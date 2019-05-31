@@ -4,7 +4,7 @@ import 'attributematcher.dart';
 import 'closed.dart';
 import 'element.dart';
 import 'rule.dart';
-import 'rulebuilder.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/rulebuilder.dart';
 
 class NegativeRule extends Rule {
   final AttributeMatcher attributeMatcher;

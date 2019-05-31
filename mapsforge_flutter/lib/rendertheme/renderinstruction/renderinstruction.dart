@@ -6,7 +6,7 @@ import '../../renderer/polylinecontainer.dart';
 
 import '../rendercallback.dart';
 import '../rendercontext.dart';
-import '../xmlutils.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/xmlutils.dart';
 
 /**
  * A RenderInstruction is a basic graphical primitive to draw a map.

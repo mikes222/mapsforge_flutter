@@ -5,7 +5,7 @@ author: devemux86, Michael Schwartz
 homepage: https://github.com/mikes222/mapsforge_flutter
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -20,6 +20,10 @@ dev_dependencies:
 
   # MIT License
   dcache: 0.2.1
+
+  # MIT License
+  xml: 3.4.1
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

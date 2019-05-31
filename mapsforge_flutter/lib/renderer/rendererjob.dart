@@ -1,18 +1,19 @@
+import 'package:mapsforge_flutter/layer/job/job.dart';
+import 'package:mapsforge_flutter/rendertheme/rule/rendertheme.dart';
+
 import '../datastore/mapdatastore.dart';
 import '../model/displaymodel.dart';
 import '../model/tile.dart';
-import '../queue/job.dart';
-import '../rendertheme/rule/rendererthemefuture.dart';
 
 class RendererJob extends Job {
   final DisplayModel displayModel;
   bool labelsOnly;
   final MapDataStore mapDataStore;
-  final RenderThemeFuture renderThemeFuture;
+  final RenderTheme renderTheme;
   final double textScale;
 
-  RendererJob(Tile tile, this.mapDataStore, this.renderThemeFuture,
-      this.displayModel, this.textScale, bool isTransparent, bool labelsOnly)
+  RendererJob(Tile tile, this.mapDataStore, this.renderTheme, this.displayModel,
+      this.textScale, bool isTransparent, bool labelsOnly)
       : super(tile, isTransparent) {
     if (mapDataStore == null) {
       throw new Exception("mapFile must not be null");
@@ -30,7 +31,7 @@ class RendererJob extends Job {
    * @return a RendererJob based on the current one, only tile changes
    */
   RendererJob otherTile(Tile tile) {
-    return new RendererJob(tile, this.mapDataStore, this.renderThemeFuture,
+    return new RendererJob(tile, this.mapDataStore, this.renderTheme,
         this.displayModel, this.textScale, this.hasAlpha, this.labelsOnly);
   }
 
@@ -50,7 +51,7 @@ class RendererJob extends Job {
           displayModel == other.displayModel &&
           labelsOnly == other.labelsOnly &&
           mapDataStore == other.mapDataStore &&
-          renderThemeFuture == other.renderThemeFuture &&
+          renderTheme == other.renderTheme &&
           textScale == other.textScale;
 
   @override
@@ -59,6 +60,6 @@ class RendererJob extends Job {
       displayModel.hashCode ^
       labelsOnly.hashCode ^
       mapDataStore.hashCode ^
-      renderThemeFuture.hashCode ^
+      renderTheme.hashCode ^
       textScale.hashCode;
 }

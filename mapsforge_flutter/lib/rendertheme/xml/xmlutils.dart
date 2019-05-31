@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import '../graphics/graphicfactory.dart';
-import '../graphics/resourcebitmap.dart';
-import '../model/displaymodel.dart';
-import '../rendertheme/renderinstruction/renderinstruction.dart';
-import '../rendertheme/themecallback.dart';
 import 'package:logging/logging.dart';
 
-import '../inputstream.dart';
+import '../../graphics/graphicfactory.dart';
+import '../../graphics/resourcebitmap.dart';
+import '../../inputstream.dart';
+import '../../model/displaymodel.dart';
+import '../../rendertheme/renderinstruction/renderinstruction.dart';
+import '../../rendertheme/themecallback.dart';
 
 class XmlUtils {
   static final _log = new Logger('XmlUtils');
@@ -50,45 +50,23 @@ class XmlUtils {
       String absoluteName = getAbsoluteName(relativePathPrefix, src);
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
-      int hash = new StringBuilder()
-          .append(absoluteName)
-          .append(width)
-          .append(height)
-          .append(percent)
-          .toString()
-          .hashCode();
-      if (src.toLowerCase(Locale.ENGLISH).endsWith(".svg")) {
+      if (src.toLowerCase().endsWith(".svg")) {
         try {
           return graphicFactory.renderSvg(inputStream,
-              displayModel.getScaleFactor(), width, height, percent, hash);
+              displayModel.getScaleFactor(), width, height, percent);
         } catch (e) {
           throw new Exception("SVG render failed " + src);
         }
       }
       try {
-        return graphicFactory.createResourceBitmap(inputStream,
-            displayModel.getScaleFactor(), width, height, percent, hash);
+        return graphicFactory.createResourceBitmap(
+            inputStream, displayModel.getScaleFactor(), width, height, percent);
       } catch (e) {
         throw new Exception("Reading bitmap file failed " + src);
       }
     } finally {
       inputStream.close();
     }
-  }
-
-  static Exception createXmlPullParserException(
-      String element, String name, String value, int attributeIndex) {
-    StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append("unknown attribute (");
-    stringBuilder.append(attributeIndex);
-    stringBuilder.append(") in element '");
-    stringBuilder.append(element);
-    stringBuilder.append("': ");
-    stringBuilder.append(name);
-    stringBuilder.append('=');
-    stringBuilder.append(value);
-
-    return new Exception(stringBuilder.toString());
   }
 
   /**
@@ -103,7 +81,7 @@ class XmlUtils {
    */
   static int getColor(GraphicFactory graphicFactory, String colorString,
       ThemeCallback themeCallback, RenderInstruction origin) {
-    if (colorString.isEmpty || colorString.charAt(0) != '#') {
+    if (colorString.isEmpty || colorString.codeUnitAt(0) != '#') {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     } else if (colorString.length == 7) {
       return getColorAlpha(
@@ -225,19 +203,19 @@ class XmlUtils {
   static InputStream inputStreamFromFile(
       String relativePathPrefix, String src) {
     File file = getFile(relativePathPrefix, src);
-    if (!file.exists()) {
-      if (src.length > 0 && src.charAt(0) == File.separatorChar) {
-        file = getFile(relativePathPrefix, src.substring(1));
-      }
-      if (!file.exists()) {
-        file = null;
-      }
-    } else if (!file.isFile() || !file.canRead()) {
-      file = null;
-    }
-    if (file != null) {
-      return new FileInputStream(file);
-    }
+//    if (!file.exists()) {
+//      if (src.length > 0 && src.charAt(0) == File.separatorChar) {
+//        file = getFile(relativePathPrefix, src.substring(1));
+//      }
+//      if (!file.exists()) {
+//        file = null;
+//      }
+//    } else if (!file.isFile() || !file.canRead()) {
+//      file = null;
+//    }
+//    if (file != null) {
+//      return new FileInputStream(file);
+//    }
     return null;
   }
 
@@ -257,9 +235,9 @@ class XmlUtils {
 //  }
 
   static String getAbsoluteName(String relativePathPrefix, String name) {
-    if (name.charAt(0) == File.separatorChar) {
-      return name;
-    }
+//    if (name.charAt(0) == File.separatorChar) {
+//      return name;
+//    }
     return relativePathPrefix + name;
   }
 
@@ -287,9 +265,9 @@ class XmlUtils {
   }
 
   static File getFile(String parentPath, String pathName) {
-    if (pathName.charAt(0) == File.separatorChar) {
-      return new File(pathName);
-    }
-    return new File(parentPath, pathName);
+//    if (pathName.charAt(0) == File.separatorChar) {
+//      return new File(pathName);
+//    }
+//    return new File(parentPath, pathName);
   }
 }

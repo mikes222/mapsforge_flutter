@@ -1,6 +1,6 @@
-import '../graphics/tilebitmap.dart';
-import '../queue/job.dart';
+import 'package:mapsforge_flutter/layer/job/job.dart';
 
+import '../graphics/tilebitmap.dart';
 import '../model/observableinterface.dart';
 
 /**

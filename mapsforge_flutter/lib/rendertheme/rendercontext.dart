@@ -28,7 +28,7 @@ class RenderContext {
   List<List<List<ShapePaintContainer>>> ways;
 
   RenderContext(this.rendererJob, this.canvasRasterer) : labels = new List() {
-    this.renderTheme = rendererJob.renderThemeFuture.get();
+    this.renderTheme = rendererJob.renderTheme;
     this
         .renderTheme
         .scaleTextSize(rendererJob.textScale, rendererJob.tile.zoomLevel);
@@ -63,7 +63,7 @@ class RenderContext {
     return new RendererJob(
         tile,
         this.rendererJob.mapDataStore,
-        this.rendererJob.renderThemeFuture,
+        this.rendererJob.renderTheme,
         this.rendererJob.displayModel,
         this.rendererJob.textScale,
         this.rendererJob.hasAlpha,

@@ -18,9 +18,9 @@ class LayerUtil {
     int tileBottom =
         MercatorProjection.latitudeToTileY(boundingBox.minLatitude, zoomLevel);
 
-    int initialCapacity =
-        (tileRight - tileLeft + 1) * (tileBottom - tileTop + 1);
-    List<TilePosition> tilePositions = new List<TilePosition>(initialCapacity);
+//    int initialCapacity =
+//        (tileRight - tileLeft + 1) * (tileBottom - tileTop + 1);
+    List<TilePosition> tilePositions = new List<TilePosition>();
 
     for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
       for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {

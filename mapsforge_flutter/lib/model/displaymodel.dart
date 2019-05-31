@@ -1,18 +1,14 @@
 import 'dart:math';
 
 import '../graphics/filter.dart';
-import '../rendertheme/themecallback.dart';
-
 import 'observable.dart';
 
-/**
- * Encapsulates the display characteristics for a MapView, such as tile size and background color. The size of map tiles
- * is used to adapt to devices with differing pixel densities and users with different preferences: The larger the tile,
- * the larger everything is rendered, the effect is one of effectively stretching everything. The default device
- * dependent scale factor is determined at the GraphicFactory level, while the DisplayModel allows further adaptation to
- * cater for user needs or application development (maybe a small map and large map, or to prevent upscaling for
- * downloaded tiles that do not scale well).
- */
+/// Encapsulates the display characteristics for a MapView, such as tile size and background color. The size of map tiles
+/// is used to adapt to devices with differing pixel densities and users with different preferences: The larger the tile,
+/// the larger everything is rendered, the effect is one of effectively stretching everything. The default device
+/// dependent scale factor is determined at the GraphicFactory level, while the DisplayModel allows further adaptation to
+/// cater for user needs or application development (maybe a small map and large map, or to prevent upscaling for
+/// downloaded tiles that do not scale well).
 class DisplayModel extends Observable {
   static final int DEFAULT_BACKGROUND_COLOR = 0xffeeeeee; // format AARRGGBB
   static final int DEFAULT_TILE_SIZE = 256;
@@ -62,16 +58,15 @@ class DisplayModel extends Observable {
 
   int backgroundColor = DEFAULT_BACKGROUND_COLOR;
   Filter filter = Filter.NONE;
-  int fixedTileSize;
+  int fixedTileSize = DEFAULT_TILE_SIZE;
   int maxTextWidth = DEFAULT_MAX_TEXT_WIDTH;
   double maxTextWidthFactor = DEFAULT_MAX_TEXT_WIDTH_FACTOR;
-  ThemeCallback themeCallback;
   int tileSize = DEFAULT_TILE_SIZE;
   int tileSizeMultiple = 64;
   double userScaleFactor = defaultUserScaleFactor;
 
   DisplayModel() {
-    this.setTileSize();
+    this._setTileSize();
   }
 
   /**
@@ -106,13 +101,6 @@ class DisplayModel extends Observable {
    */
   double getScaleFactor() {
     return deviceScaleFactor * this.userScaleFactor;
-  }
-
-  /**
-   * Theme callback.
-   */
-  ThemeCallback getThemeCallback() {
-    return this.themeCallback;
   }
 
   /**
@@ -161,7 +149,7 @@ class DisplayModel extends Observable {
    */
   void setFixedTileSize(int tileSize) {
     this.fixedTileSize = tileSize;
-    setTileSize();
+    _setTileSize();
   }
 
   /**
@@ -172,13 +160,6 @@ class DisplayModel extends Observable {
   void setMaxTextWidthFactor(double maxTextWidthFactor) {
     this.maxTextWidthFactor = maxTextWidthFactor;
     this.setMaxTextWidth();
-  }
-
-  /**
-   * Theme callback.
-   */
-  void setThemeCallback(ThemeCallback themeCallback) {
-    this.themeCallback = themeCallback;
   }
 
   /**
@@ -194,7 +175,7 @@ class DisplayModel extends Observable {
    */
   void setTileSizeMultiple(int multiple) {
     this.tileSizeMultiple = multiple;
-    setTileSize();
+    _setTileSize();
   }
 
   /**
@@ -204,14 +185,14 @@ class DisplayModel extends Observable {
    */
   void setUserScaleFactor(double scaleFactor) {
     userScaleFactor = scaleFactor;
-    setTileSize();
+    _setTileSize();
   }
 
   void setMaxTextWidth() {
     this.maxTextWidth = (this.tileSize * maxTextWidthFactor).ceil();
   }
 
-  void setTileSize() {
+  void _setTileSize() {
     if (this.fixedTileSize == 0) {
       double temp = DEFAULT_TILE_SIZE * deviceScaleFactor * userScaleFactor;
       // this will clamp to the nearest multiple of the tileSizeMultiple

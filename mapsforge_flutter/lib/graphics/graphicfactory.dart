@@ -53,7 +53,7 @@ abstract class GraphicFactory {
       int maxTextWidth);
 
   ResourceBitmap createResourceBitmap(InputStream inputStream,
-      double scaleFactor, int width, int height, int percent, int hash);
+      double scaleFactor, int width, int height, int percent);
 
   TileBitmap createTileBitmap(int tileSize, bool isTransparent,
       {InputStream inputStream});
@@ -61,5 +61,5 @@ abstract class GraphicFactory {
   InputStream platformSpecificSources(String relativePathPrefix, String src);
 
   ResourceBitmap renderSvg(InputStream inputStream, double scaleFactor,
-      int width, int height, int percent, int hash);
+      int width, int height, int percent);
 }

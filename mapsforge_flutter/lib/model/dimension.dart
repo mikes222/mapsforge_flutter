@@ -1,16 +1,12 @@
 import 'mappoint.dart';
 
 class Dimension {
-  final int height;
-  final int width;
+  final double height;
+  final double width;
 
-  Dimension(this.width, this.height) {
-    if (width < 0) {
-      throw new Exception("width must not be negative: $width");
-    } else if (height < 0) {
-      throw new Exception("height must not be negative: $height");
-    }
-  }
+  Dimension(this.width, this.height)
+      : assert(width >= 0),
+        assert(height >= 0);
 
   @override
   bool operator ==(Object other) =>

@@ -1,24 +1,17 @@
-import '../model/tile.dart';
+import 'package:mapsforge_flutter/model/tile.dart';
 
 class Job {
   final bool hasAlpha;
   final Tile tile;
   final String key;
 
-  static String _composeKey(int z, int x, int y) {
+  static String composeKey(int z, int x, int y) {
     return "$z/$x/$y";
   }
 
-  static String _composeKeyFromString(String z, String x, String y) {
-    return z + "/" + x + "/" + y;
-  }
-
   Job(this.tile, this.hasAlpha)
-      : key = _composeKey(tile.zoomLevel, tile.tileX, tile.tileY) {
-    if (tile == null) {
-      throw new Exception("tile must not be null");
-    }
-  }
+      : assert(tile != null),
+        key = composeKey(tile.zoomLevel, tile.tileX, tile.tileY);
 
   /**
    * Returns a unique identifier for the tile.
@@ -38,9 +31,8 @@ class Job {
       other is Job &&
           runtimeType == other.runtimeType &&
           hasAlpha == other.hasAlpha &&
-          tile == other.tile &&
           key == other.key;
 
   @override
-  int get hashCode => hasAlpha.hashCode ^ tile.hashCode ^ key.hashCode;
+  int get hashCode => hasAlpha.hashCode ^ key.hashCode;
 }

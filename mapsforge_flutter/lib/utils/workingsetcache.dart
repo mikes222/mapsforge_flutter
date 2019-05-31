@@ -29,4 +29,8 @@ class WorkingSetCache<K, V> extends SimpleCache<K, V> {
   void put(K key, V value) {
     set(key, value);
   }
+
+  int get capacity => storage.capacity;
+
+  List<CacheEntry<K, V>> get values => storage.values;
 }

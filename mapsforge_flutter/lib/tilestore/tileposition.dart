@@ -6,4 +6,9 @@ class TilePosition {
   final Tile tile;
 
   TilePosition(this.tile, this.point);
+
+  @override
+  String toString() {
+    return 'TilePosition{point: $point, tile: $tile}';
+  }
 }

@@ -3,7 +3,7 @@ import '../../model/tag.dart';
 import '../../model/tile.dart';
 import '../../renderer/polylinecontainer.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
-import '../../rendertheme/rule/rulebuilder.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/rulebuilder.dart';
 
 import '../rendercallback.dart';
 import '../rendercontext.dart';
@@ -138,6 +138,11 @@ abstract class Rule {
     for (int i = 0, n = this.subRules.length; i < n; ++i) {
       this.subRules.elementAt(i).scaleTextSize(scaleFactor, zoomLevel);
     }
+  }
+
+  @override
+  String toString() {
+    return 'Rule{cat: $cat, closedMatcher: $closedMatcher, elementMatcher: $elementMatcher, zoomMax: $zoomMax, zoomMin: $zoomMin, renderInstructions: $renderInstructions, subRules: $subRules}';
   }
 }
 

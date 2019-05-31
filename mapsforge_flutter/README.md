@@ -1,6 +1,13 @@
 # mapsforge_flutter
 
-A port of mapsforge for pure flutter
+A port of mapsforge for pure flutter. The library is in a very, very early stage. 
+
+Please take a look at the original:
+
+https://github.com/mapsforge/mapsforge
+
+Same license as the original mapsforge project. LPGL-v3
+
 
 ## Getting Started
 

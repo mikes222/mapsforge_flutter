@@ -47,8 +47,8 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
         neighborCacheSize != this.currentCache.neighborCacheSize ||
         demFolder != this.currentCache.demFolder ||
         algorithm != this.currentCache.algorithm) {
-      ret = new HgtCache(demFolder, enableInterpolationOverlap, graphicsFactory,
-          algorithm, mainCacheSize, neighborCacheSize);
+//      ret = new HgtCache(demFolder, enableInterpolationOverlap, graphicsFactory,
+//          algorithm, mainCacheSize, neighborCacheSize);
       this.currentCache = ret;
     }
     return ret;

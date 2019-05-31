@@ -1,3 +1,5 @@
+import 'package:logging/logging.dart';
+
 import '../cache/tilecache.dart';
 import '../datastore/mapdatastore.dart';
 import '../datastore/mapreadresult.dart';
@@ -13,8 +15,6 @@ import '../renderer/rendererjob.dart';
 import '../renderer/tiledependencies.dart';
 import '../rendertheme/rendercontext.dart';
 import '../utils/layerutil.dart';
-import 'package:logging/logging.dart';
-
 import 'canvasrasterer.dart';
 import 'standardrenderer.dart';
 

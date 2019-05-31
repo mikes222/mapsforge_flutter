@@ -9,7 +9,7 @@ import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
-import 'renderthemebuilder.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/renderthemebuilder.dart';
 
 /**
  * A RenderTheme defines how ways and nodes are drawn.
@@ -235,5 +235,10 @@ class RenderTheme {
       StandardRenderer renderer, RenderContext renderContext) {
     for (Hillshading hillShading in hillShadings)
       hillShading.render(renderContext, renderer.hillsRenderConfig);
+  }
+
+  @override
+  String toString() {
+    return 'RenderTheme{baseStrokeWidth: $baseStrokeWidth, baseTextSize: $baseTextSize, hasBackgroundOutside: $hasBackgroundOutside, levels: $levels, mapBackground: $mapBackground, mapBackgroundOutside: $mapBackgroundOutside, wayMatchingCache: $wayMatchingCache, poiMatchingCache: $poiMatchingCache, rulesList: $rulesList, hillShadings: $hillShadings, strokeScales: $strokeScales, textScales: $textScales}';
   }
 }

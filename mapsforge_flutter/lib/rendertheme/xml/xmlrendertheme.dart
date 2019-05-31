@@ -1,4 +1,4 @@
-import '../inputstream.dart';
+import '../../inputstream.dart';
 import 'xmlrenderthememenucallback.dart';
 
 /**

@@ -1,4 +1,4 @@
-import '../rendertheme/xmlrenderthmestylelayer.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/xmlrenderthmestylelayer.dart';
 
 /**
  * Entry class for automatically building menus from rendertheme V4+ files.

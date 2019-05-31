@@ -1,8 +1,8 @@
 import '../../graphics/graphicfactory.dart';
 import '../../model/displaymodel.dart';
-import '../../rendertheme/rule/renderthemehandler.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/renderthemehandler.dart';
 
-import '../xmlrendertheme.dart';
+import 'package:mapsforge_flutter/rendertheme/xml/xmlrendertheme.dart';
 import 'rendertheme.dart';
 
 /**
