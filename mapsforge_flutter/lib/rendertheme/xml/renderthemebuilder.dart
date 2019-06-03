@@ -1,4 +1,6 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/model/displaymodel.dart';
 import 'package:mapsforge_flutter/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -21,6 +23,8 @@ class RenderThemeBuilder {
   static final String XMLNS_XSI = "xmlns:xsi";
   static final String XSI_SCHEMALOCATION = "xsi:schemaLocation";
 
+  final GraphicFactory graphicFactory;
+  final DisplayModel displayModel;
   double baseStrokeWidth;
   double baseTextSize;
   bool hasBackgroundOutside;
@@ -29,7 +33,9 @@ class RenderThemeBuilder {
   int version;
   final List<RuleBuilder> ruleBuilderStack = List();
 
-  RenderThemeBuilder() {
+  RenderThemeBuilder(this.graphicFactory, this.displayModel)
+      : assert(graphicFactory != null),
+        assert(displayModel != null) {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
@@ -40,10 +46,13 @@ class RenderThemeBuilder {
    */
   RenderTheme build() {
     RenderTheme renderTheme = RenderTheme(this);
+    int maxLevel = 0;
     ruleBuilderStack.forEach((ruleBuilder) {
       _log.info("rule: " + ruleBuilder.build().toString());
       renderTheme.addRule(ruleBuilder.build());
+      if (maxLevel < ruleBuilder.getMaxLevel()) maxLevel = ruleBuilder.getMaxLevel();
     });
+    renderTheme.setLevels(maxLevel);
     return renderTheme;
   }
 
@@ -58,8 +67,7 @@ class RenderThemeBuilder {
         case XmlNodeType.ELEMENT:
           {
             XmlElement element = node;
-            if (element.name.toString() != "rendertheme")
-              throw Exception("Invalid root node ${element.name.toString()}");
+            if (element.name.toString() != "rendertheme") throw Exception("Invalid root node ${element.name.toString()}");
             _parseRendertheme(element);
             return;
           }
@@ -127,7 +135,7 @@ class RenderThemeBuilder {
           {
             XmlElement element = node;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(0);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, 0);
               ruleBuilder.parse(element);
               ruleBuilderStack.add(ruleBuilder);
               return;

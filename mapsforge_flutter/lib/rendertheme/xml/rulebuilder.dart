@@ -1,5 +1,11 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/model/displaymodel.dart';
 import 'package:mapsforge_flutter/rendertheme/renderinstruction/area.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/caption.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/line.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/renderinstruction.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -28,12 +34,16 @@ class RuleBuilder {
   static final String E = "e";
   static final String K = "k";
 
-  static final Pattern SPLIT_PATTERN = ("\\|");
+  static final Pattern SPLIT_PATTERN = ("|");
   static final String STRING_NEGATION = "~";
   static final String STRING_WILDCARD = "*";
   static final String V = "v";
   static final String ZOOM_MAX = "zoom-max";
   static final String ZOOM_MIN = "zoom-min";
+
+  final GraphicFactory graphicFactory;
+  final DisplayModel displayModel;
+  final int level;
 
   String cat;
   ClosedMatcher closedMatcher;
@@ -44,10 +54,11 @@ class RuleBuilder {
   Element element;
   List<String> keyList;
   String keys;
+  final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<RuleBuilder> ruleBuilderStack;
+  final Map<String, RenderSymbol> symbols;
   List<String> valueList;
   String values;
-  final int level;
 
   static ClosedMatcher getClosedMatcher(Closed closed) {
     switch (closed) {
@@ -89,7 +100,7 @@ class RuleBuilder {
   }
 
   static AttributeMatcher getValueMatcher(List<String> valueList) {
-    if (STRING_WILDCARD == (valueList.elementAt(0))) {
+    if (valueList.length > 0 && STRING_WILDCARD == (valueList[0])) {
       return AnyMatcher.INSTANCE;
     }
 
@@ -101,7 +112,10 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.level) : ruleBuilderStack = List() {
+  RuleBuilder(this.graphicFactory, this.displayModel, this.level)
+      : ruleBuilderStack = List(),
+        renderInstructions = List(),
+        symbols = Map() {
     this.closed = Closed.ANY;
     this.zoomMin = 0;
     this.zoomMax = 65536;
@@ -112,8 +126,7 @@ class RuleBuilder {
    */
   Rule build() {
     if (this.valueList.remove(STRING_NEGATION)) {
-      AttributeMatcher attributeMatcher =
-          new NegativeMatcher(this.keyList, this.valueList);
+      AttributeMatcher attributeMatcher = new NegativeMatcher(this.keyList, this.valueList);
       return new NegativeRule(this, attributeMatcher);
     }
 
@@ -126,14 +139,24 @@ class RuleBuilder {
     return new PositiveRule(this, keyMatcher, valueMatcher);
   }
 
+  int getMaxLevel() {
+    int result = level;
+    ruleBuilderStack.forEach((ruleBuilder) {
+      if (result < ruleBuilder.getMaxLevel()) result = ruleBuilder.getMaxLevel();
+    });
+    renderInstructions.forEach((renderInstruction) {
+      //if (result < renderInstruction.getMaxLevel()) result = renderInstruction.getMaxLevel();
+    });
+    return result;
+  }
+
   void parse(XmlNode rootElement) {
     rootElement.attributes.forEach((XmlAttribute attribute) {
       String name = attribute.name.toString();
       String value = attribute.value;
       //_log.info("checking $name=$value");
       if (E == name) {
-        this.element = Element.values
-            .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
+        this.element = Element.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (K == name) {
         this.keys = value;
       } else if (V == name) {
@@ -141,8 +164,7 @@ class RuleBuilder {
       } else if (CAT == name) {
         this.cat = value;
       } else if (CLOSED == name) {
-        this.closed = Closed.values
-            .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
+        this.closed = Closed.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (ZOOM_MIN == name) {
         this.zoomMin = XmlUtils.parseNonNegativeByte(name, value);
       } else if (ZOOM_MAX == name) {
@@ -210,8 +232,7 @@ class RuleBuilder {
     XmlUtils.checkMandatoryAttribute(elementName, V, this.values);
 
     if (this.zoomMin > this.zoomMax) {
-      throw new Exception(
-          '\'' + ZOOM_MIN + "' > '" + ZOOM_MAX + "': $zoomMin $zoomMax");
+      throw new Exception('\'' + ZOOM_MIN + "' > '" + ZOOM_MAX + "': $zoomMin $zoomMax");
     }
   }
 
@@ -220,7 +241,7 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(level + 1);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, level + 1);
       ruleBuilder.parse(rootElement);
       ruleBuilderStack.add(ruleBuilder);
 //      Rule rule = new RuleBuilder(qName, pullParser, this.ruleStack).build();
@@ -231,18 +252,18 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(null, null, qName, level + 1, null);
+      Area area = new Area(graphicFactory, displayModel, qName, level + 1, null);
       area.parse(rootElement);
-//      if (isVisible(area)) {
-//        this.currentRule.addRenderingInstruction(area);
-//      }
+      if (isVisible(area)) {
+        this.addRenderingInstruction(area);
+      }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-//      Caption caption = new Caption(
-//          this.graphicFactory, this.displayModel, qName, pullParser, symbols);
-//      if (isVisible(caption)) {
-//        this.currentRule.addRenderingInstruction(caption);
-//      }
+      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbols);
+      caption.parse(rootElement);
+      if (isVisible(caption)) {
+        this.addRenderingInstruction(caption);
+      }
     } else if ("cat" == qName) {
       checkState(qName, XmlElementType.RENDERING_STYLE);
       //this.currentLayer.addCategory(getStringAttribute("id"));
@@ -282,11 +303,11 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-//    Line line = new Line(this.graphicFactory, this.displayModel, qName, pullParser, this.level++,
-//    this.relativePathPrefix);
-//    if (isVisible(line)) {
-//    this.currentRule.addRenderingInstruction(line);
-//    }
+      Line line = new Line(this.graphicFactory, this.displayModel, qName, level + 1, null);
+      line.parse(rootElement);
+      if (isVisible(line)) {
+        this.addRenderingInstruction(line);
+      }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
 //    LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, qName,
@@ -327,16 +348,15 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-//      Symbol symbol = new Symbol(
-//          this.graphicFactory, this.displayModel, qName, pullParser,
-//          this.relativePathPrefix);
-//      if (isVisible(symbol)) {
-//        this.currentRule.addRenderingInstruction(symbol);
-//      }
-//      String symbolId = symbol.getId();
-//      if (symbolId != null) {
-//        this.symbols.put(symbolId, symbol);
-//      }
+      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel, null);
+      symbol.parse(rootElement);
+      if (isVisible(symbol)) {
+        this.addRenderingInstruction(symbol);
+      }
+      String symbolId = symbol.getId();
+      if (symbolId != null) {
+        this.symbols[symbolId] = symbol;
+      }
     } else if ("hillshading" == qName) {
       checkState(qName, XmlElementType.RULE);
       String category = null;
@@ -377,8 +397,7 @@ class RuleBuilder {
 //        //      this.renderTheme.addHillShadings(hillshading);
 //      }
     } else {
-      throw new Exception(
-          "unknown element: " + qName + ", " + rootElement.toString());
+      throw new Exception("unknown element: " + qName + ", " + rootElement.toString());
     }
   }
 
@@ -414,6 +433,22 @@ class RuleBuilder {
   void checkState(String elementName, XmlElementType element) {
     checkElement(elementName, element);
 //    this.elementStack.push(element);
+  }
+
+  bool isVisible(RenderInstruction renderInstruction) {
+    return true;
+    //return this.categories == null || renderInstruction.getCategory() == null || this.categories.contains(renderInstruction.getCategory());
+  }
+
+  bool isVisibleRule(Rule rule) {
+    // a rule is visible if categories is not set, the rule has not category or the
+    // categories contain this rule's category
+    return true;
+    //return this.categories == null || rule.cat == null || this.categories.contains(rule.cat);
+  }
+
+  void addRenderingInstruction(RenderInstruction renderInstruction) {
+    this.renderInstructions.add(renderInstruction);
   }
 }
 

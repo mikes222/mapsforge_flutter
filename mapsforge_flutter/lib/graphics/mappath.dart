@@ -1,6 +1,6 @@
 import 'fillrule.dart';
 
-abstract class Path {
+abstract class MapPath {
   void clear();
 
   void close();

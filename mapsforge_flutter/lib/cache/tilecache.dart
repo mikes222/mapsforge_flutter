@@ -1,17 +1,13 @@
-import 'package:mapsforge_flutter/layer/job/job.dart';
+import 'package:dcache/dcache.dart';
+import 'package:mapsforge_flutter/model/tile.dart';
+import 'package:mapsforge_flutter/utils/mercatorprojection.dart';
 
 import '../graphics/tilebitmap.dart';
 import '../model/observableinterface.dart';
 
-/**
- * Interface for tile image caches.
- */
+/// Interface for tile image caches.
 abstract class TileCache extends ObservableInterface {
-  /**
-   * @return true if this cache contains an image for the given key, false otherwise.
-   * @see Map#containsKey
-   */
-  bool containsKey(Job key);
+  final Map<int, _ZoomLevelTileCache> _caches = Map();
 
   /**
    * Destroys this cache.
@@ -26,27 +22,9 @@ abstract class TileCache extends ObservableInterface {
   void destroy();
 
   /**
-   * @return the image for the given key or null, if this cache contains no image for the key.
-   * @see Map#get
-   */
-  TileBitmap get(Job key);
-
-  /**
-   * @return the capacity of this cache.
-   */
-  int getCapacity();
-
-  /**
    * @return the capacity of the first level of a multi-level cache.
    */
   int getCapacityFirstLevel();
-
-  /**
-   * Returns tileBitmap only if available at fastest cache in case of multi-layered cache, null otherwise.
-   *
-   * @return tileBitmap if available without getting from lower storage levels
-   */
-  TileBitmap getImmediately(Job key);
 
   /**
    * Purges this cache.
@@ -61,15 +39,89 @@ abstract class TileCache extends ObservableInterface {
    */
   void purge();
 
-  /**
-   * @throws IllegalArgumentException if any of the parameters is {@code null}.
-   * @see Map#put
-   */
-  void put(Job key, TileBitmap bitmap);
+  Tile getTile(int x, int y, int zoomLevel, int tileSize) {
+    _ZoomLevelTileCache cache = _caches[zoomLevel];
+    if (cache == null) {
+      cache = _ZoomLevelTileCache(zoomLevel, tileSize);
+      _caches[zoomLevel] = cache;
+    }
+    return cache.getTile(x, y);
+  }
 
-  /**
-   * Reserves a working set in this cache, for multi-level caches this means bringing the elements in workingSet into
-   * the fastest cache.
-   */
-  void setWorkingSet(Set<Job> workingSet);
+  TileBitmap getTileBitmap(int x, int y, int zoomLevel) {
+    _ZoomLevelTileCache cache = _caches[zoomLevel];
+    if (cache == null) {
+      return null;
+    }
+    return cache.getTileBitmap(x, y);
+  }
+
+  void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
+    _ZoomLevelTileCache cache = _caches[tile.zoomLevel];
+    if (cache == null) {
+      return null;
+    }
+    cache.addTileBitmap(tile.tileX, tile.tileY, tileBitmap);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _ZoomLevelTileCache {
+  Cache _tilePositions = new SimpleCache<int, Tile>(storage: new SimpleStorage<int, Tile>(size: 200));
+
+  //List<Tile> _tilePositions;
+
+  Cache _bitmaps = new SimpleCache<int, TileBitmap>(storage: new SimpleStorage<int, TileBitmap>(size: 200));
+
+  //List<TileBitmap> _bitmaps;
+
+  int xCount;
+
+  int yCount;
+
+  final int tileSize;
+
+  final int zoomLevel;
+
+  _ZoomLevelTileCache(this.zoomLevel, this.tileSize)
+      : assert(zoomLevel >= 0),
+        assert(tileSize > 0) {
+    _getTilePositions(zoomLevel, tileSize);
+    //_bitmaps = List(_tilePositions.length);
+  }
+
+  void _getTilePositions(int zoomLevel, int tileSize) {
+    int tileLeft = 0;
+    int tileTop = 0;
+    int tileRight = MercatorProjection.longitudeToTileX(MercatorProjection.LONGITUDE_MAX, zoomLevel);
+    int tileBottom = MercatorProjection.latitudeToTileY(MercatorProjection.LATITUDE_MIN, zoomLevel);
+
+    xCount = tileRight - tileLeft + 1;
+    yCount = tileBottom - tileTop + 1;
+
+    //_tilePositions = List<Tile>(xCount * yCount);
+  }
+
+  Tile getTile(int x, int y) {
+    Tile result = _tilePositions.get(y * yCount + x);
+    if (result == null) {
+      result = Tile(x, y, zoomLevel, tileSize);
+      _tilePositions[y * yCount + x] = result;
+    }
+    //assert(result != null);
+    return result;
+  }
+
+  TileBitmap getTileBitmap(int x, int y) {
+    return _bitmaps[y * yCount + x];
+  }
+
+  void addTileBitmap(int x, int y, TileBitmap tileBitmap) {
+    TileBitmap old = _bitmaps[y * yCount + x];
+    if (old != null) {
+      old.decrementRefCount();
+    }
+    _bitmaps[y * yCount + x] = tileBitmap;
+  }
 }

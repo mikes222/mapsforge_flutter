@@ -1,12 +1,12 @@
+import 'package:mapsforge_flutter/rendertheme/xml/xmlutils.dart';
+
 import '../../datastore/pointofinterest.dart';
 import '../../graphics/bitmap.dart';
 import '../../graphics/graphicfactory.dart';
 import '../../model/displaymodel.dart';
 import '../../renderer/polylinecontainer.dart';
-
 import '../rendercallback.dart';
 import '../rendercontext.dart';
-import 'package:mapsforge_flutter/rendertheme/xml/xmlutils.dart';
 
 /**
  * A RenderInstruction is a basic graphical primitive to draw a map.
@@ -54,15 +54,16 @@ abstract class RenderInstruction {
   int percent = 100;
   double width;
 
-  RenderInstruction(this.graphicFactory, this.displayModel);
+  RenderInstruction(this.graphicFactory, this.displayModel)
+      : assert(graphicFactory != null),
+        assert(displayModel != null);
 
   Bitmap createBitmap(String relativePathPrefix, String src) {
     if (null == src || src.isEmpty) {
       return null;
     }
 
-    return XmlUtils.createBitmap(graphicFactory, displayModel,
-        relativePathPrefix, src, width.round(), height.round(), percent);
+    return XmlUtils.createBitmap(graphicFactory, displayModel, relativePathPrefix, src, width.round(), height.round(), percent);
   }
 
   void destroy();
@@ -76,16 +77,14 @@ abstract class RenderInstruction {
    * @param renderContext
    * @param poi
    */
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi);
+  void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi);
 
   /**
    * @param renderCallback a reference to the receiver of all render callbacks.
    * @param renderContext
    * @param way
    */
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way);
+  void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way);
 
   Scale scaleFromValue(String value) {
     if (value == (ALL)) {
@@ -109,6 +108,18 @@ abstract class RenderInstruction {
    * @param scaleFactor the factor by which the text size should be scaled.
    */
   void scaleTextSize(double scaleFactor, int zoomLevel);
+
+//  int getMaxLevel() {
+//    int result = level;
+//    ruleBuilderStack.forEach((ruleBuilder) {
+//      if (result < ruleBuilder.getMaxLevel()) result = ruleBuilder.getMaxLevel();
+//    });
+//    renderInstructions.forEach((renderInstruction) {
+//      if (result < renderInstruction.getMaxLevel()) result = renderInstruction.getMaxLevel();
+//    });
+//    return result;
+//  }
+
 }
 
 /////////////////////////////////////////////////////////////////////////////

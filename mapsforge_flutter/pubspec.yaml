@@ -24,6 +24,12 @@ dev_dependencies:
   # MIT License
   xml: 3.4.1
 
+  # Apache 2.0 License
+  rxdart: "0.21.0"
+
+  # BSD License
+  synchronized: 2.1.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

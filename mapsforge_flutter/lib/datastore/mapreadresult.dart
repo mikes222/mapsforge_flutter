@@ -10,7 +10,7 @@ class MapReadResult {
   /**
    * True if the read area is completely covered by water, false otherwise.
    */
-  bool isWater;
+  bool isWater = false;
 
   /**
    * The read POIs.
@@ -55,5 +55,10 @@ class MapReadResult {
       this.pointOfInterests.addAll(other.pointOfInterests);
       this.ways.addAll(other.ways);
     }
+  }
+
+  @override
+  String toString() {
+    return 'MapReadResult{isWater: $isWater, pointOfInterests: $pointOfInterests, ways: $ways}';
   }
 }

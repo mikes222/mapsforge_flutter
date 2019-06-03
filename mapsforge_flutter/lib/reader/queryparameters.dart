@@ -128,4 +128,9 @@ class QueryParameters {
       toBlockX.hashCode ^
       toBlockY.hashCode ^
       useTileBitmask.hashCode;
+
+  @override
+  String toString() {
+    return 'QueryParameters{fromBaseTileX: $fromBaseTileX, fromBaseTileY: $fromBaseTileY, fromBlockX: $fromBlockX, fromBlockY: $fromBlockY, queryTileBitmask: $queryTileBitmask, queryZoomLevel: $queryZoomLevel, toBaseTileX: $toBaseTileX, toBaseTileY: $toBaseTileY, toBlockX: $toBlockX, toBlockY: $toBlockY, useTileBitmask: $useTileBitmask}';
+  }
 }

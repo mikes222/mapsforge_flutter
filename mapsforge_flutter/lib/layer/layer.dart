@@ -1,5 +1,4 @@
-import 'package:mapsforge_flutter/graphics/canvas.dart';
-import 'package:mapsforge_flutter/model/boundingbox.dart';
+import 'package:mapsforge_flutter/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/model/displaymodel.dart';
 import 'package:mapsforge_flutter/model/latlong.dart';
 import 'package:mapsforge_flutter/model/mappoint.dart';
@@ -9,7 +8,7 @@ abstract class Layer {
   final DisplayModel displayModel;
   bool _visible = true;
 
-  Layer(this.displayModel);
+  Layer(this.displayModel) : assert(displayModel != null);
 
   /**
    * Draws this {@code Layer} on the given canvas.
@@ -19,8 +18,7 @@ abstract class Layer {
    * @param canvas       the canvas on which this {@code Layer} should draw itself.
    * @param topLeftPoint the top-left pixel position of the canvas relative to the top-left map position.
    */
-  void draw(MapViewPosition mapViewPosition, BoundingBox boundingBox,
-      Canvas canvas, Mappoint topLeftPoint);
+  void draw(MapViewPosition mapViewPosition, MapCanvas canvas);
 
   /**
    * Gets the geographic position of this layer element, if it exists.

@@ -3,7 +3,7 @@ import 'dart:math';
 import '../graphics/bitmap.dart';
 import '../graphics/display.dart';
 import '../graphics/graphicfactory.dart';
-import '../graphics/paint.dart';
+import '../graphics/mappaint.dart';
 import '../mapelements/mapelementcontainer.dart';
 import '../mapelements/symbolcontainer.dart';
 import '../mapelements/waytextcontainer.dart';
@@ -16,18 +16,8 @@ import '../renderer/rendererutils.dart';
 class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 45;
 
-  static void renderSymbol(
-      Bitmap symbolBitmap,
-      Display display,
-      int priority,
-      double dy,
-      bool alignCenter,
-      bool repeatSymbol,
-      int repeatGap,
-      int repeatStart,
-      bool rotate,
-      List<List<Mappoint>> coordinates,
-      List<MapElementContainer> currentItems) {
+  static void renderSymbol(Bitmap symbolBitmap, Display display, int priority, double dy, bool alignCenter, bool repeatSymbol,
+      int repeatGap, int repeatStart, bool rotate, List<List<Mappoint>> coordinates, List<MapElementContainer> currentItems) {
     int skipPixels = repeatStart;
 
     List<Mappoint> c;
@@ -71,9 +61,7 @@ class WayDecorator {
 
         Point point = new Point(previousX, previousY);
 
-        currentItems.add(new SymbolContainer(
-            point, display, priority, symbolBitmap,
-            theta: theta, alignCenter: alignCenter));
+        currentItems.add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {
@@ -124,8 +112,8 @@ class WayDecorator {
       Display display,
       int priority,
       double dy,
-      Paint fill,
-      Paint stroke,
+      MapPaint fill,
+      MapPaint stroke,
       bool repeat,
       double repeatGap,
       double repeatStart,
@@ -153,24 +141,17 @@ class WayDecorator {
       path.segments.add(segment);
     }
 
-    int textWidth =
-        (stroke == null) ? fill.getTextWidth(text) : stroke.getTextWidth(text);
-    int textHeight = (stroke == null)
-        ? fill.getTextHeight(text)
-        : stroke.getTextHeight(text);
+    int textWidth = (stroke == null) ? fill.getTextWidth(text) : stroke.getTextWidth(text);
+    int textHeight = (stroke == null) ? fill.getTextHeight(text) : stroke.getTextHeight(text);
 
     double pathLength = path.length();
 
-    for (double pos = repeatStart;
-        pos + textWidth < pathLength;
-        pos += repeatGap + textWidth) {
+    for (double pos = repeatStart; pos + textWidth < pathLength; pos += repeatGap + textWidth) {
       LineString linePart = path.extractPart(pos, pos + textWidth);
 
       bool tooSharp = false;
       for (int i = 1; i < linePart.segments.length; i++) {
-        double cornerAngle = linePart.segments
-            .elementAt(i - 1)
-            .angleTo(linePart.segments.elementAt(i));
+        double cornerAngle = linePart.segments.elementAt(i - 1).angleTo(linePart.segments.elementAt(i));
         if ((cornerAngle).abs() > MAX_LABEL_CORNER_ANGLE) {
           tooSharp = true;
           break;
@@ -178,8 +159,7 @@ class WayDecorator {
       }
       if (tooSharp) continue;
 
-      currentLabels.add(new WayTextContainer(graphicFactory, linePart, display,
-          priority, text, fill, stroke, textHeight.toDouble()));
+      currentLabels.add(new WayTextContainer(graphicFactory, linePart, display, priority, text, fill, stroke, textHeight.toDouble()));
     }
   }
 }

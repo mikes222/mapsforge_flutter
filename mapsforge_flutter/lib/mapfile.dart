@@ -10,7 +10,7 @@ import 'datastore/way.dart';
 import 'header/mapfileheader.dart';
 import 'header/mapfileinfo.dart';
 import 'header/subfileparameter.dart';
-import 'indexcache.dart';
+import 'indexnocache.dart';
 import 'mapfileexception.dart';
 import 'mapreader/readbuffer.dart';
 import 'model/boundingbox.dart';
@@ -180,7 +180,7 @@ class MapFile extends MapDataStore {
   static bool wayFilterEnabled = true;
   static int wayFilterDistance = 20;
 
-  final IndexCache databaseIndexCache;
+  final IndexNoCache databaseIndexCache;
   int fileSize;
   final RandomAccessFile inputChannel;
   final MapFileHeader mapFileHeader;
@@ -247,7 +247,7 @@ class MapFile extends MapDataStore {
    */
   MapFile(this.inputChannel, this.timestamp, String language)
       : mapFileHeader = new MapFileHeader(),
-        databaseIndexCache = new IndexCache(inputChannel, INDEX_CACHE_SIZE),
+        databaseIndexCache = new IndexNoCache(ReadBuffer(inputChannel), INDEX_CACHE_SIZE),
         super(language) {
     if (inputChannel == null) {
       throw new MapFileException("mapFileChannel must not be null");
@@ -271,6 +271,204 @@ class MapFile extends MapDataStore {
 
   void dispose() {
     close();
+  }
+
+  void debug() async {
+    _log.info(
+        "MapFile: wayfilter: $wayFilterEnabled, $wayFilterDistance, size of file: $fileSize, zoomLevel $zoomLevelMin - $zoomLevelMax");
+    _log.info("Cache: " + databaseIndexCache.toString());
+    this.mapFileHeader.debug();
+
+    this.mapFileHeader.getMapFileInfo().poiTags.forEach((Tag tag) {
+      _log.info("  PoiTag ${tag.toString()}");
+    });
+    this.mapFileHeader.getMapFileInfo().wayTags.forEach((Tag tag) {
+      _log.info("  WayTag ${tag.toString()}");
+    });
+    int zoomLevel = 0;
+    Set<int> readedSubFiles = Set();
+    for (SubFileParameter subFileParameter in mapFileHeader.subFileParameters) {
+      if (subFileParameter == null) {
+        ++zoomLevel;
+        continue;
+      }
+      if (readedSubFiles.contains(subFileParameter.startAddress)) {
+        // already analyzed
+        ++zoomLevel;
+        continue;
+      }
+      _log.info("SubfileParameter for zoomLevel $zoomLevel: " + subFileParameter.toString());
+      ReadBuffer readBuffer = new ReadBuffer(inputChannel);
+      for (int block = 0; block < subFileParameter.blocksWidth * subFileParameter.blocksHeight; ++block) {
+        await _debugBlock(block, subFileParameter, readBuffer);
+      }
+      readedSubFiles.add(subFileParameter.startAddress);
+      ++zoomLevel;
+    }
+
+//    Tile tile = Tile(0, 0, zoomLevelMin, 256);
+//    MapReadResult result = await readMapDataSingle(tile);
+//    _log.info("Result: " + result.toString());
+  }
+
+  void _debugBlock(int block, SubFileParameter subFileParameter, ReadBuffer readBuffer) async {
+    int row = (block / subFileParameter.blocksWidth).floor();
+    int column = (block % subFileParameter.blocksWidth);
+    double tileLatitude = MercatorProjection.tileYToLatitude(subFileParameter.boundaryTileTop + row, subFileParameter.baseZoomLevel);
+    double tileLongitude = MercatorProjection.tileXToLongitude(subFileParameter.boundaryTileLeft + column, subFileParameter.baseZoomLevel);
+
+    int currentBlockIndexEntry = await this.databaseIndexCache.getIndexEntry(subFileParameter, block);
+    int currentBlockPointer = currentBlockIndexEntry & BITMASK_INDEX_OFFSET;
+    int nextBlockPointer;
+    // check if the current block is the last block in the file
+    if (block + 1 == subFileParameter.numberOfBlocks) {
+      // set the next block pointer to the end of the file
+      nextBlockPointer = subFileParameter.subFileSize;
+    } else {
+      // get and check the next block pointer
+      nextBlockPointer = (await this.databaseIndexCache.getIndexEntry(subFileParameter, block + 1)) & BITMASK_INDEX_OFFSET;
+    }
+
+    // calculate the size of the current block
+    int currentBlockSize = (nextBlockPointer - currentBlockPointer);
+    _log.info("  Block $block: starting at ${subFileParameter.startAddress + currentBlockSize}, length: $currentBlockSize");
+    if (currentBlockSize == 0) {
+      return;
+    }
+    await readBuffer.readFromFile2(subFileParameter.startAddress + currentBlockPointer, currentBlockSize);
+
+    _processBlockSignature(readBuffer);
+    List<List<int>> zoomTable = _readZoomTable(subFileParameter, readBuffer);
+    zoomTable.forEach((List<int> items) {
+      // zoomLevel = idx + subFileParameter.minZoom
+      _log.info("  Tile zoomTable cumulatedNumberOfPois: ${items.elementAt(0)}, cumulatedNumberOfWays: ${items.elementAt(1)}");
+    });
+    // get the relative offset to the first stored way in the block
+    int firstWayOffset = readBuffer.readUnsignedInt();
+    _log.info("  Offest to first way entry: $firstWayOffset");
+    // todo read pois
+    if (firstWayOffset > 0) {
+      readBuffer.skipBytes(firstWayOffset);
+    }
+    _debugWays(readBuffer, subFileParameter, zoomTable.last.last, tileLatitude, tileLongitude);
+  }
+
+  void _debugWays(
+      ReadBuffer readBuffer, SubFileParameter subFileParameter, int cumulatedNumberOfWays, double tileLatitude, double tileLongitude) {
+    _log.info("  CumulatedNumberOfWays is $cumulatedNumberOfWays");
+    for (int i = 0; i < cumulatedNumberOfWays; ++i) {
+      // read ways
+      if (this.mapFileHeader.getMapFileInfo().debugFile) {
+        // get and check the way signature
+        String signatureWay = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
+        _log.info("    way signature: " + signatureWay);
+      }
+      int wayDataSize = readBuffer.readUnsignedInt();
+      int pos = readBuffer.bufferPosition;
+      int tileBitmask = readBuffer.readShort();
+      int specialByte = readBuffer.readByte();
+      // bit 1-4 represent the layer
+      int layer = ((specialByte & WAY_LAYER_BITMASK) >> WAY_LAYER_SHIFT);
+      // bit 5-8 represent the number of tag IDs
+      int numberOfTags = (specialByte & WAY_NUMBER_OF_TAGS_BITMASK);
+
+      _log.info(
+          "    Way $i: WaydataSize $wayDataSize, tileBitmask: ${tileBitmask.toRadixString(16)}, specialByte: ${specialByte.toRadixString(16)} - (layer: $layer, numberOfTags: $numberOfTags)");
+      // get the tags from IDs (VBE-U)
+      List<Tag> wayTags = this.mapFileHeader.getMapFileInfo().wayTags;
+      _debugTags(readBuffer, wayTags, numberOfTags, tileLatitude, tileLongitude);
+
+      int size = readBuffer.bufferPosition - pos;
+      if (size != wayDataSize) {
+        _log.info("    WayDataSize mismatching, expected $wayDataSize vs read $size");
+      }
+    }
+  }
+
+  void _debugTags(ReadBuffer readBuffer, List<Tag> wayTags, int numberOfTags, double tileLatitude, double tileLongitude) {
+    String tagString = "";
+    for (int tagIndex = 0; tagIndex < numberOfTags; ++tagIndex) {
+      int tagId = readBuffer.readUnsignedInt();
+      tagString += "$tagId";
+      if (tagId < wayTags.length) {
+        tagString += " (${wayTags[tagId].toString()})";
+      }
+      tagString += ", ";
+    }
+
+    // get the feature bitmask (1 byte)
+    int featureByte = readBuffer.readByte();
+
+    // bit 1-6 enable optional features
+    bool featureName = (featureByte & WAY_FEATURE_NAME) != 0;
+    bool featureHouseNumber = (featureByte & WAY_FEATURE_HOUSE_NUMBER) != 0;
+    bool featureRef = (featureByte & WAY_FEATURE_REF) != 0;
+    bool featureLabelPosition = (featureByte & WAY_FEATURE_LABEL_POSITION) != 0;
+    bool featureWayDataBlocksByte = (featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0;
+    bool featureWayDoubleDeltaEncoding = (featureByte & WAY_FEATURE_DOUBLE_DELTA_ENCODING) != 0;
+
+    // check if the way has a name
+    if (featureName) {
+      try {
+        Tag tag = (new Tag(TAG_KEY_NAME, extractLocalized(readBuffer.readUTF8EncodedString())));
+        tagString += "${tag.toString()}, ";
+      } catch (e) {
+        _log.warning("Error reading featureName " + e.toString());
+        //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+      }
+    }
+
+    // check if the way has a house number
+    if (featureHouseNumber) {
+      try {
+        Tag tag = (new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+        tagString += "${tag.toString()}, ";
+      } catch (e) {
+        _log.warning("Error reading featureHouseNumber " + e.toString());
+        //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+      }
+    }
+
+    // check if the way has a reference
+    if (featureRef) {
+      try {
+        Tag tag = (new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
+        tagString += "${tag.toString()}, ";
+      } catch (e) {
+        _log.warning("Error reading featureRef " + e.toString());
+        //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+      }
+    }
+
+    List<int> labelPosition;
+    if (featureLabelPosition) {
+      labelPosition = _readOptionalLabelPosition(readBuffer);
+      tagString += "lat/lon: ${labelPosition[0]}/${labelPosition[1]}, ";
+    }
+
+    int wayDataBlocks = _readOptionalWayDataBlocksByte(featureWayDataBlocksByte, readBuffer);
+    tagString += "// wayDataBlocks: $wayDataBlocks, ";
+
+    if (tagString.length > 2) _log.info("      TagIds: $tagString");
+
+    for (int wayDataBlock = 0; wayDataBlock < wayDataBlocks; ++wayDataBlock) {
+      List<List<LatLong>> wayNodes = _processWayDataBlock(tileLatitude, tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
+      if (wayNodes != null) {
+//        if (Selector.ALL == selector ||
+//            featureName ||
+//            featureHouseNumber ||
+//            featureRef ||
+//            wayAsLabelTagFilter(tags)) {
+        LatLong labelLatLong;
+        if (labelPosition != null) {
+          labelLatLong = new LatLong(wayNodes[0][0].latitude + LatLongUtils.microdegreesToDegrees(labelPosition[1]),
+              wayNodes[0][0].longitude + LatLongUtils.microdegreesToDegrees(labelPosition[0]));
+        }
+        //ways.add(new Way(layer, tags, wayNodes, labelLatLong));
+        //}
+        _log.info("      WayNodes: ${wayNodes.toString()}");
+      }
+    }
   }
 
   /**
@@ -318,93 +516,71 @@ class MapFile extends MapDataStore {
     }
   }
 
-  void decodeWayNodesDoubleDelta(List<LatLong> waySegment, double tileLatitude,
-      double tileLongitude, ReadBuffer readBuffer) {
+  void _decodeWayNodesDoubleDelta(List<LatLong> waySegment, double tileLatitude, double tileLongitude, ReadBuffer readBuffer) {
     // get the first way node latitude offset (VBE-S)
-    double wayNodeLatitude = tileLatitude +
-        LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+    double wayNodeLatitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
     // get the first way node longitude offset (VBE-S)
-    double wayNodeLongitude = tileLongitude +
-        LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+    double wayNodeLongitude = tileLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
     // store the first way node
-    waySegment[0] = new LatLong(wayNodeLatitude, wayNodeLongitude);
+    waySegment[0] = (new LatLong(wayNodeLatitude, wayNodeLongitude));
 
     double previousSingleDeltaLatitude = 0;
     double previousSingleDeltaLongitude = 0;
 
-    for (int wayNodesIndex = 1;
-        wayNodesIndex < waySegment.length;
-        ++wayNodesIndex) {
+    for (int wayNodesIndex = 1; wayNodesIndex < waySegment.length; ++wayNodesIndex) {
       // get the way node latitude double-delta offset (VBE-S)
-      double doubleDeltaLatitude =
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+      double doubleDeltaLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
       // get the way node longitude double-delta offset (VBE-S)
-      double doubleDeltaLongitude =
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+      double doubleDeltaLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
-      double singleDeltaLatitude =
-          doubleDeltaLatitude + previousSingleDeltaLatitude;
-      double singleDeltaLongitude =
-          doubleDeltaLongitude + previousSingleDeltaLongitude;
+      double singleDeltaLatitude = doubleDeltaLatitude + previousSingleDeltaLatitude;
+      double singleDeltaLongitude = doubleDeltaLongitude + previousSingleDeltaLongitude;
 
       wayNodeLatitude = wayNodeLatitude + singleDeltaLatitude;
       wayNodeLongitude = wayNodeLongitude + singleDeltaLongitude;
 
       // Decoding near international date line can return values slightly outside valid [-180°, 180°] due to calculation precision
-      if (wayNodeLongitude < LatLongUtils.LONGITUDE_MIN &&
-          (LatLongUtils.LONGITUDE_MIN - wayNodeLongitude) < 0.001) {
+      if (wayNodeLongitude < LatLongUtils.LONGITUDE_MIN && (LatLongUtils.LONGITUDE_MIN - wayNodeLongitude) < 0.001) {
         wayNodeLongitude = LatLongUtils.LONGITUDE_MIN;
-      } else if (wayNodeLongitude > LatLongUtils.LONGITUDE_MAX &&
-          (wayNodeLongitude - LatLongUtils.LONGITUDE_MAX) < 0.001) {
+      } else if (wayNodeLongitude > LatLongUtils.LONGITUDE_MAX && (wayNodeLongitude - LatLongUtils.LONGITUDE_MAX) < 0.001) {
         wayNodeLongitude = LatLongUtils.LONGITUDE_MAX;
       }
 
-      waySegment[wayNodesIndex] =
-          new LatLong(wayNodeLatitude, wayNodeLongitude);
+      waySegment[wayNodesIndex] = (new LatLong(wayNodeLatitude, wayNodeLongitude));
 
       previousSingleDeltaLatitude = singleDeltaLatitude;
       previousSingleDeltaLongitude = singleDeltaLongitude;
     }
   }
 
-  void decodeWayNodesSingleDelta(List<LatLong> waySegment, double tileLatitude,
-      double tileLongitude, ReadBuffer readBuffer) {
+  void _decodeWayNodesSingleDelta(List<LatLong> waySegment, double tileLatitude, double tileLongitude, ReadBuffer readBuffer) {
     // get the first way node latitude single-delta offset (VBE-S)
-    double wayNodeLatitude = tileLatitude +
-        LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+    double wayNodeLatitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
     // get the first way node longitude single-delta offset (VBE-S)
-    double wayNodeLongitude = tileLongitude +
-        LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+    double wayNodeLongitude = tileLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
     // store the first way node
-    waySegment[0] = new LatLong(wayNodeLatitude, wayNodeLongitude);
+    waySegment[0] = (new LatLong(wayNodeLatitude, wayNodeLongitude));
 
-    for (int wayNodesIndex = 1;
-        wayNodesIndex < waySegment.length;
-        ++wayNodesIndex) {
+    for (int wayNodesIndex = 1; wayNodesIndex < waySegment.length; ++wayNodesIndex) {
       // get the way node latitude offset (VBE-S)
-      wayNodeLatitude = wayNodeLatitude +
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+      wayNodeLatitude = wayNodeLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
       // get the way node longitude offset (VBE-S)
-      wayNodeLongitude = wayNodeLongitude +
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+      wayNodeLongitude = wayNodeLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
       // Decoding near international date line can return values slightly outside valid [-180°, 180°] due to calculation precision
-      if (wayNodeLongitude < LatLongUtils.LONGITUDE_MIN &&
-          (LatLongUtils.LONGITUDE_MIN - wayNodeLongitude) < 0.001) {
+      if (wayNodeLongitude < LatLongUtils.LONGITUDE_MIN && (LatLongUtils.LONGITUDE_MIN - wayNodeLongitude) < 0.001) {
         wayNodeLongitude = LatLongUtils.LONGITUDE_MIN;
-      } else if (wayNodeLongitude > LatLongUtils.LONGITUDE_MAX &&
-          (wayNodeLongitude - LatLongUtils.LONGITUDE_MAX) < 0.001) {
+      } else if (wayNodeLongitude > LatLongUtils.LONGITUDE_MAX && (wayNodeLongitude - LatLongUtils.LONGITUDE_MAX) < 0.001) {
         wayNodeLongitude = LatLongUtils.LONGITUDE_MAX;
       }
 
-      waySegment[wayNodesIndex] =
-          new LatLong(wayNodeLatitude, wayNodeLongitude);
+      waySegment[wayNodesIndex] = (new LatLong(wayNodeLatitude, wayNodeLongitude));
     }
   }
 
@@ -444,21 +620,15 @@ class MapFile extends MapDataStore {
     return null;
   }
 
-  PoiWayBundle processBlock(
-      QueryParameters queryParameters,
-      SubFileParameter subFileParameter,
-      BoundingBox boundingBox,
-      double tileLatitude,
-      double tileLongitude,
-      Selector selector,
-      ReadBuffer readBuffer) {
-    if (!processBlockSignature(readBuffer)) {
+  PoiWayBundle _processBlock(QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox,
+      double tileLatitude, double tileLongitude, Selector selector, ReadBuffer readBuffer) {
+    if (!_processBlockSignature(readBuffer)) {
+      _log.warning("ProcessblockSignature mismatch");
       return null;
     }
 
-    List<List<int>> zoomTable = readZoomTable(subFileParameter, readBuffer);
-    int zoomTableRow =
-        queryParameters.queryZoomLevel - subFileParameter.zoomLevelMin;
+    List<List<int>> zoomTable = _readZoomTable(subFileParameter, readBuffer);
+    int zoomTableRow = queryParameters.queryZoomLevel - subFileParameter.zoomLevelMin;
     int poisOnQueryZoomLevel = zoomTable[zoomTableRow][0];
     int waysOnQueryZoomLevel = zoomTable[zoomTableRow][1];
 
@@ -476,12 +646,11 @@ class MapFile extends MapDataStore {
       return null;
     }
 
-    bool filterRequired =
-        queryParameters.queryZoomLevel > subFileParameter.baseZoomLevel;
+    bool filterRequired = queryParameters.queryZoomLevel > subFileParameter.baseZoomLevel;
 
-    List<PointOfInterest> pois = processPOIs(tileLatitude, tileLongitude,
-        poisOnQueryZoomLevel, boundingBox, filterRequired, readBuffer);
+    List<PointOfInterest> pois = processPOIs(tileLatitude, tileLongitude, poisOnQueryZoomLevel, boundingBox, filterRequired, readBuffer);
     if (pois == null) {
+      _log.warning("No Pois");
       return null;
     }
 
@@ -491,17 +660,17 @@ class MapFile extends MapDataStore {
     } else {
       // finished reading POIs, check if the current buffer position is valid
       if (readBuffer.getBufferPosition() > firstWayOffset) {
-        _log.warning(
-            "invalid buffer position: ${readBuffer.getBufferPosition()}");
+        _log.warning("invalid buffer position: ${readBuffer.getBufferPosition()}");
         return null;
       }
 
       // move the pointer to the first way
       readBuffer.setBufferPosition(firstWayOffset);
 
-      ways = processWays(queryParameters, waysOnQueryZoomLevel, boundingBox,
-          filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
+      ways = _processWays(
+          queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
       if (ways == null) {
+        _log.warning("No Ways");
         return null;
       }
     }
@@ -514,11 +683,10 @@ class MapFile extends MapDataStore {
    *
    * @return true if the block signature could be processed successfully, false otherwise.
    */
-  bool processBlockSignature(ReadBuffer readBuffer) {
+  bool _processBlockSignature(ReadBuffer readBuffer) {
     if (this.mapFileHeader.getMapFileInfo().debugFile) {
       // get and check the block signature
-      String signatureBlock =
-          readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_BLOCK);
+      String signatureBlock = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_BLOCK);
       if (!signatureBlock.startsWith("###TileStart")) {
         _log.warning("invalid block signature: " + signatureBlock);
         return false;
@@ -528,29 +696,20 @@ class MapFile extends MapDataStore {
   }
 
   Future<MapReadResult> processBlocks(
-      QueryParameters queryParameters,
-      SubFileParameter subFileParameter,
-      BoundingBox boundingBox,
-      Selector selector) async {
+      QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox, Selector selector) async {
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
 
     MapReadResult mapFileReadResult = new MapReadResult();
 
     // read and process all blocks from top to bottom and from left to right
-    for (int row = queryParameters.fromBlockY;
-        row <= queryParameters.toBlockY;
-        ++row) {
-      for (int column = queryParameters.fromBlockX;
-          column <= queryParameters.toBlockX;
-          ++column) {
+    for (int row = queryParameters.fromBlockY; row <= queryParameters.toBlockY; ++row) {
+      for (int column = queryParameters.fromBlockX; column <= queryParameters.toBlockX; ++column) {
         // calculate the actual block number of the needed block in the file
         int blockNumber = row * subFileParameter.blocksWidth + column;
 
         // get the current index entry
-        int currentBlockIndexEntry = await this
-            .databaseIndexCache
-            .getIndexEntry(subFileParameter, blockNumber);
+        int currentBlockIndexEntry = await this.databaseIndexCache.getIndexEntry(subFileParameter, blockNumber);
 
         // check if the current query would still return a water tile
         if (queryIsWater) {
@@ -561,8 +720,7 @@ class MapFile extends MapDataStore {
 
         // get and check the current block pointer
         int currentBlockPointer = currentBlockIndexEntry & BITMASK_INDEX_OFFSET;
-        if (currentBlockPointer < 1 ||
-            currentBlockPointer > subFileParameter.subFileSize) {
+        if (currentBlockPointer < 1 || currentBlockPointer > subFileParameter.subFileSize) {
           _log.warning("invalid current block pointer: $currentBlockPointer");
           _log.warning("subFileSize: ${subFileParameter.subFileSize}");
           return null;
@@ -575,10 +733,7 @@ class MapFile extends MapDataStore {
           nextBlockPointer = subFileParameter.subFileSize;
         } else {
           // get and check the next block pointer
-          nextBlockPointer = (await this
-                  .databaseIndexCache
-                  .getIndexEntry(subFileParameter, blockNumber + 1)) &
-              BITMASK_INDEX_OFFSET;
+          nextBlockPointer = (await this.databaseIndexCache.getIndexEntry(subFileParameter, blockNumber + 1)) & BITMASK_INDEX_OFFSET;
           if (nextBlockPointer > subFileParameter.subFileSize) {
             _log.warning("invalid next block pointer: $nextBlockPointer");
             _log.warning("sub-file size: ${subFileParameter.subFileSize}");
@@ -589,8 +744,7 @@ class MapFile extends MapDataStore {
         // calculate the size of the current block
         int currentBlockSize = (nextBlockPointer - currentBlockPointer);
         if (currentBlockSize < 0) {
-          _log.warning(
-              "current block size must not be negative: $currentBlockSize");
+          _log.warning("current block size must not be negative: $currentBlockSize");
           return null;
         } else if (currentBlockSize == 0) {
           // the current block is empty, continue with the next block
@@ -600,44 +754,27 @@ class MapFile extends MapDataStore {
           _log.warning("current block size too large: $currentBlockSize");
           continue;
         } else if (currentBlockPointer + currentBlockSize > this.fileSize) {
-          _log.warning(
-              "current block largher than file size: $currentBlockSize");
+          _log.warning("current block largher than file size: $currentBlockSize");
           return null;
         }
+
+//        _log.info(
+//            "Processing block $row/$column from currentBlockPointer ${subFileParameter.startAddress + currentBlockPointer} to nextBlockPointer ${subFileParameter.startAddress + nextBlockPointer} ($currentBlockSize byte)");
 
         // seek to the current block in the map file
         // read the current block into the buffer
         ReadBuffer readBuffer = new ReadBuffer(inputChannel);
-        if (!(await readBuffer.readFromFile2(
-            subFileParameter.startAddress + currentBlockPointer,
-            currentBlockSize))) {
-          // skip the current block
-          _log.warning("reading current block has failed: $currentBlockSize");
-          return null;
-        }
+        await readBuffer.readFromFile2(subFileParameter.startAddress + currentBlockPointer, currentBlockSize);
 
         // calculate the top-left coordinates of the underlying tile
-        double tileLatitude = MercatorProjection.tileYToLatitude(
-            subFileParameter.boundaryTileTop + row,
-            subFileParameter.baseZoomLevel);
-        double tileLongitude = MercatorProjection.tileXToLongitude(
-            subFileParameter.boundaryTileLeft + column,
-            subFileParameter.baseZoomLevel);
+        double tileLatitude = MercatorProjection.tileYToLatitude(subFileParameter.boundaryTileTop + row, subFileParameter.baseZoomLevel);
+        double tileLongitude =
+            MercatorProjection.tileXToLongitude(subFileParameter.boundaryTileLeft + column, subFileParameter.baseZoomLevel);
 
-        try {
-          PoiWayBundle poiWayBundle = processBlock(
-              queryParameters,
-              subFileParameter,
-              boundingBox,
-              tileLatitude,
-              tileLongitude,
-              selector,
-              readBuffer);
-          if (poiWayBundle != null) {
-            mapFileReadResult.add(poiWayBundle);
-          }
-        } catch (e) {
-          _log.log(Level.SEVERE, e.getMessage(), e);
+        PoiWayBundle poiWayBundle =
+            _processBlock(queryParameters, subFileParameter, boundingBox, tileLatitude, tileLongitude, selector, readBuffer);
+        if (poiWayBundle != null) {
+          mapFileReadResult.add(poiWayBundle);
         }
       }
     }
@@ -645,29 +782,21 @@ class MapFile extends MapDataStore {
     // the query is finished, was the water flag set for all blocks?
     if (queryIsWater && queryReadWaterInfo) {
       // Deprecate water tiles rendering
-      //mapFileReadResult.isWater = true;
+      mapFileReadResult.isWater = true;
     }
 
     return mapFileReadResult;
   }
 
   List<PointOfInterest> processPOIs(
-      double tileLatitude,
-      double tileLongitude,
-      int numberOfPois,
-      BoundingBox boundingBox,
-      bool filterRequired,
-      ReadBuffer readBuffer) {
+      double tileLatitude, double tileLongitude, int numberOfPois, BoundingBox boundingBox, bool filterRequired, ReadBuffer readBuffer) {
     List<PointOfInterest> pois = new List();
     List<Tag> poiTags = this.mapFileHeader.getMapFileInfo().poiTags;
 
-    for (int elementCounter = numberOfPois;
-        elementCounter != 0;
-        --elementCounter) {
+    for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
       if (this.mapFileHeader.getMapFileInfo().debugFile) {
         // get and check the POI signature
-        String signaturePoi =
-            readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
+        String signaturePoi = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
         if (!signaturePoi.startsWith("***POIStart")) {
           _log.warning("invalid POI signature: " + signaturePoi);
           return null;
@@ -675,12 +804,10 @@ class MapFile extends MapDataStore {
       }
 
       // get the POI latitude offset (VBE-S)
-      double latitude = tileLatitude +
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+      double latitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
       // get the POI longitude offset (VBE-S)
-      double longitude = tileLongitude +
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+      double longitude = tileLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
 
       // get the special int which encodes multiple flags
       int specialByte = readBuffer.readByte();
@@ -706,14 +833,12 @@ class MapFile extends MapDataStore {
 
       // check if the POI has a name
       if (featureName) {
-        tags.add(new Tag(TAG_KEY_NAME,
-            extractLocalized(readBuffer.readUTF8EncodedString())));
+        tags.add(new Tag(TAG_KEY_NAME, extractLocalized(readBuffer.readUTF8EncodedString())));
       }
 
       // check if the POI has a house number
       if (featureHouseNumber) {
-        tags.add(
-            new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+        tags.add(new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
       }
 
       // check if the POI has an elevation
@@ -732,24 +857,19 @@ class MapFile extends MapDataStore {
     return pois;
   }
 
-  List<List<LatLong>> processWayDataBlock(double tileLatitude,
-      double tileLongitude, bool doubleDeltaEncoding, ReadBuffer readBuffer) {
+  List<List<LatLong>> _processWayDataBlock(double tileLatitude, double tileLongitude, bool doubleDeltaEncoding, ReadBuffer readBuffer) {
     // get and check the number of way coordinate blocks (VBE-U)
     int numberOfWayCoordinateBlocks = readBuffer.readUnsignedInt();
-    if (numberOfWayCoordinateBlocks < 1 ||
-        numberOfWayCoordinateBlocks > 65535) {
-      _log.warning(
-          "invalid number of way coordinate blocks: $numberOfWayCoordinateBlocks");
+    if (numberOfWayCoordinateBlocks < 1 || numberOfWayCoordinateBlocks > 65535) {
+      _log.warning("invalid number of way coordinate blocks: $numberOfWayCoordinateBlocks");
       return null;
     }
 
     // create the array which will store the different way coordinate blocks
-    List<List<LatLong>> wayCoordinates = new List<List<LatLong>>();
+    List<List<LatLong>> wayCoordinates = new List<List<LatLong>>(numberOfWayCoordinateBlocks);
 
     // read the way coordinate blocks
-    for (int coordinateBlock = 0;
-        coordinateBlock < numberOfWayCoordinateBlocks;
-        ++coordinateBlock) {
+    for (int coordinateBlock = 0; coordinateBlock < numberOfWayCoordinateBlocks; ++coordinateBlock) {
       // get and check the number of way nodes (VBE-U)
       int numberOfWayNodes = readBuffer.readUnsignedInt();
       if (numberOfWayNodes < 2 || numberOfWayNodes > 65535) {
@@ -761,14 +881,12 @@ class MapFile extends MapDataStore {
       }
 
       // create the array which will store the current way segment
-      List<LatLong> waySegment = new List<LatLong>();
+      List<LatLong> waySegment = new List<LatLong>(numberOfWayNodes);
 
       if (doubleDeltaEncoding) {
-        decodeWayNodesDoubleDelta(
-            waySegment, tileLatitude, tileLongitude, readBuffer);
+        _decodeWayNodesDoubleDelta(waySegment, tileLatitude, tileLongitude, readBuffer);
       } else {
-        decodeWayNodesSingleDelta(
-            waySegment, tileLatitude, tileLongitude, readBuffer);
+        _decodeWayNodesSingleDelta(waySegment, tileLatitude, tileLongitude, readBuffer);
       }
 
       wayCoordinates[coordinateBlock] = waySegment;
@@ -777,27 +895,17 @@ class MapFile extends MapDataStore {
     return wayCoordinates;
   }
 
-  List<Way> processWays(
-      QueryParameters queryParameters,
-      int numberOfWays,
-      BoundingBox boundingBox,
-      bool filterRequired,
-      double tileLatitude,
-      double tileLongitude,
-      Selector selector,
-      ReadBuffer readBuffer) {
+  List<Way> _processWays(QueryParameters queryParameters, int numberOfWays, BoundingBox boundingBox, bool filterRequired,
+      double tileLatitude, double tileLongitude, Selector selector, ReadBuffer readBuffer) {
     List<Way> ways = new List();
     List<Tag> wayTags = this.mapFileHeader.getMapFileInfo().wayTags;
 
     BoundingBox wayFilterBbox = boundingBox.extendMeters(wayFilterDistance);
 
-    for (int elementCounter = numberOfWays;
-        elementCounter != 0;
-        --elementCounter) {
+    for (int elementCounter = numberOfWays; elementCounter != 0; --elementCounter) {
       if (this.mapFileHeader.getMapFileInfo().debugFile) {
         // get and check the way signature
-        String signatureWay =
-            readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
+        String signatureWay = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
         if (!signatureWay.startsWith("---WayStart")) {
           _log.warning("invalid way signature: " + signatureWay);
           return null;
@@ -838,6 +946,8 @@ class MapFile extends MapDataStore {
       if (tags == null) {
         return null;
       }
+//      _log.info(
+//          "processWays for ${wayTags.toString()} and numberofTags: $numberOfTags returned ${tags.length} items");
 
       // get the feature bitmask (1 byte)
       int featureByte = readBuffer.readByte();
@@ -846,63 +956,62 @@ class MapFile extends MapDataStore {
       bool featureName = (featureByte & WAY_FEATURE_NAME) != 0;
       bool featureHouseNumber = (featureByte & WAY_FEATURE_HOUSE_NUMBER) != 0;
       bool featureRef = (featureByte & WAY_FEATURE_REF) != 0;
-      bool featureLabelPosition =
-          (featureByte & WAY_FEATURE_LABEL_POSITION) != 0;
-      bool featureWayDataBlocksByte =
-          (featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0;
-      bool featureWayDoubleDeltaEncoding =
-          (featureByte & WAY_FEATURE_DOUBLE_DELTA_ENCODING) != 0;
+      bool featureLabelPosition = (featureByte & WAY_FEATURE_LABEL_POSITION) != 0;
+      bool featureWayDataBlocksByte = (featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0;
+      bool featureWayDoubleDeltaEncoding = (featureByte & WAY_FEATURE_DOUBLE_DELTA_ENCODING) != 0;
 
       // check if the way has a name
       if (featureName) {
-        tags.add(new Tag(TAG_KEY_NAME,
-            extractLocalized(readBuffer.readUTF8EncodedString())));
+        try {
+          tags.add(new Tag(TAG_KEY_NAME, extractLocalized(readBuffer.readUTF8EncodedString())));
+        } catch (e) {
+          _log.warning(e.toString());
+          //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+        }
       }
 
       // check if the way has a house number
       if (featureHouseNumber) {
-        tags.add(
-            new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+        try {
+          tags.add(new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+        } catch (e) {
+          _log.warning(e.toString());
+          //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+        }
       }
 
       // check if the way has a reference
       if (featureRef) {
-        tags.add(new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
+        try {
+          tags.add(new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
+        } catch (e) {
+          _log.warning(e.toString());
+          //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+        }
       }
 
-      List<int> labelPosition = null;
+      List<int> labelPosition;
       if (featureLabelPosition) {
-        labelPosition = readOptionalLabelPosition(readBuffer);
+        labelPosition = _readOptionalLabelPosition(readBuffer);
       }
 
-      int wayDataBlocks =
-          readOptionalWayDataBlocksByte(featureWayDataBlocksByte, readBuffer);
+      int wayDataBlocks = _readOptionalWayDataBlocksByte(featureWayDataBlocksByte, readBuffer);
       if (wayDataBlocks < 1) {
         _log.warning("invalid number of way data blocks: $wayDataBlocks");
         return null;
       }
 
       for (int wayDataBlock = 0; wayDataBlock < wayDataBlocks; ++wayDataBlock) {
-        List<List<LatLong>> wayNodes = processWayDataBlock(tileLatitude,
-            tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
+        List<List<LatLong>> wayNodes = _processWayDataBlock(tileLatitude, tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
         if (wayNodes != null) {
-          if (filterRequired &&
-              wayFilterEnabled &&
-              !wayFilterBbox.intersectsArea(wayNodes)) {
+          if (filterRequired && wayFilterEnabled && !wayFilterBbox.intersectsArea(wayNodes)) {
             continue;
           }
-          if (Selector.ALL == selector ||
-              featureName ||
-              featureHouseNumber ||
-              featureRef ||
-              wayAsLabelTagFilter(tags)) {
+          if (Selector.ALL == selector || featureName || featureHouseNumber || featureRef || wayAsLabelTagFilter(tags)) {
             LatLong labelLatLong = null;
             if (labelPosition != null) {
-              labelLatLong = new LatLong(
-                  wayNodes[0][0].latitude +
-                      LatLongUtils.microdegreesToDegrees(labelPosition[1]),
-                  wayNodes[0][0].longitude +
-                      LatLongUtils.microdegreesToDegrees(labelPosition[0]));
+              labelLatLong = new LatLong(wayNodes[0][0].latitude + LatLongUtils.microdegreesToDegrees(labelPosition[1]),
+                  wayNodes[0][0].longitude + LatLongUtils.microdegreesToDegrees(labelPosition[0]));
             }
             ways.add(new Way(layer, tags, wayNodes, labelLatLong));
           }
@@ -963,45 +1072,32 @@ class MapFile extends MapDataStore {
     return readMapDataComplete(upperLeft, lowerRight, Selector.ALL);
   }
 
-  Future<MapReadResult> readMapDataComplete(
-      Tile upperLeft, Tile lowerRight, Selector selector) async {
-    if (upperLeft.tileX > lowerRight.tileX ||
-        upperLeft.tileY > lowerRight.tileY) {
+  Future<MapReadResult> readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
+    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
 
-    try {
-      QueryParameters queryParameters = new QueryParameters();
-      queryParameters.queryZoomLevel =
-          this.mapFileHeader.getQueryZoomLevel(upperLeft.zoomLevel);
+    QueryParameters queryParameters = new QueryParameters();
+    queryParameters.queryZoomLevel = this.mapFileHeader.getQueryZoomLevel(upperLeft.zoomLevel);
 
-      // get and check the sub-file for the query zoom level
-      SubFileParameter subFileParameter = this
-          .mapFileHeader
-          .getSubFileParameter(queryParameters.queryZoomLevel);
-      if (subFileParameter == null) {
-        _log.warning(
-            "no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
-        return null;
-      }
-
-      queryParameters.calculateBaseTiles(
-          upperLeft, lowerRight, subFileParameter);
-      queryParameters.calculateBlocks(subFileParameter);
-
-      // we enlarge the bounding box for the tile slightly in order to retain any data that
-      // lies right on the border, some of this data needs to be drawn as the graphics will
-      // overlap onto this tile.
-      return processBlocks(queryParameters, subFileParameter,
-          Tile.getBoundingBoxStatic(upperLeft, lowerRight), selector);
-    } catch (e) {
-      _log.log(Level.SEVERE, e.getMessage(), e);
+    // get and check the sub-file for the query zoom level
+    SubFileParameter subFileParameter = this.mapFileHeader.getSubFileParameter(queryParameters.queryZoomLevel);
+    if (subFileParameter == null) {
+      _log.warning("no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
       return null;
     }
+
+    queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
+    queryParameters.calculateBlocks(subFileParameter);
+
+    // we enlarge the bounding box for the tile slightly in order to retain any data that
+    // lies right on the border, some of this data needs to be drawn as the graphics will
+    // overlap onto this tile.
+    return processBlocks(queryParameters, subFileParameter, Tile.getBoundingBoxStatic(upperLeft, lowerRight), selector);
   }
 
-  List<int> readOptionalLabelPosition(ReadBuffer readBuffer) {
-    List<int> labelPosition = new List<int>();
+  List<int> _readOptionalLabelPosition(ReadBuffer readBuffer) {
+    List<int> labelPosition = new List<int>(2);
 
     // get the label position latitude offset (VBE-S)
     labelPosition[1] = readBuffer.readSignedInt();
@@ -1012,8 +1108,7 @@ class MapFile extends MapDataStore {
     return labelPosition;
   }
 
-  int readOptionalWayDataBlocksByte(
-      bool featureWayDataBlocksByte, ReadBuffer readBuffer) {
+  int _readOptionalWayDataBlocksByte(bool featureWayDataBlocksByte, ReadBuffer readBuffer) {
     if (featureWayDataBlocksByte) {
       // get and check the number of way data blocks (VBE-U)
       return readBuffer.readUnsignedInt();
@@ -1047,11 +1142,9 @@ class MapFile extends MapDataStore {
     return readMapDataComplete(upperLeft, lowerRight, Selector.POIS);
   }
 
-  List<List<int>> readZoomTable(
-      SubFileParameter subFileParameter, ReadBuffer readBuffer) {
-    int rows =
-        subFileParameter.zoomLevelMax - subFileParameter.zoomLevelMin + 1;
-    List<List<int>> zoomTable = new List<List<int>>();
+  List<List<int>> _readZoomTable(SubFileParameter subFileParameter, ReadBuffer readBuffer) {
+    int rows = subFileParameter.zoomLevelMax - subFileParameter.zoomLevelMin + 1;
+    List<List<int>> zoomTable = new List<List<int>>(rows);
 
     int cumulatedNumberOfPois = 0;
     int cumulatedNumberOfWays = 0;
@@ -1059,9 +1152,10 @@ class MapFile extends MapDataStore {
     for (int row = 0; row < rows; ++row) {
       cumulatedNumberOfPois += readBuffer.readUnsignedInt();
       cumulatedNumberOfWays += readBuffer.readUnsignedInt();
-
-      zoomTable[row][0] = cumulatedNumberOfPois;
-      zoomTable[row][1] = cumulatedNumberOfWays;
+      List<int> inner = List();
+      inner.add(cumulatedNumberOfPois);
+      inner.add(cumulatedNumberOfWays);
+      zoomTable[row] = inner;
     }
 
     return zoomTable;
@@ -1098,8 +1192,7 @@ class MapFile extends MapDataStore {
   @override
   bool supportsTile(Tile tile) {
     return tile.getBoundingBox().intersects(getMapFileInfo().boundingBox) &&
-        (tile.zoomLevel >= this.zoomLevelMin &&
-            tile.zoomLevel <= this.zoomLevelMax);
+        (tile.zoomLevel >= this.zoomLevelMin && tile.zoomLevel <= this.zoomLevelMax);
   }
 }
 

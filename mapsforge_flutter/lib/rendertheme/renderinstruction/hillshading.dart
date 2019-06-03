@@ -44,7 +44,7 @@ class Hillshading {
             max(0, this.magnitude * hillsRenderConfig.getMaginuteScaleFactor()),
             255) /
         255;
-    Tile tile = renderContext.rendererJob.tile;
+    Tile tile = renderContext.job.tile;
     int zoomLevel = tile.zoomLevel;
     if (zoomLevel > maxZoom || zoomLevel < minZoom) return;
 

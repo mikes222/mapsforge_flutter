@@ -1,81 +1,45 @@
+import 'package:mapsforge_flutter/cache/tilecache.dart';
+import 'package:mapsforge_flutter/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/model/displaymodel.dart';
-import 'package:mapsforge_flutter/model/mapviewposition.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:synchronized/synchronized.dart';
 
 import 'job.dart';
+import 'jobrenderer.dart';
 
-class JobQueue<T extends Job> {
-  static final int QUEUE_CAPACITY = 128;
-
-  final List<T> assignedJobs = new List();
+class JobQueue {
   final DisplayModel displayModel;
-  bool isInterrupted;
-  final MapViewPosition mapViewPosition;
-  bool scheduleNeeded;
+  final TileCache tileCache;
+  final JobRenderer jobRenderer;
 
-  JobQueue(this.mapViewPosition, this.displayModel);
+  Subject<Job> _inject = PublishSubject();
+  Observable<Job> _observe;
 
-  void add(T job) {
-    if (!this.assignedJobs.contains(job)) {
-      assignedJobs.add(job);
-      this.notifyWorkers();
-    }
+  static final Lock _lock = Lock();
+
+  JobQueue(this.displayModel, this.tileCache, this.jobRenderer)
+      : assert(displayModel != null),
+        assert(tileCache != null),
+        assert(jobRenderer != null) {
+    _observe = _inject.asyncMap(process).asBroadcastStream();
   }
 
-  /**
-   * Returns the most important entry from this queue. The method blocks while this queue is empty.
-   */
-  T get() {
-    while (this.assignedJobs.isEmpty) {
-      //this.wait(200);
-      if (this.isInterrupted) {
-        this.isInterrupted = false;
-        return null;
+  Observable<Job> get observe => _observe;
+
+  void add(Job job) {
+    _inject.add(job);
+  }
+
+  Future<Job> process(Job job) async {
+    Job result = await _lock.synchronized(() async {
+      TileBitmap tileBitmap = tileCache.getTileBitmap(job.tile.tileX, job.tile.tileY, job.tile.zoomLevel);
+      if (tileBitmap != null) {
+        return job;
       }
-    }
-
-    if (this.scheduleNeeded) {
-      this.scheduleNeeded = false;
-//      schedule(displayModel.getTileSize());
-    }
-
-//    T job = this.assignedJobs.remove(0);
-//    this.assignedJobs.add(job);
-//    return job;
-  }
-
-  void interrupt() {
-    this.isInterrupted = true;
-    notifyWorkers();
-  }
-
-  void notifyWorkers() {
-//    this.notifyAll();
-  }
-
-  void remove(T job) {
-    this.assignedJobs.remove(job);
-    this.notifyWorkers();
-  }
-
-//  void schedule(int tileSize) {
-//    QueueItemScheduler.schedule(
-//        this.queueItems, this.mapViewPosition.getMapPosition(), tileSize);
-//    Collections.sort(this.queueItems, QueueItemComparator.INSTANCE);
-//    trimToSize();
-//  }
-
-  /**
-   * @return the current number of entries in this queue.
-   */
-  int size() {
-//    return this.queueItems.size();
-  }
-
-  void trimToSize() {
-//    int queueSize = this.queueItems.size();
-//
-//    while (queueSize > QUEUE_CAPACITY) {
-//      this.queueItems.remove(--queueSize);
-//    }
+      tileBitmap = await jobRenderer.executeJob(job);
+      if (tileBitmap != null) tileCache.addTileBitmap(job.tile, tileBitmap);
+      return job;
+    });
+    return result;
   }
 }

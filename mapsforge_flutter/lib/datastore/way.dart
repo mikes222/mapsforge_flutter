@@ -38,9 +38,10 @@ class Way {
           tags == other.tags;
 
   @override
-  int get hashCode =>
-      labelPosition.hashCode ^
-      latLongs.hashCode ^
-      layer.hashCode ^
-      tags.hashCode;
+  int get hashCode => labelPosition.hashCode ^ latLongs.hashCode ^ layer.hashCode ^ tags.hashCode;
+
+  @override
+  String toString() {
+    return 'Way{labelPosition: $labelPosition, latLongs: $latLongs, layer: $layer, tags: $tags}';
+  }
 }

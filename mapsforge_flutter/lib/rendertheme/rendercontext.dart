@@ -1,9 +1,11 @@
 import 'dart:math';
 
+import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/layer/job/job.dart';
+
 import '../mapelements/mapelementcontainer.dart';
 import '../model/tile.dart';
 import '../renderer/canvasrasterer.dart';
-import '../renderer/rendererjob.dart';
 import '../renderer/shapepaintcontainer.dart';
 import '../rendertheme/rule/rendertheme.dart';
 
@@ -12,12 +14,14 @@ import '../rendertheme/rule/rendertheme.dart';
  * calls in order to avoid local data stored in the DatabaseRenderer.
  */
 class RenderContext {
+  static final _log = new Logger('RenderContext');
+
   static final int LAYERS = 11;
 
   static final double STROKE_INCREASE = 1.5;
   static final int STROKE_MIN_ZOOM_LEVEL = 12;
-  final RendererJob rendererJob;
-  RenderTheme renderTheme;
+  final Job job;
+  final RenderTheme renderTheme;
 
   // Configuration that drives the rendering
   final CanvasRasterer canvasRasterer;
@@ -27,13 +31,12 @@ class RenderContext {
   final List<MapElementContainer> labels;
   List<List<List<ShapePaintContainer>>> ways;
 
-  RenderContext(this.rendererJob, this.canvasRasterer) : labels = new List() {
-    this.renderTheme = rendererJob.renderTheme;
-    this
-        .renderTheme
-        .scaleTextSize(rendererJob.textScale, rendererJob.tile.zoomLevel);
+  RenderContext(this.job, this.canvasRasterer, this.renderTheme) : labels = new List() {
+//    this
+//        .renderTheme
+//        .scaleTextSize(job.textScale, job.tile.zoomLevel);
     this.ways = createWayLists();
-    setScaleStrokeWidth(this.rendererJob.tile.zoomLevel);
+    setScaleStrokeWidth(this.job.tile.zoomLevel);
   }
 
   void destroy() {
@@ -50,7 +53,8 @@ class RenderContext {
   }
 
   void addToCurrentDrawingLayer(int level, ShapePaintContainer element) {
-    this.drawingLayers.elementAt(level).add(element);
+    //_log.info("Adding level $level to layer with ${drawingLayers.length} levels");
+    this.drawingLayers[level].add(element);
   }
 
   /**
@@ -59,27 +63,21 @@ class RenderContext {
    * @param tile the tile that changes
    * @return a RendererJob based on the current one, only tile changes
    */
-  RendererJob otherTile(Tile tile) {
-    return new RendererJob(
-        tile,
-        this.rendererJob.mapDataStore,
-        this.rendererJob.renderTheme,
-        this.rendererJob.displayModel,
-        this.rendererJob.textScale,
-        this.rendererJob.hasAlpha,
-        this.rendererJob.labelsOnly);
+  Job otherTile(Tile tile) {
+    return new Job(tile, this.job.hasAlpha);
   }
 
   List<List<List<ShapePaintContainer>>> createWayLists() {
     List<List<List<ShapePaintContainer>>> result = new List(LAYERS);
     int levels = this.renderTheme.getLevels();
+    assert(levels > 0);
 
     for (int i = LAYERS - 1; i >= 0; --i) {
       List<List<ShapePaintContainer>> innerWayList = new List(levels);
       for (int j = levels - 1; j >= 0; --j) {
-        innerWayList.add(new List<ShapePaintContainer>(0));
+        innerWayList[j] = new List<ShapePaintContainer>();
       }
-      result.add(innerWayList);
+      result[i] = innerWayList;
     }
     return result;
   }
@@ -91,7 +89,6 @@ class RenderContext {
    */
   void setScaleStrokeWidth(int zoomLevel) {
     int zoomLevelDiff = max(zoomLevel - STROKE_MIN_ZOOM_LEVEL, 0);
-    this.renderTheme.scaleStrokeWidth(
-        pow(STROKE_INCREASE, zoomLevelDiff), this.rendererJob.tile.zoomLevel);
+    this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff), this.job.tile.zoomLevel);
   }
 }

@@ -25,4 +25,9 @@ class IndexCacheEntryKey {
 
   @override
   int get hashCode => indexBlockNumber.hashCode ^ subFileParameter.hashCode;
+
+  @override
+  String toString() {
+    return 'IndexCacheEntryKey{indexBlockNumber: $indexBlockNumber}';
+  }
 }

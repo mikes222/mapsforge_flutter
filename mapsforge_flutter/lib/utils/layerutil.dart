@@ -1,43 +1,12 @@
+import 'package:mapsforge_flutter/cache/tilecache.dart';
+import 'package:mapsforge_flutter/model/mapviewposition.dart';
+
 import '../mapelements/mapelementcontainer.dart';
 import '../model/boundingbox.dart';
-import '../model/mappoint.dart';
 import '../model/tile.dart';
-import '../tilestore/tileposition.dart';
-
 import 'mercatorprojection.dart';
 
 class LayerUtil {
-  static List<TilePosition> getTilePositions(BoundingBox boundingBox,
-      int zoomLevel, Mappoint topLeftPoint, int tileSize) {
-    int tileLeft = MercatorProjection.longitudeToTileX(
-        boundingBox.minLongitude, zoomLevel);
-    int tileTop =
-        MercatorProjection.latitudeToTileY(boundingBox.maxLatitude, zoomLevel);
-    int tileRight = MercatorProjection.longitudeToTileX(
-        boundingBox.maxLongitude, zoomLevel);
-    int tileBottom =
-        MercatorProjection.latitudeToTileY(boundingBox.minLatitude, zoomLevel);
-
-//    int initialCapacity =
-//        (tileRight - tileLeft + 1) * (tileBottom - tileTop + 1);
-    List<TilePosition> tilePositions = new List<TilePosition>();
-
-    for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
-      for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
-        double pixelX =
-            MercatorProjection.tileToPixel(tileX, tileSize) - topLeftPoint.x;
-        double pixelY =
-            MercatorProjection.tileToPixel(tileY, tileSize) - topLeftPoint.y;
-
-        tilePositions.add(new TilePosition(
-            new Tile(tileX, tileY, zoomLevel, tileSize),
-            new Mappoint(pixelX, pixelY)));
-      }
-    }
-
-    return tilePositions;
-  }
-
   /**
    * Upper left tile for an area.
    *
@@ -84,21 +53,23 @@ class LayerUtil {
   }
 
   static Set<Tile> getTiles(
-      BoundingBox boundingBox, int zoomLevel, int tileSize) {
+      MapViewPosition mapViewPosition, int tileSize, TileCache tileCache) {
+    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(tileSize);
     int tileLeft = MercatorProjection.longitudeToTileX(
-        boundingBox.minLongitude, zoomLevel);
-    int tileTop =
-        MercatorProjection.latitudeToTileY(boundingBox.maxLatitude, zoomLevel);
+        boundingBox.minLongitude, mapViewPosition.zoomLevel);
+    int tileTop = MercatorProjection.latitudeToTileY(
+        boundingBox.maxLatitude, mapViewPosition.zoomLevel);
     int tileRight = MercatorProjection.longitudeToTileX(
-        boundingBox.maxLongitude, zoomLevel);
-    int tileBottom =
-        MercatorProjection.latitudeToTileY(boundingBox.minLatitude, zoomLevel);
+        boundingBox.maxLongitude, mapViewPosition.zoomLevel);
+    int tileBottom = MercatorProjection.latitudeToTileY(
+        boundingBox.minLatitude, mapViewPosition.zoomLevel);
 
     Set<Tile> tiles = new Set<Tile>();
 
     for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
       for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
-        tiles.add(new Tile(tileX, tileY, zoomLevel, tileSize));
+        tiles.add(tileCache.getTile(
+            tileX, tileY, mapViewPosition.zoomLevel, tileSize));
       }
     }
     return tiles;

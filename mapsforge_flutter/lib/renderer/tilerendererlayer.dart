@@ -5,17 +5,14 @@ import 'package:mapsforge_flutter/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/labels/labelstore.dart';
 import 'package:mapsforge_flutter/labels/tilebasedlabelstore.dart';
 import 'package:mapsforge_flutter/layer/hills/hillsrenderconfig.dart';
+import 'package:mapsforge_flutter/layer/job/job.dart';
 import 'package:mapsforge_flutter/layer/tilelayer.dart';
 import 'package:mapsforge_flutter/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/model/observer.dart';
 import 'package:mapsforge_flutter/model/tile.dart';
-import 'package:mapsforge_flutter/renderer/rendererjob.dart';
 import 'package:meta/meta.dart';
 
-import 'databaserenderer.dart';
-
-class TileRendererLayer extends TileLayer<RendererJob> implements Observer {
-  DatabaseRenderer databaseRenderer;
+class TileRendererLayer extends TileLayer implements Observer {
   final GraphicFactory graphicFactory;
   final MapDataStore mapDataStore;
 
@@ -78,27 +75,24 @@ class TileRendererLayer extends TileLayer<RendererJob> implements Observer {
       bool cacheLabels = false,
       @required this.graphicFactory,
       HillsRenderConfig hillsRenderConfig,
-      @required displayModel})
+      @required displayModel,
+      @required jobRenderer})
       : assert(graphicFactory != null),
         assert(tileCache != null),
         assert(displayModel != null),
         assert(mapDataStore != null),
-        super(tileCache, graphicFactory.createMatrix(), isTransparent,
-            displayModel) {
+        assert(jobRenderer != null),
+        super(
+            tileCache: tileCache,
+            matrix: graphicFactory.createMatrix(),
+            isTransparent: isTransparent,
+            displayModel: displayModel,
+            jobRenderer: jobRenderer) {
     if (cacheLabels) {
-      this.tileBasedLabelStore =
-          new TileBasedLabelStore(tileCache.getCapacityFirstLevel());
+      this.tileBasedLabelStore = new TileBasedLabelStore(tileCache.getCapacityFirstLevel());
     } else {
       this.tileBasedLabelStore = null;
     }
-    this.databaseRenderer = new DatabaseRenderer(
-        this.mapDataStore,
-        graphicFactory,
-        tileCache,
-        tileBasedLabelStore,
-        renderLabels,
-        cacheLabels,
-        hillsRenderConfig);
     this.textScale = 1;
   }
 
@@ -136,12 +130,6 @@ class TileRendererLayer extends TileLayer<RendererJob> implements Observer {
 //    this.renderThemeFuture = new RenderThemeFuture(
 //        this.graphicFactory, this.xmlRenderTheme, this.displayModel);
 //    new Thread(this.renderThemeFuture).start();
-  }
-
-  @override
-  RendererJob createJob(Tile tile) {
-    return new RendererJob(tile, this.mapDataStore, null, this.displayModel,
-        this.textScale, this.isTransparent, false);
   }
 
   /**
@@ -186,11 +174,10 @@ class TileRendererLayer extends TileLayer<RendererJob> implements Observer {
   }
 
   @override
-  void retrieveLabelsOnly(RendererJob job) {
-    if (this.hasJobQueue &&
-        this.tileBasedLabelStore != null &&
-        this.tileBasedLabelStore.requiresTile(job.tile)) {
-      job.setRetrieveLabelsOnly();
+  void retrieveLabelsOnly(Job job) {
+    if ( //this.hasJobQueue &&
+        this.tileBasedLabelStore != null && this.tileBasedLabelStore.requiresTile(job.tile)) {
+      //job.setRetrieveLabelsOnly();
       this.jobQueue.add(job);
     }
   }

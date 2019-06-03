@@ -1,15 +1,14 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'header/subfileparameter.dart';
 import 'header/subfileparameterbuilder.dart';
-import 'indexcacheentrykey.dart';
 import 'mapreader/deserializer.dart';
+import 'mapreader/readbuffer.dart';
 
 /**
  * A cache for database index blocks with a fixed size and LRU policy.
  */
-class IndexCache {
+class IndexNoCache {
   /**
    * Number of index entries that one index block consists of.
    */
@@ -21,8 +20,7 @@ class IndexCache {
   static final int SIZE_OF_INDEX_BLOCK =
       INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
-  final Map<IndexCacheEntryKey, List<int>> map;
-  final RandomAccessFile fileChannel;
+  final ReadBuffer readBuffer;
 
   /**
    * @param inputChannel the map file from which the index should be read and cached.
@@ -30,15 +28,12 @@ class IndexCache {
    * @throws IllegalArgumentException if the capacity is negative.
    */
   // todo LRUCache
-  IndexCache(this.fileChannel, int capacity)
-      : map = new Map<IndexCacheEntryKey, List<int>>();
+  IndexNoCache(this.readBuffer, int capacity);
 
   /**
    * Destroy the cache at the end of its lifetime.
    */
-  void destroy() {
-    this.map.clear();
-  }
+  void destroy() {}
 
   /**
    * Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be
@@ -59,31 +54,17 @@ class IndexCache {
     // calculate the index block number
     int indexBlockNumber = (blockNumber / INDEX_ENTRIES_PER_BLOCK).floor();
 
-    // create the cache entry key for this request
-    IndexCacheEntryKey indexCacheEntryKey =
-        new IndexCacheEntryKey(subFileParameter, indexBlockNumber);
-
     // check for cached index block
-    List<int> indexBlock = this.map[indexCacheEntryKey];
-    if (indexBlock == null) {
-      // cache miss, seek to the correct index block in the file and read it
-      int indexBlockPosition = subFileParameter.indexStartAddress +
-          indexBlockNumber * SIZE_OF_INDEX_BLOCK;
+    // cache miss, seek to the correct index block in the file and read it
+    int indexBlockPosition = subFileParameter.indexStartAddress +
+        indexBlockNumber * SIZE_OF_INDEX_BLOCK;
 
-      int remainingIndexSize =
-          (subFileParameter.indexEndAddress - indexBlockPosition);
-      int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
-      indexBlock = new List<int>();
+    int remainingIndexSize =
+        (subFileParameter.indexEndAddress - indexBlockPosition);
+    int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
 
-//      synchronized(this.fileChannel) {
-      RandomAccessFile newInstance =
-          await this.fileChannel.setPosition(indexBlockPosition);
-      indexBlock = await (newInstance.read(indexBlockSize));
-      //    }
-
-      // put the index block in the map
-      this.map[indexCacheEntryKey] = indexBlock;
-    }
+    List<int> indexBlock =
+        await readBuffer.readDirect(indexBlockPosition, indexBlockSize);
 
     // calculate the address of the index entry inside the index block
     int indexEntryInBlock = blockNumber % INDEX_ENTRIES_PER_BLOCK;
@@ -96,6 +77,6 @@ class IndexCache {
 
   @override
   String toString() {
-    return 'IndexCache{map: $map}';
+    return 'IndexCache';
   }
 }

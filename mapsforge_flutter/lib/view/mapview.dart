@@ -1,13 +1,9 @@
-import 'package:mapsforge_flutter/model/boundingbox.dart';
-import 'package:mapsforge_flutter/model/dimension.dart';
-import 'package:mapsforge_flutter/model/latlong.dart';
-
 abstract class MapView {
   //void addLayer(Layer layer);
 
-/**
- * Clear map view.
- */
+  /**
+   * Clear map view.
+   */
 //  void destroy();
 //
   ///**

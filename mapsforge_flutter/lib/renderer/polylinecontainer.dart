@@ -6,7 +6,6 @@ import '../renderer/shapecontainer.dart';
 import '../renderer/shapetype.dart';
 import '../utils/latlongutils.dart';
 import '../utils/mercatorprojection.dart';
-
 import 'geometryutils.dart';
 
 /**
@@ -37,13 +36,11 @@ class PolylineContainer implements ShapeContainer {
     this.coordinatesRelativeToTile = null;
     this.way = way;
     if (this.way.labelPosition != null) {
-      this.center = MercatorProjection.getPixelAbsolute(
-          this.way.labelPosition, this.upperLeft.mapSize);
+      this.center = MercatorProjection.getPixelAbsolute(this.way.labelPosition, this.upperLeft.mapSize);
     }
   }
 
-  PolylineContainer.fromList(
-      List<Mappoint> coordinates, this.upperLeft, this.lowerRight, this.tags)
+  PolylineContainer.fromList(List<Mappoint> coordinates, this.upperLeft, this.lowerRight, this.tags)
       : layer = 0,
         isClosedWay = coordinates[0] == (coordinates[coordinates.length - 1]) {
     this.coordinatesAbsolute = new List<List<Mappoint>>();
@@ -55,8 +52,7 @@ class PolylineContainer implements ShapeContainer {
 
   Mappoint getCenterAbsolute() {
     if (this.center == null) {
-      this.center = GeometryUtils.calculateCenterOfBoundingBox(
-          getCoordinatesAbsolute()[0]);
+      this.center = GeometryUtils.calculateCenterOfBoundingBox(getCoordinatesAbsolute()[0]);
     }
     return this.center;
   }
@@ -70,8 +66,7 @@ class PolylineContainer implements ShapeContainer {
         List<Mappoint> mp1 = List<Mappoint>();
         coordinatesAbsolute.add(mp1);
         for (int j = 0; j < way.latLongs[i].length; ++j) {
-          Mappoint mp2 = MercatorProjection.getPixelAbsolute(
-              way.latLongs[i][j], upperLeft.mapSize);
+          Mappoint mp2 = MercatorProjection.getPixelAbsolute(way.latLongs[i][j], upperLeft.mapSize);
           mp1.add(mp2);
         }
       }
@@ -83,14 +78,13 @@ class PolylineContainer implements ShapeContainer {
   List<List<Mappoint>> getCoordinatesRelativeToOrigin() {
     if (coordinatesRelativeToTile == null) {
       Mappoint tileOrigin = upperLeft.getOrigin();
-      coordinatesRelativeToTile = List<List<Mappoint>>();
+      coordinatesRelativeToTile = List<List<Mappoint>>(getCoordinatesAbsolute().length);
       for (int i = 0; i < coordinatesRelativeToTile.length; ++i) {
-        List<Mappoint> mp1 = List<Mappoint>();
-        coordinatesRelativeToTile.add(mp1);
+        List<Mappoint> mp1 = List<Mappoint>(coordinatesAbsolute[i].length);
+        coordinatesRelativeToTile[i] = mp1;
         for (int j = 0; j < coordinatesRelativeToTile[i].length; ++j) {
-          Mappoint mp2 =
-              coordinatesAbsolute[i][j].offset(-tileOrigin.x, -tileOrigin.y);
-          mp1.add(mp2);
+          Mappoint mp2 = coordinatesAbsolute[i][j].offset(-tileOrigin.x, -tileOrigin.y);
+          mp1[j] = (mp2);
         }
       }
     }
@@ -116,5 +110,10 @@ class PolylineContainer implements ShapeContainer {
 
   Tile getLowerRight() {
     return this.lowerRight;
+  }
+
+  @override
+  String toString() {
+    return 'PolylineContainer{center: $center, coordinatesAbsolute: $coordinatesAbsolute, coordinatesRelativeToTile: $coordinatesRelativeToTile, tags: $tags, layer: $layer, way: $way}';
   }
 }

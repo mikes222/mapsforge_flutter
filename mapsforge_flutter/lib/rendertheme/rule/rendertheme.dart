@@ -116,7 +116,7 @@ class RenderTheme {
   void matchNode(RenderCallback renderCallback,
       final RenderContext renderContext, PointOfInterest poi) {
     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(
-        poi.tags, renderContext.rendererJob.tile.zoomLevel, Closed.NO);
+        poi.tags, renderContext.job.tile.zoomLevel, Closed.NO);
 
     List<RenderInstruction> matchingList =
         this.poiMatchingCache[matchingCacheKey];

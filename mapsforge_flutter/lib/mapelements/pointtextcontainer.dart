@@ -1,5 +1,5 @@
 import '../graphics/display.dart';
-import '../graphics/paint.dart';
+import '../graphics/mappaint.dart';
 import '../graphics/position.dart';
 import '../mapelements/symbolcontainer.dart';
 import '../model/mappoint.dart';
@@ -9,8 +9,8 @@ import 'mapelementcontainer.dart';
 abstract class PointTextContainer extends MapElementContainer {
   bool isVisible;
   final int maxTextWidth;
-  final Paint paintBack;
-  final Paint paintFront;
+  final MapPaint paintBack;
+  final MapPaint paintFront;
   final Position position;
   final SymbolContainer symbolContainer;
   final String text;

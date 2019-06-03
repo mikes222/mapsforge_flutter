@@ -1,13 +1,13 @@
-import 'subfileparameter.dart';
-import 'subfileparameterbuilder.dart';
-import '../mapreader/optionalfields.dart';
-import '../mapreader/readbuffer.dart';
-import '../mapreader/requiredfields.dart';
 import 'package:logging/logging.dart';
 
 import '../mapfileexception.dart';
+import '../mapreader/optionalfields.dart';
+import '../mapreader/readbuffer.dart';
+import '../mapreader/requiredfields.dart';
 import 'mapfileinfo.dart';
 import 'mapfileinfobuilder.dart';
+import 'subfileparameter.dart';
+import 'subfileparameterbuilder.dart';
 
 /**
  * Reads and validates the header data from a binary map file.
@@ -36,7 +36,7 @@ class MapFileHeader {
   static final String SPACE = ' ';
 
   MapFileInfo mapFileInfo;
-  Map<int, SubFileParameter> subFileParameters;
+  List<SubFileParameter> subFileParameters;
   int zoomLevelMaximum;
   int zoomLevelMinimum;
 
@@ -99,28 +99,20 @@ class MapFileHeader {
 
     RequiredFields.readWayTags(readBuffer, mapFileInfoBuilder);
 
-    readSubFileParameters(readBuffer, fileSize, mapFileInfoBuilder);
+    _readSubFileParameters(readBuffer, fileSize, mapFileInfoBuilder);
 
     this.mapFileInfo = mapFileInfoBuilder.build();
-
-    _log.info("mapfile is version ${mapFileInfoBuilder.fileVersion} from " +
-        DateTime.fromMillisecondsSinceEpoch(mapFileInfoBuilder.mapDate,
-                isUtc: true)
-            .toIso8601String() +
-        ", bounding: ${mapFileInfoBuilder.boundingBox.minLatitude}/${mapFileInfoBuilder.boundingBox.minLongitude} to ${mapFileInfoBuilder.boundingBox.maxLatitude}/${mapFileInfoBuilder.boundingBox.maxLongitude}" +
-        ", tilePixelSize: ${mapFileInfoBuilder.tilePixelSize}");
-
-    _log.info(
-        "StartPosition: ${mapFileInfoBuilder.optionalFields.startPosition}, startZoom: ${mapFileInfoBuilder.optionalFields.startZoomLevel}" +
-            ", poiTags: ${mapFileInfoBuilder.poiTags.length}, wayTags: ${mapFileInfoBuilder.wayTags.length}, subFiles: ${mapFileInfoBuilder.numberOfSubFiles}");
-
-    subFileParameters
-        .forEach((int zoomLevel, SubFileParameter subFileParameter) {
-      _log.info("  zoom $zoomLevel, " + subFileParameter.toString());
-    });
   }
 
-  void readSubFileParameters(ReadBuffer readBuffer, int fileSize,
+  void debug() {
+    _log.info("mapfile is version ${mapFileInfo.fileVersion} from " +
+        DateTime.fromMillisecondsSinceEpoch(mapFileInfo.mapDate, isUtc: true)
+            .toIso8601String());
+    _log.info(mapFileInfo.toString());
+    _log.info("zoomLevel: $zoomLevelMinimum - $zoomLevelMaximum");
+  }
+
+  void _readSubFileParameters(ReadBuffer readBuffer, int fileSize,
       MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the number of sub-files (1 byte)
     int numberOfSubFiles = readBuffer.readByte();
@@ -206,7 +198,8 @@ class MapFileHeader {
     }
 
     // create and fill the lookup table for the sub-files
-    this.subFileParameters = new Map<int, SubFileParameter>();
+    this.subFileParameters =
+        new List<SubFileParameter>(this.zoomLevelMaximum + 1);
     for (int currentMapFile = 0;
         currentMapFile < numberOfSubFiles;
         ++currentMapFile) {

@@ -2,35 +2,46 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import '../model/tag.dart';
 import 'package:logging/logging.dart';
+import 'package:synchronized/synchronized.dart';
 
+import '../model/tag.dart';
 import '../parameters.dart';
 import 'deserializer.dart';
 
-/**
- * Reads from a {@link RandomAccessFile} into a buffer and decodes the data.
- */
+/// Reads from a {@link RandomAccessFile} into a buffer and decodes the data.
 class ReadBuffer {
   static final _log = new Logger('ReadBuffer');
 
   static final String CHARSET_UTF8 = "UTF-8";
 
-  Uint8List bufferData;
+  static final Lock _lock = Lock();
+
+  Uint8List _bufferData;
+  int _offset;
   int bufferPosition;
   final RandomAccessFile inputChannel;
 
-  final List<int> tagIds = new List();
-
   ReadBuffer(this.inputChannel) {}
 
-  /**
-   * Returns one signed byte from the read buffer.
-   *
-   * @return the byte value.
-   */
+  Future<Uint8List> readDirect(
+      int indexBlockPosition, int indexBlockSize) async {
+    Uint8List result;
+    await _lock.synchronized(() async {
+      RandomAccessFile newInstance =
+          await inputChannel.setPosition(indexBlockPosition);
+      result = await (newInstance.read(indexBlockSize));
+    });
+    assert(result.length == indexBlockSize);
+    return result;
+  }
+
+  /// Returns one signed byte from the read buffer.
+  ///
+  /// @return the byte value.
   int readByte() {
-    return this.bufferData[this.bufferPosition++];
+    assert(_bufferData != null);
+    return this._bufferData[this.bufferPosition++];
   }
 
   /**
@@ -57,7 +68,7 @@ class ReadBuffer {
    */
   Future<bool> readFromFile(int length) async {
     // ensure that the read buffer is large enough
-    if (this.bufferData == null || this.bufferData.length < length) {
+    if (this._bufferData == null || this._bufferData.length < length) {
       // ensure that the read buffer is not too large
       if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
         _log.warning("invalid read length: $length");
@@ -69,11 +80,14 @@ class ReadBuffer {
 
     // reset the buffer position and read the data into the buffer
     this.bufferPosition = 0;
+    this._offset = 0;
 //    this.bufferWrapper = Uint8List(0).buffer; //.clear();
 
-    bufferData = await this.inputChannel.read(length);
-    assert(bufferData != null);
-    assert(bufferData.length == length);
+    await _lock.synchronized(() async {
+      _bufferData = await this.inputChannel.read(length);
+    });
+    assert(_bufferData != null);
+    assert(_bufferData.length == length);
     return true;
   }
 
@@ -88,23 +102,27 @@ class ReadBuffer {
    */
   Future<bool> readFromFile2(int offset, int length) async {
 // ensure that the read buffer is large enough
-    if (this.bufferData == null || this.bufferData.length < length) {
+    if (this._bufferData == null || this._bufferData.length < length) {
 // ensure that the read buffer is not too large
       if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
         _log.warning("invalid read length: $length");
         return false;
       }
-      this.bufferData = Uint8List(length);
+      //this._bufferData = Uint8List(length);
       //this.bufferWrapper = ByteBuffer.wrap(this.bufferData, 0, length);
     }
 
 // reset the buffer position and read the data into the buffer
     this.bufferPosition = 0;
+    this._offset = offset;
 
-    //synchronized(this.inputChannel) {
-    this.inputChannel.setPosition(offset);
-//    return this.inputChannel.read(this.bufferWrapper) == length;
-    bufferData = await this.inputChannel.read(length);
+    await _lock.synchronized(() async {
+      RandomAccessFile newInstance =
+          await this.inputChannel.setPosition(offset);
+      _bufferData = await newInstance.read(length);
+    });
+    assert(_bufferData != null);
+    assert(_bufferData.length == length);
     return true;
     //}
   }
@@ -117,8 +135,9 @@ class ReadBuffer {
    * @return the int value.
    */
   int readInt() {
+    assert(_bufferData != null);
     this.bufferPosition += 4;
-    return Deserializer.getInt(this.bufferData, this.bufferPosition - 4);
+    return Deserializer.getInt(this._bufferData, this.bufferPosition - 4);
   }
 
   /**
@@ -129,8 +148,9 @@ class ReadBuffer {
    * @return the long value.
    */
   int readLong() {
+    assert(_bufferData != null);
     this.bufferPosition += 8;
-    return Deserializer.getLong(this.bufferData, this.bufferPosition - 8);
+    return Deserializer.getLong(this._bufferData, this.bufferPosition - 8);
   }
 
   /**
@@ -141,8 +161,9 @@ class ReadBuffer {
    * @return the int value.
    */
   int readShort() {
+    assert(_bufferData != null);
     this.bufferPosition += 2;
-    return Deserializer.getShort(this.bufferData, this.bufferPosition - 2);
+    return Deserializer.getShort(this._bufferData, this.bufferPosition - 2);
   }
 
   /**
@@ -154,41 +175,44 @@ class ReadBuffer {
    * @return the int value.
    */
   int readSignedInt() {
+    assert(_bufferData != null);
     int variableByteDecode = 0;
     int variableByteShift = 0;
 
     // check if the continuation bit is set
-    while ((this.bufferData[this.bufferPosition] & 0x80) != 0) {
+    while ((this._bufferData[this.bufferPosition] & 0x80) != 0) {
       variableByteDecode |=
-          (this.bufferData[this.bufferPosition++] & 0x7f) << variableByteShift;
+          (this._bufferData[this.bufferPosition++] & 0x7f) << variableByteShift;
       variableByteShift += 7;
     }
 
     // read the six data bits from the last byte
-    if ((this.bufferData[this.bufferPosition] & 0x40) != 0) {
+    if ((this._bufferData[this.bufferPosition] & 0x40) != 0) {
       // negative
       return -(variableByteDecode |
-          ((this.bufferData[this.bufferPosition++] & 0x3f) <<
+          ((this._bufferData[this.bufferPosition++] & 0x3f) <<
               variableByteShift));
     }
     // positive
     return variableByteDecode |
-        ((this.bufferData[this.bufferPosition++] & 0x3f) << variableByteShift);
+        ((this._bufferData[this.bufferPosition++] & 0x3f) << variableByteShift);
   }
 
   List<Tag> readTags(List<Tag> tagsArray, int numberOfTags) {
     List<Tag> tags = new List();
-    tagIds.clear();
+    List<int> tagIds = new List();
 
     int maxTag = tagsArray.length;
 
     for (int tagIndex = numberOfTags; tagIndex != 0; --tagIndex) {
       int tagId = readUnsignedInt();
       if (tagId < 0 || tagId >= maxTag) {
-        _log.warning("invalid tag ID: $tagId");
-        return null;
+        _log.warning(
+            "invalid tag ID: $tagId for index $tagIndex, it should be between 0 and $maxTag, checked at offset $_offset + $bufferPosition");
+        //return null;
+      } else {
+        tagIds.add(tagId);
       }
-      tagIds.add(tagId);
     }
 
     for (int tagId in tagIds) {
@@ -227,19 +251,24 @@ class ReadBuffer {
    * @return the int value.
    */
   int readUnsignedInt() {
+    assert(_bufferData != null);
     int variableByteDecode = 0;
     int variableByteShift = 0;
 
     // check if the continuation bit is set
-    while ((this.bufferData[this.bufferPosition] & 0x80) != 0) {
+    while ((this._bufferData[this.bufferPosition] & 0x80) != 0) {
       variableByteDecode |=
-          (this.bufferData[this.bufferPosition++] & 0x7f) << variableByteShift;
+          (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
       variableByteShift += 7;
+      ++bufferPosition;
     }
 
     // read the seven data bits from the last byte
-    return variableByteDecode |
-        (this.bufferData[this.bufferPosition++] << variableByteShift);
+    variableByteDecode |=
+        (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+    variableByteShift += 7;
+    ++bufferPosition;
+    return variableByteDecode;
   }
 
   /**
@@ -258,15 +287,19 @@ class ReadBuffer {
    * @return the UTF-8 decoded string (may be null).
    */
   String readUTF8EncodedString2(int stringLength) {
+    assert(_bufferData != null);
     assert(stringLength >= 0);
     if (stringLength > 0 &&
-        this.bufferPosition + stringLength <= this.bufferData.length) {
+        this.bufferPosition + stringLength <= this._bufferData.length) {
       this.bufferPosition += stringLength;
-
-      return utf8.decoder
-          .convert(bufferData, bufferPosition - stringLength, bufferPosition);
+      //_log.info("Reading utf8 $stringLength bytes");
+      String result = utf8.decoder
+          .convert(_bufferData, bufferPosition - stringLength, bufferPosition);
+      //_log.info("String found $result");
+      return result;
     }
-    return null;
+    throw Exception(
+        "Cannot read utf8 string with $stringLength length at position $bufferPosition of data with ${_bufferData.length} bytes");
   }
 
   /**
@@ -280,7 +313,8 @@ class ReadBuffer {
    * @return the current size of the read buffer.
    */
   int getBufferSize() {
-    return this.bufferData.length;
+    assert(_bufferData != null);
+    return this._bufferData.length;
   }
 
   /**

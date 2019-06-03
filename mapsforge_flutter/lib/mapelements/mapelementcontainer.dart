@@ -1,4 +1,4 @@
-import '../graphics/canvas.dart';
+import '../graphics/mapcanvas.dart';
 import '../graphics/display.dart';
 import '../graphics/matrix.dart';
 import '../model/mappoint.dart';
@@ -48,7 +48,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
    * Drawing method: element will draw itself on canvas shifted by origin point of canvas and
    * using the matrix if rotation is required. Additionally a color filter can be applied.
    */
-  void draw(Canvas canvas, Mappoint origin, Matrix matrix, Filter filter);
+  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter);
 
   /**
    * Gets the pixel absolute boundary for this element.
@@ -105,12 +105,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
           xy == other.xy;
 
   @override
-  int get hashCode =>
-      boundary.hashCode ^
-      boundaryAbsolute.hashCode ^
-      display.hashCode ^
-      priority.hashCode ^
-      xy.hashCode;
+  int get hashCode => boundary.hashCode ^ boundaryAbsolute.hashCode ^ display.hashCode ^ priority.hashCode ^ xy.hashCode;
 
   @override
   String toString() {

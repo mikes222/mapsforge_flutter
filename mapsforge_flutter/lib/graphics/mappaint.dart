@@ -9,7 +9,7 @@ import 'fontstyle.dart';
 import 'join.dart';
 import 'style.dart';
 
-abstract class Paint {
+abstract class MapPaint {
   int getColor();
 
   double getStrokeWidth();

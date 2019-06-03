@@ -5,12 +5,12 @@ import 'dart:math';
  */
 class Mappoint implements Comparable<Mappoint> {
   /**
-   * The x coordinate of this point.
+   * The x coordinate of this point in pixels.
    */
   final double x;
 
   /**
-   * The y coordinate of this point.
+   * The y coordinate of this point in pixels.
    */
   final double y;
 
@@ -43,16 +43,14 @@ class Mappoint implements Comparable<Mappoint> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Mappoint &&
-          runtimeType == other.runtimeType &&
-          x == other.x &&
-          y == other.y;
+      identical(this, other) || other is Mappoint && runtimeType == other.runtimeType && x == other.x && y == other.y;
 
   @override
   int get hashCode => x.hashCode ^ y.hashCode;
 
   Mappoint offset(double dx, double dy) {
+    assert(dx != null);
+    assert(dy != null);
     if (0 == dx && 0 == dy) {
       return this;
     }

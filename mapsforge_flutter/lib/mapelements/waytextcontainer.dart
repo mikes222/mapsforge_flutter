@@ -1,11 +1,11 @@
-import '../graphics/canvas.dart';
+import '../graphics/mapcanvas.dart';
 import '../graphics/display.dart';
 import '../graphics/filter.dart';
 import '../graphics/graphicfactory.dart';
 import '../graphics/graphicutils.dart';
 import '../graphics/matrix.dart';
-import '../graphics/paint.dart';
-import '../graphics/path.dart';
+import '../graphics/mappaint.dart';
+import '../graphics/mappath.dart';
 import '../model/linesegment.dart';
 import '../model/linestring.dart';
 import '../model/mappoint.dart';
@@ -15,8 +15,8 @@ import 'mapelementcontainer.dart';
 class WayTextContainer extends MapElementContainer {
   final GraphicFactory graphicFactory;
   final LineString lineString;
-  final Paint paintFront;
-  final Paint paintBack;
+  final MapPaint paintFront;
+  final MapPaint paintBack;
   final String text;
 
   WayTextContainer(
@@ -39,8 +39,8 @@ class WayTextContainer extends MapElementContainer {
   }
 
   @override
-  void draw(Canvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
-    Path path = generatePath(origin);
+  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
+    MapPath path = generatePath(origin);
 
     if (this.paintBack != null) {
       int color = this.paintBack.getColor();
@@ -66,11 +66,11 @@ class WayTextContainer extends MapElementContainer {
     }
   }
 
-  Path generatePath(Mappoint origin) {
+  MapPath generatePath(Mappoint origin) {
     LineSegment firstSegment = this.lineString.segments.elementAt(0);
     // So text isn't upside down
     bool doInvert = firstSegment.end.x <= firstSegment.start.x;
-    Path path = this.graphicFactory.createPath();
+    MapPath path = this.graphicFactory.createPath();
 
     if (!doInvert) {
       Mappoint start = firstSegment.start.offset(-origin.x, -origin.y);

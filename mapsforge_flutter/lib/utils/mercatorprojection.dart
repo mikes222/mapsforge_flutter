@@ -30,6 +30,10 @@ class MercatorProjection {
    */
   static final double LATITUDE_MIN = -LATITUDE_MAX;
 
+  static final double LONGITUDE_MAX = 180;
+
+  static final double LONGITUDE_MIN = -LONGITUDE_MAX;
+
 // TODO some operations actually do not rely on the tile size, but are composited
 // from operations that require a tileSize parameter (which is effectively cancelled
 // out). A shortcut version of those operations should be implemented and then this
@@ -386,7 +390,7 @@ class MercatorProjection {
    */
   static int pixelXToTileXWithScaleFactor(
       double pixelX, double scaleFactor, int tileSize) {
-    return min(max(pixelX / tileSize, 0), scaleFactor - 1).round();
+    return min(max(pixelX / tileSize, 0), scaleFactor - 1).floor();
   }
 
   /**
@@ -397,7 +401,7 @@ class MercatorProjection {
    * @return the tile X number.
    */
   static int pixelXToTileX(double pixelX, int zoomLevel, int tileSize) {
-    return min(max(pixelX / tileSize, 0), pow(2, zoomLevel) - 1).round();
+    return min(max(pixelX / tileSize, 0), pow(2, zoomLevel) - 1).floor();
   }
 
   /**
@@ -444,7 +448,7 @@ class MercatorProjection {
    */
   static int pixelYToTileYWithScaleFactor(
       double pixelY, double scaleFactor, int tileSize) {
-    return min(max(pixelY / tileSize, 0), scaleFactor - 1).round();
+    return min(max(pixelY / tileSize, 0), scaleFactor - 1).floor();
   }
 
   /**
@@ -455,7 +459,7 @@ class MercatorProjection {
    * @return the tile Y number.
    */
   static int pixelYToTileY(double pixelY, int zoomLevel, int tileSize) {
-    return min(max(pixelY / tileSize, 0), pow(2, zoomLevel) - 1).round();
+    return min(max(pixelY / tileSize, 0), pow(2, zoomLevel) - 1).floor();
   }
 
   /**

@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter/utils/workingsetcache.dart';
 /**
  * A thread-safe cache for tile images with a variable size and LRU policy.
  */
-class MemoryTileCache implements TileCache {
+class MemoryTileCache extends TileCache {
   BitmapLRUCache lruCache;
   Observable observable;
 
@@ -22,37 +22,13 @@ class MemoryTileCache implements TileCache {
   }
 
   @override
-  bool containsKey(Job key) {
-    return this.lruCache.containsKey(key);
-  }
-
-  @override
   void destroy() {
     purge();
   }
 
   @override
-  TileBitmap get(Job key) {
-    TileBitmap bitmap = this.lruCache.get(key);
-    if (bitmap != null) {
-      bitmap.incrementRefCount();
-    }
-    return bitmap;
-  }
-
-  @override
-  int getCapacity() {
-    return this.lruCache.capacity;
-  }
-
-  @override
   int getCapacityFirstLevel() {
-    return getCapacity();
-  }
-
-  @override
-  TileBitmap getImmediately(Job key) {
-    return get(key);
+    return 200;
   }
 
   @override
@@ -61,24 +37,6 @@ class MemoryTileCache implements TileCache {
       bitmap.decrementRefCount();
     });
     this.lruCache.clear();
-  }
-
-  @override
-  void put(Job key, TileBitmap bitmap) {
-    if (key == null) {
-      throw new Exception("key must not be null");
-    } else if (bitmap == null) {
-      throw new Exception("bitmap must not be null");
-    }
-
-    TileBitmap old = this.lruCache.get(key);
-    if (old != null) {
-      old.decrementRefCount();
-    }
-
-    this.lruCache.put(key, bitmap);
-    bitmap.incrementRefCount();
-    this.observable.notifyObservers();
   }
 
   /**
@@ -92,11 +50,6 @@ class MemoryTileCache implements TileCache {
     BitmapLRUCache lruCacheNew = new BitmapLRUCache(capacity);
     //lruCacheNew.putAll(this.lruCache);
     this.lruCache = lruCacheNew;
-  }
-
-  @override
-  void setWorkingSet(Set<Job> jobs) {
-    this.lruCache.setWorkingSet(jobs);
   }
 
   @override
@@ -114,16 +67,4 @@ class MemoryTileCache implements TileCache {
 
 class BitmapLRUCache extends WorkingSetCache<Job, TileBitmap> {
   BitmapLRUCache(int capacity) : super(capacity);
-
-//  @override
-//  bool removeEldestEntry(Map.Entry<Job, TileBitmap> eldest) {
-//    if (size() > this.capacity) {
-//      TileBitmap bitmap = eldest.getValue();
-//      if (bitmap != null) {
-//        bitmap.decrementRefCount();
-//      }
-//      return true;
-//    }
-//    return false;
-//  }
 }

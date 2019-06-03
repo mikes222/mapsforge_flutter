@@ -3,37 +3,30 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/layer/job/jobrenderer.dart';
 import 'package:mapsforge_flutter/layer/tilelayer.dart';
 import 'package:mapsforge_flutter/model/mapmodel.dart';
-import 'package:mapsforge_flutter/model/mappoint.dart';
-import 'package:mapsforge_flutter/renderer/tilerendererlayer.dart';
 
-class LayerPainter extends CustomPainter {
+class LayerPainter extends ChangeNotifier implements CustomPainter {
   final MapModel mapModel;
   final TileLayer _tileLayer;
 
-  LayerPainter(this.mapModel)
+  LayerPainter(this.mapModel, JobRenderer jobRenderer)
       : assert(mapModel != null),
-        _tileLayer = TileRendererLayer(
+        _tileLayer = TileLayer(
           tileCache: mapModel.tileCache,
-          graphicFactory: mapModel.graphicsFactory,
           displayModel: mapModel.displayModel,
-          mapDataStore: mapModel.mapDataStore,
-        );
+          jobRenderer: jobRenderer,
+        ),
+        super() {
+    _tileLayer.observe.listen((job) {
+      notifyListeners();
+    });
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    mapModel.mapViewDimension.setDimension(size.width, size.height);
-    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: 16.0,
-      ),
-    )
-      ..pushStyle(ui.TextStyle(color: Colors.black45))
-      ..addText("hello $size");
-    canvas.drawParagraph(
-        builder.build()..layout(ui.ParagraphConstraints(width: 200)),
-        Offset(0, 0));
+    //mapModel.mapViewDimension.setDimension(size.width, size.height);
 
     if (mapModel.mapViewPosition == null) {
       ui.ParagraphBuilder builder = ui.ParagraphBuilder(
@@ -46,20 +39,26 @@ class LayerPainter extends CustomPainter {
           color: Colors.black45,
         ))
         ..addText("No Position");
-      canvas.drawParagraph(
-          builder.build()..layout(ui.ParagraphConstraints(width: 300)),
-          Offset(size.width / 2, size.height / 2));
+      canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: 300)), Offset(size.width / 2 - 150, size.height / 2));
     } else {
-      _tileLayer.draw(
-          mapModel.mapViewPosition,
-          mapModel.mapDataStore.boundingBox(),
-          FlutterCanvas(canvas, size),
-          Mappoint(0, 0));
+      mapModel.mapViewPosition.setSize(size);
+      _tileLayer.draw(mapModel.mapViewPosition, FlutterCanvas(canvas, size));
     }
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(LayerPainter oldDelegate) {
+    if (oldDelegate?.mapModel?.mapViewPosition != mapModel.mapViewPosition) return true;
+    return false;
   }
+
+  @override
+  bool shouldRebuildSemantics(LayerPainter oldDelegate) {
+    return false; //super.shouldRebuildSemantics(oldDelegate);
+  }
+
+  bool hitTest(Offset position) => null;
+
+  @override
+  get semanticsBuilder => null;
 }

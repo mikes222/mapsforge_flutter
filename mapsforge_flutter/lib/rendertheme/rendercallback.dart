@@ -2,7 +2,7 @@ import '../datastore/pointofinterest.dart';
 import '../graphics/bitmap.dart';
 import '../graphics/position.dart';
 
-import '../graphics/paint.dart';
+import '../graphics/mappaint.dart';
 import '../rendertheme/rendercontext.dart';
 import '../renderer/polylinecontainer.dart';
 import '../graphics/display.dart';
@@ -19,8 +19,7 @@ abstract class RenderCallback {
  * @param stroke        an optional paint for the area casing (may be null).
  * @param level
  */
-  void renderArea(final RenderContext renderContext, Paint fill, Paint stroke,
-      int level, PolylineContainer way);
+  void renderArea(final RenderContext renderContext, MapPaint fill, MapPaint stroke, int level, PolylineContainer way);
 
 /**
  * Renders an area caption with the given text.
@@ -37,18 +36,8 @@ abstract class RenderCallback {
  * @param maxTextWidth     maximum text width .
  * @param way              the way for the caption.
  */
-  void renderAreaCaption(
-      final RenderContext renderContext,
-      Display display,
-      int priority,
-      String caption,
-      double horizontalOffset,
-      double verticalOffset,
-      Paint fill,
-      Paint stroke,
-      Position position,
-      int maxTextWidth,
-      PolylineContainer way);
+  void renderAreaCaption(final RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
+      double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PolylineContainer way);
 
 /**
  * Renders an area symbol with the given bitmap.
@@ -56,8 +45,7 @@ abstract class RenderCallback {
  * @param renderContext
  * @param symbol
  */
-  void renderAreaSymbol(final RenderContext renderContext, Display display,
-      int priority, Bitmap symbol, PolylineContainer way);
+  void renderAreaSymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way);
 
 /**
  * Renders a point of interest caption with the given text.
@@ -77,8 +65,8 @@ abstract class RenderCallback {
       String caption,
       double horizontalOffset,
       double verticalOffset,
-      Paint fill,
-      Paint stroke,
+      MapPaint fill,
+      MapPaint stroke,
       Position position,
       int maxTextWidth,
       PointOfInterest poi);
@@ -92,8 +80,8 @@ abstract class RenderCallback {
  * @param stroke        an optional paint for the circle casing (may be null).
  * @param level
  */
-  void renderPointOfInterestCircle(final RenderContext renderContext,
-      double radius, Paint fill, Paint stroke, int level, PointOfInterest poi);
+  void renderPointOfInterestCircle(
+      final RenderContext renderContext, double radius, MapPaint fill, MapPaint stroke, int level, PointOfInterest poi);
 
 /**
  * Renders a point of interest symbol with the given bitmap.
@@ -101,8 +89,7 @@ abstract class RenderCallback {
  * @param renderContext
  * @param symbol
  */
-  void renderPointOfInterestSymbol(final RenderContext renderContext,
-      Display display, int priority, Bitmap symbol, PointOfInterest poi);
+  void renderPointOfInterestSymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi);
 
 /**
  * Renders a way with the given parameters.
@@ -112,8 +99,7 @@ abstract class RenderCallback {
  * @param dy            the offset of the way.
  * @param level
  */
-  void renderWay(final RenderContext renderContext, Paint stroke, double dy,
-      int level, PolylineContainer way);
+  void renderWay(final RenderContext renderContext, MapPaint stroke, double dy, int level, PolylineContainer way);
 
 /**
  * Renders a way with the given symbol along the way path.
@@ -126,18 +112,8 @@ abstract class RenderCallback {
  * @param repeatGap     distance between repetitions.
  * @param repeatStart
  */
-  void renderWaySymbol(
-      final RenderContext renderContext,
-      Display display,
-      int priority,
-      Bitmap symbol,
-      double dy,
-      bool alignCenter,
-      bool repeat,
-      double repeatGap,
-      double repeatStart,
-      bool rotate,
-      PolylineContainer way);
+  void renderWaySymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, double dy, bool alignCenter,
+      bool repeat, double repeatGap, double repeatStart, bool rotate, PolylineContainer way);
 
 /**
  * Renders a way with the given text along the way path.
@@ -148,17 +124,6 @@ abstract class RenderCallback {
  * @param fill          the paint to be used for rendering the text.
  * @param stroke
  */
-  void renderWayText(
-      final RenderContext renderContext,
-      Display display,
-      int priority,
-      String text,
-      double dy,
-      Paint fill,
-      Paint stroke,
-      bool repeat,
-      double repeatGap,
-      double repeatStart,
-      bool rotate,
-      PolylineContainer way);
+  void renderWayText(final RenderContext renderContext, Display display, int priority, String text, double dy, MapPaint fill,
+      MapPaint stroke, bool repeat, double repeatGap, double repeatStart, bool rotate, PolylineContainer way);
 }

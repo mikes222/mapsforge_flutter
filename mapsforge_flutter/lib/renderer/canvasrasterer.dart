@@ -1,11 +1,13 @@
+import 'package:logging/logging.dart';
+
 import '../graphics/bitmap.dart';
-import '../graphics/canvas.dart';
 import '../graphics/color.dart';
 import '../graphics/filter.dart';
 import '../graphics/graphicfactory.dart';
 import '../graphics/graphicutils.dart';
+import '../graphics/mapcanvas.dart';
+import '../graphics/mappath.dart';
 import '../graphics/matrix.dart';
-import '../graphics/path.dart';
 import '../mapelements/mapelementcontainer.dart';
 import '../model/mappoint.dart';
 import '../model/rectangle.dart';
@@ -16,17 +18,17 @@ import '../renderer/shapecontainer.dart';
 import '../renderer/shapepaintcontainer.dart';
 import '../renderer/shapetype.dart';
 import '../rendertheme/rendercontext.dart';
-
 import 'circlecontainer.dart';
 import 'hillshadingcontainer.dart';
 
 class CanvasRasterer {
-  final Canvas canvas;
-  final Path path;
+  static final _log = new Logger('CanvasRasterer');
+  final MapCanvas canvas;
+  final MapPath path;
   final Matrix symbolMatrix;
 
-  CanvasRasterer(GraphicFactory graphicFactory)
-      : canvas = graphicFactory.createCanvas(),
+  CanvasRasterer(GraphicFactory graphicFactory, double width, double height)
+      : canvas = graphicFactory.createCanvas(width, height),
         path = graphicFactory.createPath(),
         symbolMatrix = graphicFactory.createMatrix();
 
@@ -36,16 +38,13 @@ class CanvasRasterer {
 
   void drawWays(RenderContext renderContext) {
     int levelsPerLayer = renderContext.ways.elementAt(0).length;
+    int layers = renderContext.ways.length;
 
-    for (int layer = 0, layers = renderContext.ways.length;
-        layer < layers;
-        ++layer) {
-      List<List<ShapePaintContainer>> shapePaintContainers =
-          renderContext.ways.elementAt(layer);
+    for (int layer = 0; layer < layers; ++layer) {
+      List<List<ShapePaintContainer>> shapePaintContainers = renderContext.ways.elementAt(layer);
 
       for (int level = 0; level < levelsPerLayer; ++level) {
-        List<ShapePaintContainer> wayList =
-            shapePaintContainers.elementAt(level);
+        List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
 
         for (int index = wayList.length - 1; index >= 0; --index) {
           drawShapePaintContainer(wayList.elementAt(index));
@@ -85,11 +84,9 @@ class CanvasRasterer {
    * @param insideArea the inside area on which not to draw
    */
   void fillOutsideAreas(Color color, Rectangle insideArea) {
-    this.canvas.setClipDifference(
-        insideArea.left.toInt(),
-        insideArea.top.toInt(),
-        insideArea.getWidth().toInt(),
-        insideArea.getHeight().toInt());
+    this
+        .canvas
+        .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
     this.canvas.fillColor(color);
     this.canvas.resetClip();
   }
@@ -102,33 +99,32 @@ class CanvasRasterer {
    * @param insideArea the inside area on which not to draw
    */
   void fillOutsideAreasFromNumber(int color, Rectangle insideArea) {
-    this.canvas.setClipDifference(
-        insideArea.left.toInt(),
-        insideArea.top.toInt(),
-        insideArea.getWidth().toInt(),
-        insideArea.getHeight().toInt());
+    this
+        .canvas
+        .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
     this.canvas.fillColorFromNumber(color);
     this.canvas.resetClip();
   }
 
-  void setCanvasBitmap(Bitmap bitmap) {
-    this.canvas.setBitmap(bitmap);
+  void startCanvasBitmap() {
+    //this.canvas.setBitmap(bitmap);
+  }
+
+  Future<Bitmap> finalizeCanvasBitmap() async {
+    return await canvas.finalizeBitmap();
   }
 
   void drawCircleContainer(ShapePaintContainer shapePaintContainer) {
     CircleContainer circleContainer = shapePaintContainer.shapeContainer;
     Mappoint point = circleContainer.point;
-    this.canvas.drawCircle(point.x.toInt(), point.y.toInt(),
-        circleContainer.radius.toInt(), shapePaintContainer.paint);
+    this.canvas.drawCircle(point.x.toInt(), point.y.toInt(), circleContainer.radius.toInt(), shapePaintContainer.paint);
   }
 
   void drawHillshading(HillshadingContainer container) {
-    canvas.shadeBitmap(container.bitmap, container.hillsRect,
-        container.tileRect, container.magnitude);
+    canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
   }
 
-  void drawPath(ShapePaintContainer shapePaintContainer,
-      List<List<Mappoint>> coordinates, double dy) {
+  void drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
     this.path.clear();
 
     for (List<Mappoint> innerList in coordinates) {
@@ -164,10 +160,8 @@ class CanvasRasterer {
         break;
       case ShapeType.POLYLINE:
         PolylineContainer polylineContainer = shapeContainer;
-        drawPath(
-            shapePaintContainer,
-            polylineContainer.getCoordinatesRelativeToOrigin(),
-            shapePaintContainer.dy);
+        //_log.info("drawing line " + polylineContainer.toString());
+        drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(), shapePaintContainer.dy);
         break;
     }
   }

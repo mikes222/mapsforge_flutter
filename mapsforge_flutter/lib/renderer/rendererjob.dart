@@ -7,21 +7,18 @@ import '../model/tile.dart';
 
 class RendererJob extends Job {
   final DisplayModel displayModel;
-  bool labelsOnly;
+  final bool labelsOnly;
   final MapDataStore mapDataStore;
   final RenderTheme renderTheme;
   final double textScale;
 
   RendererJob(Tile tile, this.mapDataStore, this.renderTheme, this.displayModel,
-      this.textScale, bool isTransparent, bool labelsOnly)
-      : super(tile, isTransparent) {
-    if (mapDataStore == null) {
-      throw new Exception("mapFile must not be null");
-    } else if (textScale <= 0 || textScale == null) {
+      this.textScale, bool isTransparent, this.labelsOnly)
+      : assert(mapDataStore != null),
+        super(tile, isTransparent) {
+    if (textScale <= 0 || textScale == null) {
       throw new Exception("invalid textScale: $textScale");
     }
-
-    this.labelsOnly = labelsOnly;
   }
 
   /**
@@ -38,9 +35,9 @@ class RendererJob extends Job {
   /**
    * Indicates that for this job only the labels should be generated.
    */
-  void setRetrieveLabelsOnly() {
-    this.labelsOnly = true;
-  }
+//  void setRetrieveLabelsOnly() {
+//    this.labelsOnly = true;
+//  }
 
   @override
   bool operator ==(Object other) =>

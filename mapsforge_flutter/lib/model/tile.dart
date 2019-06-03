@@ -1,10 +1,9 @@
 import 'dart:math';
 
-import 'rectangle.dart';
 import '../utils/mercatorprojection.dart';
-
 import 'boundingbox.dart';
 import 'mappoint.dart';
+import 'rectangle.dart';
 
 /**
  * A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
@@ -35,7 +34,8 @@ class Tile {
 
   BoundingBox boundingBox;
 
-  Mappoint origin;
+  /// the left-upper point of this tile in pixel. Moved from TilePosition
+  final Mappoint leftUpperPoint;
 
   /**
    * Return the BoundingBox of a rectangle of tiles defined by upper left and lower right tile.
@@ -107,15 +107,12 @@ class Tile {
    * @throws IllegalArgumentException if any of the parameters is invalid.
    */
   Tile(this.tileX, this.tileY, this.zoomLevel, this.tileSize)
-      : mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize) {
-    if (tileX < 0) {
-      throw new Exception("tileX must not be negative: $tileX");
-    } else if (tileY < 0) {
-      throw new Exception("tileY must not be negative: $tileY");
-    } else if (zoomLevel < 0) {
-      throw new Exception("zoomLevel must not be negative: $zoomLevel");
-    }
-
+      : assert(tileX >= 0),
+        assert(tileY >= 0),
+        assert(zoomLevel >= 0),
+        mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize),
+        leftUpperPoint = Mappoint(
+            (tileX * tileSize).toDouble(), (tileY * tileSize).toDouble()) {
     int maxTileNumber = getMaxTileNumber(zoomLevel);
     if (tileX > maxTileNumber) {
       throw new Exception(
@@ -137,7 +134,7 @@ class Tile {
           tileY == other.tileY &&
           zoomLevel == other.zoomLevel &&
           boundingBox == other.boundingBox &&
-          origin == other.origin;
+          leftUpperPoint == other.leftUpperPoint;
 
   @override
   int get hashCode =>
@@ -147,7 +144,7 @@ class Tile {
       tileY.hashCode ^
       zoomLevel.hashCode ^
       boundingBox.hashCode ^
-      origin.hashCode;
+      leftUpperPoint.hashCode;
 
   /**
    * Gets the geographic extend of this Tile as a BoundingBox.
@@ -217,12 +214,7 @@ class Tile {
    * @return the top-left point
    */
   Mappoint getOrigin() {
-    if (this.origin == null) {
-      int x = MercatorProjection.tileToPixel(this.tileX, this.tileSize);
-      int y = MercatorProjection.tileToPixel(this.tileY, this.tileSize);
-      this.origin = new Mappoint(x.toDouble(), y.toDouble());
-    }
-    return this.origin;
+    return this.leftUpperPoint;
   }
 
   /**
@@ -376,6 +368,6 @@ class Tile {
 
   @override
   String toString() {
-    return 'Tile{mapSize: $mapSize, tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, boundingBox: $boundingBox, origin: $origin}';
+    return 'Tile{mapSize: $mapSize, tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, boundingBox: $boundingBox, leftUpperPoint: $leftUpperPoint}';
   }
 }

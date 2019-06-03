@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/model/mapmodel.dart';
 import 'package:mapsforge_flutter/view/mapview.dart';
 
@@ -22,12 +23,16 @@ class FlutterMapView extends StatefulWidget implements MapView {
 /////////////////////////////////////////////////////////////////////////////
 
 class _FlutterMapState extends State<FlutterMapView> {
+  static final _log = new Logger('_FlutterMapState');
+
   @override
   Widget build(BuildContext context) {
+    _log.info("draw");
     return Stack(
       children: <Widget>[
         CustomPaint(
-          foregroundPainter: LayerPainter(widget.mapModel),
+          foregroundPainter:
+              LayerPainter(widget.mapModel, widget.mapModel.renderer),
           child: Container(),
         ),
       ],

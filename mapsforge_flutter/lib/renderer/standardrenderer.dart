@@ -16,7 +16,7 @@ import '../rendertheme/rendercallback.dart';
 import '../rendertheme/rendercontext.dart';
 import '../utils/mercatorprojection.dart';
 
-import '../graphics/paint.dart';
+import '../graphics/mappaint.dart';
 import '../model/mappoint.dart';
 import '../model/tag.dart';
 import 'circlecontainer.dart';
@@ -83,7 +83,7 @@ class StandardRenderer implements RenderCallback {
   }
 
   @override
-  void renderArea(final RenderContext renderContext, Paint fill, Paint stroke,
+  void renderArea(final RenderContext renderContext, MapPaint fill, MapPaint stroke,
       int level, PolylineContainer way) async {
     renderContext.addToCurrentDrawingLayer(
         level, new ShapePaintContainer(way, stroke, 0));
@@ -99,8 +99,8 @@ class StandardRenderer implements RenderCallback {
       String caption,
       double horizontalOffset,
       double verticalOffset,
-      Paint fill,
-      Paint stroke,
+      MapPaint fill,
+      MapPaint stroke,
       Position position,
       int maxTextWidth,
       PolylineContainer way) async {
@@ -138,14 +138,14 @@ class StandardRenderer implements RenderCallback {
       String caption,
       double horizontalOffset,
       double verticalOffset,
-      Paint fill,
-      Paint stroke,
+      MapPaint fill,
+      MapPaint stroke,
       Position position,
       int maxTextWidth,
       PointOfInterest poi) {
     if (renderLabels) {
       Mappoint poiPosition = MercatorProjection.getPixelAbsolute(
-          poi.position, renderContext.rendererJob.tile.mapSize);
+          poi.position, renderContext.job.tile.mapSize);
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset),
@@ -164,12 +164,12 @@ class StandardRenderer implements RenderCallback {
   void renderPointOfInterestCircle(
       final RenderContext renderContext,
       double radius,
-      Paint fill,
-      Paint stroke,
+      MapPaint fill,
+      MapPaint stroke,
       int level,
       PointOfInterest poi) async {
     Mappoint poiPosition = MercatorProjection.getPixelRelativeToTile(
-        poi.position, renderContext.rendererJob.tile);
+        poi.position, renderContext.job.tile);
     renderContext.addToCurrentDrawingLayer(
         level,
         new ShapePaintContainer(
@@ -185,14 +185,14 @@ class StandardRenderer implements RenderCallback {
       Display display, int priority, Bitmap symbol, PointOfInterest poi) {
     if (renderLabels) {
       Mappoint poiPosition = MercatorProjection.getPixelAbsolute(
-          poi.position, renderContext.rendererJob.tile.mapSize);
+          poi.position, renderContext.job.tile.mapSize);
       renderContext.labels
           .add(new SymbolContainer(poiPosition, display, priority, symbol));
     }
   }
 
   @override
-  void renderWay(final RenderContext renderContext, Paint stroke, double dy,
+  void renderWay(final RenderContext renderContext, MapPaint stroke, double dy,
       int level, PolylineContainer way) {
     renderContext.addToCurrentDrawingLayer(
         level, new ShapePaintContainer(way, stroke, dy));
@@ -234,8 +234,8 @@ class StandardRenderer implements RenderCallback {
       int priority,
       String textKey,
       double dy,
-      Paint fill,
-      Paint stroke,
+      MapPaint fill,
+      MapPaint stroke,
       bool repeat,
       double repeatGap,
       double repeatStart,
@@ -263,10 +263,10 @@ class StandardRenderer implements RenderCallback {
 
   bool renderBitmap(RenderContext renderContext) {
     return !renderContext.renderTheme.hasMapBackgroundOutside() ||
-        this.mapDataStore.supportsTile(renderContext.rendererJob.tile);
+        this.mapDataStore.supportsTile(renderContext.job.tile);
   }
 
-  void renderMappointOfInterest(
+  void renderPointOfInterest(
       final RenderContext renderContext, PointOfInterest pointOfInterest) {
     renderContext.setDrawingLayers(pointOfInterest.layer);
     renderContext.renderTheme.matchNode(this, renderContext, pointOfInterest);
@@ -275,15 +275,15 @@ class StandardRenderer implements RenderCallback {
   void renderWaterBackground(final RenderContext renderContext) {
     renderContext.setDrawingLayers(0);
     List<Mappoint> coordinates =
-        getTilePixelCoordinates(renderContext.rendererJob.tile.tileSize);
-    Mappoint tileOrigin = renderContext.rendererJob.tile.getOrigin();
+        getTilePixelCoordinates(renderContext.job.tile.tileSize);
+    Mappoint tileOrigin = renderContext.job.tile.getOrigin();
     for (int i = 0; i < coordinates.length; i++) {
       coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
     }
     PolylineContainer way = new PolylineContainer.fromList(
         coordinates,
-        renderContext.rendererJob.tile,
-        renderContext.rendererJob.tile,
+        renderContext.job.tile,
+        renderContext.job.tile,
         [TAG_NATURAL_WATER]);
     renderContext.renderTheme.matchClosedWay(this, renderContext, way);
   }
@@ -305,7 +305,7 @@ class StandardRenderer implements RenderCallback {
     }
 
     for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
-      renderMappointOfInterest(renderContext, pointOfInterest);
+      renderPointOfInterest(renderContext, pointOfInterest);
     }
 
     for (Way way in mapReadResult.ways) {
@@ -314,8 +314,8 @@ class StandardRenderer implements RenderCallback {
           null,
           null,
           null,
-          new PolylineContainer(way, renderContext.rendererJob.tile,
-              renderContext.rendererJob.tile));
+          new PolylineContainer(way, renderContext.job.tile,
+              renderContext.job.tile));
     }
 
     if (mapReadResult.isWater) {

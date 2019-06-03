@@ -1,33 +1,42 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/cache/tilecache.dart';
-import 'package:mapsforge_flutter/graphics/canvas.dart';
+import 'package:mapsforge_flutter/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/graphics/matrix.dart';
 import 'package:mapsforge_flutter/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/model/boundingbox.dart';
 import 'package:mapsforge_flutter/model/mappoint.dart';
 import 'package:mapsforge_flutter/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/model/tile.dart';
-import 'package:mapsforge_flutter/tilestore/tileposition.dart';
 import 'package:mapsforge_flutter/utils/layerutil.dart';
+import 'package:meta/meta.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'job/job.dart';
 import 'job/jobqueue.dart';
+import 'job/jobrenderer.dart';
 import 'layer.dart';
 
-abstract class TileLayer<T extends Job> extends Layer {
+class TileLayer extends Layer {
   static final _log = new Logger('TileLayer');
 
-  final bool hasJobQueue;
   final bool isTransparent;
-  JobQueue<T> jobQueue;
+  JobQueue jobQueue;
   final TileCache tileCache;
   final Matrix matrix;
+  final JobRenderer jobRenderer;
 
-  TileLayer(this.tileCache, this.matrix, this.isTransparent, displayModel)
-      : hasJobQueue = false,
-        super(displayModel) {
-    //this(tileCache, mapViewPosition, matrix, isTransparent, true);
-  }
+  TileLayer({
+    this.tileCache,
+    this.matrix,
+    this.isTransparent = false,
+    @required displayModel,
+    @required this.jobRenderer,
+  })  : assert(isTransparent != null),
+        assert(displayModel != null),
+        assert(jobRenderer != null),
+        jobQueue = JobQueue(displayModel, tileCache, jobRenderer),
+        super(displayModel) {}
+
+  Observable<Job> get observe => jobQueue.observe;
 
 //  public TileLayer(TileCache tileCache, IMapViewPosition mapViewPosition, Matrix matrix, bool isTransparent, bool hasJobQueue) {
 //    super();
@@ -46,15 +55,9 @@ abstract class TileLayer<T extends Job> extends Layer {
 //  }
 
   @override
-  void draw(MapViewPosition mapViewPosition, BoundingBox boundingBox,
-      Canvas canvas, Mappoint topLeftPoint) {
-    List<TilePosition> tilePositions = LayerUtil.getTilePositions(
-        boundingBox,
-        mapViewPosition.zoomLevel,
-        topLeftPoint,
-        this.displayModel.getTileSize());
-
-    _log.info("tilePositions: ${tilePositions.length}");
+  void draw(MapViewPosition mapViewPosition, MapCanvas canvas) {
+    Set<Tile> tiles = LayerUtil.getTiles(mapViewPosition, displayModel.tileSize, tileCache);
+    //_log.info("tiles: ${tiles.length}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
     // clipping bounds to portrait, while the device is just being rotated into
@@ -70,46 +73,48 @@ abstract class TileLayer<T extends Job> extends Layer {
       canvas.fillColorFromNumber(this.displayModel.getBackgroundColor());
     }
 
-    Set<Job> jobs = new Set();
-    for (TilePosition tilePosition in tilePositions) {
-      jobs.add(createJob(tilePosition.tile));
-    }
-    this.tileCache.setWorkingSet(jobs);
+//    Set<Job> jobs = new Set();
+//    for (Tile tile in tiles) {
+//      jobs.add(createJob(tile));
+//    }
+//    this.tileCache.setWorkingSet(jobs);
+    canvas.setClip(0, 0, mapViewPosition.size.width.round(), mapViewPosition.size.height.round());
+    mapViewPosition.calculateBoundingBox(displayModel.tileSize);
+    Mappoint leftUpper = mapViewPosition.leftUpper;
 
-    for (int i = tilePositions.length - 1; i >= 0; --i) {
-      TilePosition tilePosition = tilePositions.elementAt(i);
-      Mappoint point = tilePosition.point;
-      Tile tile = tilePosition.tile;
-      _log.info("  tilePosition: ${tilePosition.toString()}");
-      T job = createJob(tile);
-      TileBitmap bitmap = this.tileCache.getImmediately(job);
+    for (int i = tiles.length - 1; i >= 0; --i) {
+      Tile tile = tiles.elementAt(i);
+      Mappoint point = tile.leftUpperPoint;
+      TileBitmap bitmap = this.tileCache.getTileBitmap(tile.tileX, tile.tileY, tile.zoomLevel);
 
       if (bitmap == null) {
-        if (this.hasJobQueue && !this.tileCache.containsKey(job)) {
-          this.jobQueue.add(job);
-        }
+        Job job = createJob(tile);
+        this.jobQueue.add(job);
 //        if (Parameters.PARENT_TILES_RENDERING !=
 //            Parameters.ParentTilesRendering.OFF) {
 //          drawParentTileBitmap(canvas, point, tile);
 //        }
+        //_log.info("  tile: ${tile.toString()}");
       } else {
-        if (isTileStale(tile, bitmap) &&
-            this.hasJobQueue &&
-            !this.tileCache.containsKey(job)) {
-          this.jobQueue.add(job);
-        }
-        retrieveLabelsOnly(job);
-//        canvas.drawBitmap(bitmap, (point.
-//            x), (point.y), this.displayModel.getFilter());
-        bitmap.decrementRefCount();
+//        if (isTileStale(tile, bitmap) &&
+//            this.hasJobQueue &&
+//            !this.tileCache.containsKey(job)) {
+//          this.jobQueue.add(job);
+//        }
+//        retrieveLabelsOnly(job);
+        canvas.drawBitmap(
+          bitmap: bitmap,
+          left: point.x - leftUpper.x,
+          top: point.y - leftUpper.y,
+        ); //, (point.x), (point.y), this.displayModel.getFilter());
+        //bitmap.decrementRefCount();
       }
-    }
-    if (this.hasJobQueue) {
-      this.jobQueue.notifyWorkers();
     }
   }
 
-  T createJob(Tile tile);
+  Job createJob(Tile tile) {
+    return Job(tile, true);
+  }
 
   /**
    * Whether the tile is stale and should be refreshed.
@@ -129,11 +134,11 @@ abstract class TileLayer<T extends Job> extends Layer {
    * @param tile   A tile.
    * @param bitmap The bitmap for {@code tile} currently held in the layer's cache.
    */
-  bool isTileStale(Tile tile, TileBitmap bitmap);
+  bool isTileStale(Tile tile, TileBitmap bitmap) {}
 
-  void retrieveLabelsOnly(T job) {}
+  void retrieveLabelsOnly(Job job) {}
 
-  void drawParentTileBitmap(Canvas canvas, Mappoint point, Tile tile) {
+  void drawParentTileBitmap(MapCanvas canvas, Mappoint point, Tile tile) {
     Tile cachedParentTile = getCachedParentTile(tile, 4);
     if (cachedParentTile != null) {
 //      Bitmap bitmap = this.tileCache.getImmediately(
@@ -198,8 +203,8 @@ abstract class TileLayer<T extends Job> extends Layer {
     Tile parentTile = tile.getParent();
     if (parentTile == null) {
       return null;
-    } else if (this.tileCache.containsKey(createJob(parentTile))) {
-      return parentTile;
+//    } else if (this.tileCache.containsKey(createJob(parentTile))) {
+//      return parentTile;
     }
 
     return getCachedParentTile(parentTile, level - 1);

@@ -9,8 +9,7 @@ import 'package:dcache/dcache.dart';
  * @param <V> the type of the map value, see {@link java.util.Map}.
  */
 class WorkingSetCache<K, V> extends SimpleCache<K, V> {
-  WorkingSetCache(int capacity)
-      : super(storage: new SimpleStorage(size: capacity));
+  WorkingSetCache(int capacity) : super(storage: new SimpleStorage(size: capacity));
 
   /**
    * Sets the current working set, ensuring that elements in this working set
@@ -19,11 +18,11 @@ class WorkingSetCache<K, V> extends SimpleCache<K, V> {
    * @param workingSet set of K that makes up the current working set.
    */
   void setWorkingSet(Set<K> workingSet) {
-    synchronized(workingSet) {
-      for (K key in workingSet) {
-        this.get(key);
-      }
+    //synchronized(workingSet) {
+    for (K key in workingSet) {
+      this.get(key);
     }
+    //}
   }
 
   void put(K key, V value) {
