@@ -58,10 +58,7 @@ class Tile {
    * @return rectangle with the absolute coordinates.
    */
   static Rectangle getBoundaryAbsoluteStatic(Tile upperLeft, Tile lowerRight) {
-    return new Rectangle(
-        upperLeft.getOrigin().x,
-        upperLeft.getOrigin().y,
-        lowerRight.getOrigin().x + upperLeft.tileSize,
+    return new Rectangle(upperLeft.getOrigin().x, upperLeft.getOrigin().y, lowerRight.getOrigin().x + upperLeft.tileSize,
         lowerRight.getOrigin().y + upperLeft.tileSize);
   }
 
@@ -76,16 +73,14 @@ class Tile {
    * @param lowerRightOther tile in lower right corner of area 2.
    * @return true if the areas overlap, false if zoom levels differ or areas do not overlap.
    */
-  static bool tileAreasOverlap(Tile upperLeft, Tile lowerRight,
-      Tile upperLeftOther, Tile lowerRightOther) {
+  static bool tileAreasOverlap(Tile upperLeft, Tile lowerRight, Tile upperLeftOther, Tile lowerRightOther) {
     if (upperLeft.zoomLevel != upperLeftOther.zoomLevel) {
       return false;
     }
     if (upperLeft == (upperLeftOther) && lowerRight == lowerRightOther) {
       return true;
     }
-    return getBoundaryAbsoluteStatic(upperLeft, lowerRight)
-        .intersects(getBoundaryAbsoluteStatic(upperLeftOther, lowerRightOther));
+    return getBoundaryAbsoluteStatic(upperLeft, lowerRight).intersects(getBoundaryAbsoluteStatic(upperLeftOther, lowerRightOther));
   }
 
   /**
@@ -111,15 +106,12 @@ class Tile {
         assert(tileY >= 0),
         assert(zoomLevel >= 0),
         mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize),
-        leftUpperPoint = Mappoint(
-            (tileX * tileSize).toDouble(), (tileY * tileSize).toDouble()) {
+        leftUpperPoint = Mappoint((tileX * tileSize).toDouble(), (tileY * tileSize).toDouble()) {
     int maxTileNumber = getMaxTileNumber(zoomLevel);
     if (tileX > maxTileNumber) {
-      throw new Exception(
-          "invalid tileX number on zoom level $zoomLevel: $tileX");
+      throw new Exception("invalid tileX number on zoom level $zoomLevel: $tileX");
     } else if (tileY > maxTileNumber) {
-      throw new Exception(
-          "invalid tileY number on zoom level $zoomLevel: $tileY");
+      throw new Exception("invalid tileY number on zoom level $zoomLevel: $tileY");
     }
   }
 
@@ -128,23 +120,13 @@ class Tile {
       identical(this, other) ||
       other is Tile &&
           runtimeType == other.runtimeType &&
-          mapSize == other.mapSize &&
           tileSize == other.tileSize &&
           tileX == other.tileX &&
           tileY == other.tileY &&
-          zoomLevel == other.zoomLevel &&
-          boundingBox == other.boundingBox &&
-          leftUpperPoint == other.leftUpperPoint;
+          zoomLevel == other.zoomLevel;
 
   @override
-  int get hashCode =>
-      mapSize.hashCode ^
-      tileSize.hashCode ^
-      tileX.hashCode ^
-      tileY.hashCode ^
-      zoomLevel.hashCode ^
-      boundingBox.hashCode ^
-      leftUpperPoint.hashCode;
+  int get hashCode => tileSize.hashCode ^ tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode;
 
   /**
    * Gets the geographic extend of this Tile as a BoundingBox.
@@ -153,20 +135,15 @@ class Tile {
    */
   BoundingBox getBoundingBox() {
     if (this.boundingBox == null) {
-      double minLatitude = max(MercatorProjection.LATITUDE_MIN,
-          MercatorProjection.tileYToLatitude(tileY + 1, zoomLevel));
-      double minLongitude =
-          max(-180, MercatorProjection.tileXToLongitude(this.tileX, zoomLevel));
-      double maxLatitude = min(MercatorProjection.LATITUDE_MAX,
-          MercatorProjection.tileYToLatitude(this.tileY, zoomLevel));
-      double maxLongitude =
-          min(180, MercatorProjection.tileXToLongitude(tileX + 1, zoomLevel));
+      double minLatitude = max(MercatorProjection.LATITUDE_MIN, MercatorProjection.tileYToLatitude(tileY + 1, zoomLevel));
+      double minLongitude = max(-180, MercatorProjection.tileXToLongitude(this.tileX, zoomLevel));
+      double maxLatitude = min(MercatorProjection.LATITUDE_MAX, MercatorProjection.tileYToLatitude(this.tileY, zoomLevel));
+      double maxLongitude = min(180, MercatorProjection.tileXToLongitude(tileX + 1, zoomLevel));
       if (maxLongitude == -180) {
         // fix for dateline crossing, where the right tile starts at -180 and causes an invalid bbox
         maxLongitude = 180;
       }
-      this.boundingBox =
-          new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+      this.boundingBox = new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
     }
     return this.boundingBox;
   }
@@ -195,8 +172,7 @@ class Tile {
    * @return rectangle with the absolute coordinates.
    */
   Rectangle getBoundaryAbsolute() {
-    return new Rectangle(getOrigin().x, getOrigin().y, getOrigin().x + tileSize,
-        getOrigin().y + tileSize);
+    return new Rectangle(getOrigin().x, getOrigin().y, getOrigin().x + tileSize, getOrigin().y + tileSize);
   }
 
   /**
@@ -346,8 +322,7 @@ class Tile {
       return null;
     }
 
-    return new Tile((this.tileX / 2).round(), (this.tileY / 2).round(),
-        (this.zoomLevel - 1), this.tileSize);
+    return new Tile((this.tileX / 2).round(), (this.tileY / 2).round(), (this.zoomLevel - 1), this.tileSize);
   }
 
   int getShiftX(Tile otherTile) {
@@ -368,6 +343,6 @@ class Tile {
 
   @override
   String toString() {
-    return 'Tile{mapSize: $mapSize, tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, boundingBox: $boundingBox, leftUpperPoint: $leftUpperPoint}';
+    return 'Tile{tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, boundingBox: $boundingBox, leftUpperPoint: $leftUpperPoint}';
   }
 }

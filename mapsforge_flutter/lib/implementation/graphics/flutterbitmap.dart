@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter/graphics/bitmap.dart';
 class FlutterBitmap implements Bitmap {
   final ui.Image bitmap;
 
-  int _refcount = 1;
+  int _refcount = 0;
 
   FlutterBitmap(this.bitmap) : assert(bitmap != null);
 

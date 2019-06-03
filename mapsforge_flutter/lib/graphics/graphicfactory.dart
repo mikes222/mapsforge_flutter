@@ -38,10 +38,12 @@ abstract class GraphicFactory {
 
   MapPaint createPaint();
 
+  MapPaint createPaintFrom(MapPaint from);
+
   MapPath createPath();
 
-  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
-      SymbolContainer symbolContainer, Position position, int maxTextWidth);
+  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
+      MapPaint paintBack, SymbolContainer symbolContainer, Position position, int maxTextWidth);
 
   ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 

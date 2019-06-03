@@ -1,7 +1,7 @@
 name: mapsforge_flutter
 description: A port of mapsforge for pure flutter
 version: 0.0.1
-author: devemux86, Michael Schwartz
+author: devemux86, mikes222
 homepage: https://github.com/mikes222/mapsforge_flutter
 
 environment:
@@ -19,7 +19,10 @@ dev_dependencies:
   logging: ^0.11.3+2
 
   # MIT License
-  dcache: 0.2.1
+  dcache: #0.2.1
+    git:
+      url: https://github.com/mikes222/dcache
+    # path: ../../github_dcache
 
   # MIT License
   xml: 3.4.1

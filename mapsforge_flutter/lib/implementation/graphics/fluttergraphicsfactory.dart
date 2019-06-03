@@ -97,6 +97,11 @@ class FlutterGraphicFactory implements GraphicFactory {
   }
 
   @override
+  MapPaint createPaintFrom(MapPaint from) {
+    return FlutterPaint.from(from);
+  }
+
+  @override
   MapPath createPath() {
     return FlutterPath(ui.Path());
   }

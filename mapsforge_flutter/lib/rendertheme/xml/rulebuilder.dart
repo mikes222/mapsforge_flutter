@@ -4,6 +4,9 @@ import 'package:mapsforge_flutter/model/displaymodel.dart';
 import 'package:mapsforge_flutter/rendertheme/renderinstruction/area.dart';
 import 'package:mapsforge_flutter/rendertheme/renderinstruction/caption.dart';
 import 'package:mapsforge_flutter/rendertheme/renderinstruction/line.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/linesymbol.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/pathtext.dart';
+import 'package:mapsforge_flutter/rendertheme/renderinstruction/rendercircle.dart';
 import 'package:mapsforge_flutter/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/rendertheme/xml/xmlutils.dart';
@@ -269,12 +272,11 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-//      Circle circle = new Circle(
-//          this.graphicFactory, this.displayModel, qName, pullParser,
-//          this.level++);
-//      if (isVisible(circle)) {
-//        this.currentRule.addRenderingInstruction(circle);
-//      }
+      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, this.level + 1);
+      circle.parse(rootElement);
+      if (isVisible(circle)) {
+        this.addRenderingInstruction(circle);
+      }
     }
 
 // rendertheme menu layer
@@ -310,11 +312,10 @@ class RuleBuilder {
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-//    LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, qName,
-//    pullParser, this.relativePathPrefix);
-//    if (isVisible(lineSymbol)) {
-//    this.currentRule.addRenderingInstruction(lineSymbol);
-//    }
+      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, null);
+      if (isVisible(lineSymbol)) {
+        this.addRenderingInstruction(lineSymbol);
+      }
     }
 
 // render theme menu name
@@ -334,11 +335,11 @@ class RuleBuilder {
 //      }
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-//      PathText pathText = new PathText(
-//          this.graphicFactory, this.displayModel, qName, pullParser);
-//      if (isVisible(pathText)) {
-//        this.currentRule.addRenderingInstruction(pathText);
-//      }
+      PathText pathText = new PathText(this.graphicFactory, this.displayModel);
+      pathText.parse(rootElement);
+      if (isVisible(pathText)) {
+        this.addRenderingInstruction(pathText);
+      }
     } else if ("stylemenu" == qName) {
       checkState(qName, XmlElementType.RENDERING_STYLE);
 

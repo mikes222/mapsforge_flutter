@@ -278,11 +278,11 @@ class Caption extends RenderInstruction {
 
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
-    MapPaint f = graphicFactory.createPaint(); //this.fill);
+    MapPaint f = graphicFactory.createPaintFrom(this.fill);
     f.setTextSize(this.fontSize * scaleFactor);
     this.fills[zoomLevel] = f;
 
-    MapPaint s = graphicFactory.createPaint(); //this.stroke);
+    MapPaint s = graphicFactory.createPaintFrom(this.stroke);
     s.setTextSize(this.fontSize * scaleFactor);
     this.strokes[zoomLevel] = s;
 

@@ -99,7 +99,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 //    }
 
     TileBitmap bitmap = await renderContext.canvasRasterer.finalizeCanvasBitmap();
-    _log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
+    //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     return bitmap;
   }
 

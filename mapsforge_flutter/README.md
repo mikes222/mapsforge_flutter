@@ -8,6 +8,10 @@ https://github.com/mapsforge/mapsforge
 
 Same license as the original mapsforge project. LPGL-v3
 
+## Limitations
+
+Currently flutter has no support for dashed lines
+
 
 ## Getting Started
 

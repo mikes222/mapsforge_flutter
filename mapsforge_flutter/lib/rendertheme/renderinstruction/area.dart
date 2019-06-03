@@ -126,9 +126,9 @@ class Area extends RenderInstruction {
       if (this.scale == Scale.NONE) {
         scaleFactor = 1;
       }
-//      Paint paint = graphicFactory.createPaint(this.stroke);
-//      paint.setStrokeWidth(this.strokeWidth * scaleFactor);
-//      this.strokes[zoomLevel] = paint;
+      MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
+      paint.setStrokeWidth(this.strokeWidth * scaleFactor);
+      this.strokes[zoomLevel] = paint;
     }
   }
 

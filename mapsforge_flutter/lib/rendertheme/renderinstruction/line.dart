@@ -147,7 +147,7 @@ class Line extends RenderInstruction {
       scaleFactor = 1;
     }
     if (this.stroke != null) {
-      MapPaint paint = graphicFactory.createPaint();
+      MapPaint paint = graphicFactory.createPaintFrom(stroke);
       paint.setStrokeWidth(this.strokeWidth * scaleFactor);
       if (this.scale == Scale.ALL) {
         List<double> strokeDasharrayScaled = new List<double>(this.strokeDasharray.length);

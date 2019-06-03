@@ -72,7 +72,11 @@ class _ZoomLevelTileCache {
 
   //List<Tile> _tilePositions;
 
-  Cache _bitmaps = new SimpleCache<int, TileBitmap>(storage: new SimpleStorage<int, TileBitmap>(size: 200));
+  Cache _bitmaps = new SimpleCache<int, TileBitmap>(
+      storage: new SimpleStorage<int, TileBitmap>(size: 200),
+      onEvict: (key, item) {
+        item.decrementRefCount();
+      });
 
   //List<TileBitmap> _bitmaps;
 

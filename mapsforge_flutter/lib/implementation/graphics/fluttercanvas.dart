@@ -60,7 +60,7 @@ class FlutterCanvas extends MapCanvas {
       Filter filter}) {
     assert(bitmap != null);
     ui.Paint paint = ui.Paint();
-    _log.info("Drawing image to $left/$top");
+    //_log.info("Drawing image to $left/$top");
     uiCanvas.drawImage((bitmap as FlutterBitmap).bitmap, ui.Offset(left, top), paint);
   }
 
