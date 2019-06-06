@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/maps.dart';
 
 import 'constants.dart';
 import 'filehelper.dart';

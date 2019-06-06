@@ -14,6 +14,7 @@ import '../../graphics/resourcebitmap.dart';
 import '../../model/displaymodel.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/themecallback.dart';
+import 'package:resource/resource.dart' show Resource;
 
 class XmlUtils {
   static final _log = new Logger('XmlUtils');
@@ -50,7 +51,7 @@ class XmlUtils {
       } else if (src.startsWith(PREFIX_JAR_V1)) {
         src = src.substring(PREFIX_JAR_V1.length);
       }
-      src = "assets/" + src;
+      src = "packages/mapsforge_flutter/assets/" + src;
     }
 
 //    InputStream inputStream = createInputStream(graphicFactory, relativePathPrefix, src);
@@ -58,6 +59,8 @@ class XmlUtils {
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
     if (src.toLowerCase().endsWith(".svg")) {
+      //var resource = new Resource(src);
+      //Uint8List content = await resource.readAsBytes();
       ByteData content = await rootBundle.load(src);
 
       final DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
