@@ -82,7 +82,7 @@ class Area extends RenderInstruction {
       shaderBitmap = await createBitmap(relativePathPrefix, src);
     } catch (ioException, stacktrace) {
       print(ioException.toString());
-      print(stacktrace);
+      //print(stacktrace);
       bitmapInvalid = true;
     }
   }

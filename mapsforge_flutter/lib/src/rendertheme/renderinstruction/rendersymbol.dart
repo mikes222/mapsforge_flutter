@@ -67,7 +67,7 @@ class RenderSymbol extends RenderInstruction {
         this.bitmap.incrementRefCount();
       } catch (ioException, stacktrace) {
         print(ioException.toString());
-        print(stacktrace);
+        //print(stacktrace);
         this.bitmapInvalid = true;
       }
     }

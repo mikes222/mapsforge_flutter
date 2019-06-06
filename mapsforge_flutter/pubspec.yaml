@@ -26,11 +26,10 @@ dependencies:
   # BSD License
   synchronized: 2.1.0
 
+  # BSD License
   flutter_svg: 0.13.0+2
 
   # BSD License
-  resource: 2.1.5
-
   image: 2.1.4
 
 

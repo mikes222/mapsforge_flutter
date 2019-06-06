@@ -14,7 +14,6 @@ import '../../graphics/resourcebitmap.dart';
 import '../../model/displaymodel.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/themecallback.dart';
-import 'package:resource/resource.dart' show Resource;
 
 class XmlUtils {
   static final _log = new Logger('XmlUtils');

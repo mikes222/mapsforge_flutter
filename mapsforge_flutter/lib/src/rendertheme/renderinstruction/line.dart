@@ -98,7 +98,7 @@ class Line extends RenderInstruction {
       shaderBitmap = await createBitmap(relativePathPrefix, src);
     } catch (ioException, stacktrace) {
       print(ioException.toString());
-      print(stacktrace);
+      //print(stacktrace);
     }
     bitmapCreated = true;
   }
