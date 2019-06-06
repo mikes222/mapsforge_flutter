@@ -59,7 +59,7 @@ class WayDecorator {
           theta = atan2(currentY - previousY, currentX - previousX);
         }
 
-        Point point = new Point(previousX, previousY);
+        Mappoint point = new Mappoint(previousX, previousY);
 
         currentItems.add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter));
 

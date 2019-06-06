@@ -118,15 +118,10 @@ class Tile {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Tile &&
-          runtimeType == other.runtimeType &&
-          tileSize == other.tileSize &&
-          tileX == other.tileX &&
-          tileY == other.tileY &&
-          zoomLevel == other.zoomLevel;
+      other is Tile && runtimeType == other.runtimeType && tileX == other.tileX && tileY == other.tileY && zoomLevel == other.zoomLevel;
 
   @override
-  int get hashCode => tileSize.hashCode ^ tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode;
+  int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode;
 
   /**
    * Gets the geographic extend of this Tile as a BoundingBox.

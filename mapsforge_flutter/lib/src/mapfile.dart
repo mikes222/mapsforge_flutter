@@ -1,9 +1,7 @@
-import 'dart:convert';
-import 'package:convert/convert.dart';
 import 'dart:io';
 
+import 'package:convert/convert.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/indexnocache.dart';
 import 'package:mapsforge_flutter/src/mapfileexception.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 
@@ -15,6 +13,7 @@ import 'datastore/way.dart';
 import 'header/mapfileheader.dart';
 import 'header/mapfileinfo.dart';
 import 'header/subfileparameter.dart';
+import 'indexcache.dart';
 import 'mapreader/readbuffer.dart';
 import 'model/boundingbox.dart';
 import 'model/latlong.dart';
@@ -185,7 +184,7 @@ class MapFile extends MapDataStore {
   static bool wayFilterEnabled = true;
   static int wayFilterDistance = 20;
 
-  final IndexNoCache databaseIndexCache;
+  final IndexCache databaseIndexCache;
   int fileSize;
   final RandomAccessFile inputChannel;
   final MapFileHeader mapFileHeader;
@@ -252,7 +251,7 @@ class MapFile extends MapDataStore {
    */
   MapFile(this.inputChannel, this.timestamp, String language)
       : mapFileHeader = new MapFileHeader(),
-        databaseIndexCache = new IndexNoCache(ReadBuffer(inputChannel), INDEX_CACHE_SIZE),
+        databaseIndexCache = new IndexCache(inputChannel, INDEX_CACHE_SIZE),
         super(language) {
     if (inputChannel == null) {
       throw new MapFileException("mapFileChannel must not be null");

@@ -92,7 +92,9 @@ class LineSymbol extends RenderInstruction {
     if (this.bitmap == null && !this.bitmapInvalid) {
       try {
         this.bitmap = await createBitmap(relativePathPrefix, src);
-      } catch (ioException) {
+      } catch (ioException, stacktrace) {
+        print(ioException.toString());
+        print(stacktrace);
         this.bitmapInvalid = true;
       }
     }

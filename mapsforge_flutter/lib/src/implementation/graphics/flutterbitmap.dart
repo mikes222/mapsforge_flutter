@@ -14,30 +14,29 @@ class FlutterBitmap implements Bitmap {
     --_refcount;
     if (_refcount == 0) {
       bitmap.dispose();
+      _refcount = -1;
     }
   }
 
   @override
   int getHeight() {
-    // TODO: implement getHeight
-    return null;
+    return bitmap.height;
   }
 
   @override
   int getWidth() {
-    // TODO: implement getWidth
-    return null;
+    return bitmap.width;
   }
 
   @override
   void incrementRefCount() {
+    assert(_refcount != -1);
     ++_refcount;
   }
 
   @override
   bool isDestroyed() {
-    // TODO: implement isDestroyed
-    return null;
+    return _refcount == -1;
   }
 
   @override

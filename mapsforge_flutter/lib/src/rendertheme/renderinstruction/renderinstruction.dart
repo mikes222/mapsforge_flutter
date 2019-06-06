@@ -50,9 +50,9 @@ abstract class RenderInstruction {
   final DisplayModel displayModel;
   final GraphicFactory graphicFactory;
 
-  double height;
+  double height = 0;
   int percent = 100;
-  double width;
+  double width = 0;
 
   RenderInstruction(this.graphicFactory, this.displayModel)
       : assert(graphicFactory != null),
@@ -63,8 +63,7 @@ abstract class RenderInstruction {
       return null;
     }
 
-    return XmlUtils.createBitmap(
-        graphicFactory, displayModel, relativePathPrefix, src, width?.round() ?? 50, height?.round() ?? 50, percent);
+    return XmlUtils.createBitmap(graphicFactory, displayModel, relativePathPrefix, src, width.round(), height.round(), percent);
   }
 
   void destroy();

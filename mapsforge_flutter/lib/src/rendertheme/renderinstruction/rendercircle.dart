@@ -73,6 +73,8 @@ class RenderCircle extends RenderInstruction {
     if (!this.scaleRadius) {
       this.renderRadius = this.radius;
       this.stroke.setStrokeWidth(this.strokeWidth);
+    } else {
+      this.renderRadius = this.radius;
     }
   }
 

@@ -21,7 +21,8 @@ class JobQueue {
       : assert(displayModel != null),
         assert(tileCache != null),
         assert(jobRenderer != null) {
-    _observe = _inject.asyncMap(process).asBroadcastStream();
+    _observe =
+        _inject.distinctUnique(equals: (job1, job2) => job1 == job2, hashCode: (job) => job.hashCode).asyncMap(process).asBroadcastStream();
   }
 
   Observable<Job> get observe => _observe;

@@ -49,8 +49,8 @@ class FlutterCanvas extends MapCanvas {
   @override
   void drawBitmap(
       {@required Bitmap bitmap,
-      double left,
-      double top,
+      @required double left,
+      @required double top,
       int srcLeft,
       int srcTop,
       int srcRight,
@@ -62,8 +62,11 @@ class FlutterCanvas extends MapCanvas {
       Matrix matrix,
       Filter filter}) {
     assert(bitmap != null);
+    assert(left != null);
+    assert(top != null);
     ui.Paint paint = ui.Paint();
-    //_log.info("Drawing image to $left/$top");
+    //paint.color = Colors.red;
+    //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
     uiCanvas.drawImage((bitmap as FlutterBitmap).bitmap, ui.Offset(left, top), paint);
   }
 
@@ -151,7 +154,7 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawCircle(int x, int y, int radius, MapPaint paint) {
-    // TODO: implement drawCircle
+    uiCanvas.drawCircle(ui.Offset(x.toDouble(), y.toDouble()), radius.toDouble(), (paint as FlutterPaint).paint);
   }
 
   @override

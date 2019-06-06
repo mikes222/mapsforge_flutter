@@ -3,7 +3,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image/image.dart' as imag;
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
 import 'package:mapsforge_flutter/src/inputstream.dart';
@@ -13,7 +14,6 @@ import '../../graphics/resourcebitmap.dart';
 import '../../model/displaymodel.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/themecallback.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class XmlUtils {
   static final _log = new Logger('XmlUtils');
@@ -25,6 +25,11 @@ class XmlUtils {
   static final String PREFIX_JAR_V1 = "jar:/org/mapsforge/android/maps/rendertheme";
 
   static final String UNSUPPORTED_COLOR_FORMAT = "unsupported color format: ";
+
+  /**
+   * Default size is 20x20px (400px) at baseline mdpi (160dpi).
+   */
+  static int DEFAULT_SIZE = 20;
 
   static void checkMandatoryAttribute(String elementName, String attributeName, Object attributeValue) {
     if (attributeValue == null) {
@@ -49,37 +54,52 @@ class XmlUtils {
     }
 
 //    InputStream inputStream = createInputStream(graphicFactory, relativePathPrefix, src);
-    try {
 //      String absoluteName = getAbsoluteName(relativePathPrefix, src);
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
-      if (src.toLowerCase().endsWith(".svg")) {
-        try {
-          ByteData content = await rootBundle.load(src);
+    if (src.toLowerCase().endsWith(".svg")) {
+      ByteData content = await rootBundle.load(src);
 
-          final DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
+      final DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 
 // If you only want the final Picture output, just use
-          final ui.Picture picture = svgRoot.toPicture();
-          ui.Image image = await picture.toImage(width, height);
-          //print("image: " + image.toString());
-          FlutterResourceBitmap result = FlutterResourceBitmap(image);
-          return result;
+      final ui.Picture picture = svgRoot.toPicture(
+          size:
+              ui.Size(width != 0 ? width.toDouble() : DEFAULT_SIZE.toDouble(), height != 0 ? height.toDouble() : DEFAULT_SIZE.toDouble()));
+      ui.Image image = await picture.toImage(width != 0 ? width : DEFAULT_SIZE, height != 0 ? height : DEFAULT_SIZE);
+      //print("image: " + image.toString());
+      FlutterResourceBitmap result = FlutterResourceBitmap(image);
+      return result;
 
-          //final Widget svg = new SvgPicture.asset(assetName, semanticsLabel: 'Acme Logo');
+      //final Widget svg = new SvgPicture.asset(assetName, semanticsLabel: 'Acme Logo');
 
-          //return graphicFactory.renderSvg(inputStream, displayModel.getScaleFactor(), width, height, percent);
-        } catch (e) {
-          throw new Exception("SVG render failed " + src);
-        }
+      //return graphicFactory.renderSvg(inputStream, displayModel.getScaleFactor(), width, height, percent);
+    } else if (src.toLowerCase().endsWith(".png")) {
+      ByteData content = await rootBundle.load(src);
+      if (width != 0 && height != 0) {
+        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
+        image = imag.copyResize(image, width: width, height: height);
+
+        var codec = await ui.instantiateImageCodec(image.getBytes());
+        // add additional checking for number of frames etc here
+        var frame = await codec.getNextFrame();
+        ui.Image img = frame.image;
+
+        FlutterResourceBitmap result = FlutterResourceBitmap(img);
+        return result;
+      } else {
+        var codec = await ui.instantiateImageCodec(content.buffer.asUint8List());
+        // add additional checking for number of frames etc here
+        var frame = await codec.getNextFrame();
+        ui.Image img = frame.image;
+
+        FlutterResourceBitmap result = FlutterResourceBitmap(img);
+        return result;
       }
-      try {
-        //return graphicFactory.createResourceBitmap(inputStream, displayModel.getScaleFactor(), width, height, percent);
-      } catch (e) {
-        throw new Exception("Reading bitmap file failed " + src);
-      }
-    } finally {
-      //inputStream.close();
+
+      //Image img = Image.memory(content.buffer.asUint8List());
+      //MemoryImage image = MemoryImage(content.buffer.asUint8List());
+
     }
   }
 

@@ -12,6 +12,24 @@ Same license as the original mapsforge project. LPGL-v3
 
 Currently flutter has no support for dashed lines
 
+## TODO
+
+A lot of things. 
+
+graphics:
+ rotate symbols
+ rotate path text
+ 
+Input:
+  completely missing
+  
+Layers:
+  Support multiple layers
+  
+Speed:
+  implement symbol cache
+  support for more than one concurrent job in the jobqueue
+
 
 ## Getting Started
 

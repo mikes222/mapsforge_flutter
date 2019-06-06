@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
 
@@ -15,10 +17,13 @@ class MapViewPosition {
   /// This property must be calculated if needed based on the current view
   BoundingBox boundingBox;
 
-  // the left/upper corner of the current mapview in relation to the current lat/lon.
+  // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
   Mappoint leftUpper;
 
-  MapViewPosition(this.latitude, this.longitude, this.zoomLevel);
+  MapViewPosition(this.latitude, this.longitude, this.zoomLevel)
+      : assert(zoomLevel >= 0 && zoomLevel <= 25),
+        assert(latitude != null),
+        assert(longitude != null);
 
   MapViewPosition.zoomIn(MapViewPosition old)
       : latitude = old.latitude,
@@ -39,8 +44,11 @@ class MapViewPosition {
     double topY = centerY - viewSize.height / 2;
     double bottomY = centerY + viewSize.height / 2;
     int mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize);
-    boundingBox = BoundingBox(MercatorProjection.pixelYToLatitude(bottomY, mapSize), MercatorProjection.pixelXToLongitude(leftX, mapSize),
-        MercatorProjection.pixelYToLatitude(topY, mapSize), MercatorProjection.pixelXToLongitude(rightX, mapSize));
+    boundingBox = BoundingBox(
+        MercatorProjection.pixelYToLatitude(min(bottomY, mapSize.toDouble()), mapSize),
+        MercatorProjection.pixelXToLongitude(max(leftX, 0), mapSize),
+        MercatorProjection.pixelYToLatitude(max(topY, 0), mapSize),
+        MercatorProjection.pixelXToLongitude(min(rightX, mapSize.toDouble()), mapSize));
     leftUpper = Mappoint(leftX, topY);
     return boundingBox;
   }

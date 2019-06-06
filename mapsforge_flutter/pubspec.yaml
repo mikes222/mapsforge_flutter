@@ -33,7 +33,9 @@ dev_dependencies:
   # BSD License
   synchronized: 2.1.0
 
-  flutter_svg: 0.13.0+1
+  flutter_svg: 0.13.0+2
+
+  image: 2.1.4
 
 
 # For information on the generic Dart part of this file, see the

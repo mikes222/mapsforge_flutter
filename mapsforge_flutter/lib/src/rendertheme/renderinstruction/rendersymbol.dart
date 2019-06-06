@@ -19,7 +19,7 @@ class RenderSymbol extends RenderInstruction {
   bool bitmapInvalid = false;
   Display display;
   String id;
-  int priority;
+  int priority = 0;
   final String relativePathPrefix;
   String src;
 
@@ -64,7 +64,10 @@ class RenderSymbol extends RenderInstruction {
     if (this.bitmap == null && !bitmapInvalid) {
       try {
         this.bitmap = await createBitmap(relativePathPrefix, src);
-      } catch (ioException) {
+        this.bitmap.incrementRefCount();
+      } catch (ioException, stacktrace) {
+        print(ioException.toString());
+        print(stacktrace);
         this.bitmapInvalid = true;
       }
     }

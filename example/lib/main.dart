@@ -74,6 +74,7 @@ void openPage(BuildContext context) {
                     RaisedButton(
                       child: Text("run around"),
                       onPressed: () {
+                        if (timer != null) return;
                         timer = Timer.periodic(Duration(seconds: 1), (timer) {
                           mapModel.setMapViewPosition(
                               mapModel.mapViewPosition.latitude + 0.001, mapModel.mapViewPosition.longitude + 0.001);
@@ -84,6 +85,7 @@ void openPage(BuildContext context) {
                       child: Text("stop"),
                       onPressed: () {
                         timer.cancel();
+                        timer = null;
                       },
                     ),
                     RaisedButton(
