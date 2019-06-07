@@ -38,7 +38,7 @@ void openPage(BuildContext context) {
     builder: (BuildContext context) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Next page'),
+          title: const Text('Mapsforge map'),
         ),
         body: FutureBuilder<MapModel>(
           future: MapModelHelper.prepareMapModel(),
@@ -76,8 +76,7 @@ void openPage(BuildContext context) {
                       onPressed: () {
                         if (timer != null) return;
                         timer = Timer.periodic(Duration(seconds: 1), (timer) {
-                          mapModel.setMapViewPosition(
-                              mapModel.mapViewPosition.latitude + 0.001, mapModel.mapViewPosition.longitude + 0.001);
+                          mapModel.setLeftUpper(mapModel.mapViewPosition.leftUpper.x + 10, mapModel.mapViewPosition.leftUpper.y + 10);
                         });
                       },
                     ),
@@ -134,22 +133,6 @@ class MyStatelessWidget extends StatelessWidget {
       key: scaffoldKey,
       appBar: AppBar(
         title: const Text('Flutter Mapsforge'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add_alert),
-            tooltip: 'Show Snackbar',
-            onPressed: () {
-              scaffoldKey.currentState.showSnackBar(snackBar);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.navigate_next),
-            tooltip: 'Next page',
-            onPressed: () {
-              openPage(context);
-            },
-          ),
-        ],
       ),
       body: Column(
         children: <Widget>[
@@ -166,6 +149,12 @@ class MyStatelessWidget extends StatelessWidget {
               FileHelper.downloadFile(Constants.mapfilesource, Constants.mapfile);
             },
           ),
+          RaisedButton(
+            child: Text("Show map"),
+            onPressed: () {
+              openPage(context);
+            },
+          )
         ],
       ),
     );

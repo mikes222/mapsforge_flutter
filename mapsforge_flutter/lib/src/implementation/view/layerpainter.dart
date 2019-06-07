@@ -33,7 +33,7 @@ class LayerPainter extends ChangeNotifier implements CustomPainter {
   void paint(Canvas canvas, Size size) {
     //mapModel.mapViewDimension.setDimension(size.width, size.height);
 
-    if (mapModel.mapViewPosition == null) {
+    if (mapModel.mapViewPosition == null || !mapModel.mapViewPosition.hasPosition()) {
       ui.ParagraphBuilder builder = ui.ParagraphBuilder(
         ui.ParagraphStyle(
           fontSize: 16.0,

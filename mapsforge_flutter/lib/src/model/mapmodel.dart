@@ -9,6 +9,7 @@ import 'mapviewdimension.dart';
 import 'mapviewposition.dart';
 
 class MapModel {
+  final int DEFAULT_ZOOM = 10;
   final DisplayModel displayModel;
   final MapViewDimension mapViewDimension;
   final GraphicFactory graphicsFactory;
@@ -37,21 +38,51 @@ class MapModel {
   MapViewPosition get mapViewPosition => _mapViewPosition;
 
   void setMapViewPosition(double latitude, double longitude) {
-    if (_mapViewPosition != null && _mapViewPosition.latitude == latitude && _mapViewPosition.longitude == longitude) return;
-    MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition?.zoomLevel ?? 14);
-    _mapViewPosition = newPosition;
-    _inject.add(newPosition);
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition.zoomLevel);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, DEFAULT_ZOOM);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    }
   }
 
   void zoomIn() {
-    MapViewPosition newPosition = MapViewPosition(_mapViewPosition?.latitude, _mapViewPosition?.longitude, _mapViewPosition?.zoomLevel + 1);
-    _mapViewPosition = newPosition;
-    _inject.add(newPosition);
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    }
   }
 
   void zoomOut() {
-    MapViewPosition newPosition = MapViewPosition(_mapViewPosition?.latitude, _mapViewPosition?.longitude, _mapViewPosition?.zoomLevel - 1);
-    _mapViewPosition = newPosition;
-    _inject.add(newPosition);
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.zoomOut(_mapViewPosition);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    }
+  }
+
+  void setLeftUpper(double left, double upper) {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition =
+          MapViewPosition.setLeftUpper(_mapViewPosition, left, upper, displayModel.tileSize, mapViewDimension.getDimension());
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1);
+      _mapViewPosition = newPosition;
+      _inject.add(newPosition);
+    }
   }
 }
