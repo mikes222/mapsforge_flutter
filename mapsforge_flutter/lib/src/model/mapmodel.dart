@@ -34,7 +34,9 @@ class MapModel {
         assert(tileCache != null),
         assert(symbolCache != null),
         mapViewDimension = MapViewDimension() {
-    _observe = _inject.asyncMap((pos) => pos).asBroadcastStream();
+    _observe = _inject.asyncMap((pos) async {
+      return pos;
+    }).asBroadcastStream();
   }
 
   Observable<MapViewPosition> get observe => _observe;

@@ -1,18 +1,30 @@
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
+import 'package:vector_math/vector_math.dart';
 
-class AndroidMatrix implements Matrix {
-//  matrix = AffineTransform();
+class FlutterMatrix implements Matrix {
+  //Matrix4 matrix = new Matrix4.identity();
+
+  double theta;
+
+  double pivotX;
+  double pivotY;
 
   @override
   void reset() {
-    //  this.matrix.reset();
+    //this.matrix.setIdentity();
   }
 
   /**
    * @param theta an angle measured in radians.
    */
   @override
-  void rotate(double theta, {double pivotX, double pivotY}) {}
+  void rotate(double theta, {double pivotX, double pivotY}) {
+    this.theta = theta;
+    this.pivotX = pivotX;
+    this.pivotY = pivotY;
+//    Vector3 angle = Vector3(pivotX, pivotY, 0);
+//    matrix.rotate(angle, theta);
+  }
 
   /**
    * Scale around center.

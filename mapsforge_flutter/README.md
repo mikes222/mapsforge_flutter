@@ -23,7 +23,6 @@ First and foremost to the author of mapsforge. He has done an outstanding job!
 A lot of things. 
 
 graphics:
- rotate symbols
  rotate path text
  animate movement, animate zoom
  

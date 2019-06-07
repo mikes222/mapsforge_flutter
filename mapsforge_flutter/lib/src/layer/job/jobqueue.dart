@@ -12,13 +12,15 @@ class JobQueue {
   final TileCache tileCache;
   final JobRenderer jobRenderer;
 
-  Subject<Set<Job>> _inject = PublishSubject();
+  Subject<JobQueueItem> _inject = PublishSubject();
   Subject<Job> _injectJob = PublishSubject();
   Observable<Job> _observe;
 
   static final List<Lock> _lock = List(4);
 
   static int _roundRobin = 0;
+
+  JobQueueItem _lastItem;
 
   JobQueue(this.displayModel, this.tileCache, this.jobRenderer)
       : assert(displayModel != null),
@@ -27,8 +29,8 @@ class JobQueue {
     for (int i = 0; i < _lock.length; ++i) {
       _lock[i] = Lock();
     }
-    _inject.listen((Set<Job> jobs) {
-      process(jobs);
+    _inject.listen((JobQueueItem item) {
+      process(item);
     });
     _observe = _injectJob.asBroadcastStream();
   }
@@ -38,17 +40,22 @@ class JobQueue {
   void add(Job job) {
     Set<Job> jobs = Set();
     jobs.add(job);
-    addJobs(jobs);
+    _inject.add(JobQueueItem(jobs));
   }
 
   void addJobs(Set<Job> jobs) {
     if (jobs.length == 0) return;
-    _inject.add(jobs);
+    if (_lastItem != null) {
+      _lastItem.outdated = true;
+    }
+    _lastItem = JobQueueItem(jobs);
+    _inject.add(_lastItem);
   }
 
-  process(Set<Job> jobs) async {
-    for (Job job in jobs) {
+  void process(JobQueueItem item) async {
+    for (Job job in item.jobs) {
       _lock[++_roundRobin % _lock.length].synchronized(() async {
+        if (item.outdated) return null;
         TileBitmap tileBitmap = tileCache.getTileBitmap(job.tile.tileX, job.tile.tileY, job.tile.zoomLevel);
         if (tileBitmap != null) {
           return job;
@@ -62,4 +69,14 @@ class JobQueue {
       });
     }
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class JobQueueItem {
+  final Set<Job> jobs;
+
+  bool outdated = false;
+
+  JobQueueItem(this.jobs);
 }

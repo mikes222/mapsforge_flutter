@@ -22,6 +22,7 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import '../../graphics/bitmap.dart';
 import 'fluttercanvas.dart';
 import 'fluttercolor.dart';
+import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
 import 'flutterpointtextcontainer.dart';
@@ -51,8 +52,7 @@ class FlutterGraphicFactory implements GraphicFactory {
 
   @override
   Matrix createMatrix() {
-    // TODO: implement createMatrix
-    return null;
+    return FlutterMatrix();
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
 
 import 'flutterbitmap.dart';
+import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
 import 'fluttertilebitmap.dart';
@@ -65,9 +67,33 @@ class FlutterCanvas extends MapCanvas {
     assert(left != null);
     assert(top != null);
     ui.Paint paint = ui.Paint();
+
+    ui.Image bmp = (bitmap as FlutterBitmap).bitmap;
+    assert(bmp != null);
+    assert(bmp.width > 0);
+    assert(bmp.height > 0);
+    if (matrix != null) {
+      FlutterMatrix f = matrix;
+      if (f.theta != null) {
+        double angle = f.theta; // 30 * pi / 180
+        final double r = sqrt(f.pivotX * f.pivotX + f.pivotY * f.pivotY) / 2;
+        final double alpha = atan(f.pivotY / f.pivotX);
+        final double beta = alpha + angle;
+        final shiftY = r * sin(beta);
+        final shiftX = r * cos(beta);
+        final translateX = f.pivotX - shiftX;
+        final translateY = f.pivotY - shiftY;
+        uiCanvas.save();
+        uiCanvas.translate(translateX + left, translateY + top);
+        uiCanvas.rotate(angle);
+        uiCanvas.drawImage(bmp, ui.Offset.zero, paint);
+        uiCanvas.restore();
+        return;
+      }
+    }
     //paint.color = Colors.red;
     //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
-    uiCanvas.drawImage((bitmap as FlutterBitmap).bitmap, ui.Offset(left, top), paint);
+    uiCanvas.drawImage(bmp, ui.Offset(left, top), paint);
   }
 
   @override
