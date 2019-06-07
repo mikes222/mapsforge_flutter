@@ -23,7 +23,8 @@ class RenderSymbol extends RenderInstruction {
   final String relativePathPrefix;
   String src;
 
-  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix) : super(graphicFactory, displayModel) {
+  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
+      : super(graphicFactory, displayModel, symbolCache) {
     this.display = Display.IFSPACE;
   }
 

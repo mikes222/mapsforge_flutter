@@ -12,35 +12,54 @@ class JobQueue {
   final TileCache tileCache;
   final JobRenderer jobRenderer;
 
-  Subject<Job> _inject = PublishSubject();
+  Subject<Set<Job>> _inject = PublishSubject();
+  Subject<Job> _injectJob = PublishSubject();
   Observable<Job> _observe;
 
-  static final Lock _lock = Lock();
+  static final List<Lock> _lock = List(4);
+
+  static int _roundRobin = 0;
 
   JobQueue(this.displayModel, this.tileCache, this.jobRenderer)
       : assert(displayModel != null),
         assert(tileCache != null),
         assert(jobRenderer != null) {
-    _observe =
-        _inject.distinctUnique(equals: (job1, job2) => job1 == job2, hashCode: (job) => job.hashCode).asyncMap(process).asBroadcastStream();
+    for (int i = 0; i < _lock.length; ++i) {
+      _lock[i] = Lock();
+    }
+    _inject.listen((Set<Job> jobs) {
+      process(jobs);
+    });
+    _observe = _injectJob.asBroadcastStream();
   }
 
   Observable<Job> get observe => _observe;
 
   void add(Job job) {
-    _inject.add(job);
+    Set<Job> jobs = Set();
+    jobs.add(job);
+    addJobs(jobs);
   }
 
-  Future<Job> process(Job job) async {
-    Job result = await _lock.synchronized(() async {
-      TileBitmap tileBitmap = tileCache.getTileBitmap(job.tile.tileX, job.tile.tileY, job.tile.zoomLevel);
-      if (tileBitmap != null) {
+  void addJobs(Set<Job> jobs) {
+    if (jobs.length == 0) return;
+    _inject.add(jobs);
+  }
+
+  process(Set<Job> jobs) async {
+    for (Job job in jobs) {
+      _lock[++_roundRobin % _lock.length].synchronized(() async {
+        TileBitmap tileBitmap = tileCache.getTileBitmap(job.tile.tileX, job.tile.tileY, job.tile.zoomLevel);
+        if (tileBitmap != null) {
+          return job;
+        }
+        tileBitmap = await jobRenderer.executeJob(job);
+        if (tileBitmap != null) {
+          tileCache.addTileBitmap(job.tile, tileBitmap);
+          _injectJob.add(job);
+        }
         return job;
-      }
-      tileBitmap = await jobRenderer.executeJob(job);
-      if (tileBitmap != null) tileCache.addTileBitmap(job.tile, tileBitmap);
-      return job;
-    });
-    return result;
+      });
+    }
   }
 }

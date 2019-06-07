@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
+import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
@@ -12,19 +12,12 @@ class LayerPainter extends ChangeNotifier implements CustomPainter {
   final MapModel mapModel;
   final TileLayer _tileLayer;
 
-  LayerPainter(this.mapModel, JobRenderer jobRenderer)
-      : assert(mapModel != null),
-        _tileLayer = TileLayer(
-          tileCache: mapModel.tileCache,
-          displayModel: mapModel.displayModel,
-          jobRenderer: jobRenderer,
-        ),
-        super() {
-    _tileLayer.observe.listen((job) {
-      notifyListeners();
-    });
+  final MapViewPosition position;
 
-    mapModel.observe.listen((MapViewPosition position) {
+  LayerPainter(this.mapModel, this._tileLayer, this.position)
+      : assert(mapModel != null),
+        super() {
+    _tileLayer.observe.listen((Job job) {
       notifyListeners();
     });
   }
@@ -33,7 +26,7 @@ class LayerPainter extends ChangeNotifier implements CustomPainter {
   void paint(Canvas canvas, Size size) {
     //mapModel.mapViewDimension.setDimension(size.width, size.height);
 
-    if (mapModel.mapViewPosition == null || !mapModel.mapViewPosition.hasPosition()) {
+    if (position == null || !position.hasPosition()) {
       ui.ParagraphBuilder builder = ui.ParagraphBuilder(
         ui.ParagraphStyle(
           fontSize: 16.0,
@@ -48,15 +41,15 @@ class LayerPainter extends ChangeNotifier implements CustomPainter {
     } else {
       bool changed = mapModel.mapViewDimension.setDimension(size.width, size.height);
       if (changed) {
-        mapModel.mapViewPosition.sizeChanged();
+        position.sizeChanged();
       }
-      _tileLayer.draw(mapModel.mapViewDimension, mapModel.mapViewPosition, FlutterCanvas(canvas, size));
+      _tileLayer.draw(mapModel.mapViewDimension, position, FlutterCanvas(canvas, size));
     }
   }
 
   @override
   bool shouldRepaint(LayerPainter oldDelegate) {
-    if (oldDelegate?.mapModel?.mapViewPosition != mapModel.mapViewPosition) return true;
+    if (oldDelegate?.position != position) return true;
     return false;
   }
 

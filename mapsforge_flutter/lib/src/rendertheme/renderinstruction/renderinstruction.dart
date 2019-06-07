@@ -1,4 +1,4 @@
-import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
+import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 
 import '../../datastore/pointofinterest.dart';
 import '../../graphics/bitmap.dart';
@@ -49,21 +49,23 @@ abstract class RenderInstruction {
   String category;
   final DisplayModel displayModel;
   final GraphicFactory graphicFactory;
+  final SymbolCache symbolCache;
 
   double height = 0;
   int percent = 100;
   double width = 0;
 
-  RenderInstruction(this.graphicFactory, this.displayModel)
+  RenderInstruction(this.graphicFactory, this.displayModel, this.symbolCache)
       : assert(graphicFactory != null),
-        assert(displayModel != null);
+        assert(displayModel != null),
+        assert(symbolCache != null);
 
   Future<Bitmap> createBitmap(String relativePathPrefix, String src) async {
     if (null == src || src.isEmpty) {
       return null;
     }
 
-    return XmlUtils.createBitmap(graphicFactory, displayModel, relativePathPrefix, src, width.round(), height.round(), percent);
+    return symbolCache.getBitmap(src, width.round(), height.round(), percent);
   }
 
   void destroy();

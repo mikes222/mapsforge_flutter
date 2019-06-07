@@ -99,6 +99,13 @@ void openPage(BuildContext context) {
                         mapModel.zoomOut();
                       },
                     ),
+                    StreamBuilder(
+                      stream: mapModel.observe,
+                      builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
+                        if (!snapshot.hasData) return Container();
+                        return Text("Zoom ${snapshot.data?.zoomLevel ?? ""}");
+                      },
+                    ),
                   ],
                 ),
                 Expanded(

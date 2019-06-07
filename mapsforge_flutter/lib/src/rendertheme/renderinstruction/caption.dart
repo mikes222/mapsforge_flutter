@@ -46,12 +46,12 @@ class Caption extends RenderInstruction {
   final Map<String, RenderSymbol> symbols;
   TextKey textKey;
 
-  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbols)
+  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.symbols)
       : fills = new Map(),
         strokes = new Map(),
         dyScaled = new Map(),
         maxTextWidth = displayModel.getMaxTextWidth(),
-        super(graphicFactory, displayModel) {
+        super(graphicFactory, displayModel, symbolCache) {
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);

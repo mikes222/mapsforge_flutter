@@ -18,10 +18,11 @@ class MapModelHelper {
     await mapFile.init();
     //await mapFile.debug();
 
-    final DisplayModel displayModel = DisplayModel();
     GraphicFactory graphicFactory = FlutterGraphicFactory();
+    final DisplayModel displayModel = DisplayModel();
+    SymbolCache symbolCache = SymbolCache(graphicFactory, displayModel);
 
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
     print("Rendering instructions has ${content.length} bytes");
     await renderThemeBuilder.parseXml(content);
@@ -34,6 +35,7 @@ class MapModelHelper {
       graphicsFactory: graphicFactory,
       renderer: dataStoreRenderer,
       tileCache: tileCache,
+      symbolCache: symbolCache,
     );
     return mapModel;
   }

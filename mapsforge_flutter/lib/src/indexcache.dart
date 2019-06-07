@@ -5,6 +5,7 @@ import 'header/subfileparameter.dart';
 import 'header/subfileparameterbuilder.dart';
 import 'package:mapsforge_flutter/src/indexcacheentrykey.dart';
 import 'mapreader/deserializer.dart';
+import 'mapreader/readbuffer.dart';
 
 /**
  * A cache for database index blocks with a fixed size and LRU policy.
@@ -67,12 +68,9 @@ class IndexCache {
 
       int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
       int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
-      indexBlock = new List<int>();
 
-//      synchronized(this.fileChannel) {
-      RandomAccessFile newInstance = await this.fileChannel.setPosition(indexBlockPosition);
-      indexBlock = await (newInstance.read(indexBlockSize));
-      //    }
+      ReadBuffer readBuffer = ReadBuffer(this.fileChannel);
+      indexBlock = await readBuffer.readDirect(indexBlockPosition, indexBlockSize);
 
       // put the index block in the map
       this.map[indexCacheEntryKey] = indexBlock;

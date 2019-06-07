@@ -27,11 +27,11 @@ class RenderCircle extends RenderInstruction {
   final Map<int, MapPaint> strokes;
   double strokeWidth = 1;
 
-  RenderCircle(GraphicFactory graphicFactory, DisplayModel displayModel, this.level)
+  RenderCircle(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.level)
       : fills = new Map(),
         strokes = new Map(),
         renderRadiusScaled = new Map(),
-        super(graphicFactory, displayModel) {
+        super(graphicFactory, displayModel, symbolCache) {
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);

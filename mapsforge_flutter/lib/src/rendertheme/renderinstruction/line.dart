@@ -34,8 +34,8 @@ class Line extends RenderInstruction {
   Map<int, MapPaint> strokes;
   double strokeWidth;
 
-  Line(GraphicFactory graphicFactory, DisplayModel displayModel, String elementName, this.level, this.relativePathPrefix)
-      : super(graphicFactory, displayModel) {
+  Line(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, String elementName, this.level, this.relativePathPrefix)
+      : super(graphicFactory, displayModel, symbolCache) {
     strokeWidth = 1;
     this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.BLACK);

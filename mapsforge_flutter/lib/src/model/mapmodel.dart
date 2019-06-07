@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
@@ -15,6 +16,7 @@ class MapModel {
   final GraphicFactory graphicsFactory;
   final TileCache tileCache;
   final JobRenderer renderer;
+  final SymbolCache symbolCache;
   MapViewPosition _mapViewPosition;
 
   Subject<MapViewPosition> _inject = PublishSubject();
@@ -25,12 +27,14 @@ class MapModel {
     @required this.renderer,
     @required this.graphicsFactory,
     @required this.tileCache,
+    @required this.symbolCache,
   })  : assert(displayModel != null),
         assert(renderer != null),
         assert(graphicsFactory != null),
         assert(tileCache != null),
+        assert(symbolCache != null),
         mapViewDimension = MapViewDimension() {
-    _observe = _inject.asBroadcastStream();
+    _observe = _inject.asyncMap((pos) => pos).asBroadcastStream();
   }
 
   Observable<MapViewPosition> get observe => _observe;

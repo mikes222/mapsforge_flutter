@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
@@ -27,6 +28,7 @@ class RenderThemeBuilder {
 
   final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
+  final SymbolCache symbolCache;
   double baseStrokeWidth;
   double baseTextSize;
   bool hasBackgroundOutside;
@@ -36,9 +38,10 @@ class RenderThemeBuilder {
   final List<RuleBuilder> ruleBuilderStack = List();
   int level = 0;
 
-  RenderThemeBuilder(this.graphicFactory, this.displayModel)
+  RenderThemeBuilder(this.graphicFactory, this.displayModel, this.symbolCache)
       : assert(graphicFactory != null),
-        assert(displayModel != null) {
+        assert(displayModel != null),
+        assert(symbolCache != null) {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
@@ -136,7 +139,7 @@ class RenderThemeBuilder {
           {
             XmlElement element = node;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, level++);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, level++);
               await ruleBuilder.parse(element);
               level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);

@@ -8,3 +8,4 @@ export 'src/implementation/graphics/fluttergraphicsfactory.dart';
 export 'src/implementation/view/mapview.dart';
 
 export 'src/graphics/graphicfactory.dart';
+export 'src/cache/symbolcache.dart';

@@ -83,6 +83,7 @@ class TileLayer extends Layer {
     mapViewPosition.calculateBoundingBox(displayModel.tileSize, mapViewDimension.getDimension());
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
+    Set<Job> jobs = Set();
     for (int i = tiles.length - 1; i >= 0; --i) {
       Tile tile = tiles.elementAt(i);
       Mappoint point = tile.leftUpperPoint;
@@ -90,7 +91,7 @@ class TileLayer extends Layer {
 
       if (bitmap == null) {
         Job job = createJob(tile);
-        this.jobQueue.add(job);
+        jobs.add(job);
 //        if (Parameters.PARENT_TILES_RENDERING !=
 //            Parameters.ParentTilesRendering.OFF) {
 //          drawParentTileBitmap(canvas, point, tile);
@@ -111,6 +112,7 @@ class TileLayer extends Layer {
         //bitmap.decrementRefCount();
       }
     }
+    this.jobQueue.addJobs(jobs);
   }
 
   Job createJob(Tile tile) {

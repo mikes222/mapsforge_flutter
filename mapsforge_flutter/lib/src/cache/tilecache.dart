@@ -59,7 +59,8 @@ abstract class TileCache extends ObservableInterface {
   void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
     _ZoomLevelTileCache cache = _caches[tile.zoomLevel];
     if (cache == null) {
-      return null;
+      cache = _ZoomLevelTileCache(tile.zoomLevel, tile.tileSize);
+      _caches[tile.zoomLevel] = cache;
     }
     cache.addTileBitmap(tile.tileX, tile.tileY, tileBitmap);
   }
@@ -68,12 +69,12 @@ abstract class TileCache extends ObservableInterface {
 /////////////////////////////////////////////////////////////////////////////
 
 class _ZoomLevelTileCache {
-  Cache _tilePositions = new SimpleCache<int, Tile>(storage: new SimpleStorage<int, Tile>(size: 200));
+  Cache _tilePositions = new SimpleCache<int, Tile>(storage: new SimpleStorage<int, Tile>(size: 2000));
 
   //List<Tile> _tilePositions;
 
   Cache _bitmaps = new SimpleCache<int, TileBitmap>(
-      storage: new SimpleStorage<int, TileBitmap>(size: 200),
+      storage: new SimpleStorage<int, TileBitmap>(size: 100),
       onEvict: (key, item) {
         item.decrementRefCount();
       });
@@ -103,29 +104,31 @@ class _ZoomLevelTileCache {
 
     xCount = tileRight - tileLeft + 1;
     yCount = tileBottom - tileTop + 1;
+    assert(xCount >= 0);
+    assert(yCount >= 0);
 
     //_tilePositions = List<Tile>(xCount * yCount);
   }
 
   Tile getTile(int x, int y) {
-    Tile result = _tilePositions.get(y * yCount + x);
+    Tile result = _tilePositions.get(y * xCount + x);
     if (result == null) {
       result = Tile(x, y, zoomLevel, tileSize);
-      _tilePositions[y * yCount + x] = result;
+      _tilePositions[y * xCount + x] = result;
     }
     //assert(result != null);
     return result;
   }
 
   TileBitmap getTileBitmap(int x, int y) {
-    return _bitmaps[y * yCount + x];
+    return _bitmaps[y * xCount + x];
   }
 
   void addTileBitmap(int x, int y, TileBitmap tileBitmap) {
-    TileBitmap old = _bitmaps[y * yCount + x];
+    TileBitmap old = _bitmaps[y * xCount + x];
     if (old != null) {
       old.decrementRefCount();
     }
-    _bitmaps[y * yCount + x] = tileBitmap;
+    _bitmaps[y * xCount + x] = tileBitmap;
   }
 }

@@ -27,7 +27,8 @@ class Area extends RenderInstruction {
   Map<int, MapPaint> strokes;
   double strokeWidth;
 
-  Area(graphicFactory, displayModel, String elementName, this.level, this.relativePathPrefix) : super(graphicFactory, displayModel) {
+  Area(graphicFactory, displayModel, symbolCache, String elementName, this.level, this.relativePathPrefix)
+      : super(graphicFactory, displayModel, symbolCache) {
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);
@@ -125,8 +126,9 @@ class Area extends RenderInstruction {
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (this.stroke != null) {
       if (this.scale == Scale.NONE) {
-        scaleFactor = 1;
+        return;
       }
+      if (this.strokes[zoomLevel] != null) return;
       MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
       paint.setStrokeWidth(this.strokeWidth * scaleFactor);
       this.strokes[zoomLevel] = paint;

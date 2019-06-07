@@ -20,10 +20,10 @@ class MapViewPosition {
   // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
   Mappoint _leftUpper;
 
-  MapViewPosition(this._latitude, this._longitude, this.zoomLevel)
-      : assert(zoomLevel >= 0 && zoomLevel <= 25),
-        assert(_latitude != null),
-        assert(_longitude != null);
+  MapViewPosition(this._latitude, this._longitude, this.zoomLevel) : assert(zoomLevel >= 0)
+  //assert(_latitude != null),
+  //assert(_longitude != null)
+  ;
 
   MapViewPosition.zoomIn(MapViewPosition old)
       : _latitude = old._latitude,

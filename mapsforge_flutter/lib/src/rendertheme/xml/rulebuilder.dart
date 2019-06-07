@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/area.dart';
@@ -47,6 +48,7 @@ class RuleBuilder {
 
   final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
+  final SymbolCache symbolCache;
   int level;
 
   String cat;
@@ -117,7 +119,7 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.graphicFactory, this.displayModel, this.level)
+  RuleBuilder(this.graphicFactory, this.displayModel, this.symbolCache, this.level)
       : ruleBuilderStack = List(),
         renderInstructions = List(),
         symbols = Map() {
@@ -236,7 +238,7 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, level++);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, level++);
       await ruleBuilder.parse(rootElement);
       level = ruleBuilder.level;
       ruleBuilderStack.add(ruleBuilder);
@@ -248,14 +250,14 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(graphicFactory, displayModel, qName, level++, null);
+      Area area = new Area(graphicFactory, displayModel, symbolCache, qName, level++, null);
       await area.parse(rootElement);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbols);
+      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbolCache, symbols);
       await caption.parse(rootElement);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
@@ -265,7 +267,7 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, this.level++);
+      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, symbolCache, this.level++);
       circle.parse(rootElement);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
@@ -298,14 +300,14 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line = new Line(this.graphicFactory, this.displayModel, qName, level++, null);
+      Line line = new Line(this.graphicFactory, this.displayModel, symbolCache, qName, level++, null);
       await line.parse(rootElement);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, null);
+      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, symbolCache, null);
       await lineSymbol.parse(rootElement);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
@@ -329,7 +331,7 @@ class RuleBuilder {
 //      }
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      PathText pathText = new PathText(this.graphicFactory, this.displayModel);
+      PathText pathText = new PathText(this.graphicFactory, this.displayModel, symbolCache);
       pathText.parse(rootElement);
       if (isVisible(pathText)) {
         this.addRenderingInstruction(pathText);
@@ -343,7 +345,7 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel, null);
+      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel, symbolCache, null);
       await symbol.parse(rootElement);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);

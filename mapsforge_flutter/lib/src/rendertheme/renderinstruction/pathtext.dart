@@ -40,11 +40,11 @@ class PathText extends RenderInstruction {
   bool rotate;
   TextKey textKey;
 
-  PathText(GraphicFactory graphicFactory, DisplayModel displayModel)
+  PathText(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache)
       : fills = new Map(),
         strokes = new Map(),
         dyScaled = new Map(),
-        super(graphicFactory, displayModel) {
+        super(graphicFactory, displayModel, symbolCache) {
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);

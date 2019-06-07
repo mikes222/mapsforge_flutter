@@ -23,7 +23,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   FlutterPaint(this.paint);
 
-  FlutterPaint.from(FlutterPaint other) : paint = other.paint {
+  FlutterPaint.from(FlutterPaint other) : paint = ui.Paint() {
     paint.color = other.paint.color;
     paint.strokeWidth = other.paint.strokeWidth;
     paint.style = other.paint.style;

@@ -33,9 +33,9 @@ class LineSymbol extends RenderInstruction {
   Scale scale = Scale.STROKE;
   String src;
 
-  LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix)
+  LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
       : dyScaled = new Map(),
-        super(graphicFactory, displayModel) {
+        super(graphicFactory, displayModel, symbolCache) {
     this.display = Display.IFSPACE;
     this.rotate = true;
   }
