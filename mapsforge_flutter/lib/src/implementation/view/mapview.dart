@@ -1,11 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
+import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/view/mapview.dart';
 
 import '../../../core.dart';
+import 'contextmenu.dart';
 import 'layerpainter.dart';
 
 class FlutterMapView extends StatefulWidget implements MapView {
@@ -28,66 +31,91 @@ class FlutterMapView extends StatefulWidget implements MapView {
 class _FlutterMapState extends State<FlutterMapView> {
   static final _log = new Logger('_FlutterMapState');
 
-  Mappoint startLeftUpper;
-
-  Offset startOffset;
-
   TileLayer _tileLayer;
 
-  MapViewPosition _position;
+  TapEvent _lastTapEvent;
+
+  GlobalKey _keyView = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _tileLayer = TileLayer(
-      tileCache: widget.mapModel.tileCache,
       displayModel: widget.mapModel.displayModel,
       jobRenderer: widget.mapModel.renderer,
     );
-    widget.mapModel.observe.listen((MapViewPosition position) {
-      setState(() {
-        _position = position;
-      });
-    });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     _log.info("draw");
-    return Stack(children: <Widget>[
-      GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onDoubleTap: () {
-          widget.mapModel.zoomIn();
-        },
-        onScaleStart: (ScaleStartDetails details) {
-          startOffset = details.focalPoint;
-          startLeftUpper = widget.mapModel.mapViewPosition?.leftUpper;
-          print(details.toString());
-        },
-        onScaleUpdate: (ScaleUpdateDetails details) {
-          if (startLeftUpper == null) return;
-          if (details.scale == 1) {
-            widget.mapModel.setLeftUpper(
-                startLeftUpper.x + startOffset.dx - details.focalPoint.dx, startLeftUpper.y + startOffset.dy - details.focalPoint.dy);
-          } else {
-            print(details.toString());
+    return StreamBuilder<MapViewPosition>(
+      stream: widget.mapModel.observePosition,
+      builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data.hasPosition()) {
+            return _buildMapView(snapshot.data);
           }
-        },
-        onScaleEnd: (ScaleEndDetails details) {
-          print(details.toString());
-        },
-        child: CustomPaint(
-          foregroundPainter: LayerPainter(widget.mapModel, _tileLayer, _position),
-          child: Container(),
+          return Center(
+            child: Text("No Position"),
+          );
+        }
+        if (widget.mapModel.mapViewPosition != null && widget.mapModel.mapViewPosition.hasPosition()) {
+          return _buildMapView(widget.mapModel.mapViewPosition);
+        }
+        return Center(
+          child: Text("No Position"),
+        );
+      },
+    );
+  }
+
+  Widget _buildMapView(MapViewPosition position) {
+    return Stack(
+      key: _keyView,
+      children: <Widget>[
+        FlutterGestureDetector(
+          mapModel: widget.mapModel,
+          child: Stack(
+            children: <Widget>[
+              StreamBuilder<Job>(
+                stream: _tileLayer.observeJob,
+                builder: (BuildContext context, AsyncSnapshot<Job> snapshot) {
+                  if (snapshot.hasData) {
+                    _tileLayer.jobResult(snapshot.data);
+                  }
+                  return CustomPaint(
+                    foregroundPainter: LayerPainter(widget.mapModel.mapViewDimension, _tileLayer, position),
+                    child: Container(),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
-      ),
-    ]);
+        StreamBuilder<TapEvent>(
+          stream: widget.mapModel.observeTap,
+          builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+            if (!snapshot.hasData) return Container();
+            TapEvent event = snapshot.data;
+            final RenderBox renderBox = _keyView.currentContext.findRenderObject();
+            final positionRed = renderBox.localToGlobal(Offset.zero);
+            return ContextMenu(
+              mapModel: widget.mapModel,
+              position: position,
+              viewOffset: positionRed,
+              event: event,
+            );
+          },
+        ),
+      ],
+    );
   }
 }
+
+/////////////////////////////////////////////////////////////////////////////

@@ -35,6 +35,11 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel - 1;
 
+  MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
+      : _latitude = old._latitude,
+        _longitude = old._longitude,
+        this.zoomLevel = zoomLevel;
+
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude) : zoomLevel = old.zoomLevel;
 
   MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, int tileSize, Dimension viewSize)

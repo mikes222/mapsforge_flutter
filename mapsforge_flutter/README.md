@@ -14,6 +14,9 @@ Currently flutter has no support for dashed lines
 
 doubleTap() does not provide a location so it always zooms in around the center. See https://github.com/flutter/flutter/issues/20000
 
+Everything is called in the same thread, isolates are flutter's way of threads but calling native functions is currently not possible in isolates. All graphical functions are native functions. 
+So currently the whole rendering is done in the ui thread which leads to blocked ui while rendering. See https://github.com/flutter/flutter/issues/13937
+
 ## Credits
 
 First and foremost to the author of mapsforge. He has done an outstanding job!
@@ -27,7 +30,7 @@ graphics:
  animate movement, animate zoom
  
 User Input:
-  zoom in/out
+  zoom in/out (already implemented but without visual feedback while zooming)
   notification if user starts manual input (in order to stop automatic position changes)
   response to tap events
   

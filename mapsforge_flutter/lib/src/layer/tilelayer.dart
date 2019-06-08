@@ -11,6 +11,8 @@ import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'cache/MemoryTileCache.dart';
+import 'cache/memorybitmapcache.dart';
 import 'job/job.dart';
 import 'job/jobqueue.dart';
 import 'job/jobrenderer.dart';
@@ -21,12 +23,14 @@ class TileLayer extends Layer {
 
   final bool isTransparent;
   JobQueue jobQueue;
-  final TileCache tileCache;
+  final TileCache _tileCache = MemoryTileCache();
+  final MemoryBitmapCache _bitmapCache = MemoryBitmapCache();
   final Matrix matrix;
   final JobRenderer jobRenderer;
 
+  bool needsRepaint = false;
+
   TileLayer({
-    this.tileCache,
     this.matrix,
     this.isTransparent = false,
     @required displayModel,
@@ -34,10 +38,10 @@ class TileLayer extends Layer {
   })  : assert(isTransparent != null),
         assert(displayModel != null),
         assert(jobRenderer != null),
-        jobQueue = JobQueue(displayModel, tileCache, jobRenderer),
+        jobQueue = JobQueue(displayModel, jobRenderer),
         super(displayModel) {}
 
-  Observable<Job> get observe => jobQueue.observe;
+  Observable<Job> get observeJob => jobQueue.observeJob;
 
 //  public TileLayer(TileCache tileCache, IMapViewPosition mapViewPosition, Matrix matrix, bool isTransparent, bool hasJobQueue) {
 //    super();
@@ -55,9 +59,16 @@ class TileLayer extends Layer {
 //    this.isTransparent = isTransparent;
 //  }
 
+  void jobResult(Job job) {
+    _bitmapCache.addTileBitmap(job.tile, job.tileBitmap);
+    needsRepaint = true;
+  }
+
   @override
   void draw(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, MapCanvas canvas) {
-    Set<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition, displayModel.tileSize, tileCache);
+    int time = DateTime.now().millisecondsSinceEpoch;
+    needsRepaint = false;
+    List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition, displayModel.tileSize, _tileCache);
     //_log.info("tiles: ${tiles.length}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -83,11 +94,10 @@ class TileLayer extends Layer {
     mapViewPosition.calculateBoundingBox(displayModel.tileSize, mapViewDimension.getDimension());
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
-    Set<Job> jobs = Set();
-    for (int i = tiles.length - 1; i >= 0; --i) {
-      Tile tile = tiles.elementAt(i);
+    List<Job> jobs = List();
+    tiles.forEach((tile) {
       Mappoint point = tile.leftUpperPoint;
-      TileBitmap bitmap = this.tileCache.getTileBitmap(tile.tileX, tile.tileY, tile.zoomLevel);
+      TileBitmap bitmap = this._bitmapCache.getTileBitmap(tile);
 
       if (bitmap == null) {
         Job job = createJob(tile);
@@ -111,8 +121,10 @@ class TileLayer extends Layer {
         ); //, (point.x), (point.y), this.displayModel.getFilter());
         //bitmap.decrementRefCount();
       }
-    }
+    });
     this.jobQueue.addJobs(jobs);
+    int diff = DateTime.now().millisecondsSinceEpoch - time;
+    //_log.info("diff: $diff ms");
   }
 
   Job createJob(Tile tile) {
@@ -211,9 +223,5 @@ class TileLayer extends Layer {
     }
 
     return getCachedParentTile(parentTile, level - 1);
-  }
-
-  TileCache getTileCache() {
-    return this.tileCache;
   }
 }

@@ -1,8 +1,12 @@
+import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 class Job {
   final bool hasAlpha;
   final Tile tile;
+
+  /// The resulting bitmap after this job has been processed.
+  TileBitmap tileBitmap;
 
   Job(this.tile, this.hasAlpha) : assert(tile != null);
 

@@ -26,7 +26,7 @@ class DummyRenderer extends JobRenderer {
         fontSize: 10.0,
       ),
     )
-      ..pushStyle(ui.TextStyle(color: Colors.black45))
+      ..pushStyle(ui.TextStyle(color: Colors.black87))
       ..addText("${job.tile}");
     canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: job.tile.tileSize.toDouble())), Offset(0, 0));
 
@@ -36,6 +36,6 @@ class DummyRenderer extends JobRenderer {
 //    var buffer = byteData.buffer.asUint8List();
 
     FlutterTileBitmap tileBitmap = FlutterTileBitmap(img);
-    return Future.value(tileBitmap);
+    return tileBitmap; //Future.value(tileBitmap);
   }
 }

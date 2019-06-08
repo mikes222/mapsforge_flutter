@@ -67,7 +67,7 @@ class TileRendererLayer extends TileLayer implements Observer {
    * @param hillsRenderConfig the hillshading setup to be used (can be null)
    */
   TileRendererLayer(
-      {@required TileCache tileCache,
+      { //@required TileCache tileCache,
       @required this.mapDataStore,
       MapViewPosition mapViewPosition,
       bool isTransparent = false,
@@ -78,18 +78,18 @@ class TileRendererLayer extends TileLayer implements Observer {
       @required displayModel,
       @required jobRenderer})
       : assert(graphicFactory != null),
-        assert(tileCache != null),
+        //assert(tileCache != null),
         assert(displayModel != null),
         assert(mapDataStore != null),
         assert(jobRenderer != null),
         super(
-            tileCache: tileCache,
+            //tileCache: tileCache,
             matrix: graphicFactory.createMatrix(),
             isTransparent: isTransparent,
             displayModel: displayModel,
             jobRenderer: jobRenderer) {
     if (cacheLabels) {
-      this.tileBasedLabelStore = new TileBasedLabelStore(tileCache.getCapacityFirstLevel());
+      this.tileBasedLabelStore = new TileBasedLabelStore(200);
     } else {
       this.tileBasedLabelStore = null;
     }
@@ -157,9 +157,9 @@ class TileRendererLayer extends TileLayer implements Observer {
   @override
   void onAdd() {
     //this.mapWorkerPool.start();
-    if (tileCache != null) {
-      tileCache.addObserver(this);
-    }
+//    if (tileCache != null) {
+//      tileCache.addObserver(this);
+//    }
 
     super.onAdd();
   }
@@ -167,9 +167,9 @@ class TileRendererLayer extends TileLayer implements Observer {
   @override
   void onRemove() {
 //    this.mapWorkerPool.stop();
-    if (tileCache != null) {
-      tileCache.removeObserver(this);
-    }
+//    if (tileCache != null) {
+//      tileCache.removeObserver(this);
+//    }
     super.onRemove();
   }
 

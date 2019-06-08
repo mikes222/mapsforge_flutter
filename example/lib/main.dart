@@ -3,15 +3,12 @@
 // This sample shows an [AppBar] with two simple actions. The first action
 // opens a [SnackBar], while the second action navigates to a new page.
 
-import 'dart:async';
-
+import 'package:example/showmap.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/core.dart';
 
 import 'constants.dart';
 import 'filehelper.dart';
-import 'mapmodelhelper.dart';
 
 void main() => runApp(MyApp());
 
@@ -30,103 +27,6 @@ class MyApp extends StatelessWidget {
 
 final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 final SnackBar snackBar = const SnackBar(content: Text('Showing Snackbar'));
-
-Timer timer;
-
-void openPage(BuildContext context) {
-  Navigator.push(context, MaterialPageRoute(
-    builder: (BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Mapsforge map'),
-        ),
-        body: FutureBuilder<MapModel>(
-          future: MapModelHelper.prepareMapModel(),
-          builder: (BuildContext context, AsyncSnapshot<MapModel> snapshot) {
-            if (snapshot.hasError) {
-              Error e = snapshot.error;
-              print(e.toString());
-              print(e.stackTrace.toString());
-
-              return Text("Error: ${snapshot.error.toString()}");
-            }
-            if (!snapshot.hasData)
-              return Center(
-                child: Column(
-                  children: <Widget>[
-                    Text("Preparing MapModel"),
-                    CircularProgressIndicator(),
-                  ],
-                ),
-              );
-            MapModel mapModel = snapshot.data;
-
-            return Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    RaisedButton(
-                      child: Text("Set Location"),
-                      onPressed: () {
-                        mapModel.setMapViewPosition(48.0901926, 16.308939);
-                      },
-                    ),
-                    RaisedButton(
-                      child: Text("run around"),
-                      onPressed: () {
-                        if (timer != null) return;
-                        timer = Timer.periodic(Duration(seconds: 1), (timer) {
-                          mapModel.setLeftUpper(mapModel.mapViewPosition.leftUpper.x + 10, mapModel.mapViewPosition.leftUpper.y + 10);
-                        });
-                      },
-                    ),
-                    RaisedButton(
-                      child: Text("stop"),
-                      onPressed: () {
-                        timer.cancel();
-                        timer = null;
-                      },
-                    ),
-                    RaisedButton(
-                      child: Text("Zoom in"),
-                      onPressed: () {
-                        mapModel.zoomIn();
-                      },
-                    ),
-                    RaisedButton(
-                      child: Text("Zoom out"),
-                      onPressed: () {
-                        mapModel.zoomOut();
-                      },
-                    ),
-                    StreamBuilder(
-                      stream: mapModel.observe,
-                      builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
-                        if (!snapshot.hasData) return Container();
-                        return Text("Zoom ${snapshot.data?.zoomLevel ?? ""}");
-                      },
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      decoration: BoxDecoration(border: Border.all(color: Colors.green)),
-                      child: FlutterMapView(
-                        mapModel: mapModel,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    },
-  ));
-}
 
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
@@ -159,7 +59,7 @@ class MyStatelessWidget extends StatelessWidget {
           RaisedButton(
             child: Text("Show map"),
             onPressed: () {
-              openPage(context);
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => Showmap()));
             },
           )
         ],

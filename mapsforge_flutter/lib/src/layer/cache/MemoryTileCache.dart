@@ -9,15 +9,13 @@ import 'package:mapsforge_flutter/src/utils/workingsetcache.dart';
  * A thread-safe cache for tile images with a variable size and LRU policy.
  */
 class MemoryTileCache extends TileCache {
-  BitmapLRUCache lruCache;
   Observable observable;
 
   /**
    * @param capacity the maximum number of entries in this cache.
    * @throws IllegalArgumentException if the capacity is negative.
    */
-  MemoryTileCache(int capacity) {
-    this.lruCache = new BitmapLRUCache(capacity);
+  MemoryTileCache() {
     this.observable = new Observable();
   }
 
@@ -32,12 +30,7 @@ class MemoryTileCache extends TileCache {
   }
 
   @override
-  void purge() {
-    this.lruCache.values.map((f) => f.value).forEach((bitmap) {
-      bitmap.decrementRefCount();
-    });
-    this.lruCache.clear();
-  }
+  void purge() {}
 
   /**
    * Sets the new size of this cache. If this cache already contains more items than the new capacity allows, items
@@ -46,11 +39,7 @@ class MemoryTileCache extends TileCache {
    * @param capacity the new maximum number of entries in this cache.
    * @throws IllegalArgumentException if the capacity is negative.
    */
-  void setCapacity(int capacity) {
-    BitmapLRUCache lruCacheNew = new BitmapLRUCache(capacity);
-    //lruCacheNew.putAll(this.lruCache);
-    this.lruCache = lruCacheNew;
-  }
+  void setCapacity(int capacity) {}
 
   @override
   void addObserver(final Observer observer) {
@@ -61,10 +50,4 @@ class MemoryTileCache extends TileCache {
   void removeObserver(final Observer observer) {
     this.observable.removeObserver(observer);
   }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class BitmapLRUCache extends WorkingSetCache<Job, TileBitmap> {
-  BitmapLRUCache(int capacity) : super(capacity);
 }

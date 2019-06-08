@@ -47,18 +47,32 @@ class LayerUtil {
     return tiles;
   }
 
-  static Set<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, int tileSize, TileCache tileCache) {
+  static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, int tileSize, TileCache tileCache) {
     BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(tileSize, mapViewDimension.getDimension());
     int zoomLevel = mapViewPosition.zoomLevel;
     int tileLeft = MercatorProjection.longitudeToTileX(boundingBox.minLongitude, zoomLevel);
     int tileTop = MercatorProjection.latitudeToTileY(boundingBox.maxLatitude, zoomLevel);
     int tileRight = MercatorProjection.longitudeToTileX(boundingBox.maxLongitude, zoomLevel);
     int tileBottom = MercatorProjection.latitudeToTileY(boundingBox.minLatitude, zoomLevel);
+    int tileHalfX = ((tileRight - tileLeft) / 2).round() + tileLeft;
+    int tileHalfY = ((tileBottom - tileTop) / 2).round() + tileTop;
 
-    Set<Tile> tiles = new Set<Tile>();
+    List<Tile> tiles = new List<Tile>();
 
-    for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
-      for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
+    // build tiles starting from the center tile
+    for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
+      for (int tileX = tileHalfX; tileX <= tileRight; ++tileX) {
+        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
+      }
+      for (int tileX = tileHalfX - 1; tileX >= tileLeft; --tileX) {
+        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
+      }
+    }
+    for (int tileY = tileHalfY - 1; tileY >= tileTop; --tileY) {
+      for (int tileX = tileHalfX; tileX <= tileRight; ++tileX) {
+        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
+      }
+      for (int tileX = tileHalfX - 1; tileX >= tileLeft; --tileX) {
         tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
       }
     }

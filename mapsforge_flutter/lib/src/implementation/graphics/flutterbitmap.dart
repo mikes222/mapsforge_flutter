@@ -20,11 +20,13 @@ class FlutterBitmap implements Bitmap {
 
   @override
   int getHeight() {
+    assert(_refcount != -1);
     return bitmap.height;
   }
 
   @override
   int getWidth() {
+    assert(_refcount != -1);
     return bitmap.width;
   }
 

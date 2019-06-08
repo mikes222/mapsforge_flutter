@@ -218,6 +218,8 @@ flutter:
    - packages/mapsforge_flutter/assets/symbols/transport/train_station2.svg
    - packages/mapsforge_flutter/assets/symbols/transport/tram_stop.svg
    - packages/mapsforge_flutter/assets/symbols/water/weir.svg
+   - packages/mapsforge_flutter/assets/symbols/windsock.svg
+   - packages/mapsforge_flutter/assets/symbols/viewpoint.svg
 
 
   #  - images/a_dot_ham.jpeg

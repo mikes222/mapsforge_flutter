@@ -29,12 +29,14 @@ class MapModelHelper {
     RenderTheme renderTheme = renderThemeBuilder.build();
     TileBasedLabelStore labelStore = TileBasedLabelStore(100);
     MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true, labelStore);
-    TileCache tileCache = MemoryTileCache(50);
+
+    DummyRenderer dummyRenderer = DummyRenderer();
+
     MapModel mapModel = MapModel(
       displayModel: displayModel,
       graphicsFactory: graphicFactory,
       renderer: dataStoreRenderer,
-      tileCache: tileCache,
+      //tileCache: tileCache,
       symbolCache: symbolCache,
     );
     return mapModel;

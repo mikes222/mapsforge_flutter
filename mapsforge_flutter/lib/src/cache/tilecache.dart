@@ -2,7 +2,6 @@ import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
 
-import '../graphics/tilebitmap.dart';
 import '../model/observableinterface.dart';
 
 /// Interface for tile image caches.
@@ -47,39 +46,12 @@ abstract class TileCache extends ObservableInterface {
     }
     return cache.getTile(x, y);
   }
-
-  TileBitmap getTileBitmap(int x, int y, int zoomLevel) {
-    _ZoomLevelTileCache cache = _caches[zoomLevel];
-    if (cache == null) {
-      return null;
-    }
-    return cache.getTileBitmap(x, y);
-  }
-
-  void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
-    _ZoomLevelTileCache cache = _caches[tile.zoomLevel];
-    if (cache == null) {
-      cache = _ZoomLevelTileCache(tile.zoomLevel, tile.tileSize);
-      _caches[tile.zoomLevel] = cache;
-    }
-    cache.addTileBitmap(tile.tileX, tile.tileY, tileBitmap);
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 class _ZoomLevelTileCache {
   Cache _tilePositions = new SimpleCache<int, Tile>(storage: new SimpleStorage<int, Tile>(size: 2000));
-
-  //List<Tile> _tilePositions;
-
-  Cache _bitmaps = new SimpleCache<int, TileBitmap>(
-      storage: new SimpleStorage<int, TileBitmap>(size: 100),
-      onEvict: (key, item) {
-        item.decrementRefCount();
-      });
-
-  //List<TileBitmap> _bitmaps;
 
   int xCount;
 
@@ -118,17 +90,5 @@ class _ZoomLevelTileCache {
     }
     //assert(result != null);
     return result;
-  }
-
-  TileBitmap getTileBitmap(int x, int y) {
-    return _bitmaps[y * xCount + x];
-  }
-
-  void addTileBitmap(int x, int y, TileBitmap tileBitmap) {
-    TileBitmap old = _bitmaps[y * xCount + x];
-    if (old != null) {
-      old.decrementRefCount();
-    }
-    _bitmaps[y * xCount + x] = tileBitmap;
   }
 }

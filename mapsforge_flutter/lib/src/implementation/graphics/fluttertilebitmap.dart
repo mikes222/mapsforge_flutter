@@ -5,9 +5,7 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'flutterbitmap.dart';
 
 class FlutterTileBitmap extends FlutterBitmap implements TileBitmap {
-  FlutterTileBitmap(Image bitmap) : super(bitmap) {
-    incrementRefCount();
-  }
+  FlutterTileBitmap(Image bitmap) : super(bitmap);
 
   @override
   int getTimestamp() {

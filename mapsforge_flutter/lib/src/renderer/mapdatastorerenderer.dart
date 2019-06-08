@@ -66,7 +66,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   Future<TileBitmap> executeJob(Job job) async {
-    _log.info("Executing ${job.toString()}");
+    //_log.info("Executing ${job.toString()}");
     RenderContext renderContext =
         new RenderContext(job, new CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble()), renderTheme);
     MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
