@@ -36,7 +36,7 @@ class PolylineContainer implements ShapeContainer {
     this.coordinatesRelativeToTile = null;
     this.way = way;
     if (this.way.labelPosition != null) {
-      this.center = MercatorProjection.getPixelAbsolute(this.way.labelPosition, this.upperLeft.mapSize);
+      this.center = upperLeft.mercatorProjection.getPixel(this.way.labelPosition);
     }
   }
 
@@ -66,11 +66,11 @@ class PolylineContainer implements ShapeContainer {
         List<Mappoint> mp1 = List<Mappoint>();
         coordinatesAbsolute.add(mp1);
         for (int j = 0; j < way.latLongs[i].length; ++j) {
-          Mappoint mp2 = MercatorProjection.getPixelAbsolute(way.latLongs[i][j], upperLeft.mapSize);
+          Mappoint mp2 = upperLeft.mercatorProjection.getPixel(way.latLongs[i][j]);
           mp1.add(mp2);
         }
       }
-      this.way = null;
+      //this.way = null;
     }
     return coordinatesAbsolute;
   }

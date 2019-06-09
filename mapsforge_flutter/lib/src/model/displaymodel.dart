@@ -11,10 +11,10 @@ import 'observable.dart';
 /// downloaded tiles that do not scale well).
 class DisplayModel extends Observable {
   static final int DEFAULT_BACKGROUND_COLOR = 0xffeeeeee; // format AARRGGBB
-  static final int DEFAULT_TILE_SIZE = 256;
+  /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 4 tiles to fit on it and so on.
+  static final double DEFAULT_TILE_SIZE = 256;
   static final double DEFAULT_MAX_TEXT_WIDTH_FACTOR = 0.7;
-  static final int DEFAULT_MAX_TEXT_WIDTH =
-      (DEFAULT_TILE_SIZE * DEFAULT_MAX_TEXT_WIDTH_FACTOR).ceil();
+  static final int DEFAULT_MAX_TEXT_WIDTH = (DEFAULT_TILE_SIZE * DEFAULT_MAX_TEXT_WIDTH_FACTOR).ceil();
 
   static double defaultUserScaleFactor = 1;
   static double deviceScaleFactor = 1;
@@ -58,11 +58,11 @@ class DisplayModel extends Observable {
 
   int backgroundColor = DEFAULT_BACKGROUND_COLOR;
   Filter filter = Filter.NONE;
-  int fixedTileSize = DEFAULT_TILE_SIZE;
+  double fixedTileSize = DEFAULT_TILE_SIZE;
   int maxTextWidth = DEFAULT_MAX_TEXT_WIDTH;
   double maxTextWidthFactor = DEFAULT_MAX_TEXT_WIDTH_FACTOR;
-  int tileSize = DEFAULT_TILE_SIZE;
-  int tileSizeMultiple = 64;
+  double tileSize = DEFAULT_TILE_SIZE;
+  double tileSizeMultiple = 64;
   double userScaleFactor = defaultUserScaleFactor;
 
   DisplayModel() {
@@ -106,14 +106,14 @@ class DisplayModel extends Observable {
   /**
    * Width and height of a map tile in pixel after system and user scaling is applied.
    */
-  int getTileSize() {
+  double getTileSize() {
     return tileSize;
   }
 
   /**
    * Gets the tile size multiple.
    */
-  int getTileSizeMultiple() {
+  double getTileSizeMultiple() {
     return this.tileSizeMultiple;
   }
 
@@ -147,7 +147,7 @@ class DisplayModel extends Observable {
    *
    * @param tileSize the fixed tile size to use if != 0, if 0 the tile size will be calculated
    */
-  void setFixedTileSize(int tileSize) {
+  void setFixedTileSize(double tileSize) {
     this.fixedTileSize = tileSize;
     _setTileSize();
   }
@@ -173,7 +173,7 @@ class DisplayModel extends Observable {
    *
    * @param multiple tile size multiple
    */
-  void setTileSizeMultiple(int multiple) {
+  void setTileSizeMultiple(double multiple) {
     this.tileSizeMultiple = multiple;
     _setTileSize();
   }
@@ -197,8 +197,7 @@ class DisplayModel extends Observable {
       double temp = DEFAULT_TILE_SIZE * deviceScaleFactor * userScaleFactor;
       // this will clamp to the nearest multiple of the tileSizeMultiple
       // and make sure we do not end up with 0
-      this.tileSize = max(tileSizeMultiple,
-          (temp / this.tileSizeMultiple).round() * this.tileSizeMultiple);
+      this.tileSize = max(tileSizeMultiple, (temp / this.tileSizeMultiple).round() * this.tileSizeMultiple);
     } else {
       this.tileSize = this.fixedTileSize;
     }

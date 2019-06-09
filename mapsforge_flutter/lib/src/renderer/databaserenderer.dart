@@ -20,7 +20,7 @@ import 'standardrenderer.dart';
 /**
  * The DatabaseRenderer renders map tiles by reading from a {@link org.mapsforge.map.datastore.MapDataStore}.
  */
-class DeprecatedDatabaseRenderer extends StandardRenderer {
+class DeprecatedDatabaseRenderer extends DeprecatedStandardRenderer {
   static final _log = new Logger('DatabaseRenderer');
 
   final TileBasedLabelStore labelStore;
@@ -71,7 +71,7 @@ class DeprecatedDatabaseRenderer extends StandardRenderer {
         }
 
         if (!rendererJob.labelsOnly) {
-          renderContext.renderTheme.matchHillShadings(this, renderContext);
+          //renderContext.renderTheme.matchHillShadings(this, renderContext);
           bitmap = this.graphicFactory.createTileBitmap(rendererJob.tile.tileSize, rendererJob.hasAlpha);
           bitmap.setTimestamp(rendererJob.mapDataStore.getDataTimestamp(rendererJob.tile));
           //renderContext.canvasRasterer.setCanvasBitmap(bitmap);
@@ -93,12 +93,12 @@ class DeprecatedDatabaseRenderer extends StandardRenderer {
 
         if (!rendererJob.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
           // blank out all areas outside of map
-          Rectangle insideArea = this.mapDataStore.boundingBox().getPositionRelativeToTile(rendererJob.tile);
-          if (!rendererJob.hasAlpha) {
-            renderContext.canvasRasterer.fillOutsideAreasFromNumber(renderContext.renderTheme.getMapBackgroundOutside(), insideArea);
-          } else {
-            renderContext.canvasRasterer.fillOutsideAreas(Color.TRANSPARENT, insideArea);
-          }
+//          Rectangle insideArea = this.mapDataStore.boundingBox().getPositionRelativeToTile(rendererJob.tile);
+//          if (!rendererJob.hasAlpha) {
+//            renderContext.canvasRasterer.fillOutsideAreasFromNumber(renderContext.renderTheme.getMapBackgroundOutside(), insideArea);
+//          } else {
+//            renderContext.canvasRasterer.fillOutsideAreas(Color.TRANSPARENT, insideArea);
+//          }
         }
         return bitmap;
       }

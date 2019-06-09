@@ -216,9 +216,9 @@ class RenderTheme {
     }
   }
 
-  void matchHillShadings(StandardRenderer renderer, RenderContext renderContext) {
-    for (Hillshading hillShading in hillShadings) hillShading.render(renderContext, renderer.hillsRenderConfig);
-  }
+//  void matchHillShadings(StandardRenderer renderer, RenderContext renderContext) {
+//    for (Hillshading hillShading in hillShadings) hillShading.render(renderContext, renderer.hillsRenderConfig);
+//  }
 
   @override
   String toString() {

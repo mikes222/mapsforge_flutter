@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
+
 import 'subfileparameter.dart';
 import '../model/boundingbox.dart';
 import '../utils/mercatorprojection.dart';
@@ -18,14 +20,11 @@ class SubFileParameterBuilder {
 
   SubFileParameter build() {
     // calculate the XY numbers of the boundary tiles in this sub-file
-    int boundaryTileBottom = MercatorProjection.latitudeToTileY(
-        boundingBox.minLatitude, this.baseZoomLevel);
-    int boundaryTileLeft = MercatorProjection.longitudeToTileX(
-        boundingBox.minLongitude, this.baseZoomLevel);
-    int boundaryTileTop = MercatorProjection.latitudeToTileY(
-        boundingBox.maxLatitude, this.baseZoomLevel);
-    int boundaryTileRight = MercatorProjection.longitudeToTileX(
-        boundingBox.maxLongitude, this.baseZoomLevel);
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, this.baseZoomLevel);
+    int boundaryTileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
+    int boundaryTileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
+    int boundaryTileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
+    int boundaryTileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
 
     // calculate the horizontal and vertical amount of blocks in this sub-file
     int blocksWidth = boundaryTileRight - boundaryTileLeft + 1;

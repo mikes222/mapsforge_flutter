@@ -34,13 +34,9 @@ class ContextMenuState extends State<ContextMenu> {
   @override
   Widget build(BuildContext context) {
     if (widget.event == _lastTapEvent) return Container();
-    widget.position.calculateBoundingBox(widget.mapModel.displayModel.tileSize, widget.mapModel.mapViewDimension.getDimension());
-    double x =
-        MercatorProjection.longitudeToPixelX(widget.event.longitude, widget.position.zoomLevel, widget.mapModel.displayModel.tileSize) -
-            widget.position.leftUpper.x;
-    double y =
-        MercatorProjection.latitudeToPixelY(widget.event.latitude, widget.position.zoomLevel, widget.mapModel.displayModel.tileSize) -
-            widget.position.leftUpper.y;
+    widget.position.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension());
+    double x = widget.position.mercatorProjection.longitudeToPixelX(widget.event.longitude) - widget.position.leftUpper.x;
+    double y = widget.position.mercatorProjection.latitudeToPixelY(widget.event.latitude) - widget.position.leftUpper.y;
     x = x - widget.viewOffset.dx;
     y = y - widget.viewOffset.dy;
     if (x < 0 || y < 0) {

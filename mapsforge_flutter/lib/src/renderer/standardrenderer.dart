@@ -5,26 +5,25 @@ import '../datastore/way.dart';
 import '../graphics/bitmap.dart';
 import '../graphics/display.dart';
 import '../graphics/graphicfactory.dart';
+import '../graphics/mappaint.dart';
 import '../graphics/position.dart';
 import '../layer/hills/hillsrenderconfig.dart';
 import '../mapelements/symbolcontainer.dart';
 import '../model/latlong.dart';
+import '../model/mappoint.dart';
+import '../model/tag.dart';
 import '../renderer/polylinecontainer.dart';
 import '../renderer/shapepaintcontainer.dart';
 import '../renderer/waydecorator.dart';
 import '../rendertheme/rendercallback.dart';
 import '../rendertheme/rendercontext.dart';
 import '../utils/mercatorprojection.dart';
-
-import '../graphics/mappaint.dart';
-import '../model/mappoint.dart';
-import '../model/tag.dart';
 import 'circlecontainer.dart';
 
 /**
  * The DatabaseRenderer renders map tiles by reading from a {@link MapDataStore}.
  */
-class StandardRenderer implements RenderCallback {
+class DeprecatedStandardRenderer implements RenderCallback {
   static final int DEFAULT_START_ZOOM_LEVEL = 12;
   static final Tag TAG_NATURAL_WATER = new Tag("natural", "water");
   static final int ZOOM_MAX = 22;
@@ -51,8 +50,7 @@ class StandardRenderer implements RenderCallback {
    * @param mapDataStore      the MapDataStore from which the map data will be read.
    * @param hillsRenderConfig optional relief shading support.
    */
-  StandardRenderer(this.mapDataStore, this.graphicFactory, this.renderLabels,
-      this.hillsRenderConfig);
+  DeprecatedStandardRenderer(this.mapDataStore, this.graphicFactory, this.renderLabels, this.hillsRenderConfig);
 
   /**
    * @return the start point (may be null).
@@ -68,8 +66,7 @@ class StandardRenderer implements RenderCallback {
    * @return the start zoom level (may be null).
    */
   int getStartZoomLevel() {
-    if (this.mapDataStore != null &&
-        null != this.mapDataStore.startZoomLevel()) {
+    if (this.mapDataStore != null && null != this.mapDataStore.startZoomLevel()) {
       return this.mapDataStore.startZoomLevel();
     }
     return DEFAULT_START_ZOOM_LEVEL;
@@ -83,50 +80,27 @@ class StandardRenderer implements RenderCallback {
   }
 
   @override
-  void renderArea(final RenderContext renderContext, MapPaint fill, MapPaint stroke,
-      int level, PolylineContainer way) async {
-    renderContext.addToCurrentDrawingLayer(
-        level, new ShapePaintContainer(way, stroke, 0));
-    renderContext.addToCurrentDrawingLayer(
-        level, new ShapePaintContainer(way, fill, 0));
+  void renderArea(final RenderContext renderContext, MapPaint fill, MapPaint stroke, int level, PolylineContainer way) async {
+    renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, stroke, 0));
+    renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, fill, 0));
   }
 
   @override
-  void renderAreaCaption(
-      final RenderContext renderContext,
-      Display display,
-      int priority,
-      String caption,
-      double horizontalOffset,
-      double verticalOffset,
-      MapPaint fill,
-      MapPaint stroke,
-      Position position,
-      int maxTextWidth,
-      PolylineContainer way) async {
+  void renderAreaCaption(final RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
+      double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PolylineContainer way) async {
     if (renderLabels) {
-      Mappoint centerMappoint =
-          way.getCenterAbsolute().offset(horizontalOffset, verticalOffset);
-      renderContext.labels.add(this.graphicFactory.createPointTextContainer(
-          centerMappoint,
-          display,
-          priority,
-          caption,
-          fill,
-          stroke,
-          null,
-          position,
-          maxTextWidth));
+      Mappoint centerMappoint = way.getCenterAbsolute().offset(horizontalOffset, verticalOffset);
+      renderContext.labels.add(this
+          .graphicFactory
+          .createPointTextContainer(centerMappoint, display, priority, caption, fill, stroke, null, position, maxTextWidth));
     }
   }
 
   @override
-  void renderAreaSymbol(final RenderContext renderContext, Display display,
-      int priority, Bitmap symbol, PolylineContainer way) {
+  void renderAreaSymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way) {
     if (renderLabels) {
       Mappoint centerPosition = way.getCenterAbsolute();
-      renderContext.labels
-          .add(new SymbolContainer(centerPosition, display, priority, symbol));
+      renderContext.labels.add(new SymbolContainer(centerPosition, display, priority, symbol));
     }
   }
 
@@ -144,147 +118,70 @@ class StandardRenderer implements RenderCallback {
       int maxTextWidth,
       PointOfInterest poi) {
     if (renderLabels) {
-      Mappoint poiPosition = MercatorProjection.getPixelAbsolute(
-          poi.position, renderContext.job.tile.mapSize);
+      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
-          poiPosition.offset(horizontalOffset, verticalOffset),
-          display,
-          priority,
-          caption,
-          fill,
-          stroke,
-          null,
-          position,
-          maxTextWidth));
+          poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));
     }
   }
 
   @override
   void renderPointOfInterestCircle(
-      final RenderContext renderContext,
-      double radius,
-      MapPaint fill,
-      MapPaint stroke,
-      int level,
-      PointOfInterest poi) async {
-    Mappoint poiPosition = MercatorProjection.getPixelRelativeToTile(
-        poi.position, renderContext.job.tile);
-    renderContext.addToCurrentDrawingLayer(
-        level,
-        new ShapePaintContainer(
-            new CircleContainer(poiPosition, radius), stroke, 0));
-    renderContext.addToCurrentDrawingLayer(
-        level,
-        new ShapePaintContainer(
-            new CircleContainer(poiPosition, radius), fill, 0));
+      final RenderContext renderContext, double radius, MapPaint fill, MapPaint stroke, int level, PointOfInterest poi) async {
+    Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+    renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), stroke, 0));
+    renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), fill, 0));
   }
 
   @override
-  void renderPointOfInterestSymbol(final RenderContext renderContext,
-      Display display, int priority, Bitmap symbol, PointOfInterest poi) {
+  void renderPointOfInterestSymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi) {
     if (renderLabels) {
-      Mappoint poiPosition = MercatorProjection.getPixelAbsolute(
-          poi.position, renderContext.job.tile.mapSize);
-      renderContext.labels
-          .add(new SymbolContainer(poiPosition, display, priority, symbol));
+      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
+      renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol));
     }
   }
 
   @override
-  void renderWay(final RenderContext renderContext, MapPaint stroke, double dy,
-      int level, PolylineContainer way) {
-    renderContext.addToCurrentDrawingLayer(
-        level, new ShapePaintContainer(way, stroke, dy));
+  void renderWay(final RenderContext renderContext, MapPaint stroke, double dy, int level, PolylineContainer way) {
+    renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, stroke, dy));
   }
 
   @override
-  void renderWaySymbol(
-      final RenderContext renderContext,
-      Display display,
-      int priority,
-      Bitmap symbol,
-      double dy,
-      bool alignCenter,
-      bool repeat,
-      double repeatGap,
-      double repeatStart,
-      bool rotate,
-      PolylineContainer way) {
+  void renderWaySymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, double dy, bool alignCenter,
+      bool repeat, double repeatGap, double repeatStart, bool rotate, PolylineContainer way) {
     if (renderLabels) {
-      WayDecorator.renderSymbol(
-          symbol,
-          display,
-          priority,
-          dy,
-          alignCenter,
-          repeat,
-          repeatGap.toInt(),
-          repeatStart.toInt(),
-          rotate,
-          way.getCoordinatesAbsolute(),
-          renderContext.labels);
+      WayDecorator.renderSymbol(symbol, display, priority, dy, alignCenter, repeat, repeatGap.toInt(), repeatStart.toInt(), rotate,
+          way.getCoordinatesAbsolute(), renderContext.labels);
     }
   }
 
   @override
-  void renderWayText(
-      final RenderContext renderContext,
-      Display display,
-      int priority,
-      String textKey,
-      double dy,
-      MapPaint fill,
-      MapPaint stroke,
-      bool repeat,
-      double repeatGap,
-      double repeatStart,
-      bool rotate,
-      PolylineContainer way) {
+  void renderWayText(final RenderContext renderContext, Display display, int priority, String textKey, double dy, MapPaint fill,
+      MapPaint stroke, bool repeat, double repeatGap, double repeatStart, bool rotate, PolylineContainer way) {
     if (renderLabels) {
-      WayDecorator.renderText(
-          graphicFactory,
-          way.getUpperLeft(),
-          way.getLowerRight(),
-          textKey,
-          display,
-          priority,
-          dy,
-          fill,
-          stroke,
-          repeat,
-          repeatGap,
-          repeatStart,
-          rotate,
-          way.getCoordinatesAbsolute(),
-          renderContext.labels);
+      WayDecorator.renderText(graphicFactory, way.getUpperLeft(), way.getLowerRight(), textKey, display, priority, dy, fill, stroke, repeat,
+          repeatGap, repeatStart, rotate, way.getCoordinatesAbsolute(), renderContext.labels);
     }
   }
 
   bool renderBitmap(RenderContext renderContext) {
-    return !renderContext.renderTheme.hasMapBackgroundOutside() ||
-        this.mapDataStore.supportsTile(renderContext.job.tile);
+    return !renderContext.renderTheme.hasMapBackgroundOutside() || this.mapDataStore.supportsTile(renderContext.job.tile);
   }
 
-  void renderPointOfInterest(
-      final RenderContext renderContext, PointOfInterest pointOfInterest) {
+  void renderPointOfInterest(final RenderContext renderContext, PointOfInterest pointOfInterest) {
     renderContext.setDrawingLayers(pointOfInterest.layer);
     renderContext.renderTheme.matchNode(this, renderContext, pointOfInterest);
   }
 
   void renderWaterBackground(final RenderContext renderContext) {
     renderContext.setDrawingLayers(0);
-    List<Mappoint> coordinates =
-        getTilePixelCoordinates(renderContext.job.tile.tileSize);
+    List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tile.tileSize);
     Mappoint tileOrigin = renderContext.job.tile.getOrigin();
     for (int i = 0; i < coordinates.length; i++) {
       coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
     }
-    PolylineContainer way = new PolylineContainer.fromList(
-        coordinates,
-        renderContext.job.tile,
-        renderContext.job.tile,
-        [TAG_NATURAL_WATER]);
+    PolylineContainer way =
+        new PolylineContainer.fromList(coordinates, renderContext.job.tile, renderContext.job.tile, [TAG_NATURAL_WATER]);
     renderContext.renderTheme.matchClosedWay(this, renderContext, way);
   }
 
@@ -298,8 +195,7 @@ class StandardRenderer implements RenderCallback {
     }
   }
 
-  void processReadMapData(
-      final RenderContext renderContext, MapReadResult mapReadResult) {
+  void processReadMapData(final RenderContext renderContext, MapReadResult mapReadResult) {
     if (mapReadResult == null) {
       return;
     }
@@ -309,13 +205,7 @@ class StandardRenderer implements RenderCallback {
     }
 
     for (Way way in mapReadResult.ways) {
-      renderWay(
-          renderContext,
-          null,
-          null,
-          null,
-          new PolylineContainer(way, renderContext.job.tile,
-              renderContext.job.tile));
+      renderWay(renderContext, null, null, null, new PolylineContainer(way, renderContext.job.tile, renderContext.job.tile));
     }
 
     if (mapReadResult.isWater) {
@@ -323,7 +213,7 @@ class StandardRenderer implements RenderCallback {
     }
   }
 
-  static List<Mappoint> getTilePixelCoordinates(int tileSize) {
+  static List<Mappoint> getTilePixelCoordinates(double tileSize) {
     List<Mappoint> result = List<Mappoint>();
     result.add(Mappoint(0, 0));
     result.add(Mappoint(tileSize.toDouble(), 0));

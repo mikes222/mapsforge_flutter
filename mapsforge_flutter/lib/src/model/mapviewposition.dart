@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/src/model/dimension.dart';
-import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
+import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
 import 'boundingbox.dart';
 import 'mappoint.dart';
@@ -10,6 +10,8 @@ class MapViewPosition {
   double _latitude;
 
   double _longitude;
+
+  final double _tileSize;
 
   final int zoomLevel;
 
@@ -20,44 +22,62 @@ class MapViewPosition {
   // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
   Mappoint _leftUpper;
 
-  MapViewPosition(this._latitude, this._longitude, this.zoomLevel) : assert(zoomLevel >= 0)
-  //assert(_latitude != null),
-  //assert(_longitude != null)
-  ;
+  MercatorProjectionImpl _mercatorProjection;
+
+  MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this._tileSize)
+      : assert(zoomLevel >= 0),
+        assert(_tileSize > 0),
+        assert(_latitude == null || MercatorProjectionImpl.checkLatitude(_latitude)),
+        assert(_longitude == null || MercatorProjectionImpl.checkLongitude(_longitude));
 
   MapViewPosition.zoomIn(MapViewPosition old)
       : _latitude = old._latitude,
         _longitude = old._longitude,
-        zoomLevel = old.zoomLevel + 1;
+        zoomLevel = old.zoomLevel + 1,
+        _tileSize = old._tileSize;
 
   MapViewPosition.zoomOut(MapViewPosition old)
       : _latitude = old._latitude,
         _longitude = old._longitude,
-        zoomLevel = old.zoomLevel - 1;
+        zoomLevel = old.zoomLevel - 1,
+        _tileSize = old._tileSize;
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
       : _latitude = old._latitude,
         _longitude = old._longitude,
-        this.zoomLevel = zoomLevel;
+        this.zoomLevel = zoomLevel,
+        _tileSize = old._tileSize;
 
-  MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude) : zoomLevel = old.zoomLevel;
+  MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
+      : zoomLevel = old.zoomLevel,
+        _tileSize = old._tileSize,
+        _mercatorProjection = old._mercatorProjection,
+        assert(_latitude == null || MercatorProjectionImpl.checkLatitude(_latitude)),
+        assert(_longitude == null || MercatorProjectionImpl.checkLongitude(_longitude));
 
-  MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, int tileSize, Dimension viewSize)
-      : zoomLevel = old.zoomLevel {
+  MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, Dimension viewSize)
+      : zoomLevel = old.zoomLevel,
+        _tileSize = old._tileSize,
+        _mercatorProjection = old._mercatorProjection {
     //calculateBoundingBox(tileSize, viewSize);
     _leftUpper = Mappoint(left, upper);
 
     double rightX = _leftUpper.x + viewSize.width;
     double bottomY = _leftUpper.y + viewSize.height;
-    int mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize);
-    boundingBox = BoundingBox(
-        MercatorProjection.pixelYToLatitude(min(bottomY, mapSize.toDouble()), mapSize),
-        MercatorProjection.pixelXToLongitude(max(_leftUpper.x, 0), mapSize),
-        MercatorProjection.pixelYToLatitude(max(_leftUpper.y, 0), mapSize),
-        MercatorProjection.pixelXToLongitude(min(rightX, mapSize.toDouble()), mapSize));
 
-    _latitude = MercatorProjection.pixelYToLatitude(_leftUpper.y + viewSize.height / 2, mapSize);
-    _longitude = MercatorProjection.pixelXToLongitude(_leftUpper.x + viewSize.width / 2, mapSize);
+    boundingBox = BoundingBox(
+        mercatorProjection.pixelYToLatitude(min(bottomY, mercatorProjection.mapSize)),
+        mercatorProjection.pixelXToLongitude(max(_leftUpper.x, 0)),
+        mercatorProjection.pixelYToLatitude(max(_leftUpper.y, 0)),
+        mercatorProjection.pixelXToLongitude(min(rightX, mercatorProjection.mapSize)));
+
+    _latitude = mercatorProjection.pixelYToLatitude(_leftUpper.y + viewSize.height / 2);
+
+    _longitude = mercatorProjection.pixelXToLongitude(_leftUpper.x + viewSize.width / 2);
+
+    MercatorProjectionImpl.checkLatitude(_latitude);
+
+    MercatorProjectionImpl.checkLongitude(_longitude);
   }
 
   void sizeChanged() {
@@ -69,25 +89,31 @@ class MapViewPosition {
     return _latitude != null && _longitude != null;
   }
 
-  BoundingBox calculateBoundingBox(int tileSize, Dimension viewSize) {
+  BoundingBox calculateBoundingBox(Dimension viewSize) {
     if (boundingBox != null) return boundingBox;
-    double centerY = MercatorProjection.latitudeToPixelY(_latitude, zoomLevel, tileSize);
-    double centerX = MercatorProjection.longitudeToPixelX(_longitude, zoomLevel, tileSize);
+
+    double centerY = mercatorProjection.latitudeToPixelY(_latitude);
+    double centerX = mercatorProjection.longitudeToPixelX(_longitude);
     double leftX = centerX - viewSize.width / 2;
     double rightX = centerX + viewSize.width / 2;
     double topY = centerY - viewSize.height / 2;
     double bottomY = centerY + viewSize.height / 2;
-    int mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize);
     boundingBox = BoundingBox(
-        MercatorProjection.pixelYToLatitude(min(bottomY, mapSize.toDouble()), mapSize),
-        MercatorProjection.pixelXToLongitude(max(leftX, 0), mapSize),
-        MercatorProjection.pixelYToLatitude(max(topY, 0), mapSize),
-        MercatorProjection.pixelXToLongitude(min(rightX, mapSize.toDouble()), mapSize));
+        mercatorProjection.pixelYToLatitude(min(bottomY, mercatorProjection.mapSize)),
+        mercatorProjection.pixelXToLongitude(max(leftX, 0)),
+        mercatorProjection.pixelYToLatitude(max(topY, 0)),
+        mercatorProjection.pixelXToLongitude(min(rightX, mercatorProjection.mapSize)));
     _leftUpper = Mappoint(leftX, topY);
     return boundingBox;
   }
 
   Mappoint get leftUpper => _leftUpper;
+
+  MercatorProjectionImpl get mercatorProjection {
+    if (_mercatorProjection != null) return _mercatorProjection;
+    _mercatorProjection = MercatorProjectionImpl(_tileSize, zoomLevel);
+    return _mercatorProjection;
+  }
 
   @override
   bool operator ==(Object other) =>

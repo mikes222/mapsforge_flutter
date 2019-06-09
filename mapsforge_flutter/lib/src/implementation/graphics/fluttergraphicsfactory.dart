@@ -74,7 +74,7 @@ class FlutterGraphicFactory implements GraphicFactory {
   }
 
   @override
-  TileBitmap createTileBitmap(int tileSize, bool isTransparent, {InputStream inputStream}) {
+  TileBitmap createTileBitmap(double tileSize, bool isTransparent, {InputStream inputStream}) {
     throw Exception("Cannot create a tileBitmap without bitmap");
     return FlutterTileBitmap(null);
   }

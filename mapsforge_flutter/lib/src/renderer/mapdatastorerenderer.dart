@@ -146,7 +146,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
   }
 
-  static List<Mappoint> getTilePixelCoordinates(int tileSize) {
+  static List<Mappoint> getTilePixelCoordinates(double tileSize) {
     List<Mappoint> result = List<Mappoint>();
     result.add(Mappoint(0, 0));
     result.add(Mappoint(tileSize.toDouble(), 0));
@@ -186,7 +186,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderPointOfInterestCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
       double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PointOfInterest poi) {
     if (renderLabels) {
-      Mappoint poiPosition = MercatorProjection.getPixelAbsolute(poi.position, renderContext.job.tile.mapSize);
+      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));
@@ -196,7 +196,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   void renderPointOfInterestCircle(
       RenderContext renderContext, double radius, MapPaint fill, MapPaint stroke, int level, PointOfInterest poi) {
-    Mappoint poiPosition = MercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+    Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
     renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), stroke, 0));
     renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), fill, 0));
   }
@@ -204,7 +204,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   void renderPointOfInterestSymbol(RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi) {
     if (renderLabels) {
-      Mappoint poiPosition = MercatorProjection.getPixelAbsolute(poi.position, renderContext.job.tile.mapSize);
+      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
       renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol));
     }
   }

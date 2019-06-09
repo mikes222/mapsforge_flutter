@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
+import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
+import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
-class TilePainter extends ChangeNotifier implements CustomPainter {
+class MarkerPainter implements CustomPainter {
   final MapViewDimension mapViewDimension;
-  final TileLayer _tileLayer;
 
   final MapViewPosition position;
 
-  TilePainter(this.mapViewDimension, this._tileLayer, this.position)
+  final DisplayModel displayModel;
+
+  final MarkerRenderer markerRenderer;
+
+  MarkerPainter({@required this.mapViewDimension, @required this.position, @required this.displayModel, @required this.markerRenderer})
       : assert(mapViewDimension != null),
-        assert(position != null);
+        assert(position != null),
+        assert(displayModel != null),
+        assert(markerRenderer != null);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -23,18 +29,18 @@ class TilePainter extends ChangeNotifier implements CustomPainter {
     if (changed) {
       position.sizeChanged();
     }
-    _tileLayer.draw(mapViewDimension, position, FlutterCanvas(canvas, size));
+
+    markerRenderer.draw(FlutterCanvas(canvas, size), mapViewDimension, position);
   }
 
   @override
-  bool shouldRepaint(TilePainter oldDelegate) {
-    if (oldDelegate?.position != position) return true;
-    if (_tileLayer.needsRepaint) return true;
+  bool shouldRepaint(MarkerPainter oldDelegate) {
+//    if (oldDelegate?.position != position) return true;
     return false;
   }
 
   @override
-  bool shouldRebuildSemantics(TilePainter oldDelegate) {
+  bool shouldRebuildSemantics(MarkerPainter oldDelegate) {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
@@ -42,4 +48,10 @@ class TilePainter extends ChangeNotifier implements CustomPainter {
 
   @override
   get semanticsBuilder => null;
+
+  @override
+  void addListener(listener) {}
+
+  @override
+  void removeListener(listener) {}
 }

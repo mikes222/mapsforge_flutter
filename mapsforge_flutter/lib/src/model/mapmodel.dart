@@ -1,9 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
-import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
-import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
+import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'displaymodel.dart';
@@ -17,6 +16,7 @@ class MapModel {
   final GraphicFactory graphicsFactory;
   final JobRenderer renderer;
   final SymbolCache symbolCache;
+  final MarkerDataStore markerDataStore;
   MapViewPosition _mapViewPosition;
 
   Subject<MapViewPosition> _injectPosition = PublishSubject();
@@ -30,6 +30,7 @@ class MapModel {
     @required this.renderer,
     @required this.graphicsFactory,
     @required this.symbolCache,
+    this.markerDataStore,
   })  : assert(displayModel != null),
         assert(renderer != null),
         assert(graphicsFactory != null),
@@ -50,11 +51,11 @@ class MapModel {
 
   void setMapViewPosition(double latitude, double longitude) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition.zoomLevel);
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition.zoomLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(latitude, longitude, DEFAULT_ZOOM);
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, DEFAULT_ZOOM, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -66,7 +67,7 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -78,7 +79,7 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -90,7 +91,7 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel);
+      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -98,12 +99,11 @@ class MapModel {
 
   void setLeftUpper(double left, double upper) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition =
-          MapViewPosition.setLeftUpper(_mapViewPosition, left, upper, displayModel.tileSize, mapViewDimension.getDimension());
+      MapViewPosition newPosition = MapViewPosition.setLeftUpper(_mapViewPosition, left, upper, mapViewDimension.getDimension());
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -112,9 +112,8 @@ class MapModel {
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
 
-    int mapSize = MercatorProjection.getMapSize(_mapViewPosition.zoomLevel, displayModel.tileSize);
-    TapEvent event = TapEvent(MercatorProjection.pixelYToLatitude(_mapViewPosition.leftUpper.y + upper, mapSize),
-        MercatorProjection.pixelXToLongitude(_mapViewPosition.leftUpper.x + left, mapSize), left, upper);
+    TapEvent event = TapEvent(_mapViewPosition.mercatorProjection.pixelYToLatitude(_mapViewPosition.leftUpper.y + upper),
+        _mapViewPosition.mercatorProjection.pixelXToLongitude(_mapViewPosition.leftUpper.x + left), left, upper);
     _injectTap.add(event);
   }
 }

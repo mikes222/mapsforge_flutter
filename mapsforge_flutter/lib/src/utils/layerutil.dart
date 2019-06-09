@@ -1,11 +1,11 @@
 import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
 import '../mapelements/mapelementcontainer.dart';
 import '../model/boundingbox.dart';
 import '../model/tile.dart';
-import 'mercatorprojection.dart';
 
 class LayerUtil {
   /**
@@ -16,9 +16,10 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the upper left of the bbox.
    */
-  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, int tileSize) {
-    int tileLeft = MercatorProjection.longitudeToTileX(boundingBox.minLongitude, zoomLevel);
-    int tileTop = MercatorProjection.latitudeToTileY(boundingBox.maxLatitude, zoomLevel);
+  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, double tileSize) {
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
+    int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
+    int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
     return new Tile(tileLeft, tileTop, zoomLevel, tileSize);
   }
 
@@ -30,9 +31,10 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the lower right of the bbox.
    */
-  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, int tileSize) {
-    int tileRight = MercatorProjection.longitudeToTileX(boundingBox.maxLongitude, zoomLevel);
-    int tileBottom = MercatorProjection.latitudeToTileY(boundingBox.minLatitude, zoomLevel);
+  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, double tileSize) {
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
+    int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
+    int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
     return new Tile(tileRight, tileBottom, zoomLevel, tileSize);
   }
 
@@ -47,13 +49,14 @@ class LayerUtil {
     return tiles;
   }
 
-  static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, int tileSize, TileCache tileCache) {
-    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(tileSize, mapViewDimension.getDimension());
+  static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, TileCache tileCache) {
+    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     int zoomLevel = mapViewPosition.zoomLevel;
-    int tileLeft = MercatorProjection.longitudeToTileX(boundingBox.minLongitude, zoomLevel);
-    int tileTop = MercatorProjection.latitudeToTileY(boundingBox.maxLatitude, zoomLevel);
-    int tileRight = MercatorProjection.longitudeToTileX(boundingBox.maxLongitude, zoomLevel);
-    int tileBottom = MercatorProjection.latitudeToTileY(boundingBox.minLatitude, zoomLevel);
+    double tileSize = mapViewPosition.mercatorProjection.tileSize;
+    int tileLeft = mapViewPosition.mercatorProjection.longitudeToTileX(boundingBox.minLongitude);
+    int tileTop = mapViewPosition.mercatorProjection.latitudeToTileY(boundingBox.maxLatitude);
+    int tileRight = mapViewPosition.mercatorProjection.longitudeToTileX(boundingBox.maxLongitude);
+    int tileBottom = mapViewPosition.mercatorProjection.latitudeToTileY(boundingBox.minLatitude);
     int tileHalfX = ((tileRight - tileLeft) / 2).round() + tileLeft;
     int tileHalfY = ((tileBottom - tileTop) / 2).round() + tileTop;
 

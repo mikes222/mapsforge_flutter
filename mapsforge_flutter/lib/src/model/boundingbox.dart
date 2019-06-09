@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
+
 import 'rectangle.dart';
 import '../utils/mercatorprojection.dart';
 
@@ -54,8 +56,7 @@ class BoundingBox {
    * @param maxLongitude the maximum longitude coordinate in degrees.
    * @throws IllegalArgumentException if a coordinate is invalid.
    */
-  BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude,
-      this.maxLongitude) {
+  BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude) {
     LatLongUtils.validateLatitude(minLatitude);
     LatLongUtils.validateLongitude(minLongitude);
     LatLongUtils.validateLatitude(maxLatitude);
@@ -64,8 +65,7 @@ class BoundingBox {
     if (minLatitude > maxLatitude) {
       throw new Exception("invalid latitude range: $minLatitude $maxLatitude");
     } else if (minLongitude > maxLongitude) {
-      throw new Exception(
-          "invalid longitude range: $minLongitude $maxLongitude");
+      throw new Exception("invalid longitude range: $minLongitude $maxLongitude");
     }
   }
 
@@ -99,10 +99,7 @@ class BoundingBox {
    * @return true if this BoundingBox contains the given coordinates, false otherwise.
    */
   bool contains(double latitude, double longitude) {
-    return this.minLatitude <= latitude &&
-        this.maxLatitude >= latitude &&
-        this.minLongitude <= longitude &&
-        this.maxLongitude >= longitude;
+    return this.minLatitude <= latitude && this.maxLatitude >= latitude && this.minLongitude <= longitude && this.maxLongitude >= longitude;
   }
 
   /**
@@ -125,23 +122,15 @@ class BoundingBox {
           intersectsArea == other.intersectsArea;
 
   @override
-  int get hashCode =>
-      maxLatitude.hashCode ^
-      maxLongitude.hashCode ^
-      minLatitude.hashCode ^
-      minLongitude.hashCode ^
-      intersectsArea.hashCode;
+  int get hashCode => maxLatitude.hashCode ^ maxLongitude.hashCode ^ minLatitude.hashCode ^ minLongitude.hashCode ^ intersectsArea.hashCode;
 
   /**
    * @param boundingBox the BoundingBox which this BoundingBox should be extended if it is larger
    * @return a BoundingBox that covers this BoundingBox and the given BoundingBox.
    */
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
-    return new BoundingBox(
-        min(this.minLatitude, boundingBox.minLatitude),
-        min(this.minLongitude, boundingBox.minLongitude),
-        max(this.maxLatitude, boundingBox.maxLatitude),
-        max(this.maxLongitude, boundingBox.maxLongitude));
+    return new BoundingBox(min(this.minLatitude, boundingBox.minLatitude), min(this.minLongitude, boundingBox.minLongitude),
+        max(this.maxLatitude, boundingBox.maxLatitude), max(this.maxLongitude, boundingBox.maxLongitude));
   }
 
   /**
@@ -151,20 +140,20 @@ class BoundingBox {
    * @param longitude up to the extension
    * @return an extended BoundingBox or this (if contains coordinates)
    */
-  BoundingBox extendCoordinates(double latitude, double longitude) {
-    if (contains(latitude, longitude)) {
-      return this;
-    }
-
-    double minLat =
-        max(MercatorProjection.LATITUDE_MIN, min(this.minLatitude, latitude));
-    double minLon = max(-180, min(this.minLongitude, longitude));
-    double maxLat =
-        min(MercatorProjection.LATITUDE_MAX, max(this.maxLatitude, latitude));
-    double maxLon = min(180, max(this.maxLongitude, longitude));
-
-    return new BoundingBox(minLat, minLon, maxLat, maxLon);
-  }
+//  BoundingBox extendCoordinates(double latitude, double longitude) {
+//    if (contains(latitude, longitude)) {
+//      return this;
+//    }
+//
+//    double minLat =
+//        max(MercatorProjection.LATITUDE_MIN, min(this.minLatitude, latitude));
+//    double minLon = max(-180, min(this.minLongitude, longitude));
+//    double maxLat =
+//        min(MercatorProjection.LATITUDE_MAX, max(this.maxLatitude, latitude));
+//    double maxLon = min(180, max(this.maxLongitude, longitude));
+//
+//    return new BoundingBox(minLat, minLon, maxLat, maxLon);
+//  }
 
   /**
    * Creates a BoundingBox extended up to <code>LatLong</code> (but does not cross date line/poles).
@@ -172,9 +161,9 @@ class BoundingBox {
    * @param latLong coordinates up to the extension
    * @return an extended BoundingBox or this (if contains coordinates)
    */
-  BoundingBox extendCoordinatesLatLong(LatLong latLong) {
-    return extendCoordinates(latLong.latitude, latLong.longitude);
-  }
+//  BoundingBox extendCoordinatesLatLong(LatLong latLong) {
+//    return extendCoordinates(latLong.latitude, latLong.longitude);
+//  }
 
   /**
    * Creates a BoundingBox that is a fixed degree amount larger on all sides (but does not cross date line/poles).
@@ -183,24 +172,24 @@ class BoundingBox {
    * @param horizontalExpansion degree extension (must be >= 0)
    * @return an extended BoundingBox or this (if degrees == 0)
    */
-  BoundingBox extendDegrees(
-      double verticalExpansion, double horizontalExpansion) {
-    if (verticalExpansion == 0 && horizontalExpansion == 0) {
-      return this;
-    } else if (verticalExpansion < 0 || horizontalExpansion < 0) {
-      throw new Exception(
-          "BoundingBox extend operation does not accept negative values");
-    }
-
-    double minLat = max(
-        MercatorProjection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon = max(-180, this.minLongitude - horizontalExpansion);
-    double maxLat = min(
-        MercatorProjection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
-
-    return new BoundingBox(minLat, minLon, maxLat, maxLon);
-  }
+//  BoundingBox extendDegrees(
+//      double verticalExpansion, double horizontalExpansion) {
+//    if (verticalExpansion == 0 && horizontalExpansion == 0) {
+//      return this;
+//    } else if (verticalExpansion < 0 || horizontalExpansion < 0) {
+//      throw new Exception(
+//          "BoundingBox extend operation does not accept negative values");
+//    }
+//
+//    double minLat = max(
+//        MercatorProjection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+//    double minLon = max(-180, this.minLongitude - horizontalExpansion);
+//    double maxLat = min(
+//        MercatorProjection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+//    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
+//
+//    return new BoundingBox(minLat, minLon, maxLat, maxLon);
+//  }
 
   /**
    * Creates a BoundingBox that is a fixed margin factor larger on all sides (but does not cross date line/poles).
@@ -208,28 +197,28 @@ class BoundingBox {
    * @param margin extension (must be > 0)
    * @return an extended BoundingBox or this (if margin == 1)
    */
-  BoundingBox extendMargin(double margin) {
-    if (margin == 1) {
-      return this;
-    } else if (margin <= 0) {
-      throw new Exception(
-          "BoundingBox extend operation does not accept negative or zero values");
-    }
-
-    double verticalExpansion =
-        (this.getLatitudeSpan() * margin - this.getLatitudeSpan()) * 0.5;
-    double horizontalExpansion =
-        (this.getLongitudeSpan() * margin - this.getLongitudeSpan()) * 0.5;
-
-    double minLat = max(
-        MercatorProjection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon = max(-180, this.minLongitude - horizontalExpansion);
-    double maxLat = min(
-        MercatorProjection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
-
-    return new BoundingBox(minLat, minLon, maxLat, maxLon);
-  }
+//  BoundingBox extendMargin(double margin) {
+//    if (margin == 1) {
+//      return this;
+//    } else if (margin <= 0) {
+//      throw new Exception(
+//          "BoundingBox extend operation does not accept negative or zero values");
+//    }
+//
+//    double verticalExpansion =
+//        (this.getLatitudeSpan() * margin - this.getLatitudeSpan()) * 0.5;
+//    double horizontalExpansion =
+//        (this.getLongitudeSpan() * margin - this.getLongitudeSpan()) * 0.5;
+//
+//    double minLat = max(
+//        MercatorProjection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+//    double minLon = max(-180, this.minLongitude - horizontalExpansion);
+//    double maxLat = min(
+//        MercatorProjection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+//    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
+//
+//    return new BoundingBox(minLat, minLon, maxLat, maxLon);
+//  }
 
   /**
    * Creates a BoundingBox that is a fixed meter amount larger on all sides (but does not cross date line/poles).
@@ -241,19 +230,15 @@ class BoundingBox {
     if (meters == 0) {
       return this;
     } else if (meters < 0) {
-      throw new Exception(
-          "BoundingBox extend operation does not accept negative values");
+      throw new Exception("BoundingBox extend operation does not accept negative values");
     }
 
     double verticalExpansion = LatLongUtils.latitudeDistance(meters);
-    double horizontalExpansion = LatLongUtils.longitudeDistance(
-        meters, max(minLatitude.abs(), maxLatitude.abs()));
+    double horizontalExpansion = LatLongUtils.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
 
-    double minLat = max(
-        MercatorProjection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+    double minLat = max(MercatorProjectionImpl.LATITUDE_MIN, this.minLatitude - verticalExpansion);
     double minLon = max(-180, this.minLongitude - horizontalExpansion);
-    double maxLat = min(
-        MercatorProjection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+    double maxLat = min(MercatorProjectionImpl.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
     double maxLon = min(180, this.maxLongitude + horizontalExpansion);
 
     return new BoundingBox(minLat, minLon, maxLat, maxLon);
@@ -265,8 +250,7 @@ class BoundingBox {
   LatLong getCenterPoint() {
     double latitudeOffset = (this.maxLatitude - this.minLatitude) / 2;
     double longitudeOffset = (this.maxLongitude - this.minLongitude) / 2;
-    return new LatLong(
-        this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
+    return new LatLong(this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
   }
 
   /**
@@ -289,13 +273,13 @@ class BoundingBox {
    * @param tile the tile to compute the relative position for.
    * @return rectangle giving the relative position.
    */
-  Rectangle getPositionRelativeToTile(Tile tile) {
-    Mappoint upperLeft = MercatorProjection.getPixelRelativeToTile(
-        new LatLong(this.maxLatitude, minLongitude), tile);
-    Mappoint lowerRight = MercatorProjection.getPixelRelativeToTile(
-        new LatLong(this.minLatitude, maxLongitude), tile);
-    return new Rectangle(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
-  }
+//  Rectangle getPositionRelativeToTile(Tile tile) {
+//    Mappoint upperLeft = MercatorProjection.getPixelRelativeToTile(
+//        new LatLong(this.maxLatitude, minLongitude), tile);
+//    Mappoint lowerRight = MercatorProjection.getPixelRelativeToTile(
+//        new LatLong(this.minLatitude, maxLongitude), tile);
+//    return new Rectangle(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
+//  }
 
   /**
    * @param boundingBox the BoundingBox which should be checked for intersection with this BoundingBox.
@@ -349,8 +333,7 @@ class BoundingBox {
         tmpMaxLon = max(tmpMaxLon, latLong.longitude);
       }
     }
-    return this.intersects(
-        new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
+    return this.intersects(new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
   }
 
   @override

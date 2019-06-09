@@ -9,8 +9,6 @@ import '../../model/tile.dart';
 import '../../renderer/hillshadingcontainer.dart';
 import '../../renderer/shapecontainer.dart';
 import '../../renderer/shapepaintcontainer.dart';
-import '../../utils/mercatorprojection.dart';
-
 import '../rendercontext.dart';
 
 /**
@@ -48,18 +46,18 @@ class Hillshading {
     if (zoomLevel > maxZoom || zoomLevel < minZoom) return;
 
     Mappoint origin = tile.getOrigin();
-    double maptileTopLat = MercatorProjection.pixelYToLatitude(origin.y, tile.mapSize);
-    double maptileLeftLng = MercatorProjection.pixelXToLongitude(origin.x, tile.mapSize);
+    double maptileTopLat = tile.mercatorProjection.pixelYToLatitude(origin.y);
+    double maptileLeftLng = tile.mercatorProjection.pixelXToLongitude(origin.x);
 
-    double maptileBottomLat = MercatorProjection.pixelYToLatitude(origin.y + tile.tileSize, tile.mapSize);
-    double maptileRightLng = MercatorProjection.pixelXToLongitude(origin.x + tile.tileSize, tile.mapSize);
+    double maptileBottomLat = tile.mercatorProjection.pixelYToLatitude(origin.y + tile.tileSize);
+    double maptileRightLng = tile.mercatorProjection.pixelXToLongitude(origin.x + tile.tileSize);
 
     double mapTileLatDegrees = maptileTopLat - maptileBottomLat;
     double mapTileLngDegrees = maptileRightLng - maptileLeftLng;
     double pxPerLat = (tile.tileSize / mapTileLatDegrees);
     double pxPerLng = (tile.tileSize / mapTileLngDegrees);
 
-    if (maptileRightLng < maptileLeftLng) maptileRightLng += tile.mapSize;
+    if (maptileRightLng < maptileLeftLng) maptileRightLng += tile.mercatorProjection.mapSize;
 
     int shadingLngStep = 1;
     int shadingLatStep = 1;
@@ -110,8 +108,7 @@ class Hillshading {
           shadingSubrectTop = padding + shadingInnerHeight * ((shadingTopLat - maptileTopLat) / shadingLatStep);
         } else if (maptileTopLat > shadingTopLat) {
           maptileSubrectTop =
-              MercatorProjection.latitudeToPixelYWithMapSize(shadingTopLat + (shadingPixelOffset / shadingInnerHeight), tile.mapSize) -
-                  origin.y;
+              tile.mercatorProjection.latitudeToPixelY(shadingTopLat + (shadingPixelOffset / shadingInnerHeight)) - origin.y;
         }
         if (shadingBottomLat < maptileBottomLat) {
           // map tile ends in shading tile
@@ -119,24 +116,21 @@ class Hillshading {
               padding + shadingInnerHeight - shadingInnerHeight * ((maptileBottomLat - shadingBottomLat) / shadingLatStep);
         } else if (maptileBottomLat < shadingBottomLat) {
           maptileSubrectBottom =
-              MercatorProjection.latitudeToPixelYWithMapSize(shadingBottomLat + (shadingPixelOffset / shadingInnerHeight), tile.mapSize) -
-                  origin.y;
+              tile.mercatorProjection.latitudeToPixelY(shadingBottomLat + (shadingPixelOffset / shadingInnerHeight)) - origin.y;
         }
         if (shadingLeftLng < maptileLeftLng) {
           // map tile ends in shading tile
           shadingSubrectLeft = padding + shadingInnerWidth * ((maptileLeftLng - shadingLeftLng) / shadingLngStep);
         } else if (maptileLeftLng < shadingLeftLng) {
           maptileSubrectLeft =
-              MercatorProjection.longitudeToPixelXAtMapSize(shadingLeftLng + (shadingPixelOffset / shadingInnerWidth), tile.mapSize) -
-                  origin.x;
+              tile.mercatorProjection.longitudeToPixelX(shadingLeftLng + (shadingPixelOffset / shadingInnerWidth)) - origin.x;
         }
         if (shadingRightLng > maptileRightLng) {
           // map tile ends in shading tile
           shadingSubrectRight = padding + shadingInnerWidth - shadingInnerWidth * ((shadingRightLng - maptileRightLng) / shadingLngStep);
         } else if (maptileRightLng > shadingRightLng) {
           maptileSubrectRight =
-              MercatorProjection.longitudeToPixelXAtMapSize(shadingRightLng + (shadingPixelOffset / shadingInnerHeight), tile.mapSize) -
-                  origin.x;
+              tile.mercatorProjection.longitudeToPixelX(shadingRightLng + (shadingPixelOffset / shadingInnerHeight)) - origin.x;
         }
 
         Rectangle hillsRect =

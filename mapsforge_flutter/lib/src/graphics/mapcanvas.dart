@@ -45,7 +45,7 @@ abstract class MapCanvas {
 
   void drawPathText(String text, LineString lineString, Mappoint origin, MapPaint paint);
 
-  void drawText(String text, int x, int y, MapPaint paint);
+  void drawText(String text, int x, int y, double fontSize, MapPaint paint);
 
   void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint);
 

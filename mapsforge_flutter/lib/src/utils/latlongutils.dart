@@ -60,8 +60,7 @@ class LatLongUtils {
   static bool contains(List<LatLong> latLongs, LatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
-      if ((latLongs[i].latitude > latLong.latitude) !=
-              (latLongs[j].latitude > latLong.latitude) &&
+      if ((latLongs[i].latitude > latLong.latitude) != (latLongs[j].latitude > latLong.latitude) &&
           (latLong.longitude <
               (latLongs[j].longitude - latLongs[i].longitude) *
                       (latLong.latitude - latLongs[i].latitude) /
@@ -93,19 +92,15 @@ class LatLongUtils {
    * @return the destination point
    * @see <a href="http://www.movable-type.co.uk/scripts/latlon.js">latlon.js</a>
    */
-  static LatLong destinationPoint(
-      LatLong start, double distance, double bearing) {
+  static LatLong destinationPoint(LatLong start, double distance, double bearing) {
     double theta = toRadians(bearing);
     double delta = distance / EQUATORIAL_RADIUS; // angular distance in radians
 
     double phi1 = toRadians(start.latitude);
     double lambda1 = toRadians(start.longitude);
 
-    double phi2 =
-        asin(sin(phi1) * cos(delta) + cos(phi1) * sin(delta) * cos(theta));
-    double lambda2 = lambda1 +
-        atan2(sin(theta) * sin(delta) * cos(phi1),
-            cos(delta) - sin(phi1) * sin(phi2));
+    double phi2 = asin(sin(phi1) * cos(delta) + cos(phi1) * sin(delta) * cos(theta));
+    double lambda2 = lambda1 + atan2(sin(theta) * sin(delta) * cos(phi1), cos(delta) - sin(phi1) * sin(phi2));
 
     return new LatLong(toDegrees(phi2), toDegrees(lambda2));
   }
@@ -119,8 +114,7 @@ class LatLongUtils {
    * @return distance in degrees as a double
    */
   static double distance(LatLong latLong1, LatLong latLong2) {
-    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) +
-        pow(latLong1.latitude - latLong2.latitude, 2));
+    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) + pow(latLong1.latitude - latLong2.latitude, 2));
   }
 
   /**
@@ -128,10 +122,8 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static double distanceSegmentPoint(double startX, double startY, double endX,
-      double endY, double pointX, double pointY) {
-    Point nearest =
-        nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
+  static double distanceSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
+    Point nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
     return sqrt(pow(nearest.x - pointX, 2) + pow(nearest.y - pointY, 2));
   }
 
@@ -175,8 +167,7 @@ class LatLongUtils {
    * @return longitude degrees
    */
   static double longitudeDistance(int meters, double latitude) {
-    return (meters * 360) /
-        (2 * pi * EQUATORIAL_RADIUS * cos(toRadians(latitude)));
+    return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS * cos(toRadians(latitude)));
   }
 
   /**
@@ -194,19 +185,15 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static Point nearestSegmentPoint(double startX, double startY, double endX,
-      double endY, double pointX, double pointY) {
+  static Point nearestSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
     double length2 = xDiff * xDiff + yDiff * yDiff;
     if (length2 == 0) return new Point(startX, startY);
-    double t = ((pointX - startX) * (endX - startX) +
-            (pointY - startY) * (endY - startY)) /
-        length2;
+    double t = ((pointX - startX) * (endX - startX) + (pointY - startY) * (endY - startY)) / length2;
     if (t < 0) return new Point(startX, startY);
     if (t > 1) return new Point(endX, endY);
-    return new Point(
-        startX + t * (endX - startX), startY + t * (endY - startY));
+    return new Point(startX + t * (endX - startX), startY + t * (endY - startY));
   }
 
   /**
@@ -265,10 +252,7 @@ class LatLongUtils {
     double dLat = toRadians(latLong2.latitude - latLong1.latitude);
     double dLon = toRadians(latLong2.longitude - latLong1.longitude);
     double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(toRadians(latLong1.latitude)) *
-            cos(toRadians(latLong2.latitude)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
+        cos(toRadians(latLong1.latitude)) * cos(toRadians(latLong2.latitude)) * sin(dLon / 2) * sin(dLon / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return c * LatLongUtils.EQUATORIAL_RADIUS;
   }
@@ -279,9 +263,7 @@ class LatLongUtils {
    * @throws IllegalArgumentException if the latitude coordinate is invalid or {@link Double#NaN}.
    */
   static double validateLatitude(double latitude) {
-    if (latitude == double.nan ||
-        latitude < LATITUDE_MIN ||
-        latitude > LATITUDE_MAX) {
+    if (latitude == double.nan || latitude < LATITUDE_MIN || latitude > LATITUDE_MAX) {
       throw new Exception("invalid latitude: $latitude");
     }
     return latitude;
@@ -293,9 +275,7 @@ class LatLongUtils {
    * @throws IllegalArgumentException if the longitude coordinate is invalid or {@link Double#NaN}.
    */
   static double validateLongitude(double longitude) {
-    if (longitude == double.nan ||
-        longitude < LONGITUDE_MIN ||
-        longitude > LONGITUDE_MAX) {
+    if (longitude == double.nan || longitude < LONGITUDE_MIN || longitude > LONGITUDE_MAX) {
       throw new Exception("invalid longitude: $longitude");
     }
     return longitude;
@@ -327,20 +307,12 @@ class LatLongUtils {
 
     double lambda = L, lambdaP, iterLimit = 100;
 
-    double cosSqAlpha = 0,
-        sinSigma = 0,
-        cosSigma = 0,
-        cos2SigmaM = 0,
-        sigma = 0,
-        sinLambda = 0,
-        sinAlpha = 0,
-        cosLambda = 0;
+    double cosSqAlpha = 0, sinSigma = 0, cosSigma = 0, cos2SigmaM = 0, sigma = 0, sinLambda = 0, sinAlpha = 0, cosLambda = 0;
     do {
       sinLambda = sin(lambda);
       cosLambda = cos(lambda);
       sinSigma = sqrt((cosU2 * sinLambda) * (cosU2 * sinLambda) +
-          (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) *
-              (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+          (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) * (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
       if (sinSigma == 0) return 0; // co-incident points
       cosSigma = sinU1 * sinU2 + cosU1 * cosU2 * cosLambda;
       sigma = atan2(sinSigma, cosSigma);
@@ -353,25 +325,14 @@ class LatLongUtils {
       }
       double C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha));
       lambdaP = lambda;
-      lambda = L +
-          (1 - C) *
-              f *
-              sinAlpha *
-              (sigma +
-                  C *
-                      sinSigma *
-                      (cos2SigmaM +
-                          C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
+      lambda = L + (1 - C) * f * sinAlpha * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
     } while ((lambda - lambdaP).abs() > 1e-12 && --iterLimit > 0);
 
     if (iterLimit == 0) return 0; // formula failed to converge
 
-    double uSq = cosSqAlpha *
-        (pow(LatLongUtils.EQUATORIAL_RADIUS, 2) -
-            pow(LatLongUtils.POLAR_RADIUS, 2)) /
-        pow(LatLongUtils.POLAR_RADIUS, 2);
-    double A =
-        1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+    double uSq =
+        cosSqAlpha * (pow(LatLongUtils.EQUATORIAL_RADIUS, 2) - pow(LatLongUtils.POLAR_RADIUS, 2)) / pow(LatLongUtils.POLAR_RADIUS, 2);
+    double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
     double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
     double deltaSigma = B *
         sinSigma *
@@ -379,11 +340,7 @@ class LatLongUtils {
             B /
                 4 *
                 (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) -
-                    B /
-                        6 *
-                        cos2SigmaM *
-                        (-3 + 4 * sinSigma * sinSigma) *
-                        (-3 + 4 * cos2SigmaM * cos2SigmaM)));
+                    B / 6 * cos2SigmaM * (-3 + 4 * sinSigma * sinSigma) * (-3 + 4 * cos2SigmaM * cos2SigmaM)));
     double s = LatLongUtils.POLAR_RADIUS * A * (sigma - deltaSigma);
 
     return s;
@@ -407,30 +364,30 @@ class LatLongUtils {
    * @return the zoom level that allows to display the {@link BoundingBox} on a view with the {@link Dimension} and
    * tile size.
    */
-  static int zoomForBounds(
-      Dimension dimension, BoundingBox boundingBox, int tileSize) {
-    int mapSize = MercatorProjection.getMapSize(0, tileSize);
-    double pixelXMax = MercatorProjection.longitudeToPixelXAtMapSize(
-        boundingBox.maxLongitude, mapSize);
-    double pixelXMin = MercatorProjection.longitudeToPixelXAtMapSize(
-        boundingBox.minLongitude, mapSize);
-    double zoomX =
-        -1 * log((pixelXMax - pixelXMin).abs() / dimension.width) / log(2);
-    double pixelYMax = MercatorProjection.latitudeToPixelYWithMapSize(
-        boundingBox.maxLatitude, mapSize);
-    double pixelYMin = MercatorProjection.latitudeToPixelYWithMapSize(
-        boundingBox.minLatitude, mapSize);
-    double zoomY =
-        -1 * log((pixelYMax - pixelYMin).abs() / dimension.height) / log(2);
-    int zoom = min(zoomX, zoomY).floor();
-    if (zoom < 0) {
-      return 0;
-    }
-    if (zoom > 255) {
-      return 255;
-    }
-    return zoom;
-  }
+//  static int zoomForBounds(
+//      Dimension dimension, BoundingBox boundingBox, int tileSize) {
+//    int mapSize = MercatorProjection.getMapSize(0, tileSize);
+//    double pixelXMax = MercatorProjection.longitudeToPixelXAtMapSize(
+//        boundingBox.maxLongitude, mapSize);
+//    double pixelXMin = MercatorProjection.longitudeToPixelXAtMapSize(
+//        boundingBox.minLongitude, mapSize);
+//    double zoomX =
+//        -1 * log((pixelXMax - pixelXMin).abs() / dimension.width) / log(2);
+//    double pixelYMax = MercatorProjection.latitudeToPixelYWithMapSize(
+//        boundingBox.maxLatitude, mapSize);
+//    double pixelYMin = MercatorProjection.latitudeToPixelYWithMapSize(
+//        boundingBox.minLatitude, mapSize);
+//    double zoomY =
+//        -1 * log((pixelYMax - pixelYMin).abs() / dimension.height) / log(2);
+//    int zoom = min(zoomX, zoomY).floor();
+//    if (zoom < 0) {
+//      return 0;
+//    }
+//    if (zoom > 255) {
+//      return 255;
+//    }
+//    return zoom;
+//  }
 
   LatLongUtils() {
     throw new Exception();

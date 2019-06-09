@@ -31,7 +31,7 @@ class DummyRenderer extends JobRenderer {
     canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: job.tile.tileSize.toDouble())), Offset(0, 0));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img = await pic.toImage(job.tile.tileSize, job.tile.tileSize);
+    ui.Image img = await pic.toImage(job.tile.tileSize.toInt(), job.tile.tileSize.toInt());
 //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
 

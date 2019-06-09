@@ -68,8 +68,8 @@ class TileLayer extends Layer {
   void draw(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, MapCanvas canvas) {
     int time = DateTime.now().millisecondsSinceEpoch;
     needsRepaint = false;
-    List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition, displayModel.tileSize, _tileCache);
-    //_log.info("tiles: ${tiles.length}");
+    List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition, _tileCache);
+    //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
     // clipping bounds to portrait, while the device is just being rotated into
@@ -81,17 +81,13 @@ class TileLayer extends Layer {
     // to hook this into the onConfigurationChanged call chain.
     canvas.resetClip();
 
-    if (!isTransparent) {
-      canvas.fillColorFromNumber(this.displayModel.getBackgroundColor());
-    }
-
 //    Set<Job> jobs = new Set();
 //    for (Tile tile in tiles) {
 //      jobs.add(createJob(tile));
 //    }
 //    this.tileCache.setWorkingSet(jobs);
     canvas.setClip(0, 0, mapViewDimension.getDimension().width.round(), mapViewDimension.getDimension().height.round());
-    mapViewPosition.calculateBoundingBox(displayModel.tileSize, mapViewDimension.getDimension());
+    mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
     List<Job> jobs = List();

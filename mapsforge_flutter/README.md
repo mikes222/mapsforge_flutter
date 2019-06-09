@@ -26,31 +26,34 @@ First and foremost to the author of mapsforge. He has done an outstanding job!
 A lot of things. 
 
 graphics:
- rotate path text
- animate movement, animate zoom
+ - rotate path text
+ - animate movement
+ - animate zoom
  
 User Input:
-  zoom in/out (already implemented but without visual feedback while zooming)
-  notification if user starts manual input (in order to stop automatic position changes)
-  response to tap events
+ - zoom in/out (already implemented but without visual feedback while zooming)
+ - notification if user starts manual input (in order to stop automatic position changes)
+ - response to tap events (rudimentary done)
   
 Layers:
-  Support multiple layers
+ - Support multiple layers (background, tile and marker layer done)
   
 Speed:
-  support for more than one concurrent job in the jobqueue (rudimentary implemented already)
+ - support for more than one concurrent job in the jobqueue (rudimentary implemented already)
 
 Others:
-  Group of mapfiles
-  Online Tiles
+ - Group of mapfiles
+ - Online Tiles
+ - Marker Databaase
+ - Way Database
   
 
 ## Getting Started
 
 include the library in your pubspec.yaml:
 
-  mapsforge_flutter:
-    path: ../mapsforge_flutter
+      mapsforge_flutter:
+        path: ../mapsforge_flutter
 
 include a list of all used assets in your pubspec.yaml (see  pubspec file from example project)
 
@@ -100,17 +103,12 @@ Create the MapDataStoreRenderer which is the rendering engine for the mapfiles
 
     MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true, labelStore);
 
-Another cache (There are a couple of other caches implemented too)
-
-    TileCache tileCache = MemoryTileCache(50);
-
 Glue everything together
 
     MapModel mapModel = MapModel(
       displayModel: displayModel,
       graphicsFactory: graphicFactory,
       renderer: dataStoreRenderer,
-      tileCache: tileCache,
       symbolCache: symbolCache,
     );
 

@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
+import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
-class TilePainter extends ChangeNotifier implements CustomPainter {
+class BackgroundPainter extends ChangeNotifier implements CustomPainter {
   final MapViewDimension mapViewDimension;
-  final TileLayer _tileLayer;
 
   final MapViewPosition position;
 
-  TilePainter(this.mapViewDimension, this._tileLayer, this.position)
+  final bool isTransparent;
+
+  final DisplayModel displayModel;
+
+  BackgroundPainter({@required this.mapViewDimension, @required this.position, @required this.displayModel})
       : assert(mapViewDimension != null),
-        assert(position != null);
+        assert(position != null),
+        assert(displayModel != null),
+        isTransparent = displayModel.getBackgroundColor() == Colors.transparent.value;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -23,18 +28,20 @@ class TilePainter extends ChangeNotifier implements CustomPainter {
     if (changed) {
       position.sizeChanged();
     }
-    _tileLayer.draw(mapViewDimension, position, FlutterCanvas(canvas, size));
+    if (!isTransparent) {
+      FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
+      flutterCanvas.fillColorFromNumber(this.displayModel.getBackgroundColor());
+    }
   }
 
   @override
-  bool shouldRepaint(TilePainter oldDelegate) {
-    if (oldDelegate?.position != position) return true;
-    if (_tileLayer.needsRepaint) return true;
+  bool shouldRepaint(BackgroundPainter oldDelegate) {
+//    if (oldDelegate?.position != position) return true;
     return false;
   }
 
   @override
-  bool shouldRebuildSemantics(TilePainter oldDelegate) {
+  bool shouldRebuildSemantics(BackgroundPainter oldDelegate) {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 

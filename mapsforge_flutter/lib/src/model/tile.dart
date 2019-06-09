@@ -1,21 +1,17 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
+
 import '../utils/mercatorprojection.dart';
 import 'boundingbox.dart';
 import 'mappoint.dart';
 import 'rectangle.dart';
 
-/**
- * A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
- * with their zoom level. The actual area that a tile covers on a map depends on the underlying map projection.
- */
+/// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
+/// with their zoom level. The actual area that a tile covers on a map depends on the underlying map projection.
 class Tile {
-  /**
-   * the map size implied by zoom level and tileSize, to avoid multiple computations.
-   */
-  final int mapSize;
-
-  final int tileSize;
+  /// see DisplayModel.tileSize
+  final double tileSize;
 
   /**
    * The X number of this tile.
@@ -36,6 +32,8 @@ class Tile {
 
   /// the left-upper point of this tile in pixel. Moved from TilePosition
   final Mappoint leftUpperPoint;
+
+  MercatorProjectionImpl _mercatorProjection;
 
   /**
    * Return the BoundingBox of a rectangle of tiles defined by upper left and lower right tile.
@@ -95,18 +93,15 @@ class Tile {
     return (2 << zoomLevel - 1) - 1;
   }
 
-  /**
-   * @param tileX     the X number of the tile.
-   * @param tileY     the Y number of the tile.
-   * @param zoomLevel the zoom level of the tile.
-   * @throws IllegalArgumentException if any of the parameters is invalid.
-   */
+  /// @param tileX     the X number of the tile.
+  /// @param tileY     the Y number of the tile.
+  /// @param zoomLevel the zoom level of the tile.
+  /// @throws IllegalArgumentException if any of the parameters is invalid.
   Tile(this.tileX, this.tileY, this.zoomLevel, this.tileSize)
       : assert(tileX >= 0),
         assert(tileY >= 0),
         assert(zoomLevel >= 0),
-        mapSize = MercatorProjection.getMapSize(zoomLevel, tileSize),
-        leftUpperPoint = Mappoint((tileX * tileSize).toDouble(), (tileY * tileSize).toDouble()) {
+        leftUpperPoint = Mappoint(tileX * tileSize, tileY * tileSize) {
     int maxTileNumber = getMaxTileNumber(zoomLevel);
     if (tileX > maxTileNumber) {
       throw new Exception("invalid tileX number on zoom level $zoomLevel: $tileX");
@@ -114,6 +109,8 @@ class Tile {
       throw new Exception("invalid tileY number on zoom level $zoomLevel: $tileY");
     }
   }
+
+  void dispose() {}
 
   @override
   bool operator ==(Object other) =>
@@ -123,6 +120,12 @@ class Tile {
   @override
   int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode;
 
+  MercatorProjectionImpl get mercatorProjection {
+    if (_mercatorProjection != null) return _mercatorProjection;
+    _mercatorProjection = MercatorProjectionImpl(tileSize, zoomLevel);
+    return _mercatorProjection;
+  }
+
   /**
    * Gets the geographic extend of this Tile as a BoundingBox.
    *
@@ -130,10 +133,10 @@ class Tile {
    */
   BoundingBox getBoundingBox() {
     if (this.boundingBox == null) {
-      double minLatitude = max(MercatorProjection.LATITUDE_MIN, MercatorProjection.tileYToLatitude(tileY + 1, zoomLevel));
-      double minLongitude = max(-180, MercatorProjection.tileXToLongitude(this.tileX, zoomLevel));
-      double maxLatitude = min(MercatorProjection.LATITUDE_MAX, MercatorProjection.tileYToLatitude(this.tileY, zoomLevel));
-      double maxLongitude = min(180, MercatorProjection.tileXToLongitude(tileX + 1, zoomLevel));
+      double minLatitude = max(MercatorProjectionImpl.LATITUDE_MIN, mercatorProjection.tileYToLatitude(tileY + 1));
+      double minLongitude = max(-180, mercatorProjection.tileXToLongitude(this.tileX));
+      double maxLatitude = min(MercatorProjectionImpl.LATITUDE_MAX, mercatorProjection.tileYToLatitude(this.tileY));
+      double maxLongitude = min(180, mercatorProjection.tileXToLongitude(tileX + 1));
       if (maxLongitude == -180) {
         // fix for dateline crossing, where the right tile starts at -180 and causes an invalid bbox
         maxLongitude = 180;

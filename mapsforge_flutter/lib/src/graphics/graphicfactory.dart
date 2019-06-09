@@ -47,7 +47,7 @@ abstract class GraphicFactory {
 
   ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 
-  TileBitmap createTileBitmap(int tileSize, bool isTransparent, {InputStream inputStream});
+  TileBitmap createTileBitmap(double tileSize, bool isTransparent, {InputStream inputStream});
 
   InputStream platformSpecificSources(String relativePathPrefix, String src);
 

@@ -1,5 +1,6 @@
 import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
+import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
 
 import '../model/observableinterface.dart';
@@ -38,7 +39,7 @@ abstract class TileCache extends ObservableInterface {
    */
   void purge();
 
-  Tile getTile(int x, int y, int zoomLevel, int tileSize) {
+  Tile getTile(int x, int y, int zoomLevel, double tileSize) {
     _ZoomLevelTileCache cache = _caches[zoomLevel];
     if (cache == null) {
       cache = _ZoomLevelTileCache(zoomLevel, tileSize);
@@ -51,13 +52,17 @@ abstract class TileCache extends ObservableInterface {
 /////////////////////////////////////////////////////////////////////////////
 
 class _ZoomLevelTileCache {
-  Cache _tilePositions = new SimpleCache<int, Tile>(storage: new SimpleStorage<int, Tile>(size: 2000));
+  Cache _tilePositions = new SimpleCache<int, Tile>(
+      storage: new SimpleStorage<int, Tile>(size: 200),
+      onEvict: (idx, tile) {
+        tile.dispose();
+      });
 
   int xCount;
 
   int yCount;
 
-  final int tileSize;
+  final double tileSize;
 
   final int zoomLevel;
 
@@ -68,11 +73,12 @@ class _ZoomLevelTileCache {
     //_bitmaps = List(_tilePositions.length);
   }
 
-  void _getTilePositions(int zoomLevel, int tileSize) {
+  void _getTilePositions(int zoomLevel, double tileSize) {
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileLeft = 0;
     int tileTop = 0;
-    int tileRight = MercatorProjection.longitudeToTileX(MercatorProjection.LONGITUDE_MAX, zoomLevel);
-    int tileBottom = MercatorProjection.latitudeToTileY(MercatorProjection.LATITUDE_MIN, zoomLevel);
+    int tileRight = mercatorProjectionImpl.longitudeToTileX(MercatorProjectionImpl.LONGITUDE_MAX);
+    int tileBottom = mercatorProjectionImpl.latitudeToTileY(MercatorProjectionImpl.LATITUDE_MIN);
 
     xCount = tileRight - tileLeft + 1;
     yCount = tileBottom - tileTop + 1;

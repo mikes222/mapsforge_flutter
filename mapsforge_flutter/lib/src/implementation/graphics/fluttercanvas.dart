@@ -234,16 +234,17 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawText(String text, int x, int y, MapPaint paint) {
+  void drawText(String text, int x, int y, double fontSize, MapPaint paint) {
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
-        fontSize: 10.0,
+        fontSize: fontSize,
+        textAlign: TextAlign.center,
       ),
     )
-      ..pushStyle(ui.TextStyle(color: Colors.black45))
+      ..pushStyle(ui.TextStyle(color: ui.Color(paint.getColor())))
       ..addText(text);
-    uiCanvas.drawParagraph(
-        builder.build()..layout(ui.ParagraphConstraints(width: (text.length * 50).toDouble())), Offset(x.toDouble(), y.toDouble()));
+    double width = text.length * 5 * fontSize;
+    uiCanvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: width)), Offset(x.toDouble() - width / 2, y.toDouble()));
   }
 
   @override

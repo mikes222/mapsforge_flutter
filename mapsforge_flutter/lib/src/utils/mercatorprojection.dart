@@ -14,7 +14,7 @@ import '../model/tile.dart';
  * the scaleFactor operation offers greater flexibility in computing the values for
  * intermediate zoomlevels.
  */
-class MercatorProjection {
+class DeprecatedMercatorProjection {
   /**
    * The circumference of the earth at the equator in meters.
    */
@@ -47,8 +47,7 @@ class MercatorProjection {
    * @param scaleFactor the scale at which the resolution should be calculated.
    * @return the ground resolution at the given latitude and scale.
    */
-  static double calculateGroundResolutionWithScaleFactor(
-      double latitude, double scaleFactor, int tileSize) {
+  static double calculateGroundResolutionWithScaleFactor(double latitude, double scaleFactor, int tileSize) {
     int mapSize = getMapSizeWithScaleFactor(scaleFactor, tileSize);
     return cos(latitude * (pi / 180)) * EARTH_CIRCUMFERENCE / mapSize;
   }
@@ -67,19 +66,16 @@ class MercatorProjection {
   /**
    * Get LatLong from Pixels.
    */
-  static LatLong fromPixelsWithScaleFactor(
-      double pixelX, double pixelY, double scaleFactor, int tileSize) {
+  static LatLong fromPixelsWithScaleFactor(double pixelX, double pixelY, double scaleFactor, int tileSize) {
     return new LatLong(
-        pixelYToLatitudeWithScaleFactor(pixelY, scaleFactor, tileSize),
-        pixelXToLongitudeWithScaleFactor(pixelX, scaleFactor, tileSize));
+        pixelYToLatitudeWithScaleFactor(pixelY, scaleFactor, tileSize), pixelXToLongitudeWithScaleFactor(pixelX, scaleFactor, tileSize));
   }
 
   /**
    * Get LatLong from Pixels.
    */
   static LatLong fromPixels(double pixelX, double pixelY, int mapSize) {
-    return new LatLong(
-        pixelYToLatitude(pixelY, mapSize), pixelXToLongitude(pixelX, mapSize));
+    return new LatLong(pixelYToLatitude(pixelY, mapSize), pixelXToLongitude(pixelX, mapSize));
   }
 
   /**
@@ -106,20 +102,15 @@ class MercatorProjection {
     return tileSize << zoomLevel;
   }
 
-  static Point getPixelWithScaleFactor(
-      LatLong latLong, double scaleFactor, int tileSize) {
-    double pixelX = MercatorProjection.longitudeToPixelXWithScaleFactor(
-        latLong.longitude, scaleFactor, tileSize);
-    double pixelY = MercatorProjection.latitudeToPixelYWithScaleFactor(
-        latLong.latitude, scaleFactor, tileSize);
+  static Point getPixelWithScaleFactor(LatLong latLong, double scaleFactor, int tileSize) {
+    double pixelX = DeprecatedMercatorProjection.longitudeToPixelXWithScaleFactor(latLong.longitude, scaleFactor, tileSize);
+    double pixelY = DeprecatedMercatorProjection.latitudeToPixelYWithScaleFactor(latLong.latitude, scaleFactor, tileSize);
     return new Point(pixelX, pixelY);
   }
 
   static Point getPixel(LatLong latLong, int mapSize) {
-    double pixelX = MercatorProjection.longitudeToPixelXAtMapSize(
-        latLong.longitude, mapSize);
-    double pixelY = MercatorProjection.latitudeToPixelYWithMapSize(
-        latLong.latitude, mapSize);
+    double pixelX = DeprecatedMercatorProjection.longitudeToPixelXAtMapSize(latLong.longitude, mapSize);
+    double pixelY = DeprecatedMercatorProjection.latitudeToPixelYWithMapSize(latLong.latitude, mapSize);
     return new Point(pixelX, pixelY);
   }
 
@@ -142,14 +133,9 @@ class MercatorProjection {
    * @param mapSize precomputed size of map.
    * @return the relative pixel position to the origin values (e.g. for a tile)
    */
-  static Mappoint getPixelRelative(
-      LatLong latLong, int mapSize, double x, double y) {
-    double pixelX = MercatorProjection.longitudeToPixelXAtMapSize(
-            latLong.longitude, mapSize) -
-        x;
-    double pixelY = MercatorProjection.latitudeToPixelYWithMapSize(
-            latLong.latitude, mapSize) -
-        y;
+  static Mappoint getPixelRelative(LatLong latLong, int mapSize, double x, double y) {
+    double pixelX = DeprecatedMercatorProjection.longitudeToPixelXAtMapSize(latLong.longitude, mapSize) - x;
+    double pixelY = DeprecatedMercatorProjection.latitudeToPixelYWithMapSize(latLong.latitude, mapSize) - y;
     return new Mappoint(pixelX, pixelY);
   }
 
@@ -160,8 +146,7 @@ class MercatorProjection {
    * @param mapSize precomputed size of map.
    * @return the relative pixel position to the origin values (e.g. for a tile)
    */
-  static Mappoint getPixelRelativeOrigin(
-      LatLong latLong, int mapSize, Mappoint origin) {
+  static Mappoint getPixelRelativeOrigin(LatLong latLong, int mapSize, Mappoint origin) {
     return getPixelRelative(latLong, mapSize, origin.x, origin.y);
   }
 
@@ -173,7 +158,7 @@ class MercatorProjection {
    * @return the relative pixel position to the origin values (e.g. for a tile)
    */
   static Mappoint getPixelRelativeToTile(LatLong latLong, Tile tile) {
-    return getPixelRelativeOrigin(latLong, tile.mapSize, tile.getOrigin());
+    return getPixelRelativeOrigin(latLong, getMapSize(tile.zoomLevel, tile.tileSize.toInt()), tile.getOrigin());
   }
 
   /**
@@ -183,13 +168,11 @@ class MercatorProjection {
    * @param scaleFactor the scale factor at which the coordinate should be converted.
    * @return the pixel Y coordinate of the latitude value.
    */
-  static double latitudeToPixelYWithScaleFactor(
-      double latitude, double scaleFactor, int tileSize) {
+  static double latitudeToPixelYWithScaleFactor(double latitude, double scaleFactor, int tileSize) {
     double sinLatitude = sin(latitude * (pi / 180));
     int mapSize = getMapSizeWithScaleFactor(scaleFactor, tileSize);
 // FIXME improve this formula so that it works correctly without the clipping
-    double pixelY =
-        (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * mapSize;
+    double pixelY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * mapSize;
     return min(max(0, pixelY), mapSize.toDouble());
   }
 
@@ -204,8 +187,7 @@ class MercatorProjection {
     double sinLatitude = sin(latitude * (pi / 180));
     int mapSize = getMapSize(zoomLevel, tileSize);
 // FIXME improve this formula so that it works correctly without the clipping
-    double pixelY =
-        (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * mapSize;
+    double pixelY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * mapSize;
     return min(max(0, pixelY), mapSize.toDouble());
   }
 
@@ -219,8 +201,7 @@ class MercatorProjection {
   static double latitudeToPixelYWithMapSize(double latitude, int mapSize) {
     double sinLatitude = sin(latitude * (pi / 180));
 // FIXME improve this formula so that it works correctly without the clipping
-    double pixelY =
-        (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * mapSize;
+    double pixelY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * mapSize;
     return min(max(0, pixelY), mapSize.toDouble());
   }
 
@@ -231,12 +212,9 @@ class MercatorProjection {
    * @param scaleFactor the scale factor at which the coordinate should be converted.
    * @return the tile Y number of the latitude value.
    */
-  static int latitudeToTileYWithScaleFactor(
-      double latitude, double scaleFactor) {
+  static int latitudeToTileYWithScaleFactor(double latitude, double scaleFactor) {
     return pixelYToTileYWithScaleFactor(
-        latitudeToPixelYWithScaleFactor(latitude, scaleFactor, DUMMY_TILE_SIZE),
-        scaleFactor,
-        DUMMY_TILE_SIZE);
+        latitudeToPixelYWithScaleFactor(latitude, scaleFactor, DUMMY_TILE_SIZE), scaleFactor, DUMMY_TILE_SIZE);
   }
 
   /**
@@ -247,8 +225,7 @@ class MercatorProjection {
    * @return the tile Y number of the latitude value.
    */
   static int latitudeToTileY(double latitude, int zoomLevel) {
-    return pixelYToTileY(latitudeToPixelY(latitude, zoomLevel, DUMMY_TILE_SIZE),
-        zoomLevel, DUMMY_TILE_SIZE);
+    return pixelYToTileY(latitudeToPixelY(latitude, zoomLevel, DUMMY_TILE_SIZE), zoomLevel, DUMMY_TILE_SIZE);
   }
 
   /**
@@ -258,8 +235,7 @@ class MercatorProjection {
    * @param scaleFactor the scale factor at which the coordinate should be converted.
    * @return the pixel X coordinate of the longitude value.
    */
-  static double longitudeToPixelXWithScaleFactor(
-      double longitude, double scaleFactor, int tileSize) {
+  static double longitudeToPixelXWithScaleFactor(double longitude, double scaleFactor, int tileSize) {
     int mapSize = getMapSizeWithScaleFactor(scaleFactor, tileSize);
     return (longitude + 180) / 360 * mapSize;
   }
@@ -272,8 +248,7 @@ class MercatorProjection {
    * @param tileSize  the tile size
    * @return the pixel X coordinate of the longitude value.
    */
-  static double longitudeToPixelX(
-      double longitude, int zoomLevel, int tileSize) {
+  static double longitudeToPixelX(double longitude, int zoomLevel, int tileSize) {
     int mapSize = getMapSize(zoomLevel, tileSize);
     return (longitude + 180) / 360 * mapSize;
   }
@@ -296,13 +271,9 @@ class MercatorProjection {
    * @param scaleFactor the scale factor at which the coordinate should be converted.
    * @return the tile X number of the longitude value.
    */
-  static int longitudeToTileXWithScaleFactor(
-      double longitude, double scaleFactor) {
+  static int longitudeToTileXWithScaleFactor(double longitude, double scaleFactor) {
     return pixelXToTileXWithScaleFactor(
-        longitudeToPixelXWithScaleFactor(
-            longitude, scaleFactor, DUMMY_TILE_SIZE),
-        scaleFactor,
-        DUMMY_TILE_SIZE);
+        longitudeToPixelXWithScaleFactor(longitude, scaleFactor, DUMMY_TILE_SIZE), scaleFactor, DUMMY_TILE_SIZE);
   }
 
   /**
@@ -313,10 +284,7 @@ class MercatorProjection {
    * @return the tile X number of the longitude value.
    */
   static int longitudeToTileX(double longitude, int zoomLevel) {
-    return pixelXToTileX(
-        longitudeToPixelX(longitude, zoomLevel, DUMMY_TILE_SIZE),
-        zoomLevel,
-        DUMMY_TILE_SIZE);
+    return pixelXToTileX(longitudeToPixelX(longitude, zoomLevel, DUMMY_TILE_SIZE), zoomLevel, DUMMY_TILE_SIZE);
   }
 
   /**
@@ -327,11 +295,8 @@ class MercatorProjection {
    * @param scaleFactor the scale factor for the conversion.
    * @return pixels that represent the meters at the given zoom-level and latitude.
    */
-  static double metersToPixelsWithScaleFactor(
-      double meters, double latitude, double scaleFactor, int tileSize) {
-    return meters /
-        MercatorProjection.calculateGroundResolutionWithScaleFactor(
-            latitude, scaleFactor, tileSize);
+  static double metersToPixelsWithScaleFactor(double meters, double latitude, double scaleFactor, int tileSize) {
+    return meters / DeprecatedMercatorProjection.calculateGroundResolutionWithScaleFactor(latitude, scaleFactor, tileSize);
   }
 
   /**
@@ -343,8 +308,7 @@ class MercatorProjection {
    * @return pixels that represent the meters at the given zoom-level and latitude.
    */
   static double metersToPixels(double meters, double latitude, int mapSize) {
-    return meters /
-        MercatorProjection.calculateGroundResolution(latitude, mapSize);
+    return meters / DeprecatedMercatorProjection.calculateGroundResolution(latitude, mapSize);
   }
 
   /**
@@ -355,12 +319,10 @@ class MercatorProjection {
    * @return the longitude value of the pixel X coordinate.
    * @throws IllegalArgumentException if the given pixelX coordinate is invalid.
    */
-  static double pixelXToLongitudeWithScaleFactor(
-      double pixelX, double scaleFactor, int tileSize) {
+  static double pixelXToLongitudeWithScaleFactor(double pixelX, double scaleFactor, int tileSize) {
     int mapSize = getMapSizeWithScaleFactor(scaleFactor, tileSize);
     if (pixelX < 0 || pixelX > mapSize) {
-      throw new Exception(
-          "invalid pixelX coordinate at scale $scaleFactor: $pixelX");
+      throw new Exception("invalid pixelX coordinate at scale $scaleFactor: $pixelX");
     }
     return 360 * ((pixelX / mapSize) - 0.5);
   }
@@ -388,8 +350,7 @@ class MercatorProjection {
    * @param scaleFactor the scale factor at which the coordinate should be converted.
    * @return the tile X number.
    */
-  static int pixelXToTileXWithScaleFactor(
-      double pixelX, double scaleFactor, int tileSize) {
+  static int pixelXToTileXWithScaleFactor(double pixelX, double scaleFactor, int tileSize) {
     return min(max(pixelX / tileSize, 0), scaleFactor - 1).floor();
   }
 
@@ -412,12 +373,10 @@ class MercatorProjection {
    * @return the latitude value of the pixel Y coordinate.
    * @throws IllegalArgumentException if the given pixelY coordinate is invalid.
    */
-  static double pixelYToLatitudeWithScaleFactor(
-      double pixelY, double scaleFactor, int tileSize) {
+  static double pixelYToLatitudeWithScaleFactor(double pixelY, double scaleFactor, int tileSize) {
     int mapSize = getMapSizeWithScaleFactor(scaleFactor, tileSize);
     if (pixelY < 0 || pixelY > mapSize) {
-      throw new Exception(
-          "invalid pixelY coordinate at scale $scaleFactor: $pixelY");
+      throw new Exception("invalid pixelY coordinate at scale $scaleFactor: $pixelY");
     }
     double y = 0.5 - (pixelY / mapSize);
     return 90 - 360 * atan(exp(-y * (2 * pi))) / pi;
@@ -446,8 +405,7 @@ class MercatorProjection {
    * @param scaleFactor the scale factor at which the coordinate should be converted.
    * @return the tile Y number.
    */
-  static int pixelYToTileYWithScaleFactor(
-      double pixelY, double scaleFactor, int tileSize) {
+  static int pixelYToTileYWithScaleFactor(double pixelY, double scaleFactor, int tileSize) {
     return min(max(pixelY / tileSize, 0), scaleFactor - 1).floor();
   }
 
@@ -490,8 +448,7 @@ class MercatorProjection {
    * @return the longitude value of the tile X number.
    */
   static double tileXToLongitudeWithScaleFactor(int tileX, double scaleFactor) {
-    return pixelXToLongitudeWithScaleFactor(
-        tileX * DUMMY_TILE_SIZE.toDouble(), scaleFactor, DUMMY_TILE_SIZE);
+    return pixelXToLongitudeWithScaleFactor(tileX * DUMMY_TILE_SIZE.toDouble(), scaleFactor, DUMMY_TILE_SIZE);
   }
 
   /**
@@ -502,8 +459,7 @@ class MercatorProjection {
    * @return the longitude value of the tile X number.
    */
   static double tileXToLongitude(int tileX, int zoomLevel) {
-    return pixelXToLongitude(tileX * DUMMY_TILE_SIZE.toDouble(),
-        getMapSize(zoomLevel, DUMMY_TILE_SIZE));
+    return pixelXToLongitude(tileX * DUMMY_TILE_SIZE.toDouble(), getMapSize(zoomLevel, DUMMY_TILE_SIZE));
   }
 
   /**
@@ -514,8 +470,7 @@ class MercatorProjection {
    * @return the latitude value of the tile Y number.
    */
   static double tileYToLatitudeWithScaleFactor(int tileY, double scaleFactor) {
-    return pixelYToLatitudeWithScaleFactor(
-        tileY * DUMMY_TILE_SIZE.toDouble(), scaleFactor, DUMMY_TILE_SIZE);
+    return pixelYToLatitudeWithScaleFactor(tileY * DUMMY_TILE_SIZE.toDouble(), scaleFactor, DUMMY_TILE_SIZE);
   }
 
   /**
@@ -526,8 +481,7 @@ class MercatorProjection {
    * @return the latitude value of the tile Y number.
    */
   static double tileYToLatitude(int tileY, int zoomLevel) {
-    return pixelYToLatitude(tileY * DUMMY_TILE_SIZE.toDouble(),
-        getMapSize(zoomLevel, DUMMY_TILE_SIZE));
+    return pixelYToLatitude(tileY * DUMMY_TILE_SIZE.toDouble(), getMapSize(zoomLevel, DUMMY_TILE_SIZE));
   }
 
   /**

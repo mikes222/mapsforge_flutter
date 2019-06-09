@@ -19,9 +19,9 @@ import 'model/boundingbox.dart';
 import 'model/latlong.dart';
 import 'model/tag.dart';
 import 'model/tile.dart';
+import 'projection/mercatorprojectionimpl.dart';
 import 'reader/queryparameters.dart';
 import 'utils/latlongutils.dart';
-import 'utils/mercatorprojection.dart';
 
 /**
  * A class for reading binary map files.
@@ -318,8 +318,9 @@ class MapFile extends MapDataStore {
   void _debugBlock(int block, SubFileParameter subFileParameter, ReadBuffer readBuffer) async {
     int row = (block / subFileParameter.blocksWidth).floor();
     int column = (block % subFileParameter.blocksWidth);
-    double tileLatitude = MercatorProjection.tileYToLatitude(subFileParameter.boundaryTileTop + row, subFileParameter.baseZoomLevel);
-    double tileLongitude = MercatorProjection.tileXToLongitude(subFileParameter.boundaryTileLeft + column, subFileParameter.baseZoomLevel);
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);
+    double tileLatitude = mercatorProjectionImpl.tileYToLatitude((subFileParameter.boundaryTileTop + row));
+    double tileLongitude = mercatorProjectionImpl.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
 
     int currentBlockIndexEntry = await this.databaseIndexCache.getIndexEntry(subFileParameter, block);
     int currentBlockPointer = currentBlockIndexEntry & BITMASK_INDEX_OFFSET;
@@ -802,9 +803,9 @@ class MapFile extends MapDataStore {
         await readBuffer.readFromFile2(subFileParameter.startAddress + currentBlockPointer, currentBlockSize);
 
         // calculate the top-left coordinates of the underlying tile
-        double tileLatitude = MercatorProjection.tileYToLatitude(subFileParameter.boundaryTileTop + row, subFileParameter.baseZoomLevel);
-        double tileLongitude =
-            MercatorProjection.tileXToLongitude(subFileParameter.boundaryTileLeft + column, subFileParameter.baseZoomLevel);
+        MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);
+        double tileLatitude = mercatorProjectionImpl.tileYToLatitude((subFileParameter.boundaryTileTop + row));
+        double tileLongitude = mercatorProjectionImpl.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
         LatLongUtils.validateLatitude(tileLatitude);
         LatLongUtils.validateLongitude(tileLongitude);
 
