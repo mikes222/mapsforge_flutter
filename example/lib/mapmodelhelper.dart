@@ -12,12 +12,26 @@ class MapModelHelper {
   static Future<MapModel> prepareMapModel() async {
     String _localPath = await FileHelper.findLocalPath();
 
-    File file = File(_localPath + "/" + Constants.mapfile);
-    print("opening mapfile");
-    RandomAccessFile raf = await file.open();
-    MapFile mapFile = MapFile(raf, null, null);
-    await mapFile.init();
-    //await mapFile.debug();
+    MultiMapDataStore multiMapDataStore = MultiMapDataStore(DataPolicy.DEDUPLICATE);
+
+    {
+      File file = File(_localPath + "/" + Constants.worldmap);
+      print("opening mapfile");
+      RandomAccessFile raf = await file.open();
+      MapFile mapFile = MapFile(raf, null, null);
+      await mapFile.init();
+      //await mapFile.debug();
+      multiMapDataStore.addMapDataStore(mapFile, true, true);
+    }
+    {
+      File file = File(_localPath + "/" + Constants.mapfile);
+      print("opening mapfile");
+      RandomAccessFile raf = await file.open();
+      MapFile mapFile = MapFile(raf, null, null);
+      await mapFile.init();
+      //await mapFile.debug();
+      multiMapDataStore.addMapDataStore(mapFile, false, false);
+    }
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
@@ -25,11 +39,9 @@ class MapModelHelper {
 
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
-    print("Rendering instructions has ${content.length} bytes");
     await renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
-    TileBasedLabelStore labelStore = TileBasedLabelStore(100);
-    MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true, labelStore);
+    MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(multiMapDataStore, renderTheme, graphicFactory, true);
 
     DummyRenderer dummyRenderer = DummyRenderer();
 

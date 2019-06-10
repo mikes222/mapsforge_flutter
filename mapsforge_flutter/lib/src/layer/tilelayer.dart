@@ -60,8 +60,12 @@ class TileLayer extends Layer {
 //  }
 
   void jobResult(Job job) {
-    _bitmapCache.addTileBitmap(job.tile, job.tileBitmap);
-    needsRepaint = true;
+    TileBitmap bmp = job.getAndRemovetileBitmap();
+    if (bmp != null) {
+      _bitmapCache.addTileBitmap(job.tile, bmp);
+      bmp.decrementRefCount();
+      needsRepaint = true;
+    }
   }
 
   @override

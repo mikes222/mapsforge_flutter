@@ -56,6 +56,19 @@ class MyStatelessWidget extends StatelessWidget {
               FileHelper.downloadFile(Constants.mapfilesource, Constants.mapfile);
             },
           ),
+          FutureBuilder<bool>(
+            future: FileHelper.exists(Constants.worldmap),
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+              if (snapshot.hasData) return Text(snapshot.data ? "Worldmap is already downloaded" : "Worldmap missing");
+              return Container();
+            },
+          ),
+          RaisedButton(
+            child: Text("Download Worldmap (zoom out several times)"),
+            onPressed: () {
+              FileHelper.downloadFile(Constants.worldmapsource, Constants.worldmap);
+            },
+          ),
           RaisedButton(
             child: Text("Show map"),
             onPressed: () {

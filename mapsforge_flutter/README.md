@@ -40,12 +40,13 @@ Layers:
   
 Speed:
  - support for more than one concurrent job in the jobqueue (rudimentary implemented already)
+ - store tiles on disc for later reuse
 
 Others:
- - Group of mapfiles
  - Online Tiles
  - Marker Databaase
  - Way Database
+ - Testing for ios
   
 
 ## Getting Started
@@ -75,13 +76,13 @@ Load the mapfile which holds the openstreetmap (r) data:
     await mapFile.init();
     //await mapFile.debug();
 
-Create the displayModel which defines the most important settings for mapsforge
-
-    final DisplayModel displayModel = DisplayModel();
-
 Create the graphicFactory wich implements the drawing algorithms for flutter
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
+
+Create the displayModel which defines the most important settings for mapsforge
+
+    final DisplayModel displayModel = DisplayModel();
 
 Create the cache for assets
 
@@ -89,19 +90,14 @@ Create the cache for assets
 
 Create the render theme which specifies how to render the informations from the mapfile
 
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
-    print("Rendering instructions has ${content.length} bytes");
     await renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 
-Create the labelstore which is a cache for the labels/captions
-
-    TileBasedLabelStore labelStore = TileBasedLabelStore(100);
-    
 Create the MapDataStoreRenderer which is the rendering engine for the mapfiles
 
-    MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true, labelStore);
+    MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true);
 
 Glue everything together
 
@@ -120,6 +116,22 @@ In order to change the position in the map call the mapModel with the new positi
 
     mapModel.setMapViewPosition(48.0901926, 16.308939);
     
+If you want your own marker datastore add the following to the MapModel:
 
+    MarkerDataStore markerDataStore = MarkerDataStore();
+    markerDataStore.markers.add(BasicMarker(
+      src: "jar:symbols/windsock.svg",
+      symbolCache: symbolCache,
+      width: 20,
+      height: 20,
+      graphicFactory: graphicFactory,
+      caption: "TestMarker",
+      latitude: 48.089355,
+      longitude: 16.311509,
+    )..init());
+
+and include the new datastore in the mapModel.
+
+-----------------
 
 Help is appreciated...

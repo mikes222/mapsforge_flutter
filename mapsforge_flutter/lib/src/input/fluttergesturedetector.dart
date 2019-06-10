@@ -8,9 +8,11 @@ import '../../core.dart';
 class FlutterGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 
+  final MapViewPosition position;
+
   final Widget child;
 
-  const FlutterGestureDetector({Key key, @required this.mapModel, @required this.child})
+  const FlutterGestureDetector({Key key, @required this.mapModel, this.position, @required this.child})
       : assert(mapModel != null),
         assert(child != null),
         super(key: key);
@@ -43,7 +45,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       },
       onScaleStart: (ScaleStartDetails details) {
         startOffset = details.focalPoint;
-        startLeftUpper = widget.mapModel.mapViewPosition?.leftUpper;
+        startLeftUpper = widget.position?.leftUpper;
         _lastScale = null;
         print(details.toString());
       },
@@ -68,7 +70,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 //            zoomLevelDiff = (zoomLevelOffset < 0 ? zoomLevelOffset.floor() : zoomLevelOffset.ceil()).round();
           zoomLevelDiff = zoomLevelOffset.round();
         } else {}
-        widget.mapModel.setZoomLevel(widget.mapModel.mapViewPosition.zoomLevel + zoomLevelDiff);
+        if (zoomLevelDiff != 0) widget.mapModel.setZoomLevel((widget.position?.zoomLevel ?? widget.mapModel.DEFAULT_ZOOM) + zoomLevelDiff);
       },
       child: widget.child,
     );

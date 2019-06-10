@@ -43,7 +43,7 @@ class PolylineContainer implements ShapeContainer {
   PolylineContainer.fromList(List<Mappoint> coordinates, this.upperLeft, this.lowerRight, this.tags)
       : layer = 0,
         isClosedWay = coordinates[0] == (coordinates[coordinates.length - 1]) {
-    this.coordinatesAbsolute = new List<List<Mappoint>>();
+    this.coordinatesAbsolute = new List<List<Mappoint>>(1);
     this.coordinatesRelativeToTile = null;
     this.coordinatesAbsolute[0] = new List<Mappoint>(); //[coordinates.length];
 //    System.arraycopy(

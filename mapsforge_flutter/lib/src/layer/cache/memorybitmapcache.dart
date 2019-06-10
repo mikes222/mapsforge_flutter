@@ -14,11 +14,12 @@ class MemoryBitmapCache {
   }
 
   void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
+    assert(tileBitmap != null);
+    tileBitmap.incrementRefCount();
     TileBitmap bitmap = _bitmaps.get(tile);
     if (bitmap != null) {
       bitmap.decrementRefCount();
     }
-    tileBitmap.incrementRefCount();
     _bitmaps[tile] = tileBitmap;
   }
 }

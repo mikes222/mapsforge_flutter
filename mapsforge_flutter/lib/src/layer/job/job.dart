@@ -6,7 +6,7 @@ class Job {
   final Tile tile;
 
   /// The resulting bitmap after this job has been processed.
-  TileBitmap tileBitmap;
+  TileBitmap _tileBitmap;
 
   Job(this.tile, this.hasAlpha) : assert(tile != null);
 
@@ -20,5 +20,22 @@ class Job {
   @override
   String toString() {
     return 'Job{hasAlpha: $hasAlpha, tile: $tile}';
+  }
+
+  set tileBitmap(TileBitmap tileBitmap) {
+    if (tileBitmap != null) {
+      tileBitmap.incrementRefCount();
+    }
+    if (_tileBitmap != null) {
+      _tileBitmap.decrementRefCount();
+    }
+    _tileBitmap = tileBitmap;
+  }
+
+  TileBitmap getAndRemovetileBitmap() {
+    if (_tileBitmap == null) return null;
+    TileBitmap result = _tileBitmap;
+    _tileBitmap = null;
+    return result;
   }
 }

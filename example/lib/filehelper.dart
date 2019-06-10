@@ -36,9 +36,14 @@ class FileHelper {
   static void downloadFile(String source, String destination) async {
     String _localPath = await findLocalPath();
 
+    String tempDestination = destination;
+    if (source.endsWith(".gz") && !tempDestination.endsWith(".gz")) {
+      tempDestination += ".gz";
+    }
+
     File file = File(_localPath + "/" + destination);
 
-    print("file will be downloaded from $source and stored at $_localPath/$destination");
+    print("file will be downloaded from $source and stored at $_localPath/$tempDestination");
     final taskId = await FlutterDownloader.enqueue(
       url: source,
       savedDir: _localPath,
@@ -53,15 +58,15 @@ class FileHelper {
       if (status == DownloadTaskStatus.complete) {
         // finished
         FlutterDownloader.registerCallback(null);
-        //unzip(destination);
+        if (source.endsWith(".gz") && !destination.endsWith(".gz")) unzip(tempDestination, destination);
       }
       print('Download task ($id) is in status ($status) and process ($progress)');
     });
   }
 
-  static void unzip(String filename) async {
+  static void unzip(String zippedFilename, String filename) async {
     String _localPath = await findLocalPath();
-    File zipfile = File(_localPath + "/" + filename + ".gz");
+    File zipfile = File(_localPath + "/" + zippedFilename);
     Uint8List content = await zipfile.readAsBytes();
     Uint8List unzipped = gzip.decoder.convert(content);
     File file = File(_localPath + "/" + filename);

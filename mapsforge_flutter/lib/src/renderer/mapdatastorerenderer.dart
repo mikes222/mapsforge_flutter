@@ -26,7 +26,6 @@ import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rendertheme.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
-import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
 import 'package:synchronized/synchronized.dart';
 
 import 'canvasrasterer.dart';
@@ -55,8 +54,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     this.renderTheme,
     this.graphicFactory,
     this.renderLabels,
-    this.labelStore,
-  ) {
+  ) : labelStore = TileBasedLabelStore(100) {
     if (!renderLabels) {
       this.tileDependencies = null;
     } else {
@@ -71,7 +69,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
         new RenderContext(job, new CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble()), renderTheme);
     MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
     if (mapReadResult == null) {
-      _log.info("Executing ${job.toString()} has no mapReadResult");
+      _log.info("Executing ${job.toString()} has no mapReadResult for tile ${job.tile.toString()}");
       return null;
     }
     _processReadMapData(renderContext, mapReadResult);

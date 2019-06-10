@@ -4,6 +4,8 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
+import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
+import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 import 'package:mapsforge_flutter/src/view/mapview.dart';
@@ -12,8 +14,6 @@ import '../../../core.dart';
 import 'backgroundpainter.dart';
 import 'contextmenu.dart';
 import 'layerpainter.dart';
-import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
-import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 
 class FlutterMapView extends StatefulWidget implements MapView {
   final MapModel mapModel;
@@ -89,6 +89,7 @@ class _FlutterMapState extends State<FlutterMapView> {
       children: <Widget>[
         FlutterGestureDetector(
           mapModel: widget.mapModel,
+          position: position,
           child: Stack(
             children: <Widget>[
               CustomPaint(

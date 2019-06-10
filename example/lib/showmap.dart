@@ -80,6 +80,7 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("Zoom out"),
               onPressed: () {
+                if (mapModel.mapViewPosition.zoomLevel == 0) return;
                 mapModel.zoomOut();
               },
             ),

@@ -57,7 +57,7 @@ class DeprecatedStandardRenderer implements RenderCallback {
    */
   LatLong getStartPosition() {
     if (this.mapDataStore != null) {
-      return this.mapDataStore.startPosition();
+      return this.mapDataStore.startPosition;
     }
     return null;
   }
@@ -66,8 +66,8 @@ class DeprecatedStandardRenderer implements RenderCallback {
    * @return the start zoom level (may be null).
    */
   int getStartZoomLevel() {
-    if (this.mapDataStore != null && null != this.mapDataStore.startZoomLevel()) {
-      return this.mapDataStore.startZoomLevel();
+    if (this.mapDataStore != null && null != this.mapDataStore.startZoomLevel) {
+      return this.mapDataStore.startZoomLevel;
     }
     return DEFAULT_START_ZOOM_LEVEL;
   }

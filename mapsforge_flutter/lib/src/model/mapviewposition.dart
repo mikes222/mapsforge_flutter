@@ -60,7 +60,8 @@ class MapViewPosition {
         _tileSize = old._tileSize,
         _mercatorProjection = old._mercatorProjection {
     //calculateBoundingBox(tileSize, viewSize);
-    _leftUpper = Mappoint(left, upper);
+    _leftUpper = Mappoint(min(max(left, -viewSize.width / 2), mercatorProjection.mapSize - viewSize.width / 2),
+        min(max(upper, -viewSize.height / 2), mercatorProjection.mapSize - viewSize.height / 2));
 
     double rightX = _leftUpper.x + viewSize.width;
     double bottomY = _leftUpper.y + viewSize.height;

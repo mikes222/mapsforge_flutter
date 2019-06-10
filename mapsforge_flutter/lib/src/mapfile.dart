@@ -521,7 +521,7 @@ class MapFile extends MapDataStore {
 //  }
 
   @override
-  BoundingBox boundingBox() {
+  BoundingBox get boundingBox {
     return getMapFileInfo().boundingBox;
   }
 
@@ -1229,7 +1229,7 @@ class MapFile extends MapDataStore {
   }
 
   @override
-  LatLong startPosition() {
+  LatLong get startPosition {
     if (null != getMapFileInfo().startPosition) {
       return getMapFileInfo().startPosition;
     }
@@ -1237,7 +1237,7 @@ class MapFile extends MapDataStore {
   }
 
   @override
-  int startZoomLevel() {
+  int get startZoomLevel {
     if (null != getMapFileInfo().startZoomLevel) {
       return getMapFileInfo().startZoomLevel;
     }

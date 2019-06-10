@@ -72,7 +72,7 @@ abstract class MapDataStore {
    *
    * @return bounding box of area.
    */
-  BoundingBox boundingBox();
+  BoundingBox get boundingBox;
 
   /*
      * Closes the map database.
@@ -118,8 +118,7 @@ abstract class MapDataStore {
    * @return map data for the tile.
    */
   Future<MapReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
-    if (upperLeft.tileX > lowerRight.tileX ||
-        upperLeft.tileY > lowerRight.tileY) {
+    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
     MapReadResult result = new MapReadResult();
@@ -151,8 +150,7 @@ abstract class MapDataStore {
    * @return map data for the tile.
    */
   Future<MapReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
-    if (upperLeft.tileX > lowerRight.tileX ||
-        upperLeft.tileY > lowerRight.tileY) {
+    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
     MapReadResult result = new MapReadResult();
@@ -184,8 +182,7 @@ abstract class MapDataStore {
    * @return map data for the tile.
    */
   Future<MapReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
-    if (upperLeft.tileX > lowerRight.tileX ||
-        upperLeft.tileY > lowerRight.tileY) {
+    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
     MapReadResult result = new MapReadResult();
@@ -203,14 +200,14 @@ abstract class MapDataStore {
    *
    * @return the start position, if available.
    */
-  LatLong startPosition();
+  LatLong get startPosition;
 
   /**
    * Gets the initial zoom level.
    *
    * @return the start zoom level.
    */
-  int startZoomLevel();
+  int get startZoomLevel;
 
   /**
    * Returns true if MapDatabase contains tile.
