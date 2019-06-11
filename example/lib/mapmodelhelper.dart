@@ -45,25 +45,29 @@ class MapModelHelper {
 
     DummyRenderer dummyRenderer = DummyRenderer();
 
-    MarkerDataStore markerDataStore = MarkerDataStore();
-    markerDataStore.markers.add(BasicMarker(
-      src: "jar:symbols/windsock.svg",
-      symbolCache: symbolCache,
-      width: 20,
-      height: 20,
-      graphicFactory: graphicFactory,
-      caption: "TestMarker",
-      latitude: 48.089355,
-      longitude: 16.311509,
-    )..init());
+    FileBitmapCache bitmapCache = FileBitmapCache(dataStoreRenderer.getRenderKey());
+//    bitmapCache.purge();
 
     MapModel mapModel = MapModel(
       displayModel: displayModel,
       graphicsFactory: graphicFactory,
       renderer: dataStoreRenderer,
       symbolCache: symbolCache,
-      markerDataStore: markerDataStore,
+      bitmapCache: bitmapCache,
     );
+
+    MarkerDataStore markerDataStore = MarkerDataStore();
+    markerDataStore.markers.add(BasicMarker(
+      src: "jar:symbols/windsock.svg",
+      symbolCache: symbolCache,
+      width: 20,
+      height: 20,
+      caption: "TestMarker",
+      latitude: 48.089355,
+      longitude: 16.311509,
+    ));
+    mapModel.markerDataStores.add(markerDataStore);
+
     return mapModel;
   }
 }

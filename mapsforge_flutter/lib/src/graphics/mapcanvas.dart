@@ -24,8 +24,9 @@ abstract class MapCanvas {
 
   void drawBitmap(
       {@required Bitmap bitmap,
-      double left,
-      double top,
+      @required double left,
+      @required double top,
+      @required MapPaint paint,
       int srcLeft,
       int srcTop,
       int srcRight,

@@ -51,9 +51,11 @@ class RenderThemeBuilder {
    * @return a new {@code RenderTheme} instance.
    */
   RenderTheme build() {
+    assert(ruleBuilderStack.length > 0);
     RenderTheme renderTheme = RenderTheme(this);
     ruleBuilderStack.forEach((ruleBuilder) {
       Rule rule = ruleBuilder.build();
+      assert(rule != null);
       renderTheme.addRule(rule);
     });
     renderTheme.setLevels(level);
@@ -61,7 +63,10 @@ class RenderThemeBuilder {
   }
 
   Future<void> parseXml(String content) async {
+    assert(content.length > 10);
     XmlDocument document = parse(content);
+    assert(document.children.length > 0);
+    bool foundRendertheme = false;
     for (XmlNode node in document.children) {
       switch (node.nodeType) {
         case XmlNodeType.TEXT:
@@ -72,6 +77,7 @@ class RenderThemeBuilder {
           {
             XmlElement element = node;
             if (element.name.toString() != "rendertheme") throw Exception("Invalid root node ${element.name.toString()}");
+            foundRendertheme = true;
             await _parseRendertheme(element);
             break;
           }
@@ -95,6 +101,7 @@ class RenderThemeBuilder {
           break;
       }
     }
+    assert(foundRendertheme);
   }
 
   Future<void> _parseRendertheme(XmlElement rootElement) async {
@@ -129,6 +136,9 @@ class RenderThemeBuilder {
         throw Exception(name + "=" + value);
       }
     });
+    assert(rootElement.children.length > 0);
+    bool foundElement = false;
+    bool foundRule = false;
     for (XmlNode node in rootElement.children) {
       switch (node.nodeType) {
         case XmlNodeType.TEXT:
@@ -138,11 +148,13 @@ class RenderThemeBuilder {
         case XmlNodeType.ELEMENT:
           {
             XmlElement element = node;
+            foundElement = true;
             if (element.name.toString() == "rule") {
               RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, level++);
               await ruleBuilder.parse(element);
               level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);
+              foundRule = true;
               break;
             } else if ("hillshading" == element.name.toString()) {
               String category = null;
@@ -200,5 +212,6 @@ class RenderThemeBuilder {
           break;
       }
     }
+    assert(foundElement);
   }
 }

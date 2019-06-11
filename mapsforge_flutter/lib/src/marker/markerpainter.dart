@@ -36,7 +36,7 @@ class MarkerPainter implements CustomPainter {
   @override
   bool shouldRepaint(MarkerPainter oldDelegate) {
 //    if (oldDelegate?.position != position) return true;
-    return false;
+    return markerRenderer.shouldRepaint();
   }
 
   @override

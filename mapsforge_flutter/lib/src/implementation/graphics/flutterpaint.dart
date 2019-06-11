@@ -105,6 +105,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   @override
   void setBitmapShader(Bitmap bitmap) {
+    assert(bitmap != null);
     if (_shaderBitmap != null) _shaderBitmap.decrementRefCount();
     _shaderBitmap = bitmap;
     bitmap.incrementRefCount();

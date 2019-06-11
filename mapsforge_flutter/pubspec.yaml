@@ -32,6 +32,9 @@ dependencies:
   # BSD License
   image: 2.1.4
 
+  # BSD License
+  path_provider: 1.1.0
+
 
 dev_dependencies:
   flutter_test:

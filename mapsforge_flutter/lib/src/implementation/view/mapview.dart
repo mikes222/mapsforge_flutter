@@ -37,9 +37,7 @@ class _FlutterMapState extends State<FlutterMapView> {
 
   TileLayer _tileLayer;
 
-  MarkerRenderer _markerRenderer;
-
-  TapEvent _lastTapEvent;
+  List<MarkerRenderer> _markerRenderer = List();
 
   GlobalKey _keyView = GlobalKey();
 
@@ -49,9 +47,13 @@ class _FlutterMapState extends State<FlutterMapView> {
     _tileLayer = TileLayer(
       displayModel: widget.mapModel.displayModel,
       jobRenderer: widget.mapModel.renderer,
+      bitmapCache: widget.mapModel.bitmapCache,
+      graphicFactory: widget.mapModel.graphicsFactory,
     );
-    _markerRenderer =
-        MarkerRenderer(widget.mapModel.graphicsFactory, widget.mapModel.displayModel, widget.mapModel.markerDataStore ?? MarkerDataStore());
+    widget.mapModel.markerDataStores.forEach((MarkerDataStore dataStore) {
+      MarkerRenderer markerRenderer = MarkerRenderer(widget.mapModel.graphicsFactory, widget.mapModel.displayModel, dataStore);
+      _markerRenderer.add(markerRenderer);
+    });
   }
 
   @override
@@ -67,6 +69,7 @@ class _FlutterMapState extends State<FlutterMapView> {
       builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data.hasPosition()) {
+//            _log.info("I have a new position ${snapshot.data.toString()}");
             return _buildMapView(snapshot.data);
           }
           return Center(
@@ -74,6 +77,7 @@ class _FlutterMapState extends State<FlutterMapView> {
           );
         }
         if (widget.mapModel.mapViewPosition != null && widget.mapModel.mapViewPosition.hasPosition()) {
+//          _log.info("I have an old position ${widget.mapModel.mapViewPosition.toString()}");
           return _buildMapView(widget.mapModel.mapViewPosition);
         }
         return Center(
@@ -84,6 +88,43 @@ class _FlutterMapState extends State<FlutterMapView> {
   }
 
   Widget _buildMapView(MapViewPosition position) {
+    List<Widget> widgets = List();
+    if (widget.mapModel.displayModel.backgroundColor != Colors.transparent.value) {
+      widgets.add(
+        CustomPaint(
+          foregroundPainter: BackgroundPainter(
+              mapViewDimension: widget.mapModel.mapViewDimension, position: position, displayModel: widget.mapModel.displayModel),
+          child: Container(),
+        ),
+      );
+    }
+
+    widgets.add(
+      StreamBuilder<Job>(
+        stream: _tileLayer.observeJob,
+        builder: (BuildContext context, AsyncSnapshot<Job> snapshot) {
+          if (snapshot.hasData) {
+            _tileLayer.jobResult(snapshot.data);
+          }
+          return CustomPaint(
+            foregroundPainter: TilePainter(widget.mapModel.mapViewDimension, _tileLayer, position),
+            child: Container(),
+          );
+        },
+      ),
+    );
+
+    widgets.addAll(_markerRenderer
+        .map((MarkerRenderer markerRenderer) => CustomPaint(
+              foregroundPainter: MarkerPainter(
+                  mapViewDimension: widget.mapModel.mapViewDimension,
+                  position: position,
+                  displayModel: widget.mapModel.displayModel,
+                  markerRenderer: markerRenderer),
+              child: Container(),
+            ))
+        .toList());
+
     return Stack(
       key: _keyView,
       children: <Widget>[
@@ -91,33 +132,7 @@ class _FlutterMapState extends State<FlutterMapView> {
           mapModel: widget.mapModel,
           position: position,
           child: Stack(
-            children: <Widget>[
-              CustomPaint(
-                foregroundPainter: BackgroundPainter(
-                    mapViewDimension: widget.mapModel.mapViewDimension, position: position, displayModel: widget.mapModel.displayModel),
-                child: Container(),
-              ),
-              StreamBuilder<Job>(
-                stream: _tileLayer.observeJob,
-                builder: (BuildContext context, AsyncSnapshot<Job> snapshot) {
-                  if (snapshot.hasData) {
-                    _tileLayer.jobResult(snapshot.data);
-                  }
-                  return CustomPaint(
-                    foregroundPainter: TilePainter(widget.mapModel.mapViewDimension, _tileLayer, position),
-                    child: Container(),
-                  );
-                },
-              ),
-              CustomPaint(
-                foregroundPainter: MarkerPainter(
-                    mapViewDimension: widget.mapModel.mapViewDimension,
-                    position: position,
-                    displayModel: widget.mapModel.displayModel,
-                    markerRenderer: _markerRenderer),
-                child: Container(),
-              ),
-            ],
+            children: widgets,
           ),
         ),
         StreamBuilder<TapEvent>(

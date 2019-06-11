@@ -1,14 +1,9 @@
-import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
-import 'package:mapsforge_flutter/src/utils/mercatorprojection.dart';
 
 import '../model/observableinterface.dart';
 
 /// Interface for tile image caches.
 abstract class TileCache extends ObservableInterface {
-  final Map<int, _ZoomLevelTileCache> _caches = Map();
-
   /**
    * Destroys this cache.
    * <p/>
@@ -20,11 +15,6 @@ abstract class TileCache extends ObservableInterface {
    * unexpected results when used with features introduced in 0.5.1 or later.
    */
   void destroy();
-
-  /**
-   * @return the capacity of the first level of a multi-level cache.
-   */
-  int getCapacityFirstLevel();
 
   /**
    * Purges this cache.
@@ -39,62 +29,5 @@ abstract class TileCache extends ObservableInterface {
    */
   void purge();
 
-  Tile getTile(int x, int y, int zoomLevel, double tileSize) {
-    _ZoomLevelTileCache cache = _caches[zoomLevel];
-    if (cache == null) {
-      cache = _ZoomLevelTileCache(zoomLevel, tileSize);
-      _caches[zoomLevel] = cache;
-    }
-    return cache.getTile(x, y);
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class _ZoomLevelTileCache {
-  Cache _tilePositions = new SimpleCache<int, Tile>(
-      storage: new SimpleStorage<int, Tile>(size: 200),
-      onEvict: (idx, tile) {
-        tile.dispose();
-      });
-
-  int xCount;
-
-  int yCount;
-
-  final double tileSize;
-
-  final int zoomLevel;
-
-  _ZoomLevelTileCache(this.zoomLevel, this.tileSize)
-      : assert(zoomLevel >= 0),
-        assert(tileSize > 0) {
-    _getTilePositions(zoomLevel, tileSize);
-    //_bitmaps = List(_tilePositions.length);
-  }
-
-  void _getTilePositions(int zoomLevel, double tileSize) {
-    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
-    int tileLeft = 0;
-    int tileTop = 0;
-    int tileRight = mercatorProjectionImpl.longitudeToTileX(MercatorProjectionImpl.LONGITUDE_MAX);
-    int tileBottom = mercatorProjectionImpl.latitudeToTileY(MercatorProjectionImpl.LATITUDE_MIN);
-
-    xCount = tileRight - tileLeft + 1;
-    yCount = tileBottom - tileTop + 1;
-    assert(xCount >= 0);
-    assert(yCount >= 0);
-
-    //_tilePositions = List<Tile>(xCount * yCount);
-  }
-
-  Tile getTile(int x, int y) {
-    Tile result = _tilePositions.get(y * xCount + x);
-    if (result == null) {
-      result = Tile(x, y, zoomLevel, tileSize);
-      _tilePositions[y * xCount + x] = result;
-    }
-    //assert(result != null);
-    return result;
-  }
+  Tile getTile(int x, int y, int zoomLevel, double tileSize);
 }

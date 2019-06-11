@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 
 class FileHelper {
@@ -30,7 +29,7 @@ class FileHelper {
     bool exists = await savedDir.exists();
     if (!exists) {
       print("Creating directory $result");
-      savedDir.create(recursive: true);
+      await savedDir.create(recursive: true);
     }
     return result;
   }
@@ -50,37 +49,6 @@ class FileHelper {
       return true;
     }
     return false;
-  }
-
-  static void downloadFile(String source, String destination) async {
-    String _localPath = await findLocalPath();
-
-    String tempDestination = destination;
-    if (source.endsWith(".gz") && !tempDestination.endsWith(".gz")) {
-      tempDestination += ".gz";
-    }
-
-    File file = File(_localPath + "/" + destination);
-
-    print("file will be downloaded from $source and stored at $_localPath/$tempDestination");
-    final taskId = await FlutterDownloader.enqueue(
-      url: source,
-      savedDir: _localPath,
-      showNotification: true, // show download progress in status bar (for Android)
-      openFileFromNotification: false, // click on notification to open downloaded file (for Android)
-    );
-    print("taskId $taskId");
-
-    FlutterDownloader.registerCallback((id, status, progress) {
-      // Download task (5bb2cc9b-986c-4feb-bd07-880d88269d68) is in status (DownloadTaskStatus(3)) and process (100)
-      if (id != taskId) return;
-      if (status == DownloadTaskStatus.complete) {
-        // finished
-        FlutterDownloader.registerCallback(null);
-        if (source.endsWith(".gz") && !destination.endsWith(".gz")) unzip(tempDestination, destination);
-      }
-      print('Download task ($id) is in status ($status) and process ($progress)');
-    });
   }
 
   static void unzip(String zippedFilename, String filename) async {

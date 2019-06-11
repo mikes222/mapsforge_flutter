@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:rxdart/rxdart.dart';
@@ -16,7 +17,8 @@ class MapModel {
   final GraphicFactory graphicsFactory;
   final JobRenderer renderer;
   final SymbolCache symbolCache;
-  final MarkerDataStore markerDataStore;
+  final List<MarkerDataStore> markerDataStores = List();
+  final BitmapCache bitmapCache;
   MapViewPosition _mapViewPosition;
 
   Subject<MapViewPosition> _injectPosition = PublishSubject();
@@ -25,27 +27,39 @@ class MapModel {
   Subject<TapEvent> _injectTap = PublishSubject();
   Observable<TapEvent> _observeTap;
 
+  Subject<GestureEvent> _injectGesture = PublishSubject();
+  Observable<GestureEvent> _observeGesture;
+
   MapModel({
     @required this.displayModel,
     @required this.renderer,
     @required this.graphicsFactory,
     @required this.symbolCache,
-    this.markerDataStore,
+    this.bitmapCache,
   })  : assert(displayModel != null),
         assert(renderer != null),
         assert(graphicsFactory != null),
         assert(symbolCache != null),
         mapViewDimension = MapViewDimension() {
-    _observePosition = _injectPosition.asyncMap((pos) async {
-      return pos;
-    }).asBroadcastStream();
+    _observePosition = _injectPosition.asBroadcastStream();
 
     _observeTap = _injectTap.asBroadcastStream();
+    _observeGesture = _injectGesture.asBroadcastStream();
+  }
+
+  void dispose() {
+    markerDataStores.forEach((datastore) {
+      datastore.dispose();
+    });
+    symbolCache.dispose();
+    bitmapCache.dispose();
   }
 
   Observable<MapViewPosition> get observePosition => _observePosition;
 
   Observable<TapEvent> get observeTap => _observeTap;
+
+  Observable<GestureEvent> get observeGesture => _observeGesture;
 
   MapViewPosition get mapViewPosition => _mapViewPosition;
 
@@ -85,15 +99,17 @@ class MapModel {
     }
   }
 
-  void setZoomLevel(int zoomLevel) {
+  MapViewPosition setZoomLevel(int zoomLevel) {
     if (_mapViewPosition != null) {
       MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition, zoomLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
+      return newPosition;
     } else {
       MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
+      return newPosition;
     }
   }
 
@@ -111,10 +127,14 @@ class MapModel {
 
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
-
+    _mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     TapEvent event = TapEvent(_mapViewPosition.mercatorProjection.pixelYToLatitude(_mapViewPosition.leftUpper.y + upper),
         _mapViewPosition.mercatorProjection.pixelXToLongitude(_mapViewPosition.leftUpper.x + left), left, upper);
     _injectTap.add(event);
+  }
+
+  void gestureEvent() {
+    _injectGesture.add(GestureEvent());
   }
 }
 
@@ -135,3 +155,7 @@ class TapEvent {
         assert(x != null),
         assert(y != null);
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+class GestureEvent {}

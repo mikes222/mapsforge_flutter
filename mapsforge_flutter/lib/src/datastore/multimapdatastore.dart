@@ -183,17 +183,20 @@ class MultiMapDataStore extends MapDataStore {
 
   Future<MapReadResult> _readMapData(Tile tile, bool deduplicate) async {
     MapReadResult mapReadResult = new MapReadResult();
+    bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
         MapReadResult result = await mdb.readMapDataSingle(tile);
         if (result == null) {
           continue;
         }
+        found = true;
         bool isWater = mapReadResult.isWater & result.isWater;
         mapReadResult.isWater = isWater;
         mapReadResult.addDeduplicate(result, deduplicate);
       }
     }
+    if (!found) return null;
     return mapReadResult;
   }
 
@@ -217,17 +220,20 @@ class MultiMapDataStore extends MapDataStore {
 
   Future<MapReadResult> _readMapDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
     MapReadResult mapReadResult = new MapReadResult();
+    bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(upperLeft)) {
         MapReadResult result = await mdb.readMapData(upperLeft, lowerRight);
         if (result == null) {
           continue;
         }
+        found = true;
         bool isWater = mapReadResult.isWater & result.isWater;
         mapReadResult.isWater = isWater;
         mapReadResult.addDeduplicate(result, deduplicate);
       }
     }
+    if (!found) return null;
     return mapReadResult;
   }
 

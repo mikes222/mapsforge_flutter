@@ -39,13 +39,13 @@ class MapViewPosition {
   MapViewPosition.zoomOut(MapViewPosition old)
       : _latitude = old._latitude,
         _longitude = old._longitude,
-        zoomLevel = old.zoomLevel - 1,
+        zoomLevel = max(old.zoomLevel - 1, 0),
         _tileSize = old._tileSize;
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
       : _latitude = old._latitude,
         _longitude = old._longitude,
-        this.zoomLevel = zoomLevel,
+        this.zoomLevel = max(zoomLevel, 0),
         _tileSize = old._tileSize;
 
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
@@ -127,4 +127,9 @@ class MapViewPosition {
 
   @override
   int get hashCode => _latitude.hashCode ^ _longitude.hashCode ^ zoomLevel.hashCode;
+
+  @override
+  String toString() {
+    return 'MapViewPosition{_latitude: $_latitude, _longitude: $_longitude, _tileSize: $_tileSize, zoomLevel: $zoomLevel, boundingBox: $boundingBox, _leftUpper: $_leftUpper}';
+  }
 }

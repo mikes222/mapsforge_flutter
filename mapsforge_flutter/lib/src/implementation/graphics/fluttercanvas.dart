@@ -53,6 +53,7 @@ class FlutterCanvas extends MapCanvas {
       {@required Bitmap bitmap,
       @required double left,
       @required double top,
+      @required MapPaint paint,
       int srcLeft,
       int srcTop,
       int srcRight,
@@ -66,7 +67,7 @@ class FlutterCanvas extends MapCanvas {
     assert(bitmap != null);
     assert(left != null);
     assert(top != null);
-    ui.Paint paint = ui.Paint();
+    assert(paint != null);
 
     ui.Image bmp = (bitmap as FlutterBitmap).bitmap;
     assert(bmp != null);
@@ -75,9 +76,10 @@ class FlutterCanvas extends MapCanvas {
     if (matrix != null) {
       FlutterMatrix f = matrix;
       if (f.theta != null) {
+        // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
         double angle = f.theta; // 30 * pi / 180
-        final double r = sqrt(f.pivotX * f.pivotX + f.pivotY * f.pivotY) / 2;
-        final double alpha = atan(f.pivotY / f.pivotX);
+        final double r = sqrt(f.pivotX * f.pivotX + f.pivotY * f.pivotY);
+        final double alpha = f.pivotX == 0 ? pi / 90 * f.pivotY.sign : atan(f.pivotY / f.pivotX);
         final double beta = alpha + angle;
         final shiftY = r * sin(beta);
         final shiftX = r * cos(beta);
@@ -86,14 +88,14 @@ class FlutterCanvas extends MapCanvas {
         uiCanvas.save();
         uiCanvas.translate(translateX + left, translateY + top);
         uiCanvas.rotate(angle);
-        uiCanvas.drawImage(bmp, ui.Offset.zero, paint);
+        uiCanvas.drawImage(bmp, ui.Offset.zero, (paint as FlutterPaint).paint);
         uiCanvas.restore();
         return;
       }
     }
     //paint.color = Colors.red;
     //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
-    uiCanvas.drawImage(bmp, ui.Offset(left, top), paint);
+    uiCanvas.drawImage(bmp, ui.Offset(left, top), (paint as FlutterPaint).paint);
   }
 
   @override

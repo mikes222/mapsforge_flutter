@@ -2,6 +2,7 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -32,12 +33,14 @@ class LineSymbol extends RenderInstruction {
   bool rotate;
   Scale scale = Scale.STROKE;
   String src;
+  MapPaint symbolPaint;
 
   LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
       : dyScaled = new Map(),
         super(graphicFactory, displayModel, symbolCache) {
     this.display = Display.IFSPACE;
     this.rotate = true;
+    this.symbolPaint = graphicFactory.createPaint();
   }
 
   @override
@@ -118,7 +121,7 @@ class LineSymbol extends RenderInstruction {
 
     if (this.bitmap != null) {
       renderCallback.renderWaySymbol(renderContext, this.display, this.priority, this.bitmap, dyScale, this.alignCenter, this.repeat,
-          this.repeatGap, this.repeatStart, this.rotate, way);
+          this.repeatGap, this.repeatStart, this.rotate, way, symbolPaint);
     }
   }
 

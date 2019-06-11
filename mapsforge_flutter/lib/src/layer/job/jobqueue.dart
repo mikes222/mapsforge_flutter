@@ -1,7 +1,7 @@
 import 'dart:isolate';
 
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/layer/cache/memorybitmapcache.dart';
+import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/dummyrenderer.dart';
 import 'package:meta/meta.dart';
@@ -27,10 +27,10 @@ class JobQueue {
 
   StaticRenderClass _renderClass;
 
-  JobQueue(this.displayModel, this.jobRenderer)
+  JobQueue(this.displayModel, this.jobRenderer, BitmapCache bitmapCache)
       : assert(displayModel != null),
         assert(jobRenderer != null),
-        _renderClass = StaticRenderClass(jobRenderer: jobRenderer) {
+        _renderClass = StaticRenderClass(jobRenderer: jobRenderer, bitmapCache: bitmapCache) {
     _inject.listen((JobQueueItem item) {
       process(item);
     });
@@ -120,11 +120,13 @@ class StaticRenderClass {
 
   int _roundRobin = 0;
 
-  MemoryBitmapCache bitmapCache = MemoryBitmapCache();
+  final BitmapCache bitmapCache;
 
   final JobRenderer jobRenderer;
 
-  StaticRenderClass({@required this.jobRenderer}) : assert(jobRenderer != null) {
+  StaticRenderClass({@required this.jobRenderer, @required this.bitmapCache})
+      : assert(jobRenderer != null),
+        assert(bitmapCache != null) {
     for (int i = 0; i < _lock.length; ++i) {
       _lock[i] = Lock();
     }
@@ -134,7 +136,7 @@ class StaticRenderClass {
     for (Job job in item.jobs) {
       _lock[++_roundRobin % _lock.length].synchronized(() async {
         if (item.outdated) return null;
-        TileBitmap tileBitmap = bitmapCache.getTileBitmap(job.tile);
+        TileBitmap tileBitmap = await bitmapCache.getTileBitmapAsync(job.tile);
         if (tileBitmap != null) {
           job.tileBitmap = tileBitmap;
           callback(job);
@@ -144,6 +146,10 @@ class StaticRenderClass {
         if (tileBitmap != null) {
           bitmapCache.addTileBitmap(job.tile, tileBitmap);
           job.tileBitmap = tileBitmap;
+          callback(job);
+        } else {
+          // no datastore for that tile
+          //job.tileBitmap = null;
           callback(job);
         }
         return job;

@@ -2,7 +2,6 @@ import 'package:mapsforge_flutter/src/rendertheme/xml/renderthemebuilder.dart';
 
 import '../../datastore/pointofinterest.dart';
 import '../../renderer/polylinecontainer.dart';
-import '../../renderer/standardrenderer.dart';
 import '../../rendertheme/renderinstruction/hillshading.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/rule/rule.dart';
@@ -10,7 +9,6 @@ import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
-import 'negativerule.dart';
 
 /**
  * A RenderTheme defines how ways and nodes are drawn.
@@ -90,7 +88,7 @@ class RenderTheme {
    * @param way
    */
   Future matchClosedWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
-    matchWay(renderCallback, renderContext, Closed.YES, way);
+    _matchWay(renderCallback, renderContext, Closed.YES, way);
   }
 
   /**
@@ -101,7 +99,7 @@ class RenderTheme {
    * @param way
    */
   void matchLinearWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
-    matchWay(renderCallback, renderContext, Closed.NO, way);
+    _matchWay(renderCallback, renderContext, Closed.NO, way);
   }
 
   /**
@@ -188,7 +186,7 @@ class RenderTheme {
     this.levels = levels;
   }
 
-  void matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) {
+  void _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) {
     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, closed);
 
     List<RenderInstruction> matchingList = this.wayMatchingCache[matchingCacheKey];
@@ -224,4 +222,25 @@ class RenderTheme {
   String toString() {
     return 'RenderTheme{baseStrokeWidth: $baseStrokeWidth, baseTextSize: $baseTextSize, hasBackgroundOutside: $hasBackgroundOutside, levels: $levels, mapBackground: $mapBackground, mapBackgroundOutside: $mapBackgroundOutside, wayMatchingCache: $wayMatchingCache, poiMatchingCache: $poiMatchingCache, rulesList: $rulesList, hillShadings: $hillShadings, strokeScales: $strokeScales, textScales: $textScales}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RenderTheme &&
+          runtimeType == other.runtimeType &&
+          baseStrokeWidth == other.baseStrokeWidth &&
+          baseTextSize == other.baseTextSize &&
+          hasBackgroundOutside == other.hasBackgroundOutside &&
+          levels == other.levels &&
+          mapBackground == other.mapBackground &&
+          mapBackgroundOutside == other.mapBackgroundOutside;
+
+  @override
+  int get hashCode =>
+      baseStrokeWidth.hashCode ^
+      baseTextSize.hashCode ^
+      hasBackgroundOutside.hashCode ^
+      levels.hashCode ^
+      mapBackground.hashCode ^
+      mapBackgroundOutside.hashCode;
 }

@@ -1,3 +1,6 @@
+import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
+import 'package:meta/meta.dart';
+
 import '../graphics/bitmap.dart';
 import '../graphics/filter.dart';
 import '../graphics/mapcanvas.dart';
@@ -10,8 +13,12 @@ class SymbolContainer extends MapElementContainer {
   final bool alignCenter;
   Bitmap symbol;
   final double theta;
+  final MapPaint paint;
 
-  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = false}) : super(point, display, priority) {
+  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = false, @required this.paint})
+      : assert(paint != null),
+        super(point, display, priority) {
+    assert(symbol != null);
     if (alignCenter) {
       double halfWidth = this.symbol.getWidth() / 2;
       double halfHeight = this.symbol.getHeight() / 2;
@@ -39,6 +46,7 @@ class SymbolContainer extends MapElementContainer {
         matrix: matrix,
         filter: filter,
         left: this.xy.x - origin.x + boundary.left,
-        top: this.xy.y - origin.y + boundary.top);
+        top: this.xy.y - origin.y + boundary.top,
+        paint: paint);
   }
 }

@@ -38,4 +38,9 @@ class DummyRenderer extends JobRenderer {
     FlutterTileBitmap tileBitmap = FlutterTileBitmap(img);
     return tileBitmap; //Future.value(tileBitmap);
   }
+
+  @override
+  String getRenderKey() {
+    return "dummy";
+  }
 }

@@ -16,8 +16,19 @@ import '../renderer/rendererutils.dart';
 class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 45;
 
-  static void renderSymbol(Bitmap symbolBitmap, Display display, int priority, double dy, bool alignCenter, bool repeatSymbol,
-      int repeatGap, int repeatStart, bool rotate, List<List<Mappoint>> coordinates, List<MapElementContainer> currentItems) {
+  static void renderSymbol(
+      Bitmap symbolBitmap,
+      Display display,
+      int priority,
+      double dy,
+      bool alignCenter,
+      bool repeatSymbol,
+      int repeatGap,
+      int repeatStart,
+      bool rotate,
+      List<List<Mappoint>> coordinates,
+      List<MapElementContainer> currentItems,
+      MapPaint symbolPaint) {
     int skipPixels = repeatStart;
 
     List<Mappoint> c;
@@ -61,7 +72,8 @@ class WayDecorator {
 
         Mappoint point = new Mappoint(previousX, previousY);
 
-        currentItems.add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter));
+        currentItems
+            .add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter, paint: symbolPaint));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {

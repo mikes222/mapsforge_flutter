@@ -65,7 +65,7 @@ abstract class RenderInstruction {
       return null;
     }
 
-    return symbolCache.getBitmap(src, width.round(), height.round(), percent);
+    return symbolCache.getOrCreateBitmap(src, width.round(), height.round(), percent);
   }
 
   void destroy();

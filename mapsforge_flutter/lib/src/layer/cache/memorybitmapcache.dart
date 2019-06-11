@@ -2,12 +2,19 @@ import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
-class MemoryBitmapCache {
+import 'bitmapcache.dart';
+
+class MemoryBitmapCache extends BitmapCache {
   Cache _bitmaps = new SimpleCache<Tile, TileBitmap>(
       storage: new SimpleStorage<Tile, TileBitmap>(size: 100),
       onEvict: (key, item) {
         item.decrementRefCount();
       });
+
+  @override
+  void dispose() {
+    _bitmaps.clear();
+  }
 
   TileBitmap getTileBitmap(Tile tile) {
     return _bitmaps.get(tile);
@@ -21,5 +28,10 @@ class MemoryBitmapCache {
       bitmap.decrementRefCount();
     }
     _bitmaps[tile] = tileBitmap;
+  }
+
+  @override
+  void purge() {
+    _bitmaps.clear();
   }
 }

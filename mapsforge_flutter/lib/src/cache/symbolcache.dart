@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image/image.dart' as imag;
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
@@ -26,7 +25,27 @@ class SymbolCache {
 
   SymbolCache(this.graphicFactory, this.displayModel);
 
-  Future<ResourceBitmap> getBitmap(String src, int width, int height, int percent) async {
+  ResourceBitmap getBitmap(String src, int width, int height, int percent) {
+    String key = "$src-$width-$height-$percent";
+    ResourceBitmap result = cache[key];
+    if (result != null) return result;
+    _createBitmap(graphicFactory, displayModel, null, src, width, height, percent).then((result) {
+      if (result != null && cache[key] == null) {
+        result.incrementRefCount();
+        cache[key] = result;
+      }
+    });
+    return result;
+  }
+
+  void dispose() {
+    cache.forEach((key, bitmap) {
+      bitmap.decrementRefCount();
+    });
+    cache.clear();
+  }
+
+  Future<ResourceBitmap> getOrCreateBitmap(String src, int width, int height, int percent) async {
     ResourceBitmap result = cache["$src-$width-$height-$percent"];
     if (result != null) return result;
     result = await _createBitmap(graphicFactory, displayModel, null, src, width, height, percent);
@@ -79,10 +98,11 @@ class SymbolCache {
     } else if (src.toLowerCase().endsWith(".png")) {
       ByteData content = await rootBundle.load(src);
       if (width != 0 && height != 0) {
-        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
-        image = imag.copyResize(image, width: width, height: height);
+//        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
+//        image = imag.copyResize(image, width: width, height: height);
 
-        var codec = await ui.instantiateImageCodec(image.getBytes());
+//        var codec = await ui.instantiateImageCodec(imag.encodePng(image));
+        var codec = await ui.instantiateImageCodec(content.buffer.asUint8List(), targetHeight: height, targetWidth: width);
         // add additional checking for number of frames etc here
         var frame = await codec.getNextFrame();
         ui.Image img = frame.image;

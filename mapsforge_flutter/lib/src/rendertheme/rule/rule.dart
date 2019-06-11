@@ -79,7 +79,7 @@ abstract class Rule {
 
   void matchWay(RenderCallback renderCallback, PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction> matchingList,
       final RenderContext renderContext) {
-//    print("Hello, this is a testing rule for ${way.toString()}");
+    //print("Hello, this is a testing rule for ${way.toString()}");
     if (matchesWay(way.getTags(), tile.zoomLevel, closed)) {
       for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
         this.renderInstructions.elementAt(i).renderWay(renderCallback, renderContext, way);

@@ -125,6 +125,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   void _renderWay(final RenderContext renderContext, PolylineContainer way) {
     renderContext.setDrawingLayers(way.getLayer());
+    //_log.info("drawing way " + way.toString());
     if (way.isClosedWay) {
       renderContext.renderTheme.matchClosedWay(this, renderContext, way);
     } else {
@@ -173,10 +174,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderAreaSymbol(RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way) {
+  void renderAreaSymbol(
+      RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way, MapPaint symbolPaint) {
     if (renderLabels) {
       Mappoint centerPosition = way.getCenterAbsolute();
-      renderContext.labels.add(new SymbolContainer(centerPosition, display, priority, symbol));
+      renderContext.labels.add(new SymbolContainer(centerPosition, display, priority, symbol, paint: symbolPaint));
     }
   }
 
@@ -200,10 +202,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderPointOfInterestSymbol(RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi) {
+  void renderPointOfInterestSymbol(
+      RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint symbolPaint) {
     if (renderLabels) {
       Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
-      renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol));
+      renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint));
     }
   }
 
@@ -214,10 +217,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderWaySymbol(RenderContext renderContext, Display display, int priority, Bitmap symbol, double dy, bool alignCenter, bool repeat,
-      double repeatGap, double repeatStart, bool rotate, PolylineContainer way) {
+      double repeatGap, double repeatStart, bool rotate, PolylineContainer way, MapPaint symbolPaint) {
     if (renderLabels) {
       WayDecorator.renderSymbol(symbol, display, priority, dy, alignCenter, repeat, repeatGap.toInt(), repeatStart.toInt(), rotate,
-          way.getCoordinatesAbsolute(), renderContext.labels);
+          way.getCoordinatesAbsolute(), renderContext.labels, symbolPaint);
     }
   }
 
@@ -309,5 +312,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       }
     });
     return labelsToDraw;
+  }
+
+  @override
+  String getRenderKey() {
+    return "${renderTheme.hashCode}";
   }
 }

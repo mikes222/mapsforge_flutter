@@ -25,7 +25,7 @@ dependencies:
   cupertino_icons: ^0.1.2
 
   # BSD License
-  path_provider: ^0.4.1
+  path_provider: 1.1.0
 
   # BSD License
   flutter_downloader: 1.1.7

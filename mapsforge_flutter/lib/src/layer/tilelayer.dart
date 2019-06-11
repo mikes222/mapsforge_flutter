@@ -1,6 +1,8 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/cache/tilecache.dart';
+import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
+import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
@@ -12,6 +14,7 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'cache/MemoryTileCache.dart';
+import 'cache/bitmapcache.dart';
 import 'cache/memorybitmapcache.dart';
 import 'job/job.dart';
 import 'job/jobqueue.dart';
@@ -22,11 +25,13 @@ class TileLayer extends Layer {
   static final _log = new Logger('TileLayer');
 
   final bool isTransparent;
-  JobQueue jobQueue;
+  final JobQueue jobQueue;
   final TileCache _tileCache = MemoryTileCache();
-  final MemoryBitmapCache _bitmapCache = MemoryBitmapCache();
+  final BitmapCache _bitmapCache = MemoryBitmapCache();
   final Matrix matrix;
   final JobRenderer jobRenderer;
+  final Set<Tile> noDataTiles = Set();
+  final MapPaint paint;
 
   bool needsRepaint = false;
 
@@ -35,10 +40,14 @@ class TileLayer extends Layer {
     this.isTransparent = false,
     @required displayModel,
     @required this.jobRenderer,
+    @required GraphicFactory graphicFactory,
+    BitmapCache bitmapCache,
   })  : assert(isTransparent != null),
         assert(displayModel != null),
         assert(jobRenderer != null),
-        jobQueue = JobQueue(displayModel, jobRenderer),
+        assert(graphicFactory != null),
+        jobQueue = JobQueue(displayModel, jobRenderer, bitmapCache),
+        paint = graphicFactory.createPaint(),
         super(displayModel) {}
 
   Observable<Job> get observeJob => jobQueue.observeJob;
@@ -64,6 +73,10 @@ class TileLayer extends Layer {
     if (bmp != null) {
       _bitmapCache.addTileBitmap(job.tile, bmp);
       bmp.decrementRefCount();
+      needsRepaint = true;
+    } else {
+      // There is no database for that tile
+      noDataTiles.add(job.tile);
       needsRepaint = true;
     }
   }
@@ -100,13 +113,35 @@ class TileLayer extends Layer {
       TileBitmap bitmap = this._bitmapCache.getTileBitmap(tile);
 
       if (bitmap == null) {
-        Job job = createJob(tile);
-        jobs.add(job);
+        if (noDataTiles.contains(tile)) {
+          // no data available
+          bitmap = jobRenderer.getNoDataBitmap(tile);
+          if (bitmap != null) {
+            canvas.drawBitmap(
+              bitmap: bitmap,
+              left: point.x - leftUpper.x,
+              top: point.y - leftUpper.y,
+              paint: paint,
+            ); //, (point.x), (point.y), this.displayModel.getFilter());
+          }
+        } else {
+          Job job = createJob(tile);
+          jobs.add(job);
 //        if (Parameters.PARENT_TILES_RENDERING !=
 //            Parameters.ParentTilesRendering.OFF) {
 //          drawParentTileBitmap(canvas, point, tile);
 //        }
-        //_log.info("  tile: ${tile.toString()}");
+          //_log.info("  tile: ${tile.toString()}");
+          bitmap = jobRenderer.getMissingBitmap(tile);
+          if (bitmap != null) {
+            canvas.drawBitmap(
+              bitmap: bitmap,
+              left: point.x - leftUpper.x,
+              top: point.y - leftUpper.y,
+              paint: paint,
+            ); //, (point.x), (point.y), this.displayModel.getFilter());
+          }
+        }
       } else {
 //        if (isTileStale(tile, bitmap) &&
 //            this.hasJobQueue &&
@@ -118,6 +153,7 @@ class TileLayer extends Layer {
           bitmap: bitmap,
           left: point.x - leftUpper.x,
           top: point.y - leftUpper.y,
+          paint: paint,
         ); //, (point.x), (point.y), this.displayModel.getFilter());
         //bitmap.decrementRefCount();
       }

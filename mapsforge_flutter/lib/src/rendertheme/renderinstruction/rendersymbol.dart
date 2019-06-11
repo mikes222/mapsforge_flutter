@@ -2,6 +2,7 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
@@ -22,10 +23,12 @@ class RenderSymbol extends RenderInstruction {
   int priority = 0;
   final String relativePathPrefix;
   String src;
+  MapPaint symbolPaint;
 
   RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
       : super(graphicFactory, displayModel, symbolCache) {
     this.display = Display.IFSPACE;
+    symbolPaint = graphicFactory.createPaint();
   }
 
   @override
@@ -85,7 +88,7 @@ class RenderSymbol extends RenderInstruction {
     }
 
     if (bitmap != null) {
-      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, this.priority, this.bitmap, poi);
+      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, this.priority, this.bitmap, poi, symbolPaint);
     }
   }
 
@@ -96,7 +99,7 @@ class RenderSymbol extends RenderInstruction {
     }
 
     if (bitmap != null) {
-      renderCallback.renderAreaSymbol(renderContext, this.display, this.priority, this.bitmap, way);
+      renderCallback.renderAreaSymbol(renderContext, this.display, this.priority, this.bitmap, way, symbolPaint);
     }
   }
 
