@@ -30,20 +30,46 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
   Offset startOffset;
 
+  Offset _doubleTapOffset;
+
   double _lastScale;
 
   @override
   Widget build(BuildContext context) {
+    RenderBox positionRed = context.findRenderObject();
+    Offset positionRelative = positionRed?.localToGlobal(Offset.zero);
+    //print("positionRelative: ${positionRelative.toString()}");
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
+      onTapDown: (TapDownDetails details) {
+        // for doubleTap
+        _doubleTapOffset = details.globalPosition;
+      },
       onTapUp: (TapUpDetails details) {
         //print(details.globalPosition.toString());
-        widget.mapModel.tapEvent(details.globalPosition.dx, details.globalPosition.dy);
+        if (positionRelative == null) return;
+        widget.mapModel.tapEvent(details.globalPosition.dx - positionRelative.dx, details.globalPosition.dy - positionRelative.dy);
         widget.mapModel.gestureEvent();
       },
       onDoubleTap: () {
-        widget.mapModel.zoomIn();
+        if (_doubleTapOffset != null) {
+          print(" double tap at ${_doubleTapOffset.toString()}");
+//          double xCenter = widget.mapModel.mapViewPosition.leftUpper.x
+          BoundingBox boundingBox = widget.mapModel.mapViewPosition.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension());
+          // lat/lon of the position where we double-clicked
+          double latitude = widget.mapModel.mapViewPosition.mercatorProjection
+              .pixelYToLatitude(widget.mapModel.mapViewPosition.leftUpper.y + _doubleTapOffset.dy - positionRelative.dy);
+          double longitude = widget.mapModel.mapViewPosition.mercatorProjection
+              .pixelXToLongitude(widget.mapModel.mapViewPosition.leftUpper.x + _doubleTapOffset.dx - positionRelative.dx);
+          // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
+
+          widget.mapModel.zoomInAround((latitude - widget.mapModel.mapViewPosition.latitude) / 2 + widget.mapModel.mapViewPosition.latitude,
+              (longitude - widget.mapModel.mapViewPosition.longitude) / 2 + widget.mapModel.mapViewPosition.longitude);
+        } else {
+          widget.mapModel.zoomIn();
+        }
         widget.mapModel.gestureEvent();
+        _doubleTapOffset = null;
       },
       onScaleStart: (ScaleStartDetails details) {
         startOffset = details.focalPoint;
@@ -61,7 +87,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           widget.mapModel.setLeftUpper(
               startLeftUpper.x + startOffset.dx - details.focalPoint.dx, startLeftUpper.y + startOffset.dy - details.focalPoint.dy);
         } else {
-          print(details.toString());
+          //print(details.toString());
           _lastScale = details.scale;
         }
       },
@@ -76,11 +102,11 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 //            zoomLevelDiff = (zoomLevelOffset < 0 ? zoomLevelOffset.floor() : zoomLevelOffset.ceil()).round();
           zoomLevelDiff = zoomLevelOffset.round();
           if (zoomLevelDiff != 0) {
-            print("zooming now at $zoomLevelDiff for ${widget.position.toString()}");
+//            print("zooming now at $zoomLevelDiff for ${widget.position.toString()}");
             MapViewPosition newPost =
                 widget.mapModel.setZoomLevel((widget.position?.zoomLevel ?? widget.mapModel.DEFAULT_ZOOM) + zoomLevelDiff);
-            print(
-                "  resulting in ${newPost.toString()} or ${newPost.mercatorProjection} or ${newPost.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension())} and now ${newPost.toString()}");
+//            print(
+//                "  resulting in ${newPost.toString()} or ${newPost.mercatorProjection} or ${newPost.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension())} and now ${newPost.toString()}");
           }
         }
       },

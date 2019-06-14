@@ -9,11 +9,12 @@ import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 import 'package:mapsforge_flutter/src/view/mapview.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core.dart';
 import 'backgroundpainter.dart';
 import 'contextmenu.dart';
-import 'layerpainter.dart';
+import 'tilepainter.dart';
 
 class FlutterMapView extends StatefulWidget implements MapView {
   final MapModel mapModel;
@@ -88,9 +89,11 @@ class _FlutterMapState extends State<FlutterMapView> {
   }
 
   Widget _buildMapView(MapViewPosition position) {
-    List<Widget> widgets = List();
+    List<Widget> _widgets;
+
+    _widgets = List();
     if (widget.mapModel.displayModel.backgroundColor != Colors.transparent.value) {
-      widgets.add(
+      _widgets.add(
         CustomPaint(
           foregroundPainter: BackgroundPainter(
               mapViewDimension: widget.mapModel.mapViewDimension, position: position, displayModel: widget.mapModel.displayModel),
@@ -99,7 +102,7 @@ class _FlutterMapState extends State<FlutterMapView> {
       );
     }
 
-    widgets.add(
+    _widgets.add(
       StreamBuilder<Job>(
         stream: _tileLayer.observeJob,
         builder: (BuildContext context, AsyncSnapshot<Job> snapshot) {
@@ -114,15 +117,24 @@ class _FlutterMapState extends State<FlutterMapView> {
       ),
     );
 
-    widgets.addAll(_markerRenderer
-        .map((MarkerRenderer markerRenderer) => CustomPaint(
-              foregroundPainter: MarkerPainter(
-                  mapViewDimension: widget.mapModel.mapViewDimension,
-                  position: position,
-                  displayModel: widget.mapModel.displayModel,
-                  markerRenderer: markerRenderer),
-              child: Container(),
-            ))
+    _widgets.addAll(_markerRenderer
+        .map(
+          (MarkerRenderer markerRenderer) => ChangeNotifierProvider<MarkerDataStore>.value(
+                child: Consumer<MarkerDataStore>(
+                  builder: (BuildContext context, MarkerDataStore value, Widget child) {
+                    return CustomPaint(
+                      foregroundPainter: MarkerPainter(
+                          mapViewDimension: widget.mapModel.mapViewDimension,
+                          position: position,
+                          displayModel: widget.mapModel.displayModel,
+                          markerRenderer: markerRenderer),
+                      child: Container(),
+                    );
+                  },
+                ),
+                value: markerRenderer.dataStore,
+              ),
+        )
         .toList());
 
     return Stack(
@@ -132,7 +144,7 @@ class _FlutterMapState extends State<FlutterMapView> {
           mapModel: widget.mapModel,
           position: position,
           child: Stack(
-            children: widgets,
+            children: _widgets,
           ),
         ),
         StreamBuilder<TapEvent>(
@@ -140,13 +152,11 @@ class _FlutterMapState extends State<FlutterMapView> {
           builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
             if (!snapshot.hasData) return Container();
             TapEvent event = snapshot.data;
-            final RenderBox renderBox = _keyView.currentContext.findRenderObject();
-            final positionRed = renderBox.localToGlobal(Offset.zero);
             return ContextMenu(
               mapModel: widget.mapModel,
               position: position,
-              viewOffset: positionRed,
               event: event,
+              contextMenuBuilder: widget.mapModel.contextMenuBuilder,
             );
           },
         ),
@@ -154,5 +164,3 @@ class _FlutterMapState extends State<FlutterMapView> {
     );
   }
 }
-
-/////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/src/implementation/view/contextmenu.dart';
+import 'package:mapsforge_flutter/src/implementation/view/contextmenubuilder.dart';
 import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
@@ -20,6 +22,7 @@ class MapModel {
   final List<MarkerDataStore> markerDataStores = List();
   final BitmapCache bitmapCache;
   MapViewPosition _mapViewPosition;
+  ContextMenuBuilder contextMenuBuilder;
 
   Subject<MapViewPosition> _injectPosition = PublishSubject();
   Observable<MapViewPosition> _observePosition;
@@ -36,6 +39,7 @@ class MapModel {
     @required this.graphicsFactory,
     @required this.symbolCache,
     this.bitmapCache,
+    this.contextMenuBuilder,
   })  : assert(displayModel != null),
         assert(renderer != null),
         assert(graphicsFactory != null),
@@ -81,6 +85,19 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, displayModel.tileSize);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    }
+  }
+
+  void zoomInAround(double latitude, double longitude) {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.zoomInAround(_mapViewPosition, latitude, longitude);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      // without an old position we cannot calculate the location of the zoom-center, so use null instead
       MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);

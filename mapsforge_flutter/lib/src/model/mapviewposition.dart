@@ -36,6 +36,12 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel + 1,
         _tileSize = old._tileSize;
 
+  MapViewPosition.zoomInAround(MapViewPosition old, double latitude, double longitude)
+      : _latitude = latitude,
+        _longitude = longitude,
+        zoomLevel = old.zoomLevel + 1,
+        _tileSize = old._tileSize;
+
   MapViewPosition.zoomOut(MapViewPosition old)
       : _latitude = old._latitude,
         _longitude = old._longitude,
@@ -115,6 +121,10 @@ class MapViewPosition {
     _mercatorProjection = MercatorProjectionImpl(_tileSize, zoomLevel);
     return _mercatorProjection;
   }
+
+  double get latitude => _latitude;
+
+  double get longitude => _longitude;
 
   @override
   bool operator ==(Object other) =>

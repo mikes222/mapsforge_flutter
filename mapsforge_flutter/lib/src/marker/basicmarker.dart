@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
+import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 
 import 'markercallback.dart';
 
@@ -146,5 +147,9 @@ class BasicMarker {
     _bitmap = null;
     _bitmapInvalid = false;
     _src = src;
+  }
+
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && boundary.contains(latitude, longitude);
   }
 }

@@ -1,8 +1,11 @@
 import 'dart:isolate';
 
+import 'package:dcache/dcache.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
+import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/renderer/dummyrenderer.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -12,12 +15,14 @@ import 'job.dart';
 import 'jobrenderer.dart';
 
 class JobQueue {
+  static final _log = new Logger('JobQueue');
+
   final DisplayModel displayModel;
   final JobRenderer jobRenderer;
 
   Subject<JobQueueItem> _inject = PublishSubject();
   Subject<Job> _injectJob = PublishSubject();
-  Observable<Job> _observe;
+  Observable<Job> _observeJob;
 
   JobQueueItem _lastItem;
 
@@ -27,14 +32,20 @@ class JobQueue {
 
   StaticRenderClass _renderClass;
 
+  final Cache jobs = new SimpleCache<Tile, Job>(
+      storage: new SimpleStorage<Tile, Job>(size: 1000),
+      onEvict: (key, item) {
+        item.getAndRemovetileBitmap();
+      });
+
   JobQueue(this.displayModel, this.jobRenderer, BitmapCache bitmapCache)
       : assert(displayModel != null),
         assert(jobRenderer != null),
         _renderClass = StaticRenderClass(jobRenderer: jobRenderer, bitmapCache: bitmapCache) {
     _inject.listen((JobQueueItem item) {
-      process(item);
+      _process(item);
     });
-    _observe = _injectJob.asBroadcastStream();
+    _observeJob = _injectJob.asBroadcastStream();
     //_startIsolate();
   }
 
@@ -45,7 +56,17 @@ class JobQueue {
     }
   }
 
-  Observable<Job> get observeJob => _observe;
+  Job createJob(Tile tile) {
+    Job job = jobs[tile];
+    if (job != null) {
+      return job;
+    }
+    job = Job(tile, true);
+    jobs[tile] = job;
+    return job;
+  }
+
+  Observable<Job> get observeJob => _observeJob;
 
   void add(Job job) {
     List<Job> jobs = List();
@@ -62,7 +83,7 @@ class JobQueue {
     _inject.add(_lastItem);
   }
 
-  void process(JobQueueItem item) async {
+  void _process(JobQueueItem item) async {
     // _sendPort.send(item);
     _renderClass.render(item, (job) {
       _injectJob.add(job);
@@ -116,7 +137,10 @@ typedef void Callback(Job job);
 /////////////////////////////////////////////////////////////////////////////
 
 class StaticRenderClass {
-  final List<Lock> _lock = List(4);
+  static final _log = new Logger('StaticRenderClass');
+
+  // we have only one thread, so limit the number of concurrent renderings for now
+  final List<Lock> _lock = List(1);
 
   int _roundRobin = 0;
 
@@ -132,28 +156,43 @@ class StaticRenderClass {
     }
   }
 
-  void render(JobQueueItem item, Callback callback) {
+  void render(JobQueueItem item, Callback callback) async {
     for (Job job in item.jobs) {
-      _lock[++_roundRobin % _lock.length].synchronized(() async {
-        if (item.outdated) return null;
-        TileBitmap tileBitmap = await bitmapCache.getTileBitmapAsync(job.tile);
-        if (tileBitmap != null) {
-          job.tileBitmap = tileBitmap;
-          callback(job);
-          return job;
-        }
-        tileBitmap = await jobRenderer.executeJob(job);
-        if (tileBitmap != null) {
-          bitmapCache.addTileBitmap(job.tile, tileBitmap);
-          job.tileBitmap = tileBitmap;
-          callback(job);
-        } else {
-          // no datastore for that tile
-          //job.tileBitmap = null;
-          callback(job);
-        }
-        return job;
-      });
+      // _lock[++_roundRobin % _lock.length].synchronized(() async {
+      if (item.outdated) return;
+      if (job.hasTileBitmap()) {
+        callback(job);
+        return;
+      }
+      if (job.inWork) {
+        return;
+      }
+      TileBitmap tileBitmap = await bitmapCache.getTileBitmapAsync(job.tile);
+      if (tileBitmap != null) {
+        job.tileBitmap = tileBitmap;
+        callback(job);
+        return;
+      }
+      int time = DateTime.now().millisecondsSinceEpoch;
+      job.inWork = true;
+      tileBitmap = await jobRenderer.executeJob(job);
+      if (tileBitmap != null) {
+        int diff = DateTime.now().millisecondsSinceEpoch - time;
+        _log.info("Renderer needed $diff ms for job ${job.toString()}");
+        bitmapCache.addTileBitmap(job.tile, tileBitmap);
+        job.tileBitmap = tileBitmap;
+        job.inWork = false;
+        callback(job);
+      } else {
+        // no datastore for that tile
+        TileBitmap bmp = jobRenderer.getNoDataBitmap(job.tile);
+        bmp.incrementRefCount();
+        job.tileBitmap = bmp;
+        job.inWork = false;
+        callback(job);
+      }
+      //return job;
+      //  });
     }
   }
 }

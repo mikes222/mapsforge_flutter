@@ -5,10 +5,15 @@ class Job {
   final bool hasAlpha;
   final Tile tile;
 
+  // will be set immediately before rendering begins in order to prevent rendering the same tile multiple times
+  bool inWork = false;
+
   /// The resulting bitmap after this job has been processed.
   TileBitmap _tileBitmap;
 
-  Job(this.tile, this.hasAlpha) : assert(tile != null);
+  Job(this.tile, this.hasAlpha)
+      : assert(tile != null),
+        assert(hasAlpha != null);
 
   @override
   bool operator ==(Object other) =>
@@ -37,5 +42,9 @@ class Job {
     TileBitmap result = _tileBitmap;
     _tileBitmap = null;
     return result;
+  }
+
+  bool hasTileBitmap() {
+    return _tileBitmap != null;
   }
 }

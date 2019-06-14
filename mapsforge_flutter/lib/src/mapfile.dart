@@ -186,7 +186,7 @@ class MapFile extends MapDataStore {
 
   final IndexCache databaseIndexCache;
   int fileSize;
-  final RandomAccessFile inputChannel;
+  final ReadBuffer readBuffer;
   final MapFileHeader mapFileHeader;
   final int timestamp;
 
@@ -197,7 +197,7 @@ class MapFile extends MapDataStore {
       : fileSize = 0,
         timestamp = DateTime.now().millisecondsSinceEpoch,
         databaseIndexCache = null,
-        inputChannel = null,
+        readBuffer = null,
         mapFileHeader = null,
         super(null);
 
@@ -249,14 +249,11 @@ class MapFile extends MapDataStore {
    * @param language       the language to use (may be null).
    * @throws MapFileException if the given map file channel is null or invalid.
    */
-  MapFile(this.inputChannel, this.timestamp, String language)
-      : mapFileHeader = new MapFileHeader(),
-        databaseIndexCache = new IndexCache(inputChannel, INDEX_CACHE_SIZE),
+  MapFile(this.readBuffer, this.timestamp, String language)
+      : assert(readBuffer != null),
+        mapFileHeader = new MapFileHeader(),
+        databaseIndexCache = new IndexCache(readBuffer, INDEX_CACHE_SIZE),
         super(language) {
-    if (inputChannel == null) {
-      throw new MapFileException("mapFileChannel must not be null");
-    }
-
     // do not call async methods in the constructor. You cannot wait for them.
     //try {
     //readFileSize();
@@ -268,8 +265,7 @@ class MapFile extends MapDataStore {
   }
 
   void init() async {
-    this.fileSize = await this.inputChannel.length();
-    ReadBuffer readBuffer = ReadBuffer(this.inputChannel);
+    this.fileSize = await this.readBuffer.length();
     await this.mapFileHeader.readHeader(readBuffer, this.fileSize);
   }
 
@@ -302,7 +298,7 @@ class MapFile extends MapDataStore {
         continue;
       }
       _log.info("SubfileParameter for zoomLevel $zoomLevel: " + subFileParameter.toString());
-      ReadBuffer readBuffer = new ReadBuffer(inputChannel);
+      //ReadBuffer readBuffer = new ReadBuffer(inputChannel);
       for (int block = 0; block < subFileParameter.blocksWidth * subFileParameter.blocksHeight; ++block) {
         await _debugBlock(block, subFileParameter, readBuffer);
       }
@@ -538,8 +534,8 @@ class MapFile extends MapDataStore {
     if (this.databaseIndexCache != null) {
       this.databaseIndexCache.destroy();
     }
-    if (this.inputChannel != null) {
-      this.inputChannel.close();
+    if (this.readBuffer != null) {
+      this.readBuffer.close();
     }
   }
 
@@ -799,7 +795,7 @@ class MapFile extends MapDataStore {
 
         // seek to the current block in the map file
         // read the current block into the buffer
-        ReadBuffer readBuffer = new ReadBuffer(inputChannel);
+        //ReadBuffer readBuffer = new ReadBuffer(inputChannel);
         await readBuffer.readFromFile2(subFileParameter.startAddress + currentBlockPointer, currentBlockSize);
 
         // calculate the top-left coordinates of the underlying tile

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
@@ -15,19 +13,17 @@ class MapModelHelper {
     MultiMapDataStore multiMapDataStore = MultiMapDataStore(DataPolicy.DEDUPLICATE);
 
     {
-      File file = File(_localPath + "/" + Constants.worldmap);
       print("opening mapfile");
-      RandomAccessFile raf = await file.open();
-      MapFile mapFile = MapFile(raf, null, null);
+      ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.worldmap);
+      MapFile mapFile = MapFile(readBuffer, null, null);
       await mapFile.init();
       //await mapFile.debug();
       multiMapDataStore.addMapDataStore(mapFile, true, true);
     }
     {
-      File file = File(_localPath + "/" + Constants.mapfile);
       print("opening mapfile");
-      RandomAccessFile raf = await file.open();
-      MapFile mapFile = MapFile(raf, null, null);
+      ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.mapfile);
+      MapFile mapFile = MapFile(readBuffer, null, null);
       await mapFile.init();
       //await mapFile.debug();
       multiMapDataStore.addMapDataStore(mapFile, false, false);

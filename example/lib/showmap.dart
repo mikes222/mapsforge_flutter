@@ -60,6 +60,7 @@ class ShowmapState extends State<Showmap> {
               onPressed: () {
                 if (timer != null) return;
                 timer = Timer.periodic(Duration(seconds: 1), (timer) {
+                  mapModel.mapViewPosition.calculateBoundingBox(mapModel.mapViewDimension.getDimension());
                   mapModel.setLeftUpper(mapModel.mapViewPosition.leftUpper.x + 10, mapModel.mapViewPosition.leftUpper.y + 10);
                 });
               },

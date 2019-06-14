@@ -30,7 +30,6 @@ class TileLayer extends Layer {
   final BitmapCache _bitmapCache = MemoryBitmapCache();
   final Matrix matrix;
   final JobRenderer jobRenderer;
-  final Set<Tile> noDataTiles = Set();
   final MapPaint paint;
 
   bool needsRepaint = false;
@@ -74,10 +73,6 @@ class TileLayer extends Layer {
       _bitmapCache.addTileBitmap(job.tile, bmp);
       bmp.decrementRefCount();
       needsRepaint = true;
-    } else {
-      // There is no database for that tile
-      noDataTiles.add(job.tile);
-      needsRepaint = true;
     }
   }
 
@@ -113,34 +108,21 @@ class TileLayer extends Layer {
       TileBitmap bitmap = this._bitmapCache.getTileBitmap(tile);
 
       if (bitmap == null) {
-        if (noDataTiles.contains(tile)) {
-          // no data available
-          bitmap = jobRenderer.getNoDataBitmap(tile);
-          if (bitmap != null) {
-            canvas.drawBitmap(
-              bitmap: bitmap,
-              left: point.x - leftUpper.x,
-              top: point.y - leftUpper.y,
-              paint: paint,
-            ); //, (point.x), (point.y), this.displayModel.getFilter());
-          }
-        } else {
-          Job job = createJob(tile);
-          jobs.add(job);
+        Job job = jobQueue.createJob(tile);
+        jobs.add(job);
 //        if (Parameters.PARENT_TILES_RENDERING !=
 //            Parameters.ParentTilesRendering.OFF) {
 //          drawParentTileBitmap(canvas, point, tile);
 //        }
-          //_log.info("  tile: ${tile.toString()}");
-          bitmap = jobRenderer.getMissingBitmap(tile);
-          if (bitmap != null) {
-            canvas.drawBitmap(
-              bitmap: bitmap,
-              left: point.x - leftUpper.x,
-              top: point.y - leftUpper.y,
-              paint: paint,
-            ); //, (point.x), (point.y), this.displayModel.getFilter());
-          }
+        //_log.info("  tile: ${tile.toString()}");
+        bitmap = jobRenderer.getMissingBitmap(tile);
+        if (bitmap != null) {
+          canvas.drawBitmap(
+            bitmap: bitmap,
+            left: point.x - leftUpper.x,
+            top: point.y - leftUpper.y,
+            paint: paint,
+          ); //, (point.x), (point.y), this.displayModel.getFilter());
         }
       } else {
 //        if (isTileStale(tile, bitmap) &&
@@ -161,10 +143,6 @@ class TileLayer extends Layer {
     this.jobQueue.addJobs(jobs);
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     //_log.info("diff: $diff ms");
-  }
-
-  Job createJob(Tile tile) {
-    return Job(tile, true);
   }
 
   /**

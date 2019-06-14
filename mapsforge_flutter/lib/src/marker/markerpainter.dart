@@ -19,7 +19,7 @@ class MarkerPainter implements CustomPainter {
       : assert(mapViewDimension != null),
         assert(position != null),
         assert(displayModel != null),
-        assert(markerRenderer != null);
+        assert(markerRenderer != null) {}
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -8,9 +8,12 @@ class FlutterPath implements MapPath {
 
   FlutterPath(this.path);
 
+  bool _empty = true;
+
   @override
   void clear() {
     path.reset();
+    _empty = true;
   }
 
   @override
@@ -20,18 +23,19 @@ class FlutterPath implements MapPath {
 
   @override
   bool isEmpty() {
-    // TODO: implement isEmpty
-    return null;
+    return _empty;
   }
 
   @override
   void lineTo(double x, double y) {
     path.lineTo(x, y);
+    _empty = false;
   }
 
   @override
   void moveTo(double x, double y) {
     path.moveTo(x, y);
+    _empty = false;
   }
 
   @override

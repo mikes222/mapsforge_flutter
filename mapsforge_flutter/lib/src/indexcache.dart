@@ -1,9 +1,9 @@
-import 'dart:io';
 import 'dart:math';
+
+import 'package:mapsforge_flutter/src/indexcacheentrykey.dart';
 
 import 'header/subfileparameter.dart';
 import 'header/subfileparameterbuilder.dart';
-import 'package:mapsforge_flutter/src/indexcacheentrykey.dart';
 import 'mapreader/deserializer.dart';
 import 'mapreader/readbuffer.dart';
 
@@ -22,7 +22,7 @@ class IndexCache {
   static final int SIZE_OF_INDEX_BLOCK = INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
   final Map<IndexCacheEntryKey, List<int>> map;
-  final RandomAccessFile fileChannel;
+  final ReadBuffer readBuffer;
 
   /**
    * @param inputChannel the map file from which the index should be read and cached.
@@ -30,7 +30,7 @@ class IndexCache {
    * @throws IllegalArgumentException if the capacity is negative.
    */
   // todo LRUCache
-  IndexCache(this.fileChannel, int capacity) : map = new Map<IndexCacheEntryKey, List<int>>();
+  IndexCache(this.readBuffer, int capacity) : map = new Map<IndexCacheEntryKey, List<int>>();
 
   /**
    * Destroy the cache at the end of its lifetime.
@@ -69,7 +69,6 @@ class IndexCache {
       int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
       int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
 
-      ReadBuffer readBuffer = ReadBuffer(this.fileChannel);
       indexBlock = await readBuffer.readDirect(indexBlockPosition, indexBlockSize);
 
       // put the index block in the map

@@ -15,19 +15,26 @@ class ReadBuffer {
 
   static final String CHARSET_UTF8 = "UTF-8";
 
-  static final Lock _lock = Lock();
+  final Lock _lock;
 
   Uint8List _bufferData;
   int _offset;
   int bufferPosition;
-  final RandomAccessFile inputChannel;
+  RandomAccessFile _raf;
+  final String filename;
 
-  ReadBuffer(this.inputChannel) {}
+  ReadBuffer(this.filename) : _lock = Lock();
+
+  ReadBuffer.fromSource(ReadBuffer other)
+      : _lock = other._lock,
+        _raf = other._raf,
+        filename = other.filename;
 
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
     Uint8List result;
     await _lock.synchronized(() async {
-      RandomAccessFile newInstance = await inputChannel.setPosition(indexBlockPosition);
+      if (_raf == null) _raf = await File(filename).open();
+      RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
       result = await (newInstance.read(indexBlockSize));
     });
     assert(result.length == indexBlockSize);
@@ -86,7 +93,8 @@ class ReadBuffer {
 //    this.bufferWrapper = Uint8List(0).buffer; //.clear();
 
     await _lock.synchronized(() async {
-      _bufferData = await this.inputChannel.read(length);
+      if (_raf == null) _raf = await File(filename).open();
+      _bufferData = await this._raf.read(length);
     });
     assert(_bufferData != null);
     assert(_bufferData.length == length);
@@ -110,7 +118,8 @@ class ReadBuffer {
     }
 
     await _lock.synchronized(() async {
-      RandomAccessFile newInstance = await this.inputChannel.setPosition(offset);
+      if (_raf == null) _raf = await File(filename).open();
+      RandomAccessFile newInstance = await this._raf.setPosition(offset);
       _bufferData = await newInstance.read(length);
 // reset the buffer position and read the data into the buffer
       this.bufferPosition = 0;
@@ -120,6 +129,21 @@ class ReadBuffer {
     assert(_bufferData.length == length);
     return true;
     //}
+  }
+
+  Future<int> length() async {
+    int result;
+    await _lock.synchronized(() async {
+      if (_raf == null) _raf = await File(filename).open();
+      result = await _raf.length();
+    });
+    assert(result != null);
+    return result;
+  }
+
+  void close() {
+    if (_raf != null) _raf.close();
+    _raf = null;
   }
 
   /**

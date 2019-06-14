@@ -1,0 +1,13 @@
+import 'package:flutter/widgets.dart';
+import 'package:mapsforge_flutter/src/model/dimension.dart';
+import 'package:mapsforge_flutter/src/model/mapmodel.dart';
+
+abstract class ContextMenuBuilder {
+  Widget build(Dimension screen, double x, double y, TapEvent event, ContextMenuCallback callback);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+abstract class ContextMenuCallback {
+  void close(TapEvent event);
+}

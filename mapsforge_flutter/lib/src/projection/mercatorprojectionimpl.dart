@@ -5,15 +5,20 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 class MercatorProjectionImpl {
-  /**
-   * Maximum possible latitude coordinate of the map.
-   */
+  /// Maximum possible latitude coordinate of the map.
   static final double LATITUDE_MAX = 85.05112877980659;
 
-  /**
-   * Minimum possible latitude coordinate of the map.
-   */
+  /// Minimum possible latitude coordinate of the map.
   static final double LATITUDE_MIN = -LATITUDE_MAX;
+
+  /// The circumference of the earth at the equator in meters.
+  //static final double EARTH_CIRCUMFERENCE = 40075016.686;
+
+  /// Equator radius in meter (WGS84 ellipsoid)
+  static final double EQUATOR_RADIUS = 6378137.0;
+
+  /// Polar radius in meter (WGS84 ellipsoid)
+  //static final double POLAR_RADIUS = 6356752.314245;
 
   static final double LONGITUDE_MAX = 180;
 
@@ -200,4 +205,58 @@ class MercatorProjectionImpl {
   }
 
   double get mapSize => _mapSize;
+
+  /// Converts degree to radian
+  double degToRadian(final double deg) => deg * (pi / 180.0);
+
+  /// Radian to degree
+  double radianToDeg(final double rad) => rad * (180.0 / pi);
+
+  /// Returns a destination point based on the given [distance] and [bearing]
+  ///
+  /// Given a [from] (start) point, initial [bearing], and [distance],
+  /// this will calculate the destination point and
+  /// final bearing travelling along a (shortest distance) great circle arc.
+  ///
+  ///     final Haversine distance = const Haversine();
+  ///
+  ///     final num distanceInMeter = (EARTH_RADIUS * math.PI / 4).round();
+  ///
+  ///     final p1 = new LatLng(0.0, 0.0);
+  ///     final p2 = distance.offset(p1, distanceInMeter, 180);
+  ///
+  @override
+  LatLong offset(final LatLong from, final double distanceInMeter, double bearing) {
+    assert(bearing >= 0 && bearing <= 360);
+// bearing: 0: north, 90: east, 180: south, 270: west
+    //bearing = 90 - bearing;
+
+    // 0: east, 90: north, +/- 180: west, -90: south
+    final double h = bearing / 180 * pi;
+
+    final double a = distanceInMeter / EQUATOR_RADIUS;
+
+    final double lat2 = asin(sin(degToRadian(from.latitude)) * cos(a) + cos(degToRadian(from.latitude)) * sin(a) * cos(h));
+
+    final double lng2 = degToRadian(from.longitude) +
+        atan2(sin(h) * sin(a) * cos(degToRadian(from.latitude)), cos(a) - sin(degToRadian(from.latitude)) * sin(lat2));
+
+    return new LatLong(radianToDeg(lat2), radianToDeg(lng2));
+  }
+
+  /// Calculates distance with Haversine algorithm.
+  ///
+  /// Accuracy can be out by 0.3%
+  /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)
+  @override
+  double distance(final LatLong p1, final LatLong p2) {
+    final sinDLat = sin((degToRadian(p2.latitude) - degToRadian(p1.latitude)) / 2);
+    final sinDLng = sin((degToRadian(p2.longitude) - degToRadian(p1.longitude)) / 2);
+
+    // Sides
+    final a = sinDLat * sinDLat + sinDLng * sinDLng * cos(degToRadian(p1.latitude)) * cos(degToRadian(p2.latitude));
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return EQUATOR_RADIUS * c;
+  }
 }
