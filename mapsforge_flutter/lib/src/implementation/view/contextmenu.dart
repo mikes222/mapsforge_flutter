@@ -50,7 +50,7 @@ class ContextMenuState extends State<ContextMenu> implements ContextMenuCallback
       _lastTapEvent = widget.event;
       return Container();
     }
-    return widget.contextMenuBuilder.build(screen, x, y, widget.event, this);
+    return widget.contextMenuBuilder.build(context, widget.mapModel, screen, x, y, widget.event, this);
   }
 
   @override

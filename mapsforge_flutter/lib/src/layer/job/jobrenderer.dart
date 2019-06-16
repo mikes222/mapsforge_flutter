@@ -55,13 +55,13 @@ abstract class JobRenderer {
   }
 
   @override
-  TileBitmap getNoDataBitmap(Tile tile) {
+  Future<TileBitmap> getNoDataBitmap(Tile tile) async {
     if (_noDataBitmap != null) return _noDataBitmap;
-    _createNoDataBitmap(tile.tileSize);
+    return _createNoDataBitmap(tile.tileSize);
     return null;
   }
 
-  void _createNoDataBitmap(double tileSize) async {
+  Future<TileBitmap> _createNoDataBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -87,5 +87,6 @@ abstract class JobRenderer {
 //    var buffer = byteData.buffer.asUint8List();
 
     _noDataBitmap = FlutterTileBitmap(img);
+    return _noDataBitmap;
   }
 }

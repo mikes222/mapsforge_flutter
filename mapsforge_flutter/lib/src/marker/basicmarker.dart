@@ -4,10 +4,11 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
+import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 import 'markercallback.dart';
 
-class BasicMarker {
+class BasicMarker<T> {
   final String caption;
 
   Bitmap _bitmap;
@@ -54,6 +55,9 @@ class BasicMarker {
 
   double rotation;
 
+  // the item this marker represents
+  T item;
+
   BasicMarker({
     this.caption,
     src,
@@ -71,6 +75,7 @@ class BasicMarker {
     this.strokeColor = 0xff000000,
     this.imageColor = 0xff000000,
     this.rotation,
+    this.item,
   })  : assert(caption != null || src != null),
         assert(display != null),
         assert(fontSize != null && fontSize > 0),
@@ -138,7 +143,7 @@ class BasicMarker {
   }
 
   void renderCaption(MarkerCallback markerCallback) {
-    if (caption != null) {
+    if (caption != null && caption.length > 0) {
       markerCallback.renderText(caption, latitude, longitude, captionOffsetX, captionOffsetY, stroke, fontSize);
     }
   }
@@ -151,5 +156,19 @@ class BasicMarker {
 
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && boundary.contains(latitude, longitude);
+  }
+
+  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+    if (_bitmap == null) return false;
+    double y = mapViewPosition.mercatorProjection.latitudeToPixelY(latitude);
+    double x = mapViewPosition.mercatorProjection.longitudeToPixelX(longitude);
+    x = x + imageOffsetX - mapViewPosition.leftUpper.x;
+    y = y + imageOffsetY - mapViewPosition.leftUpper.y;
+    return tappedX >= x && tappedX <= x + _bitmap.getWidth() && tappedY >= y && tappedY <= y + _bitmap.getHeight();
+  }
+
+  String get title {
+    if (caption != null && caption.length > 0) return caption;
+    return null;
   }
 }

@@ -185,7 +185,7 @@ class StaticRenderClass {
         callback(job);
       } else {
         // no datastore for that tile
-        TileBitmap bmp = jobRenderer.getNoDataBitmap(job.tile);
+        TileBitmap bmp = await jobRenderer.getNoDataBitmap(job.tile);
         bmp.incrementRefCount();
         job.tileBitmap = bmp;
         job.inWork = false;

@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 
 abstract class ContextMenuBuilder {
-  Widget build(Dimension screen, double x, double y, TapEvent event, ContextMenuCallback callback);
+  Widget build(BuildContext context, MapModel mapModel, Dimension screen, double x, double y, TapEvent event, ContextMenuCallback callback);
 }
 
 /////////////////////////////////////////////////////////////////////////////
