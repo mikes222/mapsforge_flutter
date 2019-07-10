@@ -70,11 +70,20 @@ class MyStatelessWidget extends StatelessWidget {
             },
           ),
           RaisedButton(
-            child: Text("Show map"),
+            child: Text("Show offline map"),
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => Showmap()));
             },
-          )
+          ),
+          RaisedButton(
+            child: Text("Show online map"),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => Showmap(
+                        mode: 1,
+                      )));
+            },
+          ),
         ],
       ),
     );

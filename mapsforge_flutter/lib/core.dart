@@ -10,6 +10,7 @@ export 'src/implementation/graphics/fluttergraphicsfactory.dart';
 export 'src/implementation/view/mapview.dart';
 export 'src/implementation/view/defaultcontextmenubuilder.dart';
 export 'src/implementation/view/contextmenubuilder.dart';
+export 'src/implementation/view/nopositionview.dart';
 
 export 'src/graphics/graphicfactory.dart';
 export 'src/cache/symbolcache.dart';

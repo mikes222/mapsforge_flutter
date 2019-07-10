@@ -73,19 +73,19 @@ class _FlutterMapState extends State<FlutterMapView> {
 //            _log.info("I have a new position ${snapshot.data.toString()}");
             return _buildMapView(snapshot.data);
           }
-          return Center(
-            child: Text("No Position"),
-          );
+          return _buildNoPositionView();
         }
         if (widget.mapModel.mapViewPosition != null && widget.mapModel.mapViewPosition.hasPosition()) {
 //          _log.info("I have an old position ${widget.mapModel.mapViewPosition.toString()}");
           return _buildMapView(widget.mapModel.mapViewPosition);
         }
-        return Center(
-          child: Text("No Position"),
-        );
+        return _buildNoPositionView();
       },
     );
+  }
+
+  Widget _buildNoPositionView() {
+    return widget.mapModel.noPositionView.buildNoPositionView(context, widget.mapModel);
   }
 
   Widget _buildMapView(MapViewPosition position) {

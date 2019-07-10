@@ -7,6 +7,10 @@ import 'package:mapsforge_flutter/core.dart';
 import 'mapmodelhelper.dart';
 
 class Showmap extends StatefulWidget {
+  final int mode;
+
+  const Showmap({Key key, this.mode = 0}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return ShowmapState();
@@ -23,11 +27,19 @@ class ShowmapState extends State<Showmap> {
   @override
   void initState() {
     super.initState();
-    MapModelHelper.prepareMapModel().then((mapModel) {
-      setState(() {
-        this.mapModel = mapModel;
+    if (widget.mode == 0) {
+      MapModelHelper.prepareMapModel().then((mapModel) {
+        setState(() {
+          this.mapModel = mapModel;
+        });
       });
-    });
+    } else {
+      MapModelHelper.prepareOnlineMapModel().then((mapModel) {
+        setState(() {
+          this.mapModel = mapModel;
+        });
+      });
+    }
   }
 
   @override

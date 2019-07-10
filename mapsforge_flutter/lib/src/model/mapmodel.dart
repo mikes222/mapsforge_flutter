@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/implementation/view/contextmenu.dart';
 import 'package:mapsforge_flutter/src/implementation/view/contextmenubuilder.dart';
+import 'package:mapsforge_flutter/src/implementation/view/nopositionview.dart';
 import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
@@ -21,6 +21,7 @@ class MapModel {
   final SymbolCache symbolCache;
   final List<MarkerDataStore> markerDataStores = List();
   final BitmapCache bitmapCache;
+  NoPositionView noPositionView;
   MapViewPosition _mapViewPosition;
   ContextMenuBuilder contextMenuBuilder;
 
@@ -38,6 +39,7 @@ class MapModel {
     @required this.renderer,
     @required this.graphicsFactory,
     @required this.symbolCache,
+    this.noPositionView,
     this.bitmapCache,
     this.contextMenuBuilder,
   })  : assert(displayModel != null),
@@ -49,6 +51,7 @@ class MapModel {
 
     _observeTap = _injectTap.asBroadcastStream();
     _observeGesture = _injectGesture.asBroadcastStream();
+    if (noPositionView == null) noPositionView = NoPositionView();
   }
 
   void dispose() {
