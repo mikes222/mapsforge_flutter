@@ -32,7 +32,7 @@ class WayTextContainer extends MapElementContainer {
 
   @override
   void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
-    //MapPath path = generatePath(origin);
+    MapPath path = _generatePath(origin);
 
     if (this.paintBack != null) {
       int color = this.paintBack.getColor();

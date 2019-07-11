@@ -18,7 +18,7 @@ class FlutterMatrix implements Matrix {
    * @param theta an angle measured in radians.
    */
   @override
-  void rotate(double theta, {double pivotX, double pivotY}) {
+  void rotate(double theta, {double pivotX = 0, double pivotY = 0}) {
     this.theta = theta;
     this.pivotX = pivotX;
     this.pivotY = pivotY;

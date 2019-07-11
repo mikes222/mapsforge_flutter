@@ -192,7 +192,9 @@ class StaticRenderClass {
           job.inWork = false;
           callback(job);
         }
-      } catch (error) {
+      } catch (error, stackTrace) {
+        _log.warning(error, stackTrace);
+        _log.warning(stackTrace.toString());
         TileBitmap bmp = await jobRenderer.getErrorBitmap(job.tile, error);
         bmp.incrementRefCount();
         job.tileBitmap = bmp;

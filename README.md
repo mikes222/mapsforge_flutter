@@ -37,7 +37,7 @@ Speed:
 Others:
  - Way Database
  - Testing for ios
-  
+ - tile size others than 256 pixels may break the code
 
 ## Getting Started
 

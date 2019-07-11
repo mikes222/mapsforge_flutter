@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
@@ -197,10 +198,17 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawPathText(String text, LineString lineString, Mappoint origin, MapPaint paint) {
+    if (text == null || text.trim().isEmpty) {
+      return;
+    }
+    if (paint.isTransparent()) {
+      return;
+    }
+    double fontSize = 10.0;
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
-        fontSize: 10.0,
-        textAlign: TextAlign.center,
+        fontSize: fontSize,
+        //textAlign: TextAlign.center,
       ),
     )
       ..pushStyle(ui.TextStyle(color: ui.Color((paint as FlutterPaint).getColor())))
@@ -212,27 +220,95 @@ class FlutterCanvas extends MapCanvas {
     // So text isn't upside down
     bool doInvert = firstSegment.end.x <= firstSegment.start.x;
 
-    double textlen = (text.length * 50).toDouble();
+    // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
+    // self-defined constraint
+    final constraints = BoxConstraints(
+      maxWidth: 800.0, // maxwidth calculated
+      minHeight: 0.0,
+      minWidth: 0.0,
+    );
+    //final richTextWidget = Text.rich(TextSpan(text: text)).build(context) as RichText;
+//    final renderObject = richTextWidget.createRenderObject(context);
+//    renderObject.layout(constraints);
+//    final boxes = renderObject.getBoxesForSelection(TextSelection(baseOffset: 0, extentOffset: TextSpan(text: text).toPlainText().length));
+    //double textlen = boxes.length.toDouble();
+
+//    final richTextWidget = RichText(
+//      text: TextSpan(text: text),
+//    );
+    RenderParagraph renderParagraph =
+        RenderParagraph(TextSpan(text: text, style: TextStyle(fontSize: fontSize)), textDirection: ui.TextDirection.ltr);
+    renderParagraph.layout(constraints);
+    double textlen = renderParagraph.getMinIntrinsicWidth(fontSize) + 1;
+    //double textlen = boxes.length.toDouble();
+    _log.info("Textlen: $textlen for $text");
+    //double textlen = (text.length * fontSize).toDouble();
 
     //uiCanvas.transform(new Matrix4.identity().rotatestorage);
 
     if (!doInvert) {
-      Mappoint start = firstSegment.start.offset(-origin.x, -origin.y);
-      uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(start.x - textlen / 2, start.y));
+      double len = 0;
+//      Mappoint start = firstSegment.start.offset(-origin.x, -origin.y);
+//      //uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(start.x - textlen / 2, start.y));
+//      _drawTextRotated(paragraph, textlen, fontSize, firstSegment, start);
+//      len -= sqrt((firstSegment.end.x - firstSegment.start.x) * (firstSegment.end.x - firstSegment.start.x) +
+//          (firstSegment.end.y - firstSegment.start.y) * (firstSegment.end.y - firstSegment.start.y));
       for (int i = 0; i < lineString.segments.length; i++) {
         LineSegment segment = lineString.segments.elementAt(i);
-        Mappoint end = segment.end.offset(-origin.x, -origin.y);
-        uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(end.x - textlen / 2, end.y));
+        if (len > 0) {
+          len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
+              (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+          continue;
+        }
+        len = textlen + fontSize * 2;
+        Mappoint start = segment.start.offset(-origin.x, -origin.y);
+        _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
+        len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
+            (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
       }
     } else {
-      Mappoint end = lineString.segments.elementAt(lineString.segments.length - 1).end.offset(-origin.x, -origin.y);
-      uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(end.x - textlen / 2, end.y));
+      double len = 0;
+//      Mappoint end = lineString.segments.elementAt(lineString.segments.length - 1).end.offset(-origin.x, -origin.y);
+//      //uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(end.x - textlen / 2, end.y));
+//      _drawTextRotated(paragraph, textlen, fontSize, firstSegment, end);
+//      len -= sqrt((firstSegment.end.x - firstSegment.start.x) * (firstSegment.end.x - firstSegment.start.x) +
+//          (firstSegment.end.y - firstSegment.start.y) * (firstSegment.end.y - firstSegment.start.y));
       for (int i = lineString.segments.length - 1; i >= 0; i--) {
         LineSegment segment = lineString.segments.elementAt(i);
+        if (len > 0) {
+          len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
+              (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+          continue;
+        }
+        len = textlen + fontSize * 2;
         Mappoint start = segment.start.offset(-origin.x, -origin.y);
-        uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(start.x - textlen / 2, start.y));
+        _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
+        len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
+            (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
       }
     }
+  }
+
+  void _drawTextRotated(ui.Paragraph paragraph, double textlen, double fontSize, LineSegment segment, Mappoint end, bool doInvert) {
+    double theta = segment.end.x != segment.start.x ? atan((segment.end.y - segment.start.y) / (segment.end.x - segment.start.x)) : pi;
+    Paint paint = ui.Paint();
+    paint.color = (Colors.cyanAccent);
+
+    // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
+    double angle = theta; // 30 * pi / 180
+//    final double r = sqrt(textlen * textlen / 4 + fontSize * fontSize / 4);
+//    final double alpha = textlen == 0 ? pi / 90 * fontSize.sign : atan(fontSize / textlen);
+//    final double beta = alpha + angle;
+//    final shiftY = r * sin(beta);
+//    final shiftX = r * cos(beta);
+//    final translateX = textlen - shiftX;
+//    final translateY = fontSize - shiftY;
+    uiCanvas.save();
+    uiCanvas.translate(/*translateX +*/ end.x, /*translateY +*/ end.y);
+    uiCanvas.rotate(angle);
+    //uiCanvas.drawRect(ui.Rect.fromLTWH(0, 0, textlen, fontSize), paint);
+    uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(0, 0));
+    uiCanvas.restore();
   }
 
   @override

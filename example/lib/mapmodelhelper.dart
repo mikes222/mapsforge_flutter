@@ -58,8 +58,8 @@ class MapModelHelper {
     markerDataStore.markers.add(BasicMarker(
       src: "jar:symbols/windsock.svg",
       symbolCache: symbolCache,
-      width: 20,
-      height: 20,
+      width: 40,
+      height: 40,
       caption: "TestMarker",
       latitude: 48.089355,
       longitude: 16.311509,
@@ -94,8 +94,8 @@ class MapModelHelper {
     markerDataStore.markers.add(BasicMarker(
       src: "jar:symbols/windsock.svg",
       symbolCache: symbolCache,
-      width: 20,
-      height: 20,
+      width: 40,
+      height: 40,
       caption: "TestMarker",
       latitude: 48.089355,
       longitude: 16.311509,
