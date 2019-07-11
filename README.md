@@ -15,7 +15,8 @@ Currently flutter has no support for dashed lines
 doubleTap() does not provide a location. See https://github.com/flutter/flutter/issues/20000 But there is a workaround which I have already implemented. 
 
 Everything is called in the same thread, isolates are flutter's way of threads but calling native functions is currently not possible in isolates. All graphical functions are native functions. 
-So currently the whole rendering is done in the ui thread which leads to blocked ui while rendering. See https://github.com/flutter/flutter/issues/13937
+ - So currently the whole rendering is done in the ui thread which leads to blocked ui while rendering. See https://github.com/flutter/flutter/issues/13937
+ - rendering at a low zoom level is significantly slower than the android version
 
 ## Credits
 
@@ -26,23 +27,21 @@ First and foremost to the author of mapsforge. He has done an outstanding job!
 A lot of things. 
 
 graphics:
- - rotate path text
+ - rotate path text (still horizontal text. For example for highway or river captions)
  - animate movement
- - animate zoom
+ - animate zoom (currently no visual feedback while pinch&zooming)
  
-User Input:
- - zoom in/out (already implemented but without visual feedback while zooming)
-  
 Speed:
  - support for more than one concurrent job in the jobqueue (rudimentary implemented already)
 
 Others:
- - Online Tiles
  - Way Database
  - Testing for ios
   
 
 ## Getting Started
+
+### Prerequisites
 
 include the library in your pubspec.yaml:
 
@@ -59,7 +58,10 @@ include a list of all used assets in your pubspec.yaml (see  pubspec file from e
        - packages/mapsforge_flutter/assets/patterns/deciduous.svg
     ...
 
-Load the mapfile which holds the openstreetmap (r) data:
+### Loading an offline map
+
+Load the mapfile which holds the openstreetmap (r) data: Mapfiles are files specifically designed for mobile use and provide the
+information about an area in condensed form. Please visit the original project for more information about how to download/generate them. 
 
     String _localPath = await FileHelper.findLocalPath();
 
@@ -69,26 +71,28 @@ Load the mapfile which holds the openstreetmap (r) data:
     await mapFile.init();
     //await mapFile.debug();
 
-Create the graphicFactory wich implements the drawing algorithms for flutter
+Create the graphicFactory wich implements the drawing algorithms for flutter. The original implementation have different graphicFactories for 
+android as well for java AWT. This project does have just one (for now) but we want to keep the structure of the original implementation. 
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
 
-Create the displayModel which defines the most important settings for mapsforge
+Create the displayModel which defines the most important settings for mapsforge. 
 
     final DisplayModel displayModel = DisplayModel();
 
-Create the cache for assets
+Create the cache for assets.
 
     SymbolCache symbolCache = SymbolCache(graphicFactory, displayModel);
 
-Create the render theme which specifies how to render the informations from the mapfile
+Create the render theme which specifies how to render the informations from the mapfile. (You can think of it like a css-file for html) 
 
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
     await renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 
-Create the MapDataStoreRenderer which is the rendering engine for the mapfiles
+Create the MapDataStoreRenderer which is the rendering engine for the mapfiles. This code does the main work to render the contents of a 
+mapfile together with the design guides from the render theme into map tiles. Map tiles are png files with a fixed with/height. 
 
     MapDataStoreRenderer dataStoreRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true);
 
@@ -101,7 +105,7 @@ Glue everything together
       symbolCache: symbolCache,
     );
 
-In your build function include the mapsview:
+In your view's build() function include the mapsview:
 
     FlutterMapView( mapModel: mapModel,  ),
 
@@ -109,7 +113,7 @@ In order to change the position in the map call the mapModel with the new positi
 
     mapModel.setMapViewPosition(48.0901926, 16.308939);
     
-If you want your own marker datastore add the following to the MapModel:
+If you want your own marker datastore add one or more of the following to the MapModel:
 
     MarkerDataStore markerDataStore = MarkerDataStore();
     markerDataStore.markers.add(BasicMarker(
@@ -123,7 +127,44 @@ If you want your own marker datastore add the following to the MapModel:
       longitude: 16.311509,
     )..init());
 
-and include the new datastore in the mapModel.
+and include the new datastore in the mapModel. You can add many markers to a datastore and you can add many datastores to the model. 
+
+### Loading an online map
+
+Instantiate a graphicFactory (same as in previous chapter)
+
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+
+Instantiate the displayModel
+
+    final DisplayModel displayModel = DisplayModel();
+
+Instantiate a symbolCache
+
+    SymbolCache symbolCache = SymbolCache(graphicFactory, displayModel);
+
+Instantiate the online renderer which does the main job. It downloads requested tiles (png-files) from openstreetmap. See their license!
+
+    //JobRenderer jobRenderer = MapDataStoreRenderer(multiMapDataStore, renderTheme, graphicFactory, true);
+    JobRenderer jobRenderer = MapOnlineRenderer();
+    //JobRenderer jobRenderer = DummyRenderer();
+
+Start the bitmap cache
+
+    FileBitmapCache bitmapCache = FileBitmapCache(jobRenderer.getRenderKey());
+
+Glue everything together
+
+    MapModel mapModel = MapModel(
+      displayModel: displayModel,
+      graphicsFactory: graphicFactory,
+      renderer: jobRenderer,
+      symbolCache: symbolCache,
+      bitmapCache: bitmapCache,
+      noPositionView: CustomNoPositionView(),
+    );
+
+Follow the steps above to implement the new map into your widget
 
 -----------------
 

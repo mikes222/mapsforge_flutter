@@ -89,4 +89,39 @@ abstract class JobRenderer {
     _noDataBitmap = FlutterTileBitmap(img);
     return _noDataBitmap;
   }
+
+  @override
+  Future<TileBitmap> getErrorBitmap(Tile tile, dynamic error) async {
+    return _createErrorBitmap(tile.tileSize, error);
+    return null;
+  }
+
+  Future<TileBitmap> _createErrorBitmap(double tileSize, dynamic error) async {
+    var pictureRecorder = ui.PictureRecorder();
+    var canvas = ui.Canvas(pictureRecorder);
+    var paint = ui.Paint();
+    paint.strokeWidth = 1;
+    paint.color = ui.Color(0xffaaaaaa);
+    paint.isAntiAlias = true;
+
+    canvas.drawLine(ui.Offset(margin, margin), ui.Offset(tileSize - margin, margin), paint);
+    canvas.drawLine(ui.Offset(margin, margin), ui.Offset(margin, tileSize - margin), paint);
+    canvas.drawLine(ui.Offset(tileSize - margin, margin), ui.Offset(tileSize - margin, tileSize - margin), paint);
+    canvas.drawLine(ui.Offset(margin, tileSize - margin), ui.Offset(tileSize - margin, tileSize - margin), paint);
+
+    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
+      ui.ParagraphStyle(fontSize: 10.0, textAlign: TextAlign.center),
+    )
+      ..pushStyle(ui.TextStyle(color: Colors.black87))
+      ..addText("${error?.toString() ?? "Error"}");
+    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize - margin * 2)), Offset(margin, margin));
+
+    var pic = pictureRecorder.endRecording();
+    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
+//    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+//    var buffer = byteData.buffer.asUint8List();
+
+    FlutterTileBitmap tileBitmap = FlutterTileBitmap(img);
+    return tileBitmap; //Future.value(tileBitmap);
+  }
 }

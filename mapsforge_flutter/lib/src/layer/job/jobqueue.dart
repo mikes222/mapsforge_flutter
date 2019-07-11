@@ -175,17 +175,25 @@ class StaticRenderClass {
       }
       int time = DateTime.now().millisecondsSinceEpoch;
       job.inWork = true;
-      tileBitmap = await jobRenderer.executeJob(job);
-      if (tileBitmap != null) {
-        int diff = DateTime.now().millisecondsSinceEpoch - time;
-        _log.info("Renderer needed $diff ms for job ${job.toString()}");
-        bitmapCache.addTileBitmap(job.tile, tileBitmap);
-        job.tileBitmap = tileBitmap;
-        job.inWork = false;
-        callback(job);
-      } else {
-        // no datastore for that tile
-        TileBitmap bmp = await jobRenderer.getNoDataBitmap(job.tile);
+      try {
+        tileBitmap = await jobRenderer.executeJob(job);
+        if (tileBitmap != null) {
+          int diff = DateTime.now().millisecondsSinceEpoch - time;
+          _log.info("Renderer needed $diff ms for job ${job.toString()}");
+          bitmapCache.addTileBitmap(job.tile, tileBitmap);
+          job.tileBitmap = tileBitmap;
+          job.inWork = false;
+          callback(job);
+        } else {
+          // no datastore for that tile
+          TileBitmap bmp = await jobRenderer.getNoDataBitmap(job.tile);
+          bmp.incrementRefCount();
+          job.tileBitmap = bmp;
+          job.inWork = false;
+          callback(job);
+        }
+      } catch (error) {
+        TileBitmap bmp = await jobRenderer.getErrorBitmap(job.tile, error);
         bmp.incrementRefCount();
         job.tileBitmap = bmp;
         job.inWork = false;
