@@ -1,15 +1,14 @@
-import '../graphics/mapcanvas.dart';
 import '../graphics/display.dart';
 import '../graphics/filter.dart';
 import '../graphics/graphicfactory.dart';
 import '../graphics/graphicutils.dart';
-import '../graphics/matrix.dart';
+import '../graphics/mapcanvas.dart';
 import '../graphics/mappaint.dart';
 import '../graphics/mappath.dart';
+import '../graphics/matrix.dart';
 import '../model/linesegment.dart';
 import '../model/linestring.dart';
 import '../model/mappoint.dart';
-
 import 'mapelementcontainer.dart';
 
 class WayTextContainer extends MapElementContainer {
@@ -18,9 +17,10 @@ class WayTextContainer extends MapElementContainer {
   final MapPaint paintFront;
   final MapPaint paintBack;
   final String text;
+  final double textHeight;
 
   WayTextContainer(
-      this.graphicFactory, this.lineString, Display display, int priority, this.text, this.paintFront, this.paintBack, double textHeight)
+      this.graphicFactory, this.lineString, Display display, int priority, this.text, this.paintFront, this.paintBack, this.textHeight)
       : super(lineString.segments.elementAt(0).start, display, priority) {
     this.boundary = null;
     // a way text container should always run left to right, but I leave this in because it might matter
@@ -32,7 +32,7 @@ class WayTextContainer extends MapElementContainer {
 
   @override
   void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
-    MapPath path = _generatePath(origin);
+    //MapPath path = _generatePath(origin);
 
     if (this.paintBack != null) {
       int color = this.paintBack.getColor();

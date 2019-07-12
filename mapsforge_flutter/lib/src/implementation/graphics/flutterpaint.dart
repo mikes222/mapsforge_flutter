@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/fontfamily.dart';
-import 'package:mapsforge_flutter/src/graphics/fontstyle.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
@@ -20,6 +20,12 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   final ui.Paint paint;
 
   FlutterBitmap _shaderBitmap;
+
+  double _textSize = 10;
+
+  MapFontStyle _fontStyle;
+
+  FontFamily _fontFamily;
 
   FlutterPaint(this.paint);
 
@@ -144,12 +150,23 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   @override
   void setTextSize(double textSize) {
-    // TODO: implement setTextSize
+    _textSize = textSize;
   }
 
   @override
-  void setTypeface(FontFamily fontFamily, FontStyle fontStyle) {
-    // TODO: implement setTypeface
+  double getTextSize() {
+    return _textSize;
+  }
+
+  @override
+  void setTypeface(FontFamily fontFamily, MapFontStyle fontStyle) {
+    _fontStyle = fontStyle;
+    _fontFamily = fontFamily;
+  }
+
+  @override
+  MapFontStyle getFontStyle() {
+    return _fontStyle;
   }
 
   @override

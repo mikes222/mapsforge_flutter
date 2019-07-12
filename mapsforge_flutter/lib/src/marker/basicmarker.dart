@@ -110,6 +110,7 @@ class BasicMarker<T> {
       this.stroke.setColorFromNumber(strokeColor);
       this.stroke.setStyle(Style.STROKE);
       this.stroke.setStrokeWidth(strokeWidth);
+      this.stroke.setTextSize(fontSize);
     }
     if (imagePaint == null) {
       imagePaint = markerCallback.graphicFactory.createPaint();
@@ -144,7 +145,7 @@ class BasicMarker<T> {
 
   void renderCaption(MarkerCallback markerCallback) {
     if (caption != null && caption.length > 0) {
-      markerCallback.renderText(caption, latitude, longitude, captionOffsetX, captionOffsetY, stroke, fontSize);
+      markerCallback.renderText(caption, latitude, longitude, captionOffsetX, captionOffsetY, stroke);
     }
   }
 

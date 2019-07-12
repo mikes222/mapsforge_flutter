@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
@@ -43,7 +45,10 @@ class MapModelHelper {
     //JobRenderer jobRenderer = DummyRenderer();
 
     FileBitmapCache bitmapCache = FileBitmapCache(jobRenderer.getRenderKey());
-//    bitmapCache.purge();
+    Timer(Duration(milliseconds: 1000), () {
+      // init of cache is async, so wait until init is finished an then purge the cache.
+      //bitmapCache.purge();
+    });
 
     MapModel mapModel = MapModel(
       displayModel: displayModel,

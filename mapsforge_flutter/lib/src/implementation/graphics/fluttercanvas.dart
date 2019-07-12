@@ -8,6 +8,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
@@ -204,11 +205,17 @@ class FlutterCanvas extends MapCanvas {
     if (paint.isTransparent()) {
       return;
     }
-    double fontSize = 10.0;
+    double fontSize = paint.getTextSize();
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
         fontSize: fontSize,
         //textAlign: TextAlign.center,
+        fontStyle: paint.getFontStyle() == MapFontStyle.BOLD_ITALIC || paint.getFontStyle() == MapFontStyle.ITALIC
+            ? FontStyle.italic
+            : FontStyle.normal,
+        fontWeight: paint.getFontStyle() == MapFontStyle.BOLD || paint.getFontStyle() == MapFontStyle.BOLD_ITALIC
+            ? FontWeight.bold
+            : FontWeight.normal,
       ),
     )
       ..pushStyle(ui.TextStyle(color: ui.Color((paint as FlutterPaint).getColor())))
@@ -220,29 +227,7 @@ class FlutterCanvas extends MapCanvas {
     // So text isn't upside down
     bool doInvert = firstSegment.end.x <= firstSegment.start.x;
 
-    // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
-    // self-defined constraint
-    final constraints = BoxConstraints(
-      maxWidth: 800.0, // maxwidth calculated
-      minHeight: 0.0,
-      minWidth: 0.0,
-    );
-    //final richTextWidget = Text.rich(TextSpan(text: text)).build(context) as RichText;
-//    final renderObject = richTextWidget.createRenderObject(context);
-//    renderObject.layout(constraints);
-//    final boxes = renderObject.getBoxesForSelection(TextSelection(baseOffset: 0, extentOffset: TextSpan(text: text).toPlainText().length));
-    //double textlen = boxes.length.toDouble();
-
-//    final richTextWidget = RichText(
-//      text: TextSpan(text: text),
-//    );
-    RenderParagraph renderParagraph =
-        RenderParagraph(TextSpan(text: text, style: TextStyle(fontSize: fontSize)), textDirection: ui.TextDirection.ltr);
-    renderParagraph.layout(constraints);
-    double textlen = renderParagraph.getMinIntrinsicWidth(fontSize) + 1;
-    //double textlen = boxes.length.toDouble();
-    _log.info("Textlen: $textlen for $text");
-    //double textlen = (text.length * fontSize).toDouble();
+    double textlen = _calculateTextWidth(text, fontSize, paint);
 
     //uiCanvas.transform(new Matrix4.identity().rotatestorage);
 
@@ -255,16 +240,22 @@ class FlutterCanvas extends MapCanvas {
 //          (firstSegment.end.y - firstSegment.start.y) * (firstSegment.end.y - firstSegment.start.y));
       for (int i = 0; i < lineString.segments.length; i++) {
         LineSegment segment = lineString.segments.elementAt(i);
+        double segmentLength = sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
+            (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+        if (segmentLength < textlen * 2 / 3) {
+          // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
+          // direction significantly
+          len -= segmentLength;
+          continue;
+        }
         if (len > 0) {
-          len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
-              (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+          len -= segmentLength;
           continue;
         }
         len = textlen + fontSize * 2;
         Mappoint start = segment.start.offset(-origin.x, -origin.y);
         _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
-        len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
-            (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+        len -= segmentLength;
       }
     } else {
       double len = 0;
@@ -275,18 +266,55 @@ class FlutterCanvas extends MapCanvas {
 //          (firstSegment.end.y - firstSegment.start.y) * (firstSegment.end.y - firstSegment.start.y));
       for (int i = lineString.segments.length - 1; i >= 0; i--) {
         LineSegment segment = lineString.segments.elementAt(i);
+        double segmentLength = sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
+            (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+        if (segmentLength < textlen * 2 / 3) {
+          // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
+          // direction significantly
+          len -= segmentLength;
+          continue;
+        }
         if (len > 0) {
-          len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
-              (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+          len -= segmentLength;
           continue;
         }
         len = textlen + fontSize * 2;
         Mappoint start = segment.start.offset(-origin.x, -origin.y);
         _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
-        len -= sqrt((segment.end.x - segment.start.x) * (segment.end.x - segment.start.x) +
-            (segment.end.y - segment.start.y) * (segment.end.y - segment.start.y));
+        len -= segmentLength;
       }
     }
+  }
+
+  double _calculateTextWidth(String text, double fontSize, MapPaint paint) {
+    // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
+    // self-defined constraint
+    final constraints = BoxConstraints(
+      maxWidth: 800.0, // maxwidth calculated
+      minHeight: 0.0,
+      minWidth: 0.0,
+    );
+
+    RenderParagraph renderParagraph = RenderParagraph(
+      TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontStyle: paint.getFontStyle() == MapFontStyle.BOLD_ITALIC || paint.getFontStyle() == MapFontStyle.ITALIC
+              ? FontStyle.italic
+              : FontStyle.normal,
+          fontWeight: paint.getFontStyle() == MapFontStyle.BOLD || paint.getFontStyle() == MapFontStyle.BOLD_ITALIC
+              ? FontWeight.bold
+              : FontWeight.normal,
+        ),
+      ),
+      textDirection: ui.TextDirection.ltr,
+      maxLines: 1,
+    );
+    renderParagraph.layout(constraints);
+    double textlen = renderParagraph.getMinIntrinsicWidth(fontSize).ceilToDouble(); // + 1;
+//    _log.info("Textlen: $textlen for $text");
+    return textlen;
   }
 
   void _drawTextRotated(ui.Paragraph paragraph, double textlen, double fontSize, LineSegment segment, Mappoint end, bool doInvert) {
@@ -306,23 +334,36 @@ class FlutterCanvas extends MapCanvas {
     uiCanvas.save();
     uiCanvas.translate(/*translateX +*/ end.x, /*translateY +*/ end.y);
     uiCanvas.rotate(angle);
+    uiCanvas.translate(0, -fontSize / 2);
     //uiCanvas.drawRect(ui.Rect.fromLTWH(0, 0, textlen, fontSize), paint);
+    //uiCanvas.drawCircle(Offset.zero, 10, paint);
     uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(0, 0));
     uiCanvas.restore();
   }
 
   @override
-  void drawText(String text, int x, int y, double fontSize, MapPaint paint) {
+  void drawText(String text, int x, int y, MapPaint paint) {
+    double textwidth = _calculateTextWidth(text, paint.getTextSize(), paint);
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
-        fontSize: fontSize,
+        fontSize: paint.getTextSize(),
         textAlign: TextAlign.center,
       ),
     )
-      ..pushStyle(ui.TextStyle(color: ui.Color(paint.getColor())))
+      ..pushStyle(ui.TextStyle(
+        color: ui.Color(
+          paint.getColor(),
+        ),
+        fontStyle: paint.getFontStyle() == MapFontStyle.BOLD_ITALIC || paint.getFontStyle() == MapFontStyle.ITALIC
+            ? FontStyle.italic
+            : FontStyle.normal,
+        fontWeight: paint.getFontStyle() == MapFontStyle.BOLD || paint.getFontStyle() == MapFontStyle.BOLD_ITALIC
+            ? FontWeight.bold
+            : FontWeight.normal,
+      ))
       ..addText(text);
-    double width = text.length * 5 * fontSize;
-    uiCanvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: width)), Offset(x.toDouble() - width / 2, y.toDouble()));
+    uiCanvas.drawParagraph(
+        builder.build()..layout(ui.ParagraphConstraints(width: textwidth)), Offset(x.toDouble() - textwidth / 2, y.toDouble()));
   }
 
   @override

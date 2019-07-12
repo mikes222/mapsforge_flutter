@@ -30,7 +30,7 @@ class FileBitmapCache extends BitmapCache {
     assert(renderkey != null && !renderkey.contains("/"));
     dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
     files = await FileHelper.getFiles(dir);
-    _log.info("Starting cache for $renderkey with ${files.length} items in filecache");
+    _log.info("Starting cache for renderkey $renderkey with ${files.length} items in filecache");
 //    files.forEach((file) {
 //      _log.info("  file in cache: $file");
 //    });

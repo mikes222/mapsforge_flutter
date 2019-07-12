@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter/src/graphics/align.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/fontfamily.dart';
-import 'package:mapsforge_flutter/src/graphics/fontstyle.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
@@ -70,7 +70,7 @@ class PathText extends RenderInstruction {
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
 
     FontFamily fontFamily = FontFamily.DEFAULT;
-    FontStyle fontStyle = FontStyle.NORMAL;
+    MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -91,7 +91,7 @@ class PathText extends RenderInstruction {
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
-        fontStyle = FontStyle.values.firstWhere((v) => v.toString().toLowerCase().contains(value));
+        fontStyle = MapFontStyle.values.firstWhere((v) => v.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.REPEAT == name) {
         this.repeat = value == "true";
       } else if (RenderInstruction.REPEAT_GAP == name) {

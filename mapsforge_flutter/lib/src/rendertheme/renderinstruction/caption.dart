@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/fontfamily.dart';
-import 'package:mapsforge_flutter/src/graphics/fontstyle.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
@@ -101,7 +101,7 @@ class Caption extends RenderInstruction {
 
   Future<void> parse(XmlElement rootElement) async {
     FontFamily fontFamily = FontFamily.DEFAULT;
-    FontStyle fontStyle = FontStyle.NORMAL;
+    MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -122,7 +122,7 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
-        fontStyle = FontStyle.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        fontStyle = MapFontStyle.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.POSITION == name) {
         this.position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.PRIORITY == name) {

@@ -35,11 +35,11 @@ class MarkerContext implements MarkerCallback {
         paint: paint);
   }
 
-  void renderText(String caption, double latitude, double longitude, double offsetX, double offsetY, MapPaint stroke, double fontSize) {
+  void renderText(String caption, double latitude, double longitude, double offsetX, double offsetY, MapPaint stroke) {
     double y = mapViewPosition.mercatorProjection.latitudeToPixelY(latitude);
     double x = mapViewPosition.mercatorProjection.longitudeToPixelX(longitude);
-    flutterCanvas.drawText(caption, (x + offsetX - mapViewPosition.leftUpper.x).toInt(),
-        (y + offsetY - mapViewPosition.leftUpper.y).toInt(), fontSize, stroke);
+    flutterCanvas.drawText(
+        caption, (x + offsetX - mapViewPosition.leftUpper.x).toInt(), (y + offsetY - mapViewPosition.leftUpper.y).toInt(), stroke);
   }
 
   @override

@@ -24,12 +24,10 @@ First and foremost to the author of mapsforge. He has done an outstanding job!
 
 ## TODO
 
-A lot of things. 
-
 graphics:
- - rotate path text (still horizontal text. For example for highway or river captions)
  - animate movement
  - animate zoom (currently no visual feedback while pinch&zooming)
+ - fling
  
 Speed:
  - support for more than one concurrent job in the jobqueue (rudimentary implemented already)

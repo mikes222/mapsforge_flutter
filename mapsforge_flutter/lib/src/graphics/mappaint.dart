@@ -5,7 +5,7 @@ import 'bitmap.dart';
 import 'cap.dart';
 import 'color.dart';
 import 'fontfamily.dart';
-import 'fontstyle.dart';
+import 'mapfontstyle.dart';
 import 'join.dart';
 import 'style.dart';
 
@@ -51,5 +51,9 @@ abstract class MapPaint {
 
   void setTextSize(double textSize);
 
-  void setTypeface(FontFamily fontFamily, FontStyle fontStyle);
+  double getTextSize();
+
+  void setTypeface(FontFamily fontFamily, MapFontStyle fontStyle);
+
+  MapFontStyle getFontStyle();
 }

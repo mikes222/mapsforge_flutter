@@ -1,4 +1,4 @@
-enum FontStyle {
+enum MapFontStyle {
   BOLD,
   BOLD_ITALIC,
   ITALIC,
