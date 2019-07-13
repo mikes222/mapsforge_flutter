@@ -4,20 +4,14 @@ import 'dart:math';
  * A Point represents an immutable pair of double coordinates.
  */
 class Mappoint implements Comparable<Mappoint> {
-  /**
-   * The x coordinate of this point in pixels.
-   */
+  /// The x coordinate of this point in pixels.
   final double x;
 
-  /**
-   * The y coordinate of this point in pixels.
-   */
+  /// The y coordinate of this point in pixels.
   final double y;
 
-  /**
-   * @param x the x coordinate of this point.
-   * @param y the y coordinate of this point.
-   */
+  /// @param x the x coordinate of this point.
+  /// @param y the y coordinate of this point.
   Mappoint(this.x, this.y) {}
 
   @override

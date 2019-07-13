@@ -19,6 +19,7 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 import 'package:mapsforge_flutter/src/renderer/shapepaintcontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
 import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
@@ -63,7 +64,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  Future<TileBitmap> executeJob(Job job) async {
+  Future<TileBitmap> executeJob(RendererJob job) async {
     //_log.info("Executing ${job.toString()}");
     RenderContext renderContext =
         new RenderContext(job, new CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble()), renderTheme);
@@ -166,6 +167,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PolylineContainer way) {
     if (renderLabels) {
       Mappoint centerPoint = way.getCenterAbsolute().offset(horizontalOffset, verticalOffset);
+      _log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
       PointTextContainer label =
           this.graphicFactory.createPointTextContainer(centerPoint, display, priority, caption, fill, stroke, null, position, maxTextWidth);
       assert(label != null);
@@ -186,7 +188,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderPointOfInterestCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
       double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PointOfInterest poi) {
     if (renderLabels) {
-      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+      //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
+      _log.info("poiPosition is ${poiPosition.toString()}, position is ${position.toString()} for $caption");
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));

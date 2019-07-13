@@ -206,20 +206,7 @@ class FlutterCanvas extends MapCanvas {
       return;
     }
     double fontSize = paint.getTextSize();
-    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: fontSize,
-        //textAlign: TextAlign.center,
-        fontStyle: paint.getFontStyle() == MapFontStyle.BOLD_ITALIC || paint.getFontStyle() == MapFontStyle.ITALIC
-            ? FontStyle.italic
-            : FontStyle.normal,
-        fontWeight: paint.getFontStyle() == MapFontStyle.BOLD || paint.getFontStyle() == MapFontStyle.BOLD_ITALIC
-            ? FontWeight.bold
-            : FontWeight.normal,
-      ),
-    )
-      ..pushStyle(ui.TextStyle(color: ui.Color((paint as FlutterPaint).getColor())))
-      ..addText(text);
+    ui.ParagraphBuilder builder = (paint as FlutterPaint).buildParagraphBuilder(text);
 
     ui.Paragraph paragraph = builder.build();
 
@@ -227,7 +214,7 @@ class FlutterCanvas extends MapCanvas {
     // So text isn't upside down
     bool doInvert = firstSegment.end.x <= firstSegment.start.x;
 
-    double textlen = _calculateTextWidth(text, fontSize, paint);
+    double textlen = calculateTextWidth(text, fontSize, paint);
 
     //uiCanvas.transform(new Matrix4.identity().rotatestorage);
 
@@ -279,14 +266,14 @@ class FlutterCanvas extends MapCanvas {
           continue;
         }
         len = textlen + fontSize * 2;
-        Mappoint start = segment.start.offset(-origin.x, -origin.y);
-        _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
+        Mappoint end = segment.end.offset(-origin.x, -origin.y);
+        _drawTextRotated(paragraph, textlen, fontSize, segment, end, doInvert);
         len -= segmentLength;
       }
     }
   }
 
-  double _calculateTextWidth(String text, double fontSize, MapPaint paint) {
+  static double calculateTextWidth(String text, double fontSize, MapPaint paint) {
     // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
     // self-defined constraint
     final constraints = BoxConstraints(
@@ -343,25 +330,8 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawText(String text, int x, int y, MapPaint paint) {
-    double textwidth = _calculateTextWidth(text, paint.getTextSize(), paint);
-    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: paint.getTextSize(),
-        textAlign: TextAlign.center,
-      ),
-    )
-      ..pushStyle(ui.TextStyle(
-        color: ui.Color(
-          paint.getColor(),
-        ),
-        fontStyle: paint.getFontStyle() == MapFontStyle.BOLD_ITALIC || paint.getFontStyle() == MapFontStyle.ITALIC
-            ? FontStyle.italic
-            : FontStyle.normal,
-        fontWeight: paint.getFontStyle() == MapFontStyle.BOLD || paint.getFontStyle() == MapFontStyle.BOLD_ITALIC
-            ? FontWeight.bold
-            : FontWeight.normal,
-      ))
-      ..addText(text);
+    double textwidth = calculateTextWidth(text, paint.getTextSize(), paint);
+    ui.ParagraphBuilder builder = (paint as FlutterPaint).buildParagraphBuilder(text);
     uiCanvas.drawParagraph(
         builder.build()..layout(ui.ParagraphConstraints(width: textwidth)), Offset(x.toDouble() - textwidth / 2, y.toDouble()));
   }

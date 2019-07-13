@@ -3,7 +3,6 @@ import '../graphics/mappaint.dart';
 import '../graphics/position.dart';
 import '../mapelements/symbolcontainer.dart';
 import '../model/mappoint.dart';
-
 import 'mapelementcontainer.dart';
 
 abstract class PointTextContainer extends MapElementContainer {
@@ -28,8 +27,8 @@ abstract class PointTextContainer extends MapElementContainer {
       this.textWidth = paintBack.getTextWidth(text);
       this.textHeight = paintBack.getTextHeight(text);
     } else {
-      this.textWidth = text.length * 50;
-      this.textHeight = 30;
+      this.textWidth = paintFront.getTextWidth(text);
+      this.textHeight = paintFront.getTextHeight(text);
     }
     this.isVisible = !this.paintFront.isTransparent() || (this.paintBack != null && !this.paintBack.isTransparent());
   }

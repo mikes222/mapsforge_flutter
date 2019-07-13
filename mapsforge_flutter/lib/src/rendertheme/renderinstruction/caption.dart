@@ -1,9 +1,10 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/align.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/fontfamily.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
@@ -27,6 +28,7 @@ import '../rendercontext.dart';
  * center of which is at the point of the POI. The bitmap itself is never rendered.
  */
 class Caption extends RenderInstruction {
+  static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
   Bitmap bitmap;
@@ -100,7 +102,7 @@ class Caption extends RenderInstruction {
   }
 
   Future<void> parse(XmlElement rootElement) async {
-    FontFamily fontFamily = FontFamily.DEFAULT;
+    MapFontFamily fontFamily = MapFontFamily.DEFAULT;
     MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
     rootElement.attributes.forEach((element) {
@@ -118,7 +120,7 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.FILL == name) {
         this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
-        fontFamily = FontFamily.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        fontFamily = MapFontFamily.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
@@ -201,11 +203,13 @@ class Caption extends RenderInstruction {
   @override
   void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
+      _log.info("display is never for $textKey");
       return;
     }
 
     String caption = this.textKey.getValue(poi.tags);
     if (caption == null) {
+      _log.info("caption is null for $textKey");
       return;
     }
 

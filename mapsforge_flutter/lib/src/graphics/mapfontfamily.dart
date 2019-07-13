@@ -1,4 +1,4 @@
-enum FontFamily {
+enum MapFontFamily {
   DEFAULT,
   MONOSPACE,
   SANS_SERIF,

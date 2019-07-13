@@ -9,6 +9,7 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
+import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -102,7 +103,7 @@ class TileLayer extends Layer {
     mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
-    List<Job> jobs = List();
+    List<RendererJob> jobs = List();
     tiles.forEach((tile) {
       Mappoint point = tile.leftUpperPoint;
       TileBitmap bitmap = this._bitmapCache.getTileBitmap(tile);

@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
@@ -13,12 +14,17 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
 
 import 'fluttercanvas.dart';
+import 'flutterpaint.dart';
 
 class FlutterPointTextContainer extends PointTextContainer {
+  static final _log = new Logger('FlutterPointTextContainer');
+
 //  StaticLayout backLayout;
 //  StaticLayout frontLayout;
 
-  ui.ParagraphBuilder builder;
+  ui.ParagraphBuilder frontBuilder;
+
+  ui.ParagraphBuilder backBuilder;
 
   FlutterPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
       SymbolContainer symbolContainer, Position position, int maxTextWidth)
@@ -42,19 +48,11 @@ class FlutterPointTextContainer extends PointTextContainer {
     // strange Android behaviour: if alignment is set to center, then
     // text is rendered with right alignment if using StaticLayout
 
-    builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: 14.0,
-        textAlign: alignment,
-      ),
-    )
-      ..pushStyle(ui.TextStyle(
-        color: ui.Color(paintFront.getColor()),
-      ))
-      ..addText(text);
+    frontBuilder = (paintFront as FlutterPaint).buildParagraphBuilder(text);
 
     if (this.paintBack != null) {
       //backTextPaint.setTextAlign(android.graphics.Paint.Align.LEFT);
+      backBuilder = (paintBack as FlutterPaint).buildParagraphBuilder(text);
     }
 
 //      frontLayout = new StaticLayout(
@@ -145,22 +143,31 @@ class FlutterPointTextContainer extends PointTextContainer {
     double adjustedX = (this.xy.x - origin.x) + boundary.left;
     double adjustedY = (this.xy.y - origin.y) + textOffset + boundary.top;
 
-//    if (this.paintBack != null) {
+//    _log.info("Adjusted is $adjustedX/$adjustedY and witdht is $textWidth for $text");
+//    Paint p = Paint();
+//    p.color = Colors.amber;
+//    p.strokeWidth = 2;
+//    p.style = PaintingStyle.stroke;
+//    flutterCanvas.drawRect(Rect.fromLTWH(adjustedX, adjustedY, textWidth.toDouble(), textHeight.toDouble()), p);
+//    flutterCanvas.drawLine(Offset(adjustedX, adjustedY), Offset(adjustedX + textWidth, adjustedY - 20), (paintFront as FlutterPaint).paint);
+
+    if (this.paintBack != null) {
 //      int color = this.paintBack.getColor();
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(GraphicUtils.filterColor(color, filter));
 //      }
-//      flutterCanvas.drawText(this.text, adjustedX, adjustedY, FlutterGraphicFactory.getPaint(this.paintBack));
+      flutterCanvas.drawParagraph(
+          backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble())), Offset(adjustedX, adjustedY));
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(color);
 //      }
-//    }
+    }
 //    int color = this.paintFront.getColor();
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(GraphicUtils.filterColor(color, filter));
 //    }
     flutterCanvas.drawParagraph(
-        builder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble())), Offset(adjustedX, adjustedY));
+        frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble())), Offset(adjustedX, adjustedY));
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(color);
 //    }

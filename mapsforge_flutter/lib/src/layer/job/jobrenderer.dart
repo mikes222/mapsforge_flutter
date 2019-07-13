@@ -5,15 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-
-import 'job.dart';
+import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 
 abstract class JobRenderer {
   FlutterTileBitmap _missingBitmap;
 
   FlutterTileBitmap _noDataBitmap;
 
-  Future<TileBitmap> executeJob(Job job);
+  Future<TileBitmap> executeJob(RendererJob job);
 
   String getRenderKey();
 

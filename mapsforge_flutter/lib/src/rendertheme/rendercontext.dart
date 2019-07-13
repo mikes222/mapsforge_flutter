@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 
 import '../mapelements/mapelementcontainer.dart';
 import '../model/tile.dart';
@@ -20,7 +21,7 @@ class RenderContext {
 
   static final double STROKE_INCREASE = 1.5;
   static final int STROKE_MIN_ZOOM_LEVEL = 12;
-  final Job job;
+  final RendererJob job;
   final RenderTheme renderTheme;
 
   // Configuration that drives the rendering
@@ -32,9 +33,7 @@ class RenderContext {
   List<List<List<ShapePaintContainer>>> ways;
 
   RenderContext(this.job, this.canvasRasterer, this.renderTheme) : labels = new List() {
-//    this
-//        .renderTheme
-//        .scaleTextSize(job.textScale, job.tile.zoomLevel);
+    this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
     this.ways = createWayLists();
     setScaleStrokeWidth(this.job.tile.zoomLevel);
   }

@@ -6,14 +6,15 @@ import 'package:mapsforge_flutter/src/graphics/align.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
-import 'package:mapsforge_flutter/src/graphics/fontfamily.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import 'flutterbitmap.dart';
+import 'fluttercanvas.dart';
 import 'fluttercolor.dart';
 
 class FlutterPaint extends ui.Paint implements MapPaint {
@@ -25,7 +26,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   MapFontStyle _fontStyle;
 
-  FontFamily _fontFamily;
+  MapFontFamily _fontFamily;
 
   FlutterPaint(this.paint);
 
@@ -35,6 +36,9 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     paint.style = other.paint.style;
     paint.strokeJoin = other.paint.strokeJoin;
     paint.strokeCap = other.paint.strokeCap;
+    _textSize = other._textSize;
+    _fontStyle = other._fontStyle;
+    _fontFamily = other._fontFamily;
     if (other._shaderBitmap != null) {
       _shaderBitmap = other._shaderBitmap;
       _shaderBitmap.incrementRefCount();
@@ -159,7 +163,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   }
 
   @override
-  void setTypeface(FontFamily fontFamily, MapFontStyle fontStyle) {
+  void setTypeface(MapFontFamily fontFamily, MapFontStyle fontStyle) {
     _fontStyle = fontStyle;
     _fontFamily = fontFamily;
   }
@@ -171,11 +175,31 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   @override
   int getTextHeight(String text) {
-    return 40;
+    return _textSize.ceil();
   }
 
   @override
   int getTextWidth(String text) {
-    return 50 * text.length;
+    return FlutterCanvas.calculateTextWidth(text, _textSize, this).ceil();
+  }
+
+  ui.ParagraphBuilder buildParagraphBuilder(String text) {
+    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
+      ui.ParagraphStyle(
+        fontSize: _textSize,
+        //textAlign: TextAlign.center,
+        fontStyle:
+            getFontStyle() == MapFontStyle.BOLD_ITALIC || getFontStyle() == MapFontStyle.ITALIC ? ui.FontStyle.italic : ui.FontStyle.normal,
+        fontWeight:
+            getFontStyle() == MapFontStyle.BOLD || getFontStyle() == MapFontStyle.BOLD_ITALIC ? ui.FontWeight.bold : ui.FontWeight.normal,
+        //fontFamily: _fontFamily == MapFontFamily.MONOSPACE ? FontFamily.MONOSPACE : FontFamily.DEFAULT,
+      ),
+    )
+      ..pushStyle(ui.TextStyle(
+        color: paint.color,
+        fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
+      ))
+      ..addText(text);
+    return builder;
   }
 }

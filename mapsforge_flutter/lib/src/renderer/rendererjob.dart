@@ -6,14 +6,15 @@ import '../model/displaymodel.dart';
 import '../model/tile.dart';
 
 class RendererJob extends Job {
-  final DisplayModel displayModel;
-  final bool labelsOnly;
-  final MapDataStore mapDataStore;
-  final RenderTheme renderTheme;
+//  final DisplayModel displayModel;
+//  final bool labelsOnly;
+//  final MapDataStore mapDataStore;
+//  final RenderTheme renderTheme;
   final double textScale;
 
-  RendererJob(Tile tile, this.mapDataStore, this.renderTheme, this.displayModel, this.textScale, bool isTransparent, this.labelsOnly)
-      : assert(mapDataStore != null),
+  RendererJob(
+      Tile tile, /*this.mapDataStore, this.renderTheme, this.displayModel, */ this.textScale, bool isTransparent /*, this.labelsOnly*/)
+      : //assert(mapDataStore != null),
         super(tile, isTransparent) {
     if (textScale <= 0 || textScale == null) {
       throw new Exception("invalid textScale: $textScale");
@@ -27,7 +28,8 @@ class RendererJob extends Job {
    * @return a RendererJob based on the current one, only tile changes
    */
   RendererJob otherTile(Tile tile) {
-    return new RendererJob(tile, this.mapDataStore, this.renderTheme, this.displayModel, this.textScale, this.hasAlpha, this.labelsOnly);
+    return new RendererJob(
+        tile, /*this.mapDataStore, this.renderTheme, this.displayModel,*/ this.textScale, this.hasAlpha /*, this.labelsOnly*/);
   }
 
   /**
@@ -43,13 +45,13 @@ class RendererJob extends Job {
       super == other &&
           other is RendererJob &&
           runtimeType == other.runtimeType &&
-          displayModel == other.displayModel &&
-          labelsOnly == other.labelsOnly &&
-          mapDataStore == other.mapDataStore &&
-          renderTheme == other.renderTheme &&
+//          displayModel == other.displayModel &&
+//          labelsOnly == other.labelsOnly &&
+//          mapDataStore == other.mapDataStore &&
+//          renderTheme == other.renderTheme &&
           textScale == other.textScale;
 
-  @override
-  int get hashCode =>
-      super.hashCode ^ displayModel.hashCode ^ labelsOnly.hashCode ^ mapDataStore.hashCode ^ renderTheme.hashCode ^ textScale.hashCode;
+//  @override
+//  int get hashCode =>
+//      super.hashCode ^ displayModel.hashCode ^ labelsOnly.hashCode ^ mapDataStore.hashCode ^ renderTheme.hashCode ^ textScale.hashCode;
 }

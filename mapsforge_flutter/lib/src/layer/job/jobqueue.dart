@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/renderer/dummyrenderer.dart';
+import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:synchronized/synchronized.dart';
@@ -61,20 +62,20 @@ class JobQueue {
     if (job != null) {
       return job;
     }
-    job = Job(tile, true);
+    job = RendererJob(tile, displayModel.getScaleFactor(), true);
     jobs[tile] = job;
     return job;
   }
 
   Observable<Job> get observeJob => _observeJob;
 
-  void add(Job job) {
-    List<Job> jobs = List();
+  void add(RendererJob job) {
+    List<RendererJob> jobs = List();
     jobs.add(job);
     _inject.add(JobQueueItem(jobs));
   }
 
-  void addJobs(List<Job> jobs) {
+  void addJobs(List<RendererJob> jobs) {
     if (jobs.length == 0) return;
     if (_lastItem != null) {
       _lastItem.outdated = true;
@@ -157,7 +158,7 @@ class StaticRenderClass {
   }
 
   void render(JobQueueItem item, Callback callback) async {
-    for (Job job in item.jobs) {
+    for (RendererJob job in item.jobs) {
       // _lock[++_roundRobin % _lock.length].synchronized(() async {
       if (item.outdated) return;
       if (job.hasTileBitmap()) {
@@ -210,7 +211,7 @@ class StaticRenderClass {
 /////////////////////////////////////////////////////////////////////////////
 
 class JobQueueItem {
-  final List<Job> jobs;
+  final List<RendererJob> jobs;
 
   bool outdated = false;
 
