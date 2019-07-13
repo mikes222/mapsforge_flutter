@@ -3,23 +3,15 @@ import 'pointofinterest.dart';
 import 'poiwaybundle.dart';
 import 'way.dart';
 
-/**
- * An immutable container for the data returned from a MapDataStore.
- */
+/// An immutable container for the data returned from a MapDataStore.
 class MapReadResult {
-  /**
-   * True if the read area is completely covered by water, false otherwise.
-   */
+  /// True if the read area is completely covered by water, false otherwise.
   bool isWater = false;
 
-  /**
-   * The read POIs.
-   */
+  /// The read POIs.
   List<PointOfInterest> pointOfInterests;
 
-  /**
-   * The read ways.
-   */
+  /// The read ways.
   List<Way> ways;
 
   MapReadResult() {

@@ -66,28 +66,39 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   Future<TileBitmap> executeJob(RendererJob job) async {
     //_log.info("Executing ${job.toString()}");
+    int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext =
         new RenderContext(job, new CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble()), renderTheme);
     MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
+    int diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 100) _log.info("mapReadResult took $diff ms");
     if (mapReadResult == null) {
       _log.info("Executing ${job.toString()} has no mapReadResult for tile ${job.tile.toString()}");
       return null;
     }
     _processReadMapData(renderContext, mapReadResult);
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 100) _log.info("_processReadMapData took $diff ms");
     renderContext.canvasRasterer.startCanvasBitmap();
 //    if (!job.hasAlpha && job.displayModel.getBackgroundColor() != renderContext.renderTheme.getMapBackground()) {
 //      renderContext.canvasRasterer.fill(renderContext.renderTheme.getMapBackground());
 //    }
     renderContext.canvasRasterer.drawWays(renderContext);
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 100) _log.info("drawWays took $diff ms");
 
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
       // now draw the ways and the labels
       renderContext.canvasRasterer.drawMapElements(labelsToDraw, job.tile);
+//      diff = DateTime.now().millisecondsSinceEpoch - time;
+//      if (diff > 100) _log.info("drawMapElements took $diff ms");
     }
     if (this.labelStore != null) {
       // store elements for this tile in the label cache
       this.labelStore.storeMapItems(job.tile, renderContext.labels);
+//      diff = DateTime.now().millisecondsSinceEpoch - time;
+//      if (diff > 100) _log.info("storeMapItems took $diff ms");
     }
 
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
@@ -101,6 +112,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 //    }
 
     TileBitmap bitmap = await renderContext.canvasRasterer.finalizeCanvasBitmap();
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 100) _log.info("finalizeCanvasBitmap took $diff ms");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     return bitmap;
   }
@@ -121,7 +134,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   void _renderPointOfInterest(final RenderContext renderContext, PointOfInterest pointOfInterest) {
     renderContext.setDrawingLayers(pointOfInterest.layer);
-    //renderContext.renderTheme.matchNode(databaseRenderer, renderContext, pointOfInterest);
+    renderContext.renderTheme.matchNode(this, renderContext, pointOfInterest);
   }
 
   void _renderWay(final RenderContext renderContext, PolylineContainer way) {
@@ -167,7 +180,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PolylineContainer way) {
     if (renderLabels) {
       Mappoint centerPoint = way.getCenterAbsolute().offset(horizontalOffset, verticalOffset);
-      _log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
+      //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
       PointTextContainer label =
           this.graphicFactory.createPointTextContainer(centerPoint, display, priority, caption, fill, stroke, null, position, maxTextWidth);
       assert(label != null);
@@ -190,7 +203,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     if (renderLabels) {
       //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
       Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
-      _log.info("poiPosition is ${poiPosition.toString()}, position is ${position.toString()} for $caption");
+      //_log.info("poiPosition is ${poiPosition.toString()}, position is ${position.toString()} for $caption");
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));

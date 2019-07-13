@@ -180,7 +180,7 @@ class StaticRenderClass {
         tileBitmap = await jobRenderer.executeJob(job);
         if (tileBitmap != null) {
           int diff = DateTime.now().millisecondsSinceEpoch - time;
-          _log.info("Renderer needed $diff ms for job ${job.toString()}");
+          if (diff >= 100) _log.info("Renderer needed $diff ms for job ${job.toString()}");
           bitmapCache.addTileBitmap(job.tile, tileBitmap);
           job.tileBitmap = tileBitmap;
           job.inWork = false;

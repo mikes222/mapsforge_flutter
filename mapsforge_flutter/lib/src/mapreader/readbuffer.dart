@@ -32,12 +32,14 @@ class ReadBuffer {
 
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
     Uint8List result;
+    int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
       if (_raf == null) _raf = await File(filename).open();
       RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
       result = await (newInstance.read(indexBlockSize));
     });
     assert(result.length == indexBlockSize);
+    //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return result;
   }
 
@@ -92,12 +94,14 @@ class ReadBuffer {
     this._offset = 0;
 //    this.bufferWrapper = Uint8List(0).buffer; //.clear();
 
+    int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
       if (_raf == null) _raf = await File(filename).open();
       _bufferData = await this._raf.read(length);
     });
     assert(_bufferData != null);
     assert(_bufferData.length == length);
+    //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return true;
   }
 
@@ -117,6 +121,7 @@ class ReadBuffer {
       return false;
     }
 
+    int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
       if (_raf == null) _raf = await File(filename).open();
       RandomAccessFile newInstance = await this._raf.setPosition(offset);
@@ -127,17 +132,20 @@ class ReadBuffer {
     });
     assert(_bufferData != null);
     assert(_bufferData.length == length);
+    //_log.info("readFromFile2 needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return true;
     //}
   }
 
   Future<int> length() async {
     int result;
+    int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
       if (_raf == null) _raf = await File(filename).open();
       result = await _raf.length();
     });
     assert(result != null);
+    //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return result;
   }
 
