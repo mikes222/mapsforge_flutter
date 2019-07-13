@@ -213,7 +213,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   void renderPointOfInterestCircle(
       RenderContext renderContext, double radius, MapPaint fill, MapPaint stroke, int level, PointOfInterest poi) {
-    Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+    Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
     renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), stroke, 0));
     renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), fill, 0));
   }
@@ -222,7 +222,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderPointOfInterestSymbol(
       RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint symbolPaint) {
     if (renderLabels) {
-      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
       renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint));
     }
   }
