@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -5,6 +6,7 @@ import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
@@ -94,12 +96,11 @@ class TileLayer extends Layer {
     // to hook this into the onConfigurationChanged call chain.
     canvas.resetClip();
 
-//    Set<Job> jobs = new Set();
-//    for (Tile tile in tiles) {
-//      jobs.add(createJob(tile));
-//    }
-//    this.tileCache.setWorkingSet(jobs);
     canvas.setClip(0, 0, mapViewDimension.getDimension().width.round(), mapViewDimension.getDimension().height.round());
+    if (mapViewPosition.scale != 1) {
+      _log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
+      canvas.scale(mapViewPosition.focalPoint, mapViewPosition.scale);
+    }
     mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
@@ -141,6 +142,11 @@ class TileLayer extends Layer {
         //bitmap.decrementRefCount();
       }
     });
+    if (mapViewPosition.scale != 1) {
+      //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
+      (canvas as FlutterCanvas).uiCanvas.restore();
+      //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
+    }
     this.jobQueue.addJobs(jobs);
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     //_log.info("diff: $diff ms");

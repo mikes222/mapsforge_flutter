@@ -72,4 +72,6 @@ abstract class MapCanvas {
   /// Shade tileRect neutral if bitmap is null (and shadeRect).
   /// Shade tileRect with bitmap otherwise.
   void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude);
+
+  void scale(Mappoint focalPoint, double scale);
 }

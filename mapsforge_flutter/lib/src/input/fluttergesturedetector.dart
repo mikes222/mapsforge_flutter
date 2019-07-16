@@ -81,6 +81,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       },
       onScaleUpdate: (ScaleUpdateDetails details) {
         if (details.scale == 1) {
+          // move around
           //print(details.toString());
           if (startLeftUpper == null) return;
           // do not react if less than 5 points dragged
@@ -88,8 +89,11 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           widget.mapModel.setLeftUpper(
               startLeftUpper.x + startOffset.dx - details.focalPoint.dx, startLeftUpper.y + startOffset.dy - details.focalPoint.dy);
         } else {
-          //print(details.toString());
+          // zoom
+          //print("scale ${details.scale} around ${details.focalPoint.toString()} or ${details.localFocalPoint.toString()}");
           _lastScale = details.scale;
+          MapViewPosition newPost =
+              widget.mapModel.setScale(Mappoint(details.localFocalPoint.dx, details.localFocalPoint.dy), details.scale);
         }
       },
       onScaleEnd: (ScaleEndDetails details) {
@@ -97,11 +101,10 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         if (_lastScale == null) return;
         // no zoom: 0, double zoom: 1, half zoom: -1
         double zoomLevelOffset = log(this._lastScale) / log(2);
-        int zoomLevelDiff;
         if (zoomLevelOffset.abs() >= 0.5) {
           // Complete large zooms towards gesture direction
 //            zoomLevelDiff = (zoomLevelOffset < 0 ? zoomLevelOffset.floor() : zoomLevelOffset.ceil()).round();
-          zoomLevelDiff = zoomLevelOffset.round();
+          int zoomLevelDiff = zoomLevelOffset.round();
           if (zoomLevelDiff != 0) {
 //            print("zooming now at $zoomLevelDiff for ${widget.position.toString()}");
             MapViewPosition newPost =
@@ -109,6 +112,9 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 //            print(
 //                "  resulting in ${newPost.toString()} or ${newPost.mercatorProjection} or ${newPost.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension())} and now ${newPost.toString()}");
           }
+        } else if (_lastScale != 1) {
+          // no significant zoom. Restore the old zoom
+          MapViewPosition newPost = widget.mapModel.setZoomLevel((widget.position?.zoomLevel ?? widget.mapModel.DEFAULT_ZOOM));
         }
       },
       child: widget.child,

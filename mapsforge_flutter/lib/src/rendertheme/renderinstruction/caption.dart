@@ -209,7 +209,7 @@ class Caption extends RenderInstruction {
 
     String caption = this.textKey.getValue(poi.tags);
     if (caption == null) {
-      _log.info("caption is null for $textKey");
+      //_log.info("caption is null for $textKey");
       return;
     }
 

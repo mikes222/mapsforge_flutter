@@ -345,4 +345,13 @@ class FlutterCanvas extends MapCanvas {
   void fillColor(Color color) {
     // TODO: implement fillColor
   }
+
+  @override
+  void scale(Mappoint focalPoint, double scale) {
+    uiCanvas.save();
+    uiCanvas.translate(focalPoint.x, focalPoint.y);
+    uiCanvas.scale(scale);
+    uiCanvas.translate(-focalPoint.x, -focalPoint.y);
+    //uiCanvas.translate(-focalPoint.x / scale, -focalPoint.y / scale);
+  }
 }

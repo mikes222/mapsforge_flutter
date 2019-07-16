@@ -9,6 +9,7 @@ import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'displaymodel.dart';
+import 'mappoint.dart';
 import 'mapviewdimension.dart';
 import 'mapviewposition.dart';
 
@@ -127,6 +128,23 @@ class MapModel {
       return newPosition;
     } else {
       MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel, displayModel.tileSize);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+      return newPosition;
+    }
+  }
+
+  MapViewPosition setScale(Mappoint focalPoint, double scale) {
+    assert(scale != null);
+    assert(scale > 0);
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.scale(_mapViewPosition, focalPoint, scale);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+      return newPosition;
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, displayModel.tileSize);
+      newPosition = MapViewPosition.scale(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;

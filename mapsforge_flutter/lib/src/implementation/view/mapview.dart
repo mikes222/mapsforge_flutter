@@ -64,7 +64,6 @@ class _FlutterMapState extends State<FlutterMapView> {
 
   @override
   Widget build(BuildContext context) {
-    _log.info("draw");
     return StreamBuilder<MapViewPosition>(
       stream: widget.mapModel.observePosition,
       builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
@@ -120,20 +119,20 @@ class _FlutterMapState extends State<FlutterMapView> {
     _widgets.addAll(_markerRenderer
         .map(
           (MarkerRenderer markerRenderer) => ChangeNotifierProvider<MarkerDataStore>.value(
-                child: Consumer<MarkerDataStore>(
-                  builder: (BuildContext context, MarkerDataStore value, Widget child) {
-                    return CustomPaint(
-                      foregroundPainter: MarkerPainter(
-                          mapViewDimension: widget.mapModel.mapViewDimension,
-                          position: position,
-                          displayModel: widget.mapModel.displayModel,
-                          markerRenderer: markerRenderer),
-                      child: Container(),
-                    );
-                  },
-                ),
-                value: markerRenderer.dataStore,
-              ),
+            child: Consumer<MarkerDataStore>(
+              builder: (BuildContext context, MarkerDataStore value, Widget child) {
+                return CustomPaint(
+                  foregroundPainter: MarkerPainter(
+                      mapViewDimension: widget.mapModel.mapViewDimension,
+                      position: position,
+                      displayModel: widget.mapModel.displayModel,
+                      markerRenderer: markerRenderer),
+                  child: Container(),
+                );
+              },
+            ),
+            value: markerRenderer.dataStore,
+          ),
         )
         .toList());
 
