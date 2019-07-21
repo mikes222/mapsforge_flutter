@@ -352,6 +352,5 @@ class FlutterCanvas extends MapCanvas {
     uiCanvas.translate(focalPoint.x, focalPoint.y);
     uiCanvas.scale(scale);
     uiCanvas.translate(-focalPoint.x, -focalPoint.y);
-    //uiCanvas.translate(-focalPoint.x / scale, -focalPoint.y / scale);
   }
 }

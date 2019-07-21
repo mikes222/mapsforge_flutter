@@ -36,32 +36,33 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
   @override
   Widget build(BuildContext context) {
-    RenderBox positionRed = context.findRenderObject();
-    Offset positionRelative = positionRed?.localToGlobal(Offset.zero);
+    //RenderBox positionRed = context.findRenderObject();
+    //Offset positionRelative = positionRed?.localToGlobal(Offset.zero);
     //print("positionRelative: ${positionRelative.toString()}");
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: (TapDownDetails details) {
         // for doubleTap
-        _doubleTapOffset = details.globalPosition;
+        _doubleTapOffset = details.localPosition;
       },
       onTapUp: (TapUpDetails details) {
         //print(details.globalPosition.toString());
-        if (positionRelative == null) return;
-        widget.mapModel.tapEvent(details.globalPosition.dx - positionRelative.dx, details.globalPosition.dy - positionRelative.dy);
+        //if (positionRelative == null) return;
+        //widget.mapModel.tapEvent(details.globalPosition.dx - positionRelative.dx, details.globalPosition.dy - positionRelative.dy);
+        widget.mapModel.tapEvent(details.localPosition.dx, details.localPosition.dy);
         widget.mapModel.gestureEvent();
       },
       onDoubleTap: () {
         if (_doubleTapOffset != null) {
-          if (positionRelative == null) return;
+          //if (positionRelative == null) return;
           print(" double tap at ${_doubleTapOffset.toString()}");
 //          double xCenter = widget.mapModel.mapViewPosition.leftUpper.x
           BoundingBox boundingBox = widget.mapModel.mapViewPosition.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension());
           // lat/lon of the position where we double-clicked
           double latitude = widget.mapModel.mapViewPosition.mercatorProjection
-              .pixelYToLatitude(widget.mapModel.mapViewPosition.leftUpper.y + _doubleTapOffset.dy - positionRelative.dy);
+              .pixelYToLatitude(widget.mapModel.mapViewPosition.leftUpper.y + _doubleTapOffset.dy);
           double longitude = widget.mapModel.mapViewPosition.mercatorProjection
-              .pixelXToLongitude(widget.mapModel.mapViewPosition.leftUpper.x + _doubleTapOffset.dx - positionRelative.dx);
+              .pixelXToLongitude(widget.mapModel.mapViewPosition.leftUpper.x + _doubleTapOffset.dx);
           // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
 
           widget.mapModel.zoomInAround((latitude - widget.mapModel.mapViewPosition.latitude) / 2 + widget.mapModel.mapViewPosition.latitude,
