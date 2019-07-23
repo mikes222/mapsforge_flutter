@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
@@ -63,7 +64,16 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
       Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text("${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}"),
+          GestureDetector(
+            child: Text(
+              "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}",
+              style: TextStyle(fontSize: 12),
+            ),
+            onLongPress: () {
+              Clipboard.setData(
+                  new ClipboardData(text: "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}" ?? ""));
+            },
+          ),
           IconButton(
             padding: EdgeInsets.all(0),
             icon: Icon(Icons.close),

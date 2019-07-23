@@ -1,9 +1,10 @@
 import '../utils/latlongutils.dart';
+import 'ilatlong.dart';
 
 /**
  * This immutable class represents a geographic coordinate with a latitude and longitude value.
  */
-class LatLong implements Comparable<LatLong> {
+class LatLong implements Comparable<LatLong>, ILatLong {
   /**
    * The RegEx pattern to read WKT points.
    */
@@ -54,11 +55,9 @@ class LatLong implements Comparable<LatLong> {
    */
   @override
   int compareTo(LatLong latLong) {
-    if (this.latitude > latLong.latitude ||
-        this.longitude > latLong.longitude) {
+    if (this.latitude > latLong.latitude || this.longitude > latLong.longitude) {
       return 1;
-    } else if (this.latitude < latLong.latitude ||
-        this.longitude < latLong.longitude) {
+    } else if (this.latitude < latLong.latitude || this.longitude < latLong.longitude) {
       return -1;
     }
     return 0;
@@ -90,10 +89,7 @@ class LatLong implements Comparable<LatLong> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LatLong &&
-          runtimeType == other.runtimeType &&
-          latitude == other.latitude &&
-          longitude == other.longitude;
+      other is LatLong && runtimeType == other.runtimeType && latitude == other.latitude && longitude == other.longitude;
 
   @override
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
@@ -108,8 +104,7 @@ class LatLong implements Comparable<LatLong> {
    * @throws IllegalArgumentException if the latitudeE6 or longitudeE6 value is invalid.
    */
   static LatLong fromMicroDegrees(int latitudeE6, int longitudeE6) {
-    return new LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6),
-        LatLongUtils.microdegreesToDegrees(longitudeE6));
+    return new LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6), LatLongUtils.microdegreesToDegrees(longitudeE6));
   }
 
   /**
@@ -123,8 +118,7 @@ class LatLong implements Comparable<LatLong> {
    */
   static LatLong fromString(String latLonString) {
     List<String> split = latLonString.split("[,;:\\s]");
-    if (split.length != 2)
-      throw new Exception("cannot read coordinate, not a valid format");
+    if (split.length != 2) throw new Exception("cannot read coordinate, not a valid format");
     double latitude = double.parse(split[0]);
     double longitude = double.parse(split[1]);
     return new LatLong(latitude, longitude);

@@ -60,15 +60,24 @@ class MapModelHelper {
     );
 
     MarkerDataStore markerDataStore = MarkerDataStore();
-    markerDataStore.markers.add(BasicMarker(
+    markerDataStore.markers.add(PoiMarker(
       src: "jar:symbols/windsock.svg",
       symbolCache: symbolCache,
       width: 40,
       height: 40,
       caption: "TestMarker",
-      latitude: 48.089355,
-      longitude: 16.311509,
+      latLong: LatLong(48.089355, 16.311509),
     ));
+    markerDataStore.markers.add(PathMarker(strokeWidth: 15.0, strokeColor: 0x80ff6000)
+      ..addLatLong(LatLong(48.093160, 16.314303))
+      ..addLatLong(LatLong(48.087026, 16.313660))
+      ..addLatLong(LatLong(48.086883, 16.301536))
+      ..addLatLong(LatLong(48.089935, 16.301729))
+      ..addLatLong(LatLong(48.090236, 16.295893)));
+    markerDataStore.markers.add(PolygonMarker()
+      ..addLatLong(LatLong(48.103420, 16.307523))
+      ..addLatLong(LatLong(48.097876, 16.300013))
+      ..addLatLong(LatLong(48.105885, 16.302523)));
     mapModel.markerDataStores.add(markerDataStore);
 
     return mapModel;
@@ -96,14 +105,13 @@ class MapModelHelper {
     );
 
     MarkerDataStore markerDataStore = MarkerDataStore();
-    markerDataStore.markers.add(BasicMarker(
+    markerDataStore.markers.add(PoiMarker(
       src: "jar:symbols/windsock.svg",
       symbolCache: symbolCache,
       width: 40,
       height: 40,
       caption: "TestMarker",
-      latitude: 48.089355,
-      longitude: 16.311509,
+      latLong: LatLong(48.089355, 16.311509),
     ));
     mapModel.markerDataStores.add(markerDataStore);
 

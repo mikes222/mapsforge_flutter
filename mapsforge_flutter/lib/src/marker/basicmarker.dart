@@ -1,9 +1,8 @@
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
+import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 import 'markercallback.dart';
@@ -11,23 +10,9 @@ import 'markercallback.dart';
 class BasicMarker<T> {
   final String caption;
 
-  Bitmap _bitmap;
-  bool _bitmapInvalid = false;
-
-  String _src;
   final Display display;
 
-  final int width;
-
-  final int height;
-
-  final int percent;
-
-  double latitude;
-
-  double longitude;
-
-  final SymbolCache symbolCache;
+  ILatLong latLong;
 
   double imageOffsetX = 0;
 
@@ -36,8 +21,6 @@ class BasicMarker<T> {
   double captionOffsetX = 0;
 
   double captionOffsetY = 0;
-
-  final double fontSize;
 
   MapPaint stroke;
 
@@ -60,49 +43,22 @@ class BasicMarker<T> {
 
   BasicMarker({
     this.caption,
-    src,
     this.display = Display.ALWAYS,
-    this.width = 20,
-    this.height = 20,
-    this.percent,
-    this.symbolCache,
-    this.latitude,
-    this.longitude,
-    this.fontSize = 10,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
-    this.strokeWidth = 1,
+    this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
     this.imageColor = 0xff000000,
     this.rotation,
     this.item,
-  })  : assert(caption != null || src != null),
-        assert(display != null),
-        assert(fontSize != null && fontSize > 0),
+    this.latLong,
+  })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
         assert(strokeWidth >= 0),
         assert(strokeColor != null),
-        assert(imageColor != null) {
-    _src = src;
-  }
-
-  @override
-  void dispose() {
-    if (this._bitmap != null) {}
-  }
-
-  void renderNode(MarkerCallback markerCallback) {
-    if (Display.NEVER == this.display) {
-      return;
-    }
-    if (latitude == null || longitude == null) return;
-
-    initRessources(markerCallback);
-    renderBitmap(markerCallback);
-    renderCaption(markerCallback);
-  }
+        assert(imageColor != null);
 
   void initRessources(MarkerCallback markerCallback) {
     if (stroke == null && strokeWidth > 0) {
@@ -110,66 +66,41 @@ class BasicMarker<T> {
       this.stroke.setColorFromNumber(strokeColor);
       this.stroke.setStyle(Style.STROKE);
       this.stroke.setStrokeWidth(strokeWidth);
-      this.stroke.setTextSize(fontSize);
-    }
-    if (imagePaint == null) {
-      imagePaint = markerCallback.graphicFactory.createPaint();
-      imagePaint.setColorFromNumber(imageColor);
-    }
-
-    if (this._bitmap == null && !_bitmapInvalid && _src != null && symbolCache != null) {
-      try {
-        this._bitmap = symbolCache.getBitmap(_src, width, height, percent);
-        if (_bitmap != null) {
-          imageOffsetX = -_bitmap.getWidth() / 2;
-          imageOffsetY = -_bitmap.getHeight() / 2;
-
-          captionOffsetX = 0;
-          captionOffsetY = _bitmap.getHeight() / 2;
-        } else {
-          // not yet in cache, hope that we can get it at next iteration
-        }
-      } catch (ioException, stacktrace) {
-        print("Exception while loading image $_src: " + ioException.toString());
-        print(stacktrace);
-        this._bitmapInvalid = true;
-      }
+      //this.stroke.setTextSize(fontSize);
     }
   }
 
-  void renderBitmap(MarkerCallback markerCallback) {
-    if (_bitmap != null) {
-      markerCallback.renderBitmap(_bitmap, latitude, longitude, imageOffsetX, imageOffsetY, rotation, imagePaint);
-    }
-  }
+  void dispose() {}
 
-  void renderCaption(MarkerCallback markerCallback) {
-    if (caption != null && caption.length > 0) {
-      markerCallback.renderText(caption, latitude, longitude, captionOffsetX, captionOffsetY, stroke);
+  void renderNode(MarkerCallback markerCallback) {
+    if (Display.NEVER == this.display) {
+      return;
     }
-  }
+    //if (latLong?.latitude == null || latLong?.longitude == null) return;
 
-  void set src(String src) {
-    _bitmap = null;
-    _bitmapInvalid = false;
-    _src = src;
+    initRessources(markerCallback);
+    renderBitmap(markerCallback);
+    renderCaption(markerCallback);
   }
 
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && boundary.contains(latitude, longitude);
+    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && boundary.contains(latLong.latitude, latLong.longitude);
   }
 
-  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    if (_bitmap == null) return false;
-    double y = mapViewPosition.mercatorProjection.latitudeToPixelY(latitude);
-    double x = mapViewPosition.mercatorProjection.longitudeToPixelX(longitude);
-    x = x + imageOffsetX - mapViewPosition.leftUpper.x;
-    y = y + imageOffsetY - mapViewPosition.leftUpper.y;
-    return tappedX >= x && tappedX <= x + _bitmap.getWidth() && tappedY >= y && tappedY <= y + _bitmap.getHeight();
+  void renderBitmap(MarkerCallback markerCallback) {}
+
+  void renderCaption(MarkerCallback markerCallback) {
+    if (caption != null && caption.length > 0) {
+      markerCallback.renderText(caption, latLong.latitude, latLong.longitude, captionOffsetX, captionOffsetY, stroke);
+    }
   }
 
   String get title {
     if (caption != null && caption.length > 0) return caption;
     return null;
+  }
+
+  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+    return false;
   }
 }
