@@ -78,6 +78,10 @@ class MapModelHelper {
       ..addLatLong(LatLong(48.103420, 16.307523))
       ..addLatLong(LatLong(48.097876, 16.300013))
       ..addLatLong(LatLong(48.105885, 16.302523)));
+    markerDataStore.markers.add(PolygonMarker(src: "jar:symbols/volcano.svg", symbolCache: symbolCache)
+      ..addLatLong(LatLong(48.095153, 16.334903))
+      ..addLatLong(LatLong(48.086409, 16.344301))
+      ..addLatLong(LatLong(48.097446, 16.325161)));
     mapModel.markerDataStores.add(markerDataStore);
 
     return mapModel;

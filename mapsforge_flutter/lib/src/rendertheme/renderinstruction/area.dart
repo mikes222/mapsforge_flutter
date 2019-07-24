@@ -16,11 +16,11 @@ import 'renderinstruction.dart';
  * Represents a closed polygon on the map.
  */
 class Area extends RenderInstruction {
-  bool bitmapInvalid;
   MapPaint fill;
   final int level;
   final String relativePathPrefix;
   Scale scale = Scale.STROKE;
+  bool bitmapInvalid;
   Bitmap shaderBitmap;
   String src;
   MapPaint stroke;
