@@ -24,9 +24,9 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   double _textSize = 10;
 
-  MapFontStyle _fontStyle;
+  MapFontStyle _fontStyle = MapFontStyle.NORMAL;
 
-  MapFontFamily _fontFamily;
+  MapFontFamily _fontFamily = MapFontFamily.DEFAULT;
 
   FlutterPaint(this.paint);
 
@@ -164,6 +164,8 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   @override
   void setTypeface(MapFontFamily fontFamily, MapFontStyle fontStyle) {
+    assert(fontFamily != null);
+    assert(fontStyle != null);
     _fontStyle = fontStyle;
     _fontFamily = fontFamily;
   }
@@ -201,5 +203,10 @@ class FlutterPaint extends ui.Paint implements MapPaint {
       ))
       ..addText(text);
     return builder;
+  }
+
+  @override
+  String toString() {
+    return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily}';
   }
 }

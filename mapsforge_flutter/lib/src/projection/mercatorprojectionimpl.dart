@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/latlong.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
@@ -122,7 +123,8 @@ class MercatorProjectionImpl {
   /// @param mapSize precomputed size of map.
   /// @return the absolute pixel coordinates (for world)
 
-  Mappoint getPixel(LatLong latLong) {
+  Mappoint getPixel(ILatLong latLong) {
+    assert(latLong != null);
     return Mappoint(longitudeToPixelX(latLong.longitude), latitudeToPixelY(latLong.latitude));
   }
 
@@ -131,9 +133,21 @@ class MercatorProjectionImpl {
   /// @param latLong the geographic position.
   /// @param tile    tile
   /// @return the relative pixel position to the origin values (e.g. for a tile)
-  Mappoint getPixelRelativeToTile(LatLong latLong, Tile tile) {
+  Mappoint getPixelRelativeToTile(ILatLong latLong, Tile tile) {
     Mappoint mappoint = getPixel(latLong);
     return mappoint.offset(-tile.getOrigin().x, -tile.getOrigin().y);
+  }
+
+  /// Calculates the absolute pixel position for a tile and tile size relative to origin
+  ///
+  /// @param latLong the geographic position.
+  /// @param tile    tile
+  /// @return the relative pixel position to the origin values (e.g. for a tile)
+  Mappoint getPixelRelativeToLeftUpper(ILatLong latLong, Mappoint leftUpper) {
+    assert(latLong != null);
+    assert(leftUpper != null);
+    Mappoint mappoint = getPixel(latLong);
+    return mappoint.offset(-leftUpper.x, -leftUpper.y);
   }
 
   /// Converts a longitude coordinate (in degrees) to the tile X number at a certain zoom level.
@@ -225,8 +239,8 @@ class MercatorProjectionImpl {
   ///     final p1 = new LatLng(0.0, 0.0);
   ///     final p2 = distance.offset(p1, distanceInMeter, 180);
   ///
-  @override
-  LatLong offset(final LatLong from, final double distanceInMeter, double bearing) {
+  //@override
+  ILatLong offset(final ILatLong from, final double distanceInMeter, double bearing) {
     assert(bearing >= 0 && bearing <= 360);
 // bearing: 0: north, 90: east, 180: south, 270: west
     //bearing = 90 - bearing;
@@ -248,8 +262,8 @@ class MercatorProjectionImpl {
   ///
   /// Accuracy can be out by 0.3%
   /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)
-  @override
-  double distance(final LatLong p1, final LatLong p2) {
+  //@override
+  double distance(final ILatLong p1, final ILatLong p2) {
     final sinDLat = sin((degToRadian(p2.latitude) - degToRadian(p1.latitude)) / 2);
     final sinDLng = sin((degToRadian(p2.longitude) - degToRadian(p1.longitude)) / 2);
 

@@ -65,7 +65,7 @@ class MapModelHelper {
       symbolCache: symbolCache,
       width: 40,
       height: 40,
-      caption: "TestMarker",
+      markerCaption: MarkerCaption(text: "TestMarker"),
       latLong: LatLong(48.089355, 16.311509),
     ));
     markerDataStore.markers.add(PathMarker(strokeWidth: 15.0, strokeColor: 0x80ff6000)
@@ -74,14 +74,15 @@ class MapModelHelper {
       ..addLatLong(LatLong(48.086883, 16.301536))
       ..addLatLong(LatLong(48.089935, 16.301729))
       ..addLatLong(LatLong(48.090236, 16.295893)));
-    markerDataStore.markers.add(PolygonMarker()
+    markerDataStore.markers.add(PolygonMarker(markerCaption: MarkerCaption(text: "ExamplePolygon"))
       ..addLatLong(LatLong(48.103420, 16.307523))
       ..addLatLong(LatLong(48.097876, 16.300013))
       ..addLatLong(LatLong(48.105885, 16.302523)));
-    markerDataStore.markers.add(PolygonMarker(src: "jar:symbols/volcano.svg", symbolCache: symbolCache)
-      ..addLatLong(LatLong(48.095153, 16.334903))
-      ..addLatLong(LatLong(48.086409, 16.344301))
-      ..addLatLong(LatLong(48.097446, 16.325161)));
+    markerDataStore.markers.add(
+        PolygonMarker(src: "jar:symbols/volcano.svg", symbolCache: symbolCache, markerCaption: MarkerCaption(text: "Polygon with volcanos"))
+          ..addLatLong(LatLong(48.095153, 16.334903))
+          ..addLatLong(LatLong(48.086409, 16.344301))
+          ..addLatLong(LatLong(48.097446, 16.325161)));
     mapModel.markerDataStores.add(markerDataStore);
 
     return mapModel;
@@ -114,7 +115,7 @@ class MapModelHelper {
       symbolCache: symbolCache,
       width: 40,
       height: 40,
-      caption: "TestMarker",
+      markerCaption: MarkerCaption(text: "TestMarker"),
       latLong: LatLong(48.089355, 16.311509),
     ));
     mapModel.markerDataStores.add(markerDataStore);

@@ -1,5 +1,7 @@
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
+import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 
@@ -9,34 +11,48 @@ import 'markercallback.dart';
 class PathMarker<T> extends BasicMarker<T> {
   List<ILatLong> path = List();
 
+  MapPaint stroke;
+
+  final double strokeWidth;
+
+  final int strokeColor;
+
   PathMarker({
     display = Display.ALWAYS,
-    latLong,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    strokeWidth = 1.0,
-    strokeColor = 0xff000000,
     imageColor = 0xff000000,
     rotation,
     item,
+    this.strokeWidth = 1.0,
+    this.strokeColor = 0xff000000,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
+        assert(imageColor != null),
         assert(strokeWidth >= 0),
         assert(strokeColor != null),
-        assert(imageColor != null),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          strokeWidth: strokeWidth,
-          strokeColor: strokeColor,
           imageColor: imageColor,
           rotation: rotation,
           item: item,
-          latLong: latLong,
         );
+
+  @override
+  void initResources(MarkerCallback markerCallback) {
+    super.initResources(markerCallback);
+    if (stroke == null && strokeWidth > 0) {
+      this.stroke = markerCallback.graphicFactory.createPaint();
+      this.stroke.setColorFromNumber(strokeColor);
+      this.stroke.setStyle(Style.STROKE);
+      this.stroke.setStrokeWidth(strokeWidth);
+      //this.stroke.setTextSize(fontSize);
+    }
+  }
 
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
@@ -49,6 +65,7 @@ class PathMarker<T> extends BasicMarker<T> {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
+    if (stroke == null) return;
     MapPath mapPath = markerCallback.graphicFactory.createPath();
 
     path.forEach((latLong) {

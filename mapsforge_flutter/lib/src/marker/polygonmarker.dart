@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
@@ -18,6 +19,12 @@ class PolygonMarker<T> extends BasicMarker<T> {
   double fillWidth;
 
   int fillColor;
+
+  MapPaint stroke;
+
+  final double strokeWidth;
+
+  final int strokeColor;
 
   bool bitmapInvalid;
   Bitmap shaderBitmap;
@@ -32,19 +39,19 @@ class PolygonMarker<T> extends BasicMarker<T> {
   PolygonMarker({
     this.symbolCache,
     display = Display.ALWAYS,
-    latLong,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    strokeWidth = 1.0,
-    strokeColor = 0xff000000,
     imageColor = 0xff000000,
     rotation,
     item,
+    markerCaption,
     this.width = 20,
     this.height = 20,
     this.percent,
     this.fillWidth = 1.0,
     this.fillColor = 0x40000000,
+    this.strokeWidth = 1.0,
+    this.strokeColor = 0xff000000,
     this.src,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
@@ -60,12 +67,10 @@ class PolygonMarker<T> extends BasicMarker<T> {
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          strokeWidth: strokeWidth,
-          strokeColor: strokeColor,
           imageColor: imageColor,
           rotation: rotation,
           item: item,
-          latLong: latLong,
+          markerCaption: markerCaption,
         );
 
   void addLatLong(ILatLong latLong) {
@@ -73,13 +78,20 @@ class PolygonMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  void initRessources(MarkerCallback markerCallback) {
-    super.initRessources(markerCallback);
+  void initResources(MarkerCallback markerCallback) {
+    super.initResources(markerCallback);
     if (fill == null && fillWidth > 0) {
       this.fill = markerCallback.graphicFactory.createPaint();
       this.fill.setColorFromNumber(fillColor);
       this.fill.setStyle(Style.FILL);
       this.fill.setStrokeWidth(fillWidth);
+      //this.stroke.setTextSize(fontSize);
+    }
+    if (stroke == null && strokeWidth > 0) {
+      this.stroke = markerCallback.graphicFactory.createPaint();
+      this.stroke.setColorFromNumber(strokeColor);
+      this.stroke.setStyle(Style.STROKE);
+      this.stroke.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
     }
     if (bitmapInvalid == null && src != null && !src.isEmpty) {
@@ -95,6 +107,17 @@ class PolygonMarker<T> extends BasicMarker<T> {
         //print(stacktrace);
         bitmapInvalid = true;
       }
+    }
+    if (markerCaption != null && markerCaption.latLong == null) {
+      markerCaption.latLong = GeometryUtils.calculateCenter(path);
+//      List<Mappoint> points = path
+//          .map((latLong) => markerCallback.mapViewPosition.mercatorProjection
+//                  .getPixelRelativeToLeftUpper(latLong, markerCallback.mapViewPosition.leftUpper)
+////          Mappoint(markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude),
+////              markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude))
+//              )
+//          .toList();
+//      Mappoint center = GeometryUtils.calculateCenterOfBoundingBox(points);
     }
   }
 

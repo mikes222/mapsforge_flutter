@@ -21,10 +21,7 @@ class PoiMarker<T> extends BasicMarker<T> {
 
   final SymbolCache symbolCache;
 
-  final double fontSize;
-
   PoiMarker({
-    caption,
     src,
     display = Display.ALWAYS,
     this.width = 20,
@@ -32,30 +29,23 @@ class PoiMarker<T> extends BasicMarker<T> {
     this.percent,
     this.symbolCache,
     latLong,
-    this.fontSize = 10,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    strokeWidth = 1.0,
-    strokeColor = 0xff000000,
     imageColor = 0xff000000,
     rotation,
     item,
-  })  : assert(caption != null || src != null),
+    markerCaption,
+  })  : assert(markerCaption != null || src != null),
         assert(display != null),
-        assert(fontSize != null && fontSize > 0),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
-        assert(strokeWidth >= 0),
-        assert(strokeColor != null),
         assert(imageColor != null),
         super(
-          caption: caption,
+          markerCaption: markerCaption,
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          strokeWidth: strokeWidth,
-          strokeColor: strokeColor,
           imageColor: imageColor,
           rotation: rotation,
           item: item,
@@ -70,10 +60,11 @@ class PoiMarker<T> extends BasicMarker<T> {
     if (this._bitmap != null) {}
   }
 
-  void initRessources(MarkerCallback markerCallback) {
-    super.initRessources(markerCallback);
-    if (stroke != null) {
-      this.stroke.setTextSize(fontSize);
+  @override
+  void initResources(MarkerCallback markerCallback) {
+    super.initResources(markerCallback);
+    if (markerCaption != null && markerCaption.latLong == null) {
+      markerCaption.latLong = latLong;
     }
     if (imagePaint == null) {
       imagePaint = markerCallback.graphicFactory.createPaint();
@@ -87,8 +78,10 @@ class PoiMarker<T> extends BasicMarker<T> {
           imageOffsetX = -_bitmap.getWidth() / 2;
           imageOffsetY = -_bitmap.getHeight() / 2;
 
-          captionOffsetX = 0;
-          captionOffsetY = _bitmap.getHeight() / 2;
+          if (markerCaption != null) {
+            markerCaption.captionOffsetX = 0;
+            markerCaption.captionOffsetY = _bitmap.getHeight() / 2;
+          }
         } else {
           // not yet in cache, hope that we can get it at next iteration
         }

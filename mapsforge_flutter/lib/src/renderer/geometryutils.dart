@@ -1,3 +1,6 @@
+import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/model/latlong.dart';
+
 import '../model/mappoint.dart';
 
 class GeometryUtils {
@@ -27,7 +30,29 @@ class GeometryUtils {
       }
     }
 
-    return new Mappoint(
-        (pointXMin + pointXMax) / 2, (pointYMax + pointYMin) / 2);
+    return new Mappoint((pointXMin + pointXMax) / 2, (pointYMax + pointYMin) / 2);
+  }
+
+  static ILatLong calculateCenter(List<ILatLong> coordinates) {
+    double pointXMin = coordinates[0].longitude;
+    double pointXMax = coordinates[0].longitude;
+    double pointYMin = coordinates[0].latitude;
+    double pointYMax = coordinates[0].latitude;
+
+    for (ILatLong immutablePoint in coordinates) {
+      if (immutablePoint.longitude < pointXMin) {
+        pointXMin = immutablePoint.longitude;
+      } else if (immutablePoint.longitude > pointXMax) {
+        pointXMax = immutablePoint.longitude;
+      }
+
+      if (immutablePoint.latitude < pointYMin) {
+        pointYMin = immutablePoint.latitude;
+      } else if (immutablePoint.latitude > pointYMax) {
+        pointYMax = immutablePoint.latitude;
+      }
+    }
+
+    return new LatLong((pointYMin + pointYMax) / 2, (pointXMax + pointXMin) / 2);
   }
 }

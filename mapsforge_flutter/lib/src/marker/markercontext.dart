@@ -6,6 +6,8 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttermatrix.dart';
+import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 import 'markercallback.dart';
@@ -35,11 +37,16 @@ class MarkerContext implements MarkerCallback {
         paint: paint);
   }
 
-  void renderText(String caption, double latitude, double longitude, double offsetX, double offsetY, MapPaint stroke) {
-    double y = mapViewPosition.mercatorProjection.latitudeToPixelY(latitude);
-    double x = mapViewPosition.mercatorProjection.longitudeToPixelX(longitude);
-    flutterCanvas.drawText(
-        caption, (x + offsetX - mapViewPosition.leftUpper.x).toInt(), (y + offsetY - mapViewPosition.leftUpper.y).toInt(), stroke);
+  void renderText(String caption, ILatLong latLong, double offsetX, double offsetY, MapPaint stroke) {
+    assert(stroke != null);
+    assert(caption != null);
+    assert(latLong != null);
+    assert(offsetX != null);
+    assert(offsetY != null);
+    Mappoint mappoint = mapViewPosition.mercatorProjection.getPixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper);
+//    print(
+//        "rendering caption $caption at latLong ${latLong.toString()}, ${mappoint.toString()} and leftUpper ${mapViewPosition.leftUpper.toString()}");
+    flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(), (mappoint.y + offsetY).toInt(), stroke);
   }
 
   @override
