@@ -6,7 +6,9 @@ import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
+import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
@@ -60,7 +62,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
         assert(strokeColor != null),
-        assert(fillColor != null),
+        //assert(fillColor != null),
         assert(imageColor != null),
         assert(src == null || (symbolCache != null)),
         super(
@@ -80,7 +82,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   @override
   void initResources(MarkerCallback markerCallback) {
     super.initResources(markerCallback);
-    if (fill == null && fillWidth > 0) {
+    if (fill == null && fillColor != null) {
       this.fill = markerCallback.graphicFactory.createPaint();
       this.fill.setColorFromNumber(fillColor);
       this.fill.setStyle(Style.FILL);
@@ -144,5 +146,13 @@ class PolygonMarker<T> extends BasicMarker<T> {
     mapPath.close();
     if (fill != null) markerCallback.renderPath(mapPath, fill);
     if (stroke != null) markerCallback.renderPath(mapPath, stroke);
+  }
+
+  @override
+  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+    ILatLong latLong =
+        mapViewPosition.mercatorProjection.getLatLong(tappedX + mapViewPosition.leftUpper.x, tappedY + mapViewPosition.leftUpper.y);
+    //print("Testing ${latLong.toString()} against ${title}");
+    return LatLongUtils.contains(path, latLong);
   }
 }

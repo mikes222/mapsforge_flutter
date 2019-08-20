@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+
 import '../model/boundingbox.dart';
 import '../model/dimension.dart';
 
@@ -57,7 +59,7 @@ class LatLongUtils {
    *
    * @return true if this polygon contains the given point, false otherwise.
    */
-  static bool contains(List<LatLong> latLongs, LatLong latLong) {
+  static bool contains(List<ILatLong> latLongs, ILatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
       if ((latLongs[i].latitude > latLong.latitude) != (latLongs[j].latitude > latLong.latitude) &&

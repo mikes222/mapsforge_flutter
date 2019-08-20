@@ -94,6 +94,10 @@ class MercatorProjectionImpl {
     return 90 - 360 * atan(exp(-y * (2 * pi))) / pi;
   }
 
+  ILatLong getLatLong(double pixelX, double pixelY) {
+    return LatLong(pixelYToLatitude(pixelY), pixelXToLongitude(pixelX));
+  }
+
   /// Converts a longitude coordinate (in degrees) to a pixel X coordinate at a certain zoom level.
   ///
   /// @param longitude the longitude coordinate that should be converted.
@@ -221,10 +225,10 @@ class MercatorProjectionImpl {
   double get mapSize => _mapSize;
 
   /// Converts degree to radian
-  double degToRadian(final double deg) => deg * (pi / 180.0);
+  static double degToRadian(final double deg) => deg * (pi / 180.0);
 
   /// Radian to degree
-  double radianToDeg(final double rad) => rad * (180.0 / pi);
+  static double radianToDeg(final double rad) => rad * (180.0 / pi);
 
   /// Returns a destination point based on the given [distance] and [bearing]
   ///
@@ -240,7 +244,7 @@ class MercatorProjectionImpl {
   ///     final p2 = distance.offset(p1, distanceInMeter, 180);
   ///
   //@override
-  ILatLong offset(final ILatLong from, final double distanceInMeter, double bearing) {
+  static ILatLong offset(final ILatLong from, final double distanceInMeter, double bearing) {
     assert(bearing >= 0 && bearing <= 360);
 // bearing: 0: north, 90: east, 180: south, 270: west
     //bearing = 90 - bearing;
@@ -263,7 +267,7 @@ class MercatorProjectionImpl {
   /// Accuracy can be out by 0.3%
   /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)
   //@override
-  double distance(final ILatLong p1, final ILatLong p2) {
+  static double distance(final ILatLong p1, final ILatLong p2) {
     final sinDLat = sin((degToRadian(p2.latitude) - degToRadian(p1.latitude)) / 2);
     final sinDLng = sin((degToRadian(p2.longitude) - degToRadian(p1.longitude)) / 2);
 
