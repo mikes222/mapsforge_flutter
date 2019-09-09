@@ -111,7 +111,7 @@ class Area extends RenderInstruction {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
     MapPaint fillPaint = getFillPaint();
-    if (shaderBitmap != null) {
+    if (fillPaint != null && shaderBitmap != null) {
       fillPaint.setBitmapShader(shaderBitmap);
       shaderBitmap.incrementRefCount();
     }

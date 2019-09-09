@@ -3,12 +3,15 @@
 // This sample shows an [AppBar] with two simple actions. The first action
 // opens a [SnackBar], while the second action navigates to a new page.
 
+import 'dart:async';
+
 import 'package:example/showmap.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
 import 'constants.dart';
 import 'filehelper.dart';
+import 'mapmodelhelper.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,7 +29,6 @@ class MyApp extends StatelessWidget {
 }
 
 final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-final SnackBar snackBar = const SnackBar(content: Text('Showing Snackbar'));
 
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
@@ -82,6 +84,34 @@ class MyStatelessWidget extends StatelessWidget {
                   builder: (BuildContext context) => Showmap(
                         mode: 1,
                       )));
+            },
+          ),
+          RaisedButton(
+            child: Text("Purge offline cache"),
+            onPressed: () {
+              MapModelHelper.prepareOfflineMapModel().then((mapModel) {
+                Timer(Duration(milliseconds: 1000), () async {
+                  await mapModel.bitmapCache.purge();
+                  print("cache purged");
+//              Scaffold.of(context).showSnackBar(new SnackBar(
+//                content: new Text("cache purged"),
+//              ));
+                });
+              });
+            },
+          ),
+          RaisedButton(
+            child: Text("Purge online cache"),
+            onPressed: () {
+              MapModelHelper.prepareOnlineMapModel().then((mapModel) {
+                Timer(Duration(milliseconds: 1000), () async {
+                  await mapModel.bitmapCache.purge();
+                  print("cache purged");
+//              Scaffold.of(context).showSnackBar(new SnackBar(
+//                content: new Text("cache purged"),
+//              ));
+                });
+              });
             },
           ),
         ],

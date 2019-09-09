@@ -98,6 +98,8 @@ class MarkerCaption {
 
   final double fontSize;
 
+  final int minZoom;
+
   MarkerCaption({
     this.text,
     this.latLong,
@@ -107,8 +109,10 @@ class MarkerCaption {
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
     this.fontSize = 10.0,
+    this.minZoom = 0,
   })  : assert(strokeWidth >= 0),
-        assert(strokeColor != null);
+        assert(strokeColor != null),
+        assert(minZoom != null && minZoom >= 0);
 
   void initResources(MarkerCallback markerCallback) {
     if (stroke == null && strokeWidth > 0) {
@@ -121,6 +125,7 @@ class MarkerCaption {
   }
 
   void renderCaption(MarkerCallback markerCallback) {
+    if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
     if (text != null && text.length > 0 && stroke != null && latLong != null) {
       markerCallback.renderText(text, latLong, captionOffsetX, captionOffsetY, stroke);
     }

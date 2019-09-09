@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
+import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttermatrix.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
@@ -58,5 +59,10 @@ class MarkerContext implements MarkerCallback {
     double y = mapViewPosition.mercatorProjection.latitudeToPixelY(latitude);
     double x = mapViewPosition.mercatorProjection.longitudeToPixelX(longitude);
     flutterCanvas.drawCircle((x - mapViewPosition.leftUpper.x).toInt(), (y - mapViewPosition.leftUpper.y).toInt(), radius.toInt(), paint);
+  }
+
+  @override
+  void renderRect(MapRect rect, MapPaint paint) {
+    flutterCanvas.drawRect(rect, paint);
   }
 }

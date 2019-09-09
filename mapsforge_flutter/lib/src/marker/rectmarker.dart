@@ -2,19 +2,20 @@ import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/mappath.dart';
+import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
-import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
-import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
+import 'package:meta/meta.dart';
 
+import '../../core.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
-class PolygonMarker<T> extends BasicMarker<T> {
-  List<ILatLong> path = List();
+class RectMarker<T> extends BasicMarker<T> {
+  ILatLong minLatLon;
+  ILatLong maxLatLon;
 
   MapPaint fill;
 
@@ -38,7 +39,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
 
   final int percent;
 
-  PolygonMarker({
+  RectMarker({
     this.symbolCache,
     display = Display.ALWAYS,
     minZoomLevel = 0,
@@ -55,6 +56,8 @@ class PolygonMarker<T> extends BasicMarker<T> {
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
     this.src,
+    @required this.minLatLon,
+    @required this.maxLatLon,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -65,6 +68,8 @@ class PolygonMarker<T> extends BasicMarker<T> {
         //assert(fillColor != null),
         assert(imageColor != null),
         assert(src == null || (symbolCache != null)),
+        assert(minLatLon != null),
+        assert(maxLatLon != null),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -74,10 +79,6 @@ class PolygonMarker<T> extends BasicMarker<T> {
           item: item,
           markerCaption: markerCaption,
         );
-
-  void addLatLong(ILatLong latLong) {
-    path.add(latLong);
-  }
 
   @override
   void initResources(MarkerCallback markerCallback) {
@@ -96,7 +97,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
       this.stroke.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
     }
-    if (bitmapInvalid == null && src != null && !src.isEmpty && fill != null) {
+    if (bitmapInvalid == null && src != null && !src.isEmpty) {
       try {
         shaderBitmap = symbolCache.getBitmap(src, width.round(), height.round(), percent);
         if (shaderBitmap != null) {
@@ -106,46 +107,43 @@ class PolygonMarker<T> extends BasicMarker<T> {
         }
       } catch (ioException, stacktrace) {
         print(ioException.toString());
-        //print(stacktrace);
+        print(stacktrace);
         bitmapInvalid = true;
       }
     }
     if (markerCaption != null && markerCaption.latLong == null) {
-      markerCaption.latLong = GeometryUtils.calculateCenter(path);
-//      List<Mappoint> points = path
-//          .map((latLong) => markerCallback.mapViewPosition.mercatorProjection
-//                  .getPixelRelativeToLeftUpper(latLong, markerCallback.mapViewPosition.leftUpper)
-////          Mappoint(markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude),
-////              markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude))
-//              )
-//          .toList();
-//      Mappoint center = GeometryUtils.calculateCenterOfBoundingBox(points);
+      markerCaption.latLong = LatLong(minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
+          minLatLon.longitude + (maxLatLon.longitude - minLatLon.longitude) / 2); //GeometryUtils.calculateCenter(path);
     }
   }
 
   @override
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
+    return minZoomLevel <= zoomLevel &&
+        maxZoomLevel >= zoomLevel &&
+        boundary.intersects(BoundingBox(
+          minLatLon.latitude,
+          minLatLon.longitude,
+          maxLatLon.latitude,
+          maxLatLon.longitude,
+        ));
   }
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    MapPath mapPath = markerCallback.graphicFactory.createPath();
+    MapRect mapRect = markerCallback.graphicFactory.createRect(
+        markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(minLatLon.longitude) -
+            markerCallback.mapViewPosition.leftUpper.x,
+        markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(maxLatLon.latitude) - markerCallback.mapViewPosition.leftUpper.y,
+        markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(maxLatLon.longitude) -
+            markerCallback.mapViewPosition.leftUpper.x,
+        markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(minLatLon.latitude) -
+            markerCallback.mapViewPosition.leftUpper.y);
 
-    path.forEach((latLong) {
-      double y =
-          markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude) - markerCallback.mapViewPosition.leftUpper.y;
-      double x = markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude) -
-          markerCallback.mapViewPosition.leftUpper.x;
+//    markerCallback.renderRect(mapRect, stroke);
 
-      if (mapPath.isEmpty())
-        mapPath.moveTo(x, y);
-      else
-        mapPath.lineTo(x, y);
-    });
-    mapPath.close();
-    if (fill != null) markerCallback.renderPath(mapPath, fill);
-    if (stroke != null) markerCallback.renderPath(mapPath, stroke);
+    if (fill != null) markerCallback.renderRect(mapRect, fill);
+    if (stroke != null) markerCallback.renderRect(mapRect, stroke);
   }
 
   @override
@@ -153,6 +151,9 @@ class PolygonMarker<T> extends BasicMarker<T> {
     ILatLong latLong =
         mapViewPosition.mercatorProjection.getLatLong(tappedX + mapViewPosition.leftUpper.x, tappedY + mapViewPosition.leftUpper.y);
     //print("Testing ${latLong.toString()} against ${title}");
-    return LatLongUtils.contains(path, latLong);
+    return latLong.latitude > minLatLon.latitude &&
+        latLong.latitude < maxLatLon.latitude &&
+        latLong.longitude > minLatLon.longitude &&
+        latLong.longitude < maxLatLon.longitude;
   }
 }

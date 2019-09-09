@@ -36,12 +36,15 @@ class FileBitmapCache extends BitmapCache {
 //    });
   }
 
-  void purge() {
+  void purge() async {
     if (files == null) return;
-    files.forEach((file) {
+    int count = 0;
+    await files.forEach((file) async {
       _log.info("  purging file from cache: $file");
-      FileHelper.delete(file);
+      bool ok = await FileHelper.delete(file);
+      if (ok) ++count;
     });
+    _log.info("purged $count files from cache $renderkey");
     files.clear();
   }
 

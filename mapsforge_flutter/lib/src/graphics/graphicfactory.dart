@@ -12,6 +12,7 @@ import 'mapcanvas.dart';
 import 'color.dart';
 import 'display.dart';
 import 'hillshadingbitmap.dart';
+import 'maprect.dart';
 import 'matrix.dart';
 import 'mappaint.dart';
 import 'mappath.dart';
@@ -41,6 +42,8 @@ abstract class GraphicFactory {
   MapPaint createPaintFrom(MapPaint from);
 
   MapPath createPath();
+
+  MapRect createRect(double left, double top, double right, double bottom);
 
   PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
       MapPaint paintBack, SymbolContainer symbolContainer, Position position, int maxTextWidth);

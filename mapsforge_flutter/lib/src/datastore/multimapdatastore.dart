@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/latlong.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
@@ -21,6 +22,8 @@ import 'mapreadresult.dart';
  * all objects have to be compared with all others.
  */
 class MultiMapDataStore extends MapDataStore {
+  static final _log = new Logger('MultiMapDataStore');
+
   BoundingBox boundingBox;
   final DataPolicy dataPolicy;
   final List<MapDataStore> mapDatabases;
@@ -117,6 +120,7 @@ class MultiMapDataStore extends MapDataStore {
     MapReadResult mapReadResult = new MapReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
+        _log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
         MapReadResult result = await mdb.readLabelsSingle(tile);
         if (result == null) {
           continue;
@@ -186,6 +190,7 @@ class MultiMapDataStore extends MapDataStore {
     bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
+        _log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
         MapReadResult result = await mdb.readMapDataSingle(tile);
         if (result == null) {
           continue;
@@ -223,6 +228,7 @@ class MultiMapDataStore extends MapDataStore {
     bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(upperLeft)) {
+        _log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
         MapReadResult result = await mdb.readMapData(upperLeft, lowerRight);
         if (result == null) {
           continue;

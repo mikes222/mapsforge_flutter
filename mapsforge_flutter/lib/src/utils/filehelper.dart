@@ -61,10 +61,18 @@ class FileHelper {
     zipfile.delete();
   }
 
-  static void delete(String filename) async {
+  static Future<bool> delete(String filename) async {
     String _localPath = await findLocalPath();
 
-    File file = File(_localPath + "/" + filename);
-    if (await file.exists()) file.delete();
+    File file;
+    if (filename.startsWith("/"))
+      file = File(filename);
+    else
+      file = File(_localPath + "/" + filename);
+    if (await file.exists()) {
+      file.delete();
+      return true;
+    }
+    return false;
   }
 }

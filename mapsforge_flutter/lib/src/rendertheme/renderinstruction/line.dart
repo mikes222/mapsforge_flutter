@@ -129,7 +129,7 @@ class Line extends RenderInstruction {
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
     MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
 
-    if (shaderBitmap != null) {
+    if (strokePaint != null && shaderBitmap != null) {
       strokePaint.setBitmapShader(shaderBitmap);
       strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
       shaderBitmap.incrementRefCount();

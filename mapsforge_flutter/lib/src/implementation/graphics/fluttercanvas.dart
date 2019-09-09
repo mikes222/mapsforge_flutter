@@ -11,6 +11,7 @@ import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
+import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
@@ -22,6 +23,7 @@ import 'flutterbitmap.dart';
 import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
+import 'flutterrect.dart';
 import 'fluttertilebitmap.dart';
 
 class FlutterCanvas extends MapCanvas {
@@ -195,6 +197,11 @@ class FlutterCanvas extends MapCanvas {
   @override
   void drawPath(MapPath path, MapPaint paint) {
     uiCanvas.drawPath((path as FlutterPath).path, (paint as FlutterPaint).paint);
+  }
+
+  @override
+  void drawRect(MapRect rect, MapPaint paint) {
+    uiCanvas.drawRect((rect as FlutterRect).rect, (paint as FlutterPaint).paint);
   }
 
   @override

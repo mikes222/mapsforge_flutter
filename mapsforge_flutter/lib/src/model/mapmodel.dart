@@ -85,6 +85,7 @@ class MapModel {
 
   void zoomIn() {
     if (_mapViewPosition != null) {
+      if (_mapViewPosition.zoomLevel >= displayModel.maxZoomLevel) return;
       MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -97,6 +98,7 @@ class MapModel {
 
   void zoomInAround(double latitude, double longitude) {
     if (_mapViewPosition != null) {
+      if (_mapViewPosition.zoomLevel >= displayModel.maxZoomLevel) return;
       MapViewPosition newPosition = MapViewPosition.zoomInAround(_mapViewPosition, latitude, longitude);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -122,6 +124,7 @@ class MapModel {
 
   MapViewPosition setZoomLevel(int zoomLevel) {
     if (_mapViewPosition != null) {
+      if (zoomLevel >= displayModel.maxZoomLevel) return _mapViewPosition;
       MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition, zoomLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);

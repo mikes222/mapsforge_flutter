@@ -10,26 +10,26 @@ import 'customnopositionview.dart';
 import 'filehelper.dart';
 
 class MapModelHelper {
-  static Future<MapModel> prepareMapModel() async {
+  static Future<MapModel> prepareOfflineMapModel() async {
     String _localPath = await FileHelper.findLocalPath();
 
-    MultiMapDataStore multiMapDataStore = MultiMapDataStore(DataPolicy.DEDUPLICATE);
-
-    {
-      print("opening mapfile");
-      ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.worldmap);
-      MapFile mapFile = MapFile(readBuffer, null, null);
-      await mapFile.init();
-      //await mapFile.debug();
-      multiMapDataStore.addMapDataStore(mapFile, true, true);
-    }
+    MapDataStore mapDataStore; //= MultiMapDataStore(DataPolicy.DEDUPLICATE);
+//    {
+//      print("opening mapfile");
+//      ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.worldmap);
+//      MapFile mapFile = MapFile(readBuffer, null, null);
+//      await mapFile.init();
+//      //await mapFile.debug();
+//      multiMapDataStore.addMapDataStore(mapFile, true, true);
+//    }
     {
       print("opening mapfile");
       ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.mapfile);
       MapFile mapFile = MapFile(readBuffer, null, null);
       await mapFile.init();
       //await mapFile.debug();
-      multiMapDataStore.addMapDataStore(mapFile, false, false);
+      //mapDataStore.addMapDataStore(mapFile, false, false);
+      mapDataStore = mapFile;
     }
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
@@ -40,7 +40,7 @@ class MapModelHelper {
     String content = await rootBundle.loadString("assets/defaultrender.xml");
     await renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
-    JobRenderer jobRenderer = MapDataStoreRenderer(multiMapDataStore, renderTheme, graphicFactory, true);
+    JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, true);
     //JobRenderer jobRenderer = MapOnlineRenderer();
     //JobRenderer jobRenderer = DummyRenderer();
 
@@ -83,6 +83,8 @@ class MapModelHelper {
           ..addLatLong(LatLong(48.095153, 16.334903))
           ..addLatLong(LatLong(48.086409, 16.344301))
           ..addLatLong(LatLong(48.097446, 16.325161)));
+    markerDataStore.markers
+        .add(RectMarker(minLatLon: LatLong(48.1, 16.3), maxLatLon: LatLong(48.12, 16.32), fillColor: 0x30ff6000, strokeColor: 0x800060ff));
     mapModel.markerDataStores.add(markerDataStore);
 
     return mapModel;

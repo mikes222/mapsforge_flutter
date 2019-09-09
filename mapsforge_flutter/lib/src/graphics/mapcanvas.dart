@@ -10,6 +10,7 @@ import 'bitmap.dart';
 import 'color.dart';
 import 'mappaint.dart';
 import 'mappath.dart';
+import 'maprect.dart';
 
 abstract class MapCanvas {
   void destroy();
@@ -43,6 +44,8 @@ abstract class MapCanvas {
   void drawLine(int x1, int y1, int x2, int y2, MapPaint paint);
 
   void drawPath(MapPath path, MapPaint paint);
+
+  void drawRect(MapRect rect, MapPaint paint);
 
   void drawPathText(String text, LineString lineString, Mappoint origin, MapPaint paint);
 

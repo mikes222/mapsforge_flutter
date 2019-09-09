@@ -67,6 +67,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   Future<TileBitmap> executeJob(RendererJob job) async {
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
+    if (!this.mapDataStore.supportsTile(job.tile)) {
+      return null;
+    }
     RenderContext renderContext =
         new RenderContext(job, new CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble()), renderTheme);
     MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
@@ -91,14 +94,14 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
       // now draw the ways and the labels
       renderContext.canvasRasterer.drawMapElements(labelsToDraw, job.tile);
-//      diff = DateTime.now().millisecondsSinceEpoch - time;
-//      if (diff > 100) _log.info("drawMapElements took $diff ms");
+      diff = DateTime.now().millisecondsSinceEpoch - time;
+      if (diff > 100) _log.info("drawMapElements took $diff ms");
     }
     if (this.labelStore != null) {
       // store elements for this tile in the label cache
       this.labelStore.storeMapItems(job.tile, renderContext.labels);
-//      diff = DateTime.now().millisecondsSinceEpoch - time;
-//      if (diff > 100) _log.info("storeMapItems took $diff ms");
+      diff = DateTime.now().millisecondsSinceEpoch - time;
+      if (diff > 100) _log.info("storeMapItems took $diff ms");
     }
 
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {

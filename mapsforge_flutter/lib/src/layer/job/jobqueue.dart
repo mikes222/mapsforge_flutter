@@ -168,6 +168,7 @@ class StaticRenderClass {
       if (job.inWork) {
         return;
       }
+      //_log.info("Processing tile ${job.tile.toString()}");
       TileBitmap tileBitmap = await bitmapCache.getTileBitmapAsync(job.tile);
       if (tileBitmap != null) {
         job.tileBitmap = tileBitmap;
@@ -187,6 +188,8 @@ class StaticRenderClass {
           callback(job);
         } else {
           // no datastore for that tile
+          int diff = DateTime.now().millisecondsSinceEpoch - time;
+          if (diff >= 100) _log.info("Renderer needed $diff ms for non-existent job ${job.toString()}");
           TileBitmap bmp = await jobRenderer.getNoDataBitmap(job.tile);
           bmp.incrementRefCount();
           job.tileBitmap = bmp;

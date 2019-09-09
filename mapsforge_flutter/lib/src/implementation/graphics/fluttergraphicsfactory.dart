@@ -9,6 +9,7 @@ import 'package:mapsforge_flutter/src/graphics/hillshadingbitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
+import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
@@ -26,6 +27,7 @@ import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
 import 'flutterpointtextcontainer.dart';
+import 'flutterrect.dart';
 import 'fluttertilebitmap.dart';
 
 class FlutterGraphicFactory implements GraphicFactory {
@@ -104,5 +106,10 @@ class FlutterGraphicFactory implements GraphicFactory {
   @override
   MapPath createPath() {
     return FlutterPath(ui.Path());
+  }
+
+  @override
+  MapRect createRect(double left, double top, double right, double bottom) {
+    return FlutterRect(left, top, right, bottom);
   }
 }

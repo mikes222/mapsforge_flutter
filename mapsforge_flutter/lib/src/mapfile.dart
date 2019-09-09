@@ -1124,6 +1124,7 @@ class MapFile extends MapDataStore {
   }
 
   Future<MapReadResult> readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
+    int timer = DateTime.now().millisecondsSinceEpoch;
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
@@ -1144,7 +1145,11 @@ class MapFile extends MapDataStore {
     // we enlarge the bounding box for the tile slightly in order to retain any data that
     // lies right on the border, some of this data needs to be drawn as the graphics will
     // overlap onto this tile.
-    return processBlocks(queryParameters, subFileParameter, Tile.getBoundingBoxStatic(upperLeft, lowerRight), selector);
+    MapReadResult result =
+        await processBlocks(queryParameters, subFileParameter, Tile.getBoundingBoxStatic(upperLeft, lowerRight), selector);
+    int diff = DateTime.now().millisecondsSinceEpoch - timer;
+    if (diff > 100) _log.info("readMapDataComplete took $diff ms");
+    return result;
   }
 
   List<int> _readOptionalLabelPosition(ReadBuffer readBuffer) {

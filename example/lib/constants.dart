@@ -7,4 +7,6 @@ class Constants {
 
   static final String worldmapsource = "http://dailyflightbuddy.com/dfb/map_lowres2.map.gz";
   static final String worldmap = "map_lowres2.map";
+
+  static bool performancelog = false;
 }

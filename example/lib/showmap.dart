@@ -28,7 +28,7 @@ class ShowmapState extends State<Showmap> {
   void initState() {
     super.initState();
     if (widget.mode == 0) {
-      MapModelHelper.prepareMapModel().then((mapModel) {
+      MapModelHelper.prepareOfflineMapModel().then((mapModel) {
         setState(() {
           this.mapModel = mapModel;
         });
