@@ -50,7 +50,7 @@ class RequiredFields {
     // get and check the file size (8 bytes)
     int headerFileSize = readBuffer.readLong();
     if (headerFileSize != fileSize) {
-      throw new Exception("invalid file size: $headerFileSize");
+      throw new Exception("invalid file size: $headerFileSize, expected $fileSize bytes instead");
     }
     mapFileInfoBuilder.fileSize = fileSize;
   }

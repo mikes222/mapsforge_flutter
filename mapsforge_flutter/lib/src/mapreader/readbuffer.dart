@@ -23,18 +23,30 @@ class ReadBuffer {
   RandomAccessFile _raf;
   final String filename;
 
-  ReadBuffer(this.filename) : _lock = Lock();
+  ReadBuffer(this.filename)
+      : assert(filename != null && filename.length > 0),
+        _lock = Lock() {
+    File file = File(filename);
+    _lock.synchronized(() async {
+      bool ok = await file.exists();
+      if (!ok) {
+        throw Exception("File $filename not existing");
+      }
+      _raf = await file.open();
+    });
+  }
 
   ReadBuffer.fromSource(ReadBuffer other)
-      : _lock = other._lock,
+      : assert(other._raf != null),
+        assert(other.filename != null && other.filename.length > 0),
+        _lock = other._lock,
         _raf = other._raf,
-        filename = other.filename;
+        filename = other.filename {}
 
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
     Uint8List result;
     int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
-      if (_raf == null) _raf = await File(filename).open();
       RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
       result = await (newInstance.read(indexBlockSize));
     });
@@ -96,10 +108,12 @@ class ReadBuffer {
 
     int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
-      if (_raf == null) _raf = await File(filename).open();
       _bufferData = await this._raf.read(length);
     });
     assert(_bufferData != null);
+    if (_bufferData.length != length) {
+      _log.warning("Different lenghts ${_bufferData.length} - $length for $bufferPosition and $_offset");
+    }
     assert(_bufferData.length == length);
     //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return true;
@@ -123,7 +137,6 @@ class ReadBuffer {
 
     int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
-      if (_raf == null) _raf = await File(filename).open();
       RandomAccessFile newInstance = await this._raf.setPosition(offset);
       _bufferData = await newInstance.read(length);
 // reset the buffer position and read the data into the buffer
@@ -141,7 +154,6 @@ class ReadBuffer {
     int result;
     int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
-      if (_raf == null) _raf = await File(filename).open();
       result = await _raf.length();
     });
     assert(result != null);

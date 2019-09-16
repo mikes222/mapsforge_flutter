@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -10,6 +11,8 @@ import 'customnopositionview.dart';
 import 'filehelper.dart';
 
 class MapModelHelper {
+  static final _log = new Logger('MapModelHelper');
+
   static Future<MapModel> prepareOfflineMapModel() async {
     String _localPath = await FileHelper.findLocalPath();
 
@@ -23,7 +26,7 @@ class MapModelHelper {
 //      multiMapDataStore.addMapDataStore(mapFile, true, true);
 //    }
     {
-      print("opening mapfile");
+      _log.info("opening mapfile ${Constants.mapfile}");
       ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.mapfile);
       MapFile mapFile = MapFile(readBuffer, null, null);
       await mapFile.init();

@@ -19,6 +19,10 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   static const String _title = 'Mapsforge sample';
 
+  MyApp() {
+    _initLogging();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,20 +30,27 @@ class MyApp extends StatelessWidget {
       home: MyStatelessWidget(),
     );
   }
+
+  void _initLogging() {
+    // Print output to console.
+    Logger.root.onRecord.listen((LogRecord r) {
+      print('aaa${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+    });
+
+    // Root logger level.
+    Logger.root.level = Level.FINEST;
+  }
 }
 
-final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+////////////////////////////////////////////////////////////////////////////////////////////
 
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
-  MyStatelessWidget({Key key}) : super(key: key) {
-    initLogging();
-  }
+  MyStatelessWidget({Key key}) : super(key: key) {}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
       appBar: AppBar(
         title: const Text('Flutter Mapsforge'),
       ),
@@ -117,15 +128,5 @@ class MyStatelessWidget extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  initLogging() {
-    // Print output to console.
-    Logger.root.onRecord.listen((LogRecord r) {
-      print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
-    });
-
-    // Root logger level.
-    Logger.root.level = Level.FINEST;
   }
 }
