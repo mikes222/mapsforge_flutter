@@ -64,7 +64,7 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("Set Location"),
               onPressed: () {
-                mapModel.setMapViewPosition(48.0901926, 16.308939);
+                mapModel.setMapViewPosition(50.81287701030895, 12.94189453125);
               },
             ),
             RaisedButton(

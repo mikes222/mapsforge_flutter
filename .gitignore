@@ -3,3 +3,5 @@ mapsforge_flutter/.metadata
 .idea/
 example/.metadata
 example/pubspec.lock
+.flutter-plugins-dependencies
+flutter_export_environment.sh

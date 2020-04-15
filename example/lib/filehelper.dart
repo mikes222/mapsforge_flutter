@@ -53,6 +53,7 @@ class FileHelper {
   }
 
   static void downloadFile(String source, String destination) async {
+    await FlutterDownloader.initialize();
     String _localPath = await findLocalPath();
 
     String tempDestination = destination;

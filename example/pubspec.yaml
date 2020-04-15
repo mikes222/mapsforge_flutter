@@ -28,7 +28,7 @@ dependencies:
   path_provider: 1.1.2
 
   # BSD License
-  flutter_downloader: 1.1.7
+  flutter_downloader: 1.4.3
 
   mapsforge_flutter:
     path: ../mapsforge_flutter
