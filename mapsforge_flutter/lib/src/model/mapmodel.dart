@@ -27,13 +27,13 @@ class MapModel {
   ContextMenuBuilder contextMenuBuilder;
 
   Subject<MapViewPosition> _injectPosition = PublishSubject();
-  Observable<MapViewPosition> _observePosition;
+  Stream<MapViewPosition> _observePosition;
 
   Subject<TapEvent> _injectTap = PublishSubject();
-  Observable<TapEvent> _observeTap;
+  Stream<TapEvent> _observeTap;
 
   Subject<GestureEvent> _injectGesture = PublishSubject();
-  Observable<GestureEvent> _observeGesture;
+  Stream<GestureEvent> _observeGesture;
 
   MapModel({
     @required this.displayModel,
@@ -63,11 +63,11 @@ class MapModel {
     bitmapCache.dispose();
   }
 
-  Observable<MapViewPosition> get observePosition => _observePosition;
+  Stream<MapViewPosition> get observePosition => _observePosition;
 
-  Observable<TapEvent> get observeTap => _observeTap;
+  Stream<TapEvent> get observeTap => _observeTap;
 
-  Observable<GestureEvent> get observeGesture => _observeGesture;
+  Stream<GestureEvent> get observeGesture => _observeGesture;
 
   MapViewPosition get mapViewPosition => _mapViewPosition;
 

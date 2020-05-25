@@ -64,19 +64,37 @@ class LayerUtil {
 
     // build tiles starting from the center tile
     for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
-      for (int tileX = tileHalfX; tileX <= tileRight; ++tileX) {
-        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
-      }
-      for (int tileX = tileHalfX - 1; tileX >= tileLeft; --tileX) {
-        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
+      tiles.add(tileCache.getTile(tileHalfX, tileY, zoomLevel, tileSize));
+      int xDiff = 1;
+      while (true) {
+        bool xAdded = false;
+        if (tileHalfX + xDiff <= tileRight) {
+          tiles.add(tileCache.getTile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
+          xAdded = true;
+        }
+        if (tileHalfX - xDiff >= tileLeft) {
+          tiles.add(tileCache.getTile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
+          xAdded = true;
+        }
+        if (!xAdded) break;
+        ++xDiff;
       }
     }
     for (int tileY = tileHalfY - 1; tileY >= tileTop; --tileY) {
-      for (int tileX = tileHalfX; tileX <= tileRight; ++tileX) {
-        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
-      }
-      for (int tileX = tileHalfX - 1; tileX >= tileLeft; --tileX) {
-        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
+      tiles.add(tileCache.getTile(tileHalfX, tileY, zoomLevel, tileSize));
+      int xDiff = 1;
+      while (true) {
+        bool xAdded = false;
+        if (tileHalfX + xDiff <= tileRight) {
+          tiles.add(tileCache.getTile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
+          xAdded = true;
+        }
+        if (tileHalfX - xDiff >= tileLeft) {
+          tiles.add(tileCache.getTile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
+          xAdded = true;
+        }
+        if (!xAdded) break;
+        ++xDiff;
       }
     }
     return tiles;

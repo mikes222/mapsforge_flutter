@@ -6,13 +6,13 @@ import 'package:mapsforge_flutter/src/labels/labelstore.dart';
 import 'package:mapsforge_flutter/src/labels/tilebasedlabelstore.dart';
 import 'package:mapsforge_flutter/src/layer/hills/hillsrenderconfig.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
+import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/observer.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:meta/meta.dart';
 
-class TileRendererLayer extends TileLayer implements Observer {
+class TileRendererLayer extends TileLayerImpl implements Observer {
   final GraphicFactory graphicFactory;
   final MapDataStore mapDataStore;
 

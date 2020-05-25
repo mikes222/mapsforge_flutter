@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
+import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
-class TilePainter extends ChangeNotifier implements CustomPainter {
+class TileLayerPainter extends ChangeNotifier implements CustomPainter {
   final MapViewDimension mapViewDimension;
   final TileLayer _tileLayer;
 
   final MapViewPosition position;
 
-  TilePainter(this.mapViewDimension, this._tileLayer, this.position)
+  TileLayerPainter(this.mapViewDimension, this._tileLayer, this.position)
       : assert(mapViewDimension != null),
         assert(position != null);
 
@@ -27,14 +28,14 @@ class TilePainter extends ChangeNotifier implements CustomPainter {
   }
 
   @override
-  bool shouldRepaint(TilePainter oldDelegate) {
+  bool shouldRepaint(TileLayerPainter oldDelegate) {
     if (oldDelegate?.position != position) return true;
     if (_tileLayer.needsRepaint) return true;
     return false;
   }
 
   @override
-  bool shouldRebuildSemantics(TilePainter oldDelegate) {
+  bool shouldRebuildSemantics(TileLayerPainter oldDelegate) {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 

@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
+import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import '../../../core.dart';
 import 'backgroundpainter.dart';
 import 'contextmenu.dart';
-import 'tilepainter.dart';
+import 'tilelayerpainter.dart';
 
 class FlutterMapView extends StatefulWidget implements MapView {
   final MapModel mapModel;
@@ -36,7 +36,7 @@ class FlutterMapView extends StatefulWidget implements MapView {
 class _FlutterMapState extends State<FlutterMapView> {
   static final _log = new Logger('_FlutterMapState');
 
-  TileLayer _tileLayer;
+  TileLayerImpl _tileLayer;
 
   List<MarkerRenderer> _markerRenderer = List();
 
@@ -45,7 +45,7 @@ class _FlutterMapState extends State<FlutterMapView> {
   @override
   void initState() {
     super.initState();
-    _tileLayer = TileLayer(
+    _tileLayer = TileLayerImpl(
       displayModel: widget.mapModel.displayModel,
       jobRenderer: widget.mapModel.renderer,
       bitmapCache: widget.mapModel.bitmapCache,
@@ -109,7 +109,7 @@ class _FlutterMapState extends State<FlutterMapView> {
             _tileLayer.jobResult(snapshot.data);
           }
           return CustomPaint(
-            foregroundPainter: TilePainter(widget.mapModel.mapViewDimension, _tileLayer, position),
+            foregroundPainter: TileLayerPainter(widget.mapModel.mapViewDimension, _tileLayer, position),
             child: Container(),
           );
         },

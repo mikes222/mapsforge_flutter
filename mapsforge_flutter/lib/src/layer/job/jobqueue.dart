@@ -23,7 +23,7 @@ class JobQueue {
 
   Subject<JobQueueItem> _inject = PublishSubject();
   Subject<Job> _injectJob = PublishSubject();
-  Observable<Job> _observeJob;
+  Stream<Job> _observeJob;
 
   JobQueueItem _lastItem;
 
@@ -67,7 +67,7 @@ class JobQueue {
     return job;
   }
 
-  Observable<Job> get observeJob => _observeJob;
+  Stream<Job> get observeJob => _observeJob;
 
   void add(RendererJob job) {
     List<RendererJob> jobs = List();
