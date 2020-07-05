@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/exceptions/filenotfoundexception.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -15,6 +16,7 @@ class ReadBuffer {
 
   static final String CHARSET_UTF8 = "UTF-8";
 
+  /// the _raf needs a lock otherwise the pointer to the raf could get corrupted when reading from multiple positions concurrently
   final Lock _lock;
 
   Uint8List _bufferData;
@@ -25,30 +27,29 @@ class ReadBuffer {
 
   ReadBuffer(this.filename)
       : assert(filename != null && filename.length > 0),
-        _lock = Lock() {
-    File file = File(filename);
-    _lock.synchronized(() async {
-      bool ok = await file.exists();
-      if (!ok) {
-        throw Exception("File $filename not existing");
-      }
-      _raf = await file.open();
-    });
-  }
+        _lock = Lock();
 
   ReadBuffer.fromSource(ReadBuffer other)
       : assert(other._raf != null),
         assert(other.filename != null && other.filename.length > 0),
         _lock = other._lock,
         _raf = other._raf,
-        filename = other.filename {}
+        filename = other.filename;
 
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
-    Uint8List result;
-    int time = DateTime.now().millisecondsSinceEpoch;
-    await _lock.synchronized(() async {
+    //int time = DateTime.now().millisecondsSinceEpoch;
+    Uint8List result = await _lock.synchronized(() async {
+      if (_raf == null) {
+        assert(filename != null);
+        File file = File(filename);
+        bool ok = await file.exists();
+        if (!ok) {
+          throw FileNotFoundException(filename);
+        }
+        _raf = await file.open();
+      }
       RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
-      result = await (newInstance.read(indexBlockSize));
+      return await (newInstance.read(indexBlockSize));
     });
     assert(result.length == indexBlockSize);
     //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
@@ -89,7 +90,7 @@ class ReadBuffer {
    * @return true if the whole data was read successfully, false otherwise.
    * @throws IOException if an error occurs while reading the file.
    */
-  Future<bool> readFromFile(int length) async {
+  Future<bool> readFromFile(int length, [int offset]) async {
     // ensure that the read buffer is large enough
     if (this._bufferData == null || this._bufferData.length < length) {
       // ensure that the read buffer is not too large
@@ -103,12 +104,26 @@ class ReadBuffer {
 
     // reset the buffer position and read the data into the buffer
     this.bufferPosition = 0;
-    this._offset = 0;
+    this._offset = offset ?? 0;
 //    this.bufferWrapper = Uint8List(0).buffer; //.clear();
 
     int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
-      _bufferData = await this._raf.read(length);
+      if (_raf == null) {
+        assert(filename != null);
+        File file = File(filename);
+        bool ok = await file.exists();
+        if (!ok) {
+          throw FileNotFoundException(filename);
+        }
+        _raf = await file.open();
+      }
+      RandomAccessFile _newRaf = _raf;
+      if (offset != null) {
+        assert(offset >= 0);
+        _newRaf = await this._raf.setPosition(offset);
+      }
+      _bufferData = await _newRaf.read(length);
     });
     assert(_bufferData != null);
     if (_bufferData.length != length) {
@@ -119,42 +134,19 @@ class ReadBuffer {
     return true;
   }
 
-  /**
-   * Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
-   * the capacity of the read buffer is too small, a larger one is created automatically.
-   *
-   * @param offset the offset position, measured in bytes from the beginning of the file, at which to set the file pointer.
-   * @param length the amount of bytes to read from the file.
-   * @return true if the whole data was read successfully, false otherwise.
-   * @throws IOException if an error occurs while reading the file.
-   */
-  Future<bool> readFromFile2(int offset, int length) async {
-    assert(offset >= 0);
-    if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
-      _log.warning("invalid read length: $length");
-      return false;
-    }
-
-    int time = DateTime.now().millisecondsSinceEpoch;
-    await _lock.synchronized(() async {
-      RandomAccessFile newInstance = await this._raf.setPosition(offset);
-      _bufferData = await newInstance.read(length);
-// reset the buffer position and read the data into the buffer
-      this.bufferPosition = 0;
-      this._offset = offset;
-    });
-    assert(_bufferData != null);
-    assert(_bufferData.length == length);
-    //_log.info("readFromFile2 needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return true;
-    //}
-  }
-
   Future<int> length() async {
-    int result;
-    int time = DateTime.now().millisecondsSinceEpoch;
-    await _lock.synchronized(() async {
-      result = await _raf.length();
+    //int time = DateTime.now().millisecondsSinceEpoch;
+    int result = await _lock.synchronized(() async {
+      if (_raf == null) {
+        assert(filename != null);
+        File file = File(filename);
+        bool ok = await file.exists();
+        if (!ok) {
+          throw FileNotFoundException(filename);
+        }
+        _raf = await file.open();
+      }
+      return await _raf.length();
     });
     assert(result != null);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
@@ -162,7 +154,7 @@ class ReadBuffer {
   }
 
   void close() {
-    if (_raf != null) _raf.close();
+    _raf?.close();
     _raf = null;
   }
 

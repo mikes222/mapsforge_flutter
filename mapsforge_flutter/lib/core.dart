@@ -21,3 +21,4 @@ export 'src/layer/cache/filebitmapcache.dart';
 export 'src/layer/cache/memorybitmapcache.dart';
 
 export 'src/mapreader/readbuffer.dart';
+export 'src/exceptions/filenotfoundexception.dart';

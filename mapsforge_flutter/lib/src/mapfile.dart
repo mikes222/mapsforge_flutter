@@ -23,14 +23,12 @@ import 'projection/mercatorprojectionimpl.dart';
 import 'reader/queryparameters.dart';
 import 'utils/latlongutils.dart';
 
-/**
- * A class for reading binary map files.
- * <p/>
- * The readMapData method is now thread safe, but care should be taken that not too much data is
- * read at the same time (keep simultaneous requests to minimum)
- *
- * @see <a href="https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md">Specification</a>
- */
+/// A class for reading binary map files.
+/// <p/>
+/// The readMapData method is now thread safe, but care should be taken that not too much data is
+/// read at the same time (keep simultaneous requests to minimum)
+///
+/// @see <a href="https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md">Specification</a>
 class MapFile extends MapDataStore {
   static final _log = new Logger('MapFile');
 
@@ -264,7 +262,8 @@ class MapFile extends MapDataStore {
     //}
   }
 
-  void init() async {
+  Future<void> init() async {
+    assert(readBuffer != null);
     this.fileSize = await this.readBuffer.length();
     await this.mapFileHeader.readHeader(readBuffer, this.fileSize);
   }
@@ -336,7 +335,7 @@ class MapFile extends MapDataStore {
     if (currentBlockSize == 0) {
       return;
     }
-    await readBuffer.readFromFile2(subFileParameter.startAddress + currentBlockPointer, currentBlockSize);
+    await readBuffer.readFromFile(currentBlockSize, subFileParameter.startAddress + currentBlockPointer);
 
     _processBlockSignature(readBuffer);
     List<List<int>> zoomTable = _readZoomTable(subFileParameter, readBuffer);
@@ -729,6 +728,7 @@ class MapFile extends MapDataStore {
 
   Future<MapReadResult> processBlocks(
       QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox, Selector selector) async {
+    assert(fileSize != null);
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
 
@@ -796,7 +796,7 @@ class MapFile extends MapDataStore {
         // seek to the current block in the map file
         // read the current block into the buffer
         //ReadBuffer readBuffer = new ReadBuffer(inputChannel);
-        await readBuffer.readFromFile2(subFileParameter.startAddress + currentBlockPointer, currentBlockSize);
+        await readBuffer.readFromFile(currentBlockSize, subFileParameter.startAddress + currentBlockPointer);
 
         // calculate the top-left coordinates of the underlying tile
         MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);

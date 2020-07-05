@@ -64,7 +64,7 @@ class RequiredFields {
     mapFileInfoBuilder.fileVersion = fileVersion;
   }
 
-  static void readMagicByte(ReadBuffer readBuffer) async {
+  static Future<void> readMagicByte(ReadBuffer readBuffer) async {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
@@ -119,7 +119,7 @@ class RequiredFields {
     mapFileInfoBuilder.projectionName = projectionName;
   }
 
-  static void readRemainingHeader(ReadBuffer readBuffer) async {
+  static Future<void> readRemainingHeader(ReadBuffer readBuffer) async {
 // get and check the size of the remaining file header (4 bytes)
     int remainingHeaderSize = readBuffer.readInt();
     if (remainingHeaderSize < HEADER_SIZE_MIN || remainingHeaderSize > HEADER_SIZE_MAX) {
