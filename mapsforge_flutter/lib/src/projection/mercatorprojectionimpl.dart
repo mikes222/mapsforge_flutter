@@ -32,7 +32,7 @@ class MercatorProjectionImpl {
 
   double _mapSize;
 
-  MercatorProjectionImpl(this.tileSize, int zoomLevel) : _scaleFactor = _zoomLevelToScaleFactor(zoomLevel) {
+  MercatorProjectionImpl(this.tileSize, int zoomLevel) : _scaleFactor = zoomLevelToScaleFactor(zoomLevel) {
     _mapSize = _mapSizeWithScaleFactor(_scaleFactor);
   }
 
@@ -45,7 +45,7 @@ class MercatorProjectionImpl {
   /// @throws IllegalArgumentException if the given scale factor is < 1
   double _mapSizeWithScaleFactor(double scaleFactor) {
     assert(scaleFactor >= 1);
-    return (tileSize * (pow(2, _scaleFactorToZoomLevel(scaleFactor))));
+    return (tileSize * (pow(2, scaleFactorToZoomLevel(scaleFactor))));
   }
 
   /// Converts a scaleFactor to a zoomLevel.
@@ -54,7 +54,7 @@ class MercatorProjectionImpl {
   ///
   /// @param scaleFactor the scale factor to convert to a zoom level.
   /// @return the zoom level.
-  static double _scaleFactorToZoomLevel(double scaleFactor) {
+  static double scaleFactorToZoomLevel(double scaleFactor) {
     assert(scaleFactor >= 1);
     return log(scaleFactor) / log(2);
   }
@@ -63,7 +63,7 @@ class MercatorProjectionImpl {
   ///
   /// @param zoomLevel the zoom level to convert.
   /// @return the corresponding scale factor.
-  static double _zoomLevelToScaleFactor(int zoomLevel) {
+  static double zoomLevelToScaleFactor(int zoomLevel) {
     assert(zoomLevel >= 0);
     return pow(2, zoomLevel.toDouble());
   }

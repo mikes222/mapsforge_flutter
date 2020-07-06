@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/implementation/view/contextmenubuilder.dart';
@@ -123,8 +124,8 @@ class MapModel {
   }
 
   MapViewPosition setZoomLevel(int zoomLevel) {
+    if (zoomLevel >= displayModel.maxZoomLevel) zoomLevel = displayModel.maxZoomLevel;
     if (_mapViewPosition != null) {
-      if (zoomLevel >= displayModel.maxZoomLevel) return _mapViewPosition;
       MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition, zoomLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -141,12 +142,24 @@ class MapModel {
     assert(scale != null);
     assert(scale > 0);
     if (_mapViewPosition != null) {
+      if (_mapViewPosition.scale * scale < 1) {
+        scale = MercatorProjectionImpl.zoomLevelToScaleFactor(1);
+      } else {
+        double zoomLevel = MercatorProjectionImpl.scaleFactorToZoomLevel(_mapViewPosition.scale * scale);
+        if (zoomLevel > displayModel.maxZoomLevel) scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel);
+      }
       MapViewPosition newPosition = MapViewPosition.scale(_mapViewPosition, focalPoint, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
       MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, displayModel.tileSize);
+      if (_mapViewPosition.scale * scale < 1) {
+        scale = MercatorProjectionImpl.zoomLevelToScaleFactor(1);
+      } else {
+        double zoomLevel = MercatorProjectionImpl.scaleFactorToZoomLevel(newPosition.scale * scale);
+        if (zoomLevel > displayModel.maxZoomLevel) scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel);
+      }
       newPosition = MapViewPosition.scale(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
