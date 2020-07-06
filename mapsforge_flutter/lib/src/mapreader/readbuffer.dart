@@ -44,10 +44,9 @@ class ReadBuffer {
   ///
   /// copy constructor. This way one can read the same file simultaneously
   ReadBuffer.fromSource(ReadBuffer other)
-      : assert(other._raf != null),
-        assert(other.filename != null && other.filename.length > 0),
+      : assert(other.filename != null && other.filename.length > 0),
         _lock = other._lock,
-        _raf = other._raf,
+        _raf = null,
         filename = other.filename;
 
   Future<RandomAccessFile> _openRaf() {

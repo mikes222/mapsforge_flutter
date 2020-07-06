@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -64,6 +65,7 @@ class RenderThemeBuilder {
 
   Future<void> parseXml(String content) async {
     assert(content.length > 10);
+    int time = DateTime.now().millisecondsSinceEpoch;
     XmlDocument document = parse(content);
     assert(document.children.length > 0);
     bool foundRendertheme = false;
@@ -78,7 +80,7 @@ class RenderThemeBuilder {
             XmlElement element = node;
             if (element.name.toString() != "rendertheme") throw Exception("Invalid root node ${element.name.toString()}");
             foundRendertheme = true;
-            await _parseRendertheme(element);
+            await _parseRendertheme(element, time);
             break;
           }
         case XmlNodeType.ATTRIBUTE:
@@ -104,7 +106,7 @@ class RenderThemeBuilder {
     assert(foundRendertheme);
   }
 
-  Future<void> _parseRendertheme(XmlElement rootElement) async {
+  Future<void> _parseRendertheme(XmlElement rootElement, int time) async {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -150,11 +152,12 @@ class RenderThemeBuilder {
             XmlElement element = node;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, level++);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, Map<String, RenderSymbol>(), level++);
               await ruleBuilder.parse(element);
               level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;
+              //print("Time ${DateTime.now().millisecondsSinceEpoch - time} after rule ${element.toString()}");
               break;
             } else if ("hillshading" == element.name.toString()) {
               String category = null;
@@ -189,6 +192,7 @@ class RenderThemeBuilder {
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
               //hillShadings.add(hillshading);
 //      }
+              //print("Time ${DateTime.now().millisecondsSinceEpoch - time} after hillshading");
               break;
             }
             throw Exception("Invalid node ${element.name.toString()}");

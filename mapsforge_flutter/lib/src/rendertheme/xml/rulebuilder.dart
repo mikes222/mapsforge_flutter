@@ -119,10 +119,10 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.graphicFactory, this.displayModel, this.symbolCache, this.level)
-      : ruleBuilderStack = List(),
-        renderInstructions = List(),
-        symbols = Map() {
+  RuleBuilder(this.graphicFactory, this.displayModel, this.symbolCache, this.symbols, this.level)
+      : assert(symbols != null),
+        ruleBuilderStack = List(),
+        renderInstructions = List() {
     this.closed = Closed.ANY;
     this.zoomMin = 0;
     this.zoomMax = 65536;
@@ -238,7 +238,7 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, level++);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, symbols, level++);
       await ruleBuilder.parse(rootElement);
       level = ruleBuilder.level;
       ruleBuilderStack.add(ruleBuilder);

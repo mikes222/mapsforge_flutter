@@ -12,12 +12,11 @@ import 'package:xml/xml.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
 
-/**
- * Represents an icon on the map.
- */
+/// Represents an icon on the map.
 class RenderSymbol extends RenderInstruction {
   Bitmap bitmap;
   bool bitmapInvalid = false;
+  Future<Bitmap> _future;
   Display display;
   String id;
   int priority = 0;
@@ -66,14 +65,17 @@ class RenderSymbol extends RenderInstruction {
       }
     });
     if (this.bitmap == null && !bitmapInvalid) {
-      try {
-        this.bitmap = await createBitmap(relativePathPrefix, src);
+      _future = createBitmap(relativePathPrefix, src);
+      _future.then((value) {
+        this.bitmap = value;
         this.bitmap.incrementRefCount();
-      } catch (ioException, stacktrace) {
+        _future = null;
+      }).catchError((ioException) {
         print(ioException.toString());
         //print(stacktrace);
         this.bitmapInvalid = true;
-      }
+        _future = null;
+      });
     }
   }
 
@@ -89,6 +91,8 @@ class RenderSymbol extends RenderInstruction {
 
     if (bitmap != null) {
       renderCallback.renderPointOfInterestSymbol(renderContext, this.display, this.priority, this.bitmap, poi, symbolPaint);
+    } else if (_future != null) {
+      print("Bitmap not yet loaded");
     }
   }
 
@@ -100,6 +104,8 @@ class RenderSymbol extends RenderInstruction {
 
     if (bitmap != null) {
       renderCallback.renderAreaSymbol(renderContext, this.display, this.priority, this.bitmap, way, symbolPaint);
+    } else if (_future != null) {
+      print("Bitmap not yet loaded");
     }
   }
 
@@ -111,5 +117,10 @@ class RenderSymbol extends RenderInstruction {
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     // do nothing
+  }
+
+  Future<Bitmap> getBitmap() async {
+    if (bitmap != null) return Future.value(bitmap);
+    return _future;
   }
 }

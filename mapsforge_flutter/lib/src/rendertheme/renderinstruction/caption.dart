@@ -148,7 +148,9 @@ class Caption extends RenderInstruction {
     if (this.symbolId != null) {
       RenderSymbol symbol = symbols[this.symbolId];
       if (symbol != null) {
-        //this.bitmap = await symbol.getBitmap();
+        this.bitmap = await symbol.getBitmap();
+      } else {
+        print("Symbol $symbolId not found");
       }
     }
 
