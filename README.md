@@ -63,9 +63,7 @@ information about an area in condensed form. Please visit the original project f
 
     String _localPath = await FileHelper.findLocalPath();
 
-    File file = File(_localPath + "/" + Constants.mapfile);
-    RandomAccessFile raf = await file.open();
-    MapFile mapFile = MapFile(raf, null, null);
+    MapFile mapFile = MapFile(_localPath + "/" + mapfile, null, null);
     await mapFile.init();
     //await mapFile.debug();
 

@@ -8,16 +8,12 @@ import '../model/tile.dart';
 
 import 'mapreadresult.dart';
 
-/**
- * Base class for map data retrieval.
- */
+/// Base class for map data retrieval.
 abstract class MapDataStore {
-  /**
-   * Extracts substring of preferred language from multilingual string.<br/>
-   * Example multilingual string: "Base\ren\bEnglish\rjp\bJapan\rzh_py\bPin-yin".
-   * <p/>
-   * Use '\r' delimiter among names and '\b' delimiter between each language and name.
-   */
+  /// Extracts substring of preferred language from multilingual string.<br/>
+  /// Example multilingual string: "Base\ren\bEnglish\rjp\bJapan\rzh_py\bPin-yin".
+  /// <p/>
+  /// Use '\r' delimiter among names and '\b' delimiter between each language and name.
   static String extract(String s, String language) {
     if (s == null || s.trim().length == 0) {
       return null;

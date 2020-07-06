@@ -60,6 +60,27 @@ class MultiMapDataStore extends MapDataStore {
     }
   }
 
+  void removeMapDataStore(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) {
+    mapDatabases.removeWhere((MapDataStore mapDataStore) {
+      if (mapDataStore.boundingBox.minLatitude == minLatitude &&
+          mapDataStore.boundingBox.maxLatitude == maxLatitude &&
+          mapDataStore.boundingBox.minLongitude == minLongitude &&
+          mapDataStore.boundingBox.maxLongitude == maxLongitude) return true;
+      return false;
+    });
+    if (this.boundingBox != null) {
+      // recalc boundingbox
+      this.boundingBox = null;
+      mapDatabases.forEach((mapDataStore) {
+        if (null == this.boundingBox) {
+          this.boundingBox = mapDataStore.boundingBox;
+        } else {
+          this.boundingBox = this.boundingBox.extendBoundingBox(mapDataStore.boundingBox);
+        }
+      });
+    }
+  }
+
   @override
   void close() {
     for (MapDataStore mdb in mapDatabases) {

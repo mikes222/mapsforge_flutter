@@ -27,8 +27,7 @@ class MapModelHelper {
 //    }
     {
       _log.info("opening mapfile ${Constants.mapfile}");
-      ReadBuffer readBuffer = ReadBuffer(_localPath + "/" + Constants.mapfile);
-      MapFile mapFile = MapFile(readBuffer, null, null);
+      MapFile mapFile = MapFile(_localPath + "/" + Constants.mapfile, null, null);
       await mapFile.init();
       //await mapFile.debug();
       //mapDataStore.addMapDataStore(mapFile, false, false);

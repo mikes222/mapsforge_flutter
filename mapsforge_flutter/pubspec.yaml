@@ -28,7 +28,7 @@ dependencies:
   rxdart: "0.24.1"
 
   # BSD License
-  synchronized: 2.2.0
+  synchronized: 2.2.0+1
 
   # BSD License
   flutter_svg: 0.17.4

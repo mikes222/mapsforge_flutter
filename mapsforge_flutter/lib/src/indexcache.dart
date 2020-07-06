@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/indexcacheentrykey.dart';
 
 import 'header/subfileparameter.dart';
@@ -7,36 +8,29 @@ import 'header/subfileparameterbuilder.dart';
 import 'mapreader/deserializer.dart';
 import 'mapreader/readbuffer.dart';
 
-/**
- * A cache for database index blocks with a fixed size and LRU policy.
- */
+/// A cache for database index blocks with a fixed size and LRU policy.
 class IndexCache {
-  /**
-   * Number of index entries that one index block consists of.
-   */
-  static final int INDEX_ENTRIES_PER_BLOCK = 128;
+  /// Number of index entries that one index block consists of.
+  static const int INDEX_ENTRIES_PER_BLOCK = 128;
 
-  /**
-   * Maximum size in bytes of one index block.
-   */
+  /// Maximum size in bytes of one index block.
   static final int SIZE_OF_INDEX_BLOCK = INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
-  final Map<IndexCacheEntryKey, List<int>> map;
-  final ReadBuffer readBuffer;
+  final LruCache<IndexCacheEntryKey, List<int>> _map;
 
-  /**
-   * @param inputChannel the map file from which the index should be read and cached.
-   * @param capacity     the maximum number of entries in the cache.
-   * @throws IllegalArgumentException if the capacity is negative.
-   */
-  // todo LRUCache
-  IndexCache(this.readBuffer, int capacity) : map = new Map<IndexCacheEntryKey, List<int>>();
+  /// a RandomFileAccess to the underlying file
+  final ReadBuffer _readBuffer;
+
+  /// @param inputChannel the map file from which the index should be read and cached.
+  /// @param capacity     the maximum number of entries in the cache.
+  /// @throws IllegalArgumentException if the capacity is negative.
+  IndexCache(this._readBuffer, int capacity) : _map = LruCache<IndexCacheEntryKey, List<int>>(storage: SimpleStorage(size: 100));
 
   /**
    * Destroy the cache at the end of its lifetime.
    */
   void destroy() {
-    this.map.clear();
+    this._map.clear();
   }
 
   /**
@@ -61,7 +55,7 @@ class IndexCache {
     IndexCacheEntryKey indexCacheEntryKey = new IndexCacheEntryKey(subFileParameter, indexBlockNumber);
 
     // check for cached index block
-    List<int> indexBlock = this.map[indexCacheEntryKey];
+    List<int> indexBlock = this._map[indexCacheEntryKey];
     if (indexBlock == null) {
       // cache miss, seek to the correct index block in the file and read it
       int indexBlockPosition = subFileParameter.indexStartAddress + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
@@ -69,10 +63,10 @@ class IndexCache {
       int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
       int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
 
-      indexBlock = await readBuffer.readDirect(indexBlockPosition, indexBlockSize);
+      indexBlock = await _readBuffer.readDirect(indexBlockPosition, indexBlockSize);
 
       // put the index block in the map
-      this.map[indexCacheEntryKey] = indexBlock;
+      this._map[indexCacheEntryKey] = indexBlock;
     }
 
     // calculate the address of the index entry inside the index block
@@ -85,6 +79,6 @@ class IndexCache {
 
   @override
   String toString() {
-    return 'IndexCache{map: $map}';
+    return 'IndexCache{map: $_map}';
   }
 }

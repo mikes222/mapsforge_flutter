@@ -19,16 +19,30 @@ class ReadBuffer {
   /// the _raf needs a lock otherwise the pointer to the raf could get corrupted when reading from multiple positions concurrently
   final Lock _lock;
 
+  /// A chunk of data read from the underlying file
   Uint8List _bufferData;
+
+  /// The current offset in the underlying file which denotes the start of the _bufferData
   int _offset;
+
+  /// The current position of the read pointer in the _bufferData. The position cannot exceed the amount of byte in _bufferData
   int bufferPosition;
+
+  /// The Random access file handle to the underlying file
   RandomAccessFile _raf;
+
+  /// The filename of the underlying file
   final String filename;
 
+  ///
+  /// Default constructor to open a buffer for reading a mapfile
+  ///
   ReadBuffer(this.filename)
       : assert(filename != null && filename.length > 0),
         _lock = Lock();
 
+  ///
+  /// copy constructor. This way one can read the same file simultaneously
   ReadBuffer.fromSource(ReadBuffer other)
       : assert(other._raf != null),
         assert(other.filename != null && other.filename.length > 0),
@@ -36,18 +50,26 @@ class ReadBuffer {
         _raf = other._raf,
         filename = other.filename;
 
+  Future<RandomAccessFile> _openRaf() {
+    if (_raf != null) {
+      return Future.value(_raf);
+    }
+    assert(filename != null);
+    return _lock.synchronized<RandomAccessFile>(() async {
+      File file = File(filename);
+      bool ok = await file.exists();
+      if (!ok) {
+        throw FileNotFoundException(filename);
+      }
+      _raf = await file.open();
+      return _raf;
+    });
+  }
+
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
     //int time = DateTime.now().millisecondsSinceEpoch;
+    await _openRaf();
     Uint8List result = await _lock.synchronized(() async {
-      if (_raf == null) {
-        assert(filename != null);
-        File file = File(filename);
-        bool ok = await file.exists();
-        if (!ok) {
-          throw FileNotFoundException(filename);
-        }
-        _raf = await file.open();
-      }
       RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
       return await (newInstance.read(indexBlockSize));
     });
@@ -57,6 +79,7 @@ class ReadBuffer {
   }
 
   Uint8List getBuffer(int position, int length) {
+    assert(position >= 0);
     return _bufferData.sublist(position, position + length);
   }
 
@@ -68,13 +91,11 @@ class ReadBuffer {
     return this._bufferData[this.bufferPosition++];
   }
 
-  /**
-   * Converts four bytes from the read buffer to a float.
-   * <p/>
-   * The byte order is big-endian.
-   *
-   * @return the float value.
-   */
+  /// Converts four bytes from the read buffer to a float.
+  /// <p/>
+  /// The byte order is big-endian.
+  ///
+  /// @return the float value.
   double readFloat() {
     // https://stackoverflow.com/questions/55355482/parsing-integer-bit-patterns-as-ieee-754-floats-in-dart
     var bdata = ByteData(4);
@@ -82,42 +103,25 @@ class ReadBuffer {
     return bdata.getFloat32(0);
   }
 
-  /**
-   * Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
-   * the capacity of the read buffer is too small, a larger one is created automatically.
-   *
-   * @param length the amount of bytes to read from the file.
-   * @return true if the whole data was read successfully, false otherwise.
-   * @throws IOException if an error occurs while reading the file.
-   */
+  /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
+  /// the capacity of the read buffer is too small, a larger one is created automatically.
+  ///
+  /// @param length the amount of bytes to read from the file.
+  /// @return true if the whole data was read successfully, false otherwise.
+  /// @throws IOException if an error occurs while reading the file.
   Future<bool> readFromFile(int length, [int offset]) async {
     // ensure that the read buffer is large enough
-    if (this._bufferData == null || this._bufferData.length < length) {
-      // ensure that the read buffer is not too large
-      if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
-        _log.warning("invalid read length: $length");
-        return false;
-      }
-      //this.bufferData = Uint8List(length);
-      //this.bufferWrapper = ByteBuffer.wrap(this.bufferData, 0, length);
+    if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
+      _log.warning("invalid read length: $length");
+      return false;
     }
-
     // reset the buffer position and read the data into the buffer
     this.bufferPosition = 0;
     this._offset = offset ?? 0;
-//    this.bufferWrapper = Uint8List(0).buffer; //.clear();
 
     int time = DateTime.now().millisecondsSinceEpoch;
     await _lock.synchronized(() async {
-      if (_raf == null) {
-        assert(filename != null);
-        File file = File(filename);
-        bool ok = await file.exists();
-        if (!ok) {
-          throw FileNotFoundException(filename);
-        }
-        _raf = await file.open();
-      }
+      await _openRaf();
       RandomAccessFile _newRaf = _raf;
       if (offset != null) {
         assert(offset >= 0);
@@ -136,19 +140,11 @@ class ReadBuffer {
 
   Future<int> length() async {
     //int time = DateTime.now().millisecondsSinceEpoch;
+    await _openRaf();
     int result = await _lock.synchronized(() async {
-      if (_raf == null) {
-        assert(filename != null);
-        File file = File(filename);
-        bool ok = await file.exists();
-        if (!ok) {
-          throw FileNotFoundException(filename);
-        }
-        _raf = await file.open();
-      }
       return await _raf.length();
     });
-    assert(result != null);
+    assert(result != null && result >= 0);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return result;
   }
@@ -158,39 +154,33 @@ class ReadBuffer {
     _raf = null;
   }
 
-  /**
-   * Converts four bytes from the read buffer to a signed int.
-   * <p/>
-   * The byte order is big-endian.
-   *
-   * @return the int value.
-   */
+  /// Converts four bytes from the read buffer to a signed int.
+  /// <p/>
+  /// The byte order is big-endian.
+  ///
+  /// @return the int value.
   int readInt() {
     assert(_bufferData != null);
     this.bufferPosition += 4;
     return Deserializer.getInt(this._bufferData, this.bufferPosition - 4);
   }
 
-  /**
-   * Converts eight bytes from the read buffer to a signed long.
-   * <p/>
-   * The byte order is big-endian.
-   *
-   * @return the long value.
-   */
+  /// Converts eight bytes from the read buffer to a signed long.
+  /// <p/>
+  /// The byte order is big-endian.
+  ///
+  /// @return the long value.
   int readLong() {
     assert(_bufferData != null);
     this.bufferPosition += 8;
     return Deserializer.getLong(this._bufferData, this.bufferPosition - 8);
   }
 
-  /**
-   * Converts two bytes from the read buffer to a signed int.
-   * <p/>
-   * The byte order is big-endian.
-   *
-   * @return the int value.
-   */
+  /// Converts two bytes from the read buffer to a signed int.
+  /// <p/>
+  /// The byte order is big-endian.
+  ///
+  /// @return the int value.
   int readShort() {
     assert(_bufferData != null);
     assert(bufferPosition < _bufferData.length);
@@ -243,13 +233,11 @@ class ReadBuffer {
     return tags;
   }
 
-  /**
-   * Converts a variable amount of bytes from the read buffer to an unsigned int.
-   * <p/>
-   * The first bit is for continuation info, the other seven bits are for data.
-   *
-   * @return the int value.
-   */
+  /// Converts a variable amount of bytes from the read buffer to an unsigned int.
+  /// <p/>
+  /// The first bit is for continuation info, the other seven bits are for data.
+  ///
+  /// @return the int value.
   int readUnsignedInt() {
     assert(_bufferData != null);
     assert(bufferPosition <= _bufferData.length);
@@ -270,14 +258,12 @@ class ReadBuffer {
     return variableByteDecode;
   }
 
-  /**
-   * Converts a variable amount of bytes from the read buffer to a signed int.
-   * <p/>
-   * The first bit is for continuation info, the other six (last byte) or seven (all other bytes) bits are for data.
-   * The second bit in the last byte indicates the sign of the number.
-   *
-   * @return the int value.
-   */
+  /// Converts a variable amount of bytes from the read buffer to a signed int.
+  /// <p/>
+  /// The first bit is for continuation info, the other six (last byte) or seven (all other bytes) bits are for data.
+  /// The second bit in the last byte indicates the sign of the number.
+  ///
+  /// @return the int value.
   int readSignedInt() {
     assert(_bufferData != null);
     int variableByteDecode = 0;
@@ -304,21 +290,17 @@ class ReadBuffer {
     return variableByteDecode;
   }
 
-  /**
-   * Decodes a variable amount of bytes from the read buffer to a string.
-   *
-   * @return the UTF-8 decoded string (may be null).
-   */
+  /// Decodes a variable amount of bytes from the read buffer to a string.
+  ///
+  /// @return the UTF-8 decoded string (may be null).
   String readUTF8EncodedString() {
     return readUTF8EncodedString2(readUnsignedInt());
   }
 
-  /**
-   * Decodes the given amount of bytes from the read buffer to a string.
-   *
-   * @param stringLength the length of the string in bytes.
-   * @return the UTF-8 decoded string (may be null).
-   */
+  /// Decodes the given amount of bytes from the read buffer to a string.
+  ///
+  /// @param stringLength the length of the string in bytes.
+  /// @return the UTF-8 decoded string (may be null).
   String readUTF8EncodedString2(int stringLength) {
     assert(_bufferData != null);
     assert(stringLength >= 0);
@@ -333,35 +315,27 @@ class ReadBuffer {
         "Cannot read utf8 string with $stringLength length at position $bufferPosition of data with ${_bufferData.length} bytes");
   }
 
-  /**
-   * @return the current buffer position.
-   */
+  /// @return the current buffer position.
   int getBufferPosition() {
     return this.bufferPosition;
   }
 
-  /**
-   * @return the current size of the read buffer.
-   */
+  /// @return the current size of the read buffer.
   int getBufferSize() {
     assert(_bufferData != null);
     return this._bufferData.length;
   }
 
-  /**
-   * Sets the buffer position to the given offset.
-   *
-   * @param bufferPosition the buffer position.
-   */
+  /// Sets the buffer position to the given offset.
+  ///
+  /// @param bufferPosition the buffer position.
   void setBufferPosition(int bufferPosition) {
     this.bufferPosition = bufferPosition;
   }
 
-  /**
-   * Skips the given number of bytes in the read buffer.
-   *
-   * @param bytes the number of bytes to skip.
-   */
+  /// Skips the given number of bytes in the read buffer.
+  ///
+  /// @param bytes the number of bytes to skip.
   void skipBytes(int bytes) {
     this.bufferPosition += bytes;
   }
