@@ -1,6 +1,4 @@
-/**
- * Holds all parameters of a sub-file.
- */
+/// Holds all parameters of a sub-file. A subfile is a portion of a map. It is not necessarily dependent on a mapFILE.
 class SubFileParameter {
   /**
    * Base zoom level of the sub-file, which equals to one block.

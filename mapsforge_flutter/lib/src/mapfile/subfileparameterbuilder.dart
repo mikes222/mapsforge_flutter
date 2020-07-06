@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
-import 'subfileparameter.dart';
+import '../reader/subfileparameter.dart';
 import '../model/boundingbox.dart';
 import '../utils/mercatorprojection.dart';
 

@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
-import 'package:mapsforge_flutter/src/model/latlong.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
+import '../model/boundingbox.dart';
+import '../model/latlong.dart';
+import '../model/tile.dart';
 
 import 'mapdatastore.dart';
 import 'mapreadresult.dart';

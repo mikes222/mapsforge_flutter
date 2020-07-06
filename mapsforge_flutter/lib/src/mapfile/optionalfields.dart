@@ -1,5 +1,5 @@
-import '../header/mapfileinfobuilder.dart';
-import '../mapreader/readbuffer.dart';
+import 'mapfileinfobuilder.dart';
+import 'readbuffer.dart';
 import '../model/latlong.dart';
 import '../utils/latlongutils.dart';
 
@@ -39,8 +39,7 @@ class OptionalFields {
    */
   static final int START_ZOOM_LEVEL_MAX = 22;
 
-  static void readOptionalFieldsStatic(
-      ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readOptionalFieldsStatic(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
     OptionalFields optionalFields = new OptionalFields(readBuffer.readByte());
     mapFileInfoBuilder.optionalFields = optionalFields;
 
@@ -63,8 +62,7 @@ class OptionalFields {
     this.isDebugFile = (flags & HEADER_BITMASK_DEBUG) != 0;
     this.hasStartPosition = (flags & HEADER_BITMASK_START_POSITION) != 0;
     this.hasStartZoomLevel = (flags & HEADER_BITMASK_START_ZOOM_LEVEL) != 0;
-    this.hasLanguagesPreference =
-        (flags & HEADER_BITMASK_LANGUAGES_PREFERENCE) != 0;
+    this.hasLanguagesPreference = (flags & HEADER_BITMASK_LANGUAGES_PREFERENCE) != 0;
     this.hasComment = (flags & HEADER_BITMASK_COMMENT) != 0;
     this.hasCreatedBy = (flags & HEADER_BITMASK_CREATED_BY) != 0;
   }
@@ -77,10 +75,8 @@ class OptionalFields {
 
   void readMapStartPosition(ReadBuffer readBuffer) {
     if (this.hasStartPosition) {
-      double mapStartLatitude =
-          LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
-      double mapStartLongitude =
-          LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
+      double mapStartLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
+      double mapStartLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
       this.startPosition = new LatLong(mapStartLatitude, mapStartLongitude);
     }
   }

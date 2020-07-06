@@ -1,8 +1,6 @@
-import 'header/subfileparameter.dart';
+import '../reader/subfileparameter.dart';
 
-/**
- * An immutable container class which is the key for the index cache.
- */
+/// An immutable container class which is the key for the index cache.
 class IndexCacheEntryKey {
   final int indexBlockNumber;
   final SubFileParameter subFileParameter;

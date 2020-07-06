@@ -1,6 +1,4 @@
 import 'dart:core';
-import 'dart:core';
-
 import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
@@ -191,11 +189,9 @@ abstract class MapDataStore {
     return result;
   }
 
-  /**
-   * Gets the initial map position.
-   *
-   * @return the start position, if available.
-   */
+  /// Gets the initial map position.
+  ///
+  /// @return the start position, if available.
   LatLong get startPosition;
 
   /**

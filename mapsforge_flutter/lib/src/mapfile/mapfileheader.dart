@@ -1,17 +1,15 @@
 import 'package:logging/logging.dart';
 
 import 'package:mapsforge_flutter/src/mapfileexception.dart';
-import '../mapreader/optionalfields.dart';
-import '../mapreader/readbuffer.dart';
-import '../mapreader/requiredfields.dart';
+import 'optionalfields.dart';
+import 'readbuffer.dart';
+import 'requiredfields.dart';
 import 'mapfileinfo.dart';
 import 'mapfileinfobuilder.dart';
-import 'subfileparameter.dart';
+import '../reader/subfileparameter.dart';
 import 'subfileparameterbuilder.dart';
 
-/**
- * Reads and validates the header data from a binary map file.
- */
+/// Reads and validates the header data from a binary map file.
 class MapFileHeader {
   static final _log = new Logger('MapFileHeader');
 
@@ -69,16 +67,25 @@ class MapFileHeader {
     return this.subFileParameters[queryZoomLevel];
   }
 
-  /**
-   * Reads and validates the header block from the map file.
-   *
-   * @param readBuffer the ReadBuffer for the file data.
-   * @param fileSize   the size of the map file in bytes.
-   * @throws IOException if an error occurs while reading the file.
-   */
-  Future<void> readHeader(ReadBuffer readBuffer, int fileSize) async {
-    await RequiredFields.readMagicByte(readBuffer);
-    await RequiredFields.readRemainingHeader(readBuffer);
+  /// Reads and validates the header block from the map file.
+  ///
+  /// @param readBuffer the ReadBuffer for the file data.
+  /// @param fileSize   the size of the map file in bytes.
+  /// @throws IOException if an error occurs while reading the file.
+  Future<void> readHeader(ReadBufferMaster readBufferMaster, int fileSize) async {
+    ReadBuffer readBuffer = await RequiredFields.readMagicByte(readBufferMaster);
+
+    // get and check the size of the remaining file header (4 bytes)
+    int remainingHeaderSize = readBuffer.readInt();
+    if (remainingHeaderSize < HEADER_SIZE_MIN || remainingHeaderSize > RequiredFields.HEADER_SIZE_MAX) {
+      throw new Exception("invalid remaining header size: $remainingHeaderSize");
+    }
+
+// read the header data into the buffer
+    readBuffer = await readBufferMaster.readFromFile(length: remainingHeaderSize);
+    if (readBuffer == null) {
+      throw new Exception("reading header data has failed: $remainingHeaderSize");
+    }
 
     MapFileInfoBuilder mapFileInfoBuilder = MapFileInfoBuilder();
 

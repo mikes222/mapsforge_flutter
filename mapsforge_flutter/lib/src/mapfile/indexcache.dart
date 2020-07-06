@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:dcache/dcache.dart';
-import 'package:mapsforge_flutter/src/indexcacheentrykey.dart';
+import 'indexcacheentrykey.dart';
 
-import 'header/subfileparameter.dart';
-import 'header/subfileparameterbuilder.dart';
-import 'mapreader/deserializer.dart';
-import 'mapreader/readbuffer.dart';
+import '../reader/subfileparameter.dart';
+import 'subfileparameterbuilder.dart';
+import '../datastore/deserializer.dart';
+import 'readbuffer.dart';
 
 /// A cache for database index blocks with a fixed size and LRU policy.
 class IndexCache {
@@ -19,7 +19,7 @@ class IndexCache {
   final LruCache<IndexCacheEntryKey, List<int>> _map;
 
   /// a RandomFileAccess to the underlying file
-  final ReadBuffer _readBuffer;
+  final ReadBufferMaster _readBuffer;
 
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.

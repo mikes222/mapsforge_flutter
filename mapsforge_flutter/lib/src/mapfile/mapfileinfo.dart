@@ -2,11 +2,9 @@ import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
 
-/**
- * Contains the immutable metadata of a map file.
- *
- * @see org.mapsforge.map.reader.MapFile#getMapFileInfo()
- */
+/// Contains the immutable metadata of a map file.
+///
+/// @see org.mapsforge.map.reader.MapFile#getMapFileInfo()
 class MapFileInfo {
   /**
    * The bounding box of the map file.

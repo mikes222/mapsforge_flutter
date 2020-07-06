@@ -91,13 +91,15 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
               startLeftUpper.x + startOffset.dx - details.focalPoint.dx, startLeftUpper.y + startOffset.dy - details.focalPoint.dy);
         } else {
           // zoom
-          //print("scale ${details.scale} around ${details.focalPoint.toString()} or ${details.localFocalPoint.toString()}");
+          // do not send tiny changes
+          if (_lastScale != null && ((details.scale / _lastScale) - 1).abs() < 0.01) return;
+          //print("GestureDetector scale ${details.scale} around ${details.focalPoint.toString()} or ${details.localFocalPoint.toString()}");
           _lastScale = details.scale;
           MapViewPosition newPost = widget.mapModel.setScale(Mappoint(details.localFocalPoint.dx, details.localFocalPoint.dy), _lastScale);
         }
       },
       onScaleEnd: (ScaleEndDetails details) {
-        print(details.toString());
+        //print(details.toString());
         if (_lastScale == null) return;
         // no zoom: 0, double zoom: 1, half zoom: -1
         double zoomLevelOffset = log(this._lastScale) / log(2);

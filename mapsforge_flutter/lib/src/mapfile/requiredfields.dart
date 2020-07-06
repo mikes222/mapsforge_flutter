@@ -1,9 +1,7 @@
-import '../header/mapfileinfobuilder.dart';
+import 'mapfileinfobuilder.dart';
 import '../model/boundingbox.dart';
 import '../model/tag.dart';
 import '../utils/latlongutils.dart';
-import 'package:logging/logging.dart';
-
 import 'readbuffer.dart';
 
 class RequiredFields {
@@ -64,14 +62,12 @@ class RequiredFields {
     mapFileInfoBuilder.fileVersion = fileVersion;
   }
 
-  static Future<void> readMagicByte(ReadBuffer readBuffer) async {
+  static Future<ReadBuffer> readMagicByte(ReadBufferMaster readBufferMaster) async {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
-    bool ok = await readBuffer.readFromFile(magicByteLength + 4);
-    if (!ok) {
-      throw new Exception("reading magic byte has failed");
-    }
+    ReadBuffer readBuffer = await readBufferMaster.readFromFile(length: magicByteLength + 4);
+    assert(readBuffer != null);
 
     // get and check the magic byte
     String magicByte = readBuffer.readUTF8EncodedString2(magicByteLength);
@@ -79,6 +75,7 @@ class RequiredFields {
     if (BINARY_OSM_MAGIC_BYTE != (magicByte)) {
       throw new Exception("invalid magic byte: $magicByte");
     }
+    return readBuffer;
   }
 
   static void readMapDate(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
@@ -117,19 +114,6 @@ class RequiredFields {
       throw new Exception("unsupported projection: $projectionName");
     }
     mapFileInfoBuilder.projectionName = projectionName;
-  }
-
-  static Future<void> readRemainingHeader(ReadBuffer readBuffer) async {
-// get and check the size of the remaining file header (4 bytes)
-    int remainingHeaderSize = readBuffer.readInt();
-    if (remainingHeaderSize < HEADER_SIZE_MIN || remainingHeaderSize > HEADER_SIZE_MAX) {
-      throw new Exception("invalid remaining header size: $remainingHeaderSize");
-    }
-
-// read the header data into the buffer
-    if (!(await readBuffer.readFromFile(remainingHeaderSize))) {
-      throw new Exception("reading header data has failed: $remainingHeaderSize");
-    }
   }
 
   static void readTilePixelSize(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {

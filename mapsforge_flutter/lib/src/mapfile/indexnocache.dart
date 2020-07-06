@@ -1,9 +1,10 @@
 import 'dart:math';
 
-import 'header/subfileparameter.dart';
-import 'header/subfileparameterbuilder.dart';
-import 'mapreader/deserializer.dart';
-import 'mapreader/readbuffer.dart';
+import 'package:mapsforge_flutter/src/reader/subfileparameter.dart';
+
+import 'subfileparameterbuilder.dart';
+import '../datastore/deserializer.dart';
+import 'readbuffer.dart';
 
 /**
  * A cache for database index blocks with a fixed size and LRU policy.
@@ -17,10 +18,9 @@ class IndexNoCache {
   /**
    * Maximum size in bytes of one index block.
    */
-  static final int SIZE_OF_INDEX_BLOCK =
-      INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
+  static final int SIZE_OF_INDEX_BLOCK = INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
-  final ReadBuffer readBuffer;
+  final ReadBufferMaster readBufferMaster;
 
   /**
    * @param inputChannel the map file from which the index should be read and cached.
@@ -28,7 +28,7 @@ class IndexNoCache {
    * @throws IllegalArgumentException if the capacity is negative.
    */
   // todo LRUCache
-  IndexNoCache(this.readBuffer, int capacity);
+  IndexNoCache(this.readBufferMaster, int capacity);
 
   /**
    * Destroy the cache at the end of its lifetime.
@@ -44,8 +44,7 @@ class IndexNoCache {
    * @return the index entry.
    * @throws IOException if an I/O error occurs during reading.
    */
-  Future<int> getIndexEntry(
-      SubFileParameter subFileParameter, int blockNumber) async {
+  Future<int> getIndexEntry(SubFileParameter subFileParameter, int blockNumber) async {
     // check if the block number is out of bounds
     if (blockNumber >= subFileParameter.numberOfBlocks) {
       throw new Exception("invalid block number: $blockNumber");
@@ -56,20 +55,16 @@ class IndexNoCache {
 
     // check for cached index block
     // cache miss, seek to the correct index block in the file and read it
-    int indexBlockPosition = subFileParameter.indexStartAddress +
-        indexBlockNumber * SIZE_OF_INDEX_BLOCK;
+    int indexBlockPosition = subFileParameter.indexStartAddress + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
 
-    int remainingIndexSize =
-        (subFileParameter.indexEndAddress - indexBlockPosition);
+    int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
     int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
 
-    List<int> indexBlock =
-        await readBuffer.readDirect(indexBlockPosition, indexBlockSize);
+    List<int> indexBlock = await readBufferMaster.readDirect(indexBlockPosition, indexBlockSize);
 
     // calculate the address of the index entry inside the index block
     int indexEntryInBlock = blockNumber % INDEX_ENTRIES_PER_BLOCK;
-    int addressInIndexBlock =
-        (indexEntryInBlock * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY);
+    int addressInIndexBlock = (indexEntryInBlock * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY);
 
     // return the real index entry
     return Deserializer.getFiveBytesLong(indexBlock, addressInIndexBlock);

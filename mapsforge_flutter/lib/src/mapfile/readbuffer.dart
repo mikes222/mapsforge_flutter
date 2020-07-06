@@ -2,22 +2,106 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/exceptions/filenotfoundexception.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 import 'package:synchronized/synchronized.dart';
 
 import '../model/tag.dart';
-import 'deserializer.dart';
+import '../datastore/deserializer.dart';
+
+class ReadBufferMaster {
+  static final _log = new Logger('ReadBufferMaster');
+
+  /// The Random access file handle to the underlying file
+  RandomAccessFile _raf;
+
+  /// The filename of the underlying file
+  final String filename;
+
+  int _length;
+
+  /// the _raf needs a lock otherwise the pointer to the raf could get corrupted when reading from multiple positions concurrently
+  final Lock _lock;
+
+  ReadBufferMaster(this.filename) : _lock = Lock();
+
+  Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
+    //int time = DateTime.now().millisecondsSinceEpoch;
+    await _openRaf();
+    RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
+    //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
+    Uint8List result = await newInstance.read(indexBlockSize);
+    assert(result.length == indexBlockSize);
+    return result;
+  }
+
+  /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
+  /// the capacity of the read buffer is too small, a larger one is created automatically.
+  ///
+  /// @param length the amount of bytes to read from the file.
+  /// @return true if the whole data was read successfully, false otherwise.
+  /// @throws IOException if an error occurs while reading the file.
+  Future<ReadBuffer> readFromFile({int offset, @required int length}) async {
+    assert(length != null && length > 0);
+    // ensure that the read buffer is large enough
+    if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
+      _log.warning("invalid read length: $length");
+      return null;
+    }
+
+    //int time = DateTime.now().millisecondsSinceEpoch;
+    await _openRaf();
+    RandomAccessFile _newRaf = _raf;
+    if (offset != null) {
+      assert(offset >= 0);
+      _newRaf = await this._raf.setPosition(offset);
+    }
+    Uint8List _bufferData = await _newRaf.read(length);
+    assert(_bufferData != null);
+    assert(_bufferData.length == length);
+    //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
+    return ReadBuffer._(_bufferData, offset);
+  }
+
+  void close() {
+    _raf?.close();
+    _raf = null;
+  }
+
+  Future<RandomAccessFile> _openRaf() async {
+    if (_raf != null) {
+      return Future.value(_raf);
+    }
+    assert(filename != null);
+    File file = File(filename);
+    bool ok = await file.exists();
+    if (!ok) {
+      throw FileNotFoundException(filename);
+    }
+    _raf = await file.open();
+    return _raf;
+  }
+
+  Future<int> length() async {
+    if (_length != null) return _length;
+    //int time = DateTime.now().millisecondsSinceEpoch;
+    await _openRaf();
+    _length = await _raf.length();
+    assert(_length != null && _length >= 0);
+    //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
+    return _length;
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
 
 /// Reads from a {@link RandomAccessFile} into a buffer and decodes the data.
 class ReadBuffer {
   static final _log = new Logger('ReadBuffer');
 
   static final String CHARSET_UTF8 = "UTF-8";
-
-  /// the _raf needs a lock otherwise the pointer to the raf could get corrupted when reading from multiple positions concurrently
-  final Lock _lock;
 
   /// A chunk of data read from the underlying file
   Uint8List _bufferData;
@@ -28,54 +112,19 @@ class ReadBuffer {
   /// The current position of the read pointer in the _bufferData. The position cannot exceed the amount of byte in _bufferData
   int bufferPosition;
 
-  /// The Random access file handle to the underlying file
-  RandomAccessFile _raf;
-
-  /// The filename of the underlying file
-  final String filename;
-
   ///
   /// Default constructor to open a buffer for reading a mapfile
   ///
-  ReadBuffer(this.filename)
-      : assert(filename != null && filename.length > 0),
-        _lock = Lock();
+  ReadBuffer._(this._bufferData, this._offset)
+      : assert(_bufferData != null),
+        //assert(_offset != null && _offset >= 0),
+        bufferPosition = 0;
 
-  ///
   /// copy constructor. This way one can read the same file simultaneously
-  ReadBuffer.fromSource(ReadBuffer other)
-      : assert(other.filename != null && other.filename.length > 0),
-        _lock = other._lock,
-        _raf = null,
-        filename = other.filename;
-
-  Future<RandomAccessFile> _openRaf() {
-    if (_raf != null) {
-      return Future.value(_raf);
-    }
-    assert(filename != null);
-    return _lock.synchronized<RandomAccessFile>(() async {
-      File file = File(filename);
-      bool ok = await file.exists();
-      if (!ok) {
-        throw FileNotFoundException(filename);
-      }
-      _raf = await file.open();
-      return _raf;
-    });
-  }
-
-  Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    Uint8List result = await _lock.synchronized(() async {
-      RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
-      return await (newInstance.read(indexBlockSize));
-    });
-    assert(result.length == indexBlockSize);
-    //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return result;
-  }
+//  ReadBuffer.fromSource(ReadBuffer other)
+//      : assert(other.filename != null && other.filename.length > 0),
+//        _raf = null,
+//        filename = other.filename;
 
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
@@ -100,57 +149,6 @@ class ReadBuffer {
     var bdata = ByteData(4);
     bdata.setInt32(0, readInt());
     return bdata.getFloat32(0);
-  }
-
-  /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
-  /// the capacity of the read buffer is too small, a larger one is created automatically.
-  ///
-  /// @param length the amount of bytes to read from the file.
-  /// @return true if the whole data was read successfully, false otherwise.
-  /// @throws IOException if an error occurs while reading the file.
-  Future<bool> readFromFile(int length, [int offset]) async {
-    // ensure that the read buffer is large enough
-    if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
-      _log.warning("invalid read length: $length");
-      return false;
-    }
-    // reset the buffer position and read the data into the buffer
-    this.bufferPosition = 0;
-    this._offset = offset ?? 0;
-
-    int time = DateTime.now().millisecondsSinceEpoch;
-    await _lock.synchronized(() async {
-      await _openRaf();
-      RandomAccessFile _newRaf = _raf;
-      if (offset != null) {
-        assert(offset >= 0);
-        _newRaf = await this._raf.setPosition(offset);
-      }
-      _bufferData = await _newRaf.read(length);
-    });
-    assert(_bufferData != null);
-    if (_bufferData.length != length) {
-      _log.warning("Different lenghts ${_bufferData.length} - $length for $bufferPosition and $_offset");
-    }
-    assert(_bufferData.length == length);
-    //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return true;
-  }
-
-  Future<int> length() async {
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    int result = await _lock.synchronized(() async {
-      return await _raf.length();
-    });
-    assert(result != null && result >= 0);
-    //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return result;
-  }
-
-  void close() {
-    _raf?.close();
-    _raf = null;
   }
 
   /// Converts four bytes from the read buffer to a signed int.

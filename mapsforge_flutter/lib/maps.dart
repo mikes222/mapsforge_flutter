@@ -1,4 +1,4 @@
-export 'src/mapfile.dart';
+export 'src/mapfile/mapfile.dart';
 
 export 'src/cache/tilecache.dart';
 

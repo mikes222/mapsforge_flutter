@@ -142,11 +142,15 @@ class MapModel {
     assert(scale != null);
     assert(scale > 0);
     if (_mapViewPosition != null) {
-      if (_mapViewPosition.scale * scale < 1) {
-        scale = MercatorProjectionImpl.zoomLevelToScaleFactor(1);
+      //print("Scaling ${_mapViewPosition.zoomLevel} * $scale");
+      if (MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel) * scale < 1) {
+        scale = 1 / MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel);
       } else {
-        double zoomLevel = MercatorProjectionImpl.scaleFactorToZoomLevel(_mapViewPosition.scale * scale);
-        if (zoomLevel > displayModel.maxZoomLevel) scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel);
+        double scaleFactor = MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel) * scale;
+        if (scaleFactor > MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel)) {
+          scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel) /
+              MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel);
+        }
       }
       MapViewPosition newPosition = MapViewPosition.scale(_mapViewPosition, focalPoint, scale);
       _mapViewPosition = newPosition;
@@ -154,12 +158,6 @@ class MapModel {
       return newPosition;
     } else {
       MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, displayModel.tileSize);
-      if (_mapViewPosition.scale * scale < 1) {
-        scale = MercatorProjectionImpl.zoomLevelToScaleFactor(1);
-      } else {
-        double zoomLevel = MercatorProjectionImpl.scaleFactorToZoomLevel(newPosition.scale * scale);
-        if (zoomLevel > displayModel.maxZoomLevel) scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel);
-      }
       newPosition = MapViewPosition.scale(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);

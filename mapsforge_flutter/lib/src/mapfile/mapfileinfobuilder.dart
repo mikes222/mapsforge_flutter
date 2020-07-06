@@ -1,4 +1,4 @@
-import '../mapreader/optionalfields.dart';
+import 'optionalfields.dart';
 import '../model/boundingbox.dart';
 import '../model/tag.dart';
 
