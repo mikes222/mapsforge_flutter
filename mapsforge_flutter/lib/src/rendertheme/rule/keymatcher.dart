@@ -22,12 +22,14 @@ class KeyMatcher implements AttributeMatcher {
 
   @override
   bool matchesTagList(List<Tag> tags) {
-    for (int i = 0, n = tags.length; i < n; ++i) {
-      if (this.keys.contains(tags.elementAt(i).key)) {
-        return true;
-      }
-    }
-    return false;
+    Tag tag = tags.firstWhere((element) => keys.contains(element.key), orElse: () => null);
+    return tag != null;
+//    for (int i = 0, n = tags.length; i < n; ++i) {
+//      if (this.keys.contains(tags.elementAt(i).key)) {
+//        return true;
+//      }
+//    }
+//    return false;
   }
 
   @override

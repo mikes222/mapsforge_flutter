@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/datastore/mapdatastore.dart';
 import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
@@ -19,7 +21,6 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 import 'package:mapsforge_flutter/src/renderer/shapepaintcontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
 import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
@@ -27,6 +28,7 @@ import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rendertheme.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:synchronized/synchronized.dart';
 
 import 'canvasrasterer.dart';
@@ -48,7 +50,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   final TileBasedLabelStore labelStore;
 
-  final Lock _lock = Lock();
+  SendPort _sendPort;
+
+  Isolate _isolate;
+
+  PublishSubject<MapReadResult> _subject = PublishSubject<MapReadResult>();
 
   MapDataStoreRenderer(
     this.mapDataStore,
@@ -61,47 +67,59 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     } else {
       this.tileDependencies = new TileDependencies();
     }
+    _startIsolateJob();
+  }
+
+  void dispose() {
+    if (_isolate != null) {
+      _isolate.kill(priority: Isolate.immediate);
+      _isolate = null;
+    }
   }
 
   @override
-  Future<TileBitmap> executeJob(RendererJob job) async {
+  Future<TileBitmap> executeJob(Job job) async {
+    bool showTiming = true;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     if (!this.mapDataStore.supportsTile(job.tile)) {
       return null;
     }
-    RenderContext renderContext =
-        new RenderContext(job, new CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble()), renderTheme);
-    MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
+    CanvasRasterer canvasRasterer = CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble());
+    RenderContext renderContext = RenderContext(job, renderTheme);
+    _sendPort.send(IsolateParam(mapDataStore, job.tile));
+    MapReadResult mapReadResult = await _subject.stream.first;
+    // MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
     int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100) _log.info("mapReadResult took $diff ms");
+    if (diff > 100 && showTiming)
+      _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests.length} pois and ${mapReadResult.ways.length} ways");
     if (mapReadResult == null) {
       _log.info("Executing ${job.toString()} has no mapReadResult for tile ${job.tile.toString()}");
       return null;
     }
-    _processReadMapData(renderContext, mapReadResult);
+    await _processReadMapData(renderContext, mapReadResult);
     diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100) _log.info("_processReadMapData took $diff ms");
-    renderContext.canvasRasterer.startCanvasBitmap();
+    if (diff > 100 && showTiming) _log.info("_processReadMapData took $diff ms");
+    canvasRasterer.startCanvasBitmap();
 //    if (!job.hasAlpha && job.displayModel.getBackgroundColor() != renderContext.renderTheme.getMapBackground()) {
 //      renderContext.canvasRasterer.fill(renderContext.renderTheme.getMapBackground());
 //    }
-    renderContext.canvasRasterer.drawWays(renderContext);
+    canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100) _log.info("drawWays took $diff ms");
+    if (diff > 100 && showTiming) _log.info("drawWays took $diff ms");
 
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
       // now draw the ways and the labels
-      renderContext.canvasRasterer.drawMapElements(labelsToDraw, job.tile);
+      canvasRasterer.drawMapElements(labelsToDraw, job.tile);
       diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff > 100) _log.info("drawMapElements took $diff ms");
+      if (diff > 100 && showTiming) _log.info("drawMapElements took $diff ms");
     }
     if (this.labelStore != null) {
       // store elements for this tile in the label cache
       this.labelStore.storeMapItems(job.tile, renderContext.labels);
       diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff > 100) _log.info("storeMapItems took $diff ms");
+      if (diff > 100 && showTiming) _log.info("storeMapItems took $diff ms");
     }
 
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
@@ -114,20 +132,21 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 //      }
 //    }
 
-    TileBitmap bitmap = await renderContext.canvasRasterer.finalizeCanvasBitmap();
+    TileBitmap bitmap = await canvasRasterer.finalizeCanvasBitmap();
+    canvasRasterer.destroy();
     diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100) _log.info("finalizeCanvasBitmap took $diff ms");
+    if (diff > 100 && showTiming) _log.info("finalizeCanvasBitmap took $diff ms");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     return bitmap;
   }
 
-  void _processReadMapData(final RenderContext renderContext, MapReadResult mapReadResult) {
+  Future<void> _processReadMapData(final RenderContext renderContext, MapReadResult mapReadResult) async {
     for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
       _renderPointOfInterest(renderContext, pointOfInterest);
     }
 
     for (Way way in mapReadResult.ways) {
-      _renderWay(renderContext, new PolylineContainer(way, renderContext.job.tile, renderContext.job.tile));
+      await _renderWay(renderContext, new PolylineContainer(way, renderContext.job.tile, renderContext.job.tile));
     }
 
     if (mapReadResult.isWater) {
@@ -135,18 +154,18 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     }
   }
 
-  void _renderPointOfInterest(final RenderContext renderContext, PointOfInterest pointOfInterest) {
+  Future<void> _renderPointOfInterest(final RenderContext renderContext, PointOfInterest pointOfInterest) async {
     renderContext.setDrawingLayers(pointOfInterest.layer);
-    renderContext.renderTheme.matchNode(this, renderContext, pointOfInterest);
+    await renderContext.renderTheme.matchNode(this, renderContext, pointOfInterest);
   }
 
-  void _renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> _renderWay(final RenderContext renderContext, PolylineContainer way) async {
     renderContext.setDrawingLayers(way.getLayer());
     //_log.info("drawing way " + way.toString());
     if (way.isClosedWay) {
-      renderContext.renderTheme.matchClosedWay(this, renderContext, way);
+      await renderContext.renderTheme.matchClosedWay(this, renderContext, way);
     } else {
-      renderContext.renderTheme.matchLinearWay(this, renderContext, way);
+      await renderContext.renderTheme.matchLinearWay(this, renderContext, way);
     }
   }
 
@@ -258,79 +277,77 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     // elements need to be drawn.
     Set<MapElementContainer> labelsToDraw = new Set();
 
-    _lock.synchronized(() async {
-      // first we need to get the labels from the adjacent tiles if they have already been drawn
-      // as those overlapping items must also be drawn on the current tile. They must be drawn regardless
-      // of priority clashes as a part of them has alread been drawn.
-      Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
-      Set<MapElementContainer> undrawableElements = new Set();
+    // first we need to get the labels from the adjacent tiles if they have already been drawn
+    // as those overlapping items must also be drawn on the current tile. They must be drawn regardless
+    // of priority clashes as a part of them has alread been drawn.
+    Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
+    Set<MapElementContainer> undrawableElements = new Set();
 
-      tileDependencies.addTileInProgress(renderContext.job.tile);
-      List toRemove = [];
-      neighbours.forEach((Tile neighbour) {
-        if (tileDependencies.isTileInProgress(neighbour) //||
+    tileDependencies.addTileInProgress(renderContext.job.tile);
+    List toRemove = [];
+    neighbours.forEach((Tile neighbour) {
+      if (tileDependencies.isTileInProgress(neighbour) //||
 //            tileCache
 //                .containsKey(renderContext.rendererJob.otherTile(neighbour))
-            ) {
-          // if a tile has already been drawn, the elements drawn that overlap onto the
-          // current tile should be in the tile dependencies, we add them to the labels that
-          // need to be drawn onto this tile. For the multi-threaded renderer we also need to take
-          // those tiles into account that are not yet in the TileCache: this is taken care of by the
-          // set of tilesInProgress inside the TileDependencies.
-          labelsToDraw.addAll(tileDependencies.getOverlappingElements(neighbour, renderContext.job.tile));
+          ) {
+        // if a tile has already been drawn, the elements drawn that overlap onto the
+        // current tile should be in the tile dependencies, we add them to the labels that
+        // need to be drawn onto this tile. For the multi-threaded renderer we also need to take
+        // those tiles into account that are not yet in the TileCache: this is taken care of by the
+        // set of tilesInProgress inside the TileDependencies.
+        labelsToDraw.addAll(tileDependencies.getOverlappingElements(neighbour, renderContext.job.tile));
 
-          // but we need to remove the labels for this tile that overlap onto a tile that has been drawn
-          for (MapElementContainer current in renderContext.labels) {
-            if (current.intersects(neighbour.getBoundaryAbsolute())) {
-              undrawableElements.add(current);
-            }
-          }
-          // since we already have the data from that tile, we do not need to get the data for
-          // it, so remove it from the neighbours list.
-          //neighbours.remove(neighbour);
-          toRemove.add(neighbour);
-        } else {
-          tileDependencies.removeTileData(neighbour);
-        }
-      });
-
-      neighbours.removeWhere((tile) => toRemove.contains(tile));
-      // now we remove the elements that overlap onto a drawn tile from the list of labels
-      // for this tile
-      renderContext.labels.removeWhere((toTest) => undrawableElements.contains(toTest));
-
-      // at this point we have two lists: one is the list of labels that must be drawn because
-      // they already overlap from other tiles. The second one is currentLabels that contains
-      // the elements on this tile that do not overlap onto a drawn tile. Now we sort this list and
-      // remove those elements that clash in this list already.
-      List<MapElementContainer> currentElementsOrdered = LayerUtil.collisionFreeOrdered(renderContext.labels);
-
-      // now we go through this list, ordered by priority, to see which can be drawn without clashing.
-      List<MapElementContainer> toRemove2 = List();
-      currentElementsOrdered.forEach((MapElementContainer current) {
-        for (MapElementContainer label in labelsToDraw) {
-          if (label.clashesWith(current)) {
-            toRemove2.add(current);
-            //currentElementsOrdered.remove(current);
-            break;
+        // but we need to remove the labels for this tile that overlap onto a tile that has been drawn
+        for (MapElementContainer current in renderContext.labels) {
+          if (current.intersects(neighbour.getBoundaryAbsolute())) {
+            undrawableElements.add(current);
           }
         }
-      });
-      currentElementsOrdered.removeWhere((item) => toRemove2.contains(item));
+        // since we already have the data from that tile, we do not need to get the data for
+        // it, so remove it from the neighbours list.
+        //neighbours.remove(neighbour);
+        toRemove.add(neighbour);
+      } else {
+        tileDependencies.removeTileData(neighbour);
+      }
+    });
 
-      labelsToDraw.addAll(currentElementsOrdered);
+    neighbours.removeWhere((tile) => toRemove.contains(tile));
+    // now we remove the elements that overlap onto a drawn tile from the list of labels
+    // for this tile
+    renderContext.labels.removeWhere((toTest) => undrawableElements.contains(toTest));
 
-      // update dependencies, add to the dependencies list all the elements that overlap to the
-      // neighbouring tiles, first clearing out the cache for this relation.
-      for (Tile tile in neighbours) {
-        tileDependencies.removeTileData(renderContext.job.tile, to: tile);
-        for (MapElementContainer element in labelsToDraw) {
-          if (element.intersects(tile.getBoundaryAbsolute())) {
-            tileDependencies.addOverlappingElement(renderContext.job.tile, tile, element);
-          }
+    // at this point we have two lists: one is the list of labels that must be drawn because
+    // they already overlap from other tiles. The second one is currentLabels that contains
+    // the elements on this tile that do not overlap onto a drawn tile. Now we sort this list and
+    // remove those elements that clash in this list already.
+    List<MapElementContainer> currentElementsOrdered = LayerUtil.collisionFreeOrdered(renderContext.labels);
+
+    // now we go through this list, ordered by priority, to see which can be drawn without clashing.
+    List<MapElementContainer> toRemove2 = List();
+    currentElementsOrdered.forEach((MapElementContainer current) {
+      for (MapElementContainer label in labelsToDraw) {
+        if (label.clashesWith(current)) {
+          toRemove2.add(current);
+          //currentElementsOrdered.remove(current);
+          break;
         }
       }
     });
+    currentElementsOrdered.removeWhere((item) => toRemove2.contains(item));
+
+    labelsToDraw.addAll(currentElementsOrdered);
+
+    // update dependencies, add to the dependencies list all the elements that overlap to the
+    // neighbouring tiles, first clearing out the cache for this relation.
+    for (Tile tile in neighbours) {
+      tileDependencies.removeTileData(renderContext.job.tile, to: tile);
+      for (MapElementContainer element in labelsToDraw) {
+        if (element.intersects(tile.getBoundaryAbsolute())) {
+          tileDependencies.addOverlappingElement(renderContext.job.tile, tile, element);
+        }
+      }
+    }
     return labelsToDraw;
   }
 
@@ -338,4 +355,56 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   String getRenderKey() {
     return "${renderTheme.hashCode}";
   }
+
+  ///
+  /// Isolates currently not suitable for our purpose. Most UI canvas calls are not accessible from isolates
+  /// so we cannot produce the bitmap.
+  void _startIsolateJob() async {
+    var receivePort = new ReceivePort();
+    _isolate = await Isolate.spawn(entryPoint, receivePort.sendPort);
+
+    await for (var data in receivePort) {
+      //tileCache.addTileBitmap(job.tile, tileBitmap);
+      //print("received from isolate: ${data.toString()}");
+      if (data is SendPort) {
+        // Receive the SendPort from the Isolate
+        _sendPort = data;
+      } else if (data is MapReadResult) {
+        MapReadResult result = data;
+        _subject.add(result);
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+/// see https://github.com/flutter/flutter/issues/13937
+// Entry point for your Isolate
+entryPoint(SendPort sendPort) async {
+  // Open the ReceivePort to listen for incoming messages (optional)
+  var receivePort = new ReceivePort();
+
+  // Send messages to other Isolates
+  sendPort.send(receivePort.sendPort);
+
+  // Listen for messages (optional)
+  await for (IsolateParam isolateParam in receivePort) {
+    //print("hello, we received $isolateParam in the isolate");
+    MapReadResult result = await readMapDataInIsolate(isolateParam);
+    sendPort.send(result);
+  }
+}
+
+class IsolateParam {
+  final MapDataStore mapDataStore;
+
+  final Tile tile;
+
+  IsolateParam(this.mapDataStore, this.tile);
+}
+
+Future<MapReadResult> readMapDataInIsolate(IsolateParam isolateParam) async {
+  MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);
+  return mapReadResult;
 }

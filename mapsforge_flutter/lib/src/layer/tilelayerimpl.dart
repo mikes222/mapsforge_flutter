@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
@@ -7,18 +8,15 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
 
-import 'cache/MemoryTileCache.dart';
-import 'cache/bitmapcache.dart';
-import 'cache/memorybitmapcache.dart';
+import '../cache/memorytilecache.dart';
 import 'job/job.dart';
 import 'job/jobqueue.dart';
 import 'job/jobrenderer.dart';
@@ -30,7 +28,6 @@ class TileLayerImpl extends TileLayer {
   final bool isTransparent;
   final JobQueue jobQueue;
   final TileCache _tileCache = MemoryTileCache();
-  final BitmapCache _bitmapCache = MemoryBitmapCache();
   final Matrix matrix;
   final JobRenderer jobRenderer;
   final MapPaint paint;
@@ -38,19 +35,19 @@ class TileLayerImpl extends TileLayer {
   TileLayerImpl({
     this.matrix,
     this.isTransparent = false,
-    @required displayModel,
     @required this.jobRenderer,
     @required GraphicFactory graphicFactory,
-    BitmapCache bitmapCache,
+    @required this.jobQueue,
+    @required displayModel,
   })  : assert(isTransparent != null),
         assert(displayModel != null),
         assert(jobRenderer != null),
         assert(graphicFactory != null),
-        jobQueue = JobQueue(displayModel, jobRenderer, bitmapCache),
+        assert(jobQueue != null),
         paint = graphicFactory.createPaint(),
-        super(displayModel) {}
+        super(displayModel);
 
-  Stream<Job> get observeJob => jobQueue.observeJob;
+//  Stream<Job> get observeJob => jobQueue.observeJob;
 
 //  public TileLayer(TileCache tileCache, IMapViewPosition mapViewPosition, Matrix matrix, bool isTransparent, bool hasJobQueue) {
 //    super();
@@ -68,19 +65,9 @@ class TileLayerImpl extends TileLayer {
 //    this.isTransparent = isTransparent;
 //  }
 
-  void jobResult(Job job) {
-    TileBitmap bmp = job.getAndRemovetileBitmap();
-    if (bmp != null) {
-      _bitmapCache.addTileBitmap(job.tile, bmp);
-      bmp.decrementRefCount();
-      needsRepaint = true;
-    }
-  }
-
   @override
   void draw(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, MapCanvas canvas) {
     int time = DateTime.now().millisecondsSinceEpoch;
-    needsRepaint = false;
     List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition, _tileCache);
     //_log.info("tiles: ${tiles.toString()}");
 
@@ -102,42 +89,29 @@ class TileLayerImpl extends TileLayer {
     mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
-    List<RendererJob> jobs = List();
-    tiles.forEach((tile) {
+    JobSet jobSet = JobSet();
+    tiles.forEach((Tile tile) {
       Mappoint point = tile.leftUpperPoint;
-      TileBitmap bitmap = this._bitmapCache.getTileBitmap(tile);
-
-      if (bitmap == null) {
-        Job job = jobQueue.createJob(tile);
-        jobs.add(job);
-//        if (Parameters.PARENT_TILES_RENDERING !=
-//            Parameters.ParentTilesRendering.OFF) {
-//          drawParentTileBitmap(canvas, point, tile);
-//        }
-        //_log.info("  tile: ${tile.toString()}");
-        bitmap = jobRenderer.getMissingBitmap(tile);
+      TileBitmap tileBitmap = jobQueue.tileBitmapCache.getTileBitmap(tile);
+      if (tileBitmap != null) {
+        canvas.drawBitmap(
+          bitmap: tileBitmap,
+          left: point.x - leftUpper.x,
+          top: point.y - leftUpper.y,
+          paint: paint,
+        );
+      } else {
+        Job job = Job(tile, false, displayModel.getScaleFactor());
+        jobSet.add(job);
+        TileBitmap bitmap = jobQueue.getMissingBitmap(tile.tileSize);
         if (bitmap != null) {
           canvas.drawBitmap(
             bitmap: bitmap,
             left: point.x - leftUpper.x,
             top: point.y - leftUpper.y,
             paint: paint,
-          ); //, (point.x), (point.y), this.displayModel.getFilter());
+          );
         }
-      } else {
-//        if (isTileStale(tile, bitmap) &&
-//            this.hasJobQueue &&
-//            !this.tileCache.containsKey(job)) {
-//          this.jobQueue.add(job);
-//        }
-//        retrieveLabelsOnly(job);
-        canvas.drawBitmap(
-          bitmap: bitmap,
-          left: point.x - leftUpper.x,
-          top: point.y - leftUpper.y,
-          paint: paint,
-        ); //, (point.x), (point.y), this.displayModel.getFilter());
-        //bitmap.decrementRefCount();
       }
     });
     if (mapViewPosition.scale != 1) {
@@ -145,9 +119,13 @@ class TileLayerImpl extends TileLayer {
       (canvas as FlutterCanvas).uiCanvas.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
-    this.jobQueue.addJobs(jobs);
+    if (jobSet.jobs.length > 0) {
+      this.jobQueue.processJobset(jobSet);
+      needsRepaint = true;
+    }
+
     int diff = DateTime.now().millisecondsSinceEpoch - time;
-    //_log.info("diff: $diff ms");
+    _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
   }
 
   /**

@@ -1,4 +1,7 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/cache/tilecache.dart';
+import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
@@ -60,7 +63,7 @@ class LayerUtil {
     int tileHalfX = ((tileRight - tileLeft) / 2).round() + tileLeft;
     int tileHalfY = ((tileBottom - tileTop) / 2).round() + tileTop;
 
-    List<Tile> tiles = new List<Tile>();
+    List<Tile> tiles = List<Tile>();
 
     // build tiles starting from the center tile
     for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {

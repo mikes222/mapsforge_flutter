@@ -1,10 +1,10 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -15,13 +15,11 @@ import 'renderinstruction.dart';
 /**
  * Represents an icon along a polyline on the map.
  */
-class LineSymbol extends RenderInstruction {
+class LineSymbol extends RenderInstruction with BitmapMixin {
   static final double REPEAT_GAP_DEFAULT = 200;
   static final double REPEAT_START_DEFAULT = 30;
 
   bool alignCenter = true;
-  Bitmap bitmap;
-  bool bitmapInvalid = false;
   Display display;
   double dy = 0;
   final Map<int, double> dyScaled;
@@ -32,25 +30,21 @@ class LineSymbol extends RenderInstruction {
   double repeatStart;
   bool rotate;
   Scale scale = Scale.STROKE;
-  String src;
   MapPaint symbolPaint;
 
   LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
       : dyScaled = new Map(),
-        super(graphicFactory, displayModel, symbolCache) {
+        super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.display = Display.IFSPACE;
     this.rotate = true;
     this.symbolPaint = graphicFactory.createPaint();
   }
 
   @override
-  void destroy() {
-    if (this.bitmap != null) {
-      this.bitmap.decrementRefCount();
-    }
-  }
+  void destroy() {}
 
-  Future<void> parse(XmlElement rootElement) async {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
 
@@ -92,15 +86,7 @@ class LineSymbol extends RenderInstruction {
         throw Exception("LineSymbol probs");
       }
     });
-    if (this.bitmap == null && !this.bitmapInvalid) {
-      try {
-        this.bitmap = await createBitmap(relativePathPrefix, src);
-      } catch (ioException, stacktrace) {
-        print(ioException.toString());
-        //print(stacktrace);
-        this.bitmapInvalid = true;
-      }
-    }
+    initPendings.add(this);
   }
 
   @override
@@ -119,7 +105,7 @@ class LineSymbol extends RenderInstruction {
       dyScale = this.dy;
     }
 
-    if (this.bitmap != null) {
+    if (bitmap != null) {
       renderCallback.renderWaySymbol(renderContext, this.display, this.priority, this.bitmap, dyScale, this.alignCenter, this.repeat,
           this.repeatGap, this.repeatStart, this.rotate, way, symbolPaint);
     }

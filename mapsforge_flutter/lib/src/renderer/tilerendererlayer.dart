@@ -12,6 +12,8 @@ import 'package:mapsforge_flutter/src/model/observer.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:meta/meta.dart';
 
+///
+/// This class was originally meant to point one layer. We do not use it in flutter currently.
 class TileRendererLayer extends TileLayerImpl implements Observer {
   final GraphicFactory graphicFactory;
   final MapDataStore mapDataStore;
@@ -178,7 +180,7 @@ class TileRendererLayer extends TileLayerImpl implements Observer {
     if ( //this.hasJobQueue &&
         this.tileBasedLabelStore != null && this.tileBasedLabelStore.requiresTile(job.tile)) {
       //job.setRetrieveLabelsOnly();
-      this.jobQueue.add(job);
+      //this.jobQueue.add(job);
     }
   }
 

@@ -19,21 +19,25 @@ class NegativeMatcher implements AttributeMatcher {
       return true;
     }
 
-    for (int i = 0, n = tags.length; i < n; ++i) {
-      if (this.valueList.contains(tags.elementAt(i).value)) {
-        return true;
-      }
-    }
-    return false;
+    Tag tag = tags.firstWhere((element) => valueList.contains(element.value), orElse: () => null);
+    return tag != null;
+//    for (int i = 0, n = tags.length; i < n; ++i) {
+//      if (this.valueList.contains(tags.elementAt(i).value)) {
+//        return true;
+//      }
+//    }
+//    return false;
   }
 
   bool keyListDoesNotContainKeys(List<Tag> tags) {
-    for (int i = 0, n = tags.length; i < n; ++i) {
-      if (this.keyList.contains(tags.elementAt(i).key)) {
-        return false;
-      }
-    }
-    return true;
+    Tag tag = tags.firstWhere((element) => keyList.contains(element.key), orElse: () => null);
+    return tag == null;
+//    for (int i = 0, n = tags.length; i < n; ++i) {
+//      if (this.keyList.contains(tags.elementAt(i).key)) {
+//        return false;
+//      }
+//    }
+//    return true;
   }
 
   @override

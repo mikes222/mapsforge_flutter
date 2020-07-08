@@ -4,28 +4,17 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
+import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 
 abstract class JobRenderer {
-  FlutterTileBitmap _missingBitmap;
-
-  FlutterTileBitmap _noDataBitmap;
-
-  Future<TileBitmap> executeJob(RendererJob job);
+  Future<TileBitmap> executeJob(Job job);
 
   String getRenderKey();
 
   static final double margin = 5;
 
-  @override
-  TileBitmap getMissingBitmap(Tile tile) {
-    if (_missingBitmap != null) return _missingBitmap;
-    _createMissingBitmap(tile.tileSize);
-    return null;
-  }
-
-  void _createMissingBitmap(double tileSize) async {
+  Future<TileBitmap> createMissingBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -49,18 +38,10 @@ abstract class JobRenderer {
     ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
 //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
-
-    _missingBitmap = FlutterTileBitmap(img);
+    return FlutterTileBitmap(img);
   }
 
-  @override
-  Future<TileBitmap> getNoDataBitmap(Tile tile) async {
-    if (_noDataBitmap != null) return _noDataBitmap;
-    return _createNoDataBitmap(tile.tileSize);
-    return null;
-  }
-
-  Future<TileBitmap> _createNoDataBitmap(double tileSize) async {
+  Future<TileBitmap> createNoDataBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -85,17 +66,10 @@ abstract class JobRenderer {
 //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
 
-    _noDataBitmap = FlutterTileBitmap(img);
-    return _noDataBitmap;
+    return FlutterTileBitmap(img);
   }
 
-  @override
-  Future<TileBitmap> getErrorBitmap(Tile tile, dynamic error) async {
-    return _createErrorBitmap(tile.tileSize, error);
-    return null;
-  }
-
-  Future<TileBitmap> _createErrorBitmap(double tileSize, dynamic error) async {
+  Future<TileBitmap> createErrorBitmap(double tileSize, dynamic error) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();

@@ -1,5 +1,6 @@
 abstract class Bitmap {
 //void compress(OutputStream outputStream) ;
+  Bitmap();
 
   void decrementRefCount();
 

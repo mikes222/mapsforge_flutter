@@ -29,8 +29,8 @@ class RectMarker<T> extends BasicMarker<T> {
 
   final int strokeColor;
 
-  bool bitmapInvalid;
-  Bitmap shaderBitmap;
+  bool _bitmapInvalid;
+  Bitmap _bitmap;
   String src;
   SymbolCache symbolCache;
   final int width;
@@ -81,34 +81,34 @@ class RectMarker<T> extends BasicMarker<T> {
         );
 
   @override
-  void initResources(MarkerCallback markerCallback) {
-    super.initResources(markerCallback);
+  Future<void> initResources(GraphicFactory graphicFactory) async {
+    super.initResources(graphicFactory);
     if (fill == null && fillColor != null) {
-      this.fill = markerCallback.graphicFactory.createPaint();
+      this.fill = graphicFactory.createPaint();
       this.fill.setColorFromNumber(fillColor);
       this.fill.setStyle(Style.FILL);
       this.fill.setStrokeWidth(fillWidth);
       //this.stroke.setTextSize(fontSize);
     }
     if (stroke == null && strokeWidth > 0) {
-      this.stroke = markerCallback.graphicFactory.createPaint();
+      this.stroke = graphicFactory.createPaint();
       this.stroke.setColorFromNumber(strokeColor);
       this.stroke.setStyle(Style.STROKE);
       this.stroke.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
     }
-    if (bitmapInvalid == null && src != null && !src.isEmpty) {
+    if (_bitmapInvalid == null && src != null && !src.isEmpty) {
       try {
-        shaderBitmap = symbolCache.getBitmap(src, width.round(), height.round(), percent);
-        if (shaderBitmap != null) {
-          bitmapInvalid = false;
-          fill.setBitmapShader(shaderBitmap);
-          shaderBitmap.incrementRefCount();
+        this._bitmap = await symbolCache.getOrCreateBitmap(src, width, height, percent);
+        if (_bitmap != null) {
+          _bitmapInvalid = false;
+          fill.setBitmapShader(_bitmap);
+          _bitmap.incrementRefCount();
         }
       } catch (ioException, stacktrace) {
         print(ioException.toString());
         print(stacktrace);
-        bitmapInvalid = true;
+        _bitmapInvalid = true;
       }
     }
     if (markerCaption != null && markerCaption.latLong == null) {

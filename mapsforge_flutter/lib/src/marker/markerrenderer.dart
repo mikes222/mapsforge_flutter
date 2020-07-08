@@ -17,15 +17,24 @@ class MarkerRenderer {
 
   MarkerRenderer(this.graphicFactory, this.displayModel, this.dataStore);
 
+  Future<void> initResources(MapViewDimension mapViewDimension, MapViewPosition position) async {
+    List<BasicMarker> markers = dataStore.getMarkers(position.calculateBoundingBox(mapViewDimension.getDimension()), position.zoomLevel);
+    if (markers != null && markers.length > 0) {
+      for (BasicMarker marker in markers) {
+        marker.initResources(graphicFactory);
+      }
+    }
+  }
+
   void draw(FlutterCanvas flutterCanvas, MapViewDimension mapViewDimension, MapViewPosition position) {
     flutterCanvas.resetClip();
     flutterCanvas.setClip(0, 0, mapViewDimension.getDimension().width.round(), mapViewDimension.getDimension().height.round());
     MarkerContext context = MarkerContext(flutterCanvas, graphicFactory, position);
     List<BasicMarker> markers = dataStore.getMarkers(position.calculateBoundingBox(mapViewDimension.getDimension()), position.zoomLevel);
     if (markers != null && markers.length > 0) {
-      markers.forEach((marker) {
+      for (BasicMarker marker in markers) {
         marker.renderNode(context);
-      });
+      }
     }
 
     dataStore.resetRepaint();

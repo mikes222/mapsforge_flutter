@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/implementation/view/contextmenubuilder.dart';
 import 'package:mapsforge_flutter/src/implementation/view/nopositionview.dart';
-import 'package:mapsforge_flutter/src/layer/cache/bitmapcache.dart';
+import '../cache/tilebitmapcache.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:rxdart/rxdart.dart';
@@ -22,7 +22,7 @@ class MapModel {
   final JobRenderer renderer;
   final SymbolCache symbolCache;
   final List<MarkerDataStore> markerDataStores = List();
-  final BitmapCache bitmapCache;
+  final TileBitmapCache tileBitmapCache;
   NoPositionView noPositionView;
   MapViewPosition _mapViewPosition;
   ContextMenuBuilder contextMenuBuilder;
@@ -42,7 +42,7 @@ class MapModel {
     @required this.graphicsFactory,
     @required this.symbolCache,
     this.noPositionView,
-    this.bitmapCache,
+    this.tileBitmapCache,
     this.contextMenuBuilder,
   })  : assert(displayModel != null),
         assert(renderer != null),
@@ -61,7 +61,7 @@ class MapModel {
       datastore.dispose();
     });
     symbolCache.dispose();
-    bitmapCache.dispose();
+    tileBitmapCache.dispose();
   }
 
   Stream<MapViewPosition> get observePosition => _observePosition;

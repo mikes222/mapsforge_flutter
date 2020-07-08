@@ -212,8 +212,8 @@ class MapFile extends MapDataStore {
         super(language);
 
   Future<void> init() async {
+    _databaseIndexCache = new IndexCache(filename, INDEX_CACHE_SIZE);
     ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
-    _databaseIndexCache = new IndexCache(readBufferMaster, INDEX_CACHE_SIZE);
     this._fileSize = await readBufferMaster.length();
     await this._mapFileHeader.readHeader(readBufferMaster, this._fileSize);
     readBufferMaster.close();
@@ -680,6 +680,7 @@ class MapFile extends MapDataStore {
     assert(_fileSize != null);
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);
 
     MapReadResult mapFileReadResult = new MapReadResult();
 
@@ -749,7 +750,6 @@ class MapFile extends MapDataStore {
             await readBufferMaster.readFromFile(length: currentBlockSize, offset: subFileParameter.startAddress + currentBlockPointer);
 
         // calculate the top-left coordinates of the underlying tile
-        MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);
         double tileLatitude = mercatorProjectionImpl.tileYToLatitude((subFileParameter.boundaryTileTop + row));
         double tileLongitude = mercatorProjectionImpl.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
         LatLongUtils.validateLatitude(tileLatitude);
@@ -1031,7 +1031,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<MapReadResult> readLabelsSingle(Tile tile) async {
-    return readMapDataComplete(tile, tile, Selector.LABELS);
+    return _readMapDataComplete(tile, tile, Selector.LABELS);
   }
 
   /**
@@ -1045,7 +1045,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<MapReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
-    return readMapDataComplete(upperLeft, lowerRight, Selector.LABELS);
+    return _readMapDataComplete(upperLeft, lowerRight, Selector.LABELS);
   }
 
   /**
@@ -1056,7 +1056,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<MapReadResult> readMapDataSingle(Tile tile) async {
-    return readMapDataComplete(tile, tile, Selector.ALL);
+    return _readMapDataComplete(tile, tile, Selector.ALL);
   }
 
   /**
@@ -1070,12 +1070,11 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<MapReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
-    return readMapDataComplete(upperLeft, lowerRight, Selector.ALL);
+    return _readMapDataComplete(upperLeft, lowerRight, Selector.ALL);
   }
 
-  Future<MapReadResult> readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
+  Future<MapReadResult> _readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
     int timer = DateTime.now().millisecondsSinceEpoch;
-    ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
@@ -1092,13 +1091,16 @@ class MapFile extends MapDataStore {
 
     queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
     queryParameters.calculateBlocks(subFileParameter);
+    int diff = DateTime.now().millisecondsSinceEpoch - timer;
+    if (diff > 100) _log.info("  readMapDataComplete took $diff ms up to query subfileparams");
 
     // we enlarge the bounding box for the tile slightly in order to retain any data that
     // lies right on the border, some of this data needs to be drawn as the graphics will
     // overlap onto this tile.
+    ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
     MapReadResult result = await processBlocks(
         readBufferMaster, queryParameters, subFileParameter, Tile.getBoundingBoxStatic(upperLeft, lowerRight), selector);
-    int diff = DateTime.now().millisecondsSinceEpoch - timer;
+    diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100) _log.info("readMapDataComplete took $diff ms");
     readBufferMaster.close();
     return result;
@@ -1133,7 +1135,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<MapReadResult> readPoiDataSingle(Tile tile) async {
-    return readMapDataComplete(tile, tile, Selector.POIS);
+    return _readMapDataComplete(tile, tile, Selector.POIS);
   }
 
   /**
@@ -1147,7 +1149,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<MapReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
-    return readMapDataComplete(upperLeft, lowerRight, Selector.POIS);
+    return _readMapDataComplete(upperLeft, lowerRight, Selector.POIS);
   }
 
   List<List<int>> _readZoomTable(SubFileParameter subFileParameter, ReadBuffer readBuffer) {

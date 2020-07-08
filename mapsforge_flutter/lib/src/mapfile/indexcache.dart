@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:dcache/dcache.dart';
-import 'indexcacheentrykey.dart';
 
-import '../reader/subfileparameter.dart';
-import 'subfileparameterbuilder.dart';
 import '../datastore/deserializer.dart';
+import '../reader/subfileparameter.dart';
+import 'indexcacheentrykey.dart';
 import 'readbuffer.dart';
+import 'subfileparameterbuilder.dart';
 
 /// A cache for database index blocks with a fixed size and LRU policy.
 class IndexCache {
@@ -18,13 +18,12 @@ class IndexCache {
 
   final LruCache<IndexCacheEntryKey, List<int>> _map;
 
-  /// a RandomFileAccess to the underlying file
-  final ReadBufferMaster _readBuffer;
+  String filename;
 
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.
   /// @throws IllegalArgumentException if the capacity is negative.
-  IndexCache(this._readBuffer, int capacity) : _map = LruCache<IndexCacheEntryKey, List<int>>(storage: SimpleStorage(size: 100));
+  IndexCache(String this.filename, int capacity) : _map = LruCache<IndexCacheEntryKey, List<int>>(storage: SimpleStorage(size: 100));
 
   /**
    * Destroy the cache at the end of its lifetime.
@@ -63,7 +62,9 @@ class IndexCache {
       int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
       int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
 
-      indexBlock = await _readBuffer.readDirect(indexBlockPosition, indexBlockSize);
+      ReadBufferMaster _readBufferMaster = ReadBufferMaster(filename);
+      indexBlock = await _readBufferMaster.readDirect(indexBlockPosition, indexBlockSize);
+      _readBufferMaster.close();
 
       // put the index block in the map
       this._map[indexCacheEntryKey] = indexBlock;

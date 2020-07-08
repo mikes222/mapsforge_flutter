@@ -29,5 +29,7 @@ abstract class TileCache extends ObservableInterface {
    */
   void purge();
 
+  ///
+  /// Returns a tile from cache or creates a tile and stores it in cache
   Tile getTile(int x, int y, int zoomLevel, double tileSize);
 }

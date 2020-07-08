@@ -12,6 +12,7 @@ import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/textkey.dart';
@@ -27,11 +28,10 @@ import '../rendercontext.dart';
  * If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
  * center of which is at the point of the POI. The bitmap itself is never rendered.
  */
-class Caption extends RenderInstruction {
+class Caption extends RenderInstruction with BitmapMixin {
   static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
-  Bitmap bitmap;
   Display display;
   double dy = 0;
   final Map<int, double> dyScaled;
@@ -53,7 +53,8 @@ class Caption extends RenderInstruction {
         strokes = new Map(),
         dyScaled = new Map(),
         maxTextWidth = displayModel.getMaxTextWidth(),
-        super(graphicFactory, displayModel, symbolCache) {
+        super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);
@@ -101,7 +102,7 @@ class Caption extends RenderInstruction {
     // no-op
   }
 
-  Future<void> parse(XmlElement rootElement) async {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     MapFontFamily fontFamily = MapFontFamily.DEFAULT;
     MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
@@ -146,17 +147,15 @@ class Caption extends RenderInstruction {
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
 
     if (this.symbolId != null) {
-      RenderSymbol symbol = symbols[this.symbolId];
-      if (symbol != null) {
-        this.bitmap = await symbol.getBitmap();
-      } else {
+      renderSymbol = symbols[this.symbolId];
+      if (renderSymbol == null) {
         print("Symbol $symbolId not found");
       }
     }
 
     if (this.position == null) {
       // sensible defaults: below if symbolContainer is present, center if not
-      if (this.bitmap == null) {
+      if (this.renderSymbol == null) {
         this.position = Position.CENTER;
       } else {
         this.position = Position.BELOW;
@@ -184,6 +183,7 @@ class Caption extends RenderInstruction {
       default:
         throw new Exception("Position invalid");
     }
+    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {
@@ -222,7 +222,7 @@ class Caption extends RenderInstruction {
       verticalOffset = this.dy;
     }
 
-    if (this.bitmap != null) {
+    if (bitmap != null) {
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -258,7 +258,7 @@ class Caption extends RenderInstruction {
       verticalOffset = this.dy;
     }
 
-    if (this.bitmap != null) {
+    if (bitmap != null) {
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }

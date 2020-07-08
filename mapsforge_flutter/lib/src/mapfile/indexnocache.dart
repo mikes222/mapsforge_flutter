@@ -20,7 +20,7 @@ class IndexNoCache {
    */
   static final int SIZE_OF_INDEX_BLOCK = INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
-  final ReadBufferMaster readBufferMaster;
+  ReadBufferMaster readBufferMaster;
 
   /**
    * @param inputChannel the map file from which the index should be read and cached.
@@ -28,12 +28,16 @@ class IndexNoCache {
    * @throws IllegalArgumentException if the capacity is negative.
    */
   // todo LRUCache
-  IndexNoCache(this.readBufferMaster, int capacity);
+  IndexNoCache(String filename, int capacity) {
+    readBufferMaster = ReadBufferMaster(filename);
+  }
 
   /**
    * Destroy the cache at the end of its lifetime.
    */
-  void destroy() {}
+  void destroy() {
+    readBufferMaster.close();
+  }
 
   /**
    * Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be

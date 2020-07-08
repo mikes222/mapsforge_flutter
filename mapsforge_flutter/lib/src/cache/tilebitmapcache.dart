@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
-abstract class BitmapCache {
+abstract class TileBitmapCache {
   void dispose();
 
   TileBitmap getTileBitmap(Tile tile);

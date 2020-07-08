@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -8,6 +7,7 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -18,24 +18,25 @@ import '../rendercontext.dart';
 /**
  * Represents a polyline on the map.
  */
-class Line extends RenderInstruction {
+class Line extends RenderInstruction with BitmapMixin {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
-  bool bitmapCreated;
   double dy;
   Map<int, double> dyScaled;
   final int level;
   final String relativePathPrefix;
   Scale scale = Scale.STROKE;
-  Bitmap shaderBitmap;
-  String src;
   MapPaint stroke;
   List<double> strokeDasharray;
   Map<int, MapPaint> strokes;
   double strokeWidth;
 
   Line(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, String elementName, this.level, this.relativePathPrefix)
-      : super(graphicFactory, displayModel, symbolCache) {
+      : super(
+          graphicFactory,
+          displayModel,
+        ) {
+    this.symbolCache = symbolCache;
     strokeWidth = 1;
     this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.BLACK);
@@ -46,7 +47,6 @@ class Line extends RenderInstruction {
     strokes = new Map();
     dyScaled = new Map();
     dy = 0;
-    bitmapCreated = false;
   }
 
   @override
@@ -54,7 +54,7 @@ class Line extends RenderInstruction {
     // no.op
   }
 
-  Future<void> parse(XmlElement rootElement) async {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -93,14 +93,7 @@ class Line extends RenderInstruction {
         throw new Exception("element hinich");
       }
     });
-
-    try {
-      shaderBitmap = await createBitmap(relativePathPrefix, src);
-    } catch (ioException, stacktrace) {
-      print(ioException.toString());
-      //print(stacktrace);
-    }
-    bitmapCreated = true;
+    initPendings.add(this);
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
@@ -129,10 +122,10 @@ class Line extends RenderInstruction {
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
     MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
 
-    if (strokePaint != null && shaderBitmap != null) {
-      strokePaint.setBitmapShader(shaderBitmap);
+    if (strokePaint != null && bitmap != null) {
+      strokePaint.setBitmapShader(bitmap);
       strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
-      shaderBitmap.incrementRefCount();
+      //bitmap.incrementRefCount();
     }
 
     double dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];

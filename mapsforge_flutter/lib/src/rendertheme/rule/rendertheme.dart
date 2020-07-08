@@ -10,9 +10,7 @@ import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
 
-/**
- * A RenderTheme defines how ways and nodes are drawn.
- */
+/// A RenderTheme defines how ways and nodes are drawn.
 class RenderTheme {
   static final int MATCHING_CACHE_SIZE = 1024;
 
@@ -26,6 +24,7 @@ class RenderTheme {
   Map<MatchingCacheKey, List<RenderInstruction>> poiMatchingCache;
   final List<Rule> rulesList; // NOPMD we need specific interface
   List<Hillshading> hillShadings = new List(); // NOPMD specific interface for trimToSize
+  List<RenderInstruction> initPendings = List();
 
   final Map<int, double> strokeScales = new Map();
   final Map<int, double> textScales = new Map();
@@ -109,25 +108,27 @@ class RenderTheme {
    * @param renderContext
    * @param poi            the point of interest.
    */
-  void matchNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> matchNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) async {
     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, Closed.NO);
 
     List<RenderInstruction> matchingList = this.poiMatchingCache[matchingCacheKey];
-    if (matchingList != null) {
-      // cache hit
-      for (int i = 0, n = matchingList.length; i < n; ++i) {
-        matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
+    if (matchingList == null) {
+      // build cache
+      matchingList = new List<RenderInstruction>();
+
+      for (int i = 0, n = this.rulesList.length; i < n; ++i) {
+        this.rulesList.elementAt(i).matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
       }
-      return;
+      this.poiMatchingCache[matchingCacheKey] = matchingList;
     }
-
-    // cache miss
-    matchingList = new List<RenderInstruction>();
-
-    for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-      this.rulesList.elementAt(i).matchNode(renderCallback, renderContext, matchingList, poi);
+    // render from cache
+    for (int i = 0, n = matchingList.length; i < n; ++i) {
+      if (initPendings.contains(matchingList.elementAt(i))) {
+        await matchingList.elementAt(i).initResources();
+        initPendings.remove(matchingList.elementAt(i));
+      }
+      matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
     }
-    this.poiMatchingCache[matchingCacheKey] = matchingList;
   }
 
   /**
@@ -186,26 +187,27 @@ class RenderTheme {
     this.levels = levels;
   }
 
-  void _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) {
+  Future<void> _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) async {
     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, closed);
 
     List<RenderInstruction> matchingList = this.wayMatchingCache[matchingCacheKey];
-    if (matchingList != null) {
-      // cache hit
-      for (int i = 0, n = matchingList.length; i < n; ++i) {
-        matchingList.elementAt(i).renderWay(renderCallback, renderContext, way);
-      }
-      return;
+    if (matchingList == null) {
+      // build cache
+      matchingList = new List<RenderInstruction>();
+      this.rulesList.forEach((rule) {
+        rule.matchWay(renderCallback, way, way.getUpperLeft(), closed, matchingList, renderContext, initPendings);
+      });
+
+      this.wayMatchingCache[matchingCacheKey] = matchingList;
     }
-
-    // cache miss
-    matchingList = new List<RenderInstruction>();
-    this.rulesList.forEach((rule) {
-      //print("testing rule: " + rule.toString());
-      rule.matchWay(renderCallback, way, way.getUpperLeft(), closed, matchingList, renderContext);
-    });
-
-    this.wayMatchingCache[matchingCacheKey] = matchingList;
+    // render from cache
+    for (int i = 0, n = matchingList.length; i < n; ++i) {
+      if (initPendings.contains(matchingList.elementAt(i))) {
+        await matchingList.elementAt(i).initResources();
+        initPendings.remove(matchingList.elementAt(i));
+      }
+      matchingList.elementAt(i).renderWay(renderCallback, renderContext, way);
+    }
   }
 
   void traverseRules(RuleVisitor visitor) {

@@ -37,10 +37,10 @@ dependencies:
   #image: 2.1.13
 
   # BSD License
-  path_provider: 1.6.9
+  path_provider: 1.6.11
 
   # MIT License
-  provider: 4.1.2
+  provider: 4.2.0
 
   # BSD License
   http: "0.12.1"

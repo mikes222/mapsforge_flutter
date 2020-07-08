@@ -12,6 +12,8 @@ import 'mappaint.dart';
 import 'mappath.dart';
 import 'maprect.dart';
 
+///
+/// The abstract representation of a canvas. In flutter the canvas is shown in the widget
 abstract class MapCanvas {
   void destroy();
 

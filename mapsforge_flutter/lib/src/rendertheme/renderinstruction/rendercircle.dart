@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -15,7 +16,7 @@ import 'renderinstruction.dart';
 /**
  * Represents a round area on the map.
  */
-class RenderCircle extends RenderInstruction {
+class RenderCircle extends RenderInstruction with BitmapMixin {
   MapPaint fill;
   final Map<int, MapPaint> fills;
   final int level;
@@ -31,7 +32,8 @@ class RenderCircle extends RenderInstruction {
       : fills = new Map(),
         strokes = new Map(),
         renderRadiusScaled = new Map(),
-        super(graphicFactory, displayModel, symbolCache) {
+        super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);
@@ -46,7 +48,7 @@ class RenderCircle extends RenderInstruction {
     // no-op
   }
 
-  void parse(XmlElement rootElement) {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -76,6 +78,7 @@ class RenderCircle extends RenderInstruction {
     } else {
       this.renderRadius = this.radius;
     }
+    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {

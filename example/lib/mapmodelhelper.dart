@@ -46,7 +46,7 @@ class MapModelHelper {
     //JobRenderer jobRenderer = MapOnlineRenderer();
     //JobRenderer jobRenderer = DummyRenderer();
 
-    FileBitmapCache bitmapCache = FileBitmapCache(jobRenderer.getRenderKey());
+    FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
     Timer(Duration(milliseconds: 1000), () {
       // init of cache is async, so wait until init is finished an then purge the cache.
       //bitmapCache.purge();
@@ -57,7 +57,7 @@ class MapModelHelper {
       graphicsFactory: graphicFactory,
       renderer: jobRenderer,
       symbolCache: symbolCache,
-      bitmapCache: bitmapCache,
+      tileBitmapCache: bitmapCache,
       noPositionView: CustomNoPositionView(),
     );
 
@@ -101,7 +101,7 @@ class MapModelHelper {
     JobRenderer jobRenderer = MapOnlineRenderer();
     //JobRenderer jobRenderer = DummyRenderer();
 
-    FileBitmapCache bitmapCache = FileBitmapCache(jobRenderer.getRenderKey());
+    FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
 //    bitmapCache.purge();
 
     MapModel mapModel = MapModel(
@@ -109,7 +109,7 @@ class MapModelHelper {
       graphicsFactory: graphicFactory,
       renderer: jobRenderer,
       symbolCache: symbolCache,
-      bitmapCache: bitmapCache,
+      tileBitmapCache: bitmapCache,
       noPositionView: CustomNoPositionView(),
     );
 

@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -38,6 +39,7 @@ class RenderThemeBuilder {
   int version;
   final List<RuleBuilder> ruleBuilderStack = List();
   int level = 0;
+  List<RenderInstruction> initPendings = List();
 
   RenderThemeBuilder(this.graphicFactory, this.displayModel, this.symbolCache)
       : assert(graphicFactory != null),
@@ -60,10 +62,16 @@ class RenderThemeBuilder {
       renderTheme.addRule(rule);
     });
     renderTheme.setLevels(level);
+    renderTheme.initPendings = initPendings;
     return renderTheme;
   }
 
-  Future<void> parseXml(String content) async {
+  ///
+  /// Parses a given xml string and creates the renderinstruction-structure. The renderinstruction classes serves two purposes:
+  /// On the one hand to parse the xml and create the tree structure and on the other hand to render ways and pois
+  /// appropriately and draw the respective content.
+  ///
+  void parseXml(String content) {
     assert(content.length > 10);
     int time = DateTime.now().millisecondsSinceEpoch;
     XmlDocument document = parse(content);
@@ -80,7 +88,7 @@ class RenderThemeBuilder {
             XmlElement element = node;
             if (element.name.toString() != "rendertheme") throw Exception("Invalid root node ${element.name.toString()}");
             foundRendertheme = true;
-            await _parseRendertheme(element, time);
+            _parseRendertheme(element, initPendings);
             break;
           }
         case XmlNodeType.ATTRIBUTE:
@@ -104,9 +112,10 @@ class RenderThemeBuilder {
       }
     }
     assert(foundRendertheme);
+    print("Found ${initPendings.length} items for lazy initialization");
   }
 
-  Future<void> _parseRendertheme(XmlElement rootElement, int time) async {
+  void _parseRendertheme(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -153,7 +162,7 @@ class RenderThemeBuilder {
             foundElement = true;
             if (element.name.toString() == "rule") {
               RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, Map<String, RenderSymbol>(), level++);
-              await ruleBuilder.parse(element);
+              ruleBuilder.parse(element, initPendings);
               level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;

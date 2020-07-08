@@ -16,8 +16,8 @@ export 'src/implementation/view/nopositionview.dart';
 export 'src/graphics/graphicfactory.dart';
 export 'src/cache/symbolcache.dart';
 
-export 'src/layer/cache/bitmapcache.dart';
-export 'src/layer/cache/filebitmapcache.dart';
-export 'src/layer/cache/memorybitmapcache.dart';
+export 'src/cache/tilebitmapcache.dart';
+export 'src/cache/filetilebitmapcache.dart';
+export 'src/cache/memorytilebitmapcache.dart';
 
 export 'src/exceptions/filenotfoundexception.dart';

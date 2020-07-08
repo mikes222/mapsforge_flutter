@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
   void _initLogging() {
     // Print output to console.
     Logger.root.onRecord.listen((LogRecord r) {
-      print('aaa${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+      print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
     });
 
     // Root logger level.
@@ -102,7 +102,7 @@ class MyStatelessWidget extends StatelessWidget {
             onPressed: () {
               MapModelHelper.prepareOfflineMapModel().then((mapModel) {
                 Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.bitmapCache.purge();
+                  await mapModel.tileBitmapCache.purge();
                   print("cache purged");
 //              Scaffold.of(context).showSnackBar(new SnackBar(
 //                content: new Text("cache purged"),
@@ -116,7 +116,7 @@ class MyStatelessWidget extends StatelessWidget {
             onPressed: () {
               MapModelHelper.prepareOnlineMapModel().then((mapModel) {
                 Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.bitmapCache.purge();
+                  await mapModel.tileBitmapCache.purge();
                   print("cache purged");
 //              Scaffold.of(context).showSnackBar(new SnackBar(
 //                content: new Text("cache purged"),

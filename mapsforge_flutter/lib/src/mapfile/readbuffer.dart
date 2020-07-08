@@ -327,6 +327,7 @@ class ReadBuffer {
   ///
   /// @param bufferPosition the buffer position.
   void setBufferPosition(int bufferPosition) {
+    assert(bufferPosition >= 0 && bufferPosition < _bufferData.length);
     this.bufferPosition = bufferPosition;
   }
 

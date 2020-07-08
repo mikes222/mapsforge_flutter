@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
@@ -46,19 +48,22 @@ class BasicMarker<T> {
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
         assert(imageColor != null);
 
-  void initResources(MarkerCallback markerCallback) {
-    if (markerCaption != null) markerCaption.initResources(markerCallback);
+  @mustCallSuper
+  Future<void> initResources(GraphicFactory graphicFactory) async {
+    if (markerCaption != null) markerCaption.initResources(graphicFactory);
   }
 
   void dispose() {}
 
+  ///
+  /// called by markerPointer -> markerRenderer
+  ///
   void renderNode(MarkerCallback markerCallback) {
     if (Display.NEVER == this.display) {
       return;
     }
     //if (latLong?.latitude == null || latLong?.longitude == null) return;
 
-    initResources(markerCallback);
     renderBitmap(markerCallback);
     if (markerCaption != null) markerCaption.renderCaption(markerCallback);
   }
@@ -114,9 +119,9 @@ class MarkerCaption {
         assert(strokeColor != null),
         assert(minZoom != null && minZoom >= 0);
 
-  void initResources(MarkerCallback markerCallback) {
+  void initResources(GraphicFactory graphicFactory) {
     if (stroke == null && strokeWidth > 0) {
-      this.stroke = markerCallback.graphicFactory.createPaint();
+      this.stroke = graphicFactory.createPaint();
       this.stroke.setColorFromNumber(strokeColor);
       this.stroke.setStyle(Style.STROKE);
       this.stroke.setStrokeWidth(strokeWidth);

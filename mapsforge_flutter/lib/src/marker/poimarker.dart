@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
@@ -57,23 +58,26 @@ class PoiMarker<T> extends BasicMarker<T> {
   @override
   void dispose() {
     super.dispose();
-    if (this._bitmap != null) {}
+    if (this._bitmap != null) {
+      //_bitmap.decrementRefCount();
+      _bitmap = null;
+    }
   }
 
   @override
-  void initResources(MarkerCallback markerCallback) {
-    super.initResources(markerCallback);
+  Future<void> initResources(GraphicFactory graphicFactory) async {
+    super.initResources(graphicFactory);
     if (markerCaption != null && markerCaption.latLong == null) {
       markerCaption.latLong = latLong;
     }
     if (imagePaint == null) {
-      imagePaint = markerCallback.graphicFactory.createPaint();
+      imagePaint = graphicFactory.createPaint();
       imagePaint.setColorFromNumber(imageColor);
     }
 
     if (this._bitmap == null && !_bitmapInvalid && _src != null && symbolCache != null) {
       try {
-        this._bitmap = symbolCache.getBitmap(_src, width, height, percent);
+        this._bitmap = await symbolCache.getOrCreateBitmap(_src, width, height, percent);
         if (_bitmap != null) {
           imageOffsetX = -_bitmap.getWidth() / 2;
           imageOffsetY = -_bitmap.getHeight() / 2;
@@ -99,7 +103,7 @@ class PoiMarker<T> extends BasicMarker<T> {
     }
   }
 
-  void set src(String src) {
+  set src(String src) {
     _bitmap = null;
     _bitmapInvalid = false;
     _src = src;

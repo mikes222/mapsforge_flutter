@@ -12,5 +12,5 @@ export 'src/renderer/dummyrenderer.dart';
 export 'src/layer/job/jobrenderer.dart';
 export 'src/renderer/maponlinerenderer.dart';
 
-export 'src/layer/cache/MemoryTileCache.dart';
+export 'src/cache/memorytilecache.dart';
 export 'src/projection/mercatorprojectionimpl.dart';

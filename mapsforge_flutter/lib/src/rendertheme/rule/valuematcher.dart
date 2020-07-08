@@ -22,12 +22,14 @@ class ValueMatcher implements AttributeMatcher {
 
   @override
   bool matchesTagList(List<Tag> tags) {
-    for (int i = 0, n = tags.length; i < n; ++i) {
-      if (this.values.contains(tags.elementAt(i).value)) {
-        return true;
-      }
-    }
-    return false;
+    Tag tag = tags.firstWhere((element) => values.contains(element.value), orElse: () => null);
+    return tag != null;
+//    for (int i = 0, n = tags.length; i < n; ++i) {
+//      if (this.values.contains(tags.elementAt(i).value)) {
+//        return true;
+//      }
+//    }
+//    return false;
   }
 
   @override

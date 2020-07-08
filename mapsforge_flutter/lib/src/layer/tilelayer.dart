@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 abstract class TileLayer {
   final DisplayModel displayModel;
   bool _visible = true;
-  bool _needsRepaint = false;
+  bool needsRepaint = false;
 
   TileLayer(this.displayModel) : assert(displayModel != null);
 
@@ -145,9 +145,4 @@ abstract class TileLayer {
 //    onRemove();
 //  }
 
-  void set needsRepaint(bool needsRepaint) {
-    _needsRepaint = needsRepaint;
-  }
-
-  bool get needsRepaint => _needsRepaint;
 }

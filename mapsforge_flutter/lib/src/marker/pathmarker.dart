@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
@@ -43,10 +44,10 @@ class PathMarker<T> extends BasicMarker<T> {
         );
 
   @override
-  void initResources(MarkerCallback markerCallback) {
-    super.initResources(markerCallback);
+  Future<void> initResources(GraphicFactory graphicFactory) async {
+    super.initResources(graphicFactory);
     if (stroke == null && strokeWidth > 0) {
-      this.stroke = markerCallback.graphicFactory.createPaint();
+      this.stroke = graphicFactory.createPaint();
       this.stroke.setColorFromNumber(strokeColor);
       this.stroke.setStyle(Style.STROKE);
       this.stroke.setStrokeWidth(strokeWidth);

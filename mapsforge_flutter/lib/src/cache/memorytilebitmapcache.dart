@@ -2,9 +2,9 @@ import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
-import 'bitmapcache.dart';
+import 'tilebitmapcache.dart';
 
-class MemoryBitmapCache extends BitmapCache {
+class MemoryTileBitmapCache extends TileBitmapCache {
   Cache _bitmaps = new SimpleCache<Tile, TileBitmap>(
       storage: new SimpleStorage<Tile, TileBitmap>(size: 100),
       onEvict: (key, item) {

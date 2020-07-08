@@ -1,10 +1,10 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -15,20 +15,16 @@ import 'renderinstruction.dart';
 /**
  * Represents a closed polygon on the map.
  */
-class Area extends RenderInstruction {
+class Area extends RenderInstruction with BitmapMixin {
   MapPaint fill;
   final int level;
-  final String relativePathPrefix;
   Scale scale = Scale.STROKE;
-  bool bitmapInvalid;
-  Bitmap shaderBitmap;
-  String src;
   MapPaint stroke;
   Map<int, MapPaint> strokes;
   double strokeWidth;
 
-  Area(graphicFactory, displayModel, symbolCache, String elementName, this.level, this.relativePathPrefix)
-      : super(graphicFactory, displayModel, symbolCache) {
+  Area(graphicFactory, displayModel, symbolCache, String elementName, this.level) : super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);
@@ -40,7 +36,6 @@ class Area extends RenderInstruction {
     this.stroke.setStrokeCap(Cap.ROUND);
 
     this.strokes = new Map();
-    bitmapInvalid = false;
     strokeWidth = 1;
   }
 
@@ -49,7 +44,7 @@ class Area extends RenderInstruction {
     // no-op
   }
 
-  Future<void> parse(XmlElement rootElement) async {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -78,14 +73,7 @@ class Area extends RenderInstruction {
         throw Exception(name + "=" + value);
       }
     });
-
-    try {
-      shaderBitmap = await createBitmap(relativePathPrefix, src);
-    } catch (ioException, stacktrace) {
-      print(ioException.toString());
-      //print(stacktrace);
-      bitmapInvalid = true;
-    }
+    initPendings.add(this);
   }
 
   MapPaint getFillPaint() {
@@ -111,9 +99,9 @@ class Area extends RenderInstruction {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
     MapPaint fillPaint = getFillPaint();
-    if (fillPaint != null && shaderBitmap != null) {
-      fillPaint.setBitmapShader(shaderBitmap);
-      shaderBitmap.incrementRefCount();
+    if (fillPaint != null && bitmap != null) {
+      fillPaint.setBitmapShader(bitmap);
+      bitmap.incrementRefCount();
     }
 
     fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());

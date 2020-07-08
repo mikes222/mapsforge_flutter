@@ -3,11 +3,14 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 
+///
+/// A cache for symbols (small bitmaps)
 class SymbolCache {
   static final String PREFIX_JAR = "jar:";
 
@@ -25,19 +28,6 @@ class SymbolCache {
 
   SymbolCache(this.graphicFactory, this.displayModel);
 
-  ResourceBitmap getBitmap(String src, int width, int height, int percent) {
-    String key = "$src-$width-$height-$percent";
-    ResourceBitmap result = cache[key];
-    if (result != null) return result;
-    _createBitmap(graphicFactory, displayModel, null, src, width, height, percent).then((result) {
-      if (result != null && cache[key] == null) {
-        result.incrementRefCount();
-        cache[key] = result;
-      }
-    });
-    return result;
-  }
-
   void dispose() {
     cache.forEach((key, bitmap) {
       bitmap.decrementRefCount();
@@ -46,12 +36,17 @@ class SymbolCache {
   }
 
   Future<ResourceBitmap> getOrCreateBitmap(String src, int width, int height, int percent) async {
-    ResourceBitmap result = cache["$src-$width-$height-$percent"];
+    if (src == null || src.length == 0) {
+// no image source defined
+      return null;
+    }
+    String key = "$src-$width-$height-$percent";
+    ResourceBitmap result = cache[key];
     if (result != null) return result;
     result = await _createBitmap(graphicFactory, displayModel, null, src, width, height, percent);
     if (result != null) {
       result.incrementRefCount();
-      cache["$src-$width-$height-$percent"] = result;
+      cache[key] = result;
     }
     return result;
   }

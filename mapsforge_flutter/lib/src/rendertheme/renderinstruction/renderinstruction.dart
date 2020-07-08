@@ -1,16 +1,13 @@
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../datastore/pointofinterest.dart';
-import '../../graphics/bitmap.dart';
 import '../../graphics/graphicfactory.dart';
 import '../../model/displaymodel.dart';
 import '../../renderer/polylinecontainer.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
 
-/**
- * A RenderInstruction is a basic graphical primitive to draw a map.
- */
+/// A RenderInstruction is a basic graphical primitive to draw a map.
 abstract class RenderInstruction {
   static final String ALIGN_CENTER = "align-center";
   static final String ALL = "all";
@@ -49,26 +46,14 @@ abstract class RenderInstruction {
   String category;
   final DisplayModel displayModel;
   final GraphicFactory graphicFactory;
-  final SymbolCache symbolCache;
 
-  double height = 0;
-  int percent = 100;
-  double width = 0;
-
-  RenderInstruction(this.graphicFactory, this.displayModel, this.symbolCache)
+  RenderInstruction(this.graphicFactory, this.displayModel)
       : assert(graphicFactory != null),
-        assert(displayModel != null),
-        assert(symbolCache != null);
-
-  Future<Bitmap> createBitmap(String relativePathPrefix, String src) async {
-    if (null == src || src.isEmpty) {
-      return null;
-    }
-
-    return symbolCache.getOrCreateBitmap(src, width.round(), height.round(), percent);
-  }
+        assert(displayModel != null);
 
   void destroy();
+
+  Future<void> initResources();
 
   String getCategory() {
     return this.category;

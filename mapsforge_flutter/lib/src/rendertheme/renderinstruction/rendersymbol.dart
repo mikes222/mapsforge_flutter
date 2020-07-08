@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -13,31 +14,24 @@ import '../rendercallback.dart';
 import '../rendercontext.dart';
 
 /// Represents an icon on the map.
-class RenderSymbol extends RenderInstruction {
-  Bitmap bitmap;
-  bool bitmapInvalid = false;
-  Future<Bitmap> _future;
+class RenderSymbol extends RenderInstruction with BitmapMixin {
   Display display;
   String id;
   int priority = 0;
   final String relativePathPrefix;
-  String src;
   MapPaint symbolPaint;
 
   RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
-      : super(graphicFactory, displayModel, symbolCache) {
+      : super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.display = Display.IFSPACE;
     symbolPaint = graphicFactory.createPaint();
   }
 
   @override
-  void destroy() {
-    if (this.bitmap != null) {
-      this.bitmap.decrementRefCount();
-    }
-  }
+  void destroy() {}
 
-  Future<void> parse(XmlElement rootElement) async {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -64,19 +58,7 @@ class RenderSymbol extends RenderInstruction {
         throw Exception("Symbol probs");
       }
     });
-    if (this.bitmap == null && !bitmapInvalid) {
-      _future = createBitmap(relativePathPrefix, src);
-      _future.then((value) {
-        this.bitmap = value;
-        this.bitmap.incrementRefCount();
-        _future = null;
-      }).catchError((ioException) {
-        print(ioException.toString());
-        //print(stacktrace);
-        this.bitmapInvalid = true;
-        _future = null;
-      });
-    }
+    initPendings.add(this);
   }
 
   String getId() {
@@ -91,8 +73,6 @@ class RenderSymbol extends RenderInstruction {
 
     if (bitmap != null) {
       renderCallback.renderPointOfInterestSymbol(renderContext, this.display, this.priority, this.bitmap, poi, symbolPaint);
-    } else if (_future != null) {
-      print("Bitmap not yet loaded");
     }
   }
 
@@ -104,8 +84,6 @@ class RenderSymbol extends RenderInstruction {
 
     if (bitmap != null) {
       renderCallback.renderAreaSymbol(renderContext, this.display, this.priority, this.bitmap, way, symbolPaint);
-    } else if (_future != null) {
-      print("Bitmap not yet loaded");
     }
   }
 
@@ -120,7 +98,6 @@ class RenderSymbol extends RenderInstruction {
   }
 
   Future<Bitmap> getBitmap() async {
-    if (bitmap != null) return Future.value(bitmap);
-    return _future;
+    return getOrCreateBitmap(relativePathPrefix, src);
   }
 }

@@ -1,18 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/renderer/rendererjob.dart';
 
 import '../../core.dart';
 import '../../maps.dart';
-import 'job/job.dart';
 import 'job/jobqueue.dart';
 
-class TilePainter extends ChangeNotifier implements CustomPainter {
-  final Tile tile;
-
+///
+/// Originally used by mapsforge to paint one tile. This is not suitable in flutter so this class is not used
+abstract class TilePainter extends ChangeNotifier implements CustomPainter {
   final JobQueue jobQueue;
 
   final JobRenderer jobRenderer;
@@ -22,12 +17,10 @@ class TilePainter extends ChangeNotifier implements CustomPainter {
   bool _needsRepaint = true;
 
   TilePainter({
-    this.tile,
     this.jobQueue,
     this.jobRenderer,
     @required GraphicFactory graphicFactory,
-  })  : assert(tile != null),
-        assert(jobQueue != null),
+  })  : assert(jobQueue != null),
         assert(jobRenderer != null),
         _paint = graphicFactory.createPaint();
 
@@ -37,23 +30,7 @@ class TilePainter extends ChangeNotifier implements CustomPainter {
   }
 
   @override
-  void paint(Canvas canvas, Size size) {
-    Job job = jobQueue.createJob(tile);
-    List<RendererJob> jobs = List();
-    jobs.add(job);
-    this.jobQueue.addJobs(jobs);
-
-    TileBitmap bitmap = jobRenderer.getMissingBitmap(tile);
-    if (bitmap != null) {
-      FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
-      flutterCanvas.drawBitmap(
-        bitmap: bitmap,
-        left: 0,
-        top: 0,
-        paint: _paint,
-      ); //, (point.x), (point.y), this.displayModel.getFilter());
-    }
-  }
+  void paint(Canvas canvas, Size size);
 
   @override
   get semanticsBuilder => null;

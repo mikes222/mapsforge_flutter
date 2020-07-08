@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
@@ -42,14 +43,17 @@ class _FlutterMapState extends State<FlutterMapView> {
 
   GlobalKey _keyView = GlobalKey();
 
+  JobQueue _jobQueue;
+
   @override
   void initState() {
     super.initState();
+    _jobQueue = JobQueue(widget.mapModel.displayModel, widget.mapModel.renderer, widget.mapModel.tileBitmapCache);
     _tileLayer = TileLayerImpl(
       displayModel: widget.mapModel.displayModel,
       jobRenderer: widget.mapModel.renderer,
-      bitmapCache: widget.mapModel.bitmapCache,
       graphicFactory: widget.mapModel.graphicsFactory,
+      jobQueue: _jobQueue,
     );
     widget.mapModel.markerDataStores.forEach((MarkerDataStore dataStore) {
       MarkerRenderer markerRenderer = MarkerRenderer(widget.mapModel.graphicsFactory, widget.mapModel.displayModel, dataStore);
@@ -92,6 +96,7 @@ class _FlutterMapState extends State<FlutterMapView> {
 
     _widgets = List();
     if (widget.mapModel.displayModel.backgroundColor != Colors.transparent.value) {
+      // draw the background first
       _widgets.add(
         CustomPaint(
           foregroundPainter: BackgroundPainter(
@@ -101,13 +106,12 @@ class _FlutterMapState extends State<FlutterMapView> {
       );
     }
 
+    // then draw the map
     _widgets.add(
       StreamBuilder<Job>(
-        stream: _tileLayer.observeJob,
+        stream: _jobQueue.observeJob,
         builder: (BuildContext context, AsyncSnapshot<Job> snapshot) {
-          if (snapshot.hasData) {
-            _tileLayer.jobResult(snapshot.data);
-          }
+          //_log.info("Streambuilder called with ${snapshot.data}");
           return CustomPaint(
             foregroundPainter: TileLayerPainter(widget.mapModel.mapViewDimension, _tileLayer, position),
             child: Container(),
@@ -116,6 +120,7 @@ class _FlutterMapState extends State<FlutterMapView> {
       ),
     );
 
+    // now draw all markers
     _widgets.addAll(_markerRenderer
         .map(
           (MarkerRenderer markerRenderer) => ChangeNotifierProvider<MarkerDataStore>.value(

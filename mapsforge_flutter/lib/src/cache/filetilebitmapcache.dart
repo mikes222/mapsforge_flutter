@@ -8,13 +8,13 @@ import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 
-import 'bitmapcache.dart';
-import 'memorybitmapcache.dart';
+import 'tilebitmapcache.dart';
+import 'memorytilebitmapcache.dart';
 
-class FileBitmapCache extends BitmapCache {
+class FileTileBitmapCache extends TileBitmapCache {
   static final _log = new Logger('FileBitmapCache');
 
-  final MemoryBitmapCache _memoryBitmapCache;
+  final MemoryTileBitmapCache _memoryBitmapCache;
 
   String renderkey;
 
@@ -22,7 +22,7 @@ class FileBitmapCache extends BitmapCache {
 
   String dir;
 
-  FileBitmapCache(this.renderkey) : _memoryBitmapCache = MemoryBitmapCache() {
+  FileTileBitmapCache(this.renderkey) : _memoryBitmapCache = MemoryTileBitmapCache() {
     _init();
   }
 

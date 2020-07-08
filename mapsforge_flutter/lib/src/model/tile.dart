@@ -341,6 +341,6 @@ class Tile {
 
   @override
   String toString() {
-    return 'Tile{tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, boundingBox: $boundingBox, leftUpperPoint: $leftUpperPoint}';
+    return 'Tile{tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel}';
   }
 }

@@ -1,8 +1,13 @@
+import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
+///
+/// A job is a job to produce or retrieve a bitmap for a tile
+///
 class Job {
   final bool hasAlpha;
+  final double textScale;
   final Tile tile;
 
   // will be set immediately before rendering begins in order to prevent rendering the same tile multiple times
@@ -11,9 +16,25 @@ class Job {
   /// The resulting bitmap after this job has been processed.
   TileBitmap _tileBitmap;
 
-  Job(this.tile, this.hasAlpha)
+  static final Cache jobs = new SimpleCache<Tile, Job>(
+      storage: new SimpleStorage<Tile, Job>(size: 1000),
+      onEvict: (key, Job item) {
+        item.getAndRemovetileBitmap();
+      });
+
+  Job._(this.tile, this.hasAlpha, this.textScale)
       : assert(tile != null),
         assert(hasAlpha != null);
+
+  factory Job(Tile tile, bool alpha, double scaleFactor) {
+    Job job = jobs[tile];
+    if (job != null) {
+      return job;
+    }
+    job = Job._(tile, alpha, scaleFactor);
+    jobs[tile] = job;
+    return job;
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -42,6 +63,10 @@ class Job {
     TileBitmap result = _tileBitmap;
     _tileBitmap = null;
     return result;
+  }
+
+  TileBitmap getTileBitmap() {
+    return _tileBitmap;
   }
 
   bool hasTileBitmap() {

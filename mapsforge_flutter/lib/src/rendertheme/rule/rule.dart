@@ -65,28 +65,25 @@ abstract class Rule {
   bool matchesWay(List<Tag> tags, int zoomLevel, Closed closed);
 
   void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction> matchingList,
-      PointOfInterest pointOfInterest) {
+      PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
     if (matchesNode(pointOfInterest.tags, renderContext.job.tile.zoomLevel)) {
       for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-        this.renderInstructions.elementAt(i).renderNode(renderCallback, renderContext, pointOfInterest);
         matchingList.add(this.renderInstructions.elementAt(i));
       }
       for (int i = 0, n = this.subRules.length; i < n; ++i) {
-        this.subRules.elementAt(i).matchNode(renderCallback, renderContext, matchingList, pointOfInterest);
+        this.subRules.elementAt(i).matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
       }
     }
   }
 
   void matchWay(RenderCallback renderCallback, PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction> matchingList,
-      final RenderContext renderContext) {
-    //print("Hello, this is a testing rule for ${way.toString()}");
+      final RenderContext renderContext, List<RenderInstruction> initPendings) {
     if (matchesWay(way.getTags(), tile.zoomLevel, closed)) {
       for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-        this.renderInstructions.elementAt(i).renderWay(renderCallback, renderContext, way);
         matchingList.add(this.renderInstructions.elementAt(i));
       }
       for (int i = 0, n = this.subRules.length; i < n; ++i) {
-        this.subRules.elementAt(i).matchWay(renderCallback, way, tile, closed, matchingList, renderContext);
+        this.subRules.elementAt(i).matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);
       }
     }
   }

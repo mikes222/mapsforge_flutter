@@ -2,13 +2,14 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/align.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -20,7 +21,7 @@ import 'textkey.dart';
 /**
  * Represents a text along a polyline on the map.
  */
-class PathText extends RenderInstruction {
+class PathText extends RenderInstruction with BitmapMixin {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
 
@@ -44,7 +45,8 @@ class PathText extends RenderInstruction {
       : fills = new Map(),
         strokes = new Map(),
         dyScaled = new Map(),
-        super(graphicFactory, displayModel, symbolCache) {
+        super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);
@@ -65,7 +67,7 @@ class PathText extends RenderInstruction {
     // no-op
   }
 
-  void parse(XmlElement rootElement) {
+  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
 
@@ -117,6 +119,8 @@ class PathText extends RenderInstruction {
     this.stroke.setTypeface(fontFamily, fontStyle);
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
+
+    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {
