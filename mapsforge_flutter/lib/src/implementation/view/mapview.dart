@@ -109,7 +109,7 @@ class _FlutterMapState extends State<FlutterMapView> {
     // then draw the map
     _widgets.add(
       StreamBuilder<Job>(
-        stream: _jobQueue.observeJob,
+        stream: _jobQueue.observeJobResult,
         builder: (BuildContext context, AsyncSnapshot<Job> snapshot) {
           //_log.info("Streambuilder called with ${snapshot.data}");
           return CustomPaint(

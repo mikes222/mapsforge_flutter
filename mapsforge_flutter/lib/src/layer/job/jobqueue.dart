@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
@@ -22,8 +23,8 @@ class JobQueue {
   final DisplayModel displayModel;
   final JobRenderer jobRenderer;
 
-  Subject<Job> _injectJob = PublishSubject();
-  Stream<Job> _observeJob;
+  Subject<Job> _injectJobResult = PublishSubject();
+  ListQueue<Job> _listQueue = ListQueue();
 
   JobSet _currentJobSet;
 
@@ -45,8 +46,7 @@ class JobQueue {
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache)
       : assert(displayModel != null),
         assert(jobRenderer != null) {
-    _observeJob = _injectJob.stream;
-    _startIsolateJob();
+    //_startIsolateJob();
     for (int i = 0; i < _lock.length; ++i) {
       _lock[i] = Lock();
     }
@@ -64,7 +64,7 @@ class JobQueue {
   ///
   /// Called whenever a new bitmap is created
   ///
-  Stream<Job> get observeJob => _observeJob;
+  Stream<Job> get observeJobResult => _injectJobResult.stream;
 
   TileBitmap getMissingBitmap(double tileSize) {
     if (_missingBitmap != null) return _missingBitmap;
@@ -78,33 +78,54 @@ class JobQueue {
   /// Let the queue process this jobset
   void processJobset(JobSet jobSet) {
     _currentJobSet = jobSet;
+    // remove all jobs from the queue which are not needed anymore because we want to show another view hence other tiles
+    _listQueue.removeWhere((element) => !jobSet.jobs.contains(element));
+    // now add all new jobs to queue
+    _currentJobSet.jobs.where((element) => !_listQueue.contains(element)).forEach((element) {
+      _listQueue.add(element);
+    });
     _startNextJob();
   }
 
   void _startNextJob() {
-    if (_currentJobSet == null) return;
-    Job nextJob = _currentJobSet.jobs.firstWhere((element) => !element.inWork && element.getTileBitmap() == null, orElse: () => null);
-    if (nextJob == null) return;
-    _startJob(nextJob);
-  }
-
-  void _startJob(Job item) async {
+    //print("ListQueue has ${_listQueue.length} elements");
+    if (_listQueue.isEmpty) return;
+    // let the job in the queue until it is finished, so we prevent adding the job to the queue again
     _lock[_roundRobin++ % _lock.length].synchronized(() async {
-//      _donow3(item);
-//      _donow(item);
-      await _donow2(item);
+      // recheck, it may have changed in the meantime
+      if (_listQueue.isEmpty) return;
+      Job nextJob = _listQueue.first;
+      //print("taken ${nextJob?.toString()} from queue");
+//     await _donow3(item);
+//     await _donow(item);
+      await _donow2(nextJob);
+      _listQueue.remove(nextJob);
     });
   }
 
-  void _donow(Job job) {
+  Future<void> _donow(Job job) async {
+    TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
+    if (tileBitmap != null) {
+      job.tileBitmap = tileBitmap;
+      _injectJobResult.add(job);
+      _startNextJob();
+      return;
+    }
     _sendPort.send(IsolateParam(job, jobRenderer));
   }
 
   Future<void> _donow2(Job job) async {
+    TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
+    if (tileBitmap != null) {
+      job.tileBitmap = tileBitmap;
+      _injectJobResult.add(job);
+      _startNextJob();
+      return;
+    }
     Job result = await renderDirect(IsolateParam(job, jobRenderer));
     if (result.hasTileBitmap()) {
       tileBitmapCache.addTileBitmap(job.tile, result.getTileBitmap());
-      _injectJob.add(result);
+      _injectJobResult.add(result);
       // _log.info("Job executed with bitmap");
     } else {
       // _log.warning("Job executed without bitmap");
@@ -113,10 +134,17 @@ class JobQueue {
   }
 
   void _donow3(Job job) async {
+    TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
+    if (tileBitmap != null) {
+      job.tileBitmap = tileBitmap;
+      _injectJobResult.add(job);
+      _startNextJob();
+      return;
+    }
     Job result = await compute(renderDirect, IsolateParam(job, jobRenderer));
     if (result.hasTileBitmap()) {
       tileBitmapCache.addTileBitmap(job.tile, result.getTileBitmap());
-      _injectJob.add(result);
+      _injectJobResult.add(result);
       // _log.info("Job executed with bitmap");
     } else {
       // _log.warning("Job executed without bitmap");
@@ -141,7 +169,7 @@ class JobQueue {
         Job job = data;
         if (job.hasTileBitmap()) {
           tileBitmapCache.addTileBitmap(job.tile, job.getTileBitmap());
-          _injectJob.add(job);
+          _injectJobResult.add(job);
           // _log.info("Job executed with bitmap");
         } else {
           // _log.warning("Job executed without bitmap");
@@ -195,12 +223,12 @@ class IsolateParam {
 Future<Job> renderDirect(IsolateParam isolateParam) async {
   // _lock[++_roundRobin % _lock.length].synchronized(() async {
   Job job = isolateParam.job;
-  if (job.hasTileBitmap()) {
-    return job;
-  }
-  if (job.inWork) {
-    return null;
-  }
+//  if (job.hasTileBitmap()) {
+//    return job;
+//  }
+//  if (job.inWork) {
+//    return null;
+//  }
   //_log.info("Processing tile ${job.tile.toString()}");
 //  TileBitmap tileBitmap = await isolateParam.tileBitmapCache.getTileBitmapAsync(job.tile);
 //  if (tileBitmap != null) {
@@ -208,7 +236,7 @@ Future<Job> renderDirect(IsolateParam isolateParam) async {
 //    return job;
 //  }
   int time = DateTime.now().millisecondsSinceEpoch;
-  job.inWork = true;
+//  job.inWork = true;
   try {
     TileBitmap tileBitmap = await isolateParam.jobRenderer.executeJob(job);
     if (tileBitmap != null) {
@@ -225,7 +253,7 @@ Future<Job> renderDirect(IsolateParam isolateParam) async {
       //bmp.incrementRefCount();
       job.tileBitmap = bmp;
     }
-    job.inWork = false;
+//    job.inWork = false;
     return job;
   } catch (error, stackTrace) {
     print(error.toString());
@@ -233,7 +261,7 @@ Future<Job> renderDirect(IsolateParam isolateParam) async {
     TileBitmap bmp = await isolateParam.jobRenderer.createErrorBitmap(job.tile.tileSize, error);
     bmp.incrementRefCount();
     job.tileBitmap = bmp;
-    job.inWork = false;
+//    job.inWork = false;
     return job;
   }
 }

@@ -124,8 +124,8 @@ class TileLayerImpl extends TileLayer {
       needsRepaint = true;
     }
 
-    int diff = DateTime.now().millisecondsSinceEpoch - time;
-    _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
+//    int diff = DateTime.now().millisecondsSinceEpoch - time;
+//    _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
   }
 
   /**

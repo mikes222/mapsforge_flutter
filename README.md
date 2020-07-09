@@ -14,9 +14,12 @@ Currently flutter has no support for dashed lines
 
 doubleTap() does not provide a location. See https://github.com/flutter/flutter/issues/20000 But there is a workaround which I have already implemented. 
 
-Everything is called in the same thread, isolates are flutter's way of threads but calling native functions is currently not possible in isolates. All graphical functions are native functions. 
- - So currently the whole rendering is done in the ui thread which leads to blocked ui while rendering. See https://github.com/flutter/flutter/issues/13937
- - rendering at a low zoom level is significantly slower than the android version
+Everything is called in the same thread, isolates are flutter's way of threads but calling native functions is currently not possible in isolates. 
+All graphical functions are native functions. 
+ - So currently the whole rendering is done in the ui thread which leads to blocked ui while rendering. 
+ See https://github.com/flutter/flutter/issues/13937
+
+Update: The reading from MapFiles are now done in isolates so at least a portion of the rendering process does not block the UI anymore
 
 ## Credits
 
@@ -33,8 +36,7 @@ Speed:
  - support for more than one concurrent job in the jobqueue (rudimentary implemented already)
 
 Others:
- - Way Database
- - Testing for ios
+ - Testing for IOS
  - tile size others than 256 pixels may break the code
 
 ## Getting Started
@@ -164,4 +166,15 @@ Follow the steps above to implement the new map into your widget
 
 -----------------
 
+For more information and documentation check mapsforge_flutter/resources/docu/mapdatastore.md
+
+-----------------
+
 Help is appreciated...
+
+- Solving speed issues
+- support map rotating (do not rotate the text and icons then)
+- some flaws with text spawning multiple tiles
+- bring the project to https://pub.dev/packages
+- Unit tests!
+

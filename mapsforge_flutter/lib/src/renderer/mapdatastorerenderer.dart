@@ -79,7 +79,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   Future<TileBitmap> executeJob(Job job) async {
-    bool showTiming = true;
+    bool showTiming = false;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     if (!this.mapDataStore.supportsTile(job.tile)) {

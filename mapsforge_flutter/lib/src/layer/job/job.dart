@@ -10,9 +10,6 @@ class Job {
   final double textScale;
   final Tile tile;
 
-  // will be set immediately before rendering begins in order to prevent rendering the same tile multiple times
-  bool inWork = false;
-
   /// The resulting bitmap after this job has been processed.
   TileBitmap _tileBitmap;
 
