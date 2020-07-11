@@ -15,6 +15,23 @@ import 'mapmodelhelper.dart';
 
 void main() => runApp(MyApp());
 
+MapInfo sachsenMap = MapInfo(
+  mapfilesource: "https://download.mapsforge.org/maps/v5/europe/germany/sachsen.map",
+  mapfile: "sachsen.map",
+  lat: 50.81287701030895,
+  lon: 12.94189453125,
+);
+
+MapInfo monacoMap = MapInfo(
+  mapfilesource: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/monaco.map",
+  mapfile: "monaco.map",
+  lat: 43.7399,
+  lon: 7.4262,
+);
+
+// TODO create a drop-down in UI to let the user choose from different maps
+MapInfo activeMapInfo = sachsenMap;
+
 /// This Widget is the main application widget.
 class MyApp extends StatelessWidget {
   static const String _title = 'Mapsforge sample';
@@ -57,7 +74,7 @@ class MyStatelessWidget extends StatelessWidget {
       body: Column(
         children: <Widget>[
           FutureBuilder<bool>(
-            future: FileHelper.exists(Constants.mapfile),
+            future: FileHelper.exists(activeMapInfo.mapfile),
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               if (snapshot.hasData) return Text(snapshot.data ? "Mapfile is already downloaded" : "Mapfile missing");
               return Container();
@@ -66,7 +83,7 @@ class MyStatelessWidget extends StatelessWidget {
           RaisedButton(
             child: Text("Download Mapfile"),
             onPressed: () {
-              FileHelper.downloadFile(Constants.mapfilesource, Constants.mapfile);
+              FileHelper.downloadFile(activeMapInfo.mapfilesource, activeMapInfo.mapfile);
             },
           ),
           FutureBuilder<bool>(
@@ -102,7 +119,7 @@ class MyStatelessWidget extends StatelessWidget {
             onPressed: () {
               MapModelHelper.prepareOfflineMapModel().then((mapModel) {
                 Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.tileBitmapCache.purge();
+                  await mapModel.tileBitmapCache.purgeAll();
                   print("cache purged");
 //              Scaffold.of(context).showSnackBar(new SnackBar(
 //                content: new Text("cache purged"),
@@ -116,7 +133,7 @@ class MyStatelessWidget extends StatelessWidget {
             onPressed: () {
               MapModelHelper.prepareOnlineMapModel().then((mapModel) {
                 Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.tileBitmapCache.purge();
+                  await mapModel.tileBitmapCache.purgeAll();
                   print("cache purged");
 //              Scaffold.of(context).showSnackBar(new SnackBar(
 //                content: new Text("cache purged"),
@@ -129,4 +146,17 @@ class MyStatelessWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class MapInfo {
+  final String mapfilesource;
+  final String mapfile;
+
+  final double lat;
+
+  final double lon;
+
+  MapInfo({this.mapfilesource, this.mapfile, this.lat, this.lon});
 }

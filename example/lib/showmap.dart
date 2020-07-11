@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -64,7 +65,7 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("Set Location"),
               onPressed: () {
-                mapModel.setMapViewPosition(50.81287701030895, 12.94189453125);
+                mapModel.setMapViewPosition(activeMapInfo.lat, activeMapInfo.lon);
               },
             ),
             RaisedButton(

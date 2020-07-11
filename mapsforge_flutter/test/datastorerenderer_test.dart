@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
@@ -19,12 +20,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('MapDataStoreRenderer', (WidgetTester tester) async {
+    _initLogging();
     String prefix = ""; // "../";
     double tileSize = 256;
-    int z = 10;
-    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(43.74); // lat/lon: 7.42/43.74;
-    int y = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.42);
+    int z = 2;
+    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(43.7399); // lat/lon: 7.42/43.74;
+    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(7.4262);
     double userScaleFactor = 1;
+
+    print("Creating tile $x/$y");
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel(
@@ -32,7 +36,7 @@ void main() {
     );
     SymbolCache symbolCache = SymbolCache(displayModel);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
-    final file = new File(prefix + 'test_resources/simplerender.xml');
+    final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();
     //String content = await rootBundle.loadString("assets/simplerender.xml");
     renderThemeBuilder.parseXml(content);
@@ -45,7 +49,6 @@ void main() {
       Job mapGeneratorJob = new Job(tile, false, userScaleFactor);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
-      print("start executing");
       TileBitmap resultTile = await _dataStoreRenderer.executeJob(mapGeneratorJob);
       assert(resultTile != null);
       var img = (resultTile as FlutterTileBitmap).bitmap;
@@ -54,6 +57,11 @@ void main() {
     });
 
     assert(bytes != null);
+//    print("Resulting tile has ${bytes.buffer.lengthInBytes} byte");
+//    File resFile = File("store.png");
+//    IOSink sink = resFile.openWrite();
+//    resFile.writeAsBytes(bytes.buffer.asUint8List());
+//    sink.close();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -65,6 +73,17 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
     await expectLater(find.byType(Image), matchesGoldenFile('datastorerender.png'));
   });
+}
+
+void _initLogging() {
+// Print output to console.
+  Logger.root.onRecord.listen((LogRecord r) {
+    print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+  });
+
+// Root logger level.
+  Logger.root.level = Level.FINEST;
 }

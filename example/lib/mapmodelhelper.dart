@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:example/main.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -26,8 +27,8 @@ class MapModelHelper {
 //      multiMapDataStore.addMapDataStore(mapFile, true, true);
 //    }
     {
-      _log.info("opening mapfile ${Constants.mapfile}");
-      MapFile mapFile = MapFile(_localPath + "/" + Constants.mapfile, null, null);
+      _log.info("opening mapfile ${activeMapInfo.mapfile}");
+      MapFile mapFile = MapFile(_localPath + "/" + activeMapInfo.mapfile, null, null);
       await mapFile.init();
       //await mapFile.debug();
       //mapDataStore.addMapDataStore(mapFile, false, false);
@@ -36,11 +37,11 @@ class MapModelHelper {
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
-    SymbolCache symbolCache = SymbolCache(graphicFactory, displayModel);
+    SymbolCache symbolCache = SymbolCache(displayModel);
 
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
-    await renderThemeBuilder.parseXml(content);
+    renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
     JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, true);
     //JobRenderer jobRenderer = MapOnlineRenderer();
@@ -95,7 +96,7 @@ class MapModelHelper {
   static Future<MapModel> prepareOnlineMapModel() async {
     GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
-    SymbolCache symbolCache = SymbolCache(graphicFactory, displayModel);
+    SymbolCache symbolCache = SymbolCache(displayModel);
 
     //JobRenderer jobRenderer = MapDataStoreRenderer(multiMapDataStore, renderTheme, graphicFactory, true);
     JobRenderer jobRenderer = MapOnlineRenderer();
