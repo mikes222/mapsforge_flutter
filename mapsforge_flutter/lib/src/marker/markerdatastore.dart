@@ -2,6 +2,9 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/marker/basicmarker.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 
+///
+/// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas)
+///
 class MarkerDataStore with ChangeNotifier {
   final List<BasicMarker> markers = List();
 
@@ -12,6 +15,7 @@ class MarkerDataStore with ChangeNotifier {
   }
 
   @override
+  @mustCallSuper
   void dispose() {
     markers.forEach((marker) {
       marker.dispose();

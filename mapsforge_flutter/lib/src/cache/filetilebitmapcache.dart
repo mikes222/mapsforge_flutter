@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
+import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 
@@ -36,7 +37,7 @@ class FileTileBitmapCache extends TileBitmapCache {
 //    });
   }
 
-  void purge() async {
+  void purgeAll() async {
     if (files == null) return;
     int count = 0;
     await files.forEach((file) async {
@@ -46,6 +47,7 @@ class FileTileBitmapCache extends TileBitmapCache {
     });
     _log.info("purged $count files from cache $renderkey");
     files.clear();
+    _memoryBitmapCache.purgeAll();
   }
 
   @override
@@ -102,5 +104,21 @@ class FileTileBitmapCache extends TileBitmapCache {
   @override
   void dispose() {
     _memoryBitmapCache.dispose();
+  }
+
+  @override
+  Future<void> purgeByBoundary(BoundingBox boundingBox) async {
+    // todo find a method to remove only affected files. For now we clear the whole cache
+    if (files == null) return;
+    int count = 0;
+    await files.forEach((file) async {
+      _log.info("  purging file from cache: $file");
+      bool ok = await FileHelper.delete(file);
+      if (ok) ++count;
+    });
+    _log.info("purged $count files from cache $renderkey");
+    files.clear();
+
+    _memoryBitmapCache.purgeByBoundary(boundingBox);
   }
 }

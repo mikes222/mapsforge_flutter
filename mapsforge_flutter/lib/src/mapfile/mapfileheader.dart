@@ -42,6 +42,7 @@ class MapFileHeader {
    * @return a MapFileInfo containing the header data.
    */
   MapFileInfo getMapFileInfo() {
+    // execute the init() method before using mapfiles
     assert(mapFileInfo != null);
     return this.mapFileInfo;
   }

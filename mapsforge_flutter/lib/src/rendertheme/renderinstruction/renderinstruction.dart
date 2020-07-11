@@ -53,7 +53,7 @@ abstract class RenderInstruction {
 
   void destroy();
 
-  Future<void> initResources();
+  Future<void> initResources(GraphicFactory graphicFactory);
 
   String getCategory() {
     return this.category;

@@ -99,7 +99,7 @@ class RectMarker<T> extends BasicMarker<T> {
     }
     if (_bitmapInvalid == null && src != null && !src.isEmpty) {
       try {
-        this._bitmap = await symbolCache.getOrCreateBitmap(src, width, height, percent);
+        this._bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width, height, percent);
         if (_bitmap != null) {
           _bitmapInvalid = false;
           fill.setBitmapShader(_bitmap);

@@ -77,7 +77,7 @@ class PoiMarker<T> extends BasicMarker<T> {
 
     if (this._bitmap == null && !_bitmapInvalid && _src != null && symbolCache != null) {
       try {
-        this._bitmap = await symbolCache.getOrCreateBitmap(_src, width, height, percent);
+        this._bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, _src, width, height, percent);
         if (_bitmap != null) {
           imageOffsetX = -_bitmap.getWidth() / 2;
           imageOffsetY = -_bitmap.getHeight() / 2;

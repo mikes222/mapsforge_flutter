@@ -88,18 +88,19 @@ class JobQueue {
   }
 
   void _startNextJob() {
-    //print("ListQueue has ${_listQueue.length} elements");
+    //_log.info("ListQueue has ${_listQueue.length} elements");
     if (_listQueue.isEmpty) return;
     // let the job in the queue until it is finished, so we prevent adding the job to the queue again
     _lock[_roundRobin++ % _lock.length].synchronized(() async {
       // recheck, it may have changed in the meantime
       if (_listQueue.isEmpty) return;
       Job nextJob = _listQueue.first;
-      //print("taken ${nextJob?.toString()} from queue");
+      //_log.info("taken ${nextJob?.toString()} from queue");
 //     await _donow3(item);
 //     await _donow(item);
       await _donow2(nextJob);
       _listQueue.remove(nextJob);
+      //_log.info("taken ${nextJob?.toString()} from queue finished");
     });
   }
 

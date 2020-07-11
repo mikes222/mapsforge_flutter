@@ -61,13 +61,13 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     this.renderTheme,
     this.graphicFactory,
     this.renderLabels,
-  ) : labelStore = TileBasedLabelStore(100) {
+  )   : assert(renderLabels != null),
+        labelStore = TileBasedLabelStore(100) {
     if (!renderLabels) {
       this.tileDependencies = null;
     } else {
       this.tileDependencies = new TileDependencies();
     }
-    _startIsolateJob();
   }
 
   void dispose() {
@@ -82,11 +82,12 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     bool showTiming = false;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
-    if (!this.mapDataStore.supportsTile(job.tile)) {
-      return null;
-    }
+//    if (!this.mapDataStore.supportsTile(job.tile)) {
+//      return null;
+//    }
     CanvasRasterer canvasRasterer = CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble());
-    RenderContext renderContext = RenderContext(job, renderTheme);
+    RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
+    await _startIsolateJob();
     _sendPort.send(IsolateParam(mapDataStore, job.tile));
     MapReadResult mapReadResult = await _subject.stream.first;
     // MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
@@ -96,6 +97,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     if (mapReadResult == null) {
       _log.info("Executing ${job.toString()} has no mapReadResult for tile ${job.tile.toString()}");
       return null;
+    }
+    if ((mapReadResult.ways?.length ?? 0) > 100000) {
+      _log.warning("Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
     await _processReadMapData(renderContext, mapReadResult);
     diff = DateTime.now().millisecondsSinceEpoch - time;
@@ -359,16 +363,27 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   ///
   /// Isolates currently not suitable for our purpose. Most UI canvas calls are not accessible from isolates
   /// so we cannot produce the bitmap.
-  void _startIsolateJob() async {
-    var receivePort = new ReceivePort();
+  Future<void> _startIsolateJob() async {
+    if (_sendPort != null) return;
+    ReceivePort receivePort = new ReceivePort();
     _isolate = await Isolate.spawn(entryPoint, receivePort.sendPort);
+    PublishSubject<SendPort> subject = PublishSubject<SendPort>();
+    // let the listener run in background
+    _listenToIsolate(receivePort, subject);
+    // wait for the _sendPort
+    await subject.stream.first;
+    subject.close();
+  }
 
+  void _listenToIsolate(ReceivePort receivePort, PublishSubject<SendPort> subject) async {
     await for (var data in receivePort) {
       //tileCache.addTileBitmap(job.tile, tileBitmap);
       //print("received from isolate: ${data.toString()}");
       if (data is SendPort) {
         // Receive the SendPort from the Isolate
         _sendPort = data;
+        // inform waiting method that we have a stable connection now
+        subject.add(_sendPort);
       } else if (data is MapReadResult) {
         MapReadResult result = data;
         _subject.add(result);

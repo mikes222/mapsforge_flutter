@@ -23,10 +23,9 @@ class SymbolCache {
 
   Map<String, ResourceBitmap> cache = Map();
 
-  final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
 
-  SymbolCache(this.graphicFactory, this.displayModel);
+  SymbolCache(this.displayModel);
 
   void dispose() {
     cache.forEach((key, bitmap) {
@@ -35,7 +34,7 @@ class SymbolCache {
     cache.clear();
   }
 
-  Future<ResourceBitmap> getOrCreateBitmap(String src, int width, int height, int percent) async {
+  Future<ResourceBitmap> getOrCreateBitmap(GraphicFactory graphicFactory, String src, int width, int height, int percent) async {
     if (src == null || src.length == 0) {
 // no image source defined
       return null;

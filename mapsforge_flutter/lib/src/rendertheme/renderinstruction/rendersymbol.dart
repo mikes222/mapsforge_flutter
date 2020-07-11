@@ -97,7 +97,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     // do nothing
   }
 
-  Future<Bitmap> getBitmap() async {
-    return getOrCreateBitmap(relativePathPrefix, src);
+  Future<Bitmap> getBitmap(GraphicFactory graphicFactory) async {
+    return getOrCreateBitmap(graphicFactory, relativePathPrefix, src);
   }
 }

@@ -27,7 +27,7 @@ class BitmapMixin {
   }
 
   @mustCallSuper
-  Future<void> initResources() async {
+  Future<void> initResources(GraphicFactory graphicFactory) async {
     //print("initResources called for $src");
     if (bitmapInvalid) return;
 
@@ -35,7 +35,7 @@ class BitmapMixin {
 
     if (renderSymbol != null) {
       try {
-        bitmap = await renderSymbol.getBitmap();
+        bitmap = await renderSymbol.getBitmap(graphicFactory);
       } catch (e, stacktrace) {
         print("Exception $e\nStacktrace $stacktrace");
         bitmap = null;
@@ -49,7 +49,7 @@ class BitmapMixin {
         return;
       }
       try {
-        bitmap = await symbolCache.getOrCreateBitmap(src, width.round(), height.round(), percent);
+        bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width.round(), height.round(), percent);
       } catch (e, stacktrace) {
         print("Exception $e\nStacktrace $stacktrace");
         bitmap = null;
@@ -59,7 +59,7 @@ class BitmapMixin {
   }
 
   @protected
-  Future<Bitmap> getOrCreateBitmap(String relativePathPrefix, String src) async {
+  Future<Bitmap> getOrCreateBitmap(GraphicFactory graphicFactory, String relativePathPrefix, String src) async {
     if (bitmapInvalid) return null;
     if (null == src || src.isEmpty) {
       bitmapInvalid = true;
@@ -73,7 +73,7 @@ class BitmapMixin {
       return _future;
     }
     try {
-      _future = symbolCache.getOrCreateBitmap(src, width.round(), height.round(), percent);
+      _future = symbolCache.getOrCreateBitmap(graphicFactory, src, width.round(), height.round(), percent);
       bitmap = await _future;
       _future = null;
       bitmapInvalid = false;

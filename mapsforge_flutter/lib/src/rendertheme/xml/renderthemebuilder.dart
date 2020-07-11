@@ -112,7 +112,7 @@ class RenderThemeBuilder {
       }
     }
     assert(foundRendertheme);
-    print("Found ${initPendings.length} items for lazy initialization");
+    _log.info("Found ${initPendings.length} items for lazy initialization");
   }
 
   void _parseRendertheme(XmlElement rootElement, List<RenderInstruction> initPendings) {
@@ -196,7 +196,7 @@ class RenderThemeBuilder {
                 }
               });
 
-              Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, level++, this.graphicFactory);
+              Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, level++);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
               //hillShadings.add(hillshading);

@@ -124,7 +124,7 @@ class RenderTheme {
     // render from cache
     for (int i = 0, n = matchingList.length; i < n; ++i) {
       if (initPendings.contains(matchingList.elementAt(i))) {
-        await matchingList.elementAt(i).initResources();
+        await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
         initPendings.remove(matchingList.elementAt(i));
       }
       matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
@@ -203,7 +203,7 @@ class RenderTheme {
     // render from cache
     for (int i = 0, n = matchingList.length; i < n; ++i) {
       if (initPendings.contains(matchingList.elementAt(i))) {
-        await matchingList.elementAt(i).initResources();
+        await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
         initPendings.remove(matchingList.elementAt(i));
       }
       matchingList.elementAt(i).renderWay(renderCallback, renderContext, way);

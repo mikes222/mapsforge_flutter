@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
@@ -12,5 +13,7 @@ abstract class TileBitmapCache {
 
   void addTileBitmap(Tile tile, TileBitmap tileBitmap);
 
-  void purge();
+  void purgeAll();
+
+  void purgeByBoundary(BoundingBox boundingBox);
 }

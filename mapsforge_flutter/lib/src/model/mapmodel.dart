@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';

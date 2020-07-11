@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import '../../graphics/graphicfactory.dart';
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/hillsrenderconfig.dart';
 import '../../model/mappoint.dart';
@@ -23,7 +22,7 @@ class Hillshading {
   final int maxZoom;
   final double magnitude;
 
-  Hillshading(this.minZoom, this.maxZoom, this.magnitude, this.layer, this.always, this.level, GraphicFactory graphicFactory)
+  Hillshading(this.minZoom, this.maxZoom, this.magnitude, this.layer, this.always, this.level)
       : assert(always != null),
         assert(level != null),
         assert(layer != null),

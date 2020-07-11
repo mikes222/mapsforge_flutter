@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 
 import '../layer/job/job.dart';
 import '../mapelements/mapelementcontainer.dart';
@@ -22,12 +23,16 @@ class RenderContext {
   final Job job;
   final RenderTheme renderTheme;
 
+  final GraphicFactory graphicFactory;
+
   // Data generated for the rendering process
   List<List<ShapePaintContainer>> drawingLayers;
   final List<MapElementContainer> labels;
   List<List<List<ShapePaintContainer>>> ways;
 
-  RenderContext(this.job, this.renderTheme) : labels = new List() {
+  RenderContext(this.job, this.renderTheme, this.graphicFactory)
+      : assert(graphicFactory != null),
+        labels = new List() {
     this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
     this.ways = createWayLists();
     setScaleStrokeWidth(this.job.tile.zoomLevel);

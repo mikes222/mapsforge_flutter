@@ -383,7 +383,7 @@ class RuleBuilder {
         }
       });
 
-      Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, this.level++, this.graphicFactory);
+      Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, this.level++);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
       hillShadings.add(hillshading);
