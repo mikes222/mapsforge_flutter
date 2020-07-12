@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 
 class BitmapMixin {
+  static final _log = new Logger('BitmapMixin');
+
   SymbolCache symbolCache;
 
   Bitmap bitmap;
@@ -51,7 +54,8 @@ class BitmapMixin {
       try {
         bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width.round(), height.round(), percent);
       } catch (e, stacktrace) {
-        print("Exception $e\nStacktrace $stacktrace");
+        _log.warning("${e.toString()}, ignore missing bitmap in rendering");
+        //print("Exception $e\nStacktrace $stacktrace");
         bitmap = null;
         bitmapInvalid = true;
       }

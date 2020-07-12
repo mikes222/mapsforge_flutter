@@ -34,8 +34,11 @@ class MapFileHeader {
   static final String SPACE = ' ';
 
   MapFileInfo mapFileInfo;
+
   List<SubFileParameter> subFileParameters;
+
   int zoomLevelMaximum;
+
   int zoomLevelMinimum;
 
   /**

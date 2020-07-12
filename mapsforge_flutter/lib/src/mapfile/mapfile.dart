@@ -177,6 +177,7 @@ class MapFile extends MapDataStore {
    * For most use cases the standard settings should be sufficient.
    */
   static bool wayFilterEnabled = true;
+
   static int wayFilterDistance = 20;
 
   IndexCache _databaseIndexCache;
@@ -261,7 +262,7 @@ class MapFile extends MapDataStore {
 //    _log.info("Result: " + result.toString());
   }
 
-  void _debugBlock(int block, SubFileParameter subFileParameter, ReadBufferMaster readBufferMaster) async {
+  Future<void> _debugBlock(int block, SubFileParameter subFileParameter, ReadBufferMaster readBufferMaster) async {
     int row = (block / subFileParameter.blocksWidth).floor();
     int column = (block % subFileParameter.blocksWidth);
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);
@@ -602,6 +603,7 @@ class MapFile extends MapDataStore {
 
   PoiWayBundle _processBlock(QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox,
       double tileLatitude, double tileLongitude, Selector selector, ReadBuffer readBuffer) {
+    assert(queryParameters.queryZoomLevel != null);
     if (!_processBlockSignature(readBuffer)) {
       _log.warning("ProcessblockSignature mismatch");
       return null;
@@ -678,6 +680,8 @@ class MapFile extends MapDataStore {
   Future<MapReadResult> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters, SubFileParameter subFileParameter,
       BoundingBox boundingBox, Selector selector) async {
     assert(_fileSize != null);
+    assert(queryParameters.fromBlockX != null);
+    assert(queryParameters.fromBlockY != null);
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);

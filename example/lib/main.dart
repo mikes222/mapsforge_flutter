@@ -5,6 +5,7 @@
 
 import 'dart:async';
 
+import 'package:example/mapfileanalyze/mapheaderpage.dart';
 import 'package:example/showmap.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -76,7 +77,11 @@ class MyStatelessWidget extends StatelessWidget {
           FutureBuilder<bool>(
             future: FileHelper.exists(activeMapInfo.mapfile),
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-              if (snapshot.hasData) return Text(snapshot.data ? "Mapfile is already downloaded" : "Mapfile missing");
+              if (snapshot.hasData)
+                return Text(
+                  snapshot.data ? "Mapfile is already downloaded" : "Mapfile missing",
+                  style: TextStyle(color: snapshot.data ? Colors.green : Colors.red),
+                );
               return Container();
             },
           ),
@@ -89,7 +94,11 @@ class MyStatelessWidget extends StatelessWidget {
           FutureBuilder<bool>(
             future: FileHelper.exists(Constants.worldmap),
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-              if (snapshot.hasData) return Text(snapshot.data ? "Worldmap is already downloaded" : "Worldmap missing");
+              if (snapshot.hasData)
+                return Text(
+                  snapshot.data ? "Worldmap is already downloaded" : "Worldmap missing",
+                  style: TextStyle(color: snapshot.data ? Colors.green : Colors.red),
+                );
               return Container();
             },
           ),
@@ -140,6 +149,12 @@ class MyStatelessWidget extends StatelessWidget {
 //              ));
                 });
               });
+            },
+          ),
+          RaisedButton(
+            child: Text("Analyze mapfile"),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage()));
             },
           ),
         ],

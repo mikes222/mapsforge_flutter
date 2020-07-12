@@ -149,7 +149,7 @@ class Caption extends RenderInstruction with BitmapMixin {
     if (this.symbolId != null) {
       renderSymbol = symbols[this.symbolId];
       if (renderSymbol == null) {
-        print("Symbol $symbolId not found");
+        _log.warning("Symbol $symbolId referenced in caption in render.xml, but not defined as symbol before");
       }
     }
 

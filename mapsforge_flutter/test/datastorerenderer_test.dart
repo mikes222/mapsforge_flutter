@@ -1,9 +1,6 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -21,19 +18,17 @@ void main() {
 
   testWidgets('MapDataStoreRenderer', (WidgetTester tester) async {
     _initLogging();
-    String prefix = ""; // "../";
-    double tileSize = 256;
-    int z = 2;
-    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(43.7399); // lat/lon: 7.42/43.74;
-    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(7.4262);
-    double userScaleFactor = 1;
+    final DisplayModel displayModel = DisplayModel(
+      maxZoomLevel: 14,
+    );
 
-    print("Creating tile $x/$y");
+    String prefix = ""; // "../";
+    double tileSize = displayModel.tileSize;
+    int z = 16;
+    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
-    final DisplayModel displayModel = DisplayModel(
-      maxZoomLevel: 9,
-    );
     SymbolCache symbolCache = SymbolCache(displayModel);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
@@ -42,21 +37,23 @@ void main() {
     renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 
-    ByteData bytes = await tester.runAsync(() async {
+    var img = await tester.runAsync(() async {
       MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", 0, "en");
       await mapDataStore.init();
       Tile tile = new Tile(x, y, z, tileSize);
-      Job mapGeneratorJob = new Job(tile, false, userScaleFactor);
+      print("Reading tile ${tile.toString()}");
+      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor());
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
       TileBitmap resultTile = await _dataStoreRenderer.executeJob(mapGeneratorJob);
       assert(resultTile != null);
       var img = (resultTile as FlutterTileBitmap).bitmap;
-      ByteData bytes = await img.toByteData(format: ImageByteFormat.png);
-      return bytes;
+//      ByteData bytes = await img.toByteData(format: ImageByteFormat.png);
+//      assert(bytes != null);
+      return img;
     });
 
-    assert(bytes != null);
+    assert(img != null);
 //    print("Resulting tile has ${bytes.buffer.lengthInBytes} byte");
 //    File resFile = File("store.png");
 //    IOSink sink = resFile.openWrite();
@@ -68,13 +65,16 @@ void main() {
         theme: ThemeData(),
         home: Scaffold(
           body: Center(
-            child: Image.memory(bytes.buffer.asUint8List()),
+            child: RawImage(
+              image: img,
+            ),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
-    await expectLater(find.byType(Image), matchesGoldenFile('datastorerender.png'));
+    //await tester.pump();
+    await expectLater(find.byType(RawImage), matchesGoldenFile('datastorerenderer.png'));
   });
 }
 
