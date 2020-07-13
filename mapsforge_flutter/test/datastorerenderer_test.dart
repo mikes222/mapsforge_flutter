@@ -147,24 +147,24 @@ void main() {
           body: SizedBox(
             width: tileSize * 3,
             height: tileSize * 3,
-            child: Row(
+            child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
-                Column(
+                Row(
                   children: <Widget>[
                     RawImage(image: imgs[0]),
                     RawImage(image: imgs[1]),
                     RawImage(image: imgs[2]),
                   ],
                 ),
-                Column(
+                Row(
                   children: <Widget>[
                     RawImage(image: imgs[3]),
                     RawImage(image: imgs[4]),
                     RawImage(image: imgs[5]),
                   ],
                 ),
-                Column(
+                Row(
                   children: <Widget>[
                     RawImage(image: imgs[6]),
                     RawImage(image: imgs[7]),
