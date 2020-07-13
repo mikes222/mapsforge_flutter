@@ -16,13 +16,18 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('MapDataStoreRenderer', (WidgetTester tester) async {
+  setUp(() {
     _initLogging();
+  });
+
+  ///
+  /// Test one single tile
+  testWidgets('MapDataStoreRenderer', (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
 
-    String prefix = ""; // "../";
+    String prefix = "../"; // "../";
     double tileSize = displayModel.tileSize;
     int z = 16;
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
@@ -75,6 +80,106 @@ void main() {
     await tester.pumpAndSettle();
     //await tester.pump();
     await expectLater(find.byType(RawImage), matchesGoldenFile('datastorerenderer.png'));
+  });
+
+  testWidgets('MapDataStoreRendererMultiple', (WidgetTester tester) async {
+    final DisplayModel displayModel = DisplayModel(
+      maxZoomLevel: 15,
+    );
+
+    String prefix = ""; // "../";
+    double tileSize = displayModel.tileSize;
+    int z = 15;
+    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
+
+    tester.binding.window.physicalSizeTestValue = Size(tileSize * 9, tileSize * 9);
+// resets the screen to its orinal size after the test end
+    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
+    List<Tile> tilesToLoad = [
+      Tile(x - 1, y - 1, z, tileSize),
+      Tile(x, y - 1, z, tileSize),
+      Tile(x + 1, y - 1, z, tileSize),
+      Tile(x - 1, y, z, tileSize),
+      Tile(x, y, z, tileSize),
+      Tile(x + 1, y, z, tileSize),
+      Tile(x - 1, y + 1, z, tileSize),
+      Tile(x, y + 1, z, tileSize),
+      Tile(x + 1, y + 1, z, tileSize),
+    ];
+
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    SymbolCache symbolCache = SymbolCache(displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
+    final file = new File(prefix + 'test_resources/rendertheme.xml');
+    String content = file.readAsStringSync();
+    //String content = await rootBundle.loadString("assets/simplerender.xml");
+    renderThemeBuilder.parseXml(content);
+    RenderTheme renderTheme = renderThemeBuilder.build();
+
+    List imgs = await tester.runAsync(() async {
+      MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", 0, "en");
+      await mapDataStore.init();
+
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
+      List imgs = List();
+      for (Tile tile in tilesToLoad) {
+        print("Reading tile ${tile.toString()}");
+        Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor());
+        TileBitmap resultTile = await _dataStoreRenderer.executeJob(mapGeneratorJob);
+        assert(resultTile != null);
+        var img = (resultTile as FlutterTileBitmap).bitmap;
+        imgs.add(img);
+      }
+
+//      ByteData bytes = await img.toByteData(format: ImageByteFormat.png);
+//      assert(bytes != null);
+      return imgs;
+    });
+
+    assert(imgs != null && imgs.length == tilesToLoad.length);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(),
+        home: Scaffold(
+          body: SizedBox(
+            width: tileSize * 3,
+            height: tileSize * 3,
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    RawImage(image: imgs[0]),
+                    RawImage(image: imgs[1]),
+                    RawImage(image: imgs[2]),
+                  ],
+                ),
+                Column(
+                  children: <Widget>[
+                    RawImage(image: imgs[3]),
+                    RawImage(image: imgs[4]),
+                    RawImage(image: imgs[5]),
+                  ],
+                ),
+                Column(
+                  children: <Widget>[
+                    RawImage(image: imgs[6]),
+                    RawImage(image: imgs[7]),
+                    RawImage(image: imgs[8]),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    //await tester.pump();
+    await expectLater(find.byType(SizedBox), matchesGoldenFile('datastorerenderermulti.png'));
   });
 }
 

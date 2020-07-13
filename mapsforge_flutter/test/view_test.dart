@@ -12,15 +12,15 @@ import 'package:mapsforge_flutter/maps.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // I am unable to let the system wait until the tiles have been created so this test is not working.
-  // The mapdatastorerenderer is called but the reading of the MapReadResult never succeeds.
+  // I am unable to let the system wait for the tiles to being created so this test is not working.
+  // The mapdatastorerenderer is called but the reading of the MapReadResult never finishes.
   testWidgets('ViewTest', (WidgetTester tester) async {
     _initLogging();
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
 
-    String prefix = "../"; // "../";
+    String prefix = ""; // "../";
 
     MapModel mapModel = await tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
