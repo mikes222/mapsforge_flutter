@@ -201,12 +201,10 @@ abstract class MapDataStore {
    */
   int get startZoomLevel;
 
-  /**
-   * Returns true if MapDatabase contains tile.
-   *
-   * @param tile tile to be rendered.
-   * @return true if tile is part of database.
-   */
+  /// Returns true if MapDatabase contains tile.
+  ///
+  /// @param tile tile to be rendered.
+  /// @return true if tile is part of database.
   bool supportsTile(Tile tile);
 
   /**

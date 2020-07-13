@@ -45,6 +45,7 @@ class PathMarker<T> extends BasicMarker<T> {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
+    if (init) return;
     super.initResources(graphicFactory);
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();

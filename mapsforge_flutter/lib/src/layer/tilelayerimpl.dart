@@ -119,6 +119,7 @@ class TileLayerImpl extends TileLayer {
       (canvas as FlutterCanvas).uiCanvas.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
+    //_log.info("JobSets created: ${jobSet.jobs.length}");
     if (jobSet.jobs.length > 0) {
       this.jobQueue.processJobset(jobSet);
       needsRepaint = true;

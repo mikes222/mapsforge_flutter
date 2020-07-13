@@ -29,7 +29,6 @@ import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rendertheme.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:synchronized/synchronized.dart';
 
 import 'canvasrasterer.dart';
 import 'circlecontainer.dart';
@@ -80,17 +79,24 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   Future<TileBitmap> executeJob(Job job) async {
     bool showTiming = false;
+    bool direct = false;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
-//    if (!this.mapDataStore.supportsTile(job.tile)) {
-//      return null;
-//    }
+    if (!this.mapDataStore.supportsTile(job.tile)) {
+      // return if we do not have data for the requested tile in the datastore
+      return null;
+    }
     CanvasRasterer canvasRasterer = CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble());
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
-    await _startIsolateJob();
-    _sendPort.send(IsolateParam(mapDataStore, job.tile));
-    MapReadResult mapReadResult = await _subject.stream.first;
-    // MapReadResult mapReadResult = await this.mapDataStore.readMapDataSingle(job.tile);
+    if (showTiming) _log.info("Before starting the isolate to read map data from file");
+    MapReadResult mapReadResult;
+    if (direct) {
+      mapReadResult = await readMapDataInIsolate(IsolateParam(mapDataStore, job.tile));
+    } else {
+      await _startIsolateJob();
+      _sendPort.send(IsolateParam(mapDataStore, job.tile));
+      mapReadResult = await _subject.stream.first;
+    }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests.length} pois and ${mapReadResult.ways.length} ways");

@@ -31,8 +31,6 @@ abstract class MapPaint {
    */
   void setColorFromNumber(int color);
 
-  void setDashPathEffect(List<double> strokeDasharray);
-
   /**
    * The default value is {@link Cap#ROUND}.
    */
@@ -56,4 +54,8 @@ abstract class MapPaint {
   void setTypeface(MapFontFamily fontFamily, MapFontStyle fontStyle);
 
   MapFontStyle getFontStyle();
+
+  void setStrokeDasharray(List<double> strokeDasharray);
+
+  List<double> getStrokeDasharray();
 }

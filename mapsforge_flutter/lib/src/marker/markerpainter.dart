@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
@@ -10,6 +11,8 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 /// The flutter-derived class to paint all markers in the visible canvas area
 ///
 class MarkerPainter implements CustomPainter {
+  static final _log = new Logger('MarkerPainter');
+
   final MapViewDimension mapViewDimension;
 
   final MapViewPosition position;
@@ -27,13 +30,13 @@ class MarkerPainter implements CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     //mapModel.mapViewDimension.setDimension(size.width, size.height);
-
+    //_log.info("Painting ${markerRenderer.toString()}");
     bool changed = mapViewDimension.setDimension(size.width, size.height);
     if (changed) {
       position.sizeChanged();
-      // TODO this is an async method. We should wait until the properties are initialized
-      markerRenderer.initResources(mapViewDimension, position);
     }
+    // TODO this is an async method. We should wait until the properties are initialized
+    markerRenderer.initResources(mapViewDimension, position);
 
     markerRenderer.draw(FlutterCanvas(canvas, size), mapViewDimension, position);
   }

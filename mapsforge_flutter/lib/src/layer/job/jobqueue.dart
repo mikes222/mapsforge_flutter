@@ -36,8 +36,6 @@ class JobQueue {
 
   FlutterTileBitmap _missingBitmap;
 
-  FlutterTileBitmap _noDataBitmap;
-
   // we have only one thread, so limit the number of concurrent renderings for now
   final List<Lock> _lock = List(1);
 
@@ -96,9 +94,13 @@ class JobQueue {
       if (_listQueue.isEmpty) return;
       Job nextJob = _listQueue.first;
       //_log.info("taken ${nextJob?.toString()} from queue");
+      try {
 //     await _donow3(item);
 //     await _donow(item);
-      await _donow2(nextJob);
+        await _donow2(nextJob);
+      } catch (e, stacktrace) {
+        _log.warning("$e\n$stacktrace");
+      }
       _listQueue.remove(nextJob);
       //_log.info("taken ${nextJob?.toString()} from queue finished");
     });

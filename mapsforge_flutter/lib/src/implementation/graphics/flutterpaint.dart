@@ -28,6 +28,8 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   MapFontFamily _fontFamily = MapFontFamily.DEFAULT;
 
+  List<double> _strokeDasharray;
+
   FlutterPaint(this.paint);
 
   FlutterPaint.from(FlutterPaint other) : paint = ui.Paint() {
@@ -39,6 +41,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     _textSize = other._textSize;
     _fontStyle = other._fontStyle;
     _fontFamily = other._fontFamily;
+    _strokeDasharray = other._strokeDasharray;
     if (other._shaderBitmap != null) {
       _shaderBitmap = other._shaderBitmap;
       _shaderBitmap.incrementRefCount();
@@ -143,11 +146,6 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   }
 
   @override
-  void setDashPathEffect(List<double> strokeDasharray) {
-    // TODO: implement setDashPathEffect
-  }
-
-  @override
   void setTextAlign(Align align) {
     // TODO: implement setTextAlign
   }
@@ -206,7 +204,17 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   }
 
   @override
+  void setStrokeDasharray(List<double> strokeDasharray) {
+    this._strokeDasharray = strokeDasharray;
+  }
+
+  @override
+  List<double> getStrokeDasharray() {
+    return _strokeDasharray;
+  }
+
+  @override
   String toString() {
-    return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily}';
+    return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily, _strokeDasharray: $_strokeDasharray}';
   }
 }

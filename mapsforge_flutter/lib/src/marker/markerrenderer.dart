@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
@@ -9,6 +10,8 @@ import 'basicmarker.dart';
 import 'markercontext.dart';
 
 class MarkerRenderer {
+  static final _log = new Logger('MarkerRenderer');
+
   final GraphicFactory graphicFactory;
 
   final MarkerDataStore dataStore;
@@ -31,6 +34,7 @@ class MarkerRenderer {
     flutterCanvas.setClip(0, 0, mapViewDimension.getDimension().width.round(), mapViewDimension.getDimension().height.round());
     MarkerContext context = MarkerContext(flutterCanvas, graphicFactory, position);
     List<BasicMarker> markers = dataStore.getMarkers(position.calculateBoundingBox(mapViewDimension.getDimension()), position.zoomLevel);
+    // _log.info("Drawing ${markers?.length ?? -1} markers");
     if (markers != null && markers.length > 0) {
       for (BasicMarker marker in markers) {
         marker.renderNode(context);

@@ -47,7 +47,7 @@ class CanvasRasterer {
         List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
 
         for (int index = wayList.length - 1; index >= 0; --index) {
-          drawShapePaintContainer(wayList.elementAt(index));
+          _drawShapePaintContainer(wayList.elementAt(index));
         }
       }
     }
@@ -124,7 +124,7 @@ class CanvasRasterer {
     canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
   }
 
-  void drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
+  void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
     this.path.clear();
 
     for (List<Mappoint> innerList in coordinates) {
@@ -135,19 +135,30 @@ class CanvasRasterer {
         points = innerList;
       }
       if (points.length >= 2) {
-        Mappoint point = points[0];
-        this.path.moveTo(point.x, point.y);
-        for (int i = 1; i < points.length; ++i) {
-          point = points[i];
-          this.path.lineTo(point.x, point.y);
+        if (shapePaintContainer.paint.getStrokeDasharray() != null && shapePaintContainer.paint.getStrokeDasharray().length >= 2) {
+          Mappoint point = points[0];
+          for (int i = 1; i < points.length; ++i) {
+            this.canvas.drawLine(point.x.round(), point.y.round(), points[i].x.round(), points[i].y.round(), shapePaintContainer.paint);
+            point = points[i];
+          }
+        } else {
+          Mappoint point = points[0];
+          this.path.moveTo(point.x, point.y);
+          for (int i = 1; i < points.length; ++i) {
+            point = points[i];
+            this.path.lineTo(point.x, point.y);
+          }
         }
       }
     }
 
-    this.canvas.drawPath(this.path, shapePaintContainer.paint);
+    if (shapePaintContainer.paint.getStrokeDasharray() != null && shapePaintContainer.paint.getStrokeDasharray().length >= 2) {
+    } else {
+      this.canvas.drawPath(this.path, shapePaintContainer.paint);
+    }
   }
 
-  void drawShapePaintContainer(ShapePaintContainer shapePaintContainer) {
+  void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer) {
     ShapeContainer shapeContainer = shapePaintContainer.shapeContainer;
     ShapeType shapeType = shapeContainer.getShapeType();
     switch (shapeType) {
@@ -161,7 +172,7 @@ class CanvasRasterer {
       case ShapeType.POLYLINE:
         PolylineContainer polylineContainer = shapeContainer;
         //_log.info("drawing line " + polylineContainer.toString());
-        drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(), shapePaintContainer.dy);
+        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(), shapePaintContainer.dy);
         break;
     }
   }

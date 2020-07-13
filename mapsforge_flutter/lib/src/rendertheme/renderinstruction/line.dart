@@ -74,7 +74,7 @@ class Line extends RenderInstruction with BitmapMixin {
         for (int f = 0; f < this.strokeDasharray.length; ++f) {
           this.strokeDasharray[f] = this.strokeDasharray[f] * displayModel.getScaleFactor();
         }
-        this.stroke.setDashPathEffect(this.strokeDasharray);
+        this.stroke.setStrokeDasharray(this.strokeDasharray);
       } else if (RenderInstruction.STROKE_LINECAP == name) {
         this.stroke.setStrokeCap(Cap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_LINEJOIN == name) {
@@ -148,7 +148,7 @@ class Line extends RenderInstruction with BitmapMixin {
         for (int i = 0; i < strokeDasharray.length; i++) {
           strokeDasharrayScaled[i] = this.strokeDasharray[i] * scaleFactor;
         }
-        paint.setDashPathEffect(strokeDasharrayScaled);
+        paint.setStrokeDasharray(strokeDasharrayScaled);
       }
       strokes[zoomLevel] = paint;
     }

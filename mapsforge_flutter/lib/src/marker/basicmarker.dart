@@ -33,6 +33,9 @@ class BasicMarker<T> {
 
   final MarkerCaption markerCaption;
 
+  @protected
+  bool init = false;
+
   BasicMarker({
     this.display = Display.ALWAYS,
     this.minZoomLevel = 0,
@@ -50,7 +53,9 @@ class BasicMarker<T> {
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
+    if (init) return;
     if (markerCaption != null) markerCaption.initResources(graphicFactory);
+    init = true;
   }
 
   void dispose() {}
@@ -105,6 +110,8 @@ class MarkerCaption {
 
   final int minZoom;
 
+  bool _init = false;
+
   MarkerCaption({
     this.text,
     this.latLong,
@@ -120,6 +127,7 @@ class MarkerCaption {
         assert(minZoom != null && minZoom >= 0);
 
   void initResources(GraphicFactory graphicFactory) {
+    if (_init) return;
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
       this.stroke.setColorFromNumber(strokeColor);
@@ -127,6 +135,7 @@ class MarkerCaption {
       this.stroke.setStrokeWidth(strokeWidth);
       this.stroke.setTextSize(fontSize);
     }
+    _init = true;
   }
 
   void renderCaption(MarkerCallback markerCallback) {

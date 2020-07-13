@@ -5,3 +5,4 @@ example/.metadata
 example/pubspec.lock
 .flutter-plugins-dependencies
 flutter_export_environment.sh
+mapsforge_flutter/test/failures/

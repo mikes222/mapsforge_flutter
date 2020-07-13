@@ -66,6 +66,7 @@ class PoiMarker<T> extends BasicMarker<T> {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
+    if (init) return;
     super.initResources(graphicFactory);
     if (markerCaption != null && markerCaption.latLong == null) {
       markerCaption.latLong = latLong;

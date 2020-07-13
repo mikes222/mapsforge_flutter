@@ -39,6 +39,8 @@ class RectMarker<T> extends BasicMarker<T> {
 
   final int percent;
 
+  List<double> strokeDasharray;
+
   RectMarker({
     this.symbolCache,
     display = Display.ALWAYS,
@@ -56,6 +58,7 @@ class RectMarker<T> extends BasicMarker<T> {
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
     this.src,
+    this.strokeDasharray,
     @required this.minLatLon,
     @required this.maxLatLon,
   })  : assert(display != null),
@@ -70,6 +73,7 @@ class RectMarker<T> extends BasicMarker<T> {
         assert(src == null || (symbolCache != null)),
         assert(minLatLon != null),
         assert(maxLatLon != null),
+        assert(strokeDasharray == null || strokeDasharray.length == 2),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -82,10 +86,14 @@ class RectMarker<T> extends BasicMarker<T> {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
+    if (init) return;
     super.initResources(graphicFactory);
-    if (fill == null && fillColor != null) {
+    if (fill == null && (fillColor != null || src != null)) {
       this.fill = graphicFactory.createPaint();
-      this.fill.setColorFromNumber(fillColor);
+      if (fillColor != null)
+        this.fill.setColorFromNumber(fillColor);
+      else
+        this.fill.setColorFromNumber(0x40000000);
       this.fill.setStyle(Style.FILL);
       this.fill.setStrokeWidth(fillWidth);
       //this.stroke.setTextSize(fontSize);
@@ -96,6 +104,7 @@ class RectMarker<T> extends BasicMarker<T> {
       this.stroke.setStyle(Style.STROKE);
       this.stroke.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
+      if (strokeDasharray != null) stroke.setStrokeDasharray(strokeDasharray);
     }
     if (_bitmapInvalid == null && src != null && !src.isEmpty) {
       try {

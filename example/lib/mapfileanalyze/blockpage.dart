@@ -30,10 +30,12 @@ class BlockPage extends StatelessWidget {
           );
         }
         MapReadResult mapReadResult = snapshot.data;
-        int items = mapReadResult.ways.fold(
-            0,
-            (previousValue, element) =>
-                previousValue + element.latLongs.fold(0, (previousValue, element) => previousValue + element.length));
+        int items = mapReadResult.ways.length < 1000
+            ? mapReadResult.ways.fold(
+                0,
+                (previousValue, element) =>
+                    previousValue + element.latLongs.fold(0, (previousValue, element) => previousValue + element.length))
+            : -1;
         return ListView(
           children: <Widget>[
             Card(

@@ -23,6 +23,13 @@ MapInfo sachsenMap = MapInfo(
   lon: 12.94189453125,
 );
 
+MapInfo austria = MapInfo(
+  mapfilesource: "https://download.mapsforge.org/maps/v5/europe/austria.map",
+  mapfile: "austria.map",
+  lat: 48.089415,
+  lon: 16.311374,
+);
+
 MapInfo monacoMap = MapInfo(
   mapfilesource: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/monaco.map",
   mapfile: "monaco.map",
