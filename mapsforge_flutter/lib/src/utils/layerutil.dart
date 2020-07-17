@@ -1,7 +1,4 @@
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/cache/tilecache.dart';
-import 'package:mapsforge_flutter/src/layer/job/job.dart';
-import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
@@ -52,7 +49,11 @@ class LayerUtil {
     return tiles;
   }
 
-  static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, TileCache tileCache) {
+  ///
+  /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
+  /// the user (tile in the middle should be created first
+  ///
+  static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition) {
     BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     int zoomLevel = mapViewPosition.zoomLevel;
     double tileSize = mapViewPosition.mercatorProjection.tileSize;
@@ -67,16 +68,16 @@ class LayerUtil {
 
     // build tiles starting from the center tile
     for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
-      tiles.add(tileCache.getTile(tileHalfX, tileY, zoomLevel, tileSize));
+      tiles.add(Tile(tileHalfX, tileY, zoomLevel, tileSize));
       int xDiff = 1;
       while (true) {
         bool xAdded = false;
         if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(tileCache.getTile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
           xAdded = true;
         }
         if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(tileCache.getTile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
           xAdded = true;
         }
         if (!xAdded) break;
@@ -84,16 +85,16 @@ class LayerUtil {
       }
     }
     for (int tileY = tileHalfY - 1; tileY >= tileTop; --tileY) {
-      tiles.add(tileCache.getTile(tileHalfX, tileY, zoomLevel, tileSize));
+      tiles.add(Tile(tileHalfX, tileY, zoomLevel, tileSize));
       int xDiff = 1;
       while (true) {
         bool xAdded = false;
         if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(tileCache.getTile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
           xAdded = true;
         }
         if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(tileCache.getTile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
           xAdded = true;
         }
         if (!xAdded) break;

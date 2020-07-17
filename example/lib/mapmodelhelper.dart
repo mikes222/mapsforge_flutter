@@ -48,10 +48,6 @@ class MapModelHelper {
     //JobRenderer jobRenderer = DummyRenderer();
 
     FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
-    Timer(Duration(milliseconds: 1000), () {
-      // init of cache is async, so wait until init is finished an then purge the cache.
-      //bitmapCache.purge();
-    });
 
     MapModel mapModel = MapModel(
       displayModel: displayModel,

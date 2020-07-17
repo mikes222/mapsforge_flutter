@@ -1,4 +1,3 @@
-import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/datastore/mapdatastore.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
@@ -85,6 +84,7 @@ class TileRendererLayer extends TileLayerImpl implements Observer {
         assert(mapDataStore != null),
         assert(jobRenderer != null),
         super(
+            graphicFactory: graphicFactory,
             //tileCache: tileCache,
             matrix: graphicFactory.createMatrix(),
             isTransparent: isTransparent,

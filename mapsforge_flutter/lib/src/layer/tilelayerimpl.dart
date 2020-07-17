@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/cache/tilecache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
@@ -16,7 +15,6 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:meta/meta.dart';
 
-import '../cache/memorytilecache.dart';
 import 'job/job.dart';
 import 'job/jobqueue.dart';
 import 'job/jobrenderer.dart';
@@ -27,7 +25,6 @@ class TileLayerImpl extends TileLayer {
 
   final bool isTransparent;
   final JobQueue jobQueue;
-  final TileCache _tileCache = MemoryTileCache();
   final Matrix matrix;
   final JobRenderer jobRenderer;
   final MapPaint paint;
@@ -68,7 +65,7 @@ class TileLayerImpl extends TileLayer {
   @override
   void draw(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, MapCanvas canvas) {
     int time = DateTime.now().millisecondsSinceEpoch;
-    List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition, _tileCache);
+    List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition);
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the

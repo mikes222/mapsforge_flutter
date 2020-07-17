@@ -1,7 +1,5 @@
 export 'src/mapfile/mapfile.dart';
 
-export 'src/cache/tilecache.dart';
-
 export 'src/labels/tilebasedlabelstore.dart';
 
 export 'src/rendertheme/rule/rendertheme.dart';
@@ -12,5 +10,4 @@ export 'src/renderer/dummyrenderer.dart';
 export 'src/layer/job/jobrenderer.dart';
 export 'src/renderer/maponlinerenderer.dart';
 
-export 'src/cache/memorytilecache.dart';
 export 'src/projection/mercatorprojectionimpl.dart';
