@@ -19,13 +19,11 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   String id;
   int priority = 0;
   final String relativePathPrefix;
-  MapPaint symbolPaint;
 
   RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
       : super(graphicFactory, displayModel) {
     this.symbolCache = symbolCache;
     this.display = Display.IFSPACE;
-    symbolPaint = graphicFactory.createPaint();
   }
 
   @override
@@ -99,5 +97,10 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
 
   Future<Bitmap> getBitmap(GraphicFactory graphicFactory) async {
     return getOrCreateBitmap(graphicFactory, relativePathPrefix, src);
+  }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return initBitmap(graphicFactory);
   }
 }

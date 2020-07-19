@@ -18,7 +18,7 @@ class Tag implements Comparable<Tag> {
    * @param key   the key of the tag.
    * @param value the value of the tag.
    */
-  Tag(this.key, this.value);
+  const Tag(this.key, this.value);
 
   /**
    * @param tag the textual representation of the tag.
@@ -47,11 +47,7 @@ class Tag implements Comparable<Tag> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Tag &&
-          runtimeType == other.runtimeType &&
-          key == other.key &&
-          value == other.value;
+      identical(this, other) || other is Tag && runtimeType == other.runtimeType && key == other.key && value == other.value;
 
   @override
   int get hashCode => key.hashCode ^ value.hashCode;

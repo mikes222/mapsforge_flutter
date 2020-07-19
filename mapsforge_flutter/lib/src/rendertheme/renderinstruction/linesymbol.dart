@@ -1,7 +1,6 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
@@ -30,7 +29,6 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   double repeatStart;
   bool rotate;
   Scale scale = Scale.STROKE;
-  MapPaint symbolPaint;
 
   LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
       : dyScaled = new Map(),
@@ -38,7 +36,6 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
     this.symbolCache = symbolCache;
     this.display = Display.IFSPACE;
     this.rotate = true;
-    this.symbolPaint = graphicFactory.createPaint();
   }
 
   @override
@@ -122,5 +119,10 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     // do nothing
+  }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return initBitmap(graphicFactory);
   }
 }

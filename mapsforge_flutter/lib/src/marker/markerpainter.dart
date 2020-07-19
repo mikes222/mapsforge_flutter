@@ -29,15 +29,10 @@ class MarkerPainter implements CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    //mapModel.mapViewDimension.setDimension(size.width, size.height);
-    //_log.info("Painting ${markerRenderer.toString()}");
     bool changed = mapViewDimension.setDimension(size.width, size.height);
     if (changed) {
       position.sizeChanged();
     }
-    // TODO this is an async method. We should wait until the properties are initialized
-    markerRenderer.initResources(mapViewDimension, position);
-
     markerRenderer.draw(FlutterCanvas(canvas, size), mapViewDimension, position);
   }
 
@@ -58,8 +53,13 @@ class MarkerPainter implements CustomPainter {
   get semanticsBuilder => null;
 
   @override
-  void addListener(listener) {}
+  void addListener(listener) {
+    // informs a listener if a repaint is needed because a marker is finally initialized and ready to draw itself
+    markerRenderer.addListener(listener);
+  }
 
   @override
-  void removeListener(listener) {}
+  void removeListener(listener) {
+    markerRenderer.removeListener(listener);
+  }
 }

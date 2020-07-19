@@ -294,4 +294,9 @@ class Caption extends RenderInstruction with BitmapMixin {
 
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return initBitmap(graphicFactory);
+  }
 }

@@ -188,7 +188,7 @@ class RenderTheme {
   }
 
   Future<void> _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) async {
-    MatchingCacheKey matchingCacheKey = new MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, closed);
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, closed);
 
     List<RenderInstruction> matchingList = this.wayMatchingCache[matchingCacheKey];
     if (matchingList == null) {

@@ -22,7 +22,6 @@ class PathMarker<T> extends BasicMarker<T> {
     display = Display.ALWAYS,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    imageColor = 0xff000000,
     rotation,
     item,
     this.strokeWidth = 1.0,
@@ -31,21 +30,18 @@ class PathMarker<T> extends BasicMarker<T> {
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
-        assert(imageColor != null),
         assert(strokeWidth >= 0),
         assert(strokeColor != null),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          imageColor: imageColor,
           rotation: rotation,
           item: item,
         );
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (init) return;
     super.initResources(graphicFactory);
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();

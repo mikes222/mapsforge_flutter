@@ -9,7 +9,6 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -21,7 +20,7 @@ import 'textkey.dart';
 /**
  * Represents a text along a polyline on the map.
  */
-class PathText extends RenderInstruction with BitmapMixin {
+class PathText extends RenderInstruction {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
 
@@ -46,7 +45,6 @@ class PathText extends RenderInstruction with BitmapMixin {
         strokes = new Map(),
         dyScaled = new Map(),
         super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);
@@ -192,5 +190,10 @@ class PathText extends RenderInstruction with BitmapMixin {
     MapPaint zlStroke = graphicFactory.createPaintFrom(this.stroke);
     zlStroke.setTextSize(this.fontSize * scaleFactor);
     this.strokes[zoomLevel] = zlStroke;
+  }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return null;
   }
 }

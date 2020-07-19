@@ -10,7 +10,14 @@ class FlutterBitmap implements Bitmap {
   FlutterBitmap(this.bitmap) : assert(bitmap != null);
 
   @override
+  void incrementRefCount() {
+    assert(_refcount != -1);
+    ++_refcount;
+  }
+
+  @override
   void decrementRefCount() {
+    assert(_refcount != -1);
     --_refcount;
     if (_refcount == 0) {
       bitmap.dispose();
@@ -28,12 +35,6 @@ class FlutterBitmap implements Bitmap {
   int getWidth() {
     assert(_refcount != -1);
     return bitmap.width;
-  }
-
-  @override
-  void incrementRefCount() {
-    assert(_refcount != -1);
-    ++_refcount;
   }
 
   @override

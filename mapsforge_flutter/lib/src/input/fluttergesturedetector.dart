@@ -55,7 +55,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       onDoubleTap: () {
         if (_doubleTapOffset != null) {
           //if (positionRelative == null) return;
-          print(" double tap at ${_doubleTapOffset.toString()}");
+//          _log.info(" double tap at ${_doubleTapOffset.toString()}");
 //          double xCenter = widget.mapModel.mapViewPosition.leftUpper.x
           BoundingBox boundingBox = widget.mapModel.mapViewPosition.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension());
           // lat/lon of the position where we double-clicked

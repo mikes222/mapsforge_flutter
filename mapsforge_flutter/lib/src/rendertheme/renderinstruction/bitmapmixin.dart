@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 
 class BitmapMixin {
@@ -9,17 +10,23 @@ class BitmapMixin {
 
   SymbolCache symbolCache;
 
-  Bitmap bitmap;
-  bool bitmapInvalid = false;
-  Future<Bitmap> _future;
-
-  double height = 0;
-  int percent = 100;
-  double width = 0;
-
   String src;
 
   RenderSymbol renderSymbol;
+
+  Bitmap bitmap;
+
+  bool bitmapInvalid = false;
+
+  Future<Bitmap> _future;
+
+  double height = 0;
+
+  double width = 0;
+
+  int percent = 100;
+
+  MapPaint symbolPaint;
 
   void destroy() {
     if (this.bitmap != null) {
@@ -30,7 +37,7 @@ class BitmapMixin {
   }
 
   @mustCallSuper
-  Future<void> initResources(GraphicFactory graphicFactory) async {
+  Future<void> initBitmap(GraphicFactory graphicFactory) async {
     //print("initResources called for $src");
     if (bitmapInvalid) return;
 
@@ -60,6 +67,9 @@ class BitmapMixin {
         bitmapInvalid = true;
       }
     }
+
+    symbolPaint = graphicFactory.createPaint();
+    symbolPaint.setColorFromNumber(0xff000000);
   }
 
   @protected
@@ -83,7 +93,7 @@ class BitmapMixin {
       bitmapInvalid = false;
       return bitmap;
     } catch (e, stacktrace) {
-      print("Exception $e\nStacktrace $stacktrace");
+      _log.warning("Exception $e\nStacktrace $stacktrace");
       bitmap = null;
       _future = null;
       bitmapInvalid = true;

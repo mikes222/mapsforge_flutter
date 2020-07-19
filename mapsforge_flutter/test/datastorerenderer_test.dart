@@ -27,7 +27,7 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    String prefix = "../"; // "../";
+    String prefix = ""; // "../";
     double tileSize = displayModel.tileSize;
     int z = 16;
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;

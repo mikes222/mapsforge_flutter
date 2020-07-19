@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -16,7 +15,7 @@ import 'renderinstruction.dart';
 /**
  * Represents a round area on the map.
  */
-class RenderCircle extends RenderInstruction with BitmapMixin {
+class RenderCircle extends RenderInstruction {
   MapPaint fill;
   final Map<int, MapPaint> fills;
   final int level;
@@ -33,7 +32,6 @@ class RenderCircle extends RenderInstruction with BitmapMixin {
         strokes = new Map(),
         renderRadiusScaled = new Map(),
         super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);
@@ -131,5 +129,10 @@ class RenderCircle extends RenderInstruction with BitmapMixin {
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     // do nothing
+  }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return null;
   }
 }

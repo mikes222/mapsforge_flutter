@@ -7,10 +7,11 @@ import 'tilebitmapcache.dart';
 
 class MemoryTileBitmapCache extends TileBitmapCache {
   Cache<Tile, TileBitmap> _bitmaps = new SimpleCache<Tile, TileBitmap>(
-      storage: SimpleStorage<Tile, TileBitmap>(size: 100),
-      onEvict: (key, item) {
-        item.decrementRefCount();
-      });
+    storage: SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
+      item.decrementRefCount();
+    }),
+    capacity: 100,
+  );
 
   @override
   void dispose() {
@@ -22,6 +23,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   }
 
   void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
+    assert(tile != null);
     assert(tileBitmap != null);
     tileBitmap.incrementRefCount();
     TileBitmap bitmap = _bitmaps.get(tile);

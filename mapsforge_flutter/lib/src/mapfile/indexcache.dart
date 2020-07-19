@@ -18,12 +18,12 @@ class IndexCache {
 
   final LruCache<IndexCacheEntryKey, List<int>> _map;
 
-  String filename;
+  final String filename;
 
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.
   /// @throws IllegalArgumentException if the capacity is negative.
-  IndexCache(String this.filename, int capacity) : _map = LruCache<IndexCacheEntryKey, List<int>>(storage: SimpleStorage(size: 100));
+  IndexCache(this.filename, int capacity) : _map = LruCache<IndexCacheEntryKey, List<int>>(storage: SimpleStorage(), capacity: 1000);
 
   /**
    * Destroy the cache at the end of its lifetime.

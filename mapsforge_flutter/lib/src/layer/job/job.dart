@@ -1,4 +1,3 @@
-import 'package:dcache/dcache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
@@ -13,23 +12,23 @@ class Job {
   /// The resulting bitmap after this job has been processed.
   TileBitmap _tileBitmap;
 
-  static final Cache jobs = new SimpleCache<Tile, Job>(
-      storage: new SimpleStorage<Tile, Job>(size: 1000),
-      onEvict: (key, Job item) {
-        item.getAndRemovetileBitmap();
-      });
+//  static final Cache jobs = new SimpleCache<Tile, Job>(
+//      storage: new SimpleStorage<Tile, Job>(size: 1000),
+//      onEvict: (key, Job item) {
+//        item.getAndRemovetileBitmap();
+//      });
 
   Job._(this.tile, this.hasAlpha, this.textScale)
       : assert(tile != null),
         assert(hasAlpha != null);
 
   factory Job(Tile tile, bool alpha, double scaleFactor) {
-    Job job = jobs[tile];
-    if (job != null) {
-      return job;
-    }
-    job = Job._(tile, alpha, scaleFactor);
-    jobs[tile] = job;
+//    Job job = jobs[tile];
+//    if (job != null) {
+//      return job;
+//    }
+    Job job = Job._(tile, alpha, scaleFactor);
+//    jobs[tile] = job;
     return job;
   }
 

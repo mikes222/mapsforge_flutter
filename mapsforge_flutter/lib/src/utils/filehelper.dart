@@ -62,13 +62,13 @@ class FileHelper {
   }
 
   static Future<bool> delete(String filename) async {
-    String _localPath = await findLocalPath();
-
     File file;
     if (filename.startsWith("/"))
       file = File(filename);
-    else
+    else {
+      String _localPath = await findLocalPath();
       file = File(_localPath + "/" + filename);
+    }
     if (await file.exists()) {
       file.delete();
       return true;

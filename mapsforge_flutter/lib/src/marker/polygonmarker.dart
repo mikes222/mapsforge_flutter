@@ -34,7 +34,9 @@ class PolygonMarker<T> extends BasicMarker<T> {
   bool _bitmapInvalid = false;
 
   String src;
+
   SymbolCache symbolCache;
+
   final int width;
 
   final int height;
@@ -46,7 +48,6 @@ class PolygonMarker<T> extends BasicMarker<T> {
     display = Display.ALWAYS,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    imageColor = 0xff000000,
     rotation,
     item,
     markerCaption,
@@ -65,14 +66,11 @@ class PolygonMarker<T> extends BasicMarker<T> {
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
         assert(strokeColor != null),
-        //assert(fillColor != null),
-        assert(imageColor != null),
         assert(src == null || (symbolCache != null)),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          imageColor: imageColor,
           rotation: rotation,
           item: item,
           markerCaption: markerCaption,
@@ -84,7 +82,6 @@ class PolygonMarker<T> extends BasicMarker<T> {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (init) return;
     super.initResources(graphicFactory);
     if (fill == null && fillColor != null) {
       this.fill = graphicFactory.createPaint();

@@ -1,6 +1,7 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
+import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
@@ -126,5 +127,10 @@ class Area extends RenderInstruction with BitmapMixin {
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     // do nothing
+  }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return initBitmap(graphicFactory);
   }
 }

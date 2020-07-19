@@ -1,5 +1,3 @@
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
@@ -7,13 +5,14 @@ import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:meta/meta.dart';
 
 import '../../core.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
-class RectMarker<T> extends BasicMarker<T> {
+class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   ILatLong minLatLon;
   ILatLong maxLatLon;
 
@@ -29,35 +28,21 @@ class RectMarker<T> extends BasicMarker<T> {
 
   final int strokeColor;
 
-  bool _bitmapInvalid;
-  Bitmap _bitmap;
-  String src;
-  SymbolCache symbolCache;
-  final int width;
-
-  final int height;
-
-  final int percent;
-
   List<double> strokeDasharray;
 
   RectMarker({
-    this.symbolCache,
     display = Display.ALWAYS,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    imageColor = 0xff000000,
     rotation,
     item,
+    String src,
+    symbolCache,
     markerCaption,
-    this.width = 20,
-    this.height = 20,
-    this.percent,
     this.fillWidth = 1.0,
     this.fillColor,
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
-    this.src,
     this.strokeDasharray,
     @required this.minLatLon,
     @required this.maxLatLon,
@@ -68,9 +53,6 @@ class RectMarker<T> extends BasicMarker<T> {
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
         assert(strokeColor != null),
-        //assert(fillColor != null),
-        assert(imageColor != null),
-        assert(src == null || (symbolCache != null)),
         assert(minLatLon != null),
         assert(maxLatLon != null),
         assert(strokeDasharray == null || strokeDasharray.length == 2),
@@ -78,24 +60,26 @@ class RectMarker<T> extends BasicMarker<T> {
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          imageColor: imageColor,
           rotation: rotation,
           item: item,
           markerCaption: markerCaption,
-        );
+        ) {
+    this.src = src;
+    this.symbolCache = symbolCache;
+  }
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (init) return;
     super.initResources(graphicFactory);
-    if (fill == null && (fillColor != null || src != null)) {
+    await initBitmap(graphicFactory);
+    if (fill == null && (fillColor != null || bitmap != null)) {
       this.fill = graphicFactory.createPaint();
-      if (fillColor != null)
-        this.fill.setColorFromNumber(fillColor);
-      else
-        this.fill.setColorFromNumber(0x40000000);
+      if (fillColor != null) this.fill.setColorFromNumber(fillColor);
       this.fill.setStyle(Style.FILL);
       this.fill.setStrokeWidth(fillWidth);
+      if (bitmap != null) {
+        fill.setBitmapShader(bitmap);
+      }
       //this.stroke.setTextSize(fontSize);
     }
     if (stroke == null && strokeWidth > 0) {
@@ -105,20 +89,6 @@ class RectMarker<T> extends BasicMarker<T> {
       this.stroke.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
       if (strokeDasharray != null) stroke.setStrokeDasharray(strokeDasharray);
-    }
-    if (_bitmapInvalid == null && src != null && !src.isEmpty) {
-      try {
-        this._bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width, height, percent);
-        if (_bitmap != null) {
-          _bitmapInvalid = false;
-          fill.setBitmapShader(_bitmap);
-          _bitmap.incrementRefCount();
-        }
-      } catch (ioException, stacktrace) {
-        print(ioException.toString());
-        print(stacktrace);
-        _bitmapInvalid = true;
-      }
     }
     if (markerCaption != null && markerCaption.latLong == null) {
       markerCaption.latLong = LatLong(minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,

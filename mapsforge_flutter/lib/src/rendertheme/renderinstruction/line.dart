@@ -160,4 +160,9 @@ class Line extends RenderInstruction with BitmapMixin {
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     // do nothing
   }
+
+  @override
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return initBitmap(graphicFactory);
+  }
 }

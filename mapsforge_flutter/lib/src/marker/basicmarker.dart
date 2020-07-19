@@ -12,15 +12,18 @@ import 'markercallback.dart';
 class BasicMarker<T> {
   final Display display;
 
+  ///
+  /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
+  ///
   ILatLong latLong;
 
-  double imageOffsetX = 0;
+//  double imageOffsetX = 0;
 
-  double imageOffsetY = 0;
+//  double imageOffsetY = 0;
 
-  MapPaint imagePaint;
+//  MapPaint imagePaint;
 
-  int imageColor;
+//  int imageColor;
 
   int minZoomLevel;
 
@@ -33,14 +36,11 @@ class BasicMarker<T> {
 
   final MarkerCaption markerCaption;
 
-  @protected
-  bool init = false;
-
   BasicMarker({
     this.display = Display.ALWAYS,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
-    this.imageColor = 0xff000000,
+//    this.imageColor = 0xff000000,
     this.rotation,
     this.item,
     this.latLong,
@@ -48,14 +48,15 @@ class BasicMarker<T> {
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(rotation == null || (rotation >= 0 && rotation <= 360)),
-        assert(imageColor != null);
+        //assert(latLong != null),
+        assert(minZoomLevel <= maxZoomLevel),
+        assert(rotation == null || (rotation >= 0 && rotation <= 360))
+  //      assert(imageColor != null)
+  ;
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (init) return;
     if (markerCaption != null) markerCaption.initResources(graphicFactory);
-    init = true;
   }
 
   void dispose() {}
@@ -63,18 +64,19 @@ class BasicMarker<T> {
   ///
   /// called by markerPointer -> markerRenderer
   ///
-  void renderNode(MarkerCallback markerCallback) {
-    if (Display.NEVER == this.display) {
-      return;
-    }
-    //if (latLong?.latitude == null || latLong?.longitude == null) return;
-
+  void render(MarkerCallback markerCallback) {
     renderBitmap(markerCallback);
     if (markerCaption != null) markerCaption.renderCaption(markerCallback);
   }
 
+  ///
+  /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
+  /// only if shouldPoint() returns true, do not test for available resources here.
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && boundary.contains(latLong.latitude, latLong.longitude);
+    return display != Display.NEVER &&
+        minZoomLevel <= zoomLevel &&
+        maxZoomLevel >= zoomLevel &&
+        boundary.contains(latLong.latitude, latLong.longitude);
   }
 
   void renderBitmap(MarkerCallback markerCallback) {}
@@ -110,8 +112,6 @@ class MarkerCaption {
 
   final int minZoom;
 
-  bool _init = false;
-
   MarkerCaption({
     this.text,
     this.latLong,
@@ -127,7 +127,6 @@ class MarkerCaption {
         assert(minZoom != null && minZoom >= 0);
 
   void initResources(GraphicFactory graphicFactory) {
-    if (_init) return;
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
       this.stroke.setColorFromNumber(strokeColor);
@@ -135,7 +134,6 @@ class MarkerCaption {
       this.stroke.setStrokeWidth(strokeWidth);
       this.stroke.setTextSize(fontSize);
     }
-    _init = true;
   }
 
   void renderCaption(MarkerCallback markerCallback) {
