@@ -46,6 +46,7 @@ class BitmapMixin {
     if (renderSymbol != null) {
       try {
         bitmap = await renderSymbol.getBitmap(graphicFactory);
+        bitmap.incrementRefCount();
       } catch (e, stacktrace) {
         print("Exception $e\nStacktrace $stacktrace");
         bitmap = null;
@@ -60,6 +61,7 @@ class BitmapMixin {
       }
       try {
         bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width.round(), height.round(), percent);
+        bitmap.incrementRefCount();
       } catch (e, stacktrace) {
         _log.warning("${e.toString()}, ignore missing bitmap in rendering");
         //print("Exception $e\nStacktrace $stacktrace");

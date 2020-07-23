@@ -3,11 +3,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
-import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 
 ///
 /// A cache for symbols (small bitmaps)
@@ -21,17 +19,15 @@ class SymbolCache {
    */
   static int DEFAULT_SIZE = 20;
 
-  Map<String, ResourceBitmap> cache = Map();
+  Map<String, ResourceBitmap> _cache = Map();
 
-  final DisplayModel displayModel;
-
-  SymbolCache(this.displayModel);
+  SymbolCache();
 
   void dispose() {
-    cache.forEach((key, bitmap) {
+    _cache.forEach((key, bitmap) {
       bitmap.decrementRefCount();
     });
-    cache.clear();
+    _cache.clear();
   }
 
   Future<ResourceBitmap> getOrCreateBitmap(GraphicFactory graphicFactory, String src, int width, int height, int percent) async {
@@ -40,18 +36,18 @@ class SymbolCache {
       return null;
     }
     String key = "$src-$width-$height-$percent";
-    ResourceBitmap result = cache[key];
-    if (result != null) return result;
-    result = await _createBitmap(graphicFactory, displayModel, null, src, width, height, percent);
-    if (result != null) {
-      result.incrementRefCount();
-      cache[key] = result;
+    ResourceBitmap bitmap = _cache[key];
+    if (bitmap != null) return bitmap;
+    bitmap = await _createBitmap(graphicFactory, null, src, width, height, percent);
+    if (bitmap != null) {
+      bitmap.incrementRefCount();
+      _cache[key] = bitmap;
     }
-    return result;
+    return bitmap;
   }
 
-  Future<ResourceBitmap> _createBitmap(GraphicFactory graphicFactory, DisplayModel displayModel, String relativePathPrefix, String src,
-      int width, int height, int percent) async {
+  Future<ResourceBitmap> _createBitmap(
+      GraphicFactory graphicFactory, String relativePathPrefix, String src, int width, int height, int percent) async {
     if (src == null || src.length == 0) {
 // no image source defined
       return null;

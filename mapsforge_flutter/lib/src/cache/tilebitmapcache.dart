@@ -5,11 +5,9 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 abstract class TileBitmapCache {
   void dispose();
 
-  TileBitmap getTileBitmap(Tile tile);
+  TileBitmap getTileBitmapSync(Tile tile);
 
-  Future<TileBitmap> getTileBitmapAsync(Tile tile) async {
-    return getTileBitmap(tile);
-  }
+  Future<TileBitmap> getTileBitmapAsync(Tile tile);
 
   void addTileBitmap(Tile tile, TileBitmap tileBitmap);
 

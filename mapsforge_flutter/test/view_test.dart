@@ -30,7 +30,7 @@ void main() {
 
       GraphicFactory graphicFactory = FlutterGraphicFactory();
       final DisplayModel displayModel = DisplayModel();
-      SymbolCache symbolCache = SymbolCache(displayModel);
+      SymbolCache symbolCache = SymbolCache();
 
       RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
       final file = new File(prefix + 'test_resources/rendertheme.xml');

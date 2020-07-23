@@ -9,19 +9,23 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 
-import 'tilebitmapcache.dart';
 import 'memorytilebitmapcache.dart';
+import 'tilebitmapcache.dart';
 
 class FileTileBitmapCache extends TileBitmapCache {
   static final _log = new Logger('FileTileBitmapCache');
 
   final MemoryTileBitmapCache _memoryBitmapCache;
 
+  ///
+  /// a unique key for the rendered bitmaps. The key should be dependent of the renderingTheme. In other words if the bitmaps should be
+  /// rendered differently (day/night for example or different mapfiles) there should be different rendering keys
+  ///
   String renderkey;
 
-  List<String> files;
+  List<String> _files;
 
-  String dir;
+  String _dir;
 
   FileTileBitmapCache(this.renderkey) : _memoryBitmapCache = MemoryTileBitmapCache() {
     _init();
@@ -29,24 +33,24 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   Future _init() async {
     assert(renderkey != null && !renderkey.contains("/"));
-    dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
-    files = await FileHelper.getFiles(dir);
-    _log.info("Starting cache for renderkey $renderkey with ${files.length} items in filecache");
+    _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
+    _files = await FileHelper.getFiles(_dir);
+    _log.info("Starting cache for renderkey $renderkey with ${_files.length} items in filecache");
 //    files.forEach((file) {
 //      _log.info("  file in cache: $file");
 //    });
   }
 
   void purgeAll() async {
-    if (files == null) return;
+    if (_files == null) return;
     int count = 0;
-    await files.forEach((file) async {
+    await _files.forEach((file) async {
       _log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
     });
     _log.info("purged $count files from cache $renderkey");
-    files.clear();
+    _files.clear();
     _memoryBitmapCache.purgeAll();
   }
 
@@ -56,10 +60,15 @@ class FileTileBitmapCache extends TileBitmapCache {
     _storeFile(tile, tileBitmap);
   }
 
+//  @override
+//  TileBitmap getTileBitmap(Tile tile) {
+//    TileBitmap tileBitmap = _memoryBitmapCache.getTileBitmap(tile);
+//    return tileBitmap;
+//  }
+
   @override
-  TileBitmap getTileBitmap(Tile tile) {
-    TileBitmap tileBitmap = _memoryBitmapCache.getTileBitmap(tile);
-    return tileBitmap;
+  TileBitmap getTileBitmapSync(Tile tile) {
+    return _memoryBitmapCache.getTileBitmapSync(tile);
   }
 
   @override
@@ -68,7 +77,7 @@ class FileTileBitmapCache extends TileBitmapCache {
     if (tileBitmap != null) return tileBitmap;
 
     String filename = _calculateFilename(tile);
-    if (files == null || !files.contains(filename)) {
+    if (_files == null || !_files.contains(filename)) {
       // not yet initialized or not in cache
       return null;
     }
@@ -91,20 +100,20 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   Future _storeFile(Tile tile, TileBitmap tileBitmap) async {
     String filename = _calculateFilename(tile);
-    if (files == null) {
+    if (_files == null) {
       // not yet initialized
       return;
     }
-    if (files.contains(filename)) return;
+    if (_files.contains(filename)) return;
     Image img = (tileBitmap as FlutterTileBitmap).bitmap;
     ByteData content = await img.toByteData(format: ImageByteFormat.png);
     File file = File(filename);
     file.writeAsBytes(content.buffer.asUint8List(), mode: FileMode.write);
-    files.add(filename);
+    _files.add(filename);
   }
 
   String _calculateFilename(Tile tile) {
-    return "$dir/${tile.zoomLevel}_${tile.tileX}_${tile.tileY}.png";
+    return "$_dir/${tile.zoomLevel}_${tile.tileX}_${tile.tileY}.png";
   }
 
   @override
@@ -115,15 +124,15 @@ class FileTileBitmapCache extends TileBitmapCache {
   @override
   Future<void> purgeByBoundary(BoundingBox boundingBox) async {
     // todo find a method to remove only affected files. For now we clear the whole cache
-    if (files == null) return;
+    if (_files == null) return;
     int count = 0;
-    await files.forEach((file) async {
+    await _files.forEach((file) async {
       _log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
     });
     _log.info("purged $count files from cache $renderkey");
-    files.clear();
+    _files.clear();
 
     _memoryBitmapCache.purgeByBoundary(boundingBox);
   }

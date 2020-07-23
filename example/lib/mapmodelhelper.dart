@@ -36,7 +36,7 @@ class MapModelHelper {
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
-    SymbolCache symbolCache = SymbolCache(displayModel);
+    SymbolCache symbolCache = SymbolCache();
 
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
@@ -96,7 +96,7 @@ class MapModelHelper {
   static Future<MapModel> prepareOnlineMapModel() async {
     GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
-    SymbolCache symbolCache = SymbolCache(displayModel);
+    SymbolCache symbolCache = SymbolCache();
 
     //JobRenderer jobRenderer = MapDataStoreRenderer(multiMapDataStore, renderTheme, graphicFactory, true);
     JobRenderer jobRenderer = MapOnlineRenderer();

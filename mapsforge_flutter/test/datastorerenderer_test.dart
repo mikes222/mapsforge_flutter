@@ -34,7 +34,7 @@ void main() {
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
-    SymbolCache symbolCache = SymbolCache(displayModel);
+    SymbolCache symbolCache = SymbolCache();
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();
@@ -110,7 +110,7 @@ void main() {
     ];
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
-    SymbolCache symbolCache = SymbolCache(displayModel);
+    SymbolCache symbolCache = SymbolCache();
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();

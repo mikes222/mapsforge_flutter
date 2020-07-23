@@ -89,7 +89,7 @@ class TileLayerImpl extends TileLayer {
     JobSet jobSet = JobSet();
     tiles.forEach((Tile tile) {
       Mappoint point = tile.leftUpperPoint;
-      TileBitmap tileBitmap = jobQueue.tileBitmapCache.getTileBitmap(tile);
+      TileBitmap tileBitmap = jobQueue.tileBitmapCache.getTileBitmapSync(tile);
       if (tileBitmap != null) {
         canvas.drawBitmap(
           bitmap: tileBitmap,

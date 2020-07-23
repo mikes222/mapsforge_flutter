@@ -6,7 +6,7 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'tilebitmapcache.dart';
 
 class MemoryTileBitmapCache extends TileBitmapCache {
-  Cache<Tile, TileBitmap> _bitmaps = new SimpleCache<Tile, TileBitmap>(
+  Cache<Tile, TileBitmap> _bitmaps = new LruCache<Tile, TileBitmap>(
     storage: SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
       item.decrementRefCount();
     }),
@@ -19,6 +19,16 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   }
 
   TileBitmap getTileBitmap(Tile tile) {
+    return _bitmaps.get(tile);
+  }
+
+  @override
+  TileBitmap getTileBitmapSync(Tile tile) {
+    return _bitmaps.get(tile);
+  }
+
+  @override
+  Future<TileBitmap> getTileBitmapAsync(Tile tile) async {
     return _bitmaps.get(tile);
   }
 
