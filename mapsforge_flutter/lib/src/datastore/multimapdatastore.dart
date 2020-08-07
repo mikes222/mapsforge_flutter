@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tile.dart';
@@ -211,15 +212,20 @@ class MultiMapDataStore extends MapDataStore {
     bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
-        _log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
-        MapReadResult result = await mdb.readMapDataSingle(tile);
-        if (result == null) {
-          continue;
+        //_log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
+        try {
+          MapReadResult result = await mdb.readMapDataSingle(tile);
+          if (result == null) {
+            continue;
+          }
+          found = true;
+          bool isWater = mapReadResult.isWater & result.isWater;
+          mapReadResult.isWater = isWater;
+          mapReadResult.addDeduplicate(result, deduplicate);
+        } on FileNotFoundException catch (error) {
+          _log.info("File ${error.filename} missing, removing mapfile now");
+          mapDatabases.remove(mdb);
         }
-        found = true;
-        bool isWater = mapReadResult.isWater & result.isWater;
-        mapReadResult.isWater = isWater;
-        mapReadResult.addDeduplicate(result, deduplicate);
       }
     }
     if (!found) return null;
