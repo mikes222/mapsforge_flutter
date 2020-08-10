@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
-import 'package:vector_math/vector_math.dart';
 
 class FlutterMatrix implements Matrix {
   //Matrix4 matrix = new Matrix4.identity();

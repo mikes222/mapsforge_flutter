@@ -13,7 +13,6 @@ import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
-import 'package:meta/meta.dart';
 
 import 'job/job.dart';
 import 'job/jobqueue.dart';

@@ -46,7 +46,10 @@ class BitmapMixin {
     if (renderSymbol != null) {
       try {
         bitmap = await renderSymbol.getBitmap(graphicFactory);
-        bitmap.incrementRefCount();
+        bitmap?.incrementRefCount();
+        if (bitmap == null) {
+          bitmapInvalid = true;
+        }
       } catch (e, stacktrace) {
         print("Exception $e\nStacktrace $stacktrace");
         bitmap = null;

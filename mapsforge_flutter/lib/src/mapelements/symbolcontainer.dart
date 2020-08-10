@@ -1,5 +1,5 @@
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:meta/meta.dart';
 
 import '../graphics/bitmap.dart';
 import '../graphics/filter.dart';

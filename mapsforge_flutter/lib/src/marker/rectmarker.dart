@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
@@ -6,7 +7,6 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
-import 'package:meta/meta.dart';
 
 import '../../core.dart';
 import 'basicmarker.dart';

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/datastore/mapdatastore.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
@@ -9,7 +10,6 @@ import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/observer.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:meta/meta.dart';
 
 ///
 /// This class was originally meant to point one layer. We do not use it in flutter currently.

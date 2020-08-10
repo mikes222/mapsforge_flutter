@@ -1,16 +1,20 @@
 # mapsforge_flutter
 
-A port of mapsforge for pure flutter. The library is in an early stage. 
+A port of mapsforge for pure flutter. 
 
 Please take a look at the original library for android and java:
 
 https://github.com/mapsforge/mapsforge
 
-Same license as the original mapsforge project. LPGL-v3
+If the device of your userbase is online while showing the map do not use that library. While it is possible to show online-tiles there 
+are much simpler libs available out there to perform this job. 
+
+The main feature of this library is to analyze compressed mapfiles locally storead at the user's device and render the 
+tiles on the user's device while the device has no internet connection.
 
 ## Limitations
 
-Currently flutter has no support for dashed lines
+Currently flutter has no support for dashed lines, but dashed lines are implemented already (unfortunately not as a native feature and thus a bit slower)
 
 doubleTap() does not provide a location. See https://github.com/flutter/flutter/issues/20000 But there is a workaround which I have already implemented. 
 
@@ -31,6 +35,7 @@ graphics:
  - animate movement
  - animate zoom (currently no visual feedback while pinch&zooming)
  - fling
+ - Anti-Alias
  
 Speed:
  - support for more than one concurrent job in the jobqueue (rudimentary implemented already)
@@ -169,6 +174,12 @@ Follow the steps above to implement the new map into your widget
 For more information and documentation check mapsforge_flutter/resources/docu/mapdatastore.md
 
 -----------------
+
+## License
+
+Same license as the original mapsforge project. LPGL-v3
+
+## Contribution
 
 Help is appreciated...
 

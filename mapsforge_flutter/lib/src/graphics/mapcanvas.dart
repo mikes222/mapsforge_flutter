@@ -1,9 +1,9 @@
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
-import 'package:meta/meta.dart';
 
 import '../model/dimension.dart';
 import 'bitmap.dart';
