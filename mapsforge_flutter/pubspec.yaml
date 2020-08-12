@@ -24,16 +24,16 @@ dependencies:
     #path: ../../github_dcache/
 
   # MIT License
-  xml: ^3.6.1
+  xml: ^4.2.0
 
   # Apache 2.0 License
   rxdart: "^0.24.1"
 
   # BSD License
-  synchronized: ^2.2.0+1
+  synchronized: ^2.2.0+2
 
   # BSD License
-  flutter_svg: ^0.17.4
+  flutter_svg: ^0.18.0
 
   # BSD License
   #image: 2.1.13
@@ -42,10 +42,10 @@ dependencies:
   path_provider: ^1.6.11
 
   # MIT License
-  provider: ^4.2.0
+  provider: ^4.3.2
 
   # BSD License
-  http: "^0.12.1"
+  http: ^0.12.2
 
 
 dev_dependencies:
