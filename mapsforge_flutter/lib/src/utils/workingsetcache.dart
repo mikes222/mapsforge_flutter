@@ -1,4 +1,4 @@
-import 'package:dcache/dcache.dart';
+import 'package:ecache/ecache.dart';
 
 /**
  * Cache that maintains a working set of elements in the cache, given to it by

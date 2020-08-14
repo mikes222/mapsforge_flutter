@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:dcache/dcache.dart';
+import 'package:ecache/ecache.dart';
 
 import '../datastore/deserializer.dart';
 import '../reader/subfileparameter.dart';

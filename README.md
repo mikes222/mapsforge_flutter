@@ -1,15 +1,15 @@
 # mapsforge_flutter
 
-A port of mapsforge for pure flutter. 
+Pure offline maps for flutter. This is a port of mapsforge. 
 
 Please take a look at the original library for android and java:
 
 https://github.com/mapsforge/mapsforge
 
-If the device of your userbase is online while showing the map do not use that library. While it is possible to show online-tiles there 
+If your users are online while showing the maps do not use that library. While it is possible to show online-tiles there 
 are much simpler libs available out there to perform this job. 
 
-The main feature of this library is to analyze compressed mapfiles locally storead at the user's device and render the 
+The main feature of this library is to analyze compressed mapfiles locally stored at the user's device and render the 
 tiles on the user's device while the device has no internet connection.
 
 ## Limitations
@@ -63,7 +63,7 @@ include a list of all used assets in your pubspec.yaml (see  pubspec file from e
        - packages/mapsforge_flutter/assets/patterns/deciduous.svg
     ...
 
-### Loading an offline map
+### Loading the offline map
 
 Load the mapfile which holds the openstreetmap (r) data: Mapfiles are files specifically designed for mobile use and provide the
 information about an area in condensed form. Please visit the original project for more information about how to download/generate them. 
@@ -186,6 +186,5 @@ Help is appreciated...
 - Solving speed issues
 - support map rotating (do not rotate the text and icons then)
 - some flaws with text spawning multiple tiles
-- bring the project to https://pub.dev/packages
 - Unit tests!
 

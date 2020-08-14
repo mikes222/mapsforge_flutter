@@ -1,4 +1,4 @@
-import 'package:dcache/dcache.dart';
+import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
