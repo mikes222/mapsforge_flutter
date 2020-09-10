@@ -146,7 +146,8 @@ class MapHeaderPage extends StatelessWidget {
   }
 
   String formatLatLong(ILatLong latLong) {
-    return "${latLong.latitude.toStringAsPrecision(6)} / ${latLong.longitude.toStringAsPrecision(6)}";
+    if (latLong == null) return "Unknown";
+    return "${latLong.latitude?.toStringAsPrecision(6) ?? "Unknown"} / ${latLong.longitude?.toStringAsPrecision(6) ?? "Unknown"}";
   }
 
   String formatBoundingbox(BoundingBox boundingBox) {

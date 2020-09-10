@@ -1,6 +1,6 @@
 # example
 
-A new Flutter application.
+Example code for mapsforge
 
 ## Getting Started
 

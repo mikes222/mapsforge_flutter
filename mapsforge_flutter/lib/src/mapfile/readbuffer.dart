@@ -327,6 +327,9 @@ class ReadBuffer {
   ///
   /// @param bufferPosition the buffer position.
   void setBufferPosition(int bufferPosition) {
+    if (bufferPosition < 0 || bufferPosition >= _bufferData.length) {
+      _log.warning("Cannot set bufferPosition $bufferPosition because we have only ${_bufferData.length} bytes available");
+    }
     assert(bufferPosition >= 0 && bufferPosition < _bufferData.length);
     this.bufferPosition = bufferPosition;
   }

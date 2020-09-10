@@ -645,15 +645,19 @@ class MapFile extends MapDataStore {
         _log.warning("invalid buffer position: ${readBuffer.getBufferPosition()}");
         return null;
       }
+      if (readBuffer.getBufferPosition() < firstWayOffset) {
+        // move the pointer to the first way
+        readBuffer.setBufferPosition(firstWayOffset);
 
-      // move the pointer to the first way
-      readBuffer.setBufferPosition(firstWayOffset);
-
-      ways = _processWays(
-          queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
-      if (ways == null) {
-        _log.warning("No Ways");
-        return null;
+        ways = _processWays(
+            queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
+        if (ways == null) {
+          _log.warning("No Ways");
+          return null;
+        }
+      } else {
+        // no ways in database
+        ways = List<Way>();
       }
     }
 
@@ -740,12 +744,12 @@ class MapFile extends MapDataStore {
           _log.warning("current block size too large: $currentBlockSize");
           continue;
         } else if (currentBlockPointer + currentBlockSize > this._fileSize) {
-          _log.warning("current block largher than file size: $currentBlockSize");
+          _log.warning("current block larger than file size: $currentBlockSize");
           return null;
         }
 
-//        _log.info(
-//            "Processing block $row/$column from currentBlockPointer ${subFileParameter.startAddress + currentBlockPointer} to nextBlockPointer ${subFileParameter.startAddress + nextBlockPointer} ($currentBlockSize byte)");
+        // _log.info(
+        //     "Processing block $row/$column from currentBlockPointer ${subFileParameter.startAddress + currentBlockPointer} to nextBlockPointer ${subFileParameter.startAddress + nextBlockPointer} ($currentBlockSize byte)");
 
         // seek to the current block in the map file
         // read the current block into the buffer

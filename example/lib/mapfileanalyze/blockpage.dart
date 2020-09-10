@@ -1,3 +1,4 @@
+import 'package:example/mapfileanalyze/poipage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -20,22 +21,22 @@ class BlockPage extends StatelessWidget {
     return FutureBuilder(
       future: _readBlock(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        if (snapshot.data == null)
-          return Center(
-            child: CircularProgressIndicator(),
-          );
         if (snapshot.hasError || snapshot.error != null) {
           return Center(
             child: Text(snapshot.error.toString()),
           );
         }
+        if (snapshot.data == null)
+          return Center(
+            child: CircularProgressIndicator(),
+          );
         MapReadResult mapReadResult = snapshot.data;
         int items = mapReadResult.ways.length < 1000
             ? mapReadResult.ways.fold(
                 0,
                 (previousValue, element) =>
                     previousValue + element.latLongs.fold(0, (previousValue, element) => previousValue + element.length))
-            : -1;
+            : null;
         return ListView(
           children: <Widget>[
             Card(
@@ -43,8 +44,19 @@ class BlockPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text("IsWater ${mapReadResult.isWater}, "),
-                  Text("Pois ${mapReadResult.pointOfInterests.length}, "),
-                  Text("Ways ${mapReadResult.ways.length}, sum ${items} LatLongs, "),
+                  InkWell(
+                    child: Row(
+                      children: <Widget>[
+                        Text("Pois ${mapReadResult.pointOfInterests.length}, "),
+                        Icon(Icons.more_horiz),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: mapReadResult.pointOfInterests)));
+                    },
+                  ),
+                  Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
                 ],
               ),
             ),
@@ -65,7 +77,7 @@ class BlockPage extends StatelessWidget {
       queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
       queryParameters.calculateBlocks(subFileParameter);
       print(
-          "Querying from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
+          "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
 
       BoundingBox boundingBox = Tile.getBoundingBoxStatic(upperLeft, lowerRight);
       Selector selector = Selector.ALL;
