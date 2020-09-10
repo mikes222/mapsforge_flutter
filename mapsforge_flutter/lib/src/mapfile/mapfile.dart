@@ -9,7 +9,6 @@ import '../datastore/mapreadresult.dart';
 import '../datastore/pointofinterest.dart';
 import '../datastore/poiwaybundle.dart';
 import '../datastore/way.dart';
-import 'readbuffer.dart';
 import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
@@ -19,6 +18,7 @@ import '../reader/queryparameters.dart';
 import '../utils/latlongutils.dart';
 import 'indexcache.dart';
 import 'mapfileheader.dart';
+import 'readbuffer.dart';
 
 /// A class for reading binary map files.
 /// <p/>
@@ -645,19 +645,14 @@ class MapFile extends MapDataStore {
         _log.warning("invalid buffer position: ${readBuffer.getBufferPosition()}");
         return null;
       }
-      if (readBuffer.getBufferPosition() < firstWayOffset) {
-        // move the pointer to the first way
-        readBuffer.setBufferPosition(firstWayOffset);
+      // move the pointer to the first way
+      readBuffer.setBufferPosition(firstWayOffset);
 
-        ways = _processWays(
-            queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
-        if (ways == null) {
-          _log.warning("No Ways");
-          return null;
-        }
-      } else {
-        // no ways in database
-        ways = List<Way>();
+      ways = _processWays(
+          queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
+      if (ways == null) {
+        _log.warning("No Ways");
+        return null;
       }
     }
 
