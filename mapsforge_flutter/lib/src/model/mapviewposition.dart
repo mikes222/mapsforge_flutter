@@ -16,6 +16,8 @@ class MapViewPosition {
 
   final int zoomLevel;
 
+  final int indoorLevel;
+
   final double scale;
 
   final Mappoint focalPoint;
@@ -29,7 +31,7 @@ class MapViewPosition {
 
   MercatorProjectionImpl _mercatorProjection;
 
-  MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this._tileSize)
+  MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this.indoorLevel, this._tileSize)
       : scale = 1,
         focalPoint = null,
         assert(zoomLevel >= 0),
@@ -41,6 +43,7 @@ class MapViewPosition {
       : _latitude = old._latitude,
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel + 1,
+        indoorLevel = old.indoorLevel,
         _tileSize = old._tileSize,
         scale = 1,
         focalPoint = null;
@@ -49,6 +52,7 @@ class MapViewPosition {
       : _latitude = latitude,
         _longitude = longitude,
         zoomLevel = old.zoomLevel + 1,
+        indoorLevel = old.indoorLevel,
         _tileSize = old._tileSize,
         scale = 1,
         focalPoint = null;
@@ -57,6 +61,7 @@ class MapViewPosition {
       : _latitude = old._latitude,
         _longitude = old._longitude,
         zoomLevel = max(old.zoomLevel - 1, 0),
+        indoorLevel = old.indoorLevel,
         _tileSize = old._tileSize,
         scale = 1,
         focalPoint = null;
@@ -65,6 +70,34 @@ class MapViewPosition {
       : _latitude = old._latitude,
         _longitude = old._longitude,
         this.zoomLevel = max(zoomLevel, 0),
+        indoorLevel = old.indoorLevel,
+        _tileSize = old._tileSize,
+        scale = 1,
+        focalPoint = null;
+
+  MapViewPosition.indoorLevelUp(MapViewPosition old)
+      : _latitude = old._latitude,
+        _longitude = old._longitude,
+        zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel + 1,
+        _tileSize = old._tileSize,
+        scale = 1,
+        focalPoint = null;
+
+  MapViewPosition.indoorLevelDown(MapViewPosition old)
+      : _latitude = old._latitude,
+        _longitude = old._longitude,
+        zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel - 1,
+        _tileSize = old._tileSize,
+        scale = 1,
+        focalPoint = null;
+
+  MapViewPosition.setIndoorLevel(MapViewPosition old, int indoorLevel)
+      : _latitude = old._latitude,
+        _longitude = old._longitude,
+        zoomLevel = old.zoomLevel,
+        this.indoorLevel = indoorLevel,
         _tileSize = old._tileSize,
         scale = 1,
         focalPoint = null;
@@ -73,12 +106,14 @@ class MapViewPosition {
       : _latitude = old._latitude,
         _longitude = old._longitude,
         this.zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel,
         _tileSize = old._tileSize,
         assert(scale != null),
         assert(scale > 0);
 
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
       : zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel,
         _tileSize = old._tileSize,
         _mercatorProjection = old._mercatorProjection,
         scale = old.scale,
@@ -88,6 +123,7 @@ class MapViewPosition {
 
   MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, Dimension viewSize)
       : zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel,
         _tileSize = old._tileSize,
         scale = old.scale,
         focalPoint = old.focalPoint,
@@ -161,13 +197,14 @@ class MapViewPosition {
           _latitude == other._latitude &&
           _longitude == other._longitude &&
           zoomLevel == other.zoomLevel &&
+          indoorLevel == other.indoorLevel &&
           scale == other.scale;
 
   @override
-  int get hashCode => _latitude.hashCode ^ _longitude.hashCode ^ zoomLevel.hashCode ^ scale.hashCode;
+  int get hashCode => _latitude.hashCode ^ _longitude.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5 ^ scale.hashCode;
 
   @override
   String toString() {
-    return 'MapViewPosition{_latitude: $_latitude, _longitude: $_longitude, _tileSize: $_tileSize, zoomLevel: $zoomLevel, scale: $scale, boundingBox: $boundingBox, _leftUpper: $_leftUpper}';
+    return 'MapViewPosition{_latitude: $_latitude, _longitude: $_longitude, _tileSize: $_tileSize, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel, scale: $scale, boundingBox: $boundingBox, _leftUpper: $_leftUpper}';
   }
 }

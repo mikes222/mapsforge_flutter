@@ -29,6 +29,7 @@ void main() {
 
     String prefix = ""; // "../";
     double tileSize = displayModel.tileSize;
+    int l = 0;
     int z = 16;
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
@@ -45,7 +46,7 @@ void main() {
     var img = await tester.runAsync(() async {
       MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", 0, "en");
       await mapDataStore.init();
-      Tile tile = new Tile(x, y, z, tileSize);
+      Tile tile = new Tile(x, y, z, l, tileSize);
       print("Reading tile ${tile.toString()}");
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor());
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
@@ -89,6 +90,7 @@ void main() {
 
     String prefix = ""; // "../";
     double tileSize = displayModel.tileSize;
+    int l = 0;
     int z = 15;
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
@@ -98,15 +100,15 @@ void main() {
     addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
     List<Tile> tilesToLoad = [
-      Tile(x - 1, y - 1, z, tileSize),
-      Tile(x, y - 1, z, tileSize),
-      Tile(x + 1, y - 1, z, tileSize),
-      Tile(x - 1, y, z, tileSize),
-      Tile(x, y, z, tileSize),
-      Tile(x + 1, y, z, tileSize),
-      Tile(x - 1, y + 1, z, tileSize),
-      Tile(x, y + 1, z, tileSize),
-      Tile(x + 1, y + 1, z, tileSize),
+      Tile(x - 1, y - 1, z, l, tileSize),
+      Tile(x, y - 1, z, l, tileSize),
+      Tile(x + 1, y - 1, z, l, tileSize),
+      Tile(x - 1, y, z, l, tileSize),
+      Tile(x, y, z, l, tileSize),
+      Tile(x + 1, y, z, l, tileSize),
+      Tile(x - 1, y + 1, z, l, tileSize),
+      Tile(x, y + 1, z, l, tileSize),
+      Tile(x + 1, y + 1, z, l, tileSize),
     ];
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();

@@ -65,6 +65,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+   - assets/freizeitkarte-v5.xml
    - assets/defaultrender.xml
    - packages/mapsforge_flutter/assets/patterns/coniferous.svg
    - packages/mapsforge_flutter/assets/patterns/coniferous_and_deciduous.svg

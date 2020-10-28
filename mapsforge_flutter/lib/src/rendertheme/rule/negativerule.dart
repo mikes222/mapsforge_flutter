@@ -12,17 +12,19 @@ class NegativeRule extends Rule {
   NegativeRule(RuleBuilder ruleBuilder, this.attributeMatcher) : super(ruleBuilder);
 
   @override
-  bool matchesNode(List<Tag> tags, int zoomLevel) {
+  bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel) {
     return this.zoomMin <= zoomLevel &&
         this.zoomMax >= zoomLevel &&
+        matchesIndoorLevel(tags, indoorLevel) &&
         this.elementMatcher.matchesElement(Element.NODE) &&
         this.attributeMatcher.matchesTagList(tags);
   }
 
   @override
-  bool matchesWay(List<Tag> tags, int zoomLevel, Closed closed) {
+  bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed) {
     return this.zoomMin <= zoomLevel &&
         this.zoomMax >= zoomLevel &&
+        matchesIndoorLevel(tags, indoorLevel) &&
         this.elementMatcher.matchesElement(Element.WAY) &&
         this.closedMatcher.matchesClosed(closed) &&
         this.attributeMatcher.matchesTagList(tags);

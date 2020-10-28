@@ -1501,4 +1501,22 @@
         </rule>
     </rule>
 
+    <!-- indoor -->
+    <rule e="any" k="indoor" v="*" zoom-min="18">
+        <rule e="way" k="indoor" v="*" closed="yes">
+            <area fill="#0000FF" stroke="#888888" stroke-width="0.1" />
+
+            <rule e="way" k="indoor" v="wall">
+                <area fill="#888888"/>
+            </rule>
+        </rule>
+    </rule>
+
+    <!-- indoor cpations -->
+    <rule e="any" k="indoor" v="*" zoom-min="18">
+        <rule e="any" k="ref" v="*">
+            <caption font-style="bold" font-size="12" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="20.0" />
+        </rule>
+    </rule>
+
 </rendertheme>

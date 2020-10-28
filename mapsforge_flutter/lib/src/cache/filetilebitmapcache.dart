@@ -113,7 +113,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   String _calculateFilename(Tile tile) {
-    return "$_dir/${tile.zoomLevel}_${tile.tileX}_${tile.tileY}.png";
+    return "$_dir/${tile.zoomLevel}_${tile.indoorLevel}_${tile.tileX}_${tile.tileY}.png";
   }
 
   @override

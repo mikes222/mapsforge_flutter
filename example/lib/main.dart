@@ -1,11 +1,6 @@
-// Flutter code sample for material.AppBar.1
-
-// This sample shows an [AppBar] with two simple actions. The first action
-// opens a [SnackBar], while the second action navigates to a new page.
-
+import 'package:example/constants.dart';
 import 'dart:async';
 
-import 'package:example/mapfileanalyze/mapheaderpage.dart';
 import 'package:example/showmap.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -15,30 +10,6 @@ import 'filehelper.dart';
 import 'mapmodelhelper.dart';
 
 void main() => runApp(MyApp());
-
-MapInfo sachsenMap = MapInfo(
-  mapfilesource: "https://download.mapsforge.org/maps/v5/europe/germany/sachsen.map",
-  mapfile: "sachsen.map",
-  lat: 50.81287701030895,
-  lon: 12.94189453125,
-);
-
-MapInfo austria = MapInfo(
-  mapfilesource: "https://download.mapsforge.org/maps/v5/europe/austria.map",
-  mapfile: "austria.map",
-  lat: 48.089415,
-  lon: 16.311374,
-);
-
-MapInfo monacoMap = MapInfo(
-  mapfilesource: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/monaco.map",
-  mapfile: "monaco.map",
-  lat: 43.7399,
-  lon: 7.4262,
-);
-
-// TODO create a drop-down in UI to let the user choose from different maps
-MapInfo activeMapInfo = sachsenMap;
 
 /// This Widget is the main application widget.
 class MyApp extends StatelessWidget {
@@ -67,7 +38,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
 
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
@@ -80,9 +50,10 @@ class MyStatelessWidget extends StatelessWidget {
         title: const Text('Flutter Mapsforge'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           FutureBuilder<bool>(
-            future: FileHelper.exists(activeMapInfo.mapfile),
+            future: FileHelper.exists(Constants.MAPFILE_NAME),
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               if (snapshot.hasData)
                 return Text(
@@ -95,24 +66,8 @@ class MyStatelessWidget extends StatelessWidget {
           RaisedButton(
             child: Text("Download Mapfile"),
             onPressed: () {
-              FileHelper.downloadFile(activeMapInfo.mapfilesource, activeMapInfo.mapfile);
-            },
-          ),
-          FutureBuilder<bool>(
-            future: FileHelper.exists(Constants.worldmap),
-            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-              if (snapshot.hasData)
-                return Text(
-                  snapshot.data ? "Worldmap is already downloaded" : "Worldmap missing",
-                  style: TextStyle(color: snapshot.data ? Colors.green : Colors.red),
-                );
-              return Container();
-            },
-          ),
-          RaisedButton(
-            child: Text("Download Worldmap (zoom out several times)"),
-            onPressed: () {
-              FileHelper.downloadFile(Constants.worldmapsource, Constants.worldmap);
+              FileHelper.delete(Constants.MAPFILE_NAME);
+              FileHelper.downloadFile(Constants.MAPFILE_SOURCE, Constants.MAPFILE_NAME);
             },
           ),
           RaisedButton(
@@ -122,63 +77,18 @@ class MyStatelessWidget extends StatelessWidget {
             },
           ),
           RaisedButton(
-            child: Text("Show online map"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => Showmap(
-                        mode: 1,
-                      )));
-            },
-          ),
-          RaisedButton(
             child: Text("Purge offline cache"),
             onPressed: () {
-              MapModelHelper.prepareOfflineMapModel().then((mapModel) {
+              MapModelHelper.prepareMapModel().then((mapModel) {
                 Timer(Duration(milliseconds: 1000), () async {
                   await mapModel.tileBitmapCache.purgeAll();
                   print("cache purged");
-//              Scaffold.of(context).showSnackBar(new SnackBar(
-//                content: new Text("cache purged"),
-//              ));
                 });
               });
-            },
-          ),
-          RaisedButton(
-            child: Text("Purge online cache"),
-            onPressed: () {
-              MapModelHelper.prepareOnlineMapModel().then((mapModel) {
-                Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.tileBitmapCache.purgeAll();
-                  print("cache purged");
-//              Scaffold.of(context).showSnackBar(new SnackBar(
-//                content: new Text("cache purged"),
-//              ));
-                });
-              });
-            },
-          ),
-          RaisedButton(
-            child: Text("Analyze mapfile"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage()));
             },
           ),
         ],
       ),
     );
   }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class MapInfo {
-  final String mapfilesource;
-  final String mapfile;
-
-  final double lat;
-
-  final double lon;
-
-  MapInfo({this.mapfilesource, this.mapfile, this.lat, this.lon});
 }

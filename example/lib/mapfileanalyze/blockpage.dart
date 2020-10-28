@@ -72,8 +72,8 @@ class BlockPage extends StatelessWidget {
 
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
-      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 256);
-      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 256);
+      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0, 256);
+      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0, 256);
       queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
       queryParameters.calculateBlocks(subFileParameter);
       print(

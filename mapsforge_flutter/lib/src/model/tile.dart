@@ -28,6 +28,11 @@ class Tile {
    */
   final int zoomLevel;
 
+  /**
+   * The indoor level of this tile.
+   */
+  final int indoorLevel;
+
   BoundingBox boundingBox;
 
   /// the left-upper point of this tile in pixel. Moved from TilePosition
@@ -72,7 +77,7 @@ class Tile {
    * @return true if the areas overlap, false if zoom levels differ or areas do not overlap.
    */
   static bool tileAreasOverlap(Tile upperLeft, Tile lowerRight, Tile upperLeftOther, Tile lowerRightOther) {
-    if (upperLeft.zoomLevel != upperLeftOther.zoomLevel) {
+    if (upperLeft.zoomLevel != upperLeftOther.zoomLevel || upperLeft.indoorLevel != upperLeftOther.indoorLevel) {
       return false;
     }
     if (upperLeft == (upperLeftOther) && lowerRight == lowerRightOther) {
@@ -97,7 +102,7 @@ class Tile {
   /// @param tileY     the Y number of the tile.
   /// @param zoomLevel the zoom level of the tile.
   /// @throws IllegalArgumentException if any of the parameters is invalid.
-  Tile(this.tileX, this.tileY, this.zoomLevel, this.tileSize)
+  Tile(this.tileX, this.tileY, this.zoomLevel, this.indoorLevel, this.tileSize)
       : assert(tileX >= 0),
         assert(tileY >= 0),
         assert(zoomLevel >= 0),
@@ -115,10 +120,10 @@ class Tile {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Tile && runtimeType == other.runtimeType && tileX == other.tileX && tileY == other.tileY && zoomLevel == other.zoomLevel;
+      other is Tile && runtimeType == other.runtimeType && tileX == other.tileX && tileY == other.tileY && zoomLevel == other.zoomLevel && indoorLevel == other.indoorLevel;
 
   @override
-  int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode;
+  int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
 
   MercatorProjectionImpl get mercatorProjection {
     if (_mercatorProjection != null) return _mercatorProjection;
@@ -201,7 +206,7 @@ class Tile {
     if (x < 0) {
       x = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(x, this.tileY, this.zoomLevel, this.tileSize);
+    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -214,7 +219,7 @@ class Tile {
     if (x > getMaxTileNumber(this.zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, this.tileY, this.zoomLevel, this.tileSize);
+    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -227,7 +232,7 @@ class Tile {
     if (y < 0) {
       y = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(this.tileX, y, this.zoomLevel, this.tileSize);
+    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -241,7 +246,7 @@ class Tile {
     if (y > getMaxTileNumber(this.zoomLevel)) {
       y = 0;
     }
-    return new Tile(this.tileX, y, this.zoomLevel, this.tileSize);
+    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -258,7 +263,7 @@ class Tile {
     if (x < 0) {
       x = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(x, y, this.zoomLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -275,7 +280,7 @@ class Tile {
     if (x > getMaxTileNumber(this.zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, y, this.zoomLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -292,7 +297,7 @@ class Tile {
     if (x < 0) {
       x = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(x, y, this.zoomLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -309,7 +314,7 @@ class Tile {
     if (x > getMaxTileNumber(this.zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, y, this.zoomLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
   }
 
   /**
@@ -320,7 +325,7 @@ class Tile {
       return null;
     }
 
-    return new Tile((this.tileX / 2).round(), (this.tileY / 2).round(), (this.zoomLevel - 1), this.tileSize);
+    return new Tile((this.tileX / 2).round(), (this.tileY / 2).round(), (this.zoomLevel - 1), this.indoorLevel, this.tileSize);
   }
 
   int getShiftX(Tile otherTile) {
@@ -341,6 +346,6 @@ class Tile {
 
   @override
   String toString() {
-    return 'Tile{tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel}';
+    return 'Tile{tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel}';
   }
 }

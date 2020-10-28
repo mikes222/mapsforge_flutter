@@ -17,6 +17,7 @@ import 'mapviewposition.dart';
 
 class MapModel {
   final int DEFAULT_ZOOM = 10;
+  final int DEFAULT_INDOOR_LEVEL = 0;
   final DisplayModel displayModel;
   final MapViewDimension mapViewDimension;
   final GraphicFactory graphicsFactory;
@@ -75,11 +76,11 @@ class MapModel {
 
   void setMapViewPosition(double latitude, double longitude) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition.zoomLevel, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition.zoomLevel, _mapViewPosition.indoorLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(latitude, longitude, DEFAULT_ZOOM, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, DEFAULT_ZOOM, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -92,7 +93,7 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -106,7 +107,7 @@ class MapModel {
       _injectPosition.add(newPosition);
     } else {
       // without an old position we cannot calculate the location of the zoom-center, so use null instead
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM + 1, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -118,7 +119,7 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -132,7 +133,46 @@ class MapModel {
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+      return newPosition;
+    }
+  }
+
+  void indoorLevelUp() {
+    if (_mapViewPosition != null) {
+      if (_mapViewPosition.zoomLevel >= displayModel.maxZoomLevel) return;
+      MapViewPosition newPosition = MapViewPosition.indoorLevelUp(_mapViewPosition);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, DEFAULT_INDOOR_LEVEL + 1, displayModel.tileSize);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    }
+  }
+
+  void indoorLevelDown() {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.indoorLevelDown(_mapViewPosition);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, DEFAULT_INDOOR_LEVEL - 1, displayModel.tileSize);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    }
+  }
+
+  MapViewPosition setIndoorLevel(int indoorLevel) {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.setIndoorLevel(_mapViewPosition, indoorLevel);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+      return newPosition;
+    } else {
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, indoorLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -158,7 +198,7 @@ class MapModel {
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
       newPosition = MapViewPosition.scale(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -172,7 +212,7 @@ class MapModel {
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(null, null, DEFAULT_ZOOM - 1, DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }

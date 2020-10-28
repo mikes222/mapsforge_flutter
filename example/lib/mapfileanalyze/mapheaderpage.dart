@@ -1,4 +1,4 @@
-import 'package:example/main.dart';
+import 'package:example/constants.dart';
 import 'package:example/mapfileanalyze/subfileparamspage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -132,7 +132,7 @@ class MapHeaderPage extends StatelessWidget {
 
   Future<MapFile> _loadMapfile() async {
     String _localPath = await FileHelper.findLocalPath();
-    MapFile mapFile = MapFile(_localPath + "/" + activeMapInfo.mapfile, null, null);
+    MapFile mapFile = MapFile(_localPath + "/" + Constants.MAPFILE_NAME, null, null);
     await mapFile.init();
     return mapFile;
   }

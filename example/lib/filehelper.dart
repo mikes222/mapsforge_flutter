@@ -164,3 +164,4 @@ class FileHelperInfo {
     return 'FileHelperInfo{source: $source, destination: $destination, tempDestination: $tempDestination}';
   }
 }
+

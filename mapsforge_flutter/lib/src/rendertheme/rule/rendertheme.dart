@@ -10,6 +10,7 @@ import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
 
+
 /// A RenderTheme defines how ways and nodes are drawn.
 class RenderTheme {
   static final int MATCHING_CACHE_SIZE = 1024;
@@ -109,7 +110,7 @@ class RenderTheme {
    * @param poi            the point of interest.
    */
   Future<void> matchNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) async {
-    MatchingCacheKey matchingCacheKey = new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, Closed.NO);
+     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel, Closed.NO);
 
     List<RenderInstruction> matchingList = this.poiMatchingCache[matchingCacheKey];
     if (matchingList == null) {
@@ -188,7 +189,7 @@ class RenderTheme {
   }
 
   Future<void> _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) async {
-    MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, closed);
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
 
     List<RenderInstruction> matchingList = this.wayMatchingCache[matchingCacheKey];
     if (matchingList == null) {
