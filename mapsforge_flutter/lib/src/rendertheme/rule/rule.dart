@@ -68,8 +68,13 @@ abstract class Rule {
 
 
   bool matchesIndoorLevel (List<Tag> tags, int level) {
-    final Tag levelTag = tags.firstWhere((Tag element) {
+    Tag levelTag = tags.firstWhere((Tag element) {
       return element.key == "level";
+    }, orElse: () => null);
+
+    // if no level key exists search for repeat_on key and treat its value as the level
+    if (levelTag == null) levelTag = tags.firstWhere((Tag element) {
+      return element.key == "repeat_on";
     }, orElse: () => null);
 
     // return true if no level tag exists
