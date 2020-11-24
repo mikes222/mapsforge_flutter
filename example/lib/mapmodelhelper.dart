@@ -7,7 +7,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
-import 'customnopositionview.dart';
 import 'filehelper.dart';
 
 class MapModelHelper {
@@ -52,7 +51,6 @@ class MapModelHelper {
       renderer: jobRenderer,
       symbolCache: symbolCache,
       tileBitmapCache: bitmapCache,
-      noPositionView: CustomNoPositionView(),
     );
 
     // set default position
