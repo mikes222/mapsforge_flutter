@@ -9,8 +9,8 @@ import 'package:rxdart/rxdart.dart';
  * requires an ordered map of levels with an optional level code string
  */
 class IndoorLevelBar extends StatefulWidget {
-  final BehaviorSubject<int> indoorLevelSubject;
-  final Map<int, String> indoorLevels;
+  final BehaviorSubject<double> indoorLevelSubject;
+  final Map<double, String> indoorLevels;
   final double width;
   final double itemHeight;
   final int maxVisibleItems;
@@ -71,7 +71,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
           // if level bar will be scrollable
           if (isScrollable) {
             // get current indoor level from stream/subject
-            int currentIndoorLevel = widget.indoorLevelSubject.value;
+            double currentIndoorLevel = widget.indoorLevelSubject.value;
             // calculate the scroll position so the selected element is visible at the bottom if possible
             // -3 because we need to shift the index by 1 and by 2 because of scroll buttons taking each the space of one item
             int itemIndex = widget.indoorLevels.keys.toList().indexOf(currentIndoorLevel);
@@ -125,7 +125,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       initialData: widget.indoorLevelSubject.value,
                       builder: (context, snapshot) {
                         // get current indoor level from stream/subject
-                        int currentIndoorLevel = snapshot.data;
+                        double currentIndoorLevel = snapshot.data;
                         // widget
                         return ListView.builder(
                           controller: _scrollController,
@@ -136,7 +136,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                           itemExtent: widget.itemHeight,
                           itemBuilder: (context, i) {
                             // calc item indoor level from index
-                            int itemIndoorLevel = widget.indoorLevels.keys.elementAt(i);
+                            double itemIndoorLevel = widget.indoorLevels.keys.elementAt(i);
                             // widget
                             return TextButton(
                               style: TextButton.styleFrom(
@@ -151,7 +151,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                               },
                               child: Text(
                                 // show level code if available
-                                  widget.indoorLevels[itemIndoorLevel] ?? itemIndoorLevel.toString()
+                                  widget.indoorLevels[itemIndoorLevel] ?? itemIndoorLevel.toString().replaceAll(new RegExp(r'.0'), '')
                               ),
                             );
                           },

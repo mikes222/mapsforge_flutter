@@ -16,7 +16,7 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the upper left of the bbox.
    */
-  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
+  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, double indoorLevel, double tileSize) {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
     int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
@@ -31,7 +31,7 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the lower right of the bbox.
    */
-  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
+  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, double indoorLevel, double tileSize) {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
     int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
@@ -56,7 +56,7 @@ class LayerUtil {
   static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition) {
     BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     int zoomLevel = mapViewPosition.zoomLevel;
-    int indoorLevel = mapViewPosition.indoorLevel;
+    double indoorLevel = mapViewPosition.indoorLevel;
     double tileSize = mapViewPosition.mercatorProjection.tileSize;
     int tileLeft = mapViewPosition.mercatorProjection.longitudeToTileX(boundingBox.minLongitude);
     int tileTop = mapViewPosition.mercatorProjection.latitudeToTileY(boundingBox.maxLatitude);

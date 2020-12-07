@@ -16,7 +16,7 @@ class MapViewPosition {
 
   final int zoomLevel;
 
-  final int indoorLevel;
+  final double indoorLevel;
 
   final double scale;
 
@@ -93,7 +93,7 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null;
 
-  MapViewPosition.setIndoorLevel(MapViewPosition old, int indoorLevel)
+  MapViewPosition.setIndoorLevel(MapViewPosition old, double indoorLevel)
       : _latitude = old._latitude,
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel,
