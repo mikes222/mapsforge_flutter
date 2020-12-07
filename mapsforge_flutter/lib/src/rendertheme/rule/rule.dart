@@ -12,8 +12,6 @@ import 'closed.dart';
 import 'closedmatcher.dart';
 import 'elementmatcher.dart';
 
-import 'dart:math';
-
 abstract class Rule {
   static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY = new Map();
   static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE = new Map<List<String>, AttributeMatcher>();
@@ -62,57 +60,9 @@ abstract class Rule {
     }
   }
 
-  bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel);
+  bool matchesNode(List<Tag> tags, int zoomLevel, double indoorLevel);
 
-  bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
-
-
-  bool matchesIndoorLevel (List<Tag> tags, int level) {
-    Tag levelTag = tags.firstWhere((Tag element) {
-      return element.key == "level";
-    }, orElse: () => null);
-
-    // if no level key exists search for repeat_on key and treat its value as the level
-    if (levelTag == null) levelTag = tags.firstWhere((Tag element) {
-      return element.key == "repeat_on";
-    }, orElse: () => null);
-
-    // return true if no level tag exists
-    if (levelTag == null || level == null) return true;
-
-    // TODO
-    // do not create regex on each function call
-    // move function out of this class
-
-    // match value range notation : 1-2 or -1--5
-    final RegExp matchRangeNotation = new RegExp(r"^-?\d+(\.\d+)?--?\d+(\.\d+)?$");
-    // match multiple values notation : 1;3;4 or 1.4;-4;2
-    final RegExp matchMultipleNotation = new RegExp(r"^(-?\d+(\.\d+)?)(;-?\d+(\.\d+)?)+$");
-    // match single value : 1 or -1.5
-    final RegExp matchSingleNotation = new RegExp(r"^-?\d+(\.\d+)?$");
-
-    if (matchSingleNotation.hasMatch(levelTag.value)) {
-      final double levelValue = double.parse(levelTag.value);
-      return (levelValue == level || levelValue.ceil() == level || levelValue.floor() == level);
-    }
-    else if (matchMultipleNotation.hasMatch(levelTag.value)) {
-      // split on ";" and convert values to double
-      final Iterable <double> levelValues = levelTag.value.split(";").map(double.parse);
-      // check if at least one value matches the current level
-      return levelValues.any((levelValue) => (levelValue == level || levelValue.ceil() == level || levelValue.floor() == level));
-    }
-    else if (matchRangeNotation.hasMatch(levelTag.value)) {
-      // split on "-" if number precedes and convert to double
-      final Iterable <double> levelRange = levelTag.value.split(RegExp(r"(?<=\d)-")).map(double.parse);
-      // separate into max and min value
-      double lowerLevelValue = levelRange.reduce(min);
-      double upperLevelValue = levelRange.reduce(max);
-      // if level is in range return true else false
-      return (lowerLevelValue.floor() <= level && upperLevelValue.ceil() >= level);
-    }
-
-    return false;
-  }
+  bool matchesWay(List<Tag> tags, int zoomLevel, double indoorLevel, Closed closed);
 
   void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction> matchingList,
       PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
