@@ -142,6 +142,16 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   }
 
   @override
+  void setAntiAlias(bool value) {
+    paint.isAntiAlias = value;
+  }
+
+  @override
+  bool getAntiAlias() {
+    return paint.isAntiAlias;
+  }
+
+  @override
   void setBitmapShaderShift(Mappoint origin) {
     // TODO: implement setBitmapShaderShift
   }

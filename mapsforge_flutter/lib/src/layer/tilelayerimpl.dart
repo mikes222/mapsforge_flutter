@@ -90,6 +90,9 @@ class TileLayerImpl extends TileLayer {
       Mappoint point = tile.leftUpperPoint;
       TileBitmap tileBitmap = jobQueue.tileBitmapCache.getTileBitmapSync(tile);
       if (tileBitmap != null) {
+        // disable anti alias when drawing bitmaps
+        // otherwise thin lines at the tile borders may appear
+        paint.setAntiAlias(false);
         canvas.drawBitmap(
           bitmap: tileBitmap,
           left: point.x - leftUpper.x,
