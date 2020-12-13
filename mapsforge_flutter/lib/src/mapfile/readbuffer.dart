@@ -136,7 +136,9 @@ class ReadBuffer {
   /// @return the byte value.
   int readByte() {
     assert(_bufferData != null);
-    return this._bufferData[this.bufferPosition++];
+    ByteData bdata = ByteData(1);
+    bdata.setInt8(0, this._bufferData[this.bufferPosition++]);
+    return bdata.getInt8(0);
   }
 
   /// Converts four bytes from the read buffer to a float.
