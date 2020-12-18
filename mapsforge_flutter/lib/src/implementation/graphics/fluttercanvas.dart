@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -191,19 +192,36 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawLine(int x1, int y1, int x2, int y2, MapPaint paint) {
-    if (paint.getStrokeDasharray() != null && paint.getStrokeDasharray().length >= 2) {
-      _drawDashedLine(ui.Offset(x1.toDouble(), y1.toDouble()), ui.Offset(x2.toDouble(), y2.toDouble()), paint);
-      return;
-    }
-    uiCanvas.drawLine(ui.Offset(x1.toDouble(), y1.toDouble()), ui.Offset(x2.toDouble(), y2.toDouble()), (paint as FlutterPaint).paint);
+    Path path = new Path()
+    ..moveTo(x1. toDouble(), y1. toDouble())
+    ..lineTo(x2. toDouble(), y2. toDouble());
+
+    drawPath(new FlutterPath(path), paint);
   }
 
   @override
   void drawPath(MapPath path, MapPaint paint) {
-    // TODO we have no possiblity to get the path-points back so we cannot create our own dashed path currently
-//    if (paint.getStrokeDasharray() != null && paint.getStrokeDasharray().length == 2) {
-//    }
-    uiCanvas.drawPath((path as FlutterPath).path, (paint as FlutterPaint).paint);
+    List<double> dasharray = paint.getStrokeDasharray();
+    if (dasharray != null && dasharray.length >= 2) {
+      Path dashPath = Path();
+      PathMetrics pathMetrics = (path as FlutterPath).path.computeMetrics();
+      for (PathMetric pathMetric in pathMetrics) {
+        double distance = 0;
+        while (distance < pathMetric.length) {
+          for (int i = 0; i < dasharray.length; i += 2) {
+            double dashLength = dasharray[i];
+            double gapLength = dasharray[i + 1];
+            dashPath.addPath(
+              pathMetric.extractPath(distance, distance + dashLength),
+              Offset.zero,
+            );
+            distance += dashLength + gapLength;
+          }
+        }
+      }
+      uiCanvas.drawPath(dashPath, (paint as FlutterPaint).paint);
+    }
+    else uiCanvas.drawPath((path as FlutterPath).path, (paint as FlutterPaint).paint);
   }
 
   @override
@@ -211,76 +229,11 @@ class FlutterCanvas extends MapCanvas {
     Rect rt = (rect as FlutterRect).rect;
     //FlutterPaint pt = (paint as FlutterPaint).paint;
     if (paint.getStrokeDasharray() != null && paint.getStrokeDasharray().length >= 2) {
-      _drawDashedLine(rt.topLeft, rt.topRight, paint);
-      _drawDashedLine(rt.topRight, rt.bottomRight, paint);
-      _drawDashedLine(rt.bottomRight, rt.bottomLeft, paint);
-      _drawDashedLine(rt.bottomLeft, rt.topLeft, paint);
-    } else
-      uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
-  }
-
-  void _drawDashedLine(Offset p1, Offset p2, MapPaint paint) {
-    if (p1.dy == p2.dy) {
-      // horizontal line
-      double diffX = (p2.dx - p1.dx).abs();
-      double directionX = 1;
-      if (p1.dx > p2.dx) directionX = -1;
-      double spaceX = (paint.getStrokeDasharray()[0] + paint.getStrokeDasharray()[1]);
-      double posX = 0;
-      while (posX < diffX) {
-        uiCanvas.drawLine(
-          Offset(p1.dx + posX * directionX, p1.dy),
-          Offset(p1.dx + min(posX + paint.getStrokeDasharray()[0], diffX) * directionX, p1.dy),
-          (paint as FlutterPaint).paint,
-        );
-        posX += spaceX;
-      }
-    } else if (p1.dx == p2.dx) {
-      // vertical line
-      double diffY = (p2.dy - p1.dy).abs();
-      double directionY = 1;
-      if (p1.dy > p2.dy) directionY = -1;
-      double spaceY = (paint.getStrokeDasharray()[0] + paint.getStrokeDasharray()[1]);
-      double posY = 0;
-      while (posY < diffY) {
-        uiCanvas.drawLine(
-          Offset(p1.dx, p1.dy + posY * directionY),
-          Offset(p1.dx, p1.dy + min(posY + paint.getStrokeDasharray()[0], diffY) * directionY),
-          (paint as FlutterPaint).paint,
-        );
-        posY += spaceY;
-      }
-    } else {
-      // not supported, draw normal line
-      // TODO support dashed lines in any direction
-      //uiCanvas.drawLine(p1, p2, (paint as FlutterPaint).paint);
-
-      double diffX = (p2.dx - p1.dx).abs();
-      double diffY = (p2.dy - p1.dy).abs();
-
-      double directionX = 1;
-      if (p1.dx > p2.dx) directionX = -1;
-      double directionY = 1;
-      if (p1.dy > p2.dy) directionY = -1;
-
-      double space = (paint.getStrokeDasharray()[0] + paint.getStrokeDasharray()[1]);
-      double posX = 0;
-      double posY = 0;
-      double pos = 0;
-      double diff = sqrt(diffX * diffX + diffY * diffY);
-
-      while (pos < diff) {
-        uiCanvas.drawLine(
-          Offset(p1.dx + posX * directionX, p1.dy + posY * directionY),
-          Offset(p1.dx + min(posX + paint.getStrokeDasharray()[0] * (diffX / diff), diffX) * directionX,
-              p1.dy + min(posY + paint.getStrokeDasharray()[0] * (diffY / diff), diffY) * directionY),
-          (paint as FlutterPaint).paint,
-        );
-        pos += space;
-        posX += space * (diffX / diff);
-        posY += space * (diffY / diff);
-      }
+      Path rectPath = Path()
+      ..addRect(rt);
+      drawPath(new FlutterPath(rectPath), paint);
     }
+    else uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
   }
 
   @override
