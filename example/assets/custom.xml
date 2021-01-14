@@ -218,50 +218,7 @@
         <circle fill="#FFFFFF" radius="1.2" scale-radius="true" />
     </rule>
 
-    <!-- buildings -->
-
-    <rule e="way" k="building" v="*">
-        <area fill="#f5e3c1" stroke="#D4B192" stroke-width="0.1" />
-    </rule>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- indoor -->
-    <rule e="any" k="indoor" v="*" zoom-min="17">
-        <rule e="way" k="indoor" v="*" closed="yes">
-            <area fill="#0000FF" stroke="#888888" stroke-width="0.1" />
-
-            <rule e="way" k="indoor" v="wall">
-                <area fill="#888888"/>
-            </rule>
-        </rule>
-    </rule>
-
-    <!-- indoor cpations -->
-    <rule e="any" k="indoor" v="*" zoom-min="17">
-        <rule e="any" k="ref" v="*">
-            <caption font-style="bold" font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
-        </rule>
-    </rule>
-
-
-
-
-
-    <!-- captions -->
+    <!-- path texts -->
 
     <!-- inland water -->
     <rule e="way" k="waterway" v="*">
@@ -270,11 +227,6 @@
         </rule>
         <rule e="any" k="*" v="stream|canal" zoom-min="15">
             <pathText display="always" fill="#6C96E6" font-size="12" font-style="italic" k="name" priority="-100" stroke="#FFFFFF" stroke-width="2.0" />
-        </rule>
-    </rule>
-    <rule e="way" k="natural|landuse" v="water|reservoir|basin">
-        <rule e="any" k="*" v="*" zoom-min="14">
-            <caption display="always" fill="#6C96E6" font-size="12" font-style="italic" k="name" priority="-100" stroke="#FFFFFF" stroke-width="2.0" />
         </rule>
     </rule>
 
@@ -298,6 +250,40 @@
             <rule e="any" k="highway" v="motorway" zoom-min="12">
                 <pathText fill="#2b2824" font-size="14" font-style="bold" k="ref" priority="-4" stroke="#FFFFFF" stroke-width="2.0" />
             </rule>
+        </rule>
+    </rule>
+
+    <!-- buildings -->
+
+    <rule e="way" k="building" v="*">
+        <area fill="#f5e3c1" stroke="#D4B192" stroke-width="0.1" />
+    </rule>
+
+    <!-- indoor -->
+
+    <rule e="any" k="indoor" v="*" zoom-min="17">
+        <rule e="way" k="indoor" v="*" closed="yes">
+            <area fill="#fff9ed" stroke="#cfcdca" stroke-width="0.1" />
+
+            <rule e="way" k="indoor" v="wall">
+                <area fill="#888888"/>
+            </rule>
+        </rule>
+    </rule>
+
+    <!-- captions -->
+
+    <!-- inland water -->
+    <rule e="way" k="natural|landuse" v="water|reservoir|basin">
+        <rule e="any" k="*" v="*" zoom-min="14">
+            <caption display="always" fill="#6C96E6" font-size="12" font-style="italic" k="name" priority="-100" stroke="#FFFFFF" stroke-width="2.0" />
+        </rule>
+    </rule>
+
+    <!-- indoor -->
+    <rule e="any" k="indoor" v="*" zoom-min="17">
+        <rule e="any" k="ref" v="*">
+            <caption font-style="bold" font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
         </rule>
     </rule>
 </rendertheme>
