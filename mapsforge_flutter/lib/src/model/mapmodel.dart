@@ -17,7 +17,7 @@ import 'mapviewposition.dart';
 
 class MapModel {
   final int DEFAULT_ZOOM = 10;
-  final double DEFAULT_INDOOR_LEVEL = 0;
+  final int DEFAULT_INDOOR_LEVEL = 0;
   final DisplayModel displayModel;
   final MapViewDimension mapViewDimension;
   final GraphicFactory graphicsFactory;
@@ -165,7 +165,7 @@ class MapModel {
     }
   }
 
-  MapViewPosition setIndoorLevel(double indoorLevel) {
+  MapViewPosition setIndoorLevel(int indoorLevel) {
     if (_mapViewPosition != null) {
       MapViewPosition newPosition = MapViewPosition.setIndoorLevel(_mapViewPosition, indoorLevel);
       _mapViewPosition = newPosition;

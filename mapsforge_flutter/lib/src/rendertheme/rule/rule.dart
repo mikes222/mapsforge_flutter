@@ -60,9 +60,9 @@ abstract class Rule {
     }
   }
 
-  bool matchesNode(List<Tag> tags, int zoomLevel, double indoorLevel);
+  bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel);
 
-  bool matchesWay(List<Tag> tags, int zoomLevel, double indoorLevel, Closed closed);
+  bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
 
   void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction> matchingList,
       PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {

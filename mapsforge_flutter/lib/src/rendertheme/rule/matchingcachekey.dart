@@ -7,7 +7,7 @@ class MatchingCacheKey {
   final List<Tag> tags;
 //  final Set<Tag> tagsWithoutName;
   final int zoomLevel;
-  final double indoorLevel;
+  final int indoorLevel;
 
   int _hashKey;
 

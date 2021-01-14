@@ -31,7 +31,7 @@ class Tile {
   /**
    * The indoor level of this tile.
    */
-  final double indoorLevel;
+  final int indoorLevel;
 
   BoundingBox boundingBox;
 

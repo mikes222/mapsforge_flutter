@@ -4,10 +4,14 @@ import '../model/tag.dart';
 class IndoorNotationMatcher {
   // match single value : 1 or -1.5
   static final RegExp _matchSingleNotation = new RegExp(r"^-?\d+(\.\d+)?$");
+
   // match multiple values notation : 1;3;4 or 1.4;-4;2
-  static final RegExp _matchMultipleNotation = new RegExp(r"^(-?\d+(\.\d+)?)(;-?\d+(\.\d+)?)+$");
+  static final RegExp _matchMultipleNotation = new RegExp(
+      r"^(-?\d+(\.\d+)?)(;-?\d+(\.\d+)?)+$");
+
   // match value range notation : 1-2 or -1--5
-  static final RegExp _matchRangeNotation = new RegExp(r"^-?\d+(\.\d+)?--?\d+(\.\d+)?$");
+  static final RegExp _matchRangeNotation = new RegExp(
+      r"^-?\d+(\.\d+)?--?\d+(\.\d+)?$");
 
   static bool matchesSingleNotation(String levelTagValue) {
     return _matchSingleNotation.hasMatch(levelTagValue);
@@ -21,33 +25,42 @@ class IndoorNotationMatcher {
     return _matchRangeNotation.hasMatch(levelTagValue);
   }
 
+  /*
+   * Returns int or null if no number could be parsed
+   * Decimal numbers are round down to next int
+   */
+  static int parseLevelNumber (string) {
+    return double.tryParse(string)?.floor();
+  }
+
   /* 
    * Returns true if the given level matches the given level tag notation
    * otherwise false
    */
-  static bool matchesIndoorLevelNotation (String levelTagValue, double level) {
+  static bool matchesIndoorLevelNotation(String levelTagValue, int level) {
     if (matchesSingleNotation(levelTagValue)) {
-      final double levelValue = double.tryParse(levelTagValue);
+      final int levelValue = parseLevelNumber(levelTagValue);
       return (levelValue == level);
     }
     else if (matchesMultipleNotation(levelTagValue)) {
-      // split on ";" and convert values to double
-      final Iterable <double> levelValues = levelTagValue.split(";").map(double.tryParse);
+      // split on ";" and convert values to int
+      final Iterable <int> levelValues = levelTagValue.split(";").map(parseLevelNumber);
       // check if at least one value matches the current level
       return levelValues.any((levelValue) => levelValue == level);
     }
     else if (matchesRangeNotation(levelTagValue)) {
-      // split on "-" if number precedes and convert to double
-      final Iterable <double> levelRange = levelTagValue.split(RegExp(r"(?<=\d)-")).map(double.tryParse);
+      // split on "-" if number precedes and convert to int
+      final Iterable <int> levelRange = levelTagValue.split(
+          RegExp(r"(?<=\d)-")).map(parseLevelNumber);
       // separate into max and min value
-      double lowerLevelValue = levelRange.reduce(min);
-      double upperLevelValue = levelRange.reduce(max);
+      int lowerLevelValue = levelRange.reduce(min);
+      int upperLevelValue = levelRange.reduce(max);
       // if level is in range return true else false
       return (lowerLevelValue <= level && upperLevelValue >= level);
     }
     return false;
   }
-  
+
   /* 
    * Returns the level or repeat_on value string of a given tag list
    * null if no key is found
@@ -85,7 +98,7 @@ class IndoorNotationMatcher {
    * or the given indoor level is null
    * otherwise false
    */
-  static bool isOutdoorOrMatchesIndoorLevel (List<Tag> tags, double level) {
+  static bool isOutdoorOrMatchesIndoorLevel(List<Tag> tags, int level) {
     String levelValue = getLevelValue(tags);
     // return true if no level tag exists
     if (levelValue == null || level == null) return true;

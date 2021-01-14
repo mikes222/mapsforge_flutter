@@ -29,7 +29,7 @@ void main() {
 
     String prefix = ""; // "../";
     double tileSize = displayModel.tileSize;
-    double l = 0;
+    int l = 0;
     int z = 16;
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
@@ -90,7 +90,7 @@ void main() {
 
     String prefix = ""; // "../";
     double tileSize = displayModel.tileSize;
-    double l = 0;
+    int l = 0;
     int z = 15;
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
