@@ -1,4 +1,3 @@
-import 'package:example/constants.dart';
 import 'package:example/mapfileanalyze/subfileparamspage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -6,12 +5,17 @@ import 'package:intl/intl.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
-import '../filehelper.dart';
+import '../map-file-data.dart';
 
 ///
 /// These classes are for debugging purposes only.
 ///
 class MapHeaderPage extends StatelessWidget {
+  final MapFileData mapFileData;
+
+  MapHeaderPage(
+    this.mapFileData
+  );
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -131,8 +135,8 @@ class MapHeaderPage extends StatelessWidget {
   }
 
   Future<MapFile> _loadMapfile() async {
-    String _localPath = await FileHelper.findLocalPath();
-    MapFile mapFile = MapFile(_localPath + "/" + Constants.MAPFILE_NAME, null, null);
+    String _localFilePath = await mapFileData.getLocalFilePath();
+    MapFile mapFile = MapFile(_localFilePath, null, null);
     await mapFile.init();
     return mapFile;
   }
