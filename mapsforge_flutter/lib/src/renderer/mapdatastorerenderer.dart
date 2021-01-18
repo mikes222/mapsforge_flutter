@@ -91,8 +91,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     if (showTiming) _log.info("Before starting the isolate to read map data from file");
     MapReadResult mapReadResult;
     if (direct) {
+      // read the mapdata directly in this thread
       mapReadResult = await readMapDataInIsolate(IsolateParam(mapDataStore, job.tile));
     } else {
+      // read the mapdata in an isolate which is flutter's way to create multithreaded processes
       await _startIsolateJob();
       _sendPort.send(IsolateParam(mapDataStore, job.tile));
       mapReadResult = await _subject.stream.first;

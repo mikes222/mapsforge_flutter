@@ -5,6 +5,9 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import 'tilebitmapcache.dart';
 
+///
+/// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.
+///
 class MemoryTileBitmapCache extends TileBitmapCache {
   Cache<Tile, TileBitmap> _bitmaps = new LruCache<Tile, TileBitmap>(
     storage: SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
@@ -16,10 +19,6 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   @override
   void dispose() {
     _bitmaps.clear();
-  }
-
-  TileBitmap getTileBitmap(Tile tile) {
-    return _bitmaps.get(tile);
   }
 
   @override

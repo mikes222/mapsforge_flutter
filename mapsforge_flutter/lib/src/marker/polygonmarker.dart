@@ -99,7 +99,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
     }
     if (_bitmapInvalid == null && src != null && !src.isEmpty && fill != null) {
       try {
-        this._bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width, height, percent);
+        this._bitmap = await symbolCache.getSymbol(src, width, height, percent);
         if (_bitmap != null) {
           _bitmapInvalid = false;
           fill.setBitmapShader(_bitmap);

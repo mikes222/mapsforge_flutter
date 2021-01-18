@@ -6,7 +6,7 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 
 main() async {
   //create a mapfile from .map
-  MapFile mapFile = MapFile("test_resources/campus_level.map", null, null);     //Map that contains part of the Canpus Reichehainer Straße
+  MapFile mapFile = MapFile("test_resources/campus_level.map", null, null); //Map that contains part of the Canpus Reichehainer Straße
   await mapFile.init();
 
   ////Maps that contain single rooms in the NHG
@@ -27,12 +27,13 @@ main() async {
   int lr_x = 140487; //x of lowerRight
   int lr_y = 87975; //y of lowerRight
   int z = 18; //zoomlevel
+  int iz = 18; // indoor zoomlevel
   double tileSize = 256.0; //standard tilesize
 
   //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
-  Tile upperLeft = new Tile(ul_x, ul_y, z, tileSize);
-  Tile lowerRight = new Tile(lr_x, lr_y, z, tileSize);
-  Tile Single = new Tile(140486, 87975, z, tileSize);
+  Tile upperLeft = new Tile(ul_x, ul_y, z, iz, tileSize);
+  Tile lowerRight = new Tile(lr_x, lr_y, z, iz, tileSize);
+  Tile Single = new Tile(140486, 87975, z, iz, tileSize);
 
   //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
   //Campus
@@ -47,11 +48,11 @@ main() async {
   MapReadResult mapReadResult_NHG_WC; //area
   mapReadResult_NHG_WC = await mapFile.readMapData(upperLeft, lowerRight);
 
-  int j = 0;    //Iterator for ways
+  int j = 0; //Iterator for ways
   //print each way with its key and value in the area defined by upperLeft and lowerRight
   mapReadResult.ways.forEach((way) {
     j++;
-    print("Way "+j.toString());
+    print("Way " + j.toString());
     //just print tags of a way
     way.tags.forEach((tag) {
       print("Key: " + tag.key);
@@ -70,20 +71,17 @@ main() async {
     //POI's
     mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
-        if (tag.key == "indoor")
-          indoorPois = true;
+        if (tag.key == "indoor") indoorPois = true;
       });
     });
 
     //Ways
     mapReadResult.ways.forEach((way) {
       way.tags.forEach((tag) {
-        if (tag.key == "indoor")
-          indoorWays = true;
+        if (tag.key == "indoor") indoorWays = true;
       });
     });
-    if (indoorPois && indoorWays)
-      indoorDataDetector = true;
+    if (indoorPois && indoorWays) indoorDataDetector = true;
 
     return indoorDataDetector;
   }
@@ -94,37 +92,33 @@ main() async {
     //POI's
     mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
-        if (tag.key == "level")
-          levelDetector = true;
+        if (tag.key == "level") levelDetector = true;
       });
     });
     //Ways
     mapReadResult.ways.forEach((way) {
       way.tags.forEach((tag) {
-        if (tag.key == "level")
-          levelDetector = true;
+        if (tag.key == "level") levelDetector = true;
       });
     });
     return levelDetector;
   }
 
   //General tag detecting function
-  bool objectDetected (String tagname){
+  bool objectDetected(String tagname) {
     bool objectDetector = false;
     //POI's
     mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
-        if (tag.key == tagname || tag.value == tagname)
-          objectDetector = true;  //stop search, if tag was found
-          return objectDetector;
+        if (tag.key == tagname || tag.value == tagname) objectDetector = true; //stop search, if tag was found
+        return objectDetector;
       });
     });
     //Ways
     mapReadResult.ways.forEach((way) {
       way.tags.forEach((tag) {
-        if (tag.key == tagname || tag.value == tagname)
-          objectDetector = true;
-          return objectDetector;  //stop search, if tag was found
+        if (tag.key == tagname || tag.value == tagname) objectDetector = true;
+        return objectDetector; //stop search, if tag was found
       });
     });
     return objectDetector;
@@ -143,40 +137,39 @@ main() async {
   });
 
   //Test if specific tag e.g. "room" is found
-  test ("tagTest", (){
+  test("tagTest", () {
     bool tagdetected;
 
-    tagdetected= objectDetected("room");
+    tagdetected = objectDetected("room");
 
     expect(tagdetected, true);
   });
 
-  test ("doorTest", (){
+  test("doorTest", () {
     bool tagdetected;
 
-    tagdetected= objectDetected("door");
+    tagdetected = objectDetected("door");
 
     expect(tagdetected, true);
   });
 
   //Test if tag "steps" is found
-  test ("stepsTest", (){
+  test("stepsTest", () {
     bool tagdetected;
 
-    tagdetected= objectDetected("steps");
+    tagdetected = objectDetected("steps");
 
     expect(tagdetected, true);
   });
 
   //Test if tag "room" is found
-  test ("roomTest", (){
+  test("roomTest", () {
     bool tagdetected;
 
-    tagdetected= objectDetected("room");
+    tagdetected = objectDetected("room");
 
     expect(tagdetected, true);
   });
-
 
 // currently not working, because tags are not yet in the .map-file
 

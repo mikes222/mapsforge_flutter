@@ -1,4 +1,4 @@
-import 'package:example/mapfileanalyze/subfileparamspage.dart';
+import 'package:mapsforge_example/mapfileanalyze/subfileparamspage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -13,9 +13,7 @@ import '../map-file-data.dart';
 class MapHeaderPage extends StatelessWidget {
   final MapFileData mapFileData;
 
-  MapHeaderPage(
-    this.mapFileData
-  );
+  MapHeaderPage(this.mapFileData);
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(

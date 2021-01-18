@@ -1,25 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
+import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 
-class PoiPage extends StatelessWidget {
+class WayPage extends StatelessWidget {
   /// The read POIs.
-  final List<PointOfInterest> pointOfInterests;
+  final List<Way> ways;
 
-  const PoiPage({Key key, this.pointOfInterests}) : super(key: key);
+  const WayPage({Key key, this.ways}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: pointOfInterests
+      children: ways
           .map(
             (e) => Card(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Layer ${e.layer}, Position ${formatLatLong(e.position)}"),
+                  Text(
+                      "Layer ${e.layer}, labelPosition ${e.labelPosition}, ${e.latLongs.length} coordinate with ${e.latLongs[0].length} segments in coordinate 0"),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: e.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList(),

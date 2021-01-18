@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
@@ -35,7 +36,7 @@ void main() {
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
-    SymbolCache symbolCache = SymbolCache();
+    SymbolCache symbolCache = FileSymbolCache(graphicFactory);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();
@@ -112,7 +113,7 @@ void main() {
     ];
 
     GraphicFactory graphicFactory = FlutterGraphicFactory();
-    SymbolCache symbolCache = SymbolCache();
+    SymbolCache symbolCache = FileSymbolCache(graphicFactory);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();

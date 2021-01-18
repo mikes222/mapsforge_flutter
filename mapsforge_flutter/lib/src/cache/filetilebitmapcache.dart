@@ -12,6 +12,10 @@ import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 import 'memorytilebitmapcache.dart';
 import 'tilebitmapcache.dart';
 
+///
+/// A mixed memory/file cache for the bitmaps of a [Tile]. The implementation can distinguish different sets of [Tile]s depending on the [renderkey].
+/// This can be used to cache for example tiles used by day as well as tiles used by night.
+///
 class FileTileBitmapCache extends TileBitmapCache {
   static final _log = new Logger('FileTileBitmapCache');
 
@@ -44,11 +48,11 @@ class FileTileBitmapCache extends TileBitmapCache {
   void purgeAll() async {
     if (_files == null) return;
     int count = 0;
-    await _files.forEach((file) async {
+    for (String file in _files) {
       _log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
-    });
+    }
     _log.info("purged $count files from cache $renderkey");
     _files.clear();
     _memoryBitmapCache.purgeAll();
@@ -73,7 +77,7 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   @override
   Future<TileBitmap> getTileBitmapAsync(Tile tile) async {
-    TileBitmap tileBitmap = _memoryBitmapCache.getTileBitmap(tile);
+    TileBitmap tileBitmap = _memoryBitmapCache.getTileBitmapSync(tile);
     if (tileBitmap != null) return tileBitmap;
 
     String filename = _calculateFilename(tile);
@@ -126,11 +130,11 @@ class FileTileBitmapCache extends TileBitmapCache {
     // todo find a method to remove only affected files. For now we clear the whole cache
     if (_files == null) return;
     int count = 0;
-    await _files.forEach((file) async {
+    for (String file in _files) {
       _log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
-    });
+    }
     _log.info("purged $count files from cache $renderkey");
     _files.clear();
 

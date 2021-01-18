@@ -645,14 +645,20 @@ class MapFile extends MapDataStore {
         _log.warning("invalid buffer position: ${readBuffer.getBufferPosition()}");
         return null;
       }
-      // move the pointer to the first way
-      readBuffer.setBufferPosition(firstWayOffset);
+      if (firstWayOffset == readBuffer.getBufferSize()) {
+        // no ways in this block
+        ways = List<Way>();
+      } else {
+        // move the pointer to the first way
+        readBuffer.setBufferPosition(firstWayOffset);
 
-      ways = _processWays(
-          queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
-      if (ways == null) {
-        _log.warning("No Ways");
-        return null;
+        ways = _processWays(
+            queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
+        if (ways == null) {
+          _log.warning("No Ways");
+          ways = List<Way>();
+          //return null;
+        }
       }
     }
 

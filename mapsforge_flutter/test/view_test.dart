@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
 
 ///
 /// flutter test --update-goldens
@@ -30,7 +31,7 @@ void main() {
 
       GraphicFactory graphicFactory = FlutterGraphicFactory();
       final DisplayModel displayModel = DisplayModel();
-      SymbolCache symbolCache = SymbolCache();
+      SymbolCache symbolCache = FileSymbolCache(graphicFactory);
 
       RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
       final file = new File(prefix + 'test_resources/rendertheme.xml');

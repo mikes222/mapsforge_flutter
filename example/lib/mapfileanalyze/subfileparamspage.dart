@@ -1,4 +1,4 @@
-import 'package:example/mapfileanalyze/blockpage.dart';
+import 'package:mapsforge_example/mapfileanalyze/blockpage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -13,19 +13,22 @@ class SubfileParamsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<SubFileParameter> newList = List();
-    subFileParameters.forEach((element) {
-      if (newList.contains(element)) {
-      } else {
-        newList.add(element);
-      }
-    });
-    print("analyzing ${subFileParameters.length} subfileParameter items, ${newList.length} different items");
+    //List<SubFileParameter> newList = List();
+    // subFileParameters.forEach((element) {
+    //   if (newList.contains(element)) {
+    //   } else {
+    //     newList.add(element);
+    //   }
+    // });
+    // print("analyzing ${subFileParameters.length} subfileParameter items, ${newList.length} different items");
     return ListView(
-      children: newList
+      children: subFileParameters
           .map((e) => Card(
                 child: e == null
-                    ? Text("Null")
+                    ? Text(
+                        "SubfileParam for ZoomLevel ${subFileParameters.indexOf(e)} and more",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[

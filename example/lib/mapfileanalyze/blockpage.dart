@@ -1,4 +1,5 @@
-import 'package:example/mapfileanalyze/poipage.dart';
+import 'package:mapsforge_example/mapfileanalyze/waypage.dart';
+import 'package:mapsforge_example/mapfileanalyze/poipage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -56,7 +57,17 @@ class BlockPage extends StatelessWidget {
                           MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: mapReadResult.pointOfInterests)));
                     },
                   ),
-                  Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
+                  InkWell(
+                    child: Row(
+                      children: <Widget>[
+                        Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
+                        Icon(Icons.more_horiz),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => WayPage(ways: mapReadResult.ways)));
+                    },
+                  ),
                 ],
               ),
             ),
@@ -73,7 +84,8 @@ class BlockPage extends StatelessWidget {
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
       Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0, 256);
-      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0, 256);
+      Tile lowerRight =
+          Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0, 256);
       queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
       queryParameters.calculateBlocks(subFileParameter);
       print(

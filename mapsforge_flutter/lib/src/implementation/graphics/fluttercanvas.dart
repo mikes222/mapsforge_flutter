@@ -193,8 +193,8 @@ class FlutterCanvas extends MapCanvas {
   @override
   void drawLine(int x1, int y1, int x2, int y2, MapPaint paint) {
     Path path = new Path()
-    ..moveTo(x1. toDouble(), y1. toDouble())
-    ..lineTo(x2. toDouble(), y2. toDouble());
+      ..moveTo(x1.toDouble(), y1.toDouble())
+      ..lineTo(x2.toDouble(), y2.toDouble());
 
     drawPath(new FlutterPath(path), paint);
   }
@@ -220,8 +220,8 @@ class FlutterCanvas extends MapCanvas {
         }
       }
       uiCanvas.drawPath(dashPath, (paint as FlutterPaint).paint);
-    }
-    else uiCanvas.drawPath((path as FlutterPath).path, (paint as FlutterPaint).paint);
+    } else
+      uiCanvas.drawPath((path as FlutterPath).path, (paint as FlutterPaint).paint);
   }
 
   @override
@@ -229,11 +229,10 @@ class FlutterCanvas extends MapCanvas {
     Rect rt = (rect as FlutterRect).rect;
     //FlutterPaint pt = (paint as FlutterPaint).paint;
     if (paint.getStrokeDasharray() != null && paint.getStrokeDasharray().length >= 2) {
-      Path rectPath = Path()
-      ..addRect(rt);
+      Path rectPath = Path()..addRect(rt);
       drawPath(new FlutterPath(rectPath), paint);
-    }
-    else uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
+    } else
+      uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
   }
 
   @override
@@ -334,7 +333,7 @@ class FlutterCanvas extends MapCanvas {
               : FontWeight.normal,
         ),
       ),
-      textDirection: ui.TextDirection.ltr,
+      textDirection: TextDirection.ltr,
       maxLines: 1,
     );
     renderParagraph.layout(constraints);

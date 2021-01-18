@@ -1,38 +1,47 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:example/map-page-view.dart';
+
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'map-file-data.dart';
+import 'package:mapsforge_example/map-page-view.dart';
+import 'package:mapsforge_example/showmap.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'map-file-data.dart';
+
 final List<MapFileData> MAP_FILE_DATA_LIST = [
-  new MapFileData(
-    "https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET",
-    "Chemnitz Uni.map",
-    "Chemnitz - University",
-    50.81348, 12.92936,
-    18
-  ),
-  new MapFileData(
-    "https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS",
-    "Louvre.map",
-    "Paris - Louvre",
-    48.86085, 2.33665,
-    17
-  ),
-  new MapFileData(
-      "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
-      "ile-de-france.map",
-      "ile-de-france",
-      48.86085, 2.33665,
-      17
-  ),
+  new MapFileData("https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET", "Chemnitz Uni.map",
+      "Indoor Chemnitz - University", "assets/custom.xml", 50.81348, 12.92936, 18),
+  new MapFileData("https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS", "Louvre.map", "Indoor Paris - Louvre",
+      "assets/custom.xml", 48.86085, 2.33665, 17),
+  new MapFileData("https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
+      "ile-de-france.map", "Indoor ile-de-france", "assets/custom.xml", 48.86085, 2.33665, 17),
+  new MapFileData("https://download.mapsforge.org/maps/v5/europe/germany/sachsen.map", "sachsen.map", "Offline Sachsen",
+      "assets/defaultrender.xml", 50.81287701030895, 12.94189453125, 12),
+  new MapFileData("https://download.mapsforge.org/maps/v5/europe/austria.map", "austria.map", "Offline Austria", "assets/defaultrender.xml",
+      48.089415, 16.311374, 12),
+  new MapFileData("http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/monaco.map", "monaco.map",
+      "Offline Monaco", "assets/defaultrender.xml", 43.7399, 7.4262, 15),
 ];
 
-
-
 void main() => runApp(MyApp());
+
+MapInfo dfbMap = MapInfo(
+  mapfilesource: "http://dailyflightbuddy.com/dfb_flutter/map_v1_48_16.map.gz",
+  mapfile: "map_v1_48_16.map",
+  lat: 48.089415,
+  lon: 16.311374,
+);
+
+MapInfo dfbMap2 = MapInfo(
+  mapfilesource: "http://dailyflightbuddy.com/dfb_flutter/map_lowras_simplnew.map.gz",
+  mapfile: "map_lowras_simplnew.map",
+  lat: 48.089415,
+  lon: 15.711374,
+);
+
+// TODO create a drop-down in UI to let the user choose from different maps
+MapInfo activeMapInfo = dfbMap2;
 
 /// This Widget is the main application widget.
 class MyApp extends StatelessWidget {
@@ -59,6 +68,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
   MyStatelessWidget({Key key}) : super(key: key);
@@ -73,10 +84,10 @@ class MyStatelessWidget extends StatelessWidget {
 
   Widget _buildHead(BuildContext context) {
     return AppBar(
-      title: const Text('Indoor Rendering Examples'),
+      title: const Text('Rendering Examples'),
       actions: <Widget>[
         PopupMenuButton<String>(
-          offset: Offset(0,50),
+          offset: Offset(0, 50),
           onSelected: (choice) => _handleMenuItemSelect(choice),
           itemBuilder: (BuildContext context) => [
             PopupMenuItem<String>(
@@ -94,29 +105,44 @@ class MyStatelessWidget extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(10),
-      scrollDirection: Axis.vertical,
-      itemCount: MAP_FILE_DATA_LIST.length,
-      itemBuilder: (context, i) {
-        MapFileData mapFileData = MAP_FILE_DATA_LIST[i];
-        return Card(
-          margin: EdgeInsets.only(top: 7, bottom: 7),
-          elevation: 4,
-          child: ListTile(
-            title: Text(mapFileData.name),
-            contentPadding: EdgeInsets.fromLTRB(17, 5, 17, 5),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: mapFileData)));
-            },
-            trailing: Icon(Icons.arrow_forward_rounded)
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildCard(context, "Online map", () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => Showmap(
+                      mapInfo: activeMapInfo,
+                      online: true,
+                    )));
+          }),
+          Column(
+            children: MAP_FILE_DATA_LIST.map((element) {
+              return _buildCard(context, element.name, () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: element)));
+              });
+            }).toList(),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
-  Future<void> _handleMenuItemSelect (String value) async {
+  Card _buildCard(BuildContext context, String caption, action, [bool enabled = true]) {
+    return Card(
+      margin: EdgeInsets.only(top: 7, bottom: 7),
+      elevation: 4,
+      child: ListTile(
+          title: Text(
+            caption,
+            style: TextStyle(color: enabled ? Colors.black : Colors.grey),
+          ),
+          contentPadding: EdgeInsets.fromLTRB(17, 5, 17, 5),
+          onTap: enabled ? action : null,
+          trailing: Icon(Icons.arrow_forward_rounded)),
+    );
+  }
+
+  Future<void> _handleMenuItemSelect(String value) async {
     switch (value) {
       case 'clear_tile_cache':
         String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
@@ -137,9 +163,53 @@ class MyStatelessWidget extends StatelessWidget {
         break;
     }
   }
+
+// RaisedButton(
+// child: Text("Analyze mapfile"),
+// onPressed: () {
+// Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage(activeMapInfo.mapfile)));
+// ),
+
+//     RaisedButton(
+//     child: Text("Purge offline cache"),
+//     onPressed: () {
+//     MapModelHelper.prepareOfflineMapModel().then((mapModel) {
+//     Timer(Duration(milliseconds: 1000), () async {
+//     await mapModel.tileBitmapCache.purgeAll();
+//     print("cache purged");
+// //              Scaffold.of(context).showSnackBar(new SnackBar(
+// //                content: new Text("cache purged"),
+// //              ));
+//     });
+//     });
+//     },
+//     ),
+//     RaisedButton(
+//     child: Text("Purge online cache"),
+//     onPressed: () {
+//     MapModelHelper.prepareOnlineMapModel().then((mapModel) {
+//     Timer(Duration(milliseconds: 1000), () async {
+//     await mapModel.tileBitmapCache.purgeAll();
+//     print("cache purged");
+// //              Scaffold.of(context).showSnackBar(new SnackBar(
+// //                content: new Text("cache purged"),
+// //              ));
+//     });
+//     });
+//     },
+//     ),
+
 }
 
+/////////////////////////////////////////////////////////////////////////////
 
+class MapInfo {
+  final String mapfilesource;
+  final String mapfile;
 
+  final double lat;
 
+  final double lon;
 
+  MapInfo({this.mapfilesource, this.mapfile, this.lat, this.lon});
+}

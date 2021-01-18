@@ -63,7 +63,7 @@ class BitmapMixin {
         return;
       }
       try {
-        bitmap = await symbolCache.getOrCreateBitmap(graphicFactory, src, width.round(), height.round(), percent);
+        bitmap = await symbolCache.getSymbol(src, width.round(), height.round(), percent);
         bitmap.incrementRefCount();
       } catch (e, stacktrace) {
         _log.warning("${e.toString()}, ignore missing bitmap in rendering");
@@ -92,7 +92,7 @@ class BitmapMixin {
       return _future;
     }
     try {
-      _future = symbolCache.getOrCreateBitmap(graphicFactory, src, width.round(), height.round(), percent);
+      _future = symbolCache.getSymbol(src, width.round(), height.round(), percent);
       bitmap = await _future;
       _future = null;
       bitmapInvalid = false;
