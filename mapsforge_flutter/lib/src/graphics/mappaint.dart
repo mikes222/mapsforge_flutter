@@ -20,6 +20,10 @@ abstract class MapPaint {
 
   bool isTransparent();
 
+  void setAntiAlias(bool value);
+
+  bool getAntiAlias();
+
   void setBitmapShader(Bitmap bitmap);
 
   void setBitmapShaderShift(Mappoint origin);

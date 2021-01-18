@@ -1,49 +1,41 @@
-// Flutter code sample for material.AppBar.1
-
-// This sample shows an [AppBar] with two simple actions. The first action
-// opens a [SnackBar], while the second action navigates to a new page.
-
 import 'dart:async';
-
-import 'package:example/mapfileanalyze/mapheaderpage.dart';
-import 'package:example/showmap.dart';
+import 'dart:io';
+import 'package:example/map-page-view.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'map-file-data.dart';
+import 'package:path_provider/path_provider.dart';
 
-import 'constants.dart';
-import 'filehelper.dart';
-import 'mapmodelhelper.dart';
+final List<MapFileData> MAP_FILE_DATA_LIST = [
+  new MapFileData(
+    "https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET",
+    "Chemnitz Uni.map",
+    "Chemnitz - University",
+    50.81348, 12.92936,
+    18
+  ),
+  new MapFileData(
+    "https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS",
+    "Louvre.map",
+    "Paris - Louvre",
+    48.86085, 2.33665,
+    17
+  ),
+  new MapFileData(
+      "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
+      "ile-de-france.map",
+      "ile-de-france",
+      48.86085, 2.33665,
+      17
+  ),
+];
+
+
 
 void main() => runApp(MyApp());
 
-MapInfo sachsenMap = MapInfo(
-  mapfilesource: "https://download.mapsforge.org/maps/v5/europe/germany/sachsen.map",
-  mapfile: "sachsen.map",
-  lat: 50.81287701030895,
-  lon: 12.94189453125,
-);
-
-MapInfo austria = MapInfo(
-  mapfilesource: "https://download.mapsforge.org/maps/v5/europe/austria.map",
-  mapfile: "austria.map",
-  lat: 48.089415,
-  lon: 16.311374,
-);
-
-MapInfo monacoMap = MapInfo(
-  mapfilesource: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/monaco.map",
-  mapfile: "monaco.map",
-  lat: 43.7399,
-  lon: 7.4262,
-);
-
-// TODO create a drop-down in UI to let the user choose from different maps
-MapInfo activeMapInfo = sachsenMap;
-
 /// This Widget is the main application widget.
 class MyApp extends StatelessWidget {
-  static const String _title = 'Mapsforge sample';
-
   MyApp() {
     _initLogging();
   }
@@ -51,7 +43,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: _title,
+      title: 'Mapsforge Indoor App',
       home: MyStatelessWidget(),
     );
   }
@@ -67,118 +59,87 @@ class MyApp extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
-
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
-  MyStatelessWidget({Key key}) : super(key: key) {}
+  MyStatelessWidget({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Mapsforge'),
-      ),
-      body: Column(
-        children: <Widget>[
-          FutureBuilder<bool>(
-            future: FileHelper.exists(activeMapInfo.mapfile),
-            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-              if (snapshot.hasData)
-                return Text(
-                  snapshot.data ? "Mapfile is already downloaded" : "Mapfile missing",
-                  style: TextStyle(color: snapshot.data ? Colors.green : Colors.red),
-                );
-              return Container();
-            },
-          ),
-          RaisedButton(
-            child: Text("Download Mapfile"),
-            onPressed: () {
-              FileHelper.downloadFile(activeMapInfo.mapfilesource, activeMapInfo.mapfile);
-            },
-          ),
-          FutureBuilder<bool>(
-            future: FileHelper.exists(Constants.worldmap),
-            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-              if (snapshot.hasData)
-                return Text(
-                  snapshot.data ? "Worldmap is already downloaded" : "Worldmap missing",
-                  style: TextStyle(color: snapshot.data ? Colors.green : Colors.red),
-                );
-              return Container();
-            },
-          ),
-          RaisedButton(
-            child: Text("Download Worldmap (zoom out several times)"),
-            onPressed: () {
-              FileHelper.downloadFile(Constants.worldmapsource, Constants.worldmap);
-            },
-          ),
-          RaisedButton(
-            child: Text("Show offline map"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => Showmap()));
-            },
-          ),
-          RaisedButton(
-            child: Text("Show online map"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => Showmap(
-                        mode: 1,
-                      )));
-            },
-          ),
-          RaisedButton(
-            child: Text("Purge offline cache"),
-            onPressed: () {
-              MapModelHelper.prepareOfflineMapModel().then((mapModel) {
-                Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.tileBitmapCache.purgeAll();
-                  print("cache purged");
-//              Scaffold.of(context).showSnackBar(new SnackBar(
-//                content: new Text("cache purged"),
-//              ));
-                });
-              });
-            },
-          ),
-          RaisedButton(
-            child: Text("Purge online cache"),
-            onPressed: () {
-              MapModelHelper.prepareOnlineMapModel().then((mapModel) {
-                Timer(Duration(milliseconds: 1000), () async {
-                  await mapModel.tileBitmapCache.purgeAll();
-                  print("cache purged");
-//              Scaffold.of(context).showSnackBar(new SnackBar(
-//                content: new Text("cache purged"),
-//              ));
-                });
-              });
-            },
-          ),
-          RaisedButton(
-            child: Text("Analyze mapfile"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage()));
-            },
-          ),
-        ],
-      ),
+      appBar: _buildHead(context),
+      body: _buildBody(context),
     );
+  }
+
+  Widget _buildHead(BuildContext context) {
+    return AppBar(
+      title: const Text('Indoor Rendering Examples'),
+      actions: <Widget>[
+        PopupMenuButton<String>(
+          offset: Offset(0,50),
+          onSelected: (choice) => _handleMenuItemSelect(choice),
+          itemBuilder: (BuildContext context) => [
+            PopupMenuItem<String>(
+              value: "clear_tile_cache",
+              child: Text("Delete Tile Cache"),
+            ),
+            PopupMenuItem<String>(
+              value: "delete_map_files",
+              child: Text("Delete Map Files"),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(10),
+      scrollDirection: Axis.vertical,
+      itemCount: MAP_FILE_DATA_LIST.length,
+      itemBuilder: (context, i) {
+        MapFileData mapFileData = MAP_FILE_DATA_LIST[i];
+        return Card(
+          margin: EdgeInsets.only(top: 7, bottom: 7),
+          elevation: 4,
+          child: ListTile(
+            title: Text(mapFileData.name),
+            contentPadding: EdgeInsets.fromLTRB(17, 5, 17, 5),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: mapFileData)));
+            },
+            trailing: Icon(Icons.arrow_forward_rounded)
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleMenuItemSelect (String value) async {
+    switch (value) {
+      case 'clear_tile_cache':
+        String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
+        var fileCacheDir = Directory(fileCachePath);
+        if (await fileCacheDir.exists()) {
+          fileCacheDir.list(recursive: false).forEach((f) async {
+            f.delete(recursive: true);
+          });
+        }
+        break;
+      case 'delete_map_files':
+        Directory dir = await getApplicationDocumentsDirectory();
+        dir.list(recursive: false).forEach((f) async {
+          if (await FileSystemEntity.isFile(f.path)) {
+            f.delete();
+          }
+        });
+        break;
+    }
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
 
-class MapInfo {
-  final String mapfilesource;
-  final String mapfile;
 
-  final double lat;
 
-  final double lon;
 
-  MapInfo({this.mapfilesource, this.mapfile, this.lat, this.lon});
-}

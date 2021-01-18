@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flutter/material.dart' as mat;
 import 'package:mapsforge_flutter/src/graphics/align.dart';
@@ -141,6 +142,16 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   }
 
   @override
+  void setAntiAlias(bool value) {
+    paint.isAntiAlias = value;
+  }
+
+  @override
+  bool getAntiAlias() {
+    return paint.isAntiAlias;
+  }
+
+  @override
   void setBitmapShaderShift(Mappoint origin) {
     // TODO: implement setBitmapShaderShift
   }
@@ -194,12 +205,21 @@ class FlutterPaint extends ui.Paint implements MapPaint {
             getFontStyle() == MapFontStyle.BOLD || getFontStyle() == MapFontStyle.BOLD_ITALIC ? ui.FontWeight.bold : ui.FontWeight.normal,
         //fontFamily: _fontFamily == MapFontFamily.MONOSPACE ? FontFamily.MONOSPACE : FontFamily.DEFAULT,
       ),
-    )
-      ..pushStyle(ui.TextStyle(
-        color: paint.color,
-        fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
-      ))
-      ..addText(text);
+    );
+
+    if (getStrokeWidth() == 0) builder.pushStyle(ui.TextStyle(
+      color: paint.color,
+      fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
+    ));
+    else builder.pushStyle(ui.TextStyle(
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = paint.strokeWidth
+        ..color = paint.color,
+      fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
+    ));
+
+    builder.addText(text);
     return builder;
   }
 

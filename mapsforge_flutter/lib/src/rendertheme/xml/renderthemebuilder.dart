@@ -74,7 +74,7 @@ class RenderThemeBuilder {
   void parseXml(String content) {
     assert(content.length > 10);
     int time = DateTime.now().millisecondsSinceEpoch;
-    XmlDocument document = parse(content);
+    XmlDocument document = XmlDocument.parse(content);
     assert(document.children.length > 0);
     bool foundRendertheme = false;
     for (XmlNode node in document.children) {

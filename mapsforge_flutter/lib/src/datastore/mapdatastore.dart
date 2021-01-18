@@ -118,7 +118,7 @@ abstract class MapDataStore {
     MapReadResult result = new MapReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.tileSize);
+        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize);
         result.addDeduplicate(await readLabelsSingle(current), false);
       }
     }
@@ -150,7 +150,7 @@ abstract class MapDataStore {
     MapReadResult result = new MapReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.tileSize);
+        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize);
         result.addDeduplicate(await readMapDataSingle(current), false);
       }
     }
@@ -182,7 +182,7 @@ abstract class MapDataStore {
     MapReadResult result = new MapReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.tileSize);
+        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize);
         result.addDeduplicate(await readPoiDataSingle(current), false);
       }
     }

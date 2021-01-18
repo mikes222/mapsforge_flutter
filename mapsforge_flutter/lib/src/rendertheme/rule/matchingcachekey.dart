@@ -7,10 +7,11 @@ class MatchingCacheKey {
   final List<Tag> tags;
 //  final Set<Tag> tagsWithoutName;
   final int zoomLevel;
+  final int indoorLevel;
 
   int _hashKey;
 
-  MatchingCacheKey(List<Tag> tags, this.zoomLevel, this.closed) : this.tags = List() {
+  MatchingCacheKey(List<Tag> tags, this.zoomLevel, this.indoorLevel, this.closed) : this.tags = List() {
     //: tagsWithoutName = Set<Tag>() {
 //    if (this.tags != null) {
 //      for (Tag tag in tags) {
@@ -37,6 +38,6 @@ class MatchingCacheKey {
   int get hashCode {
     if (_hashKey != null) return _hashKey;
     int tagHash = tags?.fold(15, (previousValue, element) => previousValue ^ element.hashCode) ?? 31;
-    return closed.hashCode ^ tagHash ^ zoomLevel.hashCode;
+    return closed.hashCode ^ tagHash ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
   }
 }

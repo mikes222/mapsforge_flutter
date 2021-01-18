@@ -134,28 +134,16 @@ class CanvasRasterer {
       } else {
         points = innerList;
       }
-      if (points.length >= 2) {
-        if (shapePaintContainer.paint.getStrokeDasharray() != null && shapePaintContainer.paint.getStrokeDasharray().length >= 2) {
-          Mappoint point = points[0];
-          for (int i = 1; i < points.length; ++i) {
-            this.canvas.drawLine(point.x.round(), point.y.round(), points[i].x.round(), points[i].y.round(), shapePaintContainer.paint);
-            point = points[i];
-          }
-        } else {
-          Mappoint point = points[0];
-          this.path.moveTo(point.x, point.y);
-          for (int i = 1; i < points.length; ++i) {
-            point = points[i];
-            this.path.lineTo(point.x, point.y);
-          }
-        }
+
+      Mappoint point = points[0];
+      this.path.moveTo(point.x, point.y);
+      for (int i = 1; i < points.length; i++) {
+        point = points[i];
+        this.path.lineTo(point.x, point.y);
       }
     }
 
-    if (shapePaintContainer.paint.getStrokeDasharray() != null && shapePaintContainer.paint.getStrokeDasharray().length >= 2) {
-    } else {
-      this.canvas.drawPath(this.path, shapePaintContainer.paint);
-    }
+    this.canvas.drawPath(this.path, shapePaintContainer.paint);
   }
 
   void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer) {

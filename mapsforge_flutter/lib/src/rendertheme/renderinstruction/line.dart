@@ -143,12 +143,13 @@ class Line extends RenderInstruction with BitmapMixin {
     if (this.stroke != null) {
       MapPaint paint = graphicFactory.createPaintFrom(stroke);
       paint.setStrokeWidth(this.strokeWidth * scaleFactor);
-      if (this.scale == Scale.ALL) {
-        List<double> strokeDasharrayScaled = new List<double>(this.strokeDasharray.length);
-        for (int i = 0; i < strokeDasharray.length; i++) {
-          strokeDasharrayScaled[i] = this.strokeDasharray[i] * scaleFactor;
+      if (this.scale == Scale.ALL || this.scale == Scale.STROKE) {
+        if (strokeDasharray != null) {
+          List<double> strokeDasharrayScaled = this.strokeDasharray.map((dash) {
+            return dash * scaleFactor;
+          }).toList();
+          paint.setStrokeDasharray(strokeDasharrayScaled);
         }
-        paint.setStrokeDasharray(strokeDasharrayScaled);
       }
       strokes[zoomLevel] = paint;
     }

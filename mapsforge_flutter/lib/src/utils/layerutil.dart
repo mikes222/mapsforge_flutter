@@ -16,11 +16,11 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the upper left of the bbox.
    */
-  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, double tileSize) {
+  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
     int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
-    return new Tile(tileLeft, tileTop, zoomLevel, tileSize);
+    return new Tile(tileLeft, tileTop, zoomLevel, indoorLevel, tileSize);
   }
 
   /**
@@ -31,18 +31,18 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the lower right of the bbox.
    */
-  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, double tileSize) {
+  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
     int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
-    return new Tile(tileRight, tileBottom, zoomLevel, tileSize);
+    return new Tile(tileRight, tileBottom, zoomLevel, indoorLevel, tileSize);
   }
 
   static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {
     Set<Tile> tiles = new Set<Tile>();
     for (int tileY = upperLeft.tileY; tileY <= lowerRight.tileY; ++tileY) {
       for (int tileX = upperLeft.tileX; tileX <= lowerRight.tileX; ++tileX) {
-        tiles.add(new Tile(tileX, tileY, upperLeft.zoomLevel, upperLeft.tileSize));
+        tiles.add(new Tile(tileX, tileY, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize));
 //        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
       }
     }
@@ -56,6 +56,7 @@ class LayerUtil {
   static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition) {
     BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
     int zoomLevel = mapViewPosition.zoomLevel;
+    int indoorLevel = mapViewPosition.indoorLevel;
     double tileSize = mapViewPosition.mercatorProjection.tileSize;
     int tileLeft = mapViewPosition.mercatorProjection.longitudeToTileX(boundingBox.minLongitude);
     int tileTop = mapViewPosition.mercatorProjection.latitudeToTileY(boundingBox.maxLatitude);
@@ -68,16 +69,16 @@ class LayerUtil {
 
     // build tiles starting from the center tile
     for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
-      tiles.add(Tile(tileHalfX, tileY, zoomLevel, tileSize));
+      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel, tileSize));
       int xDiff = 1;
       while (true) {
         bool xAdded = false;
         if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel, tileSize));
           xAdded = true;
         }
         if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel, tileSize));
           xAdded = true;
         }
         if (!xAdded) break;
@@ -85,16 +86,16 @@ class LayerUtil {
       }
     }
     for (int tileY = tileHalfY - 1; tileY >= tileTop; --tileY) {
-      tiles.add(Tile(tileHalfX, tileY, zoomLevel, tileSize));
+      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel, tileSize));
       int xDiff = 1;
       while (true) {
         bool xAdded = false;
         if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel, tileSize));
           xAdded = true;
         }
         if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, tileSize));
+          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel, tileSize));
           xAdded = true;
         }
         if (!xAdded) break;
