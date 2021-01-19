@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'subfileparameter.dart';
+import '../mapfile/subfileparameter.dart';
 import '../model/tile.dart';
 
 import 'querycalculations.dart';

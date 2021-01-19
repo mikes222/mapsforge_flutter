@@ -24,8 +24,8 @@ class Area extends RenderInstruction with BitmapMixin {
   Map<int, MapPaint> strokes;
   double strokeWidth;
 
-  Area(graphicFactory, displayModel, symbolCache, String elementName, this.level) : super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
+  Area(graphicFactory, displayModel, String elementName, this.level) : super(graphicFactory, displayModel) {
+    this.symbolCache = graphicFactory.symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);
@@ -55,11 +55,11 @@ class Area extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
@@ -105,7 +105,7 @@ class Area extends RenderInstruction with BitmapMixin {
       bitmap.incrementRefCount();
     }
 
-    fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
+    //fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
 
     renderCallback.renderArea(renderContext, fillPaint, getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
 //}

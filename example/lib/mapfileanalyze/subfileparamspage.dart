@@ -2,7 +2,7 @@ import 'package:mapsforge_example/mapfileanalyze/blockpage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/reader/subfileparameter.dart';
+import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 
 class SubfileParamsPage extends StatelessWidget {
   final MapFile mapFile;

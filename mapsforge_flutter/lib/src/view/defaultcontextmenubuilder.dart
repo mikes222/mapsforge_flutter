@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import 'contextmenubuilder.dart';
 

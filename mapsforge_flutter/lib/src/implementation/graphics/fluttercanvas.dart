@@ -109,68 +109,68 @@ class FlutterCanvas extends MapCanvas {
     this.uiCanvas.drawRect(ui.Rect.fromLTWH(0, 0, size.width, size.height), paint);
   }
 
-  @override
-  Dimension getDimension() {
-    // TODO: implement getDimension
-    return null;
-  }
+  // @override
+  // Dimension getDimension() {
+  //   // TODO: implement getDimension
+  //   return null;
+  // }
+  //
+  // @override
+  // int getHeight() {
+  //   // TODO: implement getHeight
+  //   return null;
+  // }
+  //
+  // @override
+  // int getWidth() {
+  //   // TODO: implement getWidth
+  //   return null;
+  // }
 
-  @override
-  int getHeight() {
-    // TODO: implement getHeight
-    return null;
-  }
-
-  @override
-  int getWidth() {
-    // TODO: implement getWidth
-    return null;
-  }
-
-  @override
-  bool isAntiAlias() {
-    // TODO: implement isAntiAlias
-    return null;
-  }
-
-  @override
-  bool isFilterBitmap() {
-    // TODO: implement isFilterBitmap
-    return null;
-  }
-
-  @override
-  void resetClip() {}
-
-  @override
-  void setAntiAlias(bool aa) {
-    // TODO: implement setAntiAlias
-  }
-
-  @override
-  void setBitmap(Bitmap bitmap) {
-    // TODO: implement setBitmap
-  }
+  // @override
+  // bool isAntiAlias() {
+  //   // TODO: implement isAntiAlias
+  //   return null;
+  // }
+  //
+  // @override
+  // bool isFilterBitmap() {
+  //   // TODO: implement isFilterBitmap
+  //   return null;
+  // }
+  //
+  // @override
+  // void resetClip() {}
+  //
+  // @override
+  // void setAntiAlias(bool aa) {
+  //   // TODO: implement setAntiAlias
+  // }
+  //
+  // @override
+  // void setBitmap(Bitmap bitmap) {
+  //   // TODO: implement setBitmap
+  // }
 
   @override
   void setClip(int left, int top, int width, int height) {
     uiCanvas.clipRect(ui.Rect.fromLTWH(left.toDouble(), top.toDouble(), width.toDouble(), height.toDouble()));
   }
 
-  @override
-  void setClipDifference(int left, int top, int width, int height) {
-    // TODO: implement setClipDifference
-  }
-
-  @override
-  void setFilterBitmap(bool filter) {
-    // TODO: implement setFilterBitmap
-  }
-
-  @override
-  void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude) {
-    // TODO: implement shadeBitmap
-  }
+  // @override
+  // void setClipDifference(int left, int top, int width, int height) {
+  //   // TODO: implement setClipDifference
+  // }
+  //
+  // @override
+  // void setFilterBitmap(bool filter) {
+  //   // TODO: implement setFilterBitmap
+  // }
+  //
+  // @override
+  // void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude) {
+  //   // TODO: implement shadeBitmap
+  // }
 
   @override
   Future<Bitmap> finalizeBitmap() async {
@@ -374,15 +374,15 @@ class FlutterCanvas extends MapCanvas {
         builder.build()..layout(ui.ParagraphConstraints(width: textwidth)), Offset(x.toDouble() - textwidth / 2, y.toDouble()));
   }
 
-  @override
-  void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint) {
-    // TODO: implement drawTextRotated
-  }
-
-  @override
-  void fillColor(Color color) {
-    // TODO: implement fillColor
-  }
+  // @override
+  // void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint) {
+  //   // TODO: implement drawTextRotated
+  // }
+  //
+  // @override
+  // void fillColor(Color color) {
+  //   // TODO: implement fillColor
+  // }
 
   @override
   void scale(Mappoint focalPoint, double scale) {

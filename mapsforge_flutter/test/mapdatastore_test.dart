@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
@@ -29,11 +30,12 @@ main() async {
   int z = 18; //zoomlevel
   int iz = 18; // indoor zoomlevel
   double tileSize = 256.0; //standard tilesize
+  MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(tileSize, z);
 
   //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
-  Tile upperLeft = new Tile(ul_x, ul_y, z, iz, tileSize);
-  Tile lowerRight = new Tile(lr_x, lr_y, z, iz, tileSize);
-  Tile Single = new Tile(140486, 87975, z, iz, tileSize);
+  Tile upperLeft = new Tile(ul_x, ul_y, z, iz, mercatorProjection);
+  Tile lowerRight = new Tile(lr_x, lr_y, z, iz, mercatorProjection);
+  Tile Single = new Tile(140486, 87975, z, iz, mercatorProjection);
 
   //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
   //Campus

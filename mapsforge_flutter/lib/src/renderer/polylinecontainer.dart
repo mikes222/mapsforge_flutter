@@ -5,7 +5,6 @@ import '../model/tile.dart';
 import '../renderer/shapecontainer.dart';
 import '../renderer/shapetype.dart';
 import '../utils/latlongutils.dart';
-import '../utils/mercatorprojection.dart';
 import 'geometryutils.dart';
 
 /**

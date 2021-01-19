@@ -31,12 +31,12 @@ class Line extends RenderInstruction with BitmapMixin {
   Map<int, MapPaint> strokes;
   double strokeWidth;
 
-  Line(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, String elementName, this.level, this.relativePathPrefix)
+  Line(GraphicFactory graphicFactory, DisplayModel displayModel, String elementName, this.level, this.relativePathPrefix)
       : super(
           graphicFactory,
           displayModel,
         ) {
-    this.symbolCache = symbolCache;
+    this.symbolCache = graphicFactory.symbolCache;
     strokeWidth = 1;
     this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.BLACK);
@@ -68,7 +68,7 @@ class Line extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_DASHARRAY == name) {
         this.strokeDasharray = parseFloatArray(name, value);
         for (int f = 0; f < this.strokeDasharray.length; ++f) {
@@ -124,7 +124,7 @@ class Line extends RenderInstruction with BitmapMixin {
 
     if (strokePaint != null && bitmap != null) {
       strokePaint.setBitmapShader(bitmap);
-      strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
+      //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
       //bitmap.incrementRefCount();
     }
 

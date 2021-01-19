@@ -20,9 +20,8 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   int priority = 0;
   final String relativePathPrefix;
 
-  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
-      : super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
+  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix) : super(graphicFactory, displayModel) {
+    this.symbolCache = graphicFactory.symbolCache;
     this.display = Display.IFSPACE;
   }
 

@@ -2,32 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
-import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 class BackgroundPainter extends ChangeNotifier implements CustomPainter {
-  final MapViewDimension mapViewDimension;
-
   final MapViewPosition position;
 
   final bool isTransparent;
 
   final DisplayModel displayModel;
 
-  BackgroundPainter({@required this.mapViewDimension, @required this.position, @required this.displayModel})
-      : assert(mapViewDimension != null),
-        assert(position != null),
+  BackgroundPainter({@required this.position, @required this.displayModel})
+      : assert(position != null),
         assert(displayModel != null),
         isTransparent = displayModel.getBackgroundColor() == Colors.transparent.value;
 
   @override
   void paint(Canvas canvas, Size size) {
-    //mapModel.mapViewDimension.setDimension(size.width, size.height);
-
-    bool changed = mapViewDimension.setDimension(size.width, size.height);
-    if (changed) {
-      position.sizeChanged();
-    }
     if (!isTransparent) {
       FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
       flutterCanvas.fillColorFromNumber(this.displayModel.getBackgroundColor());

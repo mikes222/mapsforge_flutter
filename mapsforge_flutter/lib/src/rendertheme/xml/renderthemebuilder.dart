@@ -30,7 +30,6 @@ class RenderThemeBuilder {
 
   final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
-  final SymbolCache symbolCache;
   double baseStrokeWidth;
   double baseTextSize;
   bool hasBackgroundOutside;
@@ -41,10 +40,9 @@ class RenderThemeBuilder {
   int level = 0;
   List<RenderInstruction> initPendings = List();
 
-  RenderThemeBuilder(this.graphicFactory, this.displayModel, this.symbolCache)
+  RenderThemeBuilder(this.graphicFactory, this.displayModel)
       : assert(graphicFactory != null),
-        assert(displayModel != null),
-        assert(symbolCache != null) {
+        assert(displayModel != null) {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
@@ -161,7 +159,7 @@ class RenderThemeBuilder {
             XmlElement element = node;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, Map<String, RenderSymbol>(), level++);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, Map<String, RenderSymbol>(), level++);
               ruleBuilder.parse(element, initPendings);
               level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);

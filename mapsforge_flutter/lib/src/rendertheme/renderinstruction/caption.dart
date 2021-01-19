@@ -1,12 +1,10 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/align.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
@@ -48,13 +46,13 @@ class Caption extends RenderInstruction with BitmapMixin {
   final Map<String, RenderSymbol> symbols;
   TextKey textKey;
 
-  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.symbols)
+  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbols)
       : fills = new Map(),
         strokes = new Map(),
         dyScaled = new Map(),
         maxTextWidth = displayModel.getMaxTextWidth(),
         super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
+    this.symbolCache = graphicFactory.symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);
@@ -119,7 +117,7 @@ class Caption extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
@@ -131,7 +129,7 @@ class Caption extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_ID == name) {
@@ -165,20 +163,20 @@ class Caption extends RenderInstruction with BitmapMixin {
       case Position.CENTER:
       case Position.BELOW:
       case Position.ABOVE:
-        this.stroke.setTextAlign(Align.CENTER);
-        this.fill.setTextAlign(Align.CENTER);
+        //this.stroke.setTextAlign(Align.CENTER);
+        //this.fill.setTextAlign(Align.CENTER);
         break;
       case Position.BELOW_LEFT:
       case Position.ABOVE_LEFT:
       case Position.LEFT:
-        this.stroke.setTextAlign(Align.RIGHT);
-        this.fill.setTextAlign(Align.RIGHT);
+        //this.stroke.setTextAlign(Align.RIGHT);
+        //this.fill.setTextAlign(Align.RIGHT);
         break;
       case Position.BELOW_RIGHT:
       case Position.ABOVE_RIGHT:
       case Position.RIGHT:
-        this.stroke.setTextAlign(Align.LEFT);
-        this.fill.setTextAlign(Align.LEFT);
+        //this.stroke.setTextAlign(Align.LEFT);
+        //this.fill.setTextAlign(Align.LEFT);
         break;
       default:
         throw new Exception("Position invalid");

@@ -48,13 +48,13 @@ class Hillshading {
     double maptileTopLat = tile.mercatorProjection.pixelYToLatitude(origin.y);
     double maptileLeftLng = tile.mercatorProjection.pixelXToLongitude(origin.x);
 
-    double maptileBottomLat = tile.mercatorProjection.pixelYToLatitude(origin.y + tile.tileSize);
-    double maptileRightLng = tile.mercatorProjection.pixelXToLongitude(origin.x + tile.tileSize);
+    double maptileBottomLat = tile.mercatorProjection.pixelYToLatitude(origin.y + tile.mercatorProjection.tileSize);
+    double maptileRightLng = tile.mercatorProjection.pixelXToLongitude(origin.x + tile.mercatorProjection.tileSize);
 
     double mapTileLatDegrees = maptileTopLat - maptileBottomLat;
     double mapTileLngDegrees = maptileRightLng - maptileLeftLng;
-    double pxPerLat = (tile.tileSize / mapTileLatDegrees);
-    double pxPerLng = (tile.tileSize / mapTileLngDegrees);
+    double pxPerLat = (tile.mercatorProjection.tileSize / mapTileLatDegrees);
+    double pxPerLng = (tile.mercatorProjection.tileSize / mapTileLngDegrees);
 
     if (maptileRightLng < maptileLeftLng) maptileRightLng += tile.mercatorProjection.mapSize;
 
@@ -98,8 +98,8 @@ class Hillshading {
         // map tile subset if it fully fits inside shading tile
         double maptileSubrectLeft = 0;
         double maptileSubrectTop = 0;
-        double maptileSubrectRight = tile.tileSize.toDouble();
-        double maptileSubrectBottom = tile.tileSize.toDouble();
+        double maptileSubrectRight = tile.mercatorProjection.tileSize.toDouble();
+        double maptileSubrectBottom = tile.mercatorProjection.tileSize.toDouble();
 
         // find the intersection between map tile and shading tile in earth coordinates and determine the pixel
         if (shadingTopLat > maptileTopLat) {

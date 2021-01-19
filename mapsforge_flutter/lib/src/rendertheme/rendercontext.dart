@@ -14,8 +14,6 @@ import '../rendertheme/rule/rendertheme.dart';
  * calls in order to avoid local data stored in the DatabaseRenderer.
  */
 class RenderContext {
-  static final _log = new Logger('RenderContext');
-
   static final int LAYERS = 11;
 
   static final double STROKE_INCREASE = 1.5;
@@ -34,7 +32,7 @@ class RenderContext {
       : assert(graphicFactory != null),
         labels = new List() {
     this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
-    this.ways = createWayLists();
+    this.ways = _createWayLists();
     setScaleStrokeWidth(this.job.tile.zoomLevel);
   }
 
@@ -62,7 +60,7 @@ class RenderContext {
     return Job(tile, this.job.hasAlpha, this.job.textScale);
   }
 
-  List<List<List<ShapePaintContainer>>> createWayLists() {
+  List<List<List<ShapePaintContainer>>> _createWayLists() {
     List<List<List<ShapePaintContainer>>> result = new List(LAYERS);
     int levels = this.renderTheme.getLevels();
     assert(levels > 0);

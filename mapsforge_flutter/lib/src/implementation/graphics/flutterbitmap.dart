@@ -1,8 +1,11 @@
 import 'dart:ui' as ui;
 
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 
 class FlutterBitmap implements Bitmap {
+  static final _log = new Logger('FlutterBitmap');
+
   final ui.Image bitmap;
 
   int _refcount = 0;
@@ -13,6 +16,9 @@ class FlutterBitmap implements Bitmap {
   void incrementRefCount() {
     assert(_refcount != -1);
     ++_refcount;
+    if ((_refcount % 10) == 0) {
+      _log.warning("Bitmap $bitmap refcount is $_refcount");
+    }
   }
 
   @override
@@ -42,13 +48,13 @@ class FlutterBitmap implements Bitmap {
     return _refcount == -1;
   }
 
-  @override
-  void scaleTo(int width, int height) {
-    // TODO: implement scaleTo
-  }
-
-  @override
-  void setBackgroundColor(int color) {
-    // TODO: implement setBackgroundColor
-  }
+  // @override
+  // void scaleTo(int width, int height) {
+  //   // TODO: implement scaleTo
+  // }
+  //
+  // @override
+  // void setBackgroundColor(int color) {
+  //   // TODO: implement setBackgroundColor
+  // }
 }

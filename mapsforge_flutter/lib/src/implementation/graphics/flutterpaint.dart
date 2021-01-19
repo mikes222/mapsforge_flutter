@@ -151,15 +151,15 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     return paint.isAntiAlias;
   }
 
-  @override
-  void setBitmapShaderShift(Mappoint origin) {
-    // TODO: implement setBitmapShaderShift
-  }
-
-  @override
-  void setTextAlign(Align align) {
-    // TODO: implement setTextAlign
-  }
+  // @override
+  // void setBitmapShaderShift(Mappoint origin) {
+  //   // TODO: implement setBitmapShaderShift
+  // }
+  //
+  // @override
+  // void setTextAlign(Align align) {
+  //   // TODO: implement setTextAlign
+  // }
 
   @override
   void setTextSize(double textSize) {
@@ -207,17 +207,19 @@ class FlutterPaint extends ui.Paint implements MapPaint {
       ),
     );
 
-    if (getStrokeWidth() == 0) builder.pushStyle(ui.TextStyle(
-      color: paint.color,
-      fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
-    ));
-    else builder.pushStyle(ui.TextStyle(
-      foreground: Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = paint.strokeWidth
-        ..color = paint.color,
-      fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
-    ));
+    if (getStrokeWidth() == 0)
+      builder.pushStyle(ui.TextStyle(
+        color: paint.color,
+        fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
+      ));
+    else
+      builder.pushStyle(ui.TextStyle(
+        foreground: Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = paint.strokeWidth
+          ..color = paint.color,
+        fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
+      ));
 
     builder.addText(text);
     return builder;

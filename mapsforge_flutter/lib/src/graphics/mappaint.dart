@@ -26,7 +26,7 @@ abstract class MapPaint {
 
   void setBitmapShader(Bitmap bitmap);
 
-  void setBitmapShaderShift(Mappoint origin);
+//  void setBitmapShaderShift(Mappoint origin);
 
   void setColor(Color color);
 
@@ -49,7 +49,7 @@ abstract class MapPaint {
    */
   void setStyle(Style style);
 
-  void setTextAlign(Align align);
+  //void setTextAlign(Align align);
 
   void setTextSize(double textSize);
 

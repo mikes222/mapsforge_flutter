@@ -1,12 +1,9 @@
-import 'package:mapsforge_flutter/src/model/ilatlong.dart';
-
-import '../model/boundingbox.dart';
-import '../model/dimension.dart';
-
-import '../model/latlong.dart';
 import 'dart:math';
 
-import 'mercatorprojection.dart';
+import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+
+import '../model/latlong.dart';
 
 class LatLongUtils {
   /**
@@ -148,7 +145,7 @@ class LatLongUtils {
    * @return true if this way is closed, false otherwise.
    */
   static bool isClosedWay(List<LatLong> latLongs) {
-    return latLongs[0].distance(latLongs[latLongs.length - 1]) < 0.000000001;
+    return MercatorProjectionImpl.distance(latLongs[0], latLongs[latLongs.length - 1]) < 0.000000001;
   }
 
   /**

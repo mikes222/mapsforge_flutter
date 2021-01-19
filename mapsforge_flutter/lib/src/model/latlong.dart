@@ -72,9 +72,9 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @return the destination point
    * @see <a href="http://www.movable-type.co.uk/scripts/latlon.js">latlon.js</a>
    */
-  LatLong destinationPoint(double distance, double bearing) {
-    return LatLongUtils.destinationPoint(this, distance, bearing);
-  }
+  // LatLong destinationPoint(double distance, double bearing) {
+  //   return LatLongUtils.destinationPoint(this, distance, bearing);
+  // }
 
   /**
    * Calculate the Euclidean distance from this LatLong to another.
@@ -82,9 +82,9 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @param other The LatLong to calculate the distance to
    * @return the distance in degrees as a double
    */
-  double distance(LatLong other) {
-    return LatLongUtils.distance(this, other);
-  }
+  // double distance(LatLong other) {
+  //   return LatLongUtils.distance(this, other);
+  // }
 
   @override
   bool operator ==(Object other) =>
@@ -168,9 +168,9 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @param other The LatLong to calculate the distance to
    * @return the distance in meters as a double
    */
-  double sphericalDistance(LatLong other) {
-    return LatLongUtils.sphericalDistance(this, other);
-  }
+  // double sphericalDistance(LatLong other) {
+  //   return LatLongUtils.sphericalDistance(this, other);
+  // }
 
   @override
   String toString() {
@@ -185,7 +185,7 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @param other The LatLong to calculate the distance to
    * @return the distance in meters as a double
    */
-  double vincentyDistance(LatLong other) {
-    return LatLongUtils.vincentyDistance(this, other);
-  }
+  // double vincentyDistance(LatLong other) {
+  //   return LatLongUtils.vincentyDistance(this, other);
+  // }
 }

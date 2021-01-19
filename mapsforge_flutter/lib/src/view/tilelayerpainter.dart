@@ -2,29 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
-import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 class TileLayerPainter extends ChangeNotifier implements CustomPainter {
-  final MapViewDimension mapViewDimension;
   final TileLayer _tileLayer;
 
   final MapViewPosition position;
 
-  TileLayerPainter(this.mapViewDimension, this._tileLayer, this.position)
-      : assert(mapViewDimension != null),
-        assert(position != null);
+  final ViewModel viewModel;
+
+  TileLayerPainter(this._tileLayer, this.position, this.viewModel)
+      : assert(position != null),
+        assert(viewModel != null);
 
   @override
   void paint(Canvas canvas, Size size) {
-    //mapModel.mapViewDimension.setDimension(size.width, size.height);
+    viewModel.setViewDimension(size.width, size.height);
 
-    bool changed = mapViewDimension.setDimension(size.width, size.height);
-    if (changed) {
-      position.sizeChanged();
-    }
-    _tileLayer.draw(mapViewDimension, position, FlutterCanvas(canvas, size));
+    _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size));
   }
 
   @override

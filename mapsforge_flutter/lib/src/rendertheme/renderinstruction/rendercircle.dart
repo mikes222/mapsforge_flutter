@@ -27,7 +27,7 @@ class RenderCircle extends RenderInstruction {
   final Map<int, MapPaint> strokes;
   double strokeWidth = 1;
 
-  RenderCircle(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.level)
+  RenderCircle(GraphicFactory graphicFactory, DisplayModel displayModel, this.level)
       : fills = new Map(),
         strokes = new Map(),
         renderRadiusScaled = new Map(),
@@ -56,11 +56,11 @@ class RenderCircle extends RenderInstruction {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE_RADIUS == name) {
         this.scaleRadius = value == "true";
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, null, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else {

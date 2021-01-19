@@ -44,11 +44,11 @@ class MapModelHelper {
       mapDataStore = mapFile;
     }
 
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    SymbolCache symbolCache = FileSymbolCache(rootBundle);
+    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
     final DisplayModel displayModel = DisplayModel();
-    SymbolCache symbolCache = FileSymbolCache(graphicFactory);
 
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
     String content = await rootBundle.loadString("assets/defaultrender.xml");
     renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
@@ -64,14 +64,13 @@ class MapModelHelper {
       displayModel: displayModel,
       graphicsFactory: graphicFactory,
       renderer: jobRenderer,
-      symbolCache: symbolCache,
       tileBitmapCache: bitmapCache,
     );
 
     // set default position
-    mapModel.setMapViewPosition(lat, lon);
-
-    mapModel.setZoomLevel(zoomLevel);
+    // mapModel.setMapViewPosition(lat, lon);
+    //
+    // mapModel.setZoomLevel(zoomLevel);
 
     return mapModel;
   }

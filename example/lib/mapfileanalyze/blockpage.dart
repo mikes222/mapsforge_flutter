@@ -6,9 +6,9 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
+import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
-import 'package:mapsforge_flutter/src/reader/subfileparameter.dart';
 
 class BlockPage extends StatelessWidget {
   final MapFile mapFile;
@@ -83,9 +83,11 @@ class BlockPage extends StatelessWidget {
 
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
-      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0, 256);
-      Tile lowerRight =
-          Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0, 256);
+      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, subFileParameter.baseZoomLevel);
+      Tile upperLeft =
+          Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0, mercatorProjection);
+      Tile lowerRight = Tile(
+          subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0, mercatorProjection);
       queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
       queryParameters.calculateBlocks(subFileParameter);
       print(

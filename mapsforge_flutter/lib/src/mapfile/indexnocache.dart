@@ -1,10 +1,10 @@
 import 'dart:math';
 
-import 'package:mapsforge_flutter/src/reader/subfileparameter.dart';
+import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 
-import 'subfileparameterbuilder.dart';
 import '../datastore/deserializer.dart';
 import 'readbuffer.dart';
+import 'subfileparameterbuilder.dart';
 
 /**
  * A cache for database index blocks with a fixed size and LRU policy.
@@ -20,24 +20,17 @@ class IndexNoCache {
    */
   static final int SIZE_OF_INDEX_BLOCK = INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
-  ReadBufferMaster readBufferMaster;
-
   /**
    * @param inputChannel the map file from which the index should be read and cached.
    * @param capacity     the maximum number of entries in the cache.
    * @throws IllegalArgumentException if the capacity is negative.
    */
-  // todo LRUCache
-  IndexNoCache(String filename, int capacity) {
-    readBufferMaster = ReadBufferMaster(filename);
-  }
+  IndexNoCache(String filename, int capacity);
 
   /**
    * Destroy the cache at the end of its lifetime.
    */
-  void destroy() {
-    readBufferMaster.close();
-  }
+  void destroy() {}
 
   /**
    * Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be
@@ -48,7 +41,7 @@ class IndexNoCache {
    * @return the index entry.
    * @throws IOException if an I/O error occurs during reading.
    */
-  Future<int> getIndexEntry(SubFileParameter subFileParameter, int blockNumber) async {
+  Future<int> getIndexEntry(SubFileParameter subFileParameter, int blockNumber, ReadBufferMaster readBufferMaster) async {
     // check if the block number is out of bounds
     if (blockNumber >= subFileParameter.numberOfBlocks) {
       throw new Exception("invalid block number: $blockNumber");

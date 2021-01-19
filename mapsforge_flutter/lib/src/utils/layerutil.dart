@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
 import '../mapelements/mapelementcontainer.dart';
@@ -20,7 +20,7 @@ class LayerUtil {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
     int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
-    return new Tile(tileLeft, tileTop, zoomLevel, indoorLevel, tileSize);
+    return new Tile(tileLeft, tileTop, zoomLevel, indoorLevel, mercatorProjectionImpl);
   }
 
   /**
@@ -35,14 +35,14 @@ class LayerUtil {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
     int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
     int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
-    return new Tile(tileRight, tileBottom, zoomLevel, indoorLevel, tileSize);
+    return new Tile(tileRight, tileBottom, zoomLevel, indoorLevel, mercatorProjectionImpl);
   }
 
   static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {
     Set<Tile> tiles = new Set<Tile>();
     for (int tileY = upperLeft.tileY; tileY <= lowerRight.tileY; ++tileY) {
       for (int tileX = upperLeft.tileX; tileX <= lowerRight.tileX; ++tileX) {
-        tiles.add(new Tile(tileX, tileY, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize));
+        tiles.add(new Tile(tileX, tileY, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.mercatorProjection));
 //        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
       }
     }
@@ -53,8 +53,8 @@ class LayerUtil {
   /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
   /// the user (tile in the middle should be created first
   ///
-  static List<Tile> getTiles(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition) {
-    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
+  static List<Tile> getTiles(ViewModel viewModel, MapViewPosition mapViewPosition) {
+    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
     double tileSize = mapViewPosition.mercatorProjection.tileSize;
@@ -69,16 +69,16 @@ class LayerUtil {
 
     // build tiles starting from the center tile
     for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
-      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel, tileSize));
+      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel, mapViewPosition.mercatorProjection));
       int xDiff = 1;
       while (true) {
         bool xAdded = false;
         if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel, tileSize));
+          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel, mapViewPosition.mercatorProjection));
           xAdded = true;
         }
         if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel, tileSize));
+          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel, mapViewPosition.mercatorProjection));
           xAdded = true;
         }
         if (!xAdded) break;
@@ -86,16 +86,16 @@ class LayerUtil {
       }
     }
     for (int tileY = tileHalfY - 1; tileY >= tileTop; --tileY) {
-      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel, tileSize));
+      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel, mapViewPosition.mercatorProjection));
       int xDiff = 1;
       while (true) {
         bool xAdded = false;
         if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel, tileSize));
+          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel, mapViewPosition.mercatorProjection));
           xAdded = true;
         }
         if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel, tileSize));
+          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel, mapViewPosition.mercatorProjection));
           xAdded = true;
         }
         if (!xAdded) break;

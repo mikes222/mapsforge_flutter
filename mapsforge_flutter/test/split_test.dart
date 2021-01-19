@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mapsforge_flutter/src/mapsforge_flutter.dart';
-
 void main() {
   final Pattern SPLIT_PATTERN = ("|");
 

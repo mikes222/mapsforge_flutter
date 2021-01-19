@@ -8,6 +8,10 @@ import 'mappoint.dart';
 class LineString {
   final List<LineSegment> segments = new List();
 
+  Rectangle _bounds;
+
+  double _length;
+
   /**
    * Creates a new LineString that consists of only the part between startDistance and endDistance.
    */
@@ -16,9 +20,7 @@ class LineString {
 
     for (int i = 0;
         i < this.segments.length;
-        startDistance -= this.segments.elementAt(i).length(),
-        endDistance -= this.segments.elementAt(i).length(),
-        i++) {
+        startDistance -= this.segments.elementAt(i).length(), endDistance -= this.segments.elementAt(i).length(), i++) {
       LineSegment segment = this.segments.elementAt(i);
 
       // Skip first segments that we don't need
@@ -58,6 +60,8 @@ class LineString {
   }
 
   Rectangle getBounds() {
+    if (_bounds != null) return _bounds;
+
     double minX = double.maxFinite;
     double minY = double.maxFinite;
     double maxX = double.minPositive;
@@ -69,7 +73,8 @@ class LineString {
       maxX = max(maxX, max(segment.start.x, segment.end.x));
       maxY = max(maxY, max(segment.start.y, segment.end.y));
     }
-    return new Rectangle(minX, minY, maxX, maxY);
+    _bounds = Rectangle(minX, minY, maxX, maxY);
+    return _bounds;
   }
 
   /**
@@ -92,19 +97,18 @@ class LineString {
   }
 
   double length() {
+    if (_length != null) return _length;
     double result = 0;
     for (LineSegment segment in this.segments) {
       result += segment.length();
     }
-    return result;
+    _length = result;
+    return _length;
   }
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LineString &&
-          runtimeType == other.runtimeType &&
-          segments == other.segments;
+      identical(this, other) || other is LineString && runtimeType == other.runtimeType && segments == other.segments;
 
   @override
   int get hashCode => segments.hashCode;

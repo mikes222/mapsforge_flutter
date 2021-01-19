@@ -10,7 +10,6 @@ import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
 
-
 /// A RenderTheme defines how ways and nodes are drawn.
 class RenderTheme {
   static final int MATCHING_CACHE_SIZE = 1024;
@@ -110,26 +109,37 @@ class RenderTheme {
    * @param poi            the point of interest.
    */
   Future<void> matchNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) async {
-     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel, Closed.NO);
+    MatchingCacheKey matchingCacheKey =
+        new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel, Closed.NO);
 
     List<RenderInstruction> matchingList = this.poiMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
       matchingList = new List<RenderInstruction>();
 
-      for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-        this.rulesList.elementAt(i).matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
-      }
+      rulesList.forEach((element) {
+        element.matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
+      });
+      // for (int i = 0, n = this.rulesList.length; i < n; ++i) {
+      //   this.rulesList.elementAt(i).matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
+      // }
       this.poiMatchingCache[matchingCacheKey] = matchingList;
     }
     // render from cache
-    for (int i = 0, n = matchingList.length; i < n; ++i) {
-      if (initPendings.contains(matchingList.elementAt(i))) {
-        await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
-        initPendings.remove(matchingList.elementAt(i));
+    for (RenderInstruction element in matchingList) {
+      if (initPendings.contains(element)) {
+        await element.initResources(renderContext.graphicFactory);
+        initPendings.remove(element);
       }
-      matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
+      element.renderNode(renderCallback, renderContext, poi);
     }
+    // for (int i = 0, n = matchingList.length; i < n; ++i) {
+    //   if (initPendings.contains(matchingList.elementAt(i))) {
+    //     await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
+    //     initPendings.remove(matchingList.elementAt(i));
+    //   }
+    //   matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
+    // }
   }
 
   /**
@@ -140,12 +150,14 @@ class RenderTheme {
    */
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (!strokeScales.containsKey(zoomLevel) || scaleFactor != strokeScales[zoomLevel]) {
-      for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-        Rule rule = this.rulesList.elementAt(i);
+      rulesList.forEach((rule) {
         if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth, zoomLevel);
         }
-      }
+      });
+      // for (int i = 0, n = this.rulesList.length; i < n; ++i) {
+      //   Rule rule = this.rulesList.elementAt(i);
+      // }
       strokeScales[zoomLevel] = scaleFactor;
     }
   }
@@ -158,12 +170,11 @@ class RenderTheme {
    */
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     if (!textScales.containsKey(zoomLevel) || scaleFactor != textScales[zoomLevel]) {
-      for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-        Rule rule = this.rulesList.elementAt(i);
+      rulesList.forEach((rule) {
         if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.scaleTextSize(scaleFactor * this.baseTextSize, zoomLevel);
         }
-      }
+      });
       textScales[zoomLevel] = scaleFactor;
     }
   }
@@ -179,9 +190,9 @@ class RenderTheme {
   void complete() {
 //    this.rulesList.trimToSize();
 //    this.hillShadings.trimToSize();
-    for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-      this.rulesList.elementAt(i).onComplete();
-    }
+    rulesList.forEach((element) {
+      element.onComplete();
+    });
   }
 
   void setLevels(int levels) {
@@ -189,7 +200,8 @@ class RenderTheme {
   }
 
   Future<void> _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) async {
-    MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
+    MatchingCacheKey matchingCacheKey =
+        MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
 
     List<RenderInstruction> matchingList = this.wayMatchingCache[matchingCacheKey];
     if (matchingList == null) {
@@ -202,19 +214,19 @@ class RenderTheme {
       this.wayMatchingCache[matchingCacheKey] = matchingList;
     }
     // render from cache
-    for (int i = 0, n = matchingList.length; i < n; ++i) {
-      if (initPendings.contains(matchingList.elementAt(i))) {
-        await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
-        initPendings.remove(matchingList.elementAt(i));
+    for (RenderInstruction renderInstruction in matchingList) {
+      if (initPendings.contains(renderInstruction)) {
+        await renderInstruction.initResources(renderContext.graphicFactory);
+        initPendings.remove(renderInstruction);
       }
-      matchingList.elementAt(i).renderWay(renderCallback, renderContext, way);
+      renderInstruction.renderWay(renderCallback, renderContext, way);
     }
   }
 
   void traverseRules(RuleVisitor visitor) {
-    for (Rule rule in this.rulesList) {
-      rule.apply(visitor);
-    }
+    rulesList.forEach((element) {
+      element.apply(visitor);
+    });
   }
 
 //  void matchHillShadings(StandardRenderer renderer, RenderContext renderContext) {

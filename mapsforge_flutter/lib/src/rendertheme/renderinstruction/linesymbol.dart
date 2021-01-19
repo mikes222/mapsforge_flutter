@@ -30,10 +30,10 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   bool rotate;
   Scale scale = Scale.STROKE;
 
-  LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, symbolCache, this.relativePathPrefix)
+  LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix)
       : dyScaled = new Map(),
         super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
+    this.symbolCache = graphicFactory.symbolCache;
     this.display = Display.IFSPACE;
     this.rotate = true;
   }

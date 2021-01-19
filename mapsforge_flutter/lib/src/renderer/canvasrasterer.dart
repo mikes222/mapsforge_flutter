@@ -83,13 +83,13 @@ class CanvasRasterer {
    * @param color      the fill color for the outside area
    * @param insideArea the inside area on which not to draw
    */
-  void fillOutsideAreas(Color color, Rectangle insideArea) {
-    this
-        .canvas
-        .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
-    this.canvas.fillColor(color);
-    this.canvas.resetClip();
-  }
+  // void fillOutsideAreas(Color color, Rectangle insideArea) {
+  //   this
+  //       .canvas
+  //       .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
+  //   this.canvas.fillColor(color);
+  //   this.canvas.resetClip();
+  // }
 
   /**
    * Fills the area outside the specificed rectangle with color.
@@ -98,13 +98,13 @@ class CanvasRasterer {
    * @param color      the fill color for the outside area
    * @param insideArea the inside area on which not to draw
    */
-  void fillOutsideAreasFromNumber(int color, Rectangle insideArea) {
-    this
-        .canvas
-        .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
-    this.canvas.fillColorFromNumber(color);
-    this.canvas.resetClip();
-  }
+  // void fillOutsideAreasFromNumber(int color, Rectangle insideArea) {
+  //   this
+  //       .canvas
+  //       .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
+  //   this.canvas.fillColorFromNumber(color);
+  //   this.canvas.resetClip();
+  // }
 
   void startCanvasBitmap() {
     //this.canvas.setBitmap(bitmap);
@@ -120,9 +120,9 @@ class CanvasRasterer {
     this.canvas.drawCircle(point.x.toInt(), point.y.toInt(), circleContainer.radius.toInt(), shapePaintContainer.paint);
   }
 
-  void drawHillshading(HillshadingContainer container) {
-    canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
-  }
+  // void drawHillshading(HillshadingContainer container) {
+  //   canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
+  // }
 
   void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
     this.path.clear();
@@ -155,7 +155,7 @@ class CanvasRasterer {
         break;
       case ShapeType.HILLSHADING:
         HillshadingContainer hillshadingContainer = shapeContainer;
-        drawHillshading(hillshadingContainer);
+        //drawHillshading(hillshadingContainer);
         break;
       case ShapeType.POLYLINE:
         PolylineContainer polylineContainer = shapeContainer;

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -30,12 +31,14 @@ import 'flutterpointtextcontainer.dart';
 import 'flutterrect.dart';
 import 'fluttertilebitmap.dart';
 
-class FlutterGraphicFactory implements GraphicFactory {
-  @override
-  Bitmap createBitmap(int width, int height, bool isTransparent) {
-    // TODO: implement createBitmap
-    return null;
-  }
+class FlutterGraphicFactory extends GraphicFactory {
+  FlutterGraphicFactory(SymbolCache symbolCache) : super(symbolCache);
+
+  // @override
+  // Bitmap createBitmap(int width, int height, bool isTransparent) {
+  //   // TODO: implement createBitmap
+  //   return null;
+  // }
 
   @override
   MapCanvas createCanvas(double width, double height) {
@@ -57,11 +60,11 @@ class FlutterGraphicFactory implements GraphicFactory {
     return FlutterMatrix();
   }
 
-  @override
-  HillshadingBitmap createMonoBitmap(int width, int height, Uint8List buffer, int padding, BoundingBox area) {
-    // TODO: implement createMonoBitmap
-    return null;
-  }
+  // @override
+  // HillshadingBitmap createMonoBitmap(int width, int height, Uint8List buffer, int padding, BoundingBox area) {
+  //   // TODO: implement createMonoBitmap
+  //   return null;
+  // }
 
   @override
   PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
@@ -69,29 +72,29 @@ class FlutterGraphicFactory implements GraphicFactory {
     return FlutterPointTextContainer(xy, display, priority, text, paintFront, paintBack, symbolContainer, position, maxTextWidth);
   }
 
-  @override
-  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent) {
-    // TODO: implement createResourceBitmap
-    return null;
-  }
+  // @override
+  // ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent) {
+  //   // TODO: implement createResourceBitmap
+  //   return null;
+  // }
 
-  @override
-  TileBitmap createTileBitmap(double tileSize, bool isTransparent, {InputStream inputStream}) {
-    throw Exception("Cannot create a tileBitmap without bitmap");
-    return FlutterTileBitmap(null);
-  }
-
-  @override
-  InputStream platformSpecificSources(String relativePathPrefix, String src) {
-    // TODO: implement platformSpecificSources
-    return null;
-  }
-
-  @override
-  ResourceBitmap renderSvg(InputStream inputStream, double scaleFactor, int width, int height, int percent) {
-    // TODO: implement renderSvg
-    return null;
-  }
+  // @override
+  // TileBitmap createTileBitmap(double tileSize, bool isTransparent, {InputStream inputStream}) {
+  //   throw Exception("Cannot create a tileBitmap without bitmap");
+  //   return FlutterTileBitmap(null);
+  // }
+  //
+  // @override
+  // InputStream platformSpecificSources(String relativePathPrefix, String src) {
+  //   // TODO: implement platformSpecificSources
+  //   return null;
+  // }
+  //
+  // @override
+  // ResourceBitmap renderSvg(InputStream inputStream, double scaleFactor, int width, int height, int percent) {
+  //   // TODO: implement renderSvg
+  //   return null;
+  // }
 
   @override
   MapPaint createPaint() {

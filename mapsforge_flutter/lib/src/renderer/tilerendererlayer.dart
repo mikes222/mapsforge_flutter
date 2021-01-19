@@ -8,12 +8,11 @@ import 'package:mapsforge_flutter/src/layer/hills/hillsrenderconfig.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
-import 'package:mapsforge_flutter/src/model/observer.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
 /// This class was originally meant to point one layer. We do not use it in flutter currently.
-class TileRendererLayer extends TileLayerImpl implements Observer {
+class TileRendererLayer extends TileLayerImpl {
   final GraphicFactory graphicFactory;
   final MapDataStore mapDataStore;
 

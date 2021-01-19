@@ -128,6 +128,7 @@ class ReadBuffer {
 
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
+    assert(position + length < _bufferData.length);
     return _bufferData.sublist(position, position + length);
   }
 
@@ -136,9 +137,10 @@ class ReadBuffer {
   /// @return the byte value.
   int readByte() {
     assert(_bufferData != null);
-    ByteData bdata = ByteData(1);
-    bdata.setInt8(0, this._bufferData[this.bufferPosition++]);
-    return bdata.getInt8(0);
+    assert(bufferPosition < _bufferData.length);
+    int result = _bufferData[bufferPosition];
+    ++bufferPosition;
+    return result;
   }
 
   /// Converts four bytes from the read buffer to a float.
@@ -329,9 +331,9 @@ class ReadBuffer {
   ///
   /// @param bufferPosition the buffer position.
   void setBufferPosition(int bufferPosition) {
-    if (bufferPosition < 0 || bufferPosition >= _bufferData.length) {
-      _log.warning("Cannot set bufferPosition $bufferPosition because we have only ${_bufferData.length} bytes available");
-    }
+    // if (bufferPosition < 0 || bufferPosition >= _bufferData.length) {
+    //   _log.warning("Cannot set bufferPosition $bufferPosition because we have only ${_bufferData.length} bytes available");
+    // }
     assert(bufferPosition >= 0 && bufferPosition < _bufferData.length);
     this.bufferPosition = bufferPosition;
   }
@@ -340,6 +342,7 @@ class ReadBuffer {
   ///
   /// @param bytes the number of bytes to skip.
   void skipBytes(int bytes) {
+    assert(bufferPosition >= 0 && bufferPosition + bytes <= _bufferData.length);
     this.bufferPosition += bytes;
   }
 }

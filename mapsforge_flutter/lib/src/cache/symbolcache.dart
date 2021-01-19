@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
 
 ///
-/// An abstract cache for symbols (small bitmaps used in the map, eg. stopsigns, arrows)
+/// An abstract cache for symbols (small bitmaps used in the map, eg. stopsigns, arrows). The class retrieves and caches requested symbols. It also resizes them if desired.
 ///
 abstract class SymbolCache {
   SymbolCache();

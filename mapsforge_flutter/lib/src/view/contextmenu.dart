@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import 'contextmenubuilder.dart';
 import 'defaultcontextmenubuilder.dart';
@@ -12,14 +13,18 @@ class ContextMenu extends StatefulWidget {
 
   final MapModel mapModel;
 
+  final ViewModel viewModel;
+
   final MapViewPosition position;
 
   ContextMenuBuilder contextMenuBuilder;
 
-  ContextMenu({Key key, @required this.event, @required this.mapModel, @required this.position, this.contextMenuBuilder})
+  ContextMenu(
+      {Key key, @required this.event, @required this.mapModel, @required this.viewModel, @required this.position, this.contextMenuBuilder})
       : assert(event != null),
         assert(mapModel != null),
         assert(position != null),
+        assert(viewModel != null),
         super(key: key) {
     if (contextMenuBuilder == null) contextMenuBuilder = DefaultContextMenuBuilder();
   }
@@ -38,12 +43,12 @@ class ContextMenuState extends State<ContextMenu> implements ContextMenuCallback
   @override
   Widget build(BuildContext context) {
     if (widget.event == _lastTapEvent) return Container();
-    widget.position.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension());
+    widget.position.calculateBoundingBox(widget.viewModel.viewDimension);
     double x = widget.position.mercatorProjection.longitudeToPixelX(widget.event.longitude) - widget.position.leftUpper.x;
     double y = widget.position.mercatorProjection.latitudeToPixelY(widget.event.latitude) - widget.position.leftUpper.y;
     //x = x + widget.viewOffset.dx;
     //y = y + widget.viewOffset.dy;
-    Dimension screen = widget.mapModel.mapViewDimension.getDimension();
+    Dimension screen = widget.viewModel.viewDimension;
     if (x < 0 || y < 0) {
       // out of screen, hide the box
       print("out of screen");

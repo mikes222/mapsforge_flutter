@@ -2,13 +2,8 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
-import 'rectangle.dart';
-import '../utils/mercatorprojection.dart';
-
 import '../utils/latlongutils.dart';
 import 'latlong.dart';
-import 'mappoint.dart';
-import 'tile.dart';
 
 /**
  * A BoundingBox represents an immutable set of two latitude and two longitude coordinates.

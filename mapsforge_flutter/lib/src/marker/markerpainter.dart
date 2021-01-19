@@ -4,7 +4,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
-import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 ///
@@ -13,27 +12,20 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 class MarkerPainter implements CustomPainter {
   static final _log = new Logger('MarkerPainter');
 
-  final MapViewDimension mapViewDimension;
-
   final MapViewPosition position;
 
   final DisplayModel displayModel;
 
   final MarkerRenderer markerRenderer;
 
-  MarkerPainter({@required this.mapViewDimension, @required this.position, @required this.displayModel, @required this.markerRenderer})
-      : assert(mapViewDimension != null),
-        assert(position != null),
+  MarkerPainter({@required this.position, @required this.displayModel, @required this.markerRenderer})
+      : assert(position != null),
         assert(displayModel != null),
         assert(markerRenderer != null) {}
 
   @override
   void paint(Canvas canvas, Size size) {
-    bool changed = mapViewDimension.setDimension(size.width, size.height);
-    if (changed) {
-      position.sizeChanged();
-    }
-    markerRenderer.draw(FlutterCanvas(canvas, size), mapViewDimension, position);
+    markerRenderer.draw(FlutterCanvas(canvas, size), position);
   }
 
   @override

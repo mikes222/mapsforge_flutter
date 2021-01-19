@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import '../graphics/filter.dart';
-import 'observable.dart';
 
 /// Encapsulates the display characteristics for a MapView, such as tile size and background color. The size of map tiles
 /// is used to adapt to devices with differing pixel densities and users with different preferences: The larger the tile,
@@ -9,12 +8,14 @@ import 'observable.dart';
 /// dependent scale factor is determined at the GraphicFactory level, while the DisplayModel allows further adaptation to
 /// cater for user needs or application development (maybe a small map and large map, or to prevent upscaling for
 /// downloaded tiles that do not scale well).
-class DisplayModel extends Observable {
+class DisplayModel {
   static final int DEFAULT_BACKGROUND_COLOR = 0xffeeeeee; // format AARRGGBB
   /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 4 tiles to fit on it and so on.
   static final double DEFAULT_TILE_SIZE = 256;
   static final double DEFAULT_MAX_TEXT_WIDTH_FACTOR = 0.7;
   static final int DEFAULT_MAX_TEXT_WIDTH = (DEFAULT_TILE_SIZE * DEFAULT_MAX_TEXT_WIDTH_FACTOR).ceil();
+  final int DEFAULT_ZOOM = 10;
+  final int DEFAULT_INDOOR_LEVEL = 0;
 
   static double defaultUserScaleFactor = 1;
   static double deviceScaleFactor = 1;

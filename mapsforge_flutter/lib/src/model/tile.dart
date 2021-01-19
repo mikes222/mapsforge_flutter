@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
-import '../utils/mercatorprojection.dart';
 import 'boundingbox.dart';
 import 'mappoint.dart';
 import 'rectangle.dart';
@@ -10,9 +9,6 @@ import 'rectangle.dart';
 /// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
 /// with their zoom level. The actual area that a tile covers on a map depends on the underlying map projection.
 class Tile {
-  /// see DisplayModel.tileSize
-  final double tileSize;
-
   /**
    * The X number of this tile.
    */
@@ -38,7 +34,7 @@ class Tile {
   /// the left-upper point of this tile in pixel. Moved from TilePosition
   final Mappoint leftUpperPoint;
 
-  MercatorProjectionImpl _mercatorProjection;
+  final MercatorProjectionImpl mercatorProjection;
 
   /**
    * Return the BoundingBox of a rectangle of tiles defined by upper left and lower right tile.
@@ -61,21 +57,19 @@ class Tile {
    * @return rectangle with the absolute coordinates.
    */
   static Rectangle getBoundaryAbsoluteStatic(Tile upperLeft, Tile lowerRight) {
-    return new Rectangle(upperLeft.getOrigin().x, upperLeft.getOrigin().y, lowerRight.getOrigin().x + upperLeft.tileSize,
-        lowerRight.getOrigin().y + upperLeft.tileSize);
+    return new Rectangle(upperLeft.getOrigin().x, upperLeft.getOrigin().y, lowerRight.getOrigin().x + upperLeft.mercatorProjection.tileSize,
+        lowerRight.getOrigin().y + upperLeft.mercatorProjection.tileSize);
   }
 
-  /**
-   * Returns true if two tile areas, defined by upper left and lower right tiles, overlap.
-   * Precondition: zoom levels of upperLeft/lowerRight and upperLeftOther/lowerRightOther are the
-   * same.
-   *
-   * @param upperLeft       tile in upper left corner of area 1.
-   * @param lowerRight      tile in lower right corner of area 1.
-   * @param upperLeftOther  tile in upper left corner of area 2.
-   * @param lowerRightOther tile in lower right corner of area 2.
-   * @return true if the areas overlap, false if zoom levels differ or areas do not overlap.
-   */
+  /// Returns true if two tile areas, defined by upper left and lower right tiles, overlap.
+  /// Precondition: zoom levels of upperLeft/lowerRight and upperLeftOther/lowerRightOther are the
+  /// same.
+  ///
+  /// @param upperLeft       tile in upper left corner of area 1.
+  /// @param lowerRight      tile in lower right corner of area 1.
+  /// @param upperLeftOther  tile in upper left corner of area 2.
+  /// @param lowerRightOther tile in lower right corner of area 2.
+  /// @return true if the areas overlap, false if zoom levels differ or areas do not overlap.
   static bool tileAreasOverlap(Tile upperLeft, Tile lowerRight, Tile upperLeftOther, Tile lowerRightOther) {
     if (upperLeft.zoomLevel != upperLeftOther.zoomLevel || upperLeft.indoorLevel != upperLeftOther.indoorLevel) {
       return false;
@@ -86,9 +80,7 @@ class Tile {
     return getBoundaryAbsoluteStatic(upperLeft, lowerRight).intersects(getBoundaryAbsoluteStatic(upperLeftOther, lowerRightOther));
   }
 
-  /**
-   * @return the maximum valid tile number for the given zoom level, 2<sup>zoomLevel</sup> -1.
-   */
+  /// @return the maximum valid tile number for the given zoom level, 2<sup>zoomLevel</sup> -1.
   static int getMaxTileNumber(int zoomLevel) {
     if (zoomLevel < 0) {
       throw new Exception("zoomLevel must not be negative: $zoomLevel");
@@ -102,12 +94,14 @@ class Tile {
   /// @param tileY     the Y number of the tile.
   /// @param zoomLevel the zoom level of the tile.
   /// @throws IllegalArgumentException if any of the parameters is invalid.
-  Tile(this.tileX, this.tileY, this.zoomLevel, this.indoorLevel, this.tileSize)
+  Tile(this.tileX, this.tileY, this.zoomLevel, this.indoorLevel, this.mercatorProjection)
       : assert(tileX >= 0),
         assert(tileY >= 0),
         assert(zoomLevel >= 0),
-        leftUpperPoint = Mappoint(tileX * tileSize, tileY * tileSize) {
+        assert(mercatorProjection != null),
+        leftUpperPoint = Mappoint(tileX * mercatorProjection.tileSize, tileY * mercatorProjection.tileSize) {
     int maxTileNumber = getMaxTileNumber(zoomLevel);
+    assert(MercatorProjectionImpl.zoomLevelToScaleFactor(zoomLevel) == mercatorProjection.scaleFactor);
     if (tileX > maxTileNumber) {
       throw new Exception("invalid tileX number on zoom level $zoomLevel: $tileX");
     } else if (tileY > maxTileNumber) {
@@ -120,22 +114,19 @@ class Tile {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Tile && runtimeType == other.runtimeType && tileX == other.tileX && tileY == other.tileY && zoomLevel == other.zoomLevel && indoorLevel == other.indoorLevel;
+      other is Tile &&
+          runtimeType == other.runtimeType &&
+          tileX == other.tileX &&
+          tileY == other.tileY &&
+          zoomLevel == other.zoomLevel &&
+          indoorLevel == other.indoorLevel;
 
   @override
   int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
 
-  MercatorProjectionImpl get mercatorProjection {
-    if (_mercatorProjection != null) return _mercatorProjection;
-    _mercatorProjection = MercatorProjectionImpl(tileSize, zoomLevel);
-    return _mercatorProjection;
-  }
-
-  /**
-   * Gets the geographic extend of this Tile as a BoundingBox.
-   *
-   * @return boundaries of this tile.
-   */
+  /// Gets the geographic extend of this Tile as a BoundingBox.
+  ///
+  /// @return boundaries of this tile.
   BoundingBox getBoundingBox() {
     if (this.boundingBox == null) {
       double minLatitude = max(MercatorProjectionImpl.LATITUDE_MIN, mercatorProjection.tileYToLatitude(tileY + 1));
@@ -151,11 +142,9 @@ class Tile {
     return this.boundingBox;
   }
 
-  /**
-   * Returns a set of the eight neighbours of this tile.
-   *
-   * @return neighbour tiles as a set
-   */
+  /// Returns a set of the eight neighbours of this tile.
+  ///
+  /// @return neighbour tiles as a set
   Set<Tile> getNeighbours() {
     Set<Tile> neighbours = new Set<Tile>();
     neighbours.add(getLeft());
@@ -169,22 +158,19 @@ class Tile {
     return neighbours;
   }
 
-  /**
-   * Extend of this tile in absolute coordinates.
-   *
-   * @return rectangle with the absolute coordinates.
-   */
+  /// Extend of this tile in absolute coordinates.
+  ///
+  /// @return rectangle with the absolute coordinates.
   Rectangle getBoundaryAbsolute() {
-    return new Rectangle(getOrigin().x, getOrigin().y, getOrigin().x + tileSize, getOrigin().y + tileSize);
+    return new Rectangle(
+        getOrigin().x, getOrigin().y, getOrigin().x + mercatorProjection.tileSize, getOrigin().y + mercatorProjection.tileSize);
   }
 
-  /**
-   * Extend of this tile in relative (tile) coordinates.
-   *
-   * @return rectangle with the relative coordinates.
-   */
+  /// Extend of this tile in relative (tile) coordinates.
+  ///
+  /// @return rectangle with the relative coordinates.
   Rectangle getBoundaryRelative() {
-    return new Rectangle(0, 0, tileSize.toDouble(), tileSize.toDouble());
+    return new Rectangle(0, 0, mercatorProjection.tileSize.toDouble(), mercatorProjection.tileSize.toDouble());
   }
 
   /**
@@ -206,7 +192,7 @@ class Tile {
     if (x < 0) {
       x = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -219,7 +205,7 @@ class Tile {
     if (x > getMaxTileNumber(this.zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -232,7 +218,7 @@ class Tile {
     if (y < 0) {
       y = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -246,7 +232,7 @@ class Tile {
     if (y > getMaxTileNumber(this.zoomLevel)) {
       y = 0;
     }
-    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -263,7 +249,7 @@ class Tile {
     if (x < 0) {
       x = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -280,7 +266,7 @@ class Tile {
     if (x > getMaxTileNumber(this.zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -297,7 +283,7 @@ class Tile {
     if (x < 0) {
       x = getMaxTileNumber(this.zoomLevel);
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -314,7 +300,7 @@ class Tile {
     if (x > getMaxTileNumber(this.zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel, this.tileSize);
+    return new Tile(x, y, this.zoomLevel, this.indoorLevel, mercatorProjection);
   }
 
   /**
@@ -325,7 +311,7 @@ class Tile {
       return null;
     }
 
-    return new Tile((this.tileX / 2).round(), (this.tileY / 2).round(), (this.zoomLevel - 1), this.indoorLevel, this.tileSize);
+    return new Tile((this.tileX / 2).round(), (this.tileY / 2).round(), (this.zoomLevel - 1), this.indoorLevel, mercatorProjection);
   }
 
   int getShiftX(Tile otherTile) {
@@ -346,6 +332,6 @@ class Tile {
 
   @override
   String toString() {
-    return 'Tile{tileSize: $tileSize, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel}';
+    return 'Tile{tileSize: ${mercatorProjection.tileSize}, tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel}';
   }
 }

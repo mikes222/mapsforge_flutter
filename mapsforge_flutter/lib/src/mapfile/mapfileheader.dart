@@ -1,12 +1,12 @@
 import 'package:logging/logging.dart';
 
-import 'package:mapsforge_flutter/src/mapfileexception.dart';
+import 'file:///E:/develop/github_mapsforge_flutter/mapsforge_flutter/lib/src/exceptions/mapfileexception.dart';
 import 'optionalfields.dart';
 import 'readbuffer.dart';
 import 'requiredfields.dart';
 import 'mapfileinfo.dart';
 import 'mapfileinfobuilder.dart';
-import '../reader/subfileparameter.dart';
+import 'subfileparameter.dart';
 import 'subfileparameterbuilder.dart';
 
 /// Reads and validates the header data from a binary map file.

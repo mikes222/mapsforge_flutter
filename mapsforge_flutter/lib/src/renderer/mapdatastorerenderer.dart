@@ -86,7 +86,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       // return if we do not have data for the requested tile in the datastore
       return null;
     }
-    CanvasRasterer canvasRasterer = CanvasRasterer(graphicFactory, job.tile.tileSize.toDouble(), job.tile.tileSize.toDouble());
+    CanvasRasterer canvasRasterer =
+        CanvasRasterer(graphicFactory, job.tile.mercatorProjection.tileSize.toDouble(), job.tile.mercatorProjection.tileSize.toDouble());
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
     if (showTiming) _log.info("Before starting the isolate to read map data from file");
     MapReadResult mapReadResult;
@@ -183,7 +184,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   void _renderWaterBackground(final RenderContext renderContext) {
     renderContext.setDrawingLayers(0);
-    List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tile.tileSize);
+    List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tile.mercatorProjection.tileSize);
     Mappoint tileOrigin = renderContext.job.tile.getOrigin();
     for (int i = 0; i < coordinates.length; i++) {
       coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);

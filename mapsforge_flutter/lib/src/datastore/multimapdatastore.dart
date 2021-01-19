@@ -9,19 +9,17 @@ import '../model/tile.dart';
 import 'mapdatastore.dart';
 import 'mapreadresult.dart';
 
-/**
- * A MapDatabase that reads and combines data from multiple map files.
- * The MultiMapDatabase supports the following modes for reading from multiple files:
- * - RETURN_FIRST: the data from the first database to support a tile will be returned. This is the
- * fastest operation suitable when you know there is no overlap between map files.
- * - RETURN_ALL: the data from all files will be returned, the data will be combined. This is suitable
- * if more than one file can contain data for a tile, but you know there is no semantic overlap, e.g.
- * one file contains contour lines, another road data.
- * - DEDUPLICATE: the data from all files will be returned but duplicates will be eliminated. This is
- * suitable when multiple maps cover the different areas, but there is some overlap at boundaries. This
- * is the most expensive operation and often it is actually faster to double paint objects as otherwise
- * all objects have to be compared with all others.
- */
+/// A MapDatabase that reads and combines data from multiple map files.
+/// The MultiMapDatabase supports the following modes for reading from multiple files:
+/// - RETURN_FIRST: the data from the first database to support a tile will be returned. This is the
+/// fastest operation suitable when you know there is no overlap between map files.
+/// - RETURN_ALL: the data from all files will be returned, the data will be combined. This is suitable
+/// if more than one file can contain data for a tile, but you know there is no semantic overlap, e.g.
+/// one file contains contour lines, another road data.
+/// - DEDUPLICATE: the data from all files will be returned but duplicates will be eliminated. This is
+/// suitable when multiple maps cover the different areas, but there is some overlap at boundaries. This
+/// is the most expensive operation and often it is actually faster to double paint objects as otherwise
+/// all objects have to be compared with all others.
 class MultiMapDataStore extends MapDataStore {
   static final _log = new Logger('MultiMapDataStore');
 
@@ -35,14 +33,11 @@ class MultiMapDataStore extends MapDataStore {
       : mapDatabases = new List(),
         super(null);
 
-  /**
-   * adds another mapDataStore
-   *
-   * @param mapDataStore      the mapDataStore to add
-   * @param useStartZoomLevel if true, use the start zoom level of this mapDataStore as the start zoom level
-   * @param useStartPosition  if true, use the start position of this mapDataStore as the start position
-   */
-
+  /// adds another mapDataStore
+  ///
+  /// @param mapDataStore      the mapDataStore to add
+  /// @param useStartZoomLevel if true, use the start zoom level of this mapDataStore as the start zoom level
+  /// @param useStartPosition  if true, use the start position of this mapDataStore as the start position
   void addMapDataStore(MapDataStore mapDataStore, bool useStartZoomLevel, bool useStartPosition) {
     if (this.mapDatabases.contains(mapDataStore)) {
       throw new Exception("Duplicate map database");
@@ -142,7 +137,7 @@ class MultiMapDataStore extends MapDataStore {
     MapReadResult mapReadResult = new MapReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
-        _log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
+        //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
         MapReadResult result = await mdb.readLabelsSingle(tile);
         if (result == null) {
           continue;
@@ -223,7 +218,7 @@ class MultiMapDataStore extends MapDataStore {
           mapReadResult.isWater = isWater;
           mapReadResult.addDeduplicate(result, deduplicate);
         } on FileNotFoundException catch (error) {
-          _log.info("File ${error.filename} missing, removing mapfile now");
+          _log.warning("File ${error.filename} missing, removing mapfile now");
           mapDatabases.remove(mdb);
         }
       }
@@ -255,7 +250,7 @@ class MultiMapDataStore extends MapDataStore {
     bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(upperLeft)) {
-        _log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
+        //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
         MapReadResult result = await mdb.readMapData(upperLeft, lowerRight);
         if (result == null) {
           continue;

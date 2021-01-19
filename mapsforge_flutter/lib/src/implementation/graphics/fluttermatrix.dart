@@ -8,10 +8,10 @@ class FlutterMatrix implements Matrix {
   double pivotX;
   double pivotY;
 
-  @override
-  void reset() {
-    //this.matrix.setIdentity();
-  }
+  // @override
+  // void reset() {
+  //   //this.matrix.setIdentity();
+  // }
 
   /**
    * @param theta an angle measured in radians.
@@ -31,11 +31,11 @@ class FlutterMatrix implements Matrix {
    * @param scaleX the scale factor in x-direction
    * @param scaleY the scale factor in y-direction
    */
-  @override
-  void scale(double scaleX, double scaleY, {double pivotX, double pivotY}) {}
-
-  @override
-  void translate(double translateX, double translateY) {
-    //this.matrix.preTranslate(translateX, translateY);
-  }
+  // @override
+  // void scale(double scaleX, double scaleY, {double pivotX, double pivotY}) {}
+  //
+  // @override
+  // void translate(double translateX, double translateY) {
+  //   //this.matrix.preTranslate(translateX, translateY);
+  // }
 }

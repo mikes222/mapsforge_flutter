@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/src/inputstream.dart';
 
 import '../../graphics/graphicfactory.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
-import '../../rendertheme/themecallback.dart';
 
 class XmlUtils {
   static final _log = new Logger('XmlUtils');
@@ -34,13 +33,13 @@ class XmlUtils {
   /**
    * Supported formats are {@code #RRGGBB} and {@code #AARRGGBB}.
    */
-  static int getColor(GraphicFactory graphicFactory, String colorString, ThemeCallback themeCallback, RenderInstruction origin) {
+  static int getColor(GraphicFactory graphicFactory, String colorString, RenderInstruction origin) {
     if (colorString.isEmpty || !colorString.startsWith("#")) {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     } else if (colorString.length == 7) {
-      return getColorAlpha(graphicFactory, colorString, 255, 1, themeCallback, origin);
+      return getColorAlpha(graphicFactory, colorString, 255, 1, origin);
     } else if (colorString.length == 9) {
-      return getColorAlpha(graphicFactory, colorString, int.parse(colorString.substring(1, 3), radix: 16), 3, themeCallback, origin);
+      return getColorAlpha(graphicFactory, colorString, int.parse(colorString.substring(1, 3), radix: 16), 3, origin);
     } else {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     }
@@ -83,7 +82,7 @@ class XmlUtils {
     InputStream inputStream;
     if (src.startsWith(PREFIX_ASSETS)) {
       src = src.substring(PREFIX_ASSETS.length);
-      inputStream = inputStreamFromAssets(graphicFactory, relativePathPrefix, src);
+      //inputStream = inputStreamFromAssets(graphicFactory, relativePathPrefix, src);
     } else if (src.startsWith(PREFIX_FILE)) {
       src = src.substring(PREFIX_FILE.length);
       inputStream = inputStreamFromFile(relativePathPrefix, src);
@@ -99,7 +98,7 @@ class XmlUtils {
       inputStream = inputStreamFromFile(relativePathPrefix, src);
 
       if (inputStream == null) {
-        inputStream = inputStreamFromAssets(graphicFactory, relativePathPrefix, src);
+        //inputStream = inputStreamFromAssets(graphicFactory, relativePathPrefix, src);
       }
 
 //      if (inputStream == null) {
@@ -126,16 +125,16 @@ class XmlUtils {
   /**
    * Create InputStream from (platform specific) assets resource.
    */
-  static InputStream inputStreamFromAssets(GraphicFactory graphicFactory, String relativePathPrefix, String src) {
-    InputStream inputStream = null;
-    try {
-      inputStream = graphicFactory.platformSpecificSources(relativePathPrefix, src);
-    } catch (e) {}
-    if (inputStream != null) {
-      return inputStream;
-    }
-    return null;
-  }
+  // static InputStream inputStreamFromAssets(GraphicFactory graphicFactory, String relativePathPrefix, String src) {
+  //   InputStream inputStream = null;
+  //   try {
+  //     inputStream = graphicFactory.platformSpecificSources(relativePathPrefix, src);
+  //   } catch (e) {}
+  //   if (inputStream != null) {
+  //     return inputStream;
+  //   }
+  //   return null;
+  // }
 
   /**
    * Create InputStream from file resource.
@@ -180,16 +179,12 @@ class XmlUtils {
     return relativePathPrefix + name;
   }
 
-  static int getColorAlpha(GraphicFactory graphicFactory, String colorString, int alpha, int rgbStartIndex, ThemeCallback themeCallback,
-      RenderInstruction origin) {
+  static int getColorAlpha(GraphicFactory graphicFactory, String colorString, int alpha, int rgbStartIndex, RenderInstruction origin) {
     int red = int.parse(colorString.substring(rgbStartIndex, rgbStartIndex + 2), radix: 16);
     int green = int.parse(colorString.substring(rgbStartIndex + 2, rgbStartIndex + 4), radix: 16);
     int blue = int.parse(colorString.substring(rgbStartIndex + 4, rgbStartIndex + 6), radix: 16);
 
     int color = graphicFactory.createColorSeparate(alpha, red, green, blue);
-    if (themeCallback != null) {
-      color = themeCallback.getColor(origin, color);
-    }
     return color;
   }
 

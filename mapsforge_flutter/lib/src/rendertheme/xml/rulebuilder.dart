@@ -48,7 +48,6 @@ class RuleBuilder {
 
   final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
-  final SymbolCache symbolCache;
   int level;
 
   String cat;
@@ -119,7 +118,7 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.graphicFactory, this.displayModel, this.symbolCache, this.symbols, this.level)
+  RuleBuilder(this.graphicFactory, this.displayModel, this.symbols, this.level)
       : assert(symbols != null),
         ruleBuilderStack = List(),
         renderInstructions = List() {
@@ -238,7 +237,7 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbolCache, symbols, level++);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbols, level++);
       ruleBuilder.parse(rootElement, initPendings);
       level = ruleBuilder.level;
       ruleBuilderStack.add(ruleBuilder);
@@ -250,14 +249,14 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(graphicFactory, displayModel, symbolCache, qName, level++);
+      Area area = new Area(graphicFactory, displayModel, qName, level++);
       area.parse(rootElement, initPendings);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbolCache, symbols);
+      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbols);
       caption.parse(rootElement, initPendings);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
@@ -267,7 +266,7 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, symbolCache, this.level++);
+      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, this.level++);
       circle.parse(rootElement, initPendings);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
@@ -300,14 +299,14 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line = new Line(this.graphicFactory, this.displayModel, symbolCache, qName, level++, null);
+      Line line = new Line(this.graphicFactory, this.displayModel, qName, level++, null);
       line.parse(rootElement, initPendings);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, symbolCache, null);
+      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, null);
       lineSymbol.parse(rootElement, initPendings);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
@@ -331,7 +330,7 @@ class RuleBuilder {
 //      }
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      PathText pathText = new PathText(this.graphicFactory, this.displayModel, symbolCache);
+      PathText pathText = new PathText(this.graphicFactory, this.displayModel);
       pathText.parse(rootElement, initPendings);
       if (isVisible(pathText)) {
         this.addRenderingInstruction(pathText);
@@ -345,7 +344,7 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel, symbolCache, null);
+      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel, null);
       symbol.parse(rootElement, initPendings);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);

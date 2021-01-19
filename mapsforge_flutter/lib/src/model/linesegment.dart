@@ -30,7 +30,7 @@ class LineSegment {
    * @param direction point that defines the direction (a line from start to direction point)
    * @param distance  how long to move along the line between start and direction
    */
-  LineSegment.dirction(this.start, Mappoint direction, double distance)
+  LineSegment.direction(this.start, Mappoint direction, double distance)
       : end = new LineSegment(start, direction).pointAlongLineSegment(distance);
 
   /**
@@ -41,8 +41,7 @@ class LineSegment {
    */
   double angleTo(LineSegment other) {
     double angle1 = atan2(this.start.y - this.end.y, this.start.x - this.end.x);
-    double angle2 =
-        atan2(other.start.y - other.end.y, other.start.x - other.end.x);
+    double angle2 = atan2(other.start.y - other.end.y, other.start.x - other.end.x);
     double angle = toDegrees(angle1 - angle2);
     if (angle <= -180) {
       angle += 360;
@@ -221,11 +220,7 @@ class LineSegment {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LineSegment &&
-          runtimeType == other.runtimeType &&
-          start == other.start &&
-          end == other.end;
+      identical(this, other) || other is LineSegment && runtimeType == other.runtimeType && start == other.start && end == other.end;
 
   @override
   int get hashCode => start.hashCode ^ end.hashCode;

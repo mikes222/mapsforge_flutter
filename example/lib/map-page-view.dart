@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_example/level-bar.dart';
+import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-
 import 'package:rxdart/rxdart.dart';
+
 import 'map-file-data.dart';
 
 class MapPageView extends StatefulWidget {
@@ -26,6 +26,8 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
   double downloadProgress;
 
   MapModel mapModel;
+
+  ViewModel viewModel;
 
   AnimationController fadeAnimationController;
   CurvedAnimation fadeAnimation;
@@ -90,7 +92,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
               child: Text("Analyse Mapfile"),
             ),
             PopupMenuItem<String>(
-                enabled: false, value: "current_zoom_level", child: Text("Zoom level: ${this.mapModel.mapViewPosition.zoomLevel}")),
+                enabled: false, value: "current_zoom_level", child: Text("Zoom level: ${this.viewModel.mapViewPosition.zoomLevel}")),
           ],
         ),
       ],
@@ -99,7 +101,10 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
   Widget _buildBody(BuildContext context) {
     return Stack(fit: StackFit.expand, children: <Widget>[
-      FlutterMapView(mapModel: mapModel),
+      FlutterMapView(
+        mapModel: mapModel,
+        viewModel: viewModel,
+      ),
       Positioned(
           bottom: toolbarSpacing,
           right: toolbarSpacing,
@@ -123,7 +128,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
             SizedBox(height: toolbarSpacing),
             RawMaterialButton(
               onPressed: () {
-                mapModel.zoomIn();
+                viewModel.zoomIn();
               },
               elevation: 2.0,
               fillColor: Colors.white,
@@ -136,7 +141,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
             SizedBox(height: toolbarSpacing),
             RawMaterialButton(
               onPressed: () {
-                mapModel.zoomOut();
+                viewModel.zoomOut();
               },
               elevation: 2.0,
               fillColor: Colors.white,
@@ -180,10 +185,10 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     await mapFile.init();
     //mapFile.debug();
     final MapDataStore mapDataStore = mapFile;
-    final GraphicFactory graphicFactory = FlutterGraphicFactory();
+    final SymbolCache symbolCache = FileSymbolCache(rootBundle);
+    final GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
     final DisplayModel displayModel = DisplayModel();
-    final SymbolCache symbolCache = FileSymbolCache(graphicFactory);
-    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
+    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
     final String content = await rootBundle.loadString(widget.mapFileData.theme);
     renderThemeBuilder.parseXml(content);
     final RenderTheme renderTheme = renderThemeBuilder.build();
@@ -194,15 +199,16 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       displayModel: displayModel,
       graphicsFactory: graphicFactory,
       renderer: jobRenderer,
-      symbolCache: symbolCache,
       tileBitmapCache: bitmapCache,
     );
 
+    viewModel = ViewModel(displayModel: mapModel.displayModel);
+
     // set default position
-    mapModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
-    mapModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
+    viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
     // attach indoor level stream to indoor change function
-    indoorLevelSubject.listen(mapModel.setIndoorLevel);
+    indoorLevelSubject.listen(viewModel.setIndoorLevel);
 
     /*MapModelHelper.onLevelChange.listen((levelMappings) {
       if (!fadeAnimationController.isAnimating) levelMappings == null ? fadeAnimationController.reverse() : fadeAnimationController.forward();
@@ -214,8 +220,8 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
   void _handleMenuItemSelect(String value, BuildContext context) {
     switch (value) {
       case 'start_location':
-        this.mapModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
-        this.mapModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+        this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
+        this.viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
         break;
 
       case 'analyse_mapfile':

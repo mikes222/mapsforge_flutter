@@ -1,4 +1,6 @@
 import 'dart:core';
+import 'package:mapsforge_flutter/maps.dart';
+
 import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
@@ -22,7 +24,7 @@ abstract class MapDataStore {
       return langNames[0];
     }
 
-    String fallback = null;
+    String fallback;
     for (int i = 1; i < langNames.length; i++) {
       List<String> langName = langNames[i].split("\b");
       if (langName.length != 2) {
@@ -45,72 +47,55 @@ abstract class MapDataStore {
     return (fallback != null) ? fallback : langNames[0];
   }
 
-  /**
-   * the preferred language when extracting labels from this data store. The actual
-   * implementation is up to the concrete implementation, which can also simply ignore
-   * this setting.
-   */
-  String preferredLanguage;
+  /// the preferred language when extracting labels from this data store. The actual
+  /// implementation is up to the concrete implementation, which can also simply ignore
+  /// this setting.
+  final String preferredLanguage;
 
-  /**
-   * Ctor for MapDataStore setting preferred language.
-   *
-   * @param language the preferred language or null if default language is used.
-   */
-  MapDataStore(String language) {
-    this.preferredLanguage = language;
-  }
+  /// Ctor for MapDataStore setting preferred language.
+  ///
+  /// @param language the preferred language or null if default language is used.
+  const MapDataStore(String language) : preferredLanguage = language;
 
-  /**
-   * Returns the area for which data is supplied.
-   *
-   * @return bounding box of area.
-   */
+  /// Returns the area for which data is supplied.
+  ///
+  /// @return bounding box of area.
   BoundingBox get boundingBox;
 
-  /*
-     * Closes the map database.
-     */
+  ///
+  /// Closes the map database.
   void close();
 
-  /**
-   * Extracts substring of preferred language from multilingual string using
-   * the preferredLanguage setting.
-   */
+  /// Extracts substring of preferred language from multilingual string using
+  /// the preferredLanguage setting.
   String extractLocalized(String s) {
     return MapDataStore.extract(s, preferredLanguage);
   }
 
-  /**
-   * Returns the timestamp of the data used to render a specific tile.
-   *
-   * @param tile A tile.
-   * @return the timestamp of the data used to render the tile
-   */
+  /// Returns the timestamp of the data used to render a specific tile.
+  ///
+  /// @param tile A tile.
+  /// @return the timestamp of the data used to render the tile
   int getDataTimestamp(Tile tile);
 
-  /**
-   * Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
-   * It is permissible for the MapDataStore to return more data.
-   * This default implementation returns all map data, which is inefficient, but works.
-   *
-   * @param tile tile for which data is requested.
-   * @return label data for the tile.
-   */
+  /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
+  /// It is permissible for the MapDataStore to return more data.
+  /// This default implementation returns all map data, which is inefficient, but works.
+  ///
+  /// @param tile tile for which data is requested.
+  /// @return label data for the tile.
   Future<MapReadResult> readLabelsSingle(Tile tile) async {
     return readMapDataSingle(tile);
   }
 
-  /**
-   * Reads data for an area defined by the tile in the upper left and the tile in
-   * the lower right corner. The default implementation combines the results from
-   * all tiles, a possibly inefficient solution.
-   * Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
-   *
-   * @param upperLeft  tile that defines the upper left corner of the requested area.
-   * @param lowerRight tile that defines the lower right corner of the requested area.
-   * @return map data for the tile.
-   */
+  /// Reads data for an area defined by the tile in the upper left and the tile in
+  /// the lower right corner. The default implementation combines the results from
+  /// all tiles, a possibly inefficient solution.
+  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  ///
+  /// @param upperLeft  tile that defines the upper left corner of the requested area.
+  /// @param lowerRight tile that defines the lower right corner of the requested area.
+  /// @return map data for the tile.
   Future<MapReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
@@ -118,31 +103,27 @@ abstract class MapDataStore {
     MapReadResult result = new MapReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize);
+        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.mercatorProjection);
         result.addDeduplicate(await readLabelsSingle(current), false);
       }
     }
     return result;
   }
 
-  /**
-   * Reads data for tile.
-   *
-   * @param tile tile for which data is requested.
-   * @return map data for the tile.
-   */
+  /// Reads data for tile.
+  ///
+  /// @param tile tile for which data is requested.
+  /// @return map data for the tile.
   Future<MapReadResult> readMapDataSingle(Tile tile);
 
-  /**
-   * Reads data for an area defined by the tile in the upper left and the tile in
-   * the lower right corner. The default implementation combines the results from
-   * all tiles, a possibly inefficient solution.
-   * Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
-   *
-   * @param upperLeft  tile that defines the upper left corner of the requested area.
-   * @param lowerRight tile that defines the lower right corner of the requested area.
-   * @return map data for the tile.
-   */
+  /// Reads data for an area defined by the tile in the upper left and the tile in
+  /// the lower right corner. The default implementation combines the results from
+  /// all tiles, a possibly inefficient solution.
+  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  ///
+  /// @param upperLeft  tile that defines the upper left corner of the requested area.
+  /// @param lowerRight tile that defines the lower right corner of the requested area.
+  /// @return map data for the tile.
   Future<MapReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
@@ -150,7 +131,7 @@ abstract class MapDataStore {
     MapReadResult result = new MapReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize);
+        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.mercatorProjection);
         result.addDeduplicate(await readMapDataSingle(current), false);
       }
     }
@@ -165,16 +146,14 @@ abstract class MapDataStore {
    */
   Future<MapReadResult> readPoiDataSingle(Tile tile);
 
-  /**
-   * Reads POI data for an area defined by the tile in the upper left and the tile in
-   * the lower right corner. The default implementation combines the results from
-   * all tiles, a possibly inefficient solution.
-   * Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
-   *
-   * @param upperLeft  tile that defines the upper left corner of the requested area.
-   * @param lowerRight tile that defines the lower right corner of the requested area.
-   * @return map data for the tile.
-   */
+  /// Reads POI data for an area defined by the tile in the upper left and the tile in
+  /// the lower right corner. The default implementation combines the results from
+  /// all tiles, a possibly inefficient solution.
+  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  ///
+  /// @param upperLeft  tile that defines the upper left corner of the requested area.
+  /// @param lowerRight tile that defines the lower right corner of the requested area.
+  /// @return map data for the tile.
   Future<MapReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
@@ -182,7 +161,7 @@ abstract class MapDataStore {
     MapReadResult result = new MapReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.tileSize);
+        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel, upperLeft.mercatorProjection);
         result.addDeduplicate(await readPoiDataSingle(current), false);
       }
     }
@@ -201,19 +180,17 @@ abstract class MapDataStore {
    */
   int get startZoomLevel;
 
-  /// Returns true if MapDatabase contains tile.
+  /// Returns true if MapDatabase contains the given tile.
   ///
   /// @param tile tile to be rendered.
   /// @return true if tile is part of database.
   bool supportsTile(Tile tile);
 
-  /**
-   * Returns true if a way should be included in the result set for readLabels()
-   * By default only ways with names, house numbers or a ref are included in the result set
-   * of readLabels(). This is to reduce the set of ways as much as possible to save memory.
-   * @param tags the tags associated with the way
-   * @return true if the way should be included in the result set
-   */
+  /// Returns true if a way should be included in the result set for readLabels()
+  /// By default only ways with names, house numbers or a ref are included in the result set
+  /// of readLabels(). This is to reduce the set of ways as much as possible to save memory.
+  /// @param tags the tags associated with the way
+  /// @return true if the way should be included in the result set
   bool wayAsLabelTagFilter(List<Tag> tags) {
     return false;
   }

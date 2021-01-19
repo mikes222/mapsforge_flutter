@@ -1,5 +1,4 @@
 import 'pointofinterest.dart';
-
 import 'poiwaybundle.dart';
 import 'way.dart';
 
@@ -9,15 +8,14 @@ class MapReadResult {
   bool isWater = false;
 
   /// The read POIs.
-  List<PointOfInterest> pointOfInterests;
+  final List<PointOfInterest> pointOfInterests;
 
   /// The read ways.
-  List<Way> ways;
+  final List<Way> ways;
 
-  MapReadResult() {
-    this.pointOfInterests = new List();
-    this.ways = new List();
-  }
+  MapReadResult()
+      : pointOfInterests = List(),
+        ways = List();
 
   void add(PoiWayBundle poiWayBundle) {
     this.pointOfInterests.addAll(poiWayBundle.pois);

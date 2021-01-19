@@ -40,6 +40,8 @@ class MercatorProjectionImpl {
     _mapSize = _mapSizeWithScaleFactor(_scaleFactor);
   }
 
+  double get scaleFactor => _scaleFactor;
+
   /// @param scaleFactor the scale factor for which the size of the world map should be returned.
   /// @return the horizontal and vertical size of the map in pixel at the given scale.
   /// @throws IllegalArgumentException if the given scale factor is < 1

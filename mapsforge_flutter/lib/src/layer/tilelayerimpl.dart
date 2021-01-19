@@ -9,9 +9,9 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/mapviewdimension.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
 import 'job/job.dart';
@@ -62,9 +62,9 @@ class TileLayerImpl extends TileLayer {
 //  }
 
   @override
-  void draw(MapViewDimension mapViewDimension, MapViewPosition mapViewPosition, MapCanvas canvas) {
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas) {
     int time = DateTime.now().millisecondsSinceEpoch;
-    List<Tile> tiles = LayerUtil.getTiles(mapViewDimension, mapViewPosition);
+    List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition);
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -75,14 +75,14 @@ class TileLayerImpl extends TileLayer {
     // Always resetting the clip bounds here seems to avoid the problem,
     // I assume that this is a pretty cheap operation, otherwise it would be better
     // to hook this into the onConfigurationChanged call chain.
-    canvas.resetClip();
+    //canvas.resetClip();
 
-    canvas.setClip(0, 0, mapViewDimension.getDimension().width.round(), mapViewDimension.getDimension().height.round());
+    canvas.setClip(0, 0, viewModel.viewDimension.width.round(), viewModel.viewDimension.height.round());
     if (mapViewPosition.scale != 1) {
       _log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
       canvas.scale(mapViewPosition.focalPoint, mapViewPosition.scale);
     }
-    mapViewPosition.calculateBoundingBox(mapViewDimension.getDimension());
+    mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
     JobSet jobSet = JobSet();
@@ -102,7 +102,7 @@ class TileLayerImpl extends TileLayer {
       } else {
         Job job = Job(tile, false, displayModel.getScaleFactor());
         jobSet.add(job);
-        TileBitmap bitmap = jobQueue.getMissingBitmap(tile.tileSize);
+        TileBitmap bitmap = jobQueue.getMissingBitmap(tile.mercatorProjection.tileSize);
         if (bitmap != null) {
           canvas.drawBitmap(
             bitmap: bitmap,

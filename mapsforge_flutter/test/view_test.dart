@@ -6,6 +6,9 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
+
+import 'testassetbundle.dart';
 
 ///
 /// flutter test --update-goldens
@@ -29,11 +32,11 @@ void main() {
       MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", null, null);
       await mapDataStore.init();
 
-      GraphicFactory graphicFactory = FlutterGraphicFactory();
+      SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+      GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
       final DisplayModel displayModel = DisplayModel();
-      SymbolCache symbolCache = FileSymbolCache(graphicFactory);
 
-      RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
+      RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
       final file = new File(prefix + 'test_resources/rendertheme.xml');
       String content = file.readAsStringSync();
       renderThemeBuilder.parseXml(content);
@@ -47,14 +50,15 @@ void main() {
         displayModel: displayModel,
         graphicsFactory: graphicFactory,
         renderer: _dataStoreRenderer,
-        symbolCache: symbolCache,
         tileBitmapCache: bitmapCache,
       );
 
       return mapModel;
     });
 
-    mapModel.setMapViewPosition(43.7399, 7.4262);
+    ViewModel viewModel = ViewModel(displayModel: mapModel.displayModel);
+
+    viewModel.setMapViewPosition(43.7399, 7.4262);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -63,6 +67,7 @@ void main() {
           body: Center(
             child: FlutterMapView(
               mapModel: mapModel,
+              viewModel: viewModel,
             ),
           ),
         ),

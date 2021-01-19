@@ -29,12 +29,15 @@ class ShowmapState extends State<Showmap> {
 
   MapModel mapModel;
 
+  ViewModel viewModel;
+
   @override
   void initState() {
     super.initState();
     MapModelHelper.prepareMapModel(widget.mapInfo.mapfile, widget.mapInfo.lat, widget.mapInfo.lon, 8, widget.online).then((mapModel) {
       setState(() {
         this.mapModel = mapModel;
+        viewModel = ViewModel(displayModel: mapModel.displayModel);
       });
     });
   }
@@ -61,7 +64,7 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("Set Location"),
               onPressed: () {
-                mapModel.setMapViewPosition(activeMapInfo.lat, activeMapInfo.lon);
+                viewModel.setMapViewPosition(activeMapInfo.lat, activeMapInfo.lon);
               },
             ),
             RaisedButton(
@@ -69,8 +72,8 @@ class ShowmapState extends State<Showmap> {
               onPressed: () {
                 if (timer != null) return;
                 timer = Timer.periodic(Duration(seconds: 1), (timer) {
-                  mapModel.mapViewPosition.calculateBoundingBox(mapModel.mapViewDimension.getDimension());
-                  mapModel.setLeftUpper(mapModel.mapViewPosition.leftUpper.x + 10, mapModel.mapViewPosition.leftUpper.y + 10);
+                  viewModel.mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
+                  viewModel.setLeftUpper(viewModel.mapViewPosition.leftUpper.x + 10, viewModel.mapViewPosition.leftUpper.y + 10);
                 });
               },
             ),
@@ -84,18 +87,18 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("Zoom in"),
               onPressed: () {
-                mapModel.zoomIn();
+                viewModel.zoomIn();
               },
             ),
             RaisedButton(
               child: Text("Zoom out"),
               onPressed: () {
-                if (mapModel.mapViewPosition.zoomLevel == 0) return;
-                mapModel.zoomOut();
+                if (viewModel.mapViewPosition.zoomLevel == 0) return;
+                viewModel.zoomOut();
               },
             ),
             StreamBuilder(
-              stream: mapModel.observePosition,
+              stream: viewModel.observePosition,
               builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
                 if (!snapshot.hasData) return Container();
                 return Padding(
@@ -105,7 +108,7 @@ class ShowmapState extends State<Showmap> {
               },
             ),
             StreamBuilder(
-              stream: mapModel.observeTap,
+              stream: viewModel.observeTap,
               builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
                 if (!snapshot.hasData) return Container();
                 TapEvent event = snapshot.data;
@@ -124,6 +127,7 @@ class ShowmapState extends State<Showmap> {
               decoration: BoxDecoration(border: Border.all(color: Colors.green)),
               child: FlutterMapView(
                 mapModel: mapModel,
+                viewModel: viewModel,
               ),
             ),
           ),

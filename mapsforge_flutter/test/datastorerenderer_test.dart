@@ -11,6 +11,8 @@ import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
+import 'testassetbundle.dart';
+
 ///
 /// flutter test --update-goldens
 ///
@@ -35,9 +37,9 @@ void main() {
     int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
     int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
 
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
-    SymbolCache symbolCache = FileSymbolCache(graphicFactory);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();
     //String content = await rootBundle.loadString("assets/simplerender.xml");
@@ -47,7 +49,8 @@ void main() {
     var img = await tester.runAsync(() async {
       MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", 0, "en");
       await mapDataStore.init();
-      Tile tile = new Tile(x, y, z, l, tileSize);
+      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, z);
+      Tile tile = new Tile(x, y, z, l, mercatorProjection);
       print("Reading tile ${tile.toString()}");
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor());
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
@@ -99,22 +102,23 @@ void main() {
     tester.binding.window.physicalSizeTestValue = Size(tileSize * 9, tileSize * 9);
 // resets the screen to its orinal size after the test end
     addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, z);
 
     List<Tile> tilesToLoad = [
-      Tile(x - 1, y - 1, z, l, tileSize),
-      Tile(x, y - 1, z, l, tileSize),
-      Tile(x + 1, y - 1, z, l, tileSize),
-      Tile(x - 1, y, z, l, tileSize),
-      Tile(x, y, z, l, tileSize),
-      Tile(x + 1, y, z, l, tileSize),
-      Tile(x - 1, y + 1, z, l, tileSize),
-      Tile(x, y + 1, z, l, tileSize),
-      Tile(x + 1, y + 1, z, l, tileSize),
+      Tile(x - 1, y - 1, z, l, mercatorProjection),
+      Tile(x, y - 1, z, l, mercatorProjection),
+      Tile(x + 1, y - 1, z, l, mercatorProjection),
+      Tile(x - 1, y, z, l, mercatorProjection),
+      Tile(x, y, z, l, mercatorProjection),
+      Tile(x + 1, y, z, l, mercatorProjection),
+      Tile(x - 1, y + 1, z, l, mercatorProjection),
+      Tile(x, y + 1, z, l, mercatorProjection),
+      Tile(x + 1, y + 1, z, l, mercatorProjection),
     ];
 
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
-    SymbolCache symbolCache = FileSymbolCache(graphicFactory);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel, symbolCache);
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
     final file = new File(prefix + 'test_resources/rendertheme.xml');
     String content = file.readAsStringSync();
     //String content = await rootBundle.loadString("assets/simplerender.xml");

@@ -17,11 +17,11 @@ import 'maprect.dart';
 abstract class MapCanvas {
   void destroy();
 
-  Dimension getDimension();
-
-  int getHeight();
-
-  int getWidth();
+  // Dimension getDimension();
+  //
+  // int getHeight();
+  //
+  // int getWidth();
 
   Future<Bitmap> finalizeBitmap();
 
@@ -53,30 +53,30 @@ abstract class MapCanvas {
 
   void drawText(String text, int x, int y, MapPaint paint);
 
-  void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint);
-
-  void fillColor(Color color);
+  // void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint);
+  //
+  // void fillColor(Color color);
 
   void fillColorFromNumber(int color);
 
-  bool isAntiAlias();
-
-  bool isFilterBitmap();
-
-  void resetClip();
-
-  void setAntiAlias(bool aa);
-
+  // bool isAntiAlias();
+  //
+  // bool isFilterBitmap();
+  //
+  // void resetClip();
+  //
+  // void setAntiAlias(bool aa);
+  //
   void setClip(int left, int top, int width, int height);
 
-  void setClipDifference(int left, int top, int width, int height);
-
-  void setFilterBitmap(bool filter);
+  // void setClipDifference(int left, int top, int width, int height);
+  //
+  // void setFilterBitmap(bool filter);
 
   /// Shade whole map tile when tileRect is null (and bitmap, shadeRect are null).
   /// Shade tileRect neutral if bitmap is null (and shadeRect).
   /// Shade tileRect with bitmap otherwise.
-  void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude);
+//  void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude);
 
   void scale(Mappoint focalPoint, double scale);
 }

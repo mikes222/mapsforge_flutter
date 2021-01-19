@@ -251,7 +251,7 @@ Future<Job> renderDirect(IsolateParam isolateParam) async {
       // no datastore for that tile
       int diff = DateTime.now().millisecondsSinceEpoch - time;
 //      if (diff >= 100) _log.info("Renderer needed $diff ms for non-existent job ${job.toString()}");
-      TileBitmap bmp = await isolateParam.jobRenderer.createNoDataBitmap(job.tile.tileSize);
+      TileBitmap bmp = await isolateParam.jobRenderer.createNoDataBitmap(job.tile.mercatorProjection.tileSize);
       //isolateParam.tileBitmapCache.addTileBitmap(job.tile, bmp);
       //bmp.incrementRefCount();
       job.tileBitmap = bmp;
@@ -261,7 +261,7 @@ Future<Job> renderDirect(IsolateParam isolateParam) async {
   } catch (error, stackTrace) {
     print(error.toString());
     print(stackTrace.toString());
-    TileBitmap bmp = await isolateParam.jobRenderer.createErrorBitmap(job.tile.tileSize, error);
+    TileBitmap bmp = await isolateParam.jobRenderer.createErrorBitmap(job.tile.mercatorProjection.tileSize, error);
     bmp.incrementRefCount();
     job.tileBitmap = bmp;
 //    job.inWork = false;

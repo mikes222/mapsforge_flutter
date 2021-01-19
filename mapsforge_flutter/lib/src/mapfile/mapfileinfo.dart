@@ -84,7 +84,7 @@ class MapFileInfo {
   final int zoomLevelMin;
   final int zoomLevelMax;
 
-  MapFileInfo(
+  const MapFileInfo(
       this.boundingBox,
       this.comment,
       this.createdBy,

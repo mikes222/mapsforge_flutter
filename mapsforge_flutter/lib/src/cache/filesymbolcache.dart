@@ -5,7 +5,7 @@ import 'package:ecache/ecache.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/src/exceptions/symbolnotfoundexception.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
 
@@ -23,7 +23,7 @@ class FileSymbolCache extends SymbolCache {
    */
   static int DEFAULT_SIZE = 20;
 
-  final GraphicFactory graphicFactory;
+  final AssetBundle bundle;
 
   Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
     storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
@@ -32,7 +32,7 @@ class FileSymbolCache extends SymbolCache {
     capacity: 100,
   );
 
-  FileSymbolCache(this.graphicFactory) : assert(graphicFactory != null);
+  FileSymbolCache(this.bundle) : assert(bundle != null);
 
   @override
   void dispose() {
@@ -61,10 +61,11 @@ class FileSymbolCache extends SymbolCache {
     // compatibility with mapsforge
     if (src.startsWith(PREFIX_JAR)) {
       src = src.substring(PREFIX_JAR.length);
+      src = "packages/mapsforge_flutter/assets/" + src;
     } else if (src.startsWith(PREFIX_JAR_V1)) {
       src = src.substring(PREFIX_JAR_V1.length);
+      src = "packages/mapsforge_flutter/assets/" + src;
     }
-    src = "packages/mapsforge_flutter/assets/" + src;
 
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
@@ -77,8 +78,14 @@ class FileSymbolCache extends SymbolCache {
     }
   }
 
+  Future<ByteData> fetchResource(String src) async {
+    ByteData content = await bundle.load(src);
+    return content;
+  }
+
   Future<FlutterResourceBitmap> _createPngSymbol(String src, int width, int height) async {
-    ByteData content = await rootBundle.load(src);
+    ByteData content = await fetchResource(src);
+    if (content == null) throw SymbolNotFoundException(src);
     if (width != 0 && height != 0) {
 //        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
 //        image = imag.copyResize(image, width: width, height: height);
@@ -106,9 +113,8 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<FlutterResourceBitmap> _createSvgSymbol(String src, int width, int height) async {
-    //var resource = new Resource(src);
-    //Uint8List content = await resource.readAsBytes();
-    ByteData content = await rootBundle.load(src);
+    ByteData content = await fetchResource(src);
+    if (content == null) throw SymbolNotFoundException(src);
 
     final DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 
