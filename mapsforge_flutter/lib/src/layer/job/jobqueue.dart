@@ -17,13 +17,14 @@ import 'jobrenderer.dart';
 
 ///
 /// The jobqueue receives jobs and starts the renderer for missing bitmaps.
+///
 class JobQueue {
   static final _log = new Logger('JobQueue');
 
   final DisplayModel displayModel;
   final JobRenderer jobRenderer;
 
-  Subject<Job> _injectJobResult = PublishSubject();
+  Subject<JobSet> _injectJobResult = PublishSubject();
   ListQueue<Job> _listQueue = ListQueue();
 
   JobSet _currentJobSet;
@@ -62,7 +63,7 @@ class JobQueue {
   ///
   /// Called whenever a new bitmap is created
   ///
-  Stream<Job> get observeJobResult => _injectJobResult.stream;
+  Stream<JobSet> get observeJobResult => _injectJobResult.stream;
 
   TileBitmap getMissingBitmap(double tileSize) {
     if (_missingBitmap != null) return _missingBitmap;
@@ -77,15 +78,17 @@ class JobQueue {
   void processJobset(JobSet jobSet) {
     _currentJobSet = jobSet;
     // remove all jobs from the queue which are not needed anymore because we want to show another view hence other tiles
-    _listQueue.removeWhere((element) => !jobSet.jobs.contains(element));
+    _listQueue.clear();
+    //_listQueue.removeWhere((element) => !jobSet.jobs.contains(element));
     // now add all new jobs to queue
     _currentJobSet.jobs.where((element) => !_listQueue.contains(element)).forEach((element) {
       _listQueue.add(element);
     });
-    _startNextJob();
+    //_log.info("Starting jobSet $jobSet");
+    _startNextJob(jobSet);
   }
 
-  void _startNextJob() {
+  void _startNextJob(JobSet jobSet) {
     //_log.info("ListQueue has ${_listQueue.length} elements");
     if (_listQueue.isEmpty) return;
     // let the job in the queue until it is finished, so we prevent adding the job to the queue again
@@ -97,7 +100,7 @@ class JobQueue {
       try {
 //     await _donow3(item);
 //     await _donow(item);
-        await _donow2(nextJob);
+        await _donowDirect(jobSet, nextJob);
       } catch (e, stacktrace) {
         _log.warning("$e\n$stacktrace");
       }
@@ -106,53 +109,51 @@ class JobQueue {
     });
   }
 
-  Future<void> _donow(Job job) async {
+  Future<void> _donowViaIsolate(JobSet jobSet, Job job) async {
     TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
-      job.tileBitmap = tileBitmap;
-      _injectJobResult.add(job);
-      _startNextJob();
+      _currentJobSet.removeJob(job, tileBitmap);
+      _injectJobResult.add(_currentJobSet);
+      _startNextJob(jobSet);
       return;
     }
     _sendPort.send(IsolateParam(job, jobRenderer));
   }
 
-  Future<void> _donow2(Job job) async {
+  Future<void> _donowDirect(JobSet jobSet, Job job) async {
     TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
-      job.tileBitmap = tileBitmap;
-      _injectJobResult.add(job);
-      _startNextJob();
+      _currentJobSet.removeJob(job, tileBitmap);
+      _injectJobResult.add(_currentJobSet);
+      _startNextJob(jobSet);
       return;
     }
-    Job result = await renderDirect(IsolateParam(job, jobRenderer));
-    if (result.hasTileBitmap()) {
-      tileBitmapCache.addTileBitmap(job.tile, result.getTileBitmap());
-      _injectJobResult.add(result);
-      // _log.info("Job executed with bitmap");
-    } else {
-      // _log.warning("Job executed without bitmap");
-    }
-    _startNextJob();
+    TileBitmap result = await renderDirect(IsolateParam(job, jobRenderer));
+    assert(result != null);
+    tileBitmapCache.addTileBitmap(job.tile, result);
+    _currentJobSet.removeJob(job, result);
+    _injectJobResult.add(_currentJobSet);
+    //_log.info("Job executed with bitmap");
+    _startNextJob(jobSet);
   }
 
-  void _donow3(Job job) async {
+  void _donowViaCompute(JobSet jobSet, Job job) async {
     TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
-      job.tileBitmap = tileBitmap;
-      _injectJobResult.add(job);
-      _startNextJob();
+      _currentJobSet.removeJob(job, tileBitmap);
+      _injectJobResult.add(_currentJobSet);
+      _startNextJob(jobSet);
       return;
     }
-    Job result = await compute(renderDirect, IsolateParam(job, jobRenderer));
-    if (result.hasTileBitmap()) {
-      tileBitmapCache.addTileBitmap(job.tile, result.getTileBitmap());
-      _injectJobResult.add(result);
-      // _log.info("Job executed with bitmap");
-    } else {
-      // _log.warning("Job executed without bitmap");
-    }
-    _startNextJob();
+    // Job result = await compute(renderDirect, IsolateParam(job, jobRenderer));
+    // if (result.hasTileBitmap()) {
+    //   tileBitmapCache.addTileBitmap(job.tile, result.getTileBitmap());
+    //   _injectJobResult.add(result);
+    //   // _log.info("Job executed with bitmap");
+    // } else {
+    //   // _log.warning("Job executed without bitmap");
+    // }
+    _startNextJob(jobSet);
   }
 
   ///
@@ -168,16 +169,12 @@ class JobQueue {
       if (data is SendPort) {
         // Receive the SendPort from the Isolate
         _sendPort = data;
-      } else if (data is Job) {
-        Job job = data;
-        if (job.hasTileBitmap()) {
-          tileBitmapCache.addTileBitmap(job.tile, job.getTileBitmap());
-          _injectJobResult.add(job);
-          // _log.info("Job executed with bitmap");
-        } else {
-          // _log.warning("Job executed without bitmap");
-        }
-        _startNextJob();
+      } else if (data is TileBitmap) {
+        TileBitmap bmp = data;
+        // tileBitmapCache.addTileBitmap(job.tile, bmp);
+        // _injectJobResult.add(job);
+        // _log.info("Job executed with bitmap");
+        //_startNextJob();
       }
     }
   }
@@ -196,17 +193,11 @@ entryPoint(SendPort sendPort) async {
 
   // Listen for messages (optional)
   await for (IsolateParam isolateParam in receivePort) {
-    print("hello, we received $isolateParam in the isolate");
-    Job result = await renderDirect(isolateParam);
-    sendPort.send(result);
+    //print("hello, we received $isolateParam in the isolate");
+    TileBitmap bmp = await renderDirect(isolateParam);
+    sendPort.send(bmp);
   }
 }
-
-/////////////////////////////////////////////////////////////////////////////
-
-//typedef void Callback(Job job);
-
-/////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -223,14 +214,11 @@ class IsolateParam {
 /// Renders one job and produces the bitmap for the requested tile. In case of errors or no data a special bitmap will be produced.
 /// Executes the callback function when finished.
 ///
-Future<Job> renderDirect(IsolateParam isolateParam) async {
+Future<TileBitmap> renderDirect(IsolateParam isolateParam) async {
   // _lock[++_roundRobin % _lock.length].synchronized(() async {
   Job job = isolateParam.job;
 //  if (job.hasTileBitmap()) {
 //    return job;
-//  }
-//  if (job.inWork) {
-//    return null;
 //  }
   //_log.info("Processing tile ${job.tile.toString()}");
 //  TileBitmap tileBitmap = await isolateParam.tileBitmapCache.getTileBitmapAsync(job.tile);
@@ -239,32 +227,27 @@ Future<Job> renderDirect(IsolateParam isolateParam) async {
 //    return job;
 //  }
   int time = DateTime.now().millisecondsSinceEpoch;
-//  job.inWork = true;
   try {
     TileBitmap tileBitmap = await isolateParam.jobRenderer.executeJob(job);
     if (tileBitmap != null) {
       int diff = DateTime.now().millisecondsSinceEpoch - time;
 //      if (diff >= 100) _log.info("Renderer needed $diff ms for job ${job.toString()}");
       //isolateParam.tileBitmapCache.addTileBitmap(job.tile, tileBitmap);
-      job.tileBitmap = tileBitmap;
+      return tileBitmap;
     } else {
       // no datastore for that tile
       int diff = DateTime.now().millisecondsSinceEpoch - time;
 //      if (diff >= 100) _log.info("Renderer needed $diff ms for non-existent job ${job.toString()}");
-      TileBitmap bmp = await isolateParam.jobRenderer.createNoDataBitmap(job.tile.mercatorProjection.tileSize);
+      TileBitmap bmp = await isolateParam.jobRenderer.createNoDataBitmap(job.tileSize);
       //isolateParam.tileBitmapCache.addTileBitmap(job.tile, bmp);
       //bmp.incrementRefCount();
-      job.tileBitmap = bmp;
+      return bmp;
     }
-//    job.inWork = false;
-    return job;
   } catch (error, stackTrace) {
     print(error.toString());
     print(stackTrace.toString());
-    TileBitmap bmp = await isolateParam.jobRenderer.createErrorBitmap(job.tile.mercatorProjection.tileSize, error);
+    TileBitmap bmp = await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
     bmp.incrementRefCount();
-    job.tileBitmap = bmp;
-//    job.inWork = false;
-    return job;
+    return bmp;
   }
 }

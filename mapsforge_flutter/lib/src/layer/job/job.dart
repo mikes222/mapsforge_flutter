@@ -1,4 +1,3 @@
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
@@ -8,27 +7,15 @@ class Job {
   final bool hasAlpha;
   final double textScale;
   final Tile tile;
+  final double tileSize;
 
-  /// The resulting bitmap after this job has been processed.
-  TileBitmap _tileBitmap;
-
-//  static final Cache jobs = new SimpleCache<Tile, Job>(
-//      storage: new SimpleStorage<Tile, Job>(size: 1000),
-//      onEvict: (key, Job item) {
-//        item.getAndRemovetileBitmap();
-//      });
-
-  Job._(this.tile, this.hasAlpha, this.textScale)
+  Job._(this.tile, this.hasAlpha, this.textScale, this.tileSize)
       : assert(tile != null),
-        assert(hasAlpha != null);
+        assert(hasAlpha != null),
+        assert(tileSize != null && tileSize > 0);
 
-  factory Job(Tile tile, bool alpha, double scaleFactor) {
-//    Job job = jobs[tile];
-//    if (job != null) {
-//      return job;
-//    }
-    Job job = Job._(tile, alpha, scaleFactor);
-//    jobs[tile] = job;
+  factory Job(Tile tile, bool alpha, double scaleFactor, double tileSize) {
+    Job job = Job._(tile, alpha, scaleFactor, tileSize);
     return job;
   }
 
@@ -42,30 +29,5 @@ class Job {
   @override
   String toString() {
     return 'Job{hasAlpha: $hasAlpha, tile: $tile}';
-  }
-
-  set tileBitmap(TileBitmap tileBitmap) {
-    if (tileBitmap != null) {
-      tileBitmap.incrementRefCount();
-    }
-    if (_tileBitmap != null) {
-      _tileBitmap.decrementRefCount();
-    }
-    _tileBitmap = tileBitmap;
-  }
-
-  TileBitmap getAndRemovetileBitmap() {
-    if (_tileBitmap == null) return null;
-    TileBitmap result = _tileBitmap;
-    _tileBitmap = null;
-    return result;
-  }
-
-  TileBitmap getTileBitmap() {
-    return _tileBitmap;
-  }
-
-  bool hasTileBitmap() {
-    return _tileBitmap != null;
   }
 }

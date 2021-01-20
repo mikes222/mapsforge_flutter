@@ -1,3 +1,6 @@
+import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/maps.dart';
+
 import '../datastore/way.dart';
 import '../model/mappoint.dart';
 import '../model/tag.dart';
@@ -35,7 +38,9 @@ class PolylineContainer implements ShapeContainer {
     this.coordinatesRelativeToTile = null;
     this.way = way;
     if (this.way.labelPosition != null) {
-      this.center = upperLeft.mercatorProjection.getPixel(this.way.labelPosition);
+      // Todo get correct tilesize
+      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
+      this.center = mercatorProjection.getPixel(this.way.labelPosition);
     }
   }
 
@@ -61,11 +66,13 @@ class PolylineContainer implements ShapeContainer {
     // to save memory, after computing the absolute coordinates, the way is released.
     if (coordinatesAbsolute == null) {
       coordinatesAbsolute = List<List<Mappoint>>();
+      // Todo get correct tilesize
+      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
       for (int i = 0; i < way.latLongs.length; ++i) {
         List<Mappoint> mp1 = List<Mappoint>();
         coordinatesAbsolute.add(mp1);
         for (int j = 0; j < way.latLongs[i].length; ++j) {
-          Mappoint mp2 = upperLeft.mercatorProjection.getPixel(way.latLongs[i][j]);
+          Mappoint mp2 = mercatorProjection.getPixel(way.latLongs[i][j]);
           mp1.add(mp2);
         }
       }
@@ -74,9 +81,9 @@ class PolylineContainer implements ShapeContainer {
     return coordinatesAbsolute;
   }
 
-  List<List<Mappoint>> getCoordinatesRelativeToOrigin() {
+  List<List<Mappoint>> getCoordinatesRelativeToOrigin(double tileSize) {
     if (coordinatesRelativeToTile == null) {
-      Mappoint tileOrigin = upperLeft.getOrigin();
+      Mappoint tileOrigin = upperLeft.getLeftUpper(tileSize);
       coordinatesRelativeToTile = List<List<Mappoint>>(getCoordinatesAbsolute().length);
       for (int i = 0; i < coordinatesRelativeToTile.length; ++i) {
         List<Mappoint> mp1 = List<Mappoint>(coordinatesAbsolute[i].length);

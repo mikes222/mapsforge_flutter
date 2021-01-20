@@ -16,55 +16,31 @@ import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
 import 'job/job.dart';
 import 'job/jobqueue.dart';
-import 'job/jobrenderer.dart';
 import 'tilelayer.dart';
 
 class TileLayerImpl extends TileLayer {
   static final _log = new Logger('TileLayer');
 
-  final bool isTransparent;
   final JobQueue jobQueue;
-  final Matrix matrix;
-  final JobRenderer jobRenderer;
-  final MapPaint paint;
+  Matrix _matrix;
+  final MapPaint _paint;
 
   TileLayerImpl({
-    this.matrix,
-    this.isTransparent = false,
-    @required this.jobRenderer,
     @required GraphicFactory graphicFactory,
     @required this.jobQueue,
     @required displayModel,
-  })  : assert(isTransparent != null),
-        assert(displayModel != null),
-        assert(jobRenderer != null),
+  })  : assert(displayModel != null),
         assert(graphicFactory != null),
         assert(jobQueue != null),
-        paint = graphicFactory.createPaint(),
+        _paint = graphicFactory.createPaint(),
         super(displayModel);
 
-//  Stream<Job> get observeJob => jobQueue.observeJob;
-
-//  public TileLayer(TileCache tileCache, IMapViewPosition mapViewPosition, Matrix matrix, bool isTransparent, bool hasJobQueue) {
-//    super();
-//
-//    if (tileCache == null) {
-//      throw new IllegalArgumentException("tileCache must not be null");
-//    } else if (mapViewPosition == null) {
-//      throw new IllegalArgumentException("mapViewPosition must not be null");
-//    }
-//
-//    this.hasJobQueue = hasJobQueue;
-//    this.tileCache = tileCache;
-//    this.mapViewPosition = mapViewPosition;
-//    this.matrix = matrix;
-//    this.isTransparent = isTransparent;
-//  }
-
   @override
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas) {
-    int time = DateTime.now().millisecondsSinceEpoch;
-    List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition);
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet jobSet) {
+    if (jobSet == null) {
+      //_submitJobSet(viewModel, mapViewPosition);
+      return;
+    }
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -85,47 +61,21 @@ class TileLayerImpl extends TileLayer {
     mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
     Mappoint leftUpper = mapViewPosition.leftUpper;
 
-    JobSet jobSet = JobSet();
-    tiles.forEach((Tile tile) {
-      Mappoint point = tile.leftUpperPoint;
-      TileBitmap tileBitmap = jobQueue.tileBitmapCache.getTileBitmapSync(tile);
-      if (tileBitmap != null) {
-        // disable anti alias when drawing bitmaps
-        // otherwise thin lines at the tile borders may appear
-        paint.setAntiAlias(false);
-        canvas.drawBitmap(
-          bitmap: tileBitmap,
-          left: point.x - leftUpper.x,
-          top: point.y - leftUpper.y,
-          paint: paint,
-        );
-      } else {
-        Job job = Job(tile, false, displayModel.getScaleFactor());
-        jobSet.add(job);
-        TileBitmap bitmap = jobQueue.getMissingBitmap(tile.mercatorProjection.tileSize);
-        if (bitmap != null) {
-          canvas.drawBitmap(
-            bitmap: bitmap,
-            left: point.x - leftUpper.x,
-            top: point.y - leftUpper.y,
-            paint: paint,
-          );
-        }
-      }
+    jobSet.bitmaps.forEach((Tile tile, TileBitmap tileBitmap) {
+      Mappoint point = tile.getLeftUpper(viewModel.displayModel.tileSize);
+      _paint.setAntiAlias(false);
+      canvas.drawBitmap(
+        bitmap: tileBitmap,
+        left: point.x - leftUpper.x,
+        top: point.y - leftUpper.y,
+        paint: _paint,
+      );
     });
     if (mapViewPosition.scale != 1) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
       (canvas as FlutterCanvas).uiCanvas.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
-    //_log.info("JobSets created: ${jobSet.jobs.length}");
-    if (jobSet.jobs.length > 0) {
-      this.jobQueue.processJobset(jobSet);
-      needsRepaint = true;
-    }
-
-//    int diff = DateTime.now().millisecondsSinceEpoch - time;
-//    _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
   }
 
   /**

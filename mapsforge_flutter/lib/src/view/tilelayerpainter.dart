@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayer.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
@@ -12,7 +13,9 @@ class TileLayerPainter extends ChangeNotifier implements CustomPainter {
 
   final ViewModel viewModel;
 
-  TileLayerPainter(this._tileLayer, this.position, this.viewModel)
+  final JobSet jobSet;
+
+  TileLayerPainter(this._tileLayer, this.position, this.viewModel, this.jobSet)
       : assert(position != null),
         assert(viewModel != null);
 
@@ -20,7 +23,7 @@ class TileLayerPainter extends ChangeNotifier implements CustomPainter {
   void paint(Canvas canvas, Size size) {
     viewModel.setViewDimension(size.width, size.height);
 
-    _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size));
+    _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet);
   }
 
   @override

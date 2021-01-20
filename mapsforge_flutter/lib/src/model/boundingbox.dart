@@ -5,9 +5,7 @@ import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 import '../utils/latlongutils.dart';
 import 'latlong.dart';
 
-/**
- * A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
- */
+/// A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
 class BoundingBox {
   /**
    * Creates a new BoundingBox from a comma-separated string of coordinates in the order minLat, minLon, maxLat,
@@ -24,24 +22,16 @@ class BoundingBox {
 //        coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
 //  }
 
-  /**
-   * The maximum latitude coordinate of this BoundingBox in degrees.
-   */
+  /// The maximum latitude coordinate of this BoundingBox in degrees.
   double maxLatitude;
 
-  /**
-   * The maximum longitude coordinate of this BoundingBox in degrees.
-   */
+  /// The maximum longitude coordinate of this BoundingBox in degrees.
   double maxLongitude;
 
-  /**
-   * The minimum latitude coordinate of this BoundingBox in degrees.
-   */
+  /// The minimum latitude coordinate of this BoundingBox in degrees.
   double minLatitude;
 
-  /**
-   * The minimum longitude coordinate of this BoundingBox in degrees.
-   */
+  /// The minimum longitude coordinate of this BoundingBox in degrees.
   double minLongitude;
 
   /**
@@ -276,10 +266,8 @@ class BoundingBox {
 //    return new Rectangle(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
 //  }
 
-  /**
-   * @param boundingBox the BoundingBox which should be checked for intersection with this BoundingBox.
-   * @return true if this BoundingBox intersects with the given BoundingBox, false otherwise.
-   */
+  /// @param boundingBox the BoundingBox which should be checked for intersection with this BoundingBox.
+  /// @return true if this BoundingBox intersects with the given BoundingBox, false otherwise.
   bool intersects(BoundingBox boundingBox) {
     if (this == boundingBox) {
       return true;

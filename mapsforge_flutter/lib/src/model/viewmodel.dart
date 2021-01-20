@@ -72,13 +72,15 @@ class ViewModel {
 
   void zoomOut() {
     assert(_mapViewPosition != null);
+    if (_mapViewPosition.zoomLevel <= 0) return;
     MapViewPosition newPosition = MapViewPosition.zoomOut(_mapViewPosition);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   MapViewPosition setZoomLevel(int zoomLevel) {
-    if (zoomLevel >= displayModel.maxZoomLevel) zoomLevel = displayModel.maxZoomLevel;
+    if (zoomLevel > displayModel.maxZoomLevel) zoomLevel = displayModel.maxZoomLevel;
+    if (zoomLevel < 0) zoomLevel = 0;
     if (_mapViewPosition != null) {
       MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition, zoomLevel);
       _mapViewPosition = newPosition;
@@ -179,6 +181,7 @@ class ViewModel {
   Dimension setViewDimension(double width, double height) {
     if (_viewDimension != null && _viewDimension.width == width && _viewDimension.height == height) return _viewDimension;
     _viewDimension = Dimension(width, height);
+    _injectPosition.add(mapViewPosition);
     return _viewDimension;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfileinfo.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
@@ -465,7 +466,7 @@ class MapFile extends MapDataStore {
     assert(queryParameters.fromBlockY != null);
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
-    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, subFileParameter.baseZoomLevel);
+    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, subFileParameter.baseZoomLevel);
 
     MapReadResult mapFileReadResult = new MapReadResult();
 
@@ -536,8 +537,8 @@ class MapFile extends MapDataStore {
             await readBufferMaster.readFromFile(length: currentBlockSize, offset: subFileParameter.startAddress + currentBlockPointer);
 
         // calculate the top-left coordinates of the underlying tile
-        double tileLatitude = mercatorProjectionImpl.tileYToLatitude((subFileParameter.boundaryTileTop + row));
-        double tileLongitude = mercatorProjectionImpl.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
+        double tileLatitude = mercatorProjection.tileYToLatitude((subFileParameter.boundaryTileTop + row));
+        double tileLongitude = mercatorProjection.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
         LatLongUtils.validateLatitude(tileLatitude);
         LatLongUtils.validateLongitude(tileLongitude);
 
@@ -884,8 +885,10 @@ class MapFile extends MapDataStore {
     // lies right on the border, some of this data needs to be drawn as the graphics will
     // overlap onto this tile.
     ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
-    MapReadResult result = await processBlocks(
-        readBufferMaster, queryParameters, subFileParameter, Tile.getBoundingBoxStatic(upperLeft, lowerRight), selector);
+    // todo get actual tilesize
+    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
+    MapReadResult result = await processBlocks(readBufferMaster, queryParameters, subFileParameter,
+        Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight), selector);
     diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100) _log.info("readMapDataComplete took $diff ms");
     readBufferMaster.close();
@@ -987,7 +990,8 @@ class MapFile extends MapDataStore {
 
   @override
   bool supportsTile(Tile tile) {
-    return tile.getBoundingBox().intersects(getMapFileInfo().boundingBox) &&
+    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, tile.zoomLevel);
+    return tile.getBoundingBox(mercatorProjection).intersects(getMapFileInfo().boundingBox) &&
         (tile.zoomLevel >= this.zoomLevelMin && tile.zoomLevel <= this.zoomLevelMax);
   }
 }

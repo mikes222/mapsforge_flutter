@@ -84,16 +84,14 @@ class BlockPage extends StatelessWidget {
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
       MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, subFileParameter.baseZoomLevel);
-      Tile upperLeft =
-          Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0, mercatorProjection);
-      Tile lowerRight = Tile(
-          subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0, mercatorProjection);
+      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0);
+      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0);
       queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
       queryParameters.calculateBlocks(subFileParameter);
       print(
           "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
 
-      BoundingBox boundingBox = Tile.getBoundingBoxStatic(upperLeft, lowerRight);
+      BoundingBox boundingBox = Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight);
       Selector selector = Selector.ALL;
       MapReadResult result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
       //print("result: $result");

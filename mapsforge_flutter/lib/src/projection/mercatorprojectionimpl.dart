@@ -25,9 +25,11 @@ class MercatorProjectionImpl {
 
   static final double LONGITUDE_MIN = -LONGITUDE_MAX;
 
-  /// the size of a tile  in pixel. The whole world fits on on tile in zoomLevel 0 (=scaleFactor 1) in horizontal direction.
+  /// the size of a tile  in pixel. Each tile has the same width and height.
   final double tileSize;
 
+  ///
+  /// The scalefactor. The scaleFactor is dependent on the zoomLevel (scaleFactor similar to pow(2, zoomLevel) ). The whole world fits into on tile in zoomLevel 0 (=scaleFactor 1).
   final double _scaleFactor;
 
   double _mapSize;
@@ -66,7 +68,7 @@ class MercatorProjectionImpl {
   /// @param zoomLevel the zoom level to convert.
   /// @return the corresponding scale factor.
   static double zoomLevelToScaleFactor(int zoomLevel) {
-    assert(zoomLevel >= 0);
+    assert(zoomLevel >= 0 && zoomLevel <= 65535);
     return pow(2, zoomLevel.toDouble());
   }
 
@@ -141,7 +143,7 @@ class MercatorProjectionImpl {
   /// @return the relative pixel position to the origin values (e.g. for a tile)
   Mappoint getPixelRelativeToTile(ILatLong latLong, Tile tile) {
     Mappoint mappoint = getPixel(latLong);
-    return mappoint.offset(-tile.getOrigin().x, -tile.getOrigin().y);
+    return mappoint.offset(-tile.getLeftUpper(tileSize).x, -tile.getLeftUpper(tileSize).y);
   }
 
   /// Calculates the absolute pixel position for a tile and tile size relative to origin

@@ -26,25 +26,29 @@ class CanvasRasterer {
   final MapCanvas canvas;
   final MapPath path;
   final Matrix symbolMatrix;
+  final double tileSize;
 
-  CanvasRasterer(GraphicFactory graphicFactory, double width, double height)
+  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, this.tileSize)
       : canvas = graphicFactory.createCanvas(width, height),
         path = graphicFactory.createPath(),
-        symbolMatrix = graphicFactory.createMatrix();
+        symbolMatrix = graphicFactory.createMatrix(),
+        assert(tileSize != null);
 
   void destroy() {
     this.canvas.destroy();
   }
 
   void drawWays(RenderContext renderContext) {
-    int levelsPerLayer = renderContext.ways.elementAt(0).length;
-    int layers = renderContext.ways.length;
+    //int levelsPerLayer = renderContext.ways.elementAt(0).length;
+//    int layers = renderContext.ways.length;
 
-    for (int layer = 0; layer < layers; ++layer) {
-      List<List<ShapePaintContainer>> shapePaintContainers = renderContext.ways.elementAt(layer);
+    for (List<List<ShapePaintContainer>> shapePaintContainers in renderContext.ways) {
+      // for (int layer = 0; layer < layers; ++layer) {
+      //   List<List<ShapePaintContainer>> shapePaintContainers = renderContext.ways.elementAt(layer);
 
-      for (int level = 0; level < levelsPerLayer; ++level) {
-        List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
+      for (List<ShapePaintContainer> wayList in shapePaintContainers) {
+        // for (int level = 0; level < levelsPerLayer; ++level) {
+        //   List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
 
         for (int index = wayList.length - 1; index >= 0; --index) {
           _drawShapePaintContainer(wayList.elementAt(index));
@@ -53,7 +57,7 @@ class CanvasRasterer {
     }
   }
 
-  void drawMapElements(Set<MapElementContainer> elements, Tile tile) {
+  void drawMapElements(Set<MapElementContainer> elements, Tile tile, double tileSize) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -65,7 +69,7 @@ class CanvasRasterer {
 
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
-      element.draw(canvas, tile.getOrigin(), this.symbolMatrix, Filter.NONE);
+      element.draw(canvas, tile.getLeftUpper(tileSize), this.symbolMatrix, Filter.NONE);
     }
   }
 
@@ -160,7 +164,7 @@ class CanvasRasterer {
       case ShapeType.POLYLINE:
         PolylineContainer polylineContainer = shapeContainer;
         //_log.info("drawing line " + polylineContainer.toString());
-        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(), shapePaintContainer.dy);
+        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(tileSize), shapePaintContainer.dy);
         break;
     }
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
@@ -30,8 +29,7 @@ void main() {
       // ui.Image img = frame.image;
 
       TileBitmap bitmap = FlutterTileBitmap((resourceBitmap as FlutterResourceBitmap).bitmap);
-      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, 0);
-      Tile tile = Tile(0, 0, 0, 0, mercatorProjection);
+      Tile tile = Tile(0, 0, 0, 0);
       cache.addTileBitmap(tile, bitmap);
 
       TileBitmap result = await cache.getTileBitmapAsync(tile);

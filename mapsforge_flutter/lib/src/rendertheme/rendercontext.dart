@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/maps.dart';
 
 import '../layer/job/job.dart';
 import '../mapelements/mapelementcontainer.dart';
@@ -27,6 +28,8 @@ class RenderContext {
   List<List<ShapePaintContainer>> drawingLayers;
   final List<MapElementContainer> labels;
   List<List<List<ShapePaintContainer>>> ways;
+
+  MercatorProjectionImpl _mercatorProjection;
 
   RenderContext(this.job, this.renderTheme, this.graphicFactory)
       : assert(graphicFactory != null),
@@ -56,9 +59,9 @@ class RenderContext {
    * @param tile the tile that changes
    * @return a RendererJob based on the current one, only tile changes
    */
-  Job otherTile(Tile tile) {
-    return Job(tile, this.job.hasAlpha, this.job.textScale);
-  }
+  // Job otherTile(Tile tile) {
+  //   return Job(tile, this.job.hasAlpha, this.job.textScale);
+  // }
 
   List<List<List<ShapePaintContainer>>> _createWayLists() {
     List<List<List<ShapePaintContainer>>> result = new List(LAYERS);
@@ -83,5 +86,11 @@ class RenderContext {
   void setScaleStrokeWidth(int zoomLevel) {
     int zoomLevelDiff = max(zoomLevel - STROKE_MIN_ZOOM_LEVEL, 0);
     this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff), this.job.tile.zoomLevel);
+  }
+
+  MercatorProjectionImpl get mercatorProjection {
+    if (_mercatorProjection != null) return _mercatorProjection;
+    _mercatorProjection = MercatorProjectionImpl(job.tileSize, job.tile.zoomLevel);
+    return _mercatorProjection;
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/mapdatastore.dart';
 import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
@@ -33,6 +34,9 @@ import 'package:rxdart/rxdart.dart';
 import 'canvasrasterer.dart';
 import 'circlecontainer.dart';
 
+///
+/// This renderer renders the bitmap for the tiles by using the given [MapDataStore].
+///
 class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   static final _log = new Logger('MapDataStoreRenderer');
   static final Tag TAG_NATURAL_WATER = new Tag("natural", "water");
@@ -79,19 +83,18 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   Future<TileBitmap> executeJob(Job job) async {
     bool showTiming = false;
-    bool direct = false;
+    bool useIsolate = true;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     if (!this.mapDataStore.supportsTile(job.tile)) {
       // return if we do not have data for the requested tile in the datastore
       return null;
     }
-    CanvasRasterer canvasRasterer =
-        CanvasRasterer(graphicFactory, job.tile.mercatorProjection.tileSize.toDouble(), job.tile.mercatorProjection.tileSize.toDouble());
+    CanvasRasterer canvasRasterer = CanvasRasterer(graphicFactory, job.tileSize, job.tileSize, job.tileSize);
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
     if (showTiming) _log.info("Before starting the isolate to read map data from file");
     MapReadResult mapReadResult;
-    if (direct) {
+    if (useIsolate) {
       // read the mapdata directly in this thread
       mapReadResult = await readMapDataInIsolate(IsolateParam(mapDataStore, job.tile));
     } else {
@@ -124,7 +127,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
       // now draw the ways and the labels
-      canvasRasterer.drawMapElements(labelsToDraw, job.tile);
+      canvasRasterer.drawMapElements(labelsToDraw, job.tile, job.tileSize);
       diff = DateTime.now().millisecondsSinceEpoch - time;
       if (diff > 100 && showTiming) _log.info("drawMapElements took $diff ms");
     }
@@ -184,8 +187,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   void _renderWaterBackground(final RenderContext renderContext) {
     renderContext.setDrawingLayers(0);
-    List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tile.mercatorProjection.tileSize);
-    Mappoint tileOrigin = renderContext.job.tile.getOrigin();
+    List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tileSize);
+    Mappoint tileOrigin = renderContext.job.tile.getLeftUpper(renderContext.job.tileSize);
     for (int i = 0; i < coordinates.length; i++) {
       coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
     }
@@ -237,7 +240,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PointOfInterest poi) {
     if (renderLabels) {
       //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
-      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
+      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, renderContext.job.tile.zoomLevel);
+      Mappoint poiPosition = mercatorProjection.getPixel(poi.position);
       //_log.info("poiPosition is ${poiPosition.toString()}, position is ${position.toString()} for $caption");
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
@@ -248,7 +252,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   @override
   void renderPointOfInterestCircle(
       RenderContext renderContext, double radius, MapPaint fill, MapPaint stroke, int level, PointOfInterest poi) {
-    Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
+    Mappoint poiPosition = renderContext.mercatorProjection.getPixel(poi.position);
     renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), stroke, 0));
     renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), fill, 0));
   }
@@ -257,7 +261,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderPointOfInterestSymbol(
       RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint symbolPaint) {
     if (renderLabels) {
-      Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixel(poi.position);
+      Mappoint poiPosition = renderContext.mercatorProjection.getPixel(poi.position);
       renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint));
     }
   }
@@ -312,7 +316,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
         // but we need to remove the labels for this tile that overlap onto a tile that has been drawn
         for (MapElementContainer current in renderContext.labels) {
-          if (current.intersects(neighbour.getBoundaryAbsolute())) {
+          if (current.intersects(neighbour.getBoundaryAbsolute(renderContext.job.tileSize))) {
             undrawableElements.add(current);
           }
         }
@@ -356,7 +360,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     for (Tile tile in neighbours) {
       tileDependencies.removeTileData(renderContext.job.tile, to: tile);
       for (MapElementContainer element in labelsToDraw) {
-        if (element.intersects(tile.getBoundaryAbsolute())) {
+        if (element.intersects(tile.getBoundaryAbsolute(renderContext.job.tileSize))) {
           tileDependencies.addOverlappingElement(renderContext.job.tile, tile, element);
         }
       }
@@ -420,6 +424,8 @@ entryPoint(SendPort sendPort) async {
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 class IsolateParam {
   final MapDataStore mapDataStore;
 
@@ -427,6 +433,8 @@ class IsolateParam {
 
   IsolateParam(this.mapDataStore, this.tile);
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 Future<MapReadResult> readMapDataInIsolate(IsolateParam isolateParam) async {
   MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);

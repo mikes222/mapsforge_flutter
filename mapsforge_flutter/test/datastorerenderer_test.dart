@@ -50,9 +50,9 @@ void main() {
       MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", 0, "en");
       await mapDataStore.init();
       MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, z);
-      Tile tile = new Tile(x, y, z, l, mercatorProjection);
+      Tile tile = new Tile(x, y, z, l);
       print("Reading tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor());
+      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
       TileBitmap resultTile = await _dataStoreRenderer.executeJob(mapGeneratorJob);
@@ -105,15 +105,15 @@ void main() {
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, z);
 
     List<Tile> tilesToLoad = [
-      Tile(x - 1, y - 1, z, l, mercatorProjection),
-      Tile(x, y - 1, z, l, mercatorProjection),
-      Tile(x + 1, y - 1, z, l, mercatorProjection),
-      Tile(x - 1, y, z, l, mercatorProjection),
-      Tile(x, y, z, l, mercatorProjection),
-      Tile(x + 1, y, z, l, mercatorProjection),
-      Tile(x - 1, y + 1, z, l, mercatorProjection),
-      Tile(x, y + 1, z, l, mercatorProjection),
-      Tile(x + 1, y + 1, z, l, mercatorProjection),
+      Tile(x - 1, y - 1, z, l),
+      Tile(x, y - 1, z, l),
+      Tile(x + 1, y - 1, z, l),
+      Tile(x - 1, y, z, l),
+      Tile(x, y, z, l),
+      Tile(x + 1, y, z, l),
+      Tile(x - 1, y + 1, z, l),
+      Tile(x, y + 1, z, l),
+      Tile(x + 1, y + 1, z, l),
     ];
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
@@ -133,7 +133,7 @@ void main() {
       List imgs = List();
       for (Tile tile in tilesToLoad) {
         print("Reading tile ${tile.toString()}");
-        Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor());
+        Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
         TileBitmap resultTile = await _dataStoreRenderer.executeJob(mapGeneratorJob);
         assert(resultTile != null);
         var img = (resultTile as FlutterTileBitmap).bitmap;
