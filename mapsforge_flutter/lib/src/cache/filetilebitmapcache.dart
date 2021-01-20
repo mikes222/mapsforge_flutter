@@ -9,17 +9,14 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 
-import 'memorytilebitmapcache.dart';
 import 'tilebitmapcache.dart';
 
 ///
-/// A mixed memory/file cache for the bitmaps of a [Tile]. The implementation can distinguish different sets of [Tile]s depending on the [renderkey].
+/// A file cache for the bitmaps of a [Tile]. The implementation can distinguish different sets of [Tile]s depending on the [renderkey].
 /// This can be used to cache for example tiles used by day as well as tiles used by night.
 ///
 class FileTileBitmapCache extends TileBitmapCache {
   static final _log = new Logger('FileTileBitmapCache');
-
-  final MemoryTileBitmapCache _memoryBitmapCache;
 
   ///
   /// a unique key for the rendered bitmaps. The key should be dependent of the renderingTheme. In other words if the bitmaps should be
@@ -31,7 +28,7 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   String _dir;
 
-  FileTileBitmapCache(this.renderkey) : _memoryBitmapCache = MemoryTileBitmapCache() {
+  FileTileBitmapCache(this.renderkey) {
     _init();
   }
 
@@ -55,31 +52,20 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
     _log.info("purged $count files from cache $renderkey");
     _files.clear();
-    _memoryBitmapCache.purgeAll();
   }
 
   @override
   void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
-    _memoryBitmapCache.addTileBitmap(tile, tileBitmap);
     _storeFile(tile, tileBitmap);
   }
 
-//  @override
-//  TileBitmap getTileBitmap(Tile tile) {
-//    TileBitmap tileBitmap = _memoryBitmapCache.getTileBitmap(tile);
-//    return tileBitmap;
-//  }
-
   @override
   TileBitmap getTileBitmapSync(Tile tile) {
-    return _memoryBitmapCache.getTileBitmapSync(tile);
+    return null;
   }
 
   @override
   Future<TileBitmap> getTileBitmapAsync(Tile tile) async {
-    TileBitmap tileBitmap = _memoryBitmapCache.getTileBitmapSync(tile);
-    if (tileBitmap != null) return tileBitmap;
-
     String filename = _calculateFilename(tile);
     if (_files == null || !_files.contains(filename)) {
       // not yet initialized or not in cache
@@ -92,8 +78,7 @@ class FileTileBitmapCache extends TileBitmapCache {
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       Image img = frame.image;
-      tileBitmap = FlutterTileBitmap(img);
-      _memoryBitmapCache.addTileBitmap(tile, tileBitmap);
+      TileBitmap tileBitmap = FlutterTileBitmap(img);
       return tileBitmap;
     } catch (e, stacktrace) {
       _log.warning("Error while reading image from file, deleting file $filename");
@@ -121,9 +106,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  void dispose() {
-    _memoryBitmapCache.dispose();
-  }
+  void dispose() {}
 
   @override
   Future<void> purgeByBoundary(BoundingBox boundingBox) async {
@@ -137,7 +120,5 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
     _log.info("purged $count files from cache $renderkey");
     _files.clear();
-
-    _memoryBitmapCache.purgeByBoundary(boundingBox);
   }
 }

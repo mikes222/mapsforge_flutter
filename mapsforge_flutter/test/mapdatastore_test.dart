@@ -4,19 +4,22 @@ import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
+import 'testassetbundle.dart';
+
 main() async {
   //create a mapfile from .map
-  MapFile mapFile = MapFile("test_resources/campus_level.map", null, null); //Map that contains part of the Canpus Reichehainer Straße
+  MapFile mapFile =
+      MapFile(TestAssetBundle().correctFilename("campus_level.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
   await mapFile.init();
 
   ////Maps that contain single rooms in the NHG
-  MapFile N115 = MapFile("test_resources/N115.map", null, null);
+  MapFile N115 = MapFile(TestAssetBundle().correctFilename("N115.map"), null, null);
   await N115.init();
 
-  MapFile N112 = MapFile("test_resources/N112.map", null, null);
+  MapFile N112 = MapFile(TestAssetBundle().correctFilename("N112.map"), null, null);
   await N112.init();
 
-  MapFile NHG_WC = MapFile("test_resources/NHG_WC.map", null, null);
+  MapFile NHG_WC = MapFile(TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
   await NHG_WC.init();
 
   //x- and y-Coordinates from upperLeft- and lowerRight-Tile that define the map-area,

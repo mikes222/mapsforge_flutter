@@ -29,6 +29,6 @@ class MapModel {
       datastore.dispose();
     });
     graphicsFactory.dispose();
-    tileBitmapCache.dispose();
+    tileBitmapCache?.dispose();
   }
 }

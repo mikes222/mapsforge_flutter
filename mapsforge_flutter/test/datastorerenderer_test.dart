@@ -30,7 +30,6 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    String prefix = ""; // "../";
     double tileSize = displayModel.tileSize;
     int l = 0;
     int z = 16;
@@ -40,14 +39,12 @@ void main() {
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
-    final file = new File(prefix + 'test_resources/rendertheme.xml');
-    String content = file.readAsStringSync();
-    //String content = await rootBundle.loadString("assets/simplerender.xml");
+    String content = await TestAssetBundle().loadString("rendertheme.xml");
     renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 
     var img = await tester.runAsync(() async {
-      MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", 0, "en");
+      MapFile mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
       await mapDataStore.init();
       MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, z);
       Tile tile = new Tile(x, y, z, l);
@@ -92,7 +89,7 @@ void main() {
       maxZoomLevel: 15,
     );
 
-    String prefix = ""; // "../";
+    String prefix = "../";
     double tileSize = displayModel.tileSize;
     int l = 0;
     int z = 15;
@@ -119,9 +116,9 @@ void main() {
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
-    final file = new File(prefix + 'test_resources/rendertheme.xml');
-    String content = file.readAsStringSync();
-    //String content = await rootBundle.loadString("assets/simplerender.xml");
+    //final file = new File(prefix + 'test_resources/rendertheme.xml');
+    //String content = file.readAsStringSync();
+    String content = await TestAssetBundle().loadString("rendertheme.xml");
     renderThemeBuilder.parseXml(content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 

@@ -123,16 +123,25 @@ class ViewModel {
     }
   }
 
+  ///
+  /// sets the new scale relative to the current zoomlevel. A scale of 1 means no action,
+  /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
+  /// >1 means zoom-in.
+  ///
   MapViewPosition setScale(Mappoint focalPoint, double scale) {
     assert(scale != null);
     assert(scale > 0);
+    // do not scale if the scale is too minor to do anything
+    if ((scale - 1).abs() < 0.01) return _mapViewPosition;
     if (_mapViewPosition != null) {
       //print("Scaling ${_mapViewPosition.zoomLevel} * $scale");
       if (MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel) * scale < 1) {
+        // zoom out until we reached zoomlevel 0
         scale = 1 / MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel);
       } else {
         double scaleFactor = MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel) * scale;
         if (scaleFactor > MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel)) {
+          // zoom in until we reach the maximum zoom level, limit the zoom then
           scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel) /
               MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel);
         }

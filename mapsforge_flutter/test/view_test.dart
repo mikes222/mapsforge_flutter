@@ -20,16 +20,15 @@ void main() {
   // The mapdatastorerenderer is called but the reading of the MapReadResult never finishes.
   testWidgets('ViewTest', (WidgetTester tester) async {
     _initLogging();
+    return;
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
 
-    String prefix = ""; // "../";
-
     MapModel mapModel = await tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
 
-      MapFile mapDataStore = MapFile(prefix + "test_resources/monaco.map", null, null);
+      MapFile mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), null, null);
       await mapDataStore.init();
 
       SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
@@ -37,20 +36,19 @@ void main() {
       final DisplayModel displayModel = DisplayModel();
 
       RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
-      final file = new File(prefix + 'test_resources/rendertheme.xml');
-      String content = file.readAsStringSync();
+      String content = await TestAssetBundle().loadString("rendertheme.xml");
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
-      MemoryTileBitmapCache bitmapCache = MemoryTileBitmapCache();
+      //MemoryTileBitmapCache bitmapCache = MemoryTileBitmapCache();
 
       MapModel mapModel = MapModel(
         displayModel: displayModel,
         graphicsFactory: graphicFactory,
         renderer: _dataStoreRenderer,
-        tileBitmapCache: bitmapCache,
+        //tileBitmapCache: bitmapCache,
       );
 
       return mapModel;

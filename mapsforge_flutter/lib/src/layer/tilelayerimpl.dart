@@ -55,7 +55,7 @@ class TileLayerImpl extends TileLayer {
 
     canvas.setClip(0, 0, viewModel.viewDimension.width.round(), viewModel.viewDimension.height.round());
     if (mapViewPosition.scale != 1) {
-      _log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
+      //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
       canvas.scale(mapViewPosition.focalPoint, mapViewPosition.scale);
     }
     mapViewPosition.calculateBoundingBox(viewModel.viewDimension);

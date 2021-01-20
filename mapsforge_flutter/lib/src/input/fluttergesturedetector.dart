@@ -1,11 +1,15 @@
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import '../../core.dart';
 
+///
+/// A detector for finger-gestures. It currently supports move, pinch-to-zoom and doubleclick
+///
 class FlutterGestureDetector extends StatefulWidget {
   final ViewModel viewModel;
 
@@ -27,6 +31,8 @@ class FlutterGestureDetector extends StatefulWidget {
 /////////////////////////////////////////////////////////////////////////////
 
 class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
+  static final _log = new Logger('FlutterGestureDetectorState');
+
   Mappoint startLeftUpper;
 
   Offset startOffset;
@@ -39,7 +45,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   Widget build(BuildContext context) {
     //RenderBox positionRed = context.findRenderObject();
     //Offset positionRelative = positionRed?.localToGlobal(Offset.zero);
-    //print("positionRelative: ${positionRelative.toString()}");
+    //_log.info("positionRelative: ${positionRelative.toString()}");
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: (TapDownDetails details) {
@@ -47,7 +53,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         _doubleTapOffset = details.localPosition;
       },
       onTapUp: (TapUpDetails details) {
-        //print(details.globalPosition.toString());
+        //_log.info(details.globalPosition.toString());
         //if (positionRelative == null) return;
         //widget.mapModel.tapEvent(details.globalPosition.dx - positionRelative.dx, details.globalPosition.dy - positionRelative.dy);
         widget.viewModel.tapEvent(details.localPosition.dx, details.localPosition.dy);
@@ -79,13 +85,13 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         startOffset = details.focalPoint;
         startLeftUpper = widget.position?.leftUpper;
         _lastScale = null;
-        print(details.toString());
+//        _log.info(details.toString());
         widget.viewModel.gestureEvent();
       },
       onScaleUpdate: (ScaleUpdateDetails details) {
         if (details.scale == 1) {
           // move around
-          //print(details.toString());
+          //_log.info(details.toString());
           if (startLeftUpper == null) return;
           // do not react if less than 5 points dragged
           if ((startOffset.dx - details.focalPoint.dx).abs() < 5 && (startOffset.dy - details.focalPoint.dy).abs() < 5) return;
@@ -95,13 +101,14 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           // zoom
           // do not send tiny changes
           if (_lastScale != null && ((details.scale / _lastScale) - 1).abs() < 0.01) return;
-          //print("GestureDetector scale ${details.scale} around ${details.focalPoint.toString()} or ${details.localFocalPoint.toString()}");
+          // _log.info(
+          //     "GestureDetector scale ${details.scale} around ${details.focalPoint.toString()} or ${details.localFocalPoint.toString()}");
           _lastScale = details.scale;
           MapViewPosition newPost = widget.viewModel.setScale(Mappoint(details.localFocalPoint.dx, details.localFocalPoint.dy), _lastScale);
         }
       },
       onScaleEnd: (ScaleEndDetails details) {
-        //print(details.toString());
+        //_log.info(details.toString());
         if (_lastScale == null) return;
         // no zoom: 0, double zoom: 1, half zoom: -1
         double zoomLevelOffset = log(this._lastScale) / log(2);
@@ -110,14 +117,15 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 //            zoomLevelDiff = (zoomLevelOffset < 0 ? zoomLevelOffset.floor() : zoomLevelOffset.ceil()).round();
           int zoomLevelDiff = zoomLevelOffset.round();
           if (zoomLevelDiff != 0) {
-//            print("zooming now at $zoomLevelDiff for ${widget.position.toString()}");
+            //_log.info("zooming now at $zoomLevelDiff for ${widget.position.toString()}");
             MapViewPosition newPost = widget.viewModel.setZoomLevel(widget.position.zoomLevel + zoomLevelDiff);
-//            print(
-//                "  resulting in ${newPost.toString()} or ${newPost.mercatorProjection} or ${newPost.calculateBoundingBox(widget.mapModel.mapViewDimension.getDimension())} and now ${newPost.toString()}");
+            //_log.info(
+            //    "  resulting in ${newPost.toString()} or ${newPost.mercatorProjection} or ${newPost.calculateBoundingBox(widget.viewModel.viewDimension)}}");
           }
         } else if (_lastScale != 1) {
           // no significant zoom. Restore the old zoom
           MapViewPosition newPost = widget.viewModel.setZoomLevel((widget.position.zoomLevel));
+          //_log.info("Restored zoom to ${widget.position.zoomLevel}");
         }
       },
       child: widget.child,

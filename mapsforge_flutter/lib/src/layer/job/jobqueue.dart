@@ -33,7 +33,9 @@ class JobQueue {
 
   Isolate _isolate;
 
-  TileBitmapCache tileBitmapCache;
+  final TileBitmapCache tileBitmapCache;
+
+  final TileBitmapCache tileBitmapCache1stLevel;
 
   FlutterTileBitmap _missingBitmap;
 
@@ -44,7 +46,8 @@ class JobQueue {
 
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache)
       : assert(displayModel != null),
-        assert(jobRenderer != null) {
+        assert(jobRenderer != null),
+        tileBitmapCache1stLevel = MemoryTileBitmapCache() {
     //_startIsolateJob();
     for (int i = 0; i < _lock.length; ++i) {
       _lock[i] = Lock();
@@ -76,16 +79,31 @@ class JobQueue {
   ///
   /// Let the queue process this jobset
   void processJobset(JobSet jobSet) {
-    _currentJobSet = jobSet;
     // remove all jobs from the queue which are not needed anymore because we want to show another view hence other tiles
     _listQueue.clear();
     //_listQueue.removeWhere((element) => !jobSet.jobs.contains(element));
     // now add all new jobs to queue
-    _currentJobSet.jobs.where((element) => !_listQueue.contains(element)).forEach((element) {
-      _listQueue.add(element);
+    Map<Job, TileBitmap> toRemove = Map();
+    jobSet.jobs.where((job) => !_listQueue.contains(job)).forEach((job) {
+      TileBitmap tileBitmap = tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
+      if (tileBitmap != null) {
+        toRemove[job] = tileBitmap;
+      } else {
+        _listQueue.add(job);
+      }
+    });
+
+    toRemove.forEach((key, value) {
+      jobSet.removeJob(key, value);
     });
     //_log.info("Starting jobSet $jobSet");
+    _currentJobSet = jobSet;
     _startNextJob(jobSet);
+
+    // in the meantime return the found jobs
+    if (toRemove.length > 0) {
+      _injectJobResult.add(jobSet);
+    }
   }
 
   void _startNextJob(JobSet jobSet) {
@@ -110,7 +128,7 @@ class JobQueue {
   }
 
   Future<void> _donowViaIsolate(JobSet jobSet, Job job) async {
-    TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
+    TileBitmap tileBitmap = await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       _currentJobSet.removeJob(job, tileBitmap);
       _injectJobResult.add(_currentJobSet);
@@ -121,24 +139,26 @@ class JobQueue {
   }
 
   Future<void> _donowDirect(JobSet jobSet, Job job) async {
-    TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
+    TileBitmap tileBitmap = await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       _currentJobSet.removeJob(job, tileBitmap);
+      tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       _injectJobResult.add(_currentJobSet);
       _startNextJob(jobSet);
       return;
     }
-    TileBitmap result = await renderDirect(IsolateParam(job, jobRenderer));
-    assert(result != null);
-    tileBitmapCache.addTileBitmap(job.tile, result);
-    _currentJobSet.removeJob(job, result);
+    tileBitmap = await renderDirect(IsolateParam(job, jobRenderer));
+    assert(tileBitmap != null);
+    tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
+    tileBitmapCache?.addTileBitmap(job.tile, tileBitmap);
+    _currentJobSet.removeJob(job, tileBitmap);
     _injectJobResult.add(_currentJobSet);
     //_log.info("Job executed with bitmap");
     _startNextJob(jobSet);
   }
 
   void _donowViaCompute(JobSet jobSet, Job job) async {
-    TileBitmap tileBitmap = await tileBitmapCache.getTileBitmapAsync(job.tile);
+    TileBitmap tileBitmap = await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       _currentJobSet.removeJob(job, tileBitmap);
       _injectJobResult.add(_currentJobSet);

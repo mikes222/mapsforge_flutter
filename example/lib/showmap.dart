@@ -86,7 +86,7 @@ class ShowmapState extends State<Showmap> {
             ),
             RaisedButton(
               child: Text("Zoom in"),
-              onPressed: viewModel.mapViewPosition.zoomLevel == viewModel.displayModel.maxZoomLevel
+              onPressed: viewModel.mapViewPosition?.zoomLevel == viewModel.displayModel.maxZoomLevel
                   ? null
                   : () {
                       viewModel.zoomIn();
@@ -94,7 +94,7 @@ class ShowmapState extends State<Showmap> {
             ),
             RaisedButton(
               child: Text("Zoom out"),
-              onPressed: viewModel.mapViewPosition.zoomLevel == 0
+              onPressed: viewModel.mapViewPosition?.zoomLevel == 0
                   ? null
                   : () {
                       //if (viewModel.mapViewPosition.zoomLevel == 0) return;

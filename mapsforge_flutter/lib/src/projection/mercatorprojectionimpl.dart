@@ -1,11 +1,14 @@
 import 'dart:math';
 
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/latlong.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 class MercatorProjectionImpl {
+  static final _log = new Logger('MercatorProjectionImpl');
+
   /// Maximum possible latitude coordinate of the map.
   static final double LATITUDE_MAX = 85.05112877980659;
 
@@ -32,6 +35,9 @@ class MercatorProjectionImpl {
   /// The scalefactor. The scaleFactor is dependent on the zoomLevel (scaleFactor similar to pow(2, zoomLevel) ). The whole world fits into on tile in zoomLevel 0 (=scaleFactor 1).
   final double _scaleFactor;
 
+  ///
+  /// the size of the map in pixel. At scalefactor 1 the _mapSize is equal to the tileSize.
+  ///
   double _mapSize;
 
   MercatorProjectionImpl(this.tileSize, int zoomLevel) : _scaleFactor = zoomLevelToScaleFactor(zoomLevel) {

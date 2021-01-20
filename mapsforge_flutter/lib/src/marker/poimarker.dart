@@ -16,7 +16,6 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
     String src,
     double width = 20,
     double height = 20,
-    percent,
     symbolCache,
     latLong,
     minZoomLevel = 0,
@@ -43,7 +42,6 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
     this.src = src;
     this.width = width;
     this.height = height;
-    this.percent = percent;
     this.symbolCache = symbolCache;
   }
 
