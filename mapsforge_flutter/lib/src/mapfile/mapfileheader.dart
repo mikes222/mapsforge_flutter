@@ -1,6 +1,6 @@
 import 'package:logging/logging.dart';
 
-import 'file:///E:/develop/github_mapsforge_flutter/mapsforge_flutter/lib/src/exceptions/mapfileexception.dart';
+import 'package:mapsforge_flutter/src/exceptions/mapfileexception.dart';
 import 'optionalfields.dart';
 import 'readbuffer.dart';
 import 'requiredfields.dart';

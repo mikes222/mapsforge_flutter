@@ -78,7 +78,7 @@ class BitmapMixin {
   }
 
   @protected
-  Future<Bitmap> getOrCreateBitmap(GraphicFactory graphicFactory, String relativePathPrefix, String src) async {
+  Future<Bitmap> getOrCreateBitmap(GraphicFactory graphicFactory, String src) async {
     if (bitmapInvalid) return null;
     if (null == src || src.isEmpty) {
       bitmapInvalid = true;
