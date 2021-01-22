@@ -344,7 +344,7 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel, null);
+      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel);
       symbol.parse(rootElement, initPendings);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);

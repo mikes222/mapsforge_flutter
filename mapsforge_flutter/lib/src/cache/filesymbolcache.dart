@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -23,7 +24,8 @@ class FileSymbolCache extends SymbolCache {
    */
   static int DEFAULT_SIZE = 20;
 
-  final AssetBundle bundle;
+  AssetBundle bundle;
+  String relativePathPrefix;
 
   Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
     storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
@@ -33,6 +35,8 @@ class FileSymbolCache extends SymbolCache {
   );
 
   FileSymbolCache(this.bundle) : assert(bundle != null);
+
+  FileSymbolCache.withRelativePathPrefix(this.relativePathPrefix) : assert(relativePathPrefix != null);
 
   @override
   void dispose() {
@@ -79,13 +83,24 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<ByteData> fetchResource(String src) async {
+    if (bundle == null) {
+      // TODO how to handle this case (Andrea)
+      return null;
+    }
     ByteData content = await bundle.load(src);
     return content;
   }
 
   Future<FlutterResourceBitmap> _createPngSymbol(String src, int width, int height, int percent) async {
-    ByteData content = await fetchResource(src);
-    if (content == null) throw SymbolNotFoundException(src);
+    Uint8List bytes;
+    if (bundle != null) {
+      ByteData content = await fetchResource(src);
+      if (content == null) throw SymbolNotFoundException(src);
+      bytes = content.buffer.asUint8List();
+    } else if (relativePathPrefix != null) {
+      src = relativePathPrefix + src;
+      bytes = File(src).readAsBytesSync();
+    }
     if (width != 0 && height != 0) {
 //        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
 //        image = imag.copyResize(image, width: width, height: height);
@@ -95,7 +110,7 @@ class FileSymbolCache extends SymbolCache {
         width = (width * percent.toDouble() / 100.0).round();
         height = (height * percent.toDouble() / 100.0).round();
       }
-      var codec = await ui.instantiateImageCodec(content.buffer.asUint8List(), targetHeight: height, targetWidth: width);
+      var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       ui.Image img = frame.image;
@@ -103,7 +118,7 @@ class FileSymbolCache extends SymbolCache {
       FlutterResourceBitmap result = FlutterResourceBitmap(img);
       return result;
     } else {
-      var codec = await ui.instantiateImageCodec(content.buffer.asUint8List());
+      var codec = await ui.instantiateImageCodec(bytes);
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       ui.Image img = frame.image;
@@ -114,7 +129,7 @@ class FileSymbolCache extends SymbolCache {
         width = (width * percent.toDouble() / 100.0).round();
         height = (height * percent.toDouble() / 100.0).round();
 
-        var codec = await ui.instantiateImageCodec(content.buffer.asUint8List(), targetHeight: height, targetWidth: width);
+        var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);
         var frame = await codec.getNextFrame();
         img = frame.image;
       }
@@ -128,10 +143,17 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<FlutterResourceBitmap> _createSvgSymbol(String src, int width, int height, int percent) async {
-    ByteData content = await fetchResource(src);
-    if (content == null) throw SymbolNotFoundException(src);
+    DrawableRoot svgRoot;
 
-    final DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
+    if (bundle != null) {
+      ByteData content = await fetchResource(src);
+      if (content == null) throw SymbolNotFoundException(src);
+      svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
+    } else if (relativePathPrefix != null) {
+      src = relativePathPrefix + src;
+      var bytes = File(src).readAsBytesSync();
+      svgRoot = await svg.fromSvgBytes(bytes, src);
+    }
 
     if (percent != null && percent != 100) {
       if (width != null) width = (width * percent.toDouble() / 100.0).round();

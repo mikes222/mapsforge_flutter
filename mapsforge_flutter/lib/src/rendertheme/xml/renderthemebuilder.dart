@@ -96,7 +96,7 @@ class RenderThemeBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
           break;
         case XmlNodeType.COMMENT:
-          throw Exception("Invalid node ${node.nodeType.toString()}");
+          // throw Exception("Invalid node ${node.nodeType.toString()}");
           break;
         case XmlNodeType.DOCUMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
@@ -200,6 +200,9 @@ class RenderThemeBuilder {
               //hillShadings.add(hillshading);
 //      }
               //print("Time ${DateTime.now().millisecondsSinceEpoch - time} after hillshading");
+              break;
+            } else if ("stylemenu" == element.name.toString()) {
+              // TODO handle this case (Andrea)
               break;
             }
             throw Exception("Invalid node ${element.name.toString()}");

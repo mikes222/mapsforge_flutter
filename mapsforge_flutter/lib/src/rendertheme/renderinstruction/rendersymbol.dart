@@ -18,9 +18,8 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   Display display;
   String id;
   int priority = 0;
-  final String relativePathPrefix;
 
-  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix) : super(graphicFactory, displayModel) {
+  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel) : super(graphicFactory, displayModel) {
     this.symbolCache = graphicFactory.symbolCache;
     this.display = Display.IFSPACE;
   }
@@ -98,7 +97,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   /// Returns the specified bitmap or null if loading the bitmap fails
   ///
   Future<Bitmap> getBitmap(GraphicFactory graphicFactory) async {
-    return getOrCreateBitmap(graphicFactory, relativePathPrefix, src);
+    return getOrCreateBitmap(graphicFactory, src);
   }
 
   @override
