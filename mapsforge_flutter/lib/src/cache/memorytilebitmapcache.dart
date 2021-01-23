@@ -37,10 +37,10 @@ class MemoryTileBitmapCache extends TileBitmapCache {
     assert(tile != null);
     assert(tileBitmap != null);
     tileBitmap.incrementRefCount();
-    TileBitmap bitmap = _bitmaps.get(tile);
-    if (bitmap != null) {
-      bitmap.decrementRefCount();
-    }
+    // TileBitmap bitmap = _bitmaps.get(tile);
+    // if (bitmap != null) {
+    //   bitmap.decrementRefCount();
+    // }
     _bitmaps[tile] = tileBitmap;
   }
 

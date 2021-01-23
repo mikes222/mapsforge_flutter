@@ -38,9 +38,6 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
     this.rotate = true;
   }
 
-  @override
-  void destroy() {}
-
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();

@@ -41,8 +41,8 @@ class FlutterGraphicFactory extends GraphicFactory {
   // }
 
   @override
-  MapCanvas createCanvas(double width, double height) {
-    return FlutterCanvas.forRecorder(width, height);
+  MapCanvas createCanvas(double width, double height, [String src]) {
+    return FlutterCanvas.forRecorder(width, height, src);
   }
 
   @override

@@ -115,7 +115,7 @@ class FileSymbolCache extends SymbolCache {
       var frame = await codec.getNextFrame();
       ui.Image img = frame.image;
 
-      FlutterResourceBitmap result = FlutterResourceBitmap(img);
+      FlutterResourceBitmap result = FlutterResourceBitmap(img, src);
       return result;
     } else {
       var codec = await ui.instantiateImageCodec(bytes);
@@ -134,7 +134,7 @@ class FileSymbolCache extends SymbolCache {
         img = frame.image;
       }
 
-      FlutterResourceBitmap result = FlutterResourceBitmap(img);
+      FlutterResourceBitmap result = FlutterResourceBitmap(img, src);
       return result;
     }
 
@@ -164,7 +164,7 @@ class FileSymbolCache extends SymbolCache {
         size: ui.Size(width != 0 ? width.toDouble() : DEFAULT_SIZE.toDouble(), height != 0 ? height.toDouble() : DEFAULT_SIZE.toDouble()));
     ui.Image image = await picture.toImage(width != 0 ? width : DEFAULT_SIZE, height != 0 ? height : DEFAULT_SIZE);
     //print("image: " + image.toString());
-    FlutterResourceBitmap result = FlutterResourceBitmap(image);
+    FlutterResourceBitmap result = FlutterResourceBitmap(image, src);
     return result;
 
     //final Widget svg = new SvgPicture.asset(assetName, semanticsLabel: 'Acme Logo');

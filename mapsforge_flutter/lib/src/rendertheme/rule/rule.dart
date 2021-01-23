@@ -53,7 +53,7 @@ abstract class Rule {
 
   void destroy() {
     for (RenderInstruction ri in this.renderInstructions) {
-      ri.destroy();
+      ri.dispose();
     }
     for (Rule sr in this.subRules) {
       sr.destroy();

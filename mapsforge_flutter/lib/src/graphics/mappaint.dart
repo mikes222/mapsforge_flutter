@@ -10,6 +10,11 @@ import 'join.dart';
 import 'style.dart';
 
 abstract class MapPaint {
+  ///
+  /// disposes that class. The class is not usable afterwards.
+  ///
+  void dispose();
+
   int getColor();
 
   double getStrokeWidth();

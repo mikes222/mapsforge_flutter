@@ -148,7 +148,7 @@ todo
 
 ----
 
-For more information and documentation check [resources/docu/mapdatastore.md]()
+For more information and documentation check [resources/docu/mapdatastore.md](resources/docu/mapdatastore.md)
 
 ----
 

@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
 class FileHelper {
+  static final _log = new Logger('FileHelper');
+
   static Future<String> findLocalPath() async {
 //    final directory = widget.platform == TargetPlatform.android
 //        ? await getExternalStorageDirectory()
@@ -15,7 +18,7 @@ class FileHelper {
     var savedDir = Directory(result);
     bool exists = await savedDir.exists();
     if (!exists) {
-      print("Creating directory $result");
+      _log.info("Creating directory $result");
       savedDir.create(recursive: true);
     }
 
@@ -28,7 +31,7 @@ class FileHelper {
     var savedDir = Directory(result);
     bool exists = await savedDir.exists();
     if (!exists) {
-      print("Creating directory $result");
+      _log.info("Creating directory $result");
       await savedDir.create(recursive: true);
     }
     return result;

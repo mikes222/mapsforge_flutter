@@ -90,7 +90,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       // return if we do not have data for the requested tile in the datastore
       return null;
     }
-    CanvasRasterer canvasRasterer = CanvasRasterer(graphicFactory, job.tileSize, job.tileSize, job.tileSize);
+    CanvasRasterer canvasRasterer =
+        CanvasRasterer(graphicFactory, job.tileSize, job.tileSize, job.tileSize, "MapDatastoreRenderer ${job.tile.toString()}");
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
     if (showTiming) _log.info("Before starting the isolate to read map data from file");
     MapReadResult mapReadResult;

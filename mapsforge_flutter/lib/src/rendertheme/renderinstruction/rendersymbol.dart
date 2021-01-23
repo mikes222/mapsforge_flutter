@@ -2,7 +2,6 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
@@ -23,9 +22,6 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     this.symbolCache = graphicFactory.symbolCache;
     this.display = Display.IFSPACE;
   }
-
-  @override
-  void destroy() {}
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
@@ -96,9 +92,9 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   ///
   /// Returns the specified bitmap or null if loading the bitmap fails
   ///
-  Future<Bitmap> getBitmap(GraphicFactory graphicFactory) async {
-    return getOrCreateBitmap(graphicFactory, src);
-  }
+  // Future<Bitmap> getBitmap(GraphicFactory graphicFactory) async {
+  //   return getOrCreateBitmap(graphicFactory, src);
+  // }
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) {

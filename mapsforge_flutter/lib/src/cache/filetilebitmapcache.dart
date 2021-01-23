@@ -78,7 +78,7 @@ class FileTileBitmapCache extends TileBitmapCache {
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       Image img = frame.image;
-      TileBitmap tileBitmap = FlutterTileBitmap(img);
+      TileBitmap tileBitmap = FlutterTileBitmap(img, "FileTileBitmapCache ${tile.toString()}");
       return tileBitmap;
     } catch (e, stacktrace) {
       _log.warning("Error while reading image from file, deleting file $filename");

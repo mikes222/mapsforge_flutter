@@ -97,6 +97,7 @@ class JobQueue {
       jobSet.removeJob(key, value);
     });
     //_log.info("Starting jobSet $jobSet");
+    _currentJobSet?.dispose();
     _currentJobSet = jobSet;
     _startNextJob(jobSet);
 

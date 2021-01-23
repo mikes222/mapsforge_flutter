@@ -125,6 +125,13 @@ class PolygonMarker<T> extends BasicMarker<T> {
   }
 
   @override
+  void dispose() {
+    _bitmap?.decrementRefCount();
+    _bitmap = null;
+    super.dispose();
+  }
+
+  @override
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
   }

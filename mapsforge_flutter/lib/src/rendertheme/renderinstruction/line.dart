@@ -49,11 +49,6 @@ class Line extends RenderInstruction with BitmapMixin {
     dy = 0;
   }
 
-  @override
-  void destroy() {
-    // no.op
-  }
-
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -122,12 +117,6 @@ class Line extends RenderInstruction with BitmapMixin {
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
     MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
 
-    if (strokePaint != null && bitmap != null) {
-      strokePaint.setBitmapShader(bitmap);
-      //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
-      //bitmap.incrementRefCount();
-    }
-
     double dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (dyScale == null) {
       dyScale = this.dy;
@@ -163,7 +152,21 @@ class Line extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
-    return initBitmap(graphicFactory);
+  Future<void> initResources(GraphicFactory graphicFactory) async {
+    await initBitmap(graphicFactory);
+    if (stroke != null && bitmap != null) {
+      stroke.setBitmapShader(bitmap);
+      //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
+      //bitmap.incrementRefCount();
+    }
+  }
+
+  @override
+  void dispose() {
+    stroke?.dispose();
+    strokes.values.forEach((element) {
+      element?.dispose();
+    });
+    super.dispose();
   }
 }

@@ -28,8 +28,8 @@ class CanvasRasterer {
   final Matrix symbolMatrix;
   final double tileSize;
 
-  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, this.tileSize)
-      : canvas = graphicFactory.createCanvas(width, height),
+  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, this.tileSize, [String src])
+      : canvas = graphicFactory.createCanvas(width, height, src),
         path = graphicFactory.createPath(),
         symbolMatrix = graphicFactory.createMatrix(),
         assert(tileSize != null);

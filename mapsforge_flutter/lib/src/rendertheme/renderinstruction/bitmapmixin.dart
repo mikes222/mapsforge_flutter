@@ -3,7 +3,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 
 class BitmapMixin {
   static final _log = new Logger('BitmapMixin');
@@ -11,8 +10,6 @@ class BitmapMixin {
   SymbolCache symbolCache;
 
   String src;
-
-  RenderSymbol renderSymbol;
 
   Bitmap bitmap;
 
@@ -28,7 +25,8 @@ class BitmapMixin {
 
   MapPaint symbolPaint;
 
-  void destroy() {
+  @mustCallSuper
+  void dispose() {
     if (this.bitmap != null) {
       this.bitmap.decrementRefCount();
       bitmap = null;
@@ -42,21 +40,6 @@ class BitmapMixin {
     if (bitmapInvalid) return;
 
     if (bitmap != null) return;
-
-    if (renderSymbol != null) {
-      try {
-        bitmap = await renderSymbol.getBitmap(graphicFactory);
-        bitmap?.incrementRefCount();
-        if (bitmap == null) {
-          bitmapInvalid = true;
-        }
-      } catch (e, stacktrace) {
-        print("Exception $e\nStacktrace $stacktrace");
-        bitmap = null;
-        bitmapInvalid = true;
-      }
-      return;
-    }
 
     if (symbolCache != null) {
       if (src == null || src.isEmpty) {
@@ -94,6 +77,7 @@ class BitmapMixin {
     try {
       _future = symbolCache.getSymbol(src, width.round(), height.round(), percent);
       bitmap = await _future;
+      bitmap?.incrementRefCount();
       _future = null;
       bitmapInvalid = false;
       return bitmap;

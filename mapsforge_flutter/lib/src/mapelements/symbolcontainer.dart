@@ -30,6 +30,11 @@ class SymbolContainer extends MapElementContainer {
     this.symbol.incrementRefCount();
   }
 
+  @mustCallSuper
+  dispose() {
+    symbol.decrementRefCount();
+  }
+
   @override
   void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
     //matrix.reset();

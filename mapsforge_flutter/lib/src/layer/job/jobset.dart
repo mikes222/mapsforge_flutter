@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
@@ -20,6 +21,7 @@ class JobSet {
 
   void removeJob(Job job, TileBitmap tileBitmap) {
     assert(tileBitmap != null);
+    assert(job != null);
     jobs.remove(job);
     tileBitmap.incrementRefCount();
     TileBitmap old = _bitmaps[job.tile];
@@ -33,6 +35,7 @@ class JobSet {
     return _bitmaps[tile];
   }
 
+  @mustCallSuper
   void dispose() {
     _bitmaps.values.forEach((element) {
       element.decrementRefCount();

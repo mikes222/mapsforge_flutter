@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 import '../../datastore/pointofinterest.dart';
 import '../../graphics/graphicfactory.dart';
 import '../../model/displaymodel.dart';
@@ -51,7 +49,10 @@ abstract class RenderInstruction {
       : assert(graphicFactory != null),
         assert(displayModel != null);
 
-  void destroy();
+  ///
+  /// disposes all resources. The class is not usable afterwards.
+  ///
+  void dispose();
 
   Future<void> initResources(GraphicFactory graphicFactory);
 

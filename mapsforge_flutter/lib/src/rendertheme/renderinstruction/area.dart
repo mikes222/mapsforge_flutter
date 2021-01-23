@@ -40,11 +40,6 @@ class Area extends RenderInstruction with BitmapMixin {
     strokeWidth = 1;
   }
 
-  @override
-  void destroy() {
-    // no-op
-  }
-
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -100,12 +95,6 @@ class Area extends RenderInstruction with BitmapMixin {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
     MapPaint fillPaint = getFillPaint();
-    if (fillPaint != null && bitmap != null) {
-      fillPaint.setBitmapShader(bitmap);
-      bitmap.incrementRefCount();
-    }
-
-    //fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
 
     renderCallback.renderArea(renderContext, fillPaint, getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
 //}
@@ -130,7 +119,23 @@ class Area extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
-    return initBitmap(graphicFactory);
+  Future<void> initResources(GraphicFactory graphicFactory) async {
+    await initBitmap(graphicFactory);
+
+    if (fill != null && bitmap != null) {
+      fill.setBitmapShader(bitmap);
+      //bitmap.incrementRefCount();
+    }
+
+    //fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
+  }
+
+  @override
+  void dispose() {
+    fill?.dispose();
+    strokes.values.forEach((element) {
+      element?.dispose();
+    });
+    super.dispose();
   }
 }

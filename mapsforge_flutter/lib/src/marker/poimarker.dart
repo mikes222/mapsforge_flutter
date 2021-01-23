@@ -46,12 +46,6 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  void dispose() {
-    destroy();
-    super.dispose();
-  }
-
-  @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
     super.initResources(graphicFactory);
     await initBitmap(graphicFactory);

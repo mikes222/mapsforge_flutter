@@ -20,8 +20,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
       "assets/defaultrender.xml", 50.81287701030895, 12.94189453125, 12),
   new MapFileData("https://download.mapsforge.org/maps/v5/europe/austria.map", "austria.map", "Offline Austria", "assets/defaultrender.xml",
       48.089415, 16.311374, 12),
-  new MapFileData("http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/monaco.map", "monaco.map",
-      "Offline Monaco", "assets/defaultrender.xml", 43.7399, 7.4262, 15),
+  new MapFileData(
+      "https://www.dailyflightbuddy.com/monaco.map", "monaco.map", "Offline Monaco", "assets/defaultrender.xml", 43.7399, 7.4262, 15),
 ];
 
 void main() => runApp(MyApp());

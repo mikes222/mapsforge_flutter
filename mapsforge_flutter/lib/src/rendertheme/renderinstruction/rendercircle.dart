@@ -42,9 +42,7 @@ class RenderCircle extends RenderInstruction {
   }
 
   @override
-  void destroy() {
-    // no-op
-  }
+  void dispose() {}
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {

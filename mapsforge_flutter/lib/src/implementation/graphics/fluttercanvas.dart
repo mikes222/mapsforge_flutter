@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
@@ -14,11 +13,9 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
-import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/rectangle.dart';
 
 import 'flutterbitmap.dart';
 import 'fluttermatrix.dart';
@@ -36,11 +33,16 @@ class FlutterCanvas extends MapCanvas {
 
   final ui.Size size;
 
-  FlutterCanvas(this.uiCanvas, this.size)
+  ///
+  /// optinal string to denote the type of resource. This is used to debug memory issues
+  ///
+  final String src;
+
+  FlutterCanvas(this.uiCanvas, this.size, [this.src])
       : assert(uiCanvas != null),
         pictureRecorder = null;
 
-  FlutterCanvas.forRecorder(double width, double height)
+  FlutterCanvas.forRecorder(double width, double height, [this.src])
       : pictureRecorder = ui.PictureRecorder(),
         size = ui.Size(width, height),
         assert(width >= 0),
@@ -182,7 +184,7 @@ class FlutterCanvas extends MapCanvas {
 //    var buffer = byteData.buffer.asUint8List();
     pictureRecorder = null;
 
-    return FlutterTileBitmap(img);
+    return FlutterTileBitmap(img, src);
   }
 
   @override

@@ -1,1 +1,1 @@
-See the readme file in the flutter library folder.
+See the readme file in the [mapsforge_flutter/README.md](mapsforge_flutter/README.md) folder.

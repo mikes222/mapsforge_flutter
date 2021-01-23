@@ -23,7 +23,7 @@ abstract class GraphicFactory {
 
   //Bitmap createBitmap(int width, int height, bool isTransparent);
 
-  MapCanvas createCanvas(double width, double height);
+  MapCanvas createCanvas(double width, double height, [String src]);
 
   int createColor(Color color);
 

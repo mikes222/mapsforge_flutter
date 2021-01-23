@@ -45,6 +45,7 @@ class Caption extends RenderInstruction with BitmapMixin {
   String symbolId;
   final Map<String, RenderSymbol> symbols;
   TextKey textKey;
+  RenderSymbol renderSymbol;
 
   Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbols)
       : fills = new Map(),
@@ -93,11 +94,6 @@ class Caption extends RenderInstruction with BitmapMixin {
       verticalOffset += this.bitmap.getHeight() / 2 + this.gap;
     }
     return verticalOffset;
-  }
-
-  @override
-  void destroy() {
-    // no-op
   }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
@@ -296,5 +292,11 @@ class Caption extends RenderInstruction with BitmapMixin {
   @override
   Future<void> initResources(GraphicFactory graphicFactory) {
     return initBitmap(graphicFactory);
+  }
+
+  @override
+  void dispose() {
+    renderSymbol?.dispose();
+    super.dispose();
   }
 }

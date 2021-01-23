@@ -50,6 +50,10 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     }
   }
 
+  void dispose() {
+    _shaderBitmap?.decrementRefCount();
+  }
+
   @override
   int getColor() {
     return paint.color.value;

@@ -10,14 +10,19 @@ class FlutterBitmap implements Bitmap {
 
   int _refcount = 0;
 
-  FlutterBitmap(this.bitmap) : assert(bitmap != null);
+  ///
+  /// optinal string to denote the type of resource. This is used to debug memory issues
+  ///
+  final String src;
+
+  FlutterBitmap(this.bitmap, [this.src]) : assert(bitmap != null);
 
   @override
   void incrementRefCount() {
     assert(_refcount != -1);
     ++_refcount;
     if ((_refcount % 10) == 0) {
-      _log.warning("Bitmap $bitmap refcount is $_refcount");
+      _log.warning("Bitmap $this ($bitmap) refcount is $_refcount");
     }
   }
 
