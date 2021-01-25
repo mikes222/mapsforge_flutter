@@ -112,7 +112,7 @@ class LatLongUtils {
    * @param latLong2 second LatLong
    * @return distance in degrees as a double
    */
-  static double distance(LatLong latLong1, LatLong latLong2) {
+  static double euclideanDistance(LatLong latLong1, LatLong latLong2) {
     return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) + pow(latLong1.latitude - latLong2.latitude, 2));
   }
 
@@ -145,7 +145,7 @@ class LatLongUtils {
    * @return true if this way is closed, false otherwise.
    */
   static bool isClosedWay(List<LatLong> latLongs) {
-    return MercatorProjectionImpl.distance(latLongs[0], latLongs[latLongs.length - 1]) < 0.000000001;
+    return euclideanDistance(latLongs[0], latLongs[latLongs.length - 1]) < 0.000000001;
   }
 
   /**
