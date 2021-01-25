@@ -3,15 +3,13 @@ import '../../model/tag.dart';
 import 'closed.dart';
 
 class MatchingCacheKey {
-  final Closed closed;
-  final List<Tag> tags;
-//  final Set<Tag> tagsWithoutName;
-  final int zoomLevel;
-  final int indoorLevel;
+  final Closed _closed;
+  final List<Tag> _tags;
+  // final Set<Tag> _tagsWithoutName;
+  final int _zoomLevel;
+  final int _indoorLevel;
 
-  int _hashKey;
-
-  MatchingCacheKey(List<Tag> tags, this.zoomLevel, this.indoorLevel, this.closed) : this.tags = List() {
+  MatchingCacheKey(this._tags, this._zoomLevel, this._indoorLevel, this._closed) {
     //: tagsWithoutName = Set<Tag>() {
 //    if (this.tags != null) {
 //      for (Tag tag in tags) {
@@ -20,24 +18,21 @@ class MatchingCacheKey {
 //        }
 //      }
 //    }
-    this.tags.addAll(tags);
-    _hashKey = hashCode;
-    // do not clear the given list
-    this.tags.clear();
   }
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is MatchingCacheKey && runtimeType == other.runtimeType && _hashKey == other._hashKey;
-//          closed == other.closed &&
-//          tags == other.tags &&
-//          tagsWithoutName == other.tagsWithoutName &&
-//          zoomLevel == other.zoomLevel;
+      identical(this, other) ||
+          other is MatchingCacheKey &&
+              runtimeType == other.runtimeType &&
+              _closed == other._closed &&
+              _tags == other._tags &&
+              _zoomLevel == other._zoomLevel &&
+              _indoorLevel == other._indoorLevel;
 
   @override
   int get hashCode {
-    if (_hashKey != null) return _hashKey;
-    int tagHash = tags?.fold(15, (previousValue, element) => previousValue ^ element.hashCode) ?? 31;
-    return closed.hashCode ^ tagHash ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
+    int tagHash = _tags?.fold(15, (previousValue, element) => previousValue ^ element.hashCode) ?? 31;
+    return _closed.hashCode ^ tagHash ^ _zoomLevel.hashCode ^ _indoorLevel.hashCode << 5;
   }
 }

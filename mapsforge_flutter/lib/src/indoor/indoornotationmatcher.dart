@@ -29,11 +29,36 @@ class IndoorNotationMatcher {
    * Returns int or null if no number could be parsed
    * Decimal numbers are round down to next int
    */
-  static int parseLevelNumber (string) {
-    return double.tryParse(string)?.floor();
+  static int parseLevelNumber (String levelTagValue) {
+    return double.tryParse(levelTagValue)?.floor();
   }
 
-  /* 
+  /*
+   * Returns all level values as integer in an Iterable
+   * Decimal numbers are round down to next int
+   * Range values are converted to multiple values
+   * Returns null if the String couldn't be parsed successfully
+   */
+  static Iterable<int> parseLevelNumbers (String levelTagValue) {
+    if (IndoorNotationMatcher.matchesSingleNotation(levelTagValue)) {
+      return [IndoorNotationMatcher.parseLevelNumber(levelTagValue)];
+    }
+    else if (IndoorNotationMatcher.matchesMultipleNotation(levelTagValue)) {
+      // split on ";" and convert values to int
+      return levelTagValue.split(";").map(IndoorNotationMatcher.parseLevelNumber);
+    }
+    else if (IndoorNotationMatcher.matchesRangeNotation(levelTagValue)) {
+      // split on "-" if number precedes and convert to int
+      final Iterable<int> levelRange = levelTagValue.split(RegExp(r"(?<=\d)-")).map(IndoorNotationMatcher.parseLevelNumber);
+      final int lowerLevelValue = levelRange.reduce(min);
+      final int upperLevelValue = levelRange.reduce(max);
+      final int levelCount = (lowerLevelValue - upperLevelValue).abs() + 1;
+      return Iterable.generate(levelCount, (i) => lowerLevelValue + i);
+    }
+    return null;
+  }
+
+  /*
    * Returns true if the given level matches the given level tag notation
    * otherwise false
    */
@@ -46,37 +71,47 @@ class IndoorNotationMatcher {
       // split on ";" and convert values to int
       final Iterable <int> levelValues = levelTagValue.split(";").map(parseLevelNumber);
       // check if at least one value matches the current level
-      return levelValues.any((levelValue) => levelValue == level);
+      return levelValues.contains(level);
     }
     else if (matchesRangeNotation(levelTagValue)) {
       // split on "-" if number precedes and convert to int
       final Iterable <int> levelRange = levelTagValue.split(
           RegExp(r"(?<=\d)-")).map(parseLevelNumber);
       // separate into max and min value
-      int lowerLevelValue = levelRange.reduce(min);
-      int upperLevelValue = levelRange.reduce(max);
+      final int lowerLevelValue = levelRange.reduce(min);
+      final int upperLevelValue = levelRange.reduce(max);
       // if level is in range return true else false
       return (lowerLevelValue <= level && upperLevelValue >= level);
     }
     return false;
   }
 
-  /* 
+  /*
    * Returns the level or repeat_on value string of a given tag list
+   * If both tags are set their values are merged
    * null if no key is found
    */
   static String getLevelValue(List<Tag> tags) {
     // search for level key
-    Tag levelTag = tags.firstWhere((Tag element) {
+    final Tag levelTag = tags.firstWhere((Tag element) {
       return element.key == "level";
     }, orElse: () => null);
 
-    // if no level key exists search for repeat_on key and treat its value as the level
-    if (levelTag == null) levelTag = tags.firstWhere((Tag element) {
+    // search for repeat_on key
+    final Tag repeatOnTag = tags.firstWhere((Tag element) {
       return element.key == "repeat_on";
     }, orElse: () => null);
 
-    return levelTag?.value;
+    // if both tags exist then merge their values together
+    // https://wiki.openstreetmap.org/wiki/Talk:Simple_Indoor_Tagging#repeat_on_and_level_on_one_object
+    if (levelTag != null && repeatOnTag != null) {
+      final Iterable<int> levelValues = parseLevelNumbers(levelTag.value);
+      final Iterable<int> repeatOnValues = parseLevelNumbers(repeatOnTag.value);
+      // merge them in a Set to automatically remove duplicates
+      return  {...?levelValues, ...?repeatOnValues}.join(";");
+    }
+    // if no level tag exists use the repeat_on value as the level value else return null
+    return levelTag?.value ?? repeatOnTag?.value;
   }
 
   /*
