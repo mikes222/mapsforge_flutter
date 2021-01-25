@@ -136,11 +136,9 @@ class ReadBuffer {
   ///
   /// @return the byte value.
   int readByte() {
-    assert(_bufferData != null);
-    assert(bufferPosition < _bufferData.length);
-    int result = _bufferData[bufferPosition];
-    ++bufferPosition;
-    return result;
+    ByteData bdata = ByteData(1);
+    bdata.setInt8(0, this._bufferData[this.bufferPosition++]);
+    return bdata.getInt8(0);
   }
 
   /// Converts four bytes from the read buffer to a float.
@@ -220,7 +218,7 @@ class ReadBuffer {
             value = readInt().toString();
           }
         } else if (value == '%f') {
-          value = readFloat().toString();
+          value = readFloat().toStringAsPrecision(6);
         } else if (value == '%h') {
           value = readShort().toString();
         } else if (value == '%s') {
