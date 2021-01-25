@@ -22,6 +22,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
       48.089415, 16.311374, 12),
   new MapFileData(
       "https://www.dailyflightbuddy.com/monaco.map", "monaco.map", "Offline Monaco", "assets/defaultrender.xml", 43.7399, 7.4262, 15),
+  new MapFileData(
+      "https://www.dailyflightbuddy.com/sicilia_oam.zip", "sicilia_oam.zip", "Contour sizilia", "assets/sicilia_oam.xml", 37.5, 14.3, 15),
 ];
 
 void main() => runApp(MyApp());

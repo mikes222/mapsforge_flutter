@@ -12,7 +12,10 @@ import 'package:xml/xml.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
 
-/// Represents an icon on the map.
+///
+/// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
+/// The [RenderSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementation.
+///
 class RenderSymbol extends RenderInstruction with BitmapMixin {
   Display display;
   String id;

@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_archive/flutter_archive.dart';
 import 'package:mapsforge_example/level-bar.dart';
 import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'map-file-data.dart';
@@ -157,9 +161,13 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
   Future<void> _prepare() async {
     String filePath = await widget.mapFileData.getLocalFilePath();
+    print("Using $filePath");
 
     if (await widget.mapFileData.fileExists()) {
       downloadProgress = 1;
+      if (filePath.endsWith(".zip")) {
+        filePath = filePath.replaceAll(".zip", ".map");
+      }
     } else {
       Dio dio = Dio();
       try {
@@ -178,6 +186,25 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
         );
       } catch (e) {
         print("Download Error - ${e}");
+      }
+
+      try {
+        if (filePath.endsWith(".zip")) {
+          print("Unzipping $filePath");
+          Directory dir = await getApplicationDocumentsDirectory();
+          await ZipFile.extractToDirectory(
+              zipFile: File(filePath),
+              destinationDir: dir,
+              onExtracting: (zipEntry, progress) {
+                setState(() {
+                  downloadProgress = progress / 100;
+                });
+                return ExtractOperation.extract;
+              });
+          filePath = filePath.replaceAll(".zip", ".map");
+        }
+      } catch (e) {
+        print("Unzip Error - ${e}");
       }
     }
 
