@@ -218,7 +218,8 @@ class ReadBuffer {
             value = readInt().toString();
           }
         } else if (value == '%f') {
-          value = readFloat().toStringAsPrecision(6);
+          // TODO: read float to double leads to precision errors even when using .toStringAsPrecision(6);
+          value = readFloat().toString();
         } else if (value == '%h') {
           value = readShort().toString();
         } else if (value == '%s') {
