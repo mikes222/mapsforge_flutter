@@ -57,7 +57,7 @@ class BoundingBox {
   /**
    * @param latLongs the coordinates list.
    */
-  BoundingBox._(List<LatLong> latLongs) {
+  BoundingBox.fromLatLongs(List<LatLong> latLongs) {
     double minLatitude = double.infinity;
     double minLongitude = double.infinity;
     double maxLatitude = double.negativeInfinity;
