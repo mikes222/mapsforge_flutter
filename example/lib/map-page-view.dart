@@ -212,7 +212,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     await mapFile.init();
     //mapFile.debug();
     final MapDataStore mapDataStore = mapFile;
-    final SymbolCache symbolCache = FileSymbolCache(rootBundle);
+    final SymbolCache symbolCache = FileSymbolCache(rootBundle, "sicilia_oam/");
     final GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
     final DisplayModel displayModel = DisplayModel();
     final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
