@@ -51,7 +51,7 @@ class CanvasRasterer {
         //   List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
 
         for (int index = wayList.length - 1; index >= 0; --index) {
-          _drawShapePaintContainer(wayList.elementAt(index));
+          _drawShapePaintContainer(wayList.elementAt(index), renderContext);
         }
       }
     }
@@ -118,9 +118,10 @@ class CanvasRasterer {
     return await canvas.finalizeBitmap();
   }
 
-  void drawCircleContainer(ShapePaintContainer shapePaintContainer) {
+  void drawCircleContainer(ShapePaintContainer shapePaintContainer, RenderContext renderContext) {
     CircleContainer circleContainer = shapePaintContainer.shapeContainer;
-    Mappoint point = circleContainer.point;
+    Mappoint tileOrigin = renderContext.job.tile.getLeftUpper(tileSize);
+    Mappoint point = circleContainer.point.offset(-tileOrigin.x, -tileOrigin.y);
     this.canvas.drawCircle(point.x.toInt(), point.y.toInt(), circleContainer.radius.toInt(), shapePaintContainer.paint);
   }
 
@@ -150,12 +151,12 @@ class CanvasRasterer {
     this.canvas.drawPath(this.path, shapePaintContainer.paint);
   }
 
-  void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer) {
+  void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer, RenderContext renderContext) {
     ShapeContainer shapeContainer = shapePaintContainer.shapeContainer;
     ShapeType shapeType = shapeContainer.getShapeType();
     switch (shapeType) {
       case ShapeType.CIRCLE:
-        drawCircleContainer(shapePaintContainer);
+        drawCircleContainer(shapePaintContainer, renderContext);
         break;
       case ShapeType.HILLSHADING:
         HillshadingContainer hillshadingContainer = shapeContainer;
