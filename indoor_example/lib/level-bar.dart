@@ -15,6 +15,7 @@ class IndoorLevelBar extends StatefulWidget {
   final double itemHeight;
   final int maxVisibleItems;
   final Color fillColor;
+  final Color activeColor;
   final double elevation;
   final BorderRadius borderRadius;
 
@@ -26,9 +27,12 @@ class IndoorLevelBar extends StatefulWidget {
     this.itemHeight: 45,
     this.maxVisibleItems: 5,
     this.fillColor: Colors.white,
+    this.activeColor: Colors.blue,
     this.elevation: 2,
     this.borderRadius
-  }) : super(key: key);
+  }) : assert(indoorLevels != null),
+       assert(indoorLevelSubject != null),
+       super(key: key);
 
   @override
   IndoorLevelBarState createState() => IndoorLevelBarState();
@@ -42,9 +46,9 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
 
   @override
   void dispose () {
-    _scrollController.dispose();
-    _onTop.dispose();
-    _onBottom.dispose();
+    _scrollController?.dispose();
+    _onTop?.dispose();
+    _onBottom?.dispose();
     super.dispose();
   }
 
@@ -61,6 +65,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
         builder: (context, constraints) {
           // get the total number of levels
           int totalIndoorLevels = widget.indoorLevels.length;
+          // extract levels to list and reverse it so it starts with the biggest number
+          List<int> indoorLevels = widget.indoorLevels.keys.toList().reversed.toList();
 
           double maxHeight = min(constraints.maxHeight, widget.maxVisibleItems * widget.itemHeight);
           // calculate nearest multiple item height
@@ -74,7 +80,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
             int currentIndoorLevel = widget.indoorLevelSubject.value;
             // calculate the scroll position so the selected element is visible at the bottom if possible
             // -3 because we need to shift the index by 1 and by 2 because of scroll buttons taking each the space of one item
-            int itemIndex = widget.indoorLevels.keys.toList().indexOf(currentIndoorLevel);
+            int itemIndex = indoorLevels.indexOf(currentIndoorLevel);
             double selectedItemOffset = max(itemIndex * widget.itemHeight - (maxHeight - 3 * widget.itemHeight), 0);
             // create scroll controller if not existing and set item scroll offset
             if (_scrollController == null) _scrollController = ScrollController(initialScrollOffset: selectedItemOffset);
@@ -135,14 +141,14 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                           itemCount: totalIndoorLevels,
                           itemExtent: widget.itemHeight,
                           itemBuilder: (context, i) {
-                            // calc item indoor level from index
-                            int itemIndoorLevel = widget.indoorLevels.keys.elementAt(i);
+                            // get item indoor level from index
+                            int itemIndoorLevel = indoorLevels[i];
                             // widget
                             return TextButton(
                               style: TextButton.styleFrom(
                                 shape: ContinuousRectangleBorder(),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: currentIndoorLevel == itemIndoorLevel ? Colors.blue : Colors.transparent,
+                                backgroundColor: currentIndoorLevel == itemIndoorLevel ? widget.activeColor : Colors.transparent,
                                 primary: currentIndoorLevel == itemIndoorLevel ? Colors.white : Colors.black,
                               ),
                               onPressed: () {
@@ -151,7 +157,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                               },
                               child: Text(
                                 // show level code if available
-                                  widget.indoorLevels[itemIndoorLevel] ?? itemIndoorLevel.toString()
+                                widget.indoorLevels[itemIndoorLevel] ?? itemIndoorLevel.toString(),
+                                textAlign: TextAlign.center,
                               ),
                             );
                           },

@@ -9,6 +9,7 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'level-bar.dart';
+import 'level-detector.dart';
 import 'map-file-data.dart';
 
 
@@ -33,17 +34,26 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
   ViewModel viewModel;
 
+  LevelDetector levelDetector;
+
   AnimationController fadeAnimationController;
   CurvedAnimation fadeAnimation;
 
   final double toolbarSpacing = 15;
 
   @override
+  void dispose () {
+    fadeAnimationController?.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState () {
     _prepare();
 
     fadeAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 100),
+        reverseDuration: const Duration(milliseconds: 100),
         value: 1,
         vsync: this,
         lowerBound: 0,
@@ -133,7 +143,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
                       opacity: fadeAnimationController,
                       child: IndoorLevelBar(
                         indoorLevelSubject: indoorLevelSubject,
-                        indoorLevels: { 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
+                        indoorLevels: levelDetector.levelMappings.value, //{ 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
                         width: 45,
                         fillColor: Colors.white,
                         elevation: 2.0,
@@ -208,7 +218,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
         );
       }
       catch (e) {
-        print("Download Error - ${e}");
+        print("Download Error - $e");
       }
     }
 
@@ -238,12 +248,22 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     // set default position
     viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
     viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+
+    levelDetector = new LevelDetector(viewModel, mapDataStore);
+
+    levelDetector.levelMappings.listen((levelMappings) {
+      if (levelMappings.length > 1) {
+        if (fadeAnimationController.status == AnimationStatus.dismissed) fadeAnimationController.forward();
+        // update level mappings
+        setState(() {});
+      }
+      else {
+        if (fadeAnimationController.status == AnimationStatus.completed) fadeAnimationController.reverse();
+      }
+    });
+
     // attach indoor level stream to indoor change function
     indoorLevelSubject.listen(viewModel.setIndoorLevel);
-
-    /*MapModelHelper.onLevelChange.listen((levelMappings) {
-      if (!fadeAnimationController.isAnimating) levelMappings == null ? fadeAnimationController.reverse() : fadeAnimationController.forward();
-    });*/
 
     setState(() {});
   }
