@@ -36,7 +36,7 @@ class LevelDetector {
 
   LevelDetector(this._viewModel, this._mapDataStore, [this.maxZoomLevel = 17])  {
     this._viewModel.observePosition.listen(_getTileCacheData);
-    this._viewModel.observePosition.listen(_handlePositionChanges);
+    this._viewModel.observePosition.listen(_updateLevelMappings);
   }
 
   void dispose() {
@@ -59,13 +59,13 @@ class LevelDetector {
         // trigger level check
         compute(readAndProcessTileData, new IsolateParam(_mapDataStore, tile)).then((tileLevelMappings) {
           _tileLevelCache.set(tileKey, SplayTreeMap.from(tileLevelMappings));
-          _handlePositionChanges();
+          _updateLevelMappings();
         });
       }
     }
   }
 
-  void _handlePositionChanges ([MapViewPosition mapViewPosition]) {
+  void _updateLevelMappings ([MapViewPosition mapViewPosition]) {
     if (_viewModel.viewDimension == null) return;
 
     List<Tile> tiles = LayerUtil.getTiles(_viewModel, _viewModel.mapViewPosition);
