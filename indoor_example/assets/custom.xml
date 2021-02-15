@@ -85,14 +85,14 @@
         <rule e="way" k="area" v="~|no|false">
             <rule e="way" k="highway" v="cycleway|bridleway|footway|path|track|byway|steps" zoom-min="16">
                 <!-- render solid line as background with opacity -->
-                <line stroke="#88f5f1ec" stroke-width="0.25" stroke-linecap="butt" />
-                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.25" stroke-linecap="butt" />
+                <line stroke="#88f5f1ec" stroke-width="0.15" stroke-linecap="butt" />
+                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.15" stroke-linecap="butt" />
             </rule>
             <!-- exclude pedestrian from the others since its often used for areas while not having an area label -->
             <rule e="way" k="highway" v="pedestrian" closed="no" zoom-min="16">
                 <!-- render solid line as background with opacity -->
-                <line stroke="#88f5f1ec" stroke-width="0.25" stroke-linecap="butt" />
-                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.25" stroke-linecap="butt" />
+                <line stroke="#88f5f1ec" stroke-width="0.15" stroke-linecap="butt" />
+                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.15" stroke-linecap="butt" />
             </rule>
             <rule e="way" k="highway" v="service|unclassified|residential|living_street|road">
                 <!-- set border on higher zoom levels -->
@@ -134,6 +134,12 @@
         </rule>
     </rule>
 
+    <!-- turning circle border -->
+
+    <rule e="node" k="highway" v="turning_circle">
+        <circle stroke="#cfcdca" stroke-width="0.3" radius="0.75" scale-radius="true" />
+    </rule>
+
     <!-- tunnel no -->
 
     <rule e="way" k="tunnel" v="~|no|false">
@@ -151,14 +157,14 @@
         <rule e="way" k="area" v="~|no|false">
             <rule e="way" k="highway" v="cycleway|bridleway|footway|path|track|byway|steps" zoom-min="16">
                 <!-- render solid line as background with opacity -->
-                <line stroke="#88f5f1ec" stroke-width="0.25" stroke-linecap="butt" />
-                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.25" stroke-linecap="butt" />
+                <line stroke="#88f5f1ec" stroke-width="0.15" stroke-linecap="butt" />
+                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.15" stroke-linecap="butt" />
             </rule>
             <!-- exclude pedestrian from the others since its often used for areas while not having an area label -->
             <rule e="way" k="highway" v="pedestrian" closed="no" zoom-min="16">
                 <!-- render solid line as background with opacity -->
-                <line stroke="#88f5f1ec" stroke-width="0.25" stroke-linecap="butt" />
-                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.25" stroke-linecap="butt" />
+                <line stroke="#88f5f1ec" stroke-width="0.15" stroke-linecap="butt" />
+                <line stroke="#cfcdca" stroke-dasharray="0.5,0.25" stroke-width="0.15" stroke-linecap="butt" />
             </rule>
             <rule e="way" k="highway" v="service|unclassified|residential|living_street|road">
                 <!-- set border on higher zoom levels -->
@@ -210,10 +216,10 @@
         </rule>
     </rule>
 
-    <!-- turning circle -->
+    <!-- turning circle fill -->
 
     <rule e="node" k="highway" v="turning_circle">
-        <circle fill="#FFFFFF" radius="1.2" scale-radius="true" />
+        <circle fill="#FFFFFF" radius="0.75"  scale-radius="true" />
     </rule>
 
     <!-- path texts -->
@@ -264,10 +270,7 @@
         <!-- first draw all room types (except walls) with same color and shade them later so the circle doors will be shaded too -->
 
         <rule e="way" k="indoor" v="*" closed="yes">
-            <rule e="any" k="indoor" v="area">
-                <area fill="#fff9ed" />
-            </rule>
-            <rule e="any" k="indoor" v="room|corridor">
+            <rule e="any" k="indoor" v="room|corridor|area">
                 <area fill="#fff9ed" stroke="#cfcdca" stroke-width="0.1" />
             </rule>
             <rule e="any" k="indoor" v="wall">
@@ -282,7 +285,7 @@
         <!-- draw door as circle in room color -->
 
         <rule e="node" k="door" v="*" zoom-min="19">
-            <circle fill="#fff9ed" radius="0.15" scale-radius="true" />
+            <circle fill="#fff9ed" radius="0.175" scale-radius="true" />
         </rule>
 
         <!-- shade special rooms like corridor or toilets with transparent colors -->
@@ -297,7 +300,7 @@
             </rule>
 
             <rule e="any" k="access" v="no|private">
-                <area fill="#11ff0000" />
+                <area fill="#33828282" />
             </rule>
         </rule>
 
@@ -358,11 +361,6 @@
             </rule>
         </rule>
     </rule>
-
-
-
-
-
 
     <!-- captions -->
 
