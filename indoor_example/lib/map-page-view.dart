@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -52,8 +53,8 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     _prepare();
 
     fadeAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 100),
-        reverseDuration: const Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 300),
+        reverseDuration: const Duration(milliseconds: 300),
         value: 1,
         vsync: this,
         lowerBound: 0,
@@ -139,15 +140,19 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Flexible(
-                    child: FadeTransition(
-                      opacity: fadeAnimationController,
-                      child: IndoorLevelBar(
-                        indoorLevelSubject: indoorLevelSubject,
-                        indoorLevels: levelDetector.levelMappings.value, //{ 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
-                        width: 45,
-                        fillColor: Colors.white,
-                        elevation: 2.0,
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                    child: Visibility(
+                      visible: fadeAnimationController.status != AnimationStatus.dismissed,
+                      child: FadeTransition(
+                        opacity: fadeAnimationController,
+                        child: IndoorLevelBar(
+                          indoorLevelSubject: indoorLevelSubject,
+                          indoorLevels: levelDetector.levelMappings.value,
+                          //{ 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
+                          width: 45,
+                          fillColor: Colors.white,
+                          elevation: 2.0,
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        )
                       ),
                     ),
                   ),
@@ -253,12 +258,18 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
     levelDetector.levelMappings.listen((levelMappings) {
       if (levelMappings.length > 1) {
-        if (fadeAnimationController.status == AnimationStatus.dismissed) fadeAnimationController.forward();
-        // update level mappings
+        if (fadeAnimationController.status == AnimationStatus.dismissed) {
+          // fade in level bar
+          fadeAnimationController.forward();
+        }
+        // update level mappings and show level bar
         setState(() {});
       }
       else {
-        if (fadeAnimationController.status == AnimationStatus.completed) fadeAnimationController.reverse();
+        if (fadeAnimationController.status == AnimationStatus.completed) {
+          // fade out and hide level bar
+          fadeAnimationController.reverse().whenComplete(() => setState(() {}));
+        }
       }
     });
 
