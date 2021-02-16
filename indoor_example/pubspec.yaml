@@ -20,18 +20,11 @@ dependencies:
  flutter:
   sdk: flutter
 
- # The following adds the Cupertino Icons font to your application.
- # Use with the CupertinoIcons class for iOS style icons.
- cupertino_icons: 1.0.0
-
  # BSD License, transitive dependency
- #path_provider: 1.1.2
+ path_provider: ^1.6.27
 
  # MIT License
  dio: 3.0.10
-
- # BSD License
- intl: ^0.16.1
 
  mapsforge_flutter:
   path: ../mapsforge_flutter
@@ -45,7 +38,6 @@ dependencies:
 dev_dependencies:
  flutter_test:
   sdk: flutter
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -72,4 +64,3 @@ flutter:
   - assets/icons/exit.svg
   - assets/icons/escape.svg
   - assets/icons/entrance.svg
-  - packages/mapsforge_flutter/assets/symbols/sport/shooting.svg
