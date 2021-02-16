@@ -35,8 +35,9 @@ class LevelDetector {
   final int maxZoomLevel;
 
   LevelDetector(this._viewModel, this._mapDataStore, [this.maxZoomLevel = 17])  {
-    this._viewModel.observePosition.listen(_getTileCacheData);
-    this._viewModel.observePosition.listen(_updateLevelMappings);
+    // debounce position change events
+    this._viewModel.observePosition.debounceTime(Duration(milliseconds: 150)).listen(_getTileCacheData);
+    this._viewModel.observePosition.debounceTime(Duration(milliseconds: 150)).listen(_updateLevelMappings);
   }
 
   void dispose() {
@@ -48,21 +49,29 @@ class LevelDetector {
 
     List<Tile> tiles = LayerUtil.getTiles(_viewModel, mapViewPosition);
 
+    // batch all missing tiles together so isolate only needs to be created once for each bundle
+    List<Tile> missingTiles = [];
+
     for (Tile tile in tiles) {
       SimpleTileKey tileKey = SimpleTileKey(tile);
       // if tile cache entry currently does not exist
       if (!_tileLevelCache.containsKey(tileKey)) {
         // add empty cache entry
         _tileLevelCache.set(tileKey, null);
-        // read tile data and parse level mappings in isolate
-        // update the empty level cache entry on response
-        // trigger level check
-        compute(readAndProcessTileData, new IsolateParam(_mapDataStore, tile)).then((tileLevelMappings) {
-          _tileLevelCache.set(tileKey, SplayTreeMap.from(tileLevelMappings));
-          _updateLevelMappings();
-        });
+        missingTiles.add(tile);
       }
     }
+
+    // read tile data and parse level mappings in isolate
+    // update the empty level cache entry on response
+    // trigger level update
+    if (missingTiles.isNotEmpty) compute(readAndProcessTileData, new IsolateParam(_mapDataStore, missingTiles)).then((tileLevelMappingsBundle) {
+      tileLevelMappingsBundle.forEach((tile, tileLevelMappings) {
+        SimpleTileKey tileKey = SimpleTileKey(tile);
+        _tileLevelCache.set(tileKey, SplayTreeMap.from(tileLevelMappings));
+      });
+      _updateLevelMappings();
+    });
   }
 
   void _updateLevelMappings ([MapViewPosition mapViewPosition]) {
@@ -110,12 +119,12 @@ class SimpleTileKey {
 
   @override
   bool operator ==(Object other) =>
-  identical(this, other) ||
-  other is SimpleTileKey &&
-  runtimeType == other.runtimeType &&
-  tileX == other.tileX &&
-  tileY == other.tileY &&
-  zoomLevel == other.zoomLevel;
+      identical(this, other) ||
+          other is SimpleTileKey &&
+              runtimeType == other.runtimeType &&
+              tileX == other.tileX &&
+              tileY == other.tileY &&
+              zoomLevel == other.zoomLevel;
 
   @override
   int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode;
@@ -126,41 +135,47 @@ class SimpleTileKey {
  **/
 class IsolateParam {
   final MapDataStore mapDataStore;
-  final Tile tile;
+  final List<Tile> tiles;
 
-  IsolateParam(this.mapDataStore, this.tile);
+  IsolateParam(this.mapDataStore, this.tiles);
 }
+
 
 /**
  * This function is supposed to run in a separated isolate
  * It returns a normal map since a splaytreemap is not supported for isolate data exchange
+ * returns a map containing the Tiles as the key and the level mappings as the value
  **/
-Future<Map<int, String>> readAndProcessTileData (IsolateParam isolateParam) async {
-  final MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);
+Future<Map<Tile, Map <int, String>>> readAndProcessTileData (IsolateParam isolateParam) async {
+  final Map<Tile, Map <int, String>> tileLevelMappingsBundle = new Map<Tile, Map <int, String>>();
 
-  final Map<int, String> tileLevelMappings = new Map<int, String>();
+  for (Tile tile in isolateParam.tiles) {
+    final MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(tile);
 
-  void processTags (List tags) {
-    String levelValue = IndoorNotationMatcher.getLevelValue(tags);
-    if (levelValue != null) {
-      // hardcoded filter to ignore level tags on buildings
-      if (tags.any((tag) => tag.key == "building")) return;
+    tileLevelMappingsBundle[tile] = new  Map <int, String>();
 
-      Iterable<int> levels = IndoorNotationMatcher.parseLevelNumbers(levelValue);
-      if (levels != null) {
-        // add all levels to the map with empty ref value
-        levels.forEach((int level) => tileLevelMappings[level] ??= null);
-        // if only one level is given look for further level ref value
-        if (levels.length == 1) {
-          tileLevelMappings[levels.single] ??= IndoorNotationMatcher.getLevelRefValue(tags);
+    void processTags (List tags) {
+      String levelValue = IndoorNotationMatcher.getLevelValue(tags);
+      if (levelValue != null) {
+        // hardcoded filter to ignore level tags on buildings
+        if (tags.any((tag) => tag.key == "building")) return;
+
+        Iterable<int> levels = IndoorNotationMatcher.parseLevelNumbers(levelValue);
+        if (levels != null) {
+          // add all levels to the map with empty ref value
+          levels.forEach((int level) => tileLevelMappingsBundle[tile][level] ??= null);
+          // if only one level is given look for further level ref value
+          if (levels.length == 1) {
+            tileLevelMappingsBundle[tile][levels.single] ??= IndoorNotationMatcher.getLevelRefValue(tags);
+          }
         }
       }
     }
+
+    // get levels of all indoor elements and add them to the intersecting buildings
+    mapReadResult.ways.forEach((way) => processTags(way.tags));
+    mapReadResult.pointOfInterests.forEach((poi) => processTags(poi.tags));
   }
 
-  // get levels of all indoor elements and add them to the intersecting buildings
-  mapReadResult.ways.forEach((way) => processTags(way.tags));
-  mapReadResult.pointOfInterests.forEach((poi) => processTags(poi.tags));
-
-  return tileLevelMappings;
+  return tileLevelMappingsBundle;
 }
