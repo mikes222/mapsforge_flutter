@@ -104,7 +104,6 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       title: Text(widget.mapFileData.name),
       actions: <Widget>[
         PopupMenuButton<String>(
-          offset: Offset(0,50),
           onSelected: (choice) => _handleMenuItemSelect(choice, context),
           itemBuilder: (BuildContext context) => [
             PopupMenuItem<String>(

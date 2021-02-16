@@ -23,7 +23,6 @@ class MapList extends StatelessWidget {
       title: const Text('Indoor Rendering Examples'),
       actions: <Widget>[
         PopupMenuButton<String>(
-          offset: Offset(0,50),
           onSelected: (choice) => _handleMenuItemSelect(choice),
           itemBuilder: (BuildContext context) => [
             PopupMenuItem<String>(
