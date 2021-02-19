@@ -80,6 +80,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     }
   }
 
+  ///
+  /// Executes a given job and returns a future with the bitmap of this job
   @override
   Future<TileBitmap> executeJob(Job job) async {
     bool showTiming = false;
@@ -93,24 +95,25 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     CanvasRasterer canvasRasterer =
         CanvasRasterer(graphicFactory, job.tileSize, job.tileSize, job.tileSize, "MapDatastoreRenderer ${job.tile.toString()}");
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
-    if (showTiming) _log.info("Before starting the isolate to read map data from file");
     MapReadResult mapReadResult;
     if (useIsolate) {
-      // read the mapdata directly in this thread
-      mapReadResult = await readMapDataInIsolate(IsolateParam(mapDataStore, job.tile));
-    } else {
+      if (showTiming) _log.info("Before starting the isolate to read map data from file");
       // read the mapdata in an isolate which is flutter's way to create multithreaded processes
       await _startIsolateJob();
       _sendPort.send(IsolateParam(mapDataStore, job.tile));
       mapReadResult = await _subject.stream.first;
+    } else {
+      if (showTiming) _log.info("Before reading map data from file");
+      // read the mapdata directly in this thread
+      mapReadResult = await readMapDataInIsolate(IsolateParam(mapDataStore, job.tile));
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming)
-      _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests.length} pois and ${mapReadResult.ways.length} ways");
     if (mapReadResult == null) {
       _log.info("Executing ${job.toString()} has no mapReadResult for tile ${job.tile.toString()}");
       return null;
     }
+    if (diff > 100 && showTiming)
+      _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests.length} pois and ${mapReadResult.ways.length} ways");
     if ((mapReadResult.ways?.length ?? 0) > 100000) {
       _log.warning("Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
@@ -118,9 +121,6 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("_processReadMapData took $diff ms");
     canvasRasterer.startCanvasBitmap();
-//    if (!job.hasAlpha && job.displayModel.getBackgroundColor() != renderContext.renderTheme.getMapBackground()) {
-//      renderContext.canvasRasterer.fill(renderContext.renderTheme.getMapBackground());
-//    }
     canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("drawWays took $diff ms");
@@ -427,16 +427,23 @@ entryPoint(SendPort sendPort) async {
 
 /////////////////////////////////////////////////////////////////////////////
 
+///
+/// The parameters needed to execute the reading of the mapdata.
+///
 class IsolateParam {
   final MapDataStore mapDataStore;
 
   final Tile tile;
 
-  IsolateParam(this.mapDataStore, this.tile);
+  const IsolateParam(this.mapDataStore, this.tile);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+///
+/// This is the execution of reading the mapdata. If called directly the execution is done in the main thread. If called
+/// via [entryPoint] the execution is done in an isolate.
+///
 Future<MapReadResult> readMapDataInIsolate(IsolateParam isolateParam) async {
   MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);
   return mapReadResult;

@@ -12,6 +12,8 @@ void main() {
     MatchingCacheKey m3 = MatchingCacheKey([tag1], 5, 0, Closed.YES);
     MatchingCacheKey m4 = MatchingCacheKey([Tag('', '')], 5, 0, Closed.YES);
     MatchingCacheKey m5 = MatchingCacheKey([Tag('test', '')], 5, 0, Closed.YES);
+    expect(tag1 == Tag('', ''), true);
+//    expect(tagList1 == [tag1], true);
 //    expect(m1.hashCode, m1.hashCode);
     expect(m1.hashCode, m2.hashCode);
     expect(m1.hashCode, m3.hashCode);

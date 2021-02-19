@@ -91,7 +91,7 @@ class _FlutterMapState extends State<FlutterMapView> {
   }
 
   Widget _buildNoPositionView() {
-    return widget.viewModel.noPositionView.buildNoPositionView(context, widget.mapModel);
+    return widget.viewModel.noPositionView.buildNoPositionView(context, widget.mapModel, widget.viewModel);
   }
 
   Widget _buildMapView(MapViewPosition position) {

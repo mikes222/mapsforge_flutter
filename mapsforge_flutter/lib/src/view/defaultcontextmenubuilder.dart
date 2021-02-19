@@ -16,8 +16,8 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
   Color backgroundColor = Color(0xc3FFFFFF);
 
   @override
-  Widget build(
-      BuildContext context, MapModel mapModel, Dimension screen, double x, double y, TapEvent event, ContextMenuCallback callback) {
+  Widget build(BuildContext context, MapModel mapModel, ViewModel viewModel, Dimension screen, double x, double y, TapEvent event,
+      ContextMenuCallback callback) {
     Radius outer = Radius.circular(outerRadius);
     Radius inner = Radius.circular(outerRadius - width);
     //print("${x} / ${y}");
@@ -53,14 +53,14 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
           padding: EdgeInsets.only(left: 4, right: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: buildColumns(context, mapModel, event, callback),
+            children: buildColumns(context, mapModel, viewModel, event, callback),
           ),
         ),
       ),
     );
   }
 
-  List<Widget> buildColumns(BuildContext context, MapModel mapModel, TapEvent event, ContextMenuCallback callback) {
+  List<Widget> buildColumns(BuildContext context, MapModel mapModel, ViewModel viewModel, TapEvent event, ContextMenuCallback callback) {
     return [
       Row(
         mainAxisSize: MainAxisSize.min,
