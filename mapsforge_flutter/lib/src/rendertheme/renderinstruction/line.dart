@@ -101,10 +101,11 @@ class Line extends RenderInstruction with BitmapMixin {
 
   static List<double> parseFloatArray(String name, String dashString) {
     List<String> dashEntries = dashString.split(",");
-    List<double> dashIntervals = List<double>(dashEntries.length);
-    for (int i = 0; i < dashEntries.length; ++i) {
-      dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
-    }
+    List<double> dashIntervals = dashEntries.map((e) => XmlUtils.parseNonNegativeFloat(name, e)).toList();
+    // List<double>(dashEntries.length);
+    // for (int i = 0; i < dashEntries.length; ++i) {
+    //   dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
+    // }
     return dashIntervals;
   }
 
@@ -132,6 +133,7 @@ class Line extends RenderInstruction with BitmapMixin {
     if (this.stroke != null) {
       MapPaint paint = graphicFactory.createPaintFrom(stroke);
       paint.setStrokeWidth(this.strokeWidth * scaleFactor);
+
       if (this.scale == Scale.ALL || this.scale == Scale.STROKE) {
         if (strokeDasharray != null) {
           List<double> strokeDasharrayScaled = this.strokeDasharray.map((dash) {
@@ -140,9 +142,10 @@ class Line extends RenderInstruction with BitmapMixin {
           paint.setStrokeDasharray(strokeDasharrayScaled);
         }
       }
+
+      //paint.setStrokeDasharray(this.strokeDasharray);
       strokes[zoomLevel] = paint;
     }
-
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
 

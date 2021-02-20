@@ -86,8 +86,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  Future matchClosedWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
-    _matchWay(renderCallback, renderContext, Closed.YES, way);
+  Future<void> matchClosedWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
+    return _matchWay(renderCallback, renderContext, Closed.YES, way);
   }
 
   /**
@@ -97,8 +97,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  void matchLinearWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
-    _matchWay(renderCallback, renderContext, Closed.NO, way);
+  Future<void> matchLinearWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
+    return _matchWay(renderCallback, renderContext, Closed.NO, way);
   }
 
   /**

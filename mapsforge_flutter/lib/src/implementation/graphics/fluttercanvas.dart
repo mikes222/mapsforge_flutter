@@ -213,10 +213,12 @@ class FlutterCanvas extends MapCanvas {
           for (int i = 0; i < dasharray.length; i += 2) {
             double dashLength = dasharray[i];
             double gapLength = dasharray[i + 1];
-            dashPath.addPath(
-              pathMetric.extractPath(distance, distance + dashLength),
-              Offset.zero,
-            );
+            if (dashLength > 0) {
+              dashPath.addPath(
+                pathMetric.extractPath(distance, distance + dashLength),
+                Offset.zero,
+              );
+            }
             distance += dashLength + gapLength;
           }
         }
