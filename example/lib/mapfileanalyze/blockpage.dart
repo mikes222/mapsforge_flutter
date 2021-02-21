@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
+import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
@@ -31,7 +31,7 @@ class BlockPage extends StatelessWidget {
           return Center(
             child: CircularProgressIndicator(),
           );
-        MapReadResult mapReadResult = snapshot.data;
+        DatastoreReadResult mapReadResult = snapshot.data;
         int items = mapReadResult.ways.length < 1000
             ? mapReadResult.ways.fold(
                 0,
@@ -77,7 +77,7 @@ class BlockPage extends StatelessWidget {
     );
   }
 
-  Future<MapReadResult> _readBlock() async {
+  Future<DatastoreReadResult> _readBlock() async {
     try {
       ReadBufferMaster readBufferMaster = ReadBufferMaster(mapFile.filename);
 
@@ -93,7 +93,7 @@ class BlockPage extends StatelessWidget {
 
       BoundingBox boundingBox = Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight);
       Selector selector = Selector.ALL;
-      MapReadResult result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
+      DatastoreReadResult result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {

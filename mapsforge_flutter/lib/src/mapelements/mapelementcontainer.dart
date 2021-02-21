@@ -21,7 +21,7 @@ import '../graphics/filter.dart';
 abstract class MapElementContainer implements Comparable<MapElementContainer> {
   Rectangle boundary;
   Rectangle boundaryAbsolute;
-  Display display;
+  final Display display;
   final int priority;
   final Mappoint xy;
 
@@ -50,11 +50,9 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
    */
   void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter);
 
-  /**
-   * Gets the pixel absolute boundary for this element.
-   *
-   * @return Rectangle with absolute pixel coordinates.
-   */
+  /// Gets the pixel absolute boundary for this element.
+  ///
+  /// @return Rectangle with absolute pixel coordinates.
   Rectangle getBoundaryAbsolute() {
     if (boundaryAbsolute == null) {
       boundaryAbsolute = this.boundary.shift(xy);

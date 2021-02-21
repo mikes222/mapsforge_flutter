@@ -44,9 +44,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     _fontFamily = other._fontFamily;
     _strokeDasharray = other._strokeDasharray;
     if (other._shaderBitmap != null) {
-      _shaderBitmap = other._shaderBitmap;
-      _shaderBitmap.incrementRefCount();
-      paint.shader = other.paint.shader;
+      setBitmapShader(other._shaderBitmap);
     }
   }
 
@@ -129,14 +127,13 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     bitmap.incrementRefCount();
     ui.Image img = _shaderBitmap.bitmap;
 
-    final double devicePixelRatio = ui.window.devicePixelRatio;
-    final Float64List deviceTransform = new Float64List(16)
-      ..[0] = devicePixelRatio
-      ..[5] = devicePixelRatio
-      ..[10] = 1.0
-      ..[15] = 2.0;
-    //Float64List matrix = new Float64List(16);
-
+    // final double devicePixelRatio = ui.window.devicePixelRatio;
+    // final Float64List deviceTransform = new Float64List(16)
+    //   ..[0] = devicePixelRatio
+    //   ..[5] = devicePixelRatio
+    //   ..[10] = 1.0
+    //   ..[15] = 2.0;
+    Float64List deviceTransform = Float64List.fromList(mat.Matrix4.identity().storage);
     paint.shader = ui.ImageShader(img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
   }
 

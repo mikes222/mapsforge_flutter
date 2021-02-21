@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
@@ -15,6 +16,8 @@ import 'basicmarker.dart';
 import 'markercallback.dart';
 
 class PolygonMarker<T> extends BasicMarker<T> {
+  static final _log = new Logger('PolygonMarker');
+
   List<ILatLong> path = List();
 
   MapPaint fill;
@@ -106,7 +109,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
           _bitmap.incrementRefCount();
         }
       } catch (ioException, stacktrace) {
-        print(ioException.toString());
+        _log.warning(ioException.toString());
         //print(stacktrace);
         _bitmapInvalid = true;
       }

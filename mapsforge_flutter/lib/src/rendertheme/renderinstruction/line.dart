@@ -91,7 +91,7 @@ class Line extends RenderInstruction with BitmapMixin {
     initPendings.add(this);
   }
 
-  MapPaint getStrokePaint(int zoomLevel) {
+  MapPaint _getStrokePaint(int zoomLevel) {
     MapPaint paint = strokes[zoomLevel];
     if (paint == null) {
       paint = this.stroke;
@@ -116,7 +116,7 @@ class Line extends RenderInstruction with BitmapMixin {
 
   @override
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
-    MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
+    MapPaint strokePaint = _getStrokePaint(renderContext.job.tile.zoomLevel);
 
     double dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (dyScale == null) {
@@ -159,6 +159,9 @@ class Line extends RenderInstruction with BitmapMixin {
     await initBitmap(graphicFactory);
     if (stroke != null && bitmap != null) {
       stroke.setBitmapShader(bitmap);
+      strokes.forEach((key, value) {
+        value.setBitmapShader(bitmap);
+      });
       //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
       //bitmap.incrementRefCount();
     }

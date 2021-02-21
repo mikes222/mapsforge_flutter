@@ -172,4 +172,9 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      this.paintFront.setColor(color);
 //    }
   }
+
+  @override
+  String toString() {
+    return 'FlutterPointTextContainer{frontBuilder: $frontBuilder, backBuilder: $backBuilder, ${super.toString()}';
+  }
 }

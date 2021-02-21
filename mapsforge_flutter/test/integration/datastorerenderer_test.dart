@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
@@ -42,7 +43,7 @@ void main() {
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      MapFile mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
+      Datastore mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
       await mapDataStore.init();
       Tile tile = new Tile(x, y, z, l);
       print("Calculating tile ${tile.toString()}");
@@ -110,7 +111,7 @@ void main() {
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      MapFile mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
+      Datastore mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
       await mapDataStore.init();
 
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);

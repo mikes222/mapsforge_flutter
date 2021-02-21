@@ -104,15 +104,12 @@ class LayerUtil {
     return tiles;
   }
 
-  /**
-   * Transforms a list of MapElements, orders it and removes those elements that overlap.
-   * This operation is useful for an early elimination of elements in a list that will never
-   * be drawn because they overlap.
-   *
-   * @param input list of MapElements
-   * @return collision-free, ordered list, a subset of the input.
-   */
-
+  /// Transforms a list of MapElements, orders it and removes those elements that overlap.
+  /// This operation is useful for an early elimination of elements in a list that will never
+  /// be drawn because they overlap.
+  ///
+  /// @param input list of MapElements
+  /// @return collision-free, ordered list, a subset of the input.
   static List<MapElementContainer> collisionFreeOrdered(List<MapElementContainer> input) {
     // sort items by priority (highest first)
     input.sort((MapElementContainer a, MapElementContainer b) => a.priority - b.priority);
@@ -124,6 +121,7 @@ class LayerUtil {
       bool hasSpace = true;
       for (MapElementContainer outputElement in output) {
         if (outputElement.clashesWith(item)) {
+          //print("$outputElement --------clashesWith-------- $item");
           hasSpace = false;
           break;
         }

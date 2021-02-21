@@ -1,13 +1,14 @@
-import '../model/latlong.dart';
+import 'package:mapsforge_flutter/core.dart';
+
 import '../model/tag.dart';
 
 /// An immutable container for all data associated with a single way or area (closed way).
 class Way {
   /// The position of the area label (may be null).
-  final LatLong labelPosition;
+  final ILatLong labelPosition;
 
   /// The geographical coordinates of the way nodes.
-  final List<List<LatLong>> latLongs;
+  final List<List<ILatLong>> latLongs;
 
   /// The layer of this way + 5 (to avoid negative values).
   final int layer;

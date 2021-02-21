@@ -133,13 +133,6 @@ class RenderTheme {
       }
       element.renderNode(renderCallback, renderContext, poi);
     }
-    // for (int i = 0, n = matchingList.length; i < n; ++i) {
-    //   if (initPendings.contains(matchingList.elementAt(i))) {
-    //     await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
-    //     initPendings.remove(matchingList.elementAt(i));
-    //   }
-    //   matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
-    // }
   }
 
   /**

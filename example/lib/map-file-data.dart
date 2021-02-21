@@ -9,8 +9,10 @@ class MapFileData {
   final double initialPositionLat;
   final double initialPositionLong;
   final int initialZoomLevel;
+  final String relativePathPrefix;
 
-  MapFileData(this.url, this.fileName, this.name, this.theme, this.initialPositionLat, this.initialPositionLong, this.initialZoomLevel);
+  MapFileData(this.url, this.fileName, this.name, this.theme, this.relativePathPrefix, this.initialPositionLat, this.initialPositionLong,
+      this.initialZoomLevel);
 
   Future<String> getLocalFilePath() async {
     Directory dir = await getApplicationDocumentsDirectory();

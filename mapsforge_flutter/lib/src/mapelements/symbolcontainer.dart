@@ -11,7 +11,7 @@ import 'mapelementcontainer.dart';
 
 class SymbolContainer extends MapElementContainer {
   final bool alignCenter;
-  Bitmap symbol;
+  final Bitmap symbol;
   final double theta;
   final MapPaint paint;
 
@@ -53,5 +53,10 @@ class SymbolContainer extends MapElementContainer {
         left: this.xy.x - origin.x + boundary.left,
         top: this.xy.y - origin.y + boundary.top,
         paint: paint);
+  }
+
+  @override
+  String toString() {
+    return 'SymbolContainer{alignCenter: $alignCenter, symbol: $symbol, theta: $theta, paint: $paint, super ${super.toString()}';
   }
 }

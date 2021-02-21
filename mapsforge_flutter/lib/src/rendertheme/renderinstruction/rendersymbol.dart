@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
@@ -63,22 +62,24 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   @override
   void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
+      //_log.info("display is never for $textKey");
       return;
     }
 
     if (bitmap != null) {
-      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, this.priority, this.bitmap, poi, symbolPaint);
+      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap, poi, symbolPaint);
     }
   }
 
   @override
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
+      //_log.info("display is never for $textKey");
       return;
     }
 
     if (bitmap != null) {
-      renderCallback.renderAreaSymbol(renderContext, this.display, this.priority, this.bitmap, way, symbolPaint);
+      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap, way, symbolPaint);
     }
   }
 

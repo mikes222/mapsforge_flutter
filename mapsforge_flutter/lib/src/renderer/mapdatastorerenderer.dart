@@ -2,8 +2,8 @@ import 'dart:isolate';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/mapdatastore.dart';
-import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
+import 'package:mapsforge_flutter/src/datastore/datastore.dart';
+import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
@@ -41,7 +41,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   static final _log = new Logger('MapDataStoreRenderer');
   static final Tag TAG_NATURAL_WATER = new Tag("natural", "water");
 
-  final MapDataStore mapDataStore;
+  final Datastore datastore;
 
   final RenderTheme renderTheme;
 
@@ -57,10 +57,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   Isolate _isolate;
 
-  PublishSubject<MapReadResult> _subject = PublishSubject<MapReadResult>();
+  PublishSubject<DatastoreReadResult> _subject = PublishSubject<DatastoreReadResult>();
 
   MapDataStoreRenderer(
-    this.mapDataStore,
+    this.datastore,
     this.renderTheme,
     this.graphicFactory,
     this.renderLabels,
@@ -81,31 +81,33 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   ///
-  /// Executes a given job and returns a future with the bitmap of this job
+  /// Executes a given job and returns a future with the bitmap of this job.
+  /// @returns null if the datastore does not support the requested tile
+  /// @returns the Bitmap for the requested tile
   @override
   Future<TileBitmap> executeJob(Job job) async {
     bool showTiming = false;
     bool useIsolate = true;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
-    if (!this.mapDataStore.supportsTile(job.tile)) {
+    if (!this.datastore.supportsTile(job.tile)) {
       // return if we do not have data for the requested tile in the datastore
       return null;
     }
     CanvasRasterer canvasRasterer =
         CanvasRasterer(graphicFactory, job.tileSize, job.tileSize, job.tileSize, "MapDatastoreRenderer ${job.tile.toString()}");
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
-    MapReadResult mapReadResult;
+    DatastoreReadResult mapReadResult;
     if (useIsolate) {
       if (showTiming) _log.info("Before starting the isolate to read map data from file");
       // read the mapdata in an isolate which is flutter's way to create multithreaded processes
       await _startIsolateJob();
-      _sendPort.send(IsolateParam(mapDataStore, job.tile));
+      _sendPort.send(IsolateParam(datastore, job.tile));
       mapReadResult = await _subject.stream.first;
     } else {
       if (showTiming) _log.info("Before reading map data from file");
       // read the mapdata directly in this thread
-      mapReadResult = await readMapDataInIsolate(IsolateParam(mapDataStore, job.tile));
+      mapReadResult = await readMapDataInIsolate(IsolateParam(datastore, job.tile));
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (mapReadResult == null) {
@@ -127,6 +129,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
+      //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
       canvasRasterer.drawMapElements(labelsToDraw, job.tile, job.tileSize);
       diff = DateTime.now().millisecondsSinceEpoch - time;
@@ -157,9 +160,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     return bitmap;
   }
 
-  Future<void> _processReadMapData(final RenderContext renderContext, MapReadResult mapReadResult) async {
+  Future<void> _processReadMapData(final RenderContext renderContext, DatastoreReadResult mapReadResult) async {
     for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
-      _renderPointOfInterest(renderContext, pointOfInterest);
+      await _renderPointOfInterest(renderContext, pointOfInterest);
     }
 
     for (Way way in mapReadResult.ways) {
@@ -243,7 +246,6 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
       MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, renderContext.job.tile.zoomLevel);
       Mappoint poiPosition = mercatorProjection.getPixel(poi.position);
-      //_log.info("poiPosition is ${poiPosition.toString()}, position is ${position.toString()} for $caption");
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));
@@ -263,7 +265,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint symbolPaint) {
     if (renderLabels) {
       Mappoint poiPosition = renderContext.mercatorProjection.getPixel(poi.position);
-      renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint));
+      renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint, alignCenter: true));
     }
   }
 
@@ -291,6 +293,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   Future<Set<MapElementContainer>> _processLabels(RenderContext renderContext) async {
+    //return renderContext.labels.toSet();
     // if we are drawing the labels per tile, we need to establish which tile-overlapping
     // elements need to be drawn.
     Set<MapElementContainer> labelsToDraw = new Set();
@@ -329,7 +332,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
         tileDependencies.removeTileData(neighbour);
       }
     });
-
+    //_log.info("undrawable: $undrawableElements");
+    //_log.info("toRemove: $toRemove");
     neighbours.removeWhere((tile) => toRemove.contains(tile));
     // now we remove the elements that overlap onto a drawn tile from the list of labels
     // for this tile
@@ -340,7 +344,6 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     // the elements on this tile that do not overlap onto a drawn tile. Now we sort this list and
     // remove those elements that clash in this list already.
     List<MapElementContainer> currentElementsOrdered = LayerUtil.collisionFreeOrdered(renderContext.labels);
-
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
     List<MapElementContainer> toRemove2 = List();
     currentElementsOrdered.forEach((MapElementContainer current) {
@@ -398,8 +401,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
         _sendPort = data;
         // inform waiting method that we have a stable connection now
         subject.add(_sendPort);
-      } else if (data is MapReadResult) {
-        MapReadResult result = data;
+      } else if (data is DatastoreReadResult) {
+        DatastoreReadResult result = data;
         _subject.add(result);
       }
     }
@@ -420,7 +423,7 @@ entryPoint(SendPort sendPort) async {
   // Listen for messages (optional)
   await for (IsolateParam isolateParam in receivePort) {
     //print("hello, we received $isolateParam in the isolate");
-    MapReadResult result = await readMapDataInIsolate(isolateParam);
+    DatastoreReadResult result = await readMapDataInIsolate(isolateParam);
     sendPort.send(result);
   }
 }
@@ -431,7 +434,7 @@ entryPoint(SendPort sendPort) async {
 /// The parameters needed to execute the reading of the mapdata.
 ///
 class IsolateParam {
-  final MapDataStore mapDataStore;
+  final Datastore mapDataStore;
 
   final Tile tile;
 
@@ -444,7 +447,7 @@ class IsolateParam {
 /// This is the execution of reading the mapdata. If called directly the execution is done in the main thread. If called
 /// via [entryPoint] the execution is done in an isolate.
 ///
-Future<MapReadResult> readMapDataInIsolate(IsolateParam isolateParam) async {
-  MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);
+Future<DatastoreReadResult> readMapDataInIsolate(IsolateParam isolateParam) async {
+  DatastoreReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);
   return mapReadResult;
 }

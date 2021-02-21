@@ -7,7 +7,7 @@ import '../model/latlong.dart';
 import '../model/tile.dart';
 
 import 'mapdatastore.dart';
-import 'mapreadresult.dart';
+import 'datastorereadresult.dart';
 
 /// A MapDatabase that reads and combines data from multiple map files.
 /// The MultiMapDatabase supports the following modes for reading from multiple files:
@@ -116,7 +116,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<MapReadResult> readLabelsSingle(Tile tile) async {
+  Future<DatastoreReadResult> readLabelsSingle(Tile tile) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
@@ -133,12 +133,12 @@ class MultiMapDataStore extends MapDataStore {
     throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<MapReadResult> _readLabelsDedup(Tile tile, bool deduplicate) async {
-    MapReadResult mapReadResult = new MapReadResult();
+  Future<DatastoreReadResult> _readLabelsDedup(Tile tile, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
         //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
-        MapReadResult result = await mdb.readLabelsSingle(tile);
+        DatastoreReadResult result = await mdb.readLabelsSingle(tile);
         if (result == null) {
           continue;
         }
@@ -151,7 +151,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<MapReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
@@ -168,11 +168,11 @@ class MultiMapDataStore extends MapDataStore {
     throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<MapReadResult> _readLabels(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
-    MapReadResult mapReadResult = new MapReadResult();
+  Future<DatastoreReadResult> _readLabels(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(upperLeft)) {
-        MapReadResult result = await mdb.readLabels(upperLeft, lowerRight);
+        DatastoreReadResult result = await mdb.readLabels(upperLeft, lowerRight);
         if (result == null) {
           continue;
         }
@@ -185,7 +185,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<MapReadResult> readMapDataSingle(Tile tile) async {
+  Future<DatastoreReadResult> readMapDataSingle(Tile tile) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
@@ -202,14 +202,14 @@ class MultiMapDataStore extends MapDataStore {
     throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<MapReadResult> _readMapData(Tile tile, bool deduplicate) async {
-    MapReadResult mapReadResult = new MapReadResult();
+  Future<DatastoreReadResult> _readMapData(Tile tile, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult();
     bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
         //_log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
         try {
-          MapReadResult result = await mdb.readMapDataSingle(tile);
+          DatastoreReadResult result = await mdb.readMapDataSingle(tile);
           if (result == null) {
             continue;
           }
@@ -228,7 +228,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<MapReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
@@ -245,13 +245,13 @@ class MultiMapDataStore extends MapDataStore {
     throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<MapReadResult> _readMapDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
-    MapReadResult mapReadResult = new MapReadResult();
+  Future<DatastoreReadResult> _readMapDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult();
     bool found = false;
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(upperLeft)) {
         //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
-        MapReadResult result = await mdb.readMapData(upperLeft, lowerRight);
+        DatastoreReadResult result = await mdb.readMapData(upperLeft, lowerRight);
         if (result == null) {
           continue;
         }
@@ -266,7 +266,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<MapReadResult> readPoiDataSingle(Tile tile) async {
+  Future<DatastoreReadResult> readPoiDataSingle(Tile tile) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
@@ -283,11 +283,11 @@ class MultiMapDataStore extends MapDataStore {
     throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<MapReadResult> _readPoiData(Tile tile, bool deduplicate) async {
-    MapReadResult mapReadResult = new MapReadResult();
+  Future<DatastoreReadResult> _readPoiData(Tile tile, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
-        MapReadResult result = await mdb.readPoiDataSingle(tile);
+        DatastoreReadResult result = await mdb.readPoiDataSingle(tile);
         if (result == null) {
           continue;
         }
@@ -300,7 +300,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<MapReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
@@ -317,11 +317,11 @@ class MultiMapDataStore extends MapDataStore {
     throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<MapReadResult> _readPoiDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
-    MapReadResult mapReadResult = new MapReadResult();
+  Future<DatastoreReadResult> _readPoiDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(upperLeft)) {
-        MapReadResult result = await mdb.readPoiData(upperLeft, lowerRight);
+        DatastoreReadResult result = await mdb.readPoiData(upperLeft, lowerRight);
         if (result == null) {
           continue;
         }
@@ -361,6 +361,9 @@ class MultiMapDataStore extends MapDataStore {
     }
     return false;
   }
+
+  @override
+  Future<void> init() {}
 }
 
 /////////////////////////////////////////////////////////////////////////////

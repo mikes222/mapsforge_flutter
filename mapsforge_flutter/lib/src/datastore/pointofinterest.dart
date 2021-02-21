@@ -25,4 +25,9 @@ class PointOfInterest {
 
   @override
   int get hashCode => layer.hashCode ^ position.hashCode ^ tags.hashCode;
+
+  @override
+  String toString() {
+    return 'PointOfInterest{layer: $layer, position: $position, tags: $tags}';
+  }
 }

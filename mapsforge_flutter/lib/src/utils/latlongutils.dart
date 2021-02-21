@@ -144,7 +144,7 @@ class LatLongUtils {
    *
    * @return true if this way is closed, false otherwise.
    */
-  static bool isClosedWay(List<LatLong> latLongs) {
+  static bool isClosedWay(List<ILatLong> latLongs) {
     return euclideanDistance(latLongs[0], latLongs[latLongs.length - 1]) < 0.000000001;
   }
 

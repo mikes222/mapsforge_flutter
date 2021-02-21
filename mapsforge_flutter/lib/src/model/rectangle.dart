@@ -21,10 +21,7 @@ class Rectangle {
    * @return true if this Rectangle contains the given point, false otherwise.
    */
   bool contains(Mappoint point) {
-    return this.left <= point.x &&
-        this.right >= point.x &&
-        this.top <= point.y &&
-        this.bottom >= point.y;
+    return this.left <= point.x && this.right >= point.x && this.top <= point.y && this.bottom >= point.y;
   }
 
   /**
@@ -36,13 +33,11 @@ class Rectangle {
    * @return
    */
   Rectangle enlarge(double left, double top, double right, double bottom) {
-    return new Rectangle(this.left - left, this.top - top, this.right + right,
-        this.bottom + bottom);
+    return new Rectangle(this.left - left, this.top - top, this.right + right, this.bottom + bottom);
   }
 
   Rectangle envelope(double padding) {
-    return new Rectangle(this.left - padding, this.top - padding,
-        this.right + padding, this.bottom + padding);
+    return new Rectangle(this.left - padding, this.top - padding, this.right + padding, this.bottom + padding);
   }
 
   /**
@@ -82,10 +77,7 @@ class Rectangle {
       return true;
     }
 
-    return this.left <= rectangle.right &&
-        rectangle.left <= this.right &&
-        this.top <= rectangle.bottom &&
-        rectangle.top <= this.bottom;
+    return this.left <= rectangle.right && rectangle.left <= this.right && this.top <= rectangle.bottom && rectangle.top <= this.bottom;
   }
 
   bool intersectsCircle(double pointX, double pointY, double radius) {
@@ -111,16 +103,18 @@ class Rectangle {
 
     double cornerDistanceX = centerDistanceX - halfWidth;
     double cornerDistanceY = centerDistanceY - halfHeight;
-    return cornerDistanceX * cornerDistanceX +
-            cornerDistanceY * cornerDistanceY <=
-        radius * radius;
+    return cornerDistanceX * cornerDistanceX + cornerDistanceY * cornerDistanceY <= radius * radius;
   }
 
   Rectangle shift(Mappoint origin) {
     if (origin.x == 0 && origin.y == 0) {
       return this;
     }
-    return new Rectangle(this.left + origin.x, this.top + origin.y,
-        this.right + origin.x, this.bottom + origin.y);
+    return new Rectangle(this.left + origin.x, this.top + origin.y, this.right + origin.x, this.bottom + origin.y);
+  }
+
+  @override
+  String toString() {
+    return 'Rectangle{bottom: $bottom, left: $left, right: $right, top: $top}';
   }
 }

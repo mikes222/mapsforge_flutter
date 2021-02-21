@@ -3,19 +3,20 @@ import 'poiwaybundle.dart';
 import 'way.dart';
 
 /// An immutable container for the data returned from a MapDataStore.
-class MapReadResult {
+class DatastoreReadResult {
   /// True if the read area is completely covered by water, false otherwise.
   bool isWater = false;
 
   /// The read POIs.
-  final List<PointOfInterest> pointOfInterests;
+  List<PointOfInterest> pointOfInterests;
 
   /// The read ways.
-  final List<Way> ways;
+  List<Way> ways;
 
-  MapReadResult()
-      : pointOfInterests = List(),
-        ways = List();
+  DatastoreReadResult({this.pointOfInterests, this.ways}) {
+    if (pointOfInterests == null) pointOfInterests = List();
+    if (ways == null) ways = List();
+  }
 
   void add(PoiWayBundle poiWayBundle) {
     this.pointOfInterests.addAll(poiWayBundle.pois);
@@ -29,7 +30,7 @@ class MapReadResult {
    * @param other       the MapReadResult to add to this.
    * @param deduplicate true if check for duplicates is required.
    */
-  void addDeduplicate(MapReadResult other, bool deduplicate) {
+  void addDeduplicate(DatastoreReadResult other, bool deduplicate) {
     if (deduplicate) {
       for (PointOfInterest poi in other.pointOfInterests) {
         if (!this.pointOfInterests.contains(poi)) {
