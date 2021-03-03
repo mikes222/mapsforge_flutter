@@ -55,7 +55,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     fadeAnimationController = AnimationController(
         duration: const Duration(milliseconds: 300),
         reverseDuration: const Duration(milliseconds: 300),
-        value: 1,
+        value: 0,
         vsync: this,
         lowerBound: 0,
         upperBound: 1
@@ -140,7 +140,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
                 children: <Widget>[
                   Flexible(
                     child: Visibility(
-                      visible: fadeAnimationController.status != AnimationStatus.dismissed,
+                      visible: !fadeAnimationController.isDismissed,
                       child: FadeTransition(
                         opacity: fadeAnimationController,
                         child: IndoorLevelBar(
@@ -257,7 +257,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
     levelDetector.levelMappings.listen((levelMappings) {
       if (levelMappings.length > 1) {
-        if (fadeAnimationController.status == AnimationStatus.dismissed) {
+        if (fadeAnimationController.isDismissed || fadeAnimationController.status == AnimationStatus.reverse) {
           // fade in level bar
           fadeAnimationController.forward();
         }
@@ -265,7 +265,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
         setState(() {});
       }
       else {
-        if (fadeAnimationController.status == AnimationStatus.completed) {
+        if (fadeAnimationController.isCompleted  || fadeAnimationController.status == AnimationStatus.forward) {
           // fade out and hide level bar
           fadeAnimationController.reverse().whenComplete(() => setState(() {}));
         }
