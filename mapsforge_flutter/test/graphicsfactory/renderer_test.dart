@@ -51,6 +51,7 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       datastore.addPoi(PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'TestPOI')], LatLong(46, 18)));
       datastore.addPoi(PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'TestSuburb')], LatLong(46, 17.998)));
+      datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')], LatLong(45.999, 17.996)));
       datastore.addWay(Way(
           0,
           [Tag('name', 'TestWay'), Tag('tunnel', 'yes'), Tag('railway', 'rail')],

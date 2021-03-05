@@ -115,7 +115,7 @@ class RenderTheme {
     List<RenderInstruction> matchingList = this.poiMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
-      matchingList = new List<RenderInstruction>();
+      matchingList = [];
 
       rulesList.forEach((element) {
         element.matchNode(renderCallback, renderContext, matchingList, poi, initPendings);

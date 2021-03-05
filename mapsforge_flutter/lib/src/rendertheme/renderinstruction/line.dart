@@ -88,7 +88,7 @@ class Line extends RenderInstruction with BitmapMixin {
         throw new Exception("element hinich");
       }
     });
-    initPendings.add(this);
+    if (src != null) initPendings.add(this);
   }
 
   MapPaint _getStrokePaint(int zoomLevel) {

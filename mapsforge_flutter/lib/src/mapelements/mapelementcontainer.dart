@@ -5,19 +5,17 @@ import '../model/mappoint.dart';
 import '../model/rectangle.dart';
 import '../graphics/filter.dart';
 
-/**
- * The MapElementContainer is the abstract base class for annotations that can be placed on the
- * map, e.g. labels and icons.
- * <p/>
- * A MapElementContainer has a central pivot point, which denotes the geographic point for the entity
- * translated into absolute map pixels. The boundary denotes the space that the item requires
- * around this central point.
- * <p/>
- * A MapElementContainer has a priority (higher value means higher priority) that should be used to determine
- * the drawing order, i.e. elements with higher priority should be drawn before elements with lower
- * priority. If there is not enough space on the map, elements with lower priority should then not be
- * drawn.
- */
+/// The MapElementContainer is the abstract base class for annotations that can be placed on the
+/// map, e.g. labels and icons.
+/// <p/>
+/// A MapElementContainer has a central pivot point, which denotes the geographic point for the entity
+/// translated into absolute map pixels. The boundary denotes the space that the item requires
+/// around this central point.
+/// <p/>
+/// A MapElementContainer has a priority (higher value means higher priority) that should be used to determine
+/// the drawing order, i.e. elements with higher priority should be drawn before elements with lower
+/// priority. If there is not enough space on the map, elements with lower priority should then not be
+/// drawn.
 abstract class MapElementContainer implements Comparable<MapElementContainer> {
   Rectangle boundary;
   Rectangle boundaryAbsolute;

@@ -80,7 +80,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
         throw Exception("LineSymbol probs");
       }
     });
-    initPendings.add(this);
+    if (src != null) initPendings.add(this);
   }
 
   @override

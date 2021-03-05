@@ -140,6 +140,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
   @override
   bool isTransparent() {
     return paint.color == mat.Colors.transparent;
+    //return paint.color == ui.Color(FlutterColor.getColor(Color.TRANSPARENT));
   }
 
   @override
@@ -238,6 +239,6 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   @override
   String toString() {
-    return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily, _strokeDasharray: $_strokeDasharray}';
+    return 'FlutterPaint{paint: $paint, color: ${paint.color}, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily, _strokeDasharray: $_strokeDasharray}';
   }
 }

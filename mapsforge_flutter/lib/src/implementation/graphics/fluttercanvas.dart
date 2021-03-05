@@ -189,11 +189,13 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawCircle(int x, int y, int radius, MapPaint paint) {
+    //_log.info("draw circle at $x $y $radius $paint at ${ui.Offset(x.toDouble(), y.toDouble())}");
     uiCanvas.drawCircle(ui.Offset(x.toDouble(), y.toDouble()), radius.toDouble(), (paint as FlutterPaint).paint);
   }
 
   @override
   void drawLine(int x1, int y1, int x2, int y2, MapPaint paint) {
+    //_log.info("draw line at $x1 $y1 $x2 $y2 $paint}");
     Path path = new Path()
       ..moveTo(x1.toDouble(), y1.toDouble())
       ..lineTo(x2.toDouble(), y2.toDouble());
@@ -224,8 +226,10 @@ class FlutterCanvas extends MapCanvas {
         }
       }
       uiCanvas.drawPath(dashPath, (paint as FlutterPaint).paint);
-    } else
+    } else {
+      //_log.info("draw path at ${(path as FlutterPath).path.getBounds()}  $paint}");
       uiCanvas.drawPath((path as FlutterPath).path, (paint as FlutterPaint).paint);
+    }
   }
 
   @override

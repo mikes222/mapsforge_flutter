@@ -114,8 +114,6 @@ class PathText extends RenderInstruction {
     this.stroke.setTypeface(fontFamily, fontStyle);
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
-
-    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {

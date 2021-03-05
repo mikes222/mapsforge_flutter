@@ -17,7 +17,6 @@ import 'renderinstruction.dart';
  */
 class RenderCircle extends RenderInstruction {
   MapPaint fill;
-  final Map<int, MapPaint> fills;
   final int level;
   double radius;
   double renderRadius;
@@ -28,8 +27,7 @@ class RenderCircle extends RenderInstruction {
   double strokeWidth = 1;
 
   RenderCircle(GraphicFactory graphicFactory, DisplayModel displayModel, this.level)
-      : fills = new Map(),
-        strokes = new Map(),
+      : strokes = new Map(),
         renderRadiusScaled = new Map(),
         super(graphicFactory, displayModel) {
     this.fill = graphicFactory.createPaint();
@@ -37,7 +35,7 @@ class RenderCircle extends RenderInstruction {
     this.fill.setStyle(Style.FILL);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.TRANSPARENT);
+    this.stroke.setColor(Color.BLACK);
     this.stroke.setStyle(Style.STROKE);
   }
 
@@ -74,15 +72,10 @@ class RenderCircle extends RenderInstruction {
     } else {
       this.renderRadius = this.radius;
     }
-    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {
-    MapPaint paint = fills[zoomLevel];
-    if (paint == null) {
-      paint = this.fill;
-    }
-    return paint;
+    return fill;
   }
 
   double getRenderRadius(int zoomLevel) {

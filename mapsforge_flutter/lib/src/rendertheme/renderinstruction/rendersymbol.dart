@@ -52,7 +52,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
         throw Exception("Symbol probs");
       }
     });
-    initPendings.add(this);
+    if (src != null) initPendings.add(this);
   }
 
   String getId() {
