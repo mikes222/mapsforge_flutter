@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
   # BSD License
-  logging: ^1.0.0
+  logging: ^0.11.4
 
   # BSD License
   convert: ^2.1.0
@@ -27,22 +27,22 @@ dependencies:
   xml: ^4.2.0
 
   # Apache 2.0 License
-  rxdart: ^0.26.0
+  rxdart: ^0.25.0
 
   # BSD License
-  synchronized: ^3.0.0
+  synchronized: ^2.2.0+2
 
   # BSD License
-  flutter_svg: ^0.19.3
+  flutter_svg: ^0.19.1
 
   # BSD License
   #image: 2.1.13
 
   # BSD License
-  path_provider: ^2.0.1
+  path_provider: ^1.6.27
 
   # MIT License
-  provider: ^5.0.0
+  provider: ^4.3.3
 
   # BSD License
   http: ^0.12.2
