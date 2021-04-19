@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
-import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
+import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:mapsforge_flutter/src/indoor/indoornotationmatcher.dart';
@@ -150,7 +150,7 @@ Future<Map<Tile, Map <int, String>>> readAndProcessTileData (IsolateParam isolat
   final Map<Tile, Map <int, String>> tileLevelMappingsBundle = new Map<Tile, Map <int, String>>();
 
   for (Tile tile in isolateParam.tiles) {
-    final MapReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(tile);
+    final DatastoreReadResult mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(tile);
 
     tileLevelMappingsBundle[tile] = new  Map <int, String>();
 
