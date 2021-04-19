@@ -1,15 +1,15 @@
 import 'dart:core';
-import 'package:mapsforge_flutter/maps.dart';
+
+import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 
 import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
 import '../model/tile.dart';
-
-import 'mapreadresult.dart';
+import 'datastorereadresult.dart';
 
 /// Base class for map data retrieval.
-abstract class MapDataStore {
+abstract class MapDataStore extends Datastore {
   /// Extracts substring of preferred language from multilingual string.<br/>
   /// Example multilingual string: "Base\ren\bEnglish\rjp\bJapan\rzh_py\bPin-yin".
   /// <p/>
@@ -84,7 +84,8 @@ abstract class MapDataStore {
   ///
   /// @param tile tile for which data is requested.
   /// @return label data for the tile.
-  Future<MapReadResult> readLabelsSingle(Tile tile) async {
+  @override
+  Future<DatastoreReadResult> readLabelsSingle(Tile tile) async {
     return readMapDataSingle(tile);
   }
 
@@ -96,11 +97,12 @@ abstract class MapDataStore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<MapReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
+  @override
+  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    MapReadResult result = new MapReadResult();
+    DatastoreReadResult result = new DatastoreReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
@@ -114,7 +116,8 @@ abstract class MapDataStore {
   ///
   /// @param tile tile for which data is requested.
   /// @return map data for the tile.
-  Future<MapReadResult> readMapDataSingle(Tile tile);
+  @override
+  Future<DatastoreReadResult> readMapDataSingle(Tile tile);
 
   /// Reads data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -124,11 +127,12 @@ abstract class MapDataStore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<MapReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+  @override
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    MapReadResult result = new MapReadResult();
+    DatastoreReadResult result = new DatastoreReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
@@ -144,7 +148,8 @@ abstract class MapDataStore {
    * @param tile tile for which data is requested.
    * @return poi data for the tile.
    */
-  Future<MapReadResult> readPoiDataSingle(Tile tile);
+  @override
+  Future<DatastoreReadResult> readPoiDataSingle(Tile tile);
 
   /// Reads POI data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -154,11 +159,12 @@ abstract class MapDataStore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<MapReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
+  @override
+  Future<DatastoreReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    MapReadResult result = new MapReadResult();
+    DatastoreReadResult result = new DatastoreReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
@@ -179,12 +185,6 @@ abstract class MapDataStore {
    * @return the start zoom level.
    */
   int get startZoomLevel;
-
-  /// Returns true if MapDatabase contains the given tile.
-  ///
-  /// @param tile tile to be rendered.
-  /// @return true if tile is part of database.
-  bool supportsTile(Tile tile);
 
   /// Returns true if a way should be included in the result set for readLabels()
   /// By default only ways with names, house numbers or a ref are included in the result set

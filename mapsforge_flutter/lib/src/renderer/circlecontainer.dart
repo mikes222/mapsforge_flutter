@@ -6,7 +6,7 @@ class CircleContainer implements ShapeContainer {
   final Mappoint point;
   final double radius;
 
-  CircleContainer(this.point, this.radius);
+  const CircleContainer(this.point, this.radius);
 
   @override
   ShapeType getShapeType() {

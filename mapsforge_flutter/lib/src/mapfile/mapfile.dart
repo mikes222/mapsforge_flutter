@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 
 import '../datastore/mapdatastore.dart';
-import '../datastore/mapreadresult.dart';
+import '../datastore/datastorereadresult.dart';
 import '../datastore/pointofinterest.dart';
 import '../datastore/poiwaybundle.dart';
 import '../datastore/way.dart';
@@ -459,8 +459,8 @@ class MapFile extends MapDataStore {
     return true;
   }
 
-  Future<MapReadResult> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters, SubFileParameter subFileParameter,
-      BoundingBox boundingBox, Selector selector) async {
+  Future<DatastoreReadResult> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters,
+      SubFileParameter subFileParameter, BoundingBox boundingBox, Selector selector) async {
     assert(_fileSize != null);
     assert(queryParameters.fromBlockX != null);
     assert(queryParameters.fromBlockY != null);
@@ -468,7 +468,7 @@ class MapFile extends MapDataStore {
     bool queryReadWaterInfo = false;
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, subFileParameter.baseZoomLevel);
 
-    MapReadResult mapFileReadResult = new MapReadResult();
+    DatastoreReadResult mapFileReadResult = new DatastoreReadResult();
 
     // read and process all blocks from top to bottom and from left to right
     for (int row = queryParameters.fromBlockY; row <= queryParameters.toBlockY; ++row) {
@@ -817,7 +817,7 @@ class MapFile extends MapDataStore {
    * @return label data for the tile.
    */
   @override
-  Future<MapReadResult> readLabelsSingle(Tile tile) async {
+  Future<DatastoreReadResult> readLabelsSingle(Tile tile) async {
     return _readMapDataComplete(tile, tile, Selector.LABELS);
   }
 
@@ -831,7 +831,7 @@ class MapFile extends MapDataStore {
    * @return map data for the tile.
    */
   @override
-  Future<MapReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
     return _readMapDataComplete(upperLeft, lowerRight, Selector.LABELS);
   }
 
@@ -842,7 +842,7 @@ class MapFile extends MapDataStore {
    * @return the read map data.
    */
   @override
-  Future<MapReadResult> readMapDataSingle(Tile tile) async {
+  Future<DatastoreReadResult> readMapDataSingle(Tile tile) async {
     return _readMapDataComplete(tile, tile, Selector.ALL);
   }
 
@@ -856,11 +856,11 @@ class MapFile extends MapDataStore {
    * @return map data for the tile.
    */
   @override
-  Future<MapReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
     return _readMapDataComplete(upperLeft, lowerRight, Selector.ALL);
   }
 
-  Future<MapReadResult> _readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
+  Future<DatastoreReadResult> _readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
     int timer = DateTime.now().millisecondsSinceEpoch;
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
@@ -887,7 +887,7 @@ class MapFile extends MapDataStore {
     ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
     // todo get actual tilesize
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
-    MapReadResult result = await processBlocks(readBufferMaster, queryParameters, subFileParameter,
+    DatastoreReadResult result = await processBlocks(readBufferMaster, queryParameters, subFileParameter,
         Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight), selector);
     diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100) _log.info("readMapDataComplete took $diff ms");
@@ -923,7 +923,7 @@ class MapFile extends MapDataStore {
    * @return POI data for the tile.
    */
   @override
-  Future<MapReadResult> readPoiDataSingle(Tile tile) async {
+  Future<DatastoreReadResult> readPoiDataSingle(Tile tile) async {
     return _readMapDataComplete(tile, tile, Selector.POIS);
   }
 
@@ -937,7 +937,7 @@ class MapFile extends MapDataStore {
    * @return map data for the tile.
    */
   @override
-  Future<MapReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
     return _readMapDataComplete(upperLeft, lowerRight, Selector.POIS);
   }
 

@@ -88,10 +88,10 @@ class Line extends RenderInstruction with BitmapMixin {
         throw new Exception("element hinich");
       }
     });
-    initPendings.add(this);
+    if (src != null) initPendings.add(this);
   }
 
-  MapPaint getStrokePaint(int zoomLevel) {
+  MapPaint _getStrokePaint(int zoomLevel) {
     MapPaint paint = strokes[zoomLevel];
     if (paint == null) {
       paint = this.stroke;
@@ -101,10 +101,11 @@ class Line extends RenderInstruction with BitmapMixin {
 
   static List<double> parseFloatArray(String name, String dashString) {
     List<String> dashEntries = dashString.split(",");
-    List<double> dashIntervals = List<double>(dashEntries.length);
-    for (int i = 0; i < dashEntries.length; ++i) {
-      dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
-    }
+    List<double> dashIntervals = dashEntries.map((e) => XmlUtils.parseNonNegativeFloat(name, e)).toList();
+    // List<double>(dashEntries.length);
+    // for (int i = 0; i < dashEntries.length; ++i) {
+    //   dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
+    // }
     return dashIntervals;
   }
 
@@ -115,7 +116,7 @@ class Line extends RenderInstruction with BitmapMixin {
 
   @override
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
-    MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
+    MapPaint strokePaint = _getStrokePaint(renderContext.job.tile.zoomLevel);
 
     double dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (dyScale == null) {
@@ -132,6 +133,7 @@ class Line extends RenderInstruction with BitmapMixin {
     if (this.stroke != null) {
       MapPaint paint = graphicFactory.createPaintFrom(stroke);
       paint.setStrokeWidth(this.strokeWidth * scaleFactor);
+
       if (this.scale == Scale.ALL || this.scale == Scale.STROKE) {
         if (strokeDasharray != null) {
           List<double> strokeDasharrayScaled = this.strokeDasharray.map((dash) {
@@ -140,9 +142,10 @@ class Line extends RenderInstruction with BitmapMixin {
           paint.setStrokeDasharray(strokeDasharrayScaled);
         }
       }
+
+      //paint.setStrokeDasharray(this.strokeDasharray);
       strokes[zoomLevel] = paint;
     }
-
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
 
@@ -156,6 +159,9 @@ class Line extends RenderInstruction with BitmapMixin {
     await initBitmap(graphicFactory);
     if (stroke != null && bitmap != null) {
       stroke.setBitmapShader(bitmap);
+      strokes.forEach((key, value) {
+        value.setBitmapShader(bitmap);
+      });
       //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
       //bitmap.incrementRefCount();
     }

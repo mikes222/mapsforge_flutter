@@ -10,7 +10,6 @@ import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/textkey.dart';
@@ -26,7 +25,7 @@ import '../rendercontext.dart';
  * If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
  * center of which is at the point of the POI. The bitmap itself is never rendered.
  */
-class Caption extends RenderInstruction with BitmapMixin {
+class Caption extends RenderInstruction {
   static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
@@ -53,7 +52,6 @@ class Caption extends RenderInstruction with BitmapMixin {
         dyScaled = new Map(),
         maxTextWidth = displayModel.getMaxTextWidth(),
         super(graphicFactory, displayModel) {
-    this.symbolCache = graphicFactory.symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);
@@ -76,7 +74,7 @@ class Caption extends RenderInstruction with BitmapMixin {
         Position.BELOW_LEFT == this.position ||
         Position.ABOVE_RIGHT == this.position ||
         Position.ABOVE_LEFT == this.position) {
-      double horizontalOffset = this.bitmap.getWidth() / 2 + this.gap;
+      double horizontalOffset = this.renderSymbol.bitmap.getWidth() / 2 + this.gap;
       if (Position.LEFT == this.position || Position.BELOW_LEFT == this.position || Position.ABOVE_LEFT == this.position) {
         horizontalOffset *= -1;
       }
@@ -87,11 +85,14 @@ class Caption extends RenderInstruction with BitmapMixin {
 
   double computeVerticalOffset(int zoomLevel) {
     double verticalOffset = this.dyScaled[zoomLevel];
+    if (verticalOffset == null) {
+      verticalOffset = this.dy;
+    }
 
     if (Position.ABOVE == this.position || Position.ABOVE_LEFT == this.position || Position.ABOVE_RIGHT == this.position) {
-      verticalOffset -= this.bitmap.getHeight() / 2 + this.gap;
+      verticalOffset -= this.renderSymbol.bitmap.getHeight() / 2 + this.gap;
     } else if (Position.BELOW == this.position || Position.BELOW_LEFT == this.position || Position.BELOW_RIGHT == this.position) {
-      verticalOffset += this.bitmap.getHeight() / 2 + this.gap;
+      verticalOffset += this.renderSymbol.bitmap.getHeight() / 2 + this.gap;
     }
     return verticalOffset;
   }
@@ -177,7 +178,6 @@ class Caption extends RenderInstruction with BitmapMixin {
       default:
         throw new Exception("Position invalid");
     }
-    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {
@@ -199,7 +199,7 @@ class Caption extends RenderInstruction with BitmapMixin {
   @override
   void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
-      _log.info("display is never for $textKey");
+      //_log.info("display is never for $textKey");
       return;
     }
 
@@ -216,7 +216,7 @@ class Caption extends RenderInstruction with BitmapMixin {
       verticalOffset = this.dy;
     }
 
-    if (bitmap != null) {
+    if (renderSymbol != null && renderSymbol.bitmap != null) {
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -252,7 +252,7 @@ class Caption extends RenderInstruction with BitmapMixin {
       verticalOffset = this.dy;
     }
 
-    if (bitmap != null) {
+    if (renderSymbol != null && renderSymbol.bitmap != null) {
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -290,13 +290,10 @@ class Caption extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
-    return initBitmap(graphicFactory);
-  }
+  void dispose() {}
 
   @override
-  void dispose() {
-    renderSymbol?.dispose();
-    super.dispose();
+  Future<void> initResources(GraphicFactory graphicFactory) {
+    return null;
   }
 }

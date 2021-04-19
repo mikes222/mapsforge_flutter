@@ -86,8 +86,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  Future matchClosedWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
-    _matchWay(renderCallback, renderContext, Closed.YES, way);
+  Future<void> matchClosedWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
+    return _matchWay(renderCallback, renderContext, Closed.YES, way);
   }
 
   /**
@@ -97,8 +97,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  void matchLinearWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
-    _matchWay(renderCallback, renderContext, Closed.NO, way);
+  Future<void> matchLinearWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
+    return _matchWay(renderCallback, renderContext, Closed.NO, way);
   }
 
   /**
@@ -115,7 +115,7 @@ class RenderTheme {
     List<RenderInstruction> matchingList = this.poiMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
-      matchingList = new List<RenderInstruction>();
+      matchingList = [];
 
       rulesList.forEach((element) {
         element.matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
@@ -133,13 +133,6 @@ class RenderTheme {
       }
       element.renderNode(renderCallback, renderContext, poi);
     }
-    // for (int i = 0, n = matchingList.length; i < n; ++i) {
-    //   if (initPendings.contains(matchingList.elementAt(i))) {
-    //     await matchingList.elementAt(i).initResources(renderContext.graphicFactory);
-    //     initPendings.remove(matchingList.elementAt(i));
-    //   }
-    //   matchingList.elementAt(i).renderNode(renderCallback, renderContext, poi);
-    // }
   }
 
   /**

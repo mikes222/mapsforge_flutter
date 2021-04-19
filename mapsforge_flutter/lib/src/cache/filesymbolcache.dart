@@ -4,17 +4,22 @@ import 'dart:ui' as ui;
 
 import 'package:ecache/ecache.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/exceptions/symbolnotfoundexception.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
+import 'package:path_provider/path_provider.dart';
 
 ///
 /// A cache for symbols (small bitmaps used in the map, eg. stopsigns, arrows). The [src] parameter specifies the filename including the
 /// extension starting from the assets-path. eg. "patterns/arrow.png"
 ///
 class FileSymbolCache extends SymbolCache {
+  static final _log = new Logger('FileSymbolCache');
+
   static final String PREFIX_JAR = "jar:";
 
   static final String PREFIX_JAR_V1 = "jar:/org/mapsforge/android/maps/rendertheme";
@@ -24,8 +29,9 @@ class FileSymbolCache extends SymbolCache {
    */
   static int DEFAULT_SIZE = 20;
 
-  AssetBundle bundle;
-  String relativePathPrefix;
+  final AssetBundle bundle;
+
+  final String relativePathPrefix;
 
   Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
     storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
@@ -34,9 +40,15 @@ class FileSymbolCache extends SymbolCache {
     capacity: 100,
   );
 
-  FileSymbolCache(this.bundle) : assert(bundle != null);
+  ///
+  /// Creates a new FileSymbolCache. If the [relativePathPrefix] is not null the symbols will be loaded given by the [relativePathPrefix] first and if
+  /// not found there the symbols will be loaded by the bundle.
+  ///
+  FileSymbolCache(this.bundle, [this.relativePathPrefix]) : assert(bundle != null);
 
-  FileSymbolCache.withRelativePathPrefix(this.relativePathPrefix) : assert(relativePathPrefix != null);
+  FileSymbolCache.withRelativePathPrefix(this.relativePathPrefix)
+      : assert(relativePathPrefix != null),
+        bundle = null;
 
   @override
   void dispose() {
@@ -62,15 +74,6 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<ResourceBitmap> _createSymbol(String src, int width, int height, int percent) async {
-    // compatibility with mapsforge
-    if (src.startsWith(PREFIX_JAR)) {
-      src = src.substring(PREFIX_JAR.length);
-      src = "packages/mapsforge_flutter/assets/" + src;
-    } else if (src.startsWith(PREFIX_JAR_V1)) {
-      src = src.substring(PREFIX_JAR_V1.length);
-      src = "packages/mapsforge_flutter/assets/" + src;
-    }
-
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
     if (src.toLowerCase().endsWith(".svg")) {
@@ -82,25 +85,40 @@ class FileSymbolCache extends SymbolCache {
     }
   }
 
+  ///
+  /// Returns the content of the symbol given as [src] as [ByteData]. This method reads the file or resource and returns the requested bytes.
+  ///
+  @protected
   Future<ByteData> fetchResource(String src) async {
-    if (bundle == null) {
-      // TODO how to handle this case (Andrea)
-      return null;
+    // compatibility with mapsforge
+    if (src.startsWith(PREFIX_JAR)) {
+      src = src.substring(PREFIX_JAR.length);
+      src = "packages/mapsforge_flutter/assets/" + src;
+    } else if (src.startsWith(PREFIX_JAR_V1)) {
+      src = src.substring(PREFIX_JAR_V1.length);
+      src = "packages/mapsforge_flutter/assets/" + src;
     }
-    ByteData content = await bundle.load(src);
-    return content;
+    if (relativePathPrefix != null) {
+      Directory dir = await getApplicationDocumentsDirectory();
+      src = dir.path + "/" + relativePathPrefix + src;
+      //_log.info("Trying to load symbol from $src");
+      File file = File(relativePathPrefix + src);
+      if (await file.exists()) {
+        Uint8List bytes = await file.readAsBytes();
+        return ByteData.view(bytes.buffer);
+      }
+    }
+    if (bundle != null) {
+      ByteData content = await bundle.load(src);
+      return content;
+    }
+    return null;
   }
 
   Future<FlutterResourceBitmap> _createPngSymbol(String src, int width, int height, int percent) async {
-    Uint8List bytes;
-    if (bundle != null) {
-      ByteData content = await fetchResource(src);
-      if (content == null) throw SymbolNotFoundException(src);
-      bytes = content.buffer.asUint8List();
-    } else if (relativePathPrefix != null) {
-      src = relativePathPrefix + src;
-      bytes = File(src).readAsBytesSync();
-    }
+    ByteData content = await fetchResource(src);
+    if (content == null) throw SymbolNotFoundException(src);
+    Uint8List bytes = content.buffer.asUint8List();
     if (width != 0 && height != 0) {
 //        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
 //        image = imag.copyResize(image, width: width, height: height);
@@ -143,17 +161,9 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<FlutterResourceBitmap> _createSvgSymbol(String src, int width, int height, int percent) async {
-    DrawableRoot svgRoot;
-
-    if (bundle != null) {
-      ByteData content = await fetchResource(src);
-      if (content == null) throw SymbolNotFoundException(src);
-      svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
-    } else if (relativePathPrefix != null) {
-      src = relativePathPrefix + src;
-      var bytes = File(src).readAsBytesSync();
-      svgRoot = await svg.fromSvgBytes(bytes, src);
-    }
+    ByteData content = await fetchResource(src);
+    if (content == null) throw SymbolNotFoundException(src);
+    DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 
     if (percent != null && percent != 100) {
       if (width != null) width = (width * percent.toDouble() / 100.0).round();

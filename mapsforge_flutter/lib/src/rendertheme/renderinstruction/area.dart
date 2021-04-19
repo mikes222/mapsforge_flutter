@@ -69,7 +69,7 @@ class Area extends RenderInstruction with BitmapMixin {
         throw Exception(name + "=" + value);
       }
     });
-    initPendings.add(this);
+    if (src != null) initPendings.add(this);
   }
 
   MapPaint getFillPaint() {

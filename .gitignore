@@ -7,3 +7,4 @@ example/pubspec.lock
 flutter_export_environment.sh
 mapsforge_flutter/test/failures/
 example/.gradle/
+mapsforge_flutter/test/integration/failures/

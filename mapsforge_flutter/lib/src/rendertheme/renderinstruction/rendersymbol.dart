@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
@@ -12,7 +11,10 @@ import 'package:xml/xml.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
 
-/// Represents an icon on the map.
+///
+/// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
+/// The [RenderSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementation.
+///
 class RenderSymbol extends RenderInstruction with BitmapMixin {
   Display display;
   String id;
@@ -50,7 +52,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
         throw Exception("Symbol probs");
       }
     });
-    initPendings.add(this);
+    if (src != null) initPendings.add(this);
   }
 
   String getId() {
@@ -60,22 +62,24 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   @override
   void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
+      //_log.info("display is never for $textKey");
       return;
     }
 
     if (bitmap != null) {
-      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, this.priority, this.bitmap, poi, symbolPaint);
+      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap, poi, symbolPaint);
     }
   }
 
   @override
   void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
+      //_log.info("display is never for $textKey");
       return;
     }
 
     if (bitmap != null) {
-      renderCallback.renderAreaSymbol(renderContext, this.display, this.priority, this.bitmap, way, symbolPaint);
+      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap, way, symbolPaint);
     }
   }
 

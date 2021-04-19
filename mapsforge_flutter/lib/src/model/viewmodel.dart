@@ -28,7 +28,7 @@ class ViewModel {
 
   Stream<GestureEvent> get observeGesture => _injectGesture.stream;
 
-  ViewModel({this.contextMenuBuilder, @required this.displayModel}) : assert(displayModel != null) {
+  ViewModel({this.contextMenuBuilder, @required this.displayModel, this.noPositionView}) : assert(displayModel != null) {
     if (noPositionView == null) noPositionView = NoPositionView();
   }
 

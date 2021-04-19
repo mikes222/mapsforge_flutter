@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
 
 import '../utils/latlongutils.dart';
@@ -289,12 +290,12 @@ class BoundingBox {
    * @param latLongs the points that define an area
    * @return false if there is no intersection, true if there could be an intersection
    */
-  bool intersectsArea(List<List<LatLong>> latLongs) {
+  bool intersectsArea(List<List<ILatLong>> latLongs) {
     if (latLongs.length == 0 || latLongs[0].length == 0) {
       return false;
     }
-    for (List<LatLong> outer in latLongs) {
-      for (LatLong latLong in outer) {
+    for (List<ILatLong> outer in latLongs) {
+      for (ILatLong latLong in outer) {
         if (this.containsLatLong(latLong)) {
           // if any of the points is inside the bbox return early
           return true;
@@ -308,8 +309,8 @@ class BoundingBox {
     double tmpMaxLat = latLongs[0][0].latitude;
     double tmpMaxLon = latLongs[0][0].longitude;
 
-    for (List<LatLong> outer in latLongs) {
-      for (LatLong latLong in outer) {
+    for (List<ILatLong> outer in latLongs) {
+      for (ILatLong latLong in outer) {
         tmpMinLat = min(tmpMinLat, latLong.latitude);
         tmpMaxLat = max(tmpMaxLat, latLong.latitude);
         tmpMinLon = min(tmpMinLon, latLong.longitude);

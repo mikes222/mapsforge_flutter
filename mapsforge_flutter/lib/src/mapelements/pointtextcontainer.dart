@@ -79,6 +79,6 @@ abstract class PointTextContainer extends MapElementContainer {
 
   @override
   String toString() {
-    return 'PointTextContainer{isVisible: $isVisible, maxTextWidth: $maxTextWidth, paintBack: $paintBack, paintFront: $paintFront, position: $position, symbolContainer: $symbolContainer, text: $text, textHeight: $textHeight, textWidth: $textWidth}';
+    return 'PointTextContainer{isVisible: $isVisible, maxTextWidth: $maxTextWidth, paintBack: $paintBack, paintFront: $paintFront, position: $position, symbolContainer: $symbolContainer, text: $text, textHeight: $textHeight, textWidth: $textWidth, ${super.toString()}';
   }
 }

@@ -163,6 +163,7 @@
                 stroke-width="0.25" />
         </rule>
         <rule e="way" k="railway" v="rail">
+            <line stroke="#60cccccc" stroke-linecap="butt" stroke-width="0.8" />
             <line stroke="#60999999" stroke-dasharray="6,6" stroke-linecap="butt"
                 stroke-width="0.4" />
         </rule>

@@ -44,9 +44,7 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     _fontFamily = other._fontFamily;
     _strokeDasharray = other._strokeDasharray;
     if (other._shaderBitmap != null) {
-      _shaderBitmap = other._shaderBitmap;
-      _shaderBitmap.incrementRefCount();
-      paint.shader = other.paint.shader;
+      setBitmapShader(other._shaderBitmap);
     }
   }
 
@@ -129,20 +127,20 @@ class FlutterPaint extends ui.Paint implements MapPaint {
     bitmap.incrementRefCount();
     ui.Image img = _shaderBitmap.bitmap;
 
-    final double devicePixelRatio = ui.window.devicePixelRatio;
-    final Float64List deviceTransform = new Float64List(16)
-      ..[0] = devicePixelRatio
-      ..[5] = devicePixelRatio
-      ..[10] = 1.0
-      ..[15] = 2.0;
-    //Float64List matrix = new Float64List(16);
-
+    // final double devicePixelRatio = ui.window.devicePixelRatio;
+    // final Float64List deviceTransform = new Float64List(16)
+    //   ..[0] = devicePixelRatio
+    //   ..[5] = devicePixelRatio
+    //   ..[10] = 1.0
+    //   ..[15] = 2.0;
+    Float64List deviceTransform = Float64List.fromList(mat.Matrix4.identity().storage);
     paint.shader = ui.ImageShader(img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
   }
 
   @override
   bool isTransparent() {
     return paint.color == mat.Colors.transparent;
+    //return paint.color == ui.Color(FlutterColor.getColor(Color.TRANSPARENT));
   }
 
   @override
@@ -241,6 +239,6 @@ class FlutterPaint extends ui.Paint implements MapPaint {
 
   @override
   String toString() {
-    return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily, _strokeDasharray: $_strokeDasharray}';
+    return 'FlutterPaint{paint: $paint, color: ${paint.color}, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily, _strokeDasharray: $_strokeDasharray}';
   }
 }

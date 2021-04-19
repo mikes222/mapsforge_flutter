@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/mapreadresult.dart';
+import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
@@ -41,15 +41,15 @@ main() async {
 
   //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
   //Campus
-  MapReadResult mapReadResult; //area
+  DatastoreReadResult mapReadResult; //area
   mapReadResult = await mapFile.readMapData(upperLeft, lowerRight);
 
   //Single rooms on Campus
-  MapReadResult mapReadResult_N115; //area
+  DatastoreReadResult mapReadResult_N115; //area
   mapReadResult_N115 = await mapFile.readMapData(upperLeft, lowerRight);
-  MapReadResult mapReadResult_N112; //area
+  DatastoreReadResult mapReadResult_N112; //area
   mapReadResult_N112 = await mapFile.readMapData(upperLeft, lowerRight);
-  MapReadResult mapReadResult_NHG_WC; //area
+  DatastoreReadResult mapReadResult_NHG_WC; //area
   mapReadResult_NHG_WC = await mapFile.readMapData(upperLeft, lowerRight);
 
   int j = 0; //Iterator for ways

@@ -6,5 +6,5 @@ class ShapePaintContainer {
   final MapPaint paint;
   final ShapeContainer shapeContainer;
 
-  ShapePaintContainer(this.shapeContainer, this.paint, this.dy);
+  const ShapePaintContainer(this.shapeContainer, this.paint, this.dy);
 }

@@ -16,7 +16,7 @@ class TextKey {
 
   final String key;
 
-  TextKey(this.key) : assert(key != null && key.length > 0);
+  const TextKey(this.key) : assert(key != null && key.length > 0);
 
   String getValue(List<Tag> tags) {
     assert(tags != null);
@@ -26,5 +26,10 @@ class TextKey {
       }
     }
     return null;
+  }
+
+  @override
+  String toString() {
+    return 'TextKey{key: $key}';
   }
 }

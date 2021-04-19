@@ -163,6 +163,7 @@
                 stroke-width="0.25" />
         </rule>
         <rule e="way" k="railway" v="rail">
+            <line stroke="#60cccccc" stroke-linecap="butt" stroke-width="0.8" />
             <line stroke="#60999999" stroke-dasharray="6,6" stroke-linecap="butt"
                 stroke-width="0.4" />
         </rule>
@@ -1463,6 +1464,7 @@
 
     <!-- names for POIs -->
     <rule e="any" k="amenity" v="restaurant|fast_food|biergarten|cafe|pub|bar" zoom-min="18">
+        <symbol id="restaurant" src="jar:symbols/food/restaurant.svg" />
         <caption fill="#734A08" font-size="12" font-style="bold" k="name" position="above"
             stroke="#FFFFFF" stroke-width="2.0" symbol-id="restaurant" />
     </rule>

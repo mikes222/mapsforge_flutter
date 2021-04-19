@@ -61,7 +61,7 @@ class CanvasRasterer {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
-    List<MapElementContainer> elementsAsList = new List();
+    List<MapElementContainer> elementsAsList = [];
     elementsAsList.addAll(elements);
     // draw elements in order of priority: lower priority first, so more important
     // elements will be drawn on top (in case of display=true) items.
