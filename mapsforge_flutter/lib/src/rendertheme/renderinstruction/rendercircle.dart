@@ -35,7 +35,7 @@ class RenderCircle extends RenderInstruction {
     this.fill.setStyle(Style.FILL);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.BLACK);
+    this.stroke.setColor(Color.TRANSPARENT);
     this.stroke.setStyle(Style.STROKE);
   }
 
