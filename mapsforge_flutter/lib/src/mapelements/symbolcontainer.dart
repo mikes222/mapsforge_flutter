@@ -15,7 +15,7 @@ class SymbolContainer extends MapElementContainer {
   final double theta;
   final MapPaint paint;
 
-  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = false, @required this.paint})
+  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = true, @required this.paint})
       : assert(paint != null),
         super(point, display, priority) {
     assert(symbol != null);

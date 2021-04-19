@@ -13,11 +13,9 @@ import '../../core.dart';
 class FlutterGestureDetector extends StatefulWidget {
   final ViewModel viewModel;
 
-  final MapViewPosition position;
-
   final Widget child;
 
-  const FlutterGestureDetector({Key key, @required this.viewModel, this.position, @required this.child})
+  const FlutterGestureDetector({Key key, @required this.viewModel, @required this.child})
       : assert(viewModel != null),
         assert(child != null),
         super(key: key);
@@ -83,7 +81,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       },
       onScaleStart: (ScaleStartDetails details) {
         startOffset = details.focalPoint;
-        startLeftUpper = widget.position?.leftUpper;
+        startLeftUpper = widget.viewModel.mapViewPosition.leftUpper;
         _lastScale = null;
 //        _log.info(details.toString());
         widget.viewModel.gestureEvent();
@@ -118,13 +116,13 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           int zoomLevelDiff = zoomLevelOffset.round();
           if (zoomLevelDiff != 0) {
             //_log.info("zooming now at $zoomLevelDiff for ${widget.position.toString()}");
-            MapViewPosition newPost = widget.viewModel.setZoomLevel(widget.position.zoomLevel + zoomLevelDiff);
+            MapViewPosition newPost = widget.viewModel.setZoomLevel(widget.viewModel.mapViewPosition.zoomLevel + zoomLevelDiff);
             //_log.info(
             //    "  resulting in ${newPost.toString()} or ${newPost.mercatorProjection} or ${newPost.calculateBoundingBox(widget.viewModel.viewDimension)}}");
           }
         } else if (_lastScale != 1) {
           // no significant zoom. Restore the old zoom
-          MapViewPosition newPost = widget.viewModel.setZoomLevel((widget.position.zoomLevel));
+          MapViewPosition newPost = widget.viewModel.setZoomLevel((widget.viewModel.mapViewPosition.zoomLevel));
           //_log.info("Restored zoom to ${widget.position.zoomLevel}");
         }
       },

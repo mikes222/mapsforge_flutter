@@ -146,7 +146,6 @@ class _FlutterMapState extends State<FlutterMapView> {
       children: <Widget>[
         FlutterGestureDetector(
           viewModel: widget.viewModel,
-          position: position,
           child: Stack(
             children: _widgets,
           ),
