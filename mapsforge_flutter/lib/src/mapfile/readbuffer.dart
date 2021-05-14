@@ -15,12 +15,12 @@ class ReadBufferMaster {
   static final _log = new Logger('ReadBufferMaster');
 
   /// The Random access file handle to the underlying file
-  RandomAccessFile _raf;
+  RandomAccessFile? _raf;
 
   /// The filename of the underlying file
-  final String filename;
+  final String? filename;
 
-  int _length;
+  int? _length;
 
   /// the _raf needs a lock otherwise the pointer to the raf could get corrupted when reading from multiple positions concurrently
   final Lock _lock;
@@ -30,7 +30,7 @@ class ReadBufferMaster {
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
     //int time = DateTime.now().millisecondsSinceEpoch;
     await _openRaf();
-    RandomAccessFile newInstance = await _raf.setPosition(indexBlockPosition);
+    RandomAccessFile newInstance = await _raf!.setPosition(indexBlockPosition);
     //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     Uint8List result = await newInstance.read(indexBlockSize);
     assert(result.length == indexBlockSize);
@@ -43,7 +43,7 @@ class ReadBufferMaster {
   /// @param length the amount of bytes to read from the file.
   /// @return true if the whole data was read successfully, false otherwise.
   /// @throws IOException if an error occurs while reading the file.
-  Future<ReadBuffer> readFromFile({int offset, @required int length}) async {
+  Future<ReadBuffer?> readFromFile({int? offset, required int length}) async {
     assert(length != null && length > 0);
     // ensure that the read buffer is large enough
     if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
@@ -53,12 +53,12 @@ class ReadBufferMaster {
 
     //int time = DateTime.now().millisecondsSinceEpoch;
     await _openRaf();
-    RandomAccessFile _newRaf = _raf;
+    RandomAccessFile? _newRaf = _raf;
     if (offset != null) {
       assert(offset >= 0);
-      _newRaf = await this._raf.setPosition(offset);
+      _newRaf = await this._raf!.setPosition(offset);
     }
-    Uint8List _bufferData = await _newRaf.read(length);
+    Uint8List _bufferData = await _newRaf!.read(length);
     assert(_bufferData != null);
     assert(_bufferData.length == length);
     //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
@@ -70,26 +70,26 @@ class ReadBufferMaster {
     _raf = null;
   }
 
-  Future<RandomAccessFile> _openRaf() async {
+  Future<RandomAccessFile?> _openRaf() async {
     if (_raf != null) {
       return Future.value(_raf);
     }
     assert(filename != null);
-    File file = File(filename);
+    File file = File(filename!);
     bool ok = await file.exists();
     if (!ok) {
-      throw FileNotFoundException(filename);
+      throw FileNotFoundException(filename!);
     }
     _raf = await file.open();
     return _raf;
   }
 
-  Future<int> length() async {
+  Future<int?> length() async {
     if (_length != null) return _length;
     //int time = DateTime.now().millisecondsSinceEpoch;
     await _openRaf();
-    _length = await _raf.length();
-    assert(_length != null && _length >= 0);
+    _length = await _raf!.length();
+    assert(_length != null && _length! >= 0);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return _length;
   }
@@ -107,7 +107,7 @@ class ReadBuffer {
   Uint8List _bufferData;
 
   /// The current offset in the underlying file which denotes the start of the _bufferData
-  int _offset;
+  int? _offset;
 
   /// The current position of the read pointer in the _bufferData. The position cannot exceed the amount of byte in _bufferData
   int bufferPosition;
@@ -188,8 +188,8 @@ class ReadBuffer {
   }
 
   List<Tag> readTags(List<Tag> tagsArray, int numberOfTags) {
-    List<Tag> tags = new List();
-    List<int> tagIds = new List();
+    List<Tag> tags =  [];
+    List<int> tagIds =  [];
 
     int maxTag = tagsArray.length;
 
@@ -207,12 +207,12 @@ class ReadBuffer {
     for (int tagId in tagIds) {
       Tag tag = tagsArray[tagId];
       // Decode variable values of tags
-      if (tag.value.length == 2 && tag.value.startsWith('%')) {
-        String value = tag.value;
+      if (tag.value!.length == 2 && tag.value!.startsWith('%')) {
+        String? value = tag.value;
         if (value == '%b') {
           value = readByte().toString();
         } else if (value == '%i') {
-          if (tag.key.contains(":colour")) {
+          if (tag.key!.contains(":colour")) {
             value = "#" + readInt().toRadixString(16);
           } else {
             value = readInt().toString();

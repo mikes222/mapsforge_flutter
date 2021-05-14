@@ -11,15 +11,15 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
 
 class BlockPage extends StatelessWidget {
-  final MapFile mapFile;
+  final MapFile? mapFile;
 
-  final SubFileParameter subFileParameter;
+  final SubFileParameter? subFileParameter;
 
-  const BlockPage({Key key, this.mapFile, this.subFileParameter}) : super(key: key);
+  const BlockPage({Key? key, this.mapFile, this.subFileParameter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return FutureBuilder<DatastoreReadResult?>(
       future: _readBlock(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasError || snapshot.error != null) {
@@ -32,11 +32,11 @@ class BlockPage extends StatelessWidget {
             child: CircularProgressIndicator(),
           );
         DatastoreReadResult mapReadResult = snapshot.data;
-        int items = mapReadResult.ways.length < 1000
-            ? mapReadResult.ways.fold(
+        int? items = mapReadResult.ways!.length < 1000
+            ? mapReadResult.ways!.fold<int>(
                 0,
-                (previousValue, element) =>
-                    previousValue + element.latLongs.fold(0, (previousValue, element) => previousValue + element.length))
+                ((previousValue, element) =>
+                    previousValue + element.latLongs.fold(0, ((previousValue, element) => previousValue + element.length))))
             : null;
         return ListView(
           children: <Widget>[
@@ -48,7 +48,7 @@ class BlockPage extends StatelessWidget {
                   InkWell(
                     child: Row(
                       children: <Widget>[
-                        Text("Pois ${mapReadResult.pointOfInterests.length}, "),
+                        Text("Pois ${mapReadResult.pointOfInterests!.length}, "),
                         Icon(Icons.more_horiz),
                       ],
                     ),
@@ -60,7 +60,7 @@ class BlockPage extends StatelessWidget {
                   InkWell(
                     child: Row(
                       children: <Widget>[
-                        Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
+                        Text("Ways ${mapReadResult.ways!.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
                         Icon(Icons.more_horiz),
                       ],
                     ),
@@ -77,23 +77,25 @@ class BlockPage extends StatelessWidget {
     );
   }
 
-  Future<DatastoreReadResult> _readBlock() async {
+  Future<DatastoreReadResult?> _readBlock() async {
     try {
-      ReadBufferMaster readBufferMaster = ReadBufferMaster(mapFile.filename);
+      ReadBufferMaster readBufferMaster = ReadBufferMaster(mapFile!.filename);
 
       QueryParameters queryParameters = new QueryParameters();
-      queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
-      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, subFileParameter.baseZoomLevel);
-      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0);
-      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0);
-      queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
-      queryParameters.calculateBlocks(subFileParameter);
+      queryParameters.queryZoomLevel = subFileParameter!.baseZoomLevel;
+      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, subFileParameter!.baseZoomLevel!);
+      Tile upperLeft = Tile(subFileParameter!.boundaryTileLeft, subFileParameter!.boundaryTileTop, subFileParameter!.baseZoomLevel!, 0);
+      Tile lowerRight =
+          Tile(subFileParameter!.boundaryTileRight, subFileParameter!.boundaryTileBottom, subFileParameter!.baseZoomLevel!, 0);
+      queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter!);
+      queryParameters.calculateBlocks(subFileParameter!);
       print(
           "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
 
       BoundingBox boundingBox = Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight);
       Selector selector = Selector.ALL;
-      DatastoreReadResult result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
+      DatastoreReadResult? result =
+          await mapFile!.processBlocks(readBufferMaster, queryParameters, subFileParameter!, boundingBox, selector);
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {

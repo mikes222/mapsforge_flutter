@@ -9,7 +9,7 @@ class BackgroundPainter extends ChangeNotifier implements CustomPainter {
 
   final DisplayModel displayModel;
 
-  BackgroundPainter({@required this.position, @required this.displayModel})
+  BackgroundPainter({required this.position, required this.displayModel})
       : assert(position != null),
         assert(displayModel != null);
 
@@ -30,7 +30,7 @@ class BackgroundPainter extends ChangeNotifier implements CustomPainter {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
-  bool hitTest(Offset position) => null;
+  bool? hitTest(Offset position) => null;
 
   @override
   get semanticsBuilder => null;

@@ -30,15 +30,15 @@ class RenderThemeBuilder {
 
   final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
-  double baseStrokeWidth;
-  double baseTextSize;
-  bool hasBackgroundOutside;
-  int mapBackground;
-  int mapBackgroundOutside;
-  int version;
-  final List<RuleBuilder> ruleBuilderStack = List();
+  double? baseStrokeWidth;
+  double? baseTextSize;
+  bool? hasBackgroundOutside;
+  int? mapBackground;
+  int? mapBackgroundOutside;
+  late int version;
+  final List<RuleBuilder> ruleBuilderStack = [];
   int level = 0;
-  List<RenderInstruction> initPendings = List();
+  List<RenderInstruction> initPendings = [];
 
   RenderThemeBuilder(this.graphicFactory, this.displayModel)
       : assert(graphicFactory != null),
@@ -83,7 +83,7 @@ class RenderThemeBuilder {
           break;
         case XmlNodeType.ELEMENT:
           {
-            XmlElement element = node;
+            XmlElement element = node as XmlElement;
             if (element.name.toString() != "rendertheme") throw Exception("Invalid root node ${element.name.toString()}");
             foundRendertheme = true;
             _parseRendertheme(element, initPendings);
@@ -156,7 +156,7 @@ class RenderThemeBuilder {
           break;
         case XmlNodeType.ELEMENT:
           {
-            XmlElement element = node;
+            XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
               RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, Map<String, RenderSymbol>(), level++);
@@ -167,7 +167,7 @@ class RenderThemeBuilder {
               //print("Time ${DateTime.now().millisecondsSinceEpoch - time} after rule ${element.toString()}");
               break;
             } else if ("hillshading" == element.name.toString()) {
-              String category = null;
+              String? category = null;
               int minZoom = 5;
               int maxZoom = 17;
               int layer = 5;

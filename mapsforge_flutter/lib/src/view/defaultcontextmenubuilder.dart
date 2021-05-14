@@ -16,12 +16,12 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
   Color backgroundColor = Color(0xc3FFFFFF);
 
   @override
-  Widget build(BuildContext context, MapModel mapModel, ViewModel viewModel, Dimension screen, double x, double y, TapEvent event,
+  Widget build(BuildContext context, MapModel mapModel, ViewModel viewModel, Dimension? screen, double x, double y, TapEvent event,
       ContextMenuCallback callback) {
     Radius outer = Radius.circular(outerRadius);
     Radius inner = Radius.circular(outerRadius - width);
     //print("${x} / ${y}");
-    double halfWidth = screen.width / 2;
+    double halfWidth = screen!.width / 2;
     double halfHeight = screen.height / 2;
     return Positioned(
       left: x <= halfWidth ? x : null,
@@ -71,8 +71,7 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
               style: TextStyle(fontSize: 12),
             ),
             onLongPress: () {
-              Clipboard.setData(
-                  new ClipboardData(text: "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}" ?? ""));
+              Clipboard.setData(new ClipboardData(text: "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}"));
             },
           ),
           IconButton(

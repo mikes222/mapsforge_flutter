@@ -17,7 +17,7 @@ class XmlUtils {
 
   static final String UNSUPPORTED_COLOR_FORMAT = "unsupported color format: ";
 
-  static void checkMandatoryAttribute(String elementName, String attributeName, Object attributeValue) {
+  static void checkMandatoryAttribute(String elementName, String attributeName, Object? attributeValue) {
     if (attributeValue == null) {
       throw new Exception("missing attribute '" + attributeName + "' for element: " + elementName);
     }
@@ -74,55 +74,6 @@ class XmlUtils {
   }
 
   /**
-   * Create InputStream from assets, file or jar resource.
-   * <p/>
-   * If the resource has not a location prefix, then the search order is (file, assets, jar).
-   */
-  static InputStream createInputStream(GraphicFactory graphicFactory, String relativePathPrefix, String src) {
-    InputStream inputStream;
-    if (src.startsWith(PREFIX_ASSETS)) {
-      src = src.substring(PREFIX_ASSETS.length);
-      //inputStream = inputStreamFromAssets(graphicFactory, relativePathPrefix, src);
-    } else if (src.startsWith(PREFIX_FILE)) {
-      src = src.substring(PREFIX_FILE.length);
-      inputStream = inputStreamFromFile(relativePathPrefix, src);
-    } else if (src.startsWith(PREFIX_JAR) || src.startsWith(PREFIX_JAR_V1)) {
-      if (src.startsWith(PREFIX_JAR)) {
-        src = src.substring(PREFIX_JAR.length);
-      } else if (src.startsWith(PREFIX_JAR_V1)) {
-        src = src.substring(PREFIX_JAR_V1.length);
-      }
-      src = "patterns/" + src;
-//      inputStream = inputStreamFromJar(relativePathPrefix, src);
-    } else {
-      inputStream = inputStreamFromFile(relativePathPrefix, src);
-
-      if (inputStream == null) {
-        //inputStream = inputStreamFromAssets(graphicFactory, relativePathPrefix, src);
-      }
-
-//      if (inputStream == null) {
-//        inputStream = inputStreamFromJar(relativePathPrefix, src);
-//      }
-    }
-
-// Fallback to internal resources
-//    if (inputStream == null) {
-//      inputStream = inputStreamFromJar("/assets/", src);
-//      if (inputStream != null) {
-//        LOGGER.info("internal resource: " + src);
-//      }
-//    }
-
-    if (inputStream != null) {
-      return inputStream;
-    }
-
-    _log.severe("invalid resource: " + src);
-    throw new Exception("invalid resource: " + src);
-  }
-
-  /**
    * Create InputStream from (platform specific) assets resource.
    */
   // static InputStream inputStreamFromAssets(GraphicFactory graphicFactory, String relativePathPrefix, String src) {
@@ -135,27 +86,6 @@ class XmlUtils {
   //   }
   //   return null;
   // }
-
-  /**
-   * Create InputStream from file resource.
-   */
-  static InputStream inputStreamFromFile(String relativePathPrefix, String src) {
-    File file = getFile(relativePathPrefix, src);
-//    if (!file.exists()) {
-//      if (src.length > 0 && src.charAt(0) == File.separatorChar) {
-//        file = getFile(relativePathPrefix, src.substring(1));
-//      }
-//      if (!file.exists()) {
-//        file = null;
-//      }
-//    } else if (!file.isFile() || !file.canRead()) {
-//      file = null;
-//    }
-//    if (file != null) {
-//      return new FileInputStream(file);
-//    }
-    return null;
-  }
 
   /**
    * Create InputStream from jar resource.
@@ -186,12 +116,5 @@ class XmlUtils {
 
     int color = graphicFactory.createColorSeparate(alpha, red, green, blue);
     return color;
-  }
-
-  static File getFile(String parentPath, String pathName) {
-//    if (pathName.charAt(0) == File.separatorChar) {
-//      return new File(pathName);
-//    }
-//    return new File(parentPath, pathName);
   }
 }

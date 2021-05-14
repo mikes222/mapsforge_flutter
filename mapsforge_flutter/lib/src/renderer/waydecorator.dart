@@ -17,30 +17,30 @@ class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 45;
 
   static void renderSymbol(
-      Bitmap symbolBitmap,
-      Display display,
+      Bitmap? symbolBitmap,
+      Display? display,
       int priority,
       double dy,
       bool alignCenter,
       bool repeatSymbol,
       int repeatGap,
       int repeatStart,
-      bool rotate,
-      List<List<Mappoint>> coordinates,
+      bool? rotate,
+      List<List<Mappoint>?>? coordinates,
       List<MapElementContainer> currentItems,
-      MapPaint symbolPaint) {
+      MapPaint? symbolPaint) {
     int skipPixels = repeatStart;
 
-    List<Mappoint> c;
+    List<Mappoint?>? c;
     if (dy == 0) {
-      c = coordinates[0];
+      c = coordinates![0];
     } else {
-      c = RendererUtils.parallelPath(coordinates[0], dy);
+      c = RendererUtils.parallelPath(coordinates![0]!, dy);
     }
 
     // get the first way point coordinates
-    double previousX = c[0].x;
-    double previousY = c[0].y;
+    double previousX = c![0]!.x;
+    double previousY = c[0]!.y;
 
     // draw the symbolContainer on each way segment
     int segmentLengthRemaining;
@@ -49,8 +49,8 @@ class WayDecorator {
 
     for (int i = 1; i < c.length; ++i) {
       // get the current way point coordinates
-      double currentX = c[i].x;
-      double currentY = c[i].y;
+      double currentX = c[i]!.x;
+      double currentY = c[i]!.y;
 
       // calculate the length of the current segment (Euclidian distance)
       double diffX = currentX - previousX;
@@ -65,7 +65,7 @@ class WayDecorator {
         // move the previous point forward towards the current point
         previousX += diffX * segmentSkipPercentage;
         previousY += diffY * segmentSkipPercentage;
-        if (rotate) {
+        if (rotate!) {
           // if we do not rotate theta will be 0, which is correct
           theta = atan2(currentY - previousY, currentX - previousX);
         }
@@ -73,7 +73,7 @@ class WayDecorator {
         Mappoint point = new Mappoint(previousX, previousY);
 
         currentItems
-            .add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter, paint: symbolPaint));
+            .add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter, paint: symbolPaint!));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {
@@ -121,16 +121,16 @@ class WayDecorator {
       Tile upperLeft,
       Tile lowerRight,
       String text,
-      Display display,
+      Display? display,
       int priority,
       double dy,
       MapPaint fill,
       MapPaint stroke,
-      bool repeat,
+      bool? repeat,
       double repeatGap,
       double repeatStart,
-      bool rotate,
-      List<List<Mappoint>> coordinates,
+      bool? rotate,
+      List<List<Mappoint>?> coordinates,
       List<MapElementContainer> currentLabels) {
     assert(repeatStart != null);
     assert(repeatGap != null);
@@ -138,14 +138,14 @@ class WayDecorator {
       return;
     }
 
-    List<Mappoint> c;
+    List<Mappoint?>? c;
     if (dy == 0) {
       c = coordinates[0];
     } else {
-      c = RendererUtils.parallelPath(coordinates[0], dy);
+      c = RendererUtils.parallelPath(coordinates[0]!, dy);
     }
 
-    if (c.length < 2) {
+    if (c!.length < 2) {
       return;
     }
 
@@ -158,7 +158,7 @@ class WayDecorator {
     int textWidth = (stroke == null) ? fill.getTextWidth(text) : stroke.getTextWidth(text);
     int textHeight = (stroke == null) ? fill.getTextHeight(text) : stroke.getTextHeight(text);
 
-    double pathLength = path.length();
+    double pathLength = path.length()!;
 
     for (double pos = repeatStart; pos + textWidth < pathLength; pos += repeatGap + textWidth) {
       LineString linePart = path.extractPart(pos, pos + textWidth);

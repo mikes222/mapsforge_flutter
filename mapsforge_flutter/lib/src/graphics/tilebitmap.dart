@@ -7,7 +7,7 @@ abstract class TileBitmap extends Bitmap {
  * The timestamp indicates when the tile was created and can be used together with a TTL in order to determine
  * whether to treat it as expired.
  */
-  int getTimestamp();
+  int? getTimestamp();
 
 /**
  * Whether the TileBitmap has expired.
@@ -19,7 +19,7 @@ abstract class TileBitmap extends Bitmap {
  *
  * @return {@code true} if expired, {@code false} otherwise.
  */
-  bool isExpired();
+  bool? isExpired();
 
 /**
  * Sets the timestamp when this tile will be expired in milliseconds since January 1, 1970 GMT or 0 if this

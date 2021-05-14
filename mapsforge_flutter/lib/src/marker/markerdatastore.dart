@@ -7,13 +7,13 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 /// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas)
 ///
 class MarkerDataStore with ChangeNotifier {
-  final List<BasicMarker> _markers = List();
+  final List<BasicMarker> _markers = [];
 
-  final List<BasicMarker> _markersNeedInit = List();
+  final List<BasicMarker> _markersNeedInit = [];
 
   bool _needsRepaint = false;
 
-  List<BasicMarker> getMarkers(GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
+  List<BasicMarker> getMarkers(GraphicFactory graphicFactory, BoundingBox? boundary, int zoomLevel) {
     List<BasicMarker> markers = _markers.where((marker) => marker.shouldPaint(boundary, zoomLevel)).toList();
     List<BasicMarker> markersToInit = markers.where((element) => _markersNeedInit.contains(element)).toList();
     markersToInit.forEach((element) {

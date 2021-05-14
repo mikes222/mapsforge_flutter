@@ -9,7 +9,7 @@ class Deserializer {
   /// @param buffer the byte array.
   /// @param offset the offset in the array.
   /// @return the long value.
-  static int getFiveBytesLong(Uint8List buffer, int offset) {
+  static int getFiveBytesLong(List<int> buffer, int offset) {
     return (buffer[offset] & 0xff) << 32 |
         (buffer[offset + 1] & 0xff) << 24 |
         (buffer[offset + 2] & 0xff) << 16 |

@@ -7,18 +7,13 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 abstract class Datastore {
   const Datastore();
 
-  ///
-  /// Initializes the datastore
-  ///
-  Future<void> init();
-
   /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
   /// It is permissible for the MapDataStore to return more data.
   /// This default implementation returns all map data, which is inefficient, but works.
   ///
   /// @param tile tile for which data is requested.
   /// @return label data for the tile.
-  Future<DatastoreReadResult> readLabelsSingle(Tile tile);
+  Future<DatastoreReadResult?> readLabelsSingle(Tile tile);
 
   /// Reads data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -28,13 +23,13 @@ abstract class Datastore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight);
+  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight);
 
   /// Reads data for tile.
   ///
   /// @param tile tile for which data is requested.
   /// @return map data for the tile.
-  Future<DatastoreReadResult> readMapDataSingle(Tile tile);
+  Future<DatastoreReadResult?> readMapDataSingle(Tile tile);
 
   /// Reads data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -44,7 +39,7 @@ abstract class Datastore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight);
+  Future<DatastoreReadResult?> readMapData(Tile upperLeft, Tile lowerRight);
 
   /**
    * Reads only POI data for tile.
@@ -52,7 +47,7 @@ abstract class Datastore {
    * @param tile tile for which data is requested.
    * @return poi data for the tile.
    */
-  Future<DatastoreReadResult> readPoiDataSingle(Tile tile);
+  Future<DatastoreReadResult?> readPoiDataSingle(Tile tile);
 
   /// Reads POI data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -62,7 +57,7 @@ abstract class Datastore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<DatastoreReadResult> readPoiData(Tile upperLeft, Tile lowerRight);
+  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight);
 
   /// Returns true if MapDatabase contains the given tile.
   ///

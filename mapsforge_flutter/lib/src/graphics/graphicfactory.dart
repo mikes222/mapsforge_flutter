@@ -23,7 +23,7 @@ abstract class GraphicFactory {
 
   //Bitmap createBitmap(int width, int height, bool isTransparent);
 
-  MapCanvas createCanvas(double width, double height, [String src]);
+  MapCanvas createCanvas(double width, double height, [String? src]);
 
   int createColor(Color color);
 
@@ -40,14 +40,14 @@ abstract class GraphicFactory {
 
   MapPaint createPaint();
 
-  MapPaint createPaintFrom(MapPaint from);
+  MapPaint createPaintFrom(MapPaint? from);
 
   MapPath createPath();
 
   MapRect createRect(double left, double top, double right, double bottom);
 
-  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
-      MapPaint paintBack, SymbolContainer symbolContainer, Position position, int maxTextWidth);
+  PointTextContainer createPointTextContainer(Mappoint xy, Display? display, int priority, String text, MapPaint paintFront,
+      MapPaint paintBack, SymbolContainer? symbolContainer, Position? position, int maxTextWidth);
 
 //  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 

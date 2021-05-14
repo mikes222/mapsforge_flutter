@@ -24,12 +24,12 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  TileBitmap getTileBitmapSync(Tile tile) {
+  TileBitmap? getTileBitmapSync(Tile tile) {
     return _bitmaps.get(tile);
   }
 
   @override
-  Future<TileBitmap> getTileBitmapAsync(Tile tile) async {
+  Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
     return _bitmaps.get(tile);
   }
 
@@ -54,7 +54,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
     _bitmaps.storage.keys.where((Tile tile) {
       // TODO find the correct tilesize
       MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, tile.zoomLevel);
-      if (tile.getBoundingBox(mercatorProjectionImpl).intersects(boundingBox)) {
+      if (tile.getBoundingBox(mercatorProjectionImpl)!.intersects(boundingBox)) {
         return true;
       }
       return false;

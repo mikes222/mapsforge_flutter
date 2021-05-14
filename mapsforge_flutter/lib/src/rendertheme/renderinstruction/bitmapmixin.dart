@@ -7,15 +7,15 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 class BitmapMixin {
   static final _log = new Logger('BitmapMixin');
 
-  SymbolCache symbolCache;
+  SymbolCache? symbolCache;
 
-  String src;
+  String? src;
 
-  Bitmap bitmap;
+  Bitmap? bitmap;
 
   bool bitmapInvalid = false;
 
-  Future<Bitmap> _future;
+  Future<Bitmap?>? _future;
 
   double height = 0;
 
@@ -23,12 +23,12 @@ class BitmapMixin {
 
   int percent = 100;
 
-  MapPaint symbolPaint;
+  MapPaint? symbolPaint;
 
   @mustCallSuper
   void dispose() {
     if (this.bitmap != null) {
-      this.bitmap.decrementRefCount();
+      this.bitmap!.decrementRefCount();
       bitmap = null;
     }
     _future = null;
@@ -42,12 +42,12 @@ class BitmapMixin {
     if (bitmap != null) return;
 
     if (symbolCache != null) {
-      if (src == null || src.isEmpty) {
+      if (src == null || src!.isEmpty) {
         return;
       }
       try {
-        bitmap = await symbolCache.getSymbol(src, width.round(), height.round(), percent);
-        bitmap.incrementRefCount();
+        bitmap = await symbolCache!.getSymbol(src, width.round(), height.round(), percent);
+        bitmap!.incrementRefCount();
       } catch (e, stacktrace) {
         _log.warning("${e.toString()}, ignore missing bitmap in rendering");
         //print("Exception $e\nStacktrace $stacktrace");
@@ -57,11 +57,11 @@ class BitmapMixin {
     }
 
     symbolPaint = graphicFactory.createPaint();
-    symbolPaint.setColorFromNumber(0xff000000);
+    symbolPaint!.setColorFromNumber(0xff000000);
   }
 
   @protected
-  Future<Bitmap> getOrCreateBitmap(GraphicFactory graphicFactory, String src) async {
+  Future<Bitmap?>? getOrCreateBitmap(GraphicFactory graphicFactory, String src) async {
     if (bitmapInvalid) return null;
     if (null == src || src.isEmpty) {
       bitmapInvalid = true;
@@ -75,7 +75,7 @@ class BitmapMixin {
       return _future;
     }
     try {
-      _future = symbolCache.getSymbol(src, width.round(), height.round(), percent);
+      _future = symbolCache!.getSymbol(src, width.round(), height.round(), percent);
       bitmap = await _future;
       bitmap?.incrementRefCount();
       _future = null;

@@ -17,24 +17,24 @@ import 'renderinstruction.dart';
  * Represents a closed polygon on the map.
  */
 class Area extends RenderInstruction with BitmapMixin {
-  MapPaint fill;
+  MapPaint? fill;
   final int level;
   Scale scale = Scale.STROKE;
-  MapPaint stroke;
-  Map<int, MapPaint> strokes;
-  double strokeWidth;
+  MapPaint? stroke;
+  late Map<int, MapPaint> strokes;
+  late double strokeWidth;
 
   Area(graphicFactory, displayModel, String elementName, this.level) : super(graphicFactory, displayModel) {
     this.symbolCache = graphicFactory.symbolCache;
     this.fill = graphicFactory.createPaint();
-    this.fill.setColor(Color.TRANSPARENT);
-    this.fill.setStyle(Style.FILL);
-    this.fill.setStrokeCap(Cap.ROUND);
+    this.fill!.setColor(Color.TRANSPARENT);
+    this.fill!.setStyle(Style.FILL);
+    this.fill!.setStrokeCap(Cap.ROUND);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.TRANSPARENT);
-    this.stroke.setStyle(Style.STROKE);
-    this.stroke.setStrokeCap(Cap.ROUND);
+    this.stroke!.setColor(Color.TRANSPARENT);
+    this.stroke!.setStyle(Style.STROKE);
+    this.stroke!.setStrokeCap(Cap.ROUND);
 
     this.strokes = new Map();
     strokeWidth = 1;
@@ -50,11 +50,11 @@ class Area extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
@@ -72,16 +72,16 @@ class Area extends RenderInstruction with BitmapMixin {
     if (src != null) initPendings.add(this);
   }
 
-  MapPaint getFillPaint() {
+  MapPaint? getFillPaint() {
     return this.fill;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint paint = strokes[zoomLevel];
+    MapPaint? paint = strokes[zoomLevel];
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint;
+    return paint!;
   }
 
   @override
@@ -94,7 +94,7 @@ class Area extends RenderInstruction with BitmapMixin {
 //    synchronized(this) {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
-    MapPaint fillPaint = getFillPaint();
+    MapPaint? fillPaint = getFillPaint();
 
     renderCallback.renderArea(renderContext, fillPaint, getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
 //}
@@ -123,7 +123,7 @@ class Area extends RenderInstruction with BitmapMixin {
     await initBitmap(graphicFactory);
 
     if (fill != null && bitmap != null) {
-      fill.setBitmapShader(bitmap);
+      fill!.setBitmapShader(bitmap);
       //bitmap.incrementRefCount();
     }
 
@@ -134,7 +134,7 @@ class Area extends RenderInstruction with BitmapMixin {
   void dispose() {
     fill?.dispose();
     strokes.values.forEach((element) {
-      element?.dispose();
+      element.dispose();
     });
     super.dispose();
   }

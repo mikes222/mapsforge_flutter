@@ -46,17 +46,17 @@ class OptionalFields {
     optionalFields.readOptionalFields(readBuffer);
   }
 
-  String comment;
-  String createdBy;
-  bool hasComment;
-  bool hasCreatedBy;
-  bool hasLanguagesPreference;
-  bool hasStartPosition;
-  bool hasStartZoomLevel;
-  bool isDebugFile;
-  String languagesPreference;
-  LatLong startPosition;
-  int startZoomLevel;
+  String? comment;
+  String? createdBy;
+  late bool hasComment;
+  late bool hasCreatedBy;
+  late bool hasLanguagesPreference;
+  late bool hasStartPosition;
+  late bool hasStartZoomLevel;
+  bool? isDebugFile;
+  String? languagesPreference;
+  LatLong? startPosition;
+  int? startZoomLevel;
 
   OptionalFields(int flags) {
     this.isDebugFile = (flags & HEADER_BITMASK_DEBUG) != 0;

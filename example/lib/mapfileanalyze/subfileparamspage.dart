@@ -5,11 +5,11 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 
 class SubfileParamsPage extends StatelessWidget {
-  final MapFile mapFile;
+  final MapFile? mapFile;
 
-  final List<SubFileParameter> subFileParameters;
+  final List<SubFileParameter?>? subFileParameters;
 
-  const SubfileParamsPage({Key key, this.mapFile, this.subFileParameters}) : super(key: key);
+  const SubfileParamsPage({Key? key, this.mapFile, this.subFileParameters}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +22,18 @@ class SubfileParamsPage extends StatelessWidget {
     // });
     // print("analyzing ${subFileParameters.length} subfileParameter items, ${newList.length} different items");
     return ListView(
-      children: subFileParameters
+      children: subFileParameters!
           .map((e) => Card(
                 child: e == null
                     ? Text(
-                        "SubfileParam for ZoomLevel ${subFileParameters.indexOf(e)} and more",
+                        "SubfileParam for ZoomLevel ${subFileParameters!.indexOf(e)} and more",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            "SubfileParam for ZoomLevel ${subFileParameters.indexOf(e)} and more",
+                            "SubfileParam for ZoomLevel ${subFileParameters!.indexOf(e)} and more",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Wrap(

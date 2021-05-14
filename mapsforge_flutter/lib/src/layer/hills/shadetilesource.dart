@@ -15,7 +15,7 @@ abstract class ShadeTileSource {
   /**
    * main work method
    */
-  HillshadingBitmap getHillshadingBitmap(int latitudeOfSouthWestCorner,
+  HillshadingBitmap? getHillshadingBitmap(int latitudeOfSouthWestCorner,
       int longituedOfSouthWestCorner, double pxPerLat, double pxPerLng);
 
   void applyConfiguration(bool allowParallel);

@@ -12,12 +12,12 @@ import 'hgtcache.dart';
  */
 class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
   final GraphicFactory graphicsFactory;
-  HgtCache currentCache;
+  HgtCache? currentCache;
   int mainCacheSize = 4;
   int neighborCacheSize = 4;
   bool enableInterpolationOverlap = true;
-  File demFolder;
-  ShadingAlgorithm algorithm;
+  File? demFolder;
+  ShadingAlgorithm? algorithm;
   bool configurationChangePending = true;
 
   MemoryCachingHgtReaderTileSource(
@@ -28,25 +28,25 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
 
   @override
   void applyConfiguration(bool allowParallel) {
-    HgtCache before = currentCache;
-    HgtCache latest = latestCache();
+    HgtCache? before = currentCache;
+    HgtCache? latest = latestCache();
     if (allowParallel && latest != null && latest != before)
       latest.indexOnThread();
   }
 
-  HgtCache latestCache() {
-    HgtCache ret = this.currentCache;
+  HgtCache? latestCache() {
+    HgtCache? ret = this.currentCache;
     if (ret != null && !configurationChangePending) return ret;
     if (demFolder == null || algorithm == null) {
       this.currentCache = null;
       return null;
     }
     if (ret == null ||
-        enableInterpolationOverlap != this.currentCache.interpolatorOverlap ||
-        mainCacheSize != this.currentCache.mainCacheSize ||
-        neighborCacheSize != this.currentCache.neighborCacheSize ||
-        demFolder != this.currentCache.demFolder ||
-        algorithm != this.currentCache.algorithm) {
+        enableInterpolationOverlap != this.currentCache!.interpolatorOverlap ||
+        mainCacheSize != this.currentCache!.mainCacheSize ||
+        neighborCacheSize != this.currentCache!.neighborCacheSize ||
+        demFolder != this.currentCache!.demFolder ||
+        algorithm != this.currentCache!.algorithm) {
 //      ret = new HgtCache(demFolder, enableInterpolationOverlap, graphicsFactory,
 //          algorithm, mainCacheSize, neighborCacheSize);
       this.currentCache = ret;
@@ -56,16 +56,16 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
 
   @override
   void prepareOnThread() {
-    if (currentCache != null) currentCache.indexOnThread();
+    if (currentCache != null) currentCache!.indexOnThread();
   }
 
   @override
-  HillshadingBitmap getHillshadingBitmap(int latitudeOfSouthWestCorner,
+  HillshadingBitmap? getHillshadingBitmap(int latitudeOfSouthWestCorner,
       int longituedOfSouthWestCorner, double pxPerLat, double pxPerLng) {
     if (latestCache() == null) {
       return null;
     }
-    return currentCache.getHillshadingBitmap(latitudeOfSouthWestCorner,
+    return currentCache!.getHillshadingBitmap(latitudeOfSouthWestCorner,
         longituedOfSouthWestCorner, pxPerLat, pxPerLng);
   }
 
@@ -113,11 +113,11 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
     return enableInterpolationOverlap;
   }
 
-  File getDemFolder() {
+  File? getDemFolder() {
     return demFolder;
   }
 
-  ShadingAlgorithm getAlgorithm() {
+  ShadingAlgorithm? getAlgorithm() {
     return algorithm;
   }
 }

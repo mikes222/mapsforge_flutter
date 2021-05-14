@@ -10,9 +10,9 @@ import 'basicmarker.dart';
 import 'markercallback.dart';
 
 class PathMarker<T> extends BasicMarker<T> {
-  List<ILatLong> path = List();
+  List<ILatLong> path = [];
 
-  MapPaint stroke;
+  MapPaint? stroke;
 
   final double strokeWidth;
 
@@ -45,9 +45,9 @@ class PathMarker<T> extends BasicMarker<T> {
     super.initResources(graphicFactory);
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
-      this.stroke.setColorFromNumber(strokeColor);
-      this.stroke.setStyle(Style.STROKE);
-      this.stroke.setStrokeWidth(strokeWidth);
+      this.stroke!.setColorFromNumber(strokeColor);
+      this.stroke!.setStyle(Style.STROKE);
+      this.stroke!.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
     }
   }
@@ -57,7 +57,7 @@ class PathMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
   }
 
@@ -68,9 +68,9 @@ class PathMarker<T> extends BasicMarker<T> {
 
     path.forEach((latLong) {
       double y =
-          markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude) - markerCallback.mapViewPosition.leftUpper.y;
-      double x = markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude) -
-          markerCallback.mapViewPosition.leftUpper.x;
+          markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude!) - markerCallback.mapViewPosition.leftUpper!.y;
+      double x = markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong.longitude!) -
+          markerCallback.mapViewPosition.leftUpper!.x;
 
       if (mapPath.isEmpty())
         mapPath.moveTo(x, y);

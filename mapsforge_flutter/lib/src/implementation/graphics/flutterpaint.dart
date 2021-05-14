@@ -19,7 +19,7 @@ import 'fluttercolor.dart';
 class FlutterPaint implements MapPaint {
   final ui.Paint paint;
 
-  FlutterBitmap _shaderBitmap;
+  FlutterBitmap? _shaderBitmap;
 
   double _textSize = 10;
 
@@ -27,7 +27,7 @@ class FlutterPaint implements MapPaint {
 
   MapFontFamily _fontFamily = MapFontFamily.DEFAULT;
 
-  List<double> _strokeDasharray;
+  List<double>? _strokeDasharray;
 
   FlutterPaint(this.paint);
 
@@ -66,8 +66,8 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setColorFromNumber(int color) {
-    paint.color = ui.Color(color);
+  void setColorFromNumber(int? color) {
+    paint.color = ui.Color(color!);
   }
 
   @override
@@ -101,8 +101,8 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setStrokeWidth(double strokeWidth) {
-    paint.strokeWidth = strokeWidth;
+  void setStrokeWidth(double? strokeWidth) {
+    paint.strokeWidth = strokeWidth!;
   }
 
   @override
@@ -118,12 +118,12 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setBitmapShader(Bitmap bitmap) {
+  void setBitmapShader(Bitmap? bitmap) {
     assert(bitmap != null);
-    if (_shaderBitmap != null) _shaderBitmap.decrementRefCount();
-    _shaderBitmap = bitmap;
-    bitmap.incrementRefCount();
-    ui.Image img = _shaderBitmap.bitmap;
+    if (_shaderBitmap != null) _shaderBitmap!.decrementRefCount();
+    _shaderBitmap = bitmap as FlutterBitmap?;
+    bitmap!.incrementRefCount();
+    ui.Image img = _shaderBitmap!.bitmap;
 
     // final double devicePixelRatio = ui.window.devicePixelRatio;
     // final Float64List deviceTransform = new Float64List(16)
@@ -226,12 +226,12 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setStrokeDasharray(List<double> strokeDasharray) {
+  void setStrokeDasharray(List<double>? strokeDasharray) {
     this._strokeDasharray = strokeDasharray;
   }
 
   @override
-  List<double> getStrokeDasharray() {
+  List<double>? getStrokeDasharray() {
     return _strokeDasharray;
   }
 

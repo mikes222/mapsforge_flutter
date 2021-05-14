@@ -50,23 +50,23 @@ class RuleBuilder {
   final DisplayModel displayModel;
   int level;
 
-  String cat;
-  ClosedMatcher closedMatcher;
-  ElementMatcher elementMatcher;
-  int zoomMax;
-  int zoomMin;
-  Closed closed;
-  Element element;
-  List<String> keyList;
-  String keys;
+  String? cat;
+  ClosedMatcher? closedMatcher;
+  ElementMatcher? elementMatcher;
+  int? zoomMax;
+  int? zoomMin;
+  Closed? closed;
+  Element? element;
+  List<String>? keyList;
+  String? keys;
   final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<RuleBuilder> ruleBuilderStack;
   final Map<String, RenderSymbol> symbols;
-  List<Hillshading> hillShadings = new List(); // NOPMD specific interface for trimToSize
-  List<String> valueList;
-  String values;
+  List<Hillshading> hillShadings = []; // NOPMD specific interface for trimToSize
+  List<String>? valueList;
+  String? values;
 
-  static ClosedMatcher getClosedMatcher(Closed closed) {
+  static ClosedMatcher getClosedMatcher(Closed? closed) {
     switch (closed) {
       case Closed.YES:
         return ClosedWayMatcher.INSTANCE;
@@ -79,7 +79,7 @@ class RuleBuilder {
     throw new Exception("unknown closed value: " + closed.toString());
   }
 
-  static ElementMatcher getElementMatcher(Element element) {
+  static ElementMatcher getElementMatcher(Element? element) {
     switch (element) {
       case Element.NODE:
         return ElementNodeMatcher.INSTANCE;
@@ -97,7 +97,7 @@ class RuleBuilder {
       return AnyMatcher.INSTANCE;
     }
 
-    AttributeMatcher attributeMatcher = Rule.MATCHERS_CACHE_KEY[keyList];
+    AttributeMatcher? attributeMatcher = Rule.MATCHERS_CACHE_KEY[keyList];
     if (attributeMatcher == null) {
       attributeMatcher = new KeyMatcher(keyList);
       Rule.MATCHERS_CACHE_KEY[keyList] = attributeMatcher;
@@ -110,7 +110,7 @@ class RuleBuilder {
       return AnyMatcher.INSTANCE;
     }
 
-    AttributeMatcher attributeMatcher = Rule.MATCHERS_CACHE_VALUE[valueList];
+    AttributeMatcher? attributeMatcher = Rule.MATCHERS_CACHE_VALUE[valueList];
     if (attributeMatcher == null) {
       attributeMatcher = new ValueMatcher(valueList);
       Rule.MATCHERS_CACHE_VALUE[valueList] = attributeMatcher;
@@ -120,8 +120,8 @@ class RuleBuilder {
 
   RuleBuilder(this.graphicFactory, this.displayModel, this.symbols, this.level)
       : assert(symbols != null),
-        ruleBuilderStack = List(),
-        renderInstructions = List() {
+        ruleBuilderStack = [],
+        renderInstructions = [] {
     this.closed = Closed.ANY;
     this.zoomMin = 0;
     this.zoomMax = 65536;
@@ -131,13 +131,13 @@ class RuleBuilder {
    * @return a new {@code Rule} instance.
    */
   Rule build() {
-    if (this.valueList.remove(STRING_NEGATION)) {
-      AttributeMatcher attributeMatcher = new NegativeMatcher(this.keyList, this.valueList);
+    if (this.valueList!.remove(STRING_NEGATION)) {
+      AttributeMatcher attributeMatcher = new NegativeMatcher(this.keyList!, this.valueList!);
       return new NegativeRule(this, attributeMatcher);
     }
 
-    AttributeMatcher keyMatcher = getKeyMatcher(this.keyList);
-    AttributeMatcher valueMatcher = getValueMatcher(this.valueList);
+    AttributeMatcher keyMatcher = getKeyMatcher(this.keyList!);
+    AttributeMatcher valueMatcher = getValueMatcher(this.valueList!);
 
 //    keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleStack);
 //    valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleStack);
@@ -171,10 +171,10 @@ class RuleBuilder {
 
     validate(rootElement.toString());
 
-    this.keyList = this.keys.split(SPLIT_PATTERN);
+    this.keyList = this.keys!.split(SPLIT_PATTERN);
 //        new List<String>(Arrays.asList(SPLIT_PATTERN.split(this.keys)));
 //
-    this.valueList = this.values.split(SPLIT_PATTERN);
+    this.valueList = this.values!.split(SPLIT_PATTERN);
 
     this.elementMatcher = getElementMatcher(this.element);
 
@@ -195,7 +195,7 @@ class RuleBuilder {
           break;
         case XmlNodeType.ELEMENT:
           {
-            XmlElement element = node;
+            XmlElement element = node as XmlElement;
             _parseSubElement(element, initPendings);
             break;
           }
@@ -227,7 +227,7 @@ class RuleBuilder {
 
     XmlUtils.checkMandatoryAttribute(elementName, V, this.values);
 
-    if (this.zoomMin > this.zoomMax) {
+    if (this.zoomMin! > this.zoomMax!) {
       throw new Exception('\'' + ZOOM_MIN + "' > '" + ZOOM_MAX + "': $zoomMin $zoomMax");
     }
   }
@@ -349,13 +349,13 @@ class RuleBuilder {
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);
       }
-      String symbolId = symbol.getId();
+      String? symbolId = symbol.getId();
       if (symbolId != null) {
         this.symbols[symbolId] = symbol;
       }
     } else if ("hillshading" == qName) {
       checkState(qName, XmlElementType.RULE);
-      String category = null;
+      String? category = null;
       int minZoom = 5;
       int maxZoom = 17;
       int layer = 5;

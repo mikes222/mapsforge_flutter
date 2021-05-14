@@ -9,7 +9,7 @@ class MapFileData {
   final double initialPositionLat;
   final double initialPositionLong;
   final int initialZoomLevel;
-  final String relativePathPrefix;
+  final String? relativePathPrefix;
 
   MapFileData(this.url, this.fileName, this.name, this.theme, this.relativePathPrefix, this.initialPositionLat, this.initialPositionLong,
       this.initialZoomLevel);

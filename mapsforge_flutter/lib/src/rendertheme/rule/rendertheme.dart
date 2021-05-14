@@ -14,17 +14,17 @@ import 'matchingcachekey.dart';
 class RenderTheme {
   static final int MATCHING_CACHE_SIZE = 1024;
 
-  final double baseStrokeWidth;
-  final double baseTextSize;
-  final bool hasBackgroundOutside;
-  int levels;
-  final int mapBackground;
-  final int mapBackgroundOutside;
-  Map<MatchingCacheKey, List<RenderInstruction>> wayMatchingCache;
-  Map<MatchingCacheKey, List<RenderInstruction>> poiMatchingCache;
+  final double? baseStrokeWidth;
+  final double? baseTextSize;
+  final bool? hasBackgroundOutside;
+  int? levels;
+  final int? mapBackground;
+  final int? mapBackgroundOutside;
+  late Map<MatchingCacheKey, List<RenderInstruction>> wayMatchingCache;
+  late Map<MatchingCacheKey, List<RenderInstruction>> poiMatchingCache;
   final List<Rule> rulesList; // NOPMD we need specific interface
-  List<Hillshading> hillShadings = new List(); // NOPMD specific interface for trimToSize
-  List<RenderInstruction> initPendings = List();
+  List<Hillshading> hillShadings = []; // NOPMD specific interface for trimToSize
+  List<RenderInstruction> initPendings = [];
 
   final Map<int, double> strokeScales = new Map();
   final Map<int, double> textScales = new Map();
@@ -35,7 +35,7 @@ class RenderTheme {
         hasBackgroundOutside = renderThemeBuilder.hasBackgroundOutside,
         mapBackground = renderThemeBuilder.mapBackground,
         mapBackgroundOutside = renderThemeBuilder.mapBackgroundOutside,
-        rulesList = new List() {
+        rulesList = [] {
     this.poiMatchingCache = new Map();
     this.wayMatchingCache = new Map();
   }
@@ -54,28 +54,28 @@ class RenderTheme {
   /**
    * @return the number of distinct drawing levels required by this RenderTheme.
    */
-  int getLevels() {
+  int? getLevels() {
     return this.levels;
   }
 
   /**
    * @return the map background color of this RenderTheme.
    */
-  int getMapBackground() {
+  int? getMapBackground() {
     return this.mapBackground;
   }
 
   /**
    * @return the background color that applies to areas outside the map.
    */
-  int getMapBackgroundOutside() {
+  int? getMapBackgroundOutside() {
     return this.mapBackgroundOutside;
   }
 
   /**
    * @return true if map color is defined for outside areas.
    */
-  bool hasMapBackgroundOutside() {
+  bool? hasMapBackgroundOutside() {
     return this.hasBackgroundOutside;
   }
 
@@ -112,7 +112,7 @@ class RenderTheme {
     MatchingCacheKey matchingCacheKey =
         new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel, Closed.NO);
 
-    List<RenderInstruction> matchingList = this.poiMatchingCache[matchingCacheKey];
+    List<RenderInstruction>? matchingList = this.poiMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
       matchingList = [];
@@ -144,8 +144,8 @@ class RenderTheme {
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (!strokeScales.containsKey(zoomLevel) || scaleFactor != strokeScales[zoomLevel]) {
       rulesList.forEach((rule) {
-        if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
-          rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth, zoomLevel);
+        if (rule.zoomMin! <= zoomLevel && rule.zoomMax! >= zoomLevel) {
+          rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth!, zoomLevel);
         }
       });
       // for (int i = 0, n = this.rulesList.length; i < n; ++i) {
@@ -164,8 +164,8 @@ class RenderTheme {
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     if (!textScales.containsKey(zoomLevel) || scaleFactor != textScales[zoomLevel]) {
       rulesList.forEach((rule) {
-        if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
-          rule.scaleTextSize(scaleFactor * this.baseTextSize, zoomLevel);
+        if (rule.zoomMin! <= zoomLevel && rule.zoomMax! >= zoomLevel) {
+          rule.scaleTextSize(scaleFactor * this.baseTextSize!, zoomLevel);
         }
       });
       textScales[zoomLevel] = scaleFactor;
@@ -188,7 +188,7 @@ class RenderTheme {
     });
   }
 
-  void setLevels(int levels) {
+  void setLevels(int? levels) {
     this.levels = levels;
   }
 
@@ -196,10 +196,10 @@ class RenderTheme {
     MatchingCacheKey matchingCacheKey =
         MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
 
-    List<RenderInstruction> matchingList = this.wayMatchingCache[matchingCacheKey];
+    List<RenderInstruction>? matchingList = this.wayMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
-      matchingList = new List<RenderInstruction>();
+      matchingList = [];
       this.rulesList.forEach((rule) {
         rule.matchWay(renderCallback, way, way.getUpperLeft(), closed, matchingList, renderContext, initPendings);
       });

@@ -8,19 +8,15 @@ import 'testassetbundle.dart';
 
 main() async {
   //create a mapfile from .map
-  MapFile mapFile =
-      MapFile(TestAssetBundle().correctFilename("campus_level.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
-  await mapFile.init();
+  MapFile mapFile = await MapFile.create(
+      TestAssetBundle().correctFilename("campus_level.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
 
   ////Maps that contain single rooms in the NHG
-  MapFile N115 = MapFile(TestAssetBundle().correctFilename("N115.map"), null, null);
-  await N115.init();
+  MapFile N115 = await MapFile.create(TestAssetBundle().correctFilename("N115.map"), null, null);
 
-  MapFile N112 = MapFile(TestAssetBundle().correctFilename("N112.map"), null, null);
-  await N112.init();
+  MapFile N112 = await MapFile.create(TestAssetBundle().correctFilename("N112.map"), null, null);
 
-  MapFile NHG_WC = MapFile(TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
-  await NHG_WC.init();
+  MapFile NHG_WC = await MapFile.create(TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
 
   //x- and y-Coordinates from upperLeft- and lowerRight-Tile that define the map-area,
   //here we are using the coordinates of 4 Tiles around the NHG in Reichenhainer Straße 70, 09126
@@ -41,26 +37,26 @@ main() async {
 
   //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
   //Campus
-  DatastoreReadResult mapReadResult; //area
+  DatastoreReadResult? mapReadResult; //area
   mapReadResult = await mapFile.readMapData(upperLeft, lowerRight);
 
   //Single rooms on Campus
-  DatastoreReadResult mapReadResult_N115; //area
+  DatastoreReadResult? mapReadResult_N115; //area
   mapReadResult_N115 = await mapFile.readMapData(upperLeft, lowerRight);
-  DatastoreReadResult mapReadResult_N112; //area
+  DatastoreReadResult? mapReadResult_N112; //area
   mapReadResult_N112 = await mapFile.readMapData(upperLeft, lowerRight);
-  DatastoreReadResult mapReadResult_NHG_WC; //area
+  DatastoreReadResult? mapReadResult_NHG_WC; //area
   mapReadResult_NHG_WC = await mapFile.readMapData(upperLeft, lowerRight);
 
   int j = 0; //Iterator for ways
   //print each way with its key and value in the area defined by upperLeft and lowerRight
-  mapReadResult.ways.forEach((way) {
+  mapReadResult!.ways!.forEach((way) {
     j++;
     print("Way " + j.toString());
     //just print tags of a way
     way.tags.forEach((tag) {
-      print("Key: " + tag.key);
-      print("Value: " + tag.value);
+      print("Key: " + tag.key!);
+      print("Value: " + tag.value!);
     });
   });
 
@@ -73,14 +69,14 @@ main() async {
   bool indoorDetector() {
     bool indoorDataDetector = false;
     //POI's
-    mapReadResult.pointOfInterests.forEach((poi) {
+    mapReadResult!.pointOfInterests!.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == "indoor") indoorPois = true;
       });
     });
 
     //Ways
-    mapReadResult.ways.forEach((way) {
+    mapReadResult.ways!.forEach((way) {
       way.tags.forEach((tag) {
         if (tag.key == "indoor") indoorWays = true;
       });
@@ -94,13 +90,13 @@ main() async {
   bool levelDetector() {
     bool levelDetector = false;
     //POI's
-    mapReadResult.pointOfInterests.forEach((poi) {
+    mapReadResult!.pointOfInterests!.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == "level") levelDetector = true;
       });
     });
     //Ways
-    mapReadResult.ways.forEach((way) {
+    mapReadResult.ways!.forEach((way) {
       way.tags.forEach((tag) {
         if (tag.key == "level") levelDetector = true;
       });
@@ -112,17 +108,17 @@ main() async {
   bool objectDetected(String tagname) {
     bool objectDetector = false;
     //POI's
-    mapReadResult.pointOfInterests.forEach((poi) {
+    mapReadResult!.pointOfInterests!.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == tagname || tag.value == tagname) objectDetector = true; //stop search, if tag was found
-        return objectDetector;
+        //return objectDetector;
       });
     });
     //Ways
-    mapReadResult.ways.forEach((way) {
+    mapReadResult.ways!.forEach((way) {
       way.tags.forEach((tag) {
         if (tag.key == tagname || tag.value == tagname) objectDetector = true;
-        return objectDetector; //stop search, if tag was found
+        //return objectDetector; //stop search, if tag was found
       });
     });
     return objectDetector;

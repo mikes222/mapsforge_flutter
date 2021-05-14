@@ -13,7 +13,7 @@ class FlutterBitmap implements Bitmap {
   ///
   /// optinal string to denote the type of resource. This is used to debug memory issues
   ///
-  final String src;
+  final String? src;
 
   FlutterBitmap(this.bitmap, [this.src]) : assert(bitmap != null);
 

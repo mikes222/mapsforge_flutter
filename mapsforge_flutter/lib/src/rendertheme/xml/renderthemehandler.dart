@@ -16,20 +16,20 @@ class RenderThemeHandler {
   static final String ELEMENT_NAME_RULE = "rule";
   static final String UNEXPECTED_ELEMENT = "unexpected element: ";
 
-  Set<String> categories;
-  Rule currentRule;
+  Set<String>? categories;
+  Rule? currentRule;
   final DisplayModel displayModel;
-  final List<Element> elementStack = new List<Element>();
+  final List<Element> elementStack = [];
   final GraphicFactory graphicFactory;
-  int level;
-  String qName;
+  int level = 0;
+  String? qName;
   final String relativePathPrefix;
-  RenderTheme renderTheme;
-  final List<Rule> ruleStack = new List<Rule>();
+  RenderTheme? renderTheme;
+  final List<Rule> ruleStack = [];
   Map<String, Symbol> symbols = new Map<String, Symbol>();
   final XmlRenderTheme xmlRenderTheme;
-  XmlRenderThemeStyleMenu renderThemeStyleMenu;
-  XmlRenderThemeStyleLayer currentLayer;
+  late XmlRenderThemeStyleMenu renderThemeStyleMenu;
+  late XmlRenderThemeStyleLayer currentLayer;
 
   RenderThemeHandler(this.graphicFactory, this.displayModel, this.relativePathPrefix, this.xmlRenderTheme);
 
@@ -55,8 +55,8 @@ class RenderThemeHandler {
       throw new Exception("missing element: rules");
     }
 
-    this.renderTheme.setLevels(this.level);
-    this.renderTheme.complete();
+    this.renderTheme!.setLevels(this.level);
+    this.renderTheme!.complete();
   }
 
 //  void endElement() {
@@ -142,7 +142,7 @@ class RenderThemeHandler {
       this.currentLayer = this.renderThemeStyleMenu.createLayer(getStringAttribute("id"), visible, enabled);
       String parent = getStringAttribute("parent");
       if (null != parent) {
-        XmlRenderThemeStyleLayer parentEntry = this.renderThemeStyleMenu.getLayer(parent);
+        XmlRenderThemeStyleLayer? parentEntry = this.renderThemeStyleMenu.getLayer(parent);
         if (null != parentEntry) {
           for (String cat in parentEntry.getCategories()) {
             this.currentLayer.addCategory(cat);
@@ -177,7 +177,7 @@ class RenderThemeHandler {
 // render theme menu overlay
     else if ("overlay" == qName) {
       checkState(qName, Element.RENDERING_STYLE);
-      XmlRenderThemeStyleLayer overlay = this.renderThemeStyleMenu.getLayer(getStringAttribute("id"));
+      XmlRenderThemeStyleLayer? overlay = this.renderThemeStyleMenu.getLayer(getStringAttribute("id"));
       if (overlay != null) {
         this.currentLayer.addOverlay(overlay);
       }
@@ -207,7 +207,7 @@ class RenderThemeHandler {
 //      }
     } else if ("hillshading" == qName) {
       checkState(qName, Element.RULE);
-      String category = null;
+      String? category = null;
       int minZoom = 5;
       int maxZoom = 17;
       int layer = 5;
@@ -239,19 +239,19 @@ class RenderThemeHandler {
       int hillShadingLevel = this.level++;
 //    Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, hillShadingLevel, this.graphicFactory);
 
-      if (this.categories == null || category == null || this.categories.contains(category)) {
+      if (this.categories == null || category == null || this.categories!.contains(category)) {
         //      this.renderTheme.addHillShadings(hillshading);
       }
     } else {
-      throw new Exception("unknown element: " + qName);
+      throw new Exception("unknown element: " + qName!);
     }
   }
 
-  void checkElement(String elementName, Element element) {
+  void checkElement(String? elementName, Element element) {
     switch (element) {
       case Element.RENDER_THEME:
         if (!this.elementStack.isEmpty) {
-          throw new Exception(UNEXPECTED_ELEMENT + elementName);
+          throw new Exception(UNEXPECTED_ELEMENT + elementName!);
         }
         return;
 
@@ -276,7 +276,7 @@ class RenderThemeHandler {
     throw new Exception("unknown enum value: " + element.toString());
   }
 
-  void checkState(String elementName, Element element) {
+  void checkState(String? elementName, Element element) {
     checkElement(elementName, element);
 //    this.elementStack.push(element);
   }
@@ -288,6 +288,7 @@ class RenderThemeHandler {
 //    ) {
 //    return pullParser.getAttributeValue(i);
 //    }
+    return "unknownStringAttribute";
   }
 //    return
 //    null;
@@ -304,6 +305,7 @@ bool isVisible(RenderInstruction renderInstruction) {
 //    return this.categories == null || rule.cat == null ||
 //        this.categories.contains(rule.cat);
 //  }
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

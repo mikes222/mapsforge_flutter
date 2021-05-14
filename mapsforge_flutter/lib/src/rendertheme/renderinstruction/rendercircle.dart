@@ -16,13 +16,13 @@ import 'renderinstruction.dart';
  * Represents a round area on the map.
  */
 class RenderCircle extends RenderInstruction {
-  MapPaint fill;
+  MapPaint? fill;
   final int level;
-  double radius;
-  double renderRadius;
+  double? radius;
+  double? renderRadius;
   final Map<int, double> renderRadiusScaled;
   bool scaleRadius = false;
-  MapPaint stroke;
+  MapPaint? stroke;
   final Map<int, MapPaint> strokes;
   double strokeWidth = 1;
 
@@ -31,12 +31,12 @@ class RenderCircle extends RenderInstruction {
         renderRadiusScaled = new Map(),
         super(graphicFactory, displayModel) {
     this.fill = graphicFactory.createPaint();
-    this.fill.setColor(Color.TRANSPARENT);
-    this.fill.setStyle(Style.FILL);
+    this.fill!.setColor(Color.TRANSPARENT);
+    this.fill!.setStyle(Style.FILL);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.TRANSPARENT);
-    this.stroke.setStyle(Style.STROKE);
+    this.stroke!.setColor(Color.TRANSPARENT);
+    this.stroke!.setStyle(Style.STROKE);
   }
 
   @override
@@ -52,11 +52,11 @@ class RenderCircle extends RenderInstruction {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE_RADIUS == name) {
         this.scaleRadius = value == "true";
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else {
@@ -68,30 +68,30 @@ class RenderCircle extends RenderInstruction {
 
     if (!this.scaleRadius) {
       this.renderRadius = this.radius;
-      this.stroke.setStrokeWidth(this.strokeWidth);
+      this.stroke!.setStrokeWidth(this.strokeWidth);
     } else {
       this.renderRadius = this.radius;
     }
   }
 
-  MapPaint getFillPaint(int zoomLevel) {
+  MapPaint? getFillPaint(int zoomLevel) {
     return fill;
   }
 
   double getRenderRadius(int zoomLevel) {
-    double radius = renderRadiusScaled[zoomLevel];
+    double? radius = renderRadiusScaled[zoomLevel];
     if (radius == null) {
       radius = this.renderRadius;
     }
-    return radius;
+    return radius!;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint paint = strokes[zoomLevel];
+    MapPaint? paint = strokes[zoomLevel];
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint;
+    return paint!;
   }
 
   @override
@@ -108,7 +108,7 @@ class RenderCircle extends RenderInstruction {
   @override
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (this.scaleRadius) {
-      this.renderRadiusScaled[zoomLevel] = this.radius * scaleFactor;
+      this.renderRadiusScaled[zoomLevel] = this.radius! * scaleFactor;
       if (this.stroke != null) {
         MapPaint paint = graphicFactory.createPaintFrom(stroke);
         paint.setStrokeWidth(this.strokeWidth * scaleFactor);
@@ -123,7 +123,7 @@ class RenderCircle extends RenderInstruction {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
+  Future<void>? initResources(GraphicFactory graphicFactory) {
     return null;
   }
 }

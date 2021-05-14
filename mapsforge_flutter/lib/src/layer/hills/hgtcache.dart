@@ -26,7 +26,7 @@ class HgtCache {
 ////  LazyFuture<Map<TileKey, HgtFileInfo>> hgtFiles;
 //
 //
-//  List<String> problems = new List();
+//  List<String> problems =  [];
 //
   HgtCache(this.demFolder, this.interpolatorOverlap, this.graphicsFactory, this.algorithm, this.mainCacheSize, this.neighborCacheSize) {
 //    mainLru = new Lru(this.mainCacheSize);
@@ -93,7 +93,7 @@ class HgtCache {
 //    hgtFiles.withRunningThread();
   }
 
-  HillshadingBitmap getHillshadingBitmap(int northInt, int eastInt, double pxPerLat, double pxPerLng) {
+  HillshadingBitmap? getHillshadingBitmap(int northInt, int eastInt, double pxPerLat, double pxPerLng) {
 //    HgtFileInfo hgtFileInfo = hgtFiles.get().get(
 //        new TileKey(northInt, eastInt));
 //
@@ -144,6 +144,7 @@ class HgtCache {
 //          padding);
 //      copyCanvas.drawBitmap(source, 0, (source.getHeight() - 2 * padding));
 //    }
+    return null;
   }
 }
 
@@ -156,12 +157,11 @@ class TileKey {
   @override
   bool equals(Object o) {
     if (this == o) return true;
-//    if (o == null || getClass() != o.getClass())
-//      return false;
-//
-//    TileKey tileKey = (TileKey) o;
+    if (o is! TileKey) return false;
 
-//    return north == tileKey.north && east == tileKey.east;
+    TileKey tileKey = o;
+
+    return north == tileKey.north && east == tileKey.east;
   }
 
   TileKey(this.north, this.east);

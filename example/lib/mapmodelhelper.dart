@@ -29,16 +29,15 @@ class MapModelHelper {
     return result;
   }
 
-  static Future<MapModel> prepareMapModel(String filename, double lat, double lon, int zoomLevel, bool online) async {
+  static Future<MapModel> prepareMapModel(String? filename, double? lat, double? lon, int zoomLevel, bool online) async {
     String _localPath = await findLocalPath();
 
-    MapDataStore mapDataStore;
+    late MapDataStore mapDataStore;
     if (online) {
       //mapDataStore = MapOnlineRenderer();
     } else {
-      _log.info("opening mapfile ${_localPath + "/" + filename}");
-      MapFile mapFile = MapFile(_localPath + "/" + filename, null, null);
-      await mapFile.init();
+      _log.info("opening mapfile ${_localPath + "/" + filename!}");
+      MapFile mapFile = await MapFile.create(_localPath + "/" + filename, null, null);
       //await mapFile.debug();
       //mapDataStore.addMapDataStore(mapFile, false, false);
       mapDataStore = mapFile;
@@ -58,7 +57,7 @@ class MapModelHelper {
     } else {
       jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, true);
     }
-    FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
+    FileTileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 
     MapModel mapModel = MapModel(
       displayModel: displayModel,

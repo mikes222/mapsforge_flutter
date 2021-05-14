@@ -74,12 +74,12 @@ class MyApp extends StatelessWidget {
 
 /// This is the stateless widget that the main application instantiates.
 class MyStatelessWidget extends StatelessWidget {
-  MyStatelessWidget({Key key}) : super(key: key);
+  MyStatelessWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildHead(context),
+      appBar: _buildHead(context) as PreferredSizeWidget?,
       body: _buildBody(context),
     );
   }
@@ -206,12 +206,12 @@ class MyStatelessWidget extends StatelessWidget {
 /////////////////////////////////////////////////////////////////////////////
 
 class MapInfo {
-  final String mapfilesource;
-  final String mapfile;
+  final String? mapfilesource;
+  final String? mapfile;
 
-  final double lat;
+  final double? lat;
 
-  final double lon;
+  final double? lon;
 
   MapInfo({this.mapfilesource, this.mapfile, this.lat, this.lon});
 }

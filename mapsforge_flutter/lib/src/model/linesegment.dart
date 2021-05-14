@@ -12,8 +12,8 @@ class LineSegment {
   static int BOTTOM = 4; // 0100
   static int TOP = 8; // 1000
 
-  final Mappoint start;
-  final Mappoint end;
+  final Mappoint? start;
+  final Mappoint? end;
 
   /**
    * Ctor with given start and end point
@@ -40,8 +40,8 @@ class LineSegment {
    * @return angle in degrees
    */
   double angleTo(LineSegment other) {
-    double angle1 = atan2(this.start.y - this.end.y, this.start.x - this.end.x);
-    double angle2 = atan2(other.start.y - other.end.y, other.start.x - other.end.x);
+    double angle1 = atan2(this.start!.y - this.end!.y, this.start!.x - this.end!.x);
+    double angle2 = atan2(other.start!.y - other.end!.y, other.start!.x - other.end!.x);
     double angle = toDegrees(angle1 - angle2);
     if (angle <= -180) {
       angle += 360;
@@ -64,9 +64,9 @@ class LineSegment {
    * @param r the rectangle to clip to.
    * @return the LineSegment that falls into the Rectangle, null if there is no intersection.
    */
-  LineSegment clipToRectangle(Rectangle r) {
-    Mappoint a = this.start;
-    Mappoint b = this.end;
+  LineSegment? clipToRectangle(Rectangle r) {
+    Mappoint a = this.start!;
+    Mappoint b = this.end!;
 
     int codeStart = code(r, a);
     int codeEnd = code(r, b);
@@ -87,19 +87,19 @@ class LineSegment {
         if (0 != (outsideCode & TOP)) {
 // point is above the clip rectangle
           newX = a.x + (b.x - a.x) * (r.top - a.y) / (b.y - a.y);
-          newY = r.top;
+          newY = r.top as double;
         } else if (0 != (outsideCode & BOTTOM)) {
 // point is below the clip rectangle
           newX = a.x + (b.x - a.x) * (r.bottom - a.y) / (b.y - a.y);
-          newY = r.bottom;
+          newY = r.bottom as double;
         } else if (0 != (outsideCode & RIGHT)) {
 // point is to the right of clip rectangle
           newY = a.y + (b.y - a.y) * (r.right - a.x) / (b.x - a.x);
-          newX = r.right;
+          newX = r.right as double;
         } else if (0 != (outsideCode & LEFT)) {
 // point is to the left of clip rectangle
           newY = a.y + (b.y - a.y) * (r.left - a.x) / (b.x - a.x);
-          newX = r.left;
+          newX = r.left as double;
         } else {
           throw new Exception("Should not get here");
         }
@@ -126,8 +126,8 @@ class LineSegment {
    */
 
   bool intersectsRectangle(Rectangle r, bool bias) {
-    int codeStart = code(r, this.start);
-    int codeEnd = code(r, this.end);
+    int codeStart = code(r, this.start!);
+    int codeEnd = code(r, this.end!);
 
     if (0 == (codeStart | codeEnd)) {
 // both points are inside, trivial case
@@ -145,7 +145,7 @@ class LineSegment {
    * @return the length of the segment.
    */
   double length() {
-    return start.distance(end);
+    return start!.distance(end!);
   }
 
   /**
@@ -155,20 +155,20 @@ class LineSegment {
    * @return point at given distance from start point
    */
   Mappoint pointAlongLineSegment(double distance) {
-    if (start.x == end.x) {
+    if (start!.x == end!.x) {
 // we have a vertical line
-      if (start.y > end.y) {
-        return new Mappoint(end.x, end.y + distance);
+      if (start!.y > end!.y) {
+        return new Mappoint(end!.x, end!.y + distance);
       } else {
-        return new Mappoint(start.x, start.y + distance);
+        return new Mappoint(start!.x, start!.y + distance);
       }
     } else {
-      double slope = (end.y - start.y) / (end.x - start.x);
+      double slope = (end!.y - start!.y) / (end!.x - start!.x);
       double dx = sqrt((distance * distance) / (1 + (slope * slope)));
-      if (end.x < start.x) {
+      if (end!.x < start!.x) {
         dx *= -1;
       }
-      return new Mappoint(start.x + dx, start.y + slope * dx);
+      return new Mappoint(start!.x + dx, start!.y + slope * dx);
     }
   }
 

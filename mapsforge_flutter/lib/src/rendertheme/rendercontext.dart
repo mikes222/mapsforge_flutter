@@ -25,15 +25,15 @@ class RenderContext {
   final GraphicFactory graphicFactory;
 
   // Data generated for the rendering process
-  List<List<ShapePaintContainer>> drawingLayers;
+  List<List<ShapePaintContainer>?>? drawingLayers;
   final List<MapElementContainer> labels;
-  List<List<List<ShapePaintContainer>>> ways;
+  late List<List<List<ShapePaintContainer>?>?> ways;
 
-  MercatorProjectionImpl _mercatorProjection;
+  MercatorProjectionImpl? _mercatorProjection;
 
   RenderContext(this.job, this.renderTheme, this.graphicFactory)
       : assert(graphicFactory != null),
-        labels = new List() {
+        labels = [] {
     this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
     this.ways = _createWayLists();
     setScaleStrokeWidth(this.job.tile.zoomLevel);
@@ -50,7 +50,7 @@ class RenderContext {
 
   void addToCurrentDrawingLayer(int level, ShapePaintContainer element) {
     //_log.info("Adding level $level to layer with ${drawingLayers.length} levels");
-    this.drawingLayers[level].add(element);
+    this.drawingLayers![level]!.add(element);
   }
 
   /**
@@ -63,15 +63,15 @@ class RenderContext {
   //   return Job(tile, this.job.hasAlpha, this.job.textScale);
   // }
 
-  List<List<List<ShapePaintContainer>>> _createWayLists() {
-    List<List<List<ShapePaintContainer>>> result = new List(LAYERS);
-    int levels = this.renderTheme.getLevels();
+  List<List<List<ShapePaintContainer>?>?> _createWayLists() {
+    List<List<List<ShapePaintContainer>?>?> result = new List.filled(LAYERS, null);
+    int levels = this.renderTheme.getLevels()!;
     assert(levels > 0);
 
     for (int i = LAYERS - 1; i >= 0; --i) {
-      List<List<ShapePaintContainer>> innerWayList = new List(levels);
+      List<List<ShapePaintContainer>?> innerWayList = new List.filled(levels, null);
       for (int j = levels - 1; j >= 0; --j) {
-        innerWayList[j] = new List<ShapePaintContainer>();
+        innerWayList[j] = [];
       }
       result[i] = innerWayList;
     }
@@ -85,10 +85,10 @@ class RenderContext {
    */
   void setScaleStrokeWidth(int zoomLevel) {
     int zoomLevelDiff = max(zoomLevel - STROKE_MIN_ZOOM_LEVEL, 0);
-    this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff), this.job.tile.zoomLevel);
+    this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff) as double, this.job.tile.zoomLevel);
   }
 
-  MercatorProjectionImpl get mercatorProjection {
+  MercatorProjectionImpl? get mercatorProjection {
     if (_mercatorProjection != null) return _mercatorProjection;
     _mercatorProjection = MercatorProjectionImpl(job.tileSize, job.tile.zoomLevel);
     return _mercatorProjection;

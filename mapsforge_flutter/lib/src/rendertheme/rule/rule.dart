@@ -16,11 +16,11 @@ abstract class Rule {
   static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY = new Map();
   static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE = new Map<List<String>, AttributeMatcher>();
 
-  String cat;
-  final ClosedMatcher closedMatcher;
-  final ElementMatcher elementMatcher;
-  final int zoomMax;
-  final int zoomMin;
+  String? cat;
+  final ClosedMatcher? closedMatcher;
+  final ElementMatcher? elementMatcher;
+  final int? zoomMax;
+  final int? zoomMin;
   final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<Rule> subRules; // NOSONAR NOPMD we need specific interface
 
@@ -29,8 +29,8 @@ abstract class Rule {
         elementMatcher = ruleBuilder.elementMatcher,
         zoomMax = ruleBuilder.zoomMax,
         zoomMin = ruleBuilder.zoomMin,
-        renderInstructions = new List(),
-        subRules = new List() {
+        renderInstructions = [],
+        subRules = [] {
     this.cat = ruleBuilder.cat;
     this.renderInstructions.addAll(ruleBuilder.renderInstructions);
     ruleBuilder.ruleBuilderStack.forEach((ruleBuilder) {
@@ -64,11 +64,11 @@ abstract class Rule {
 
   bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
 
-  void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction> matchingList,
+  void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction>? matchingList,
       PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
     if (matchesNode(pointOfInterest.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel)) {
       for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-        matchingList.add(this.renderInstructions.elementAt(i));
+        matchingList!.add(this.renderInstructions.elementAt(i));
       }
       for (int i = 0, n = this.subRules.length; i < n; ++i) {
         this.subRules.elementAt(i).matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
@@ -76,11 +76,11 @@ abstract class Rule {
     }
   }
 
-  void matchWay(RenderCallback renderCallback, PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction> matchingList,
+  void matchWay(RenderCallback renderCallback, PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction>? matchingList,
       final RenderContext renderContext, List<RenderInstruction> initPendings) {
     if (matchesWay(way.getTags(), tile.zoomLevel, tile.indoorLevel, closed)) {
       for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-        matchingList.add(this.renderInstructions.elementAt(i));
+        matchingList!.add(this.renderInstructions.elementAt(i));
       }
       for (int i = 0, n = this.subRules.length; i < n; ++i) {
         this.subRules.elementAt(i).matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);

@@ -12,13 +12,13 @@ class MapModel {
   final DisplayModel displayModel;
   final GraphicFactory graphicsFactory;
   final JobRenderer renderer;
-  final List<MarkerDataStore> markerDataStores = List();
-  final TileBitmapCache tileBitmapCache;
+  final List<MarkerDataStore> markerDataStores = [];
+  final TileBitmapCache? tileBitmapCache;
 
   MapModel({
-    @required this.displayModel,
-    @required this.renderer,
-    @required this.graphicsFactory,
+    required this.displayModel,
+    required this.renderer,
+    required this.graphicsFactory,
     this.tileBitmapCache,
   })  : assert(displayModel != null),
         assert(renderer != null),

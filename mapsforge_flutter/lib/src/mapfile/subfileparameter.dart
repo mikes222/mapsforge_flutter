@@ -3,7 +3,7 @@ class SubFileParameter {
   /**
    * Base zoom level of the sub-file, which equals to one block.
    */
-  final int baseZoomLevel;
+  final int? baseZoomLevel;
 
   /**
    * Vertical amount of blocks in the grid.
@@ -43,7 +43,7 @@ class SubFileParameter {
   /**
    * Absolute start address of the index in the enclosing file.
    */
-  final int indexStartAddress;
+  final int? indexStartAddress;
 
   /**
    * Total number of blocks in the grid.
@@ -53,22 +53,22 @@ class SubFileParameter {
   /**
    * Absolute start address of the sub-file in the enclosing file.
    */
-  final int startAddress;
+  final int? startAddress;
 
   /**
    * Size of the sub-file in bytes.
    */
-  final int subFileSize;
+  final int? subFileSize;
 
   /**
    * Maximum zoom level for which the block entries tables are made.
    */
-  final int zoomLevelMax;
+  final int? zoomLevelMax;
 
   /**
    * Minimum zoom level for which the block entries tables are made.
    */
-  final int zoomLevelMin;
+  final int? zoomLevelMin;
 
   SubFileParameter(
     this.baseZoomLevel,

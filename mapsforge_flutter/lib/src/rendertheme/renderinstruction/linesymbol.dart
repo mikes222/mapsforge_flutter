@@ -19,15 +19,15 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   static final double REPEAT_START_DEFAULT = 30;
 
   bool alignCenter = true;
-  Display display;
+  Display? display;
   double dy = 0;
   final Map<int, double> dyScaled;
   int priority = 0;
-  final String relativePathPrefix;
+  final String? relativePathPrefix;
   bool repeat = true;
-  double repeatGap;
-  double repeatStart;
-  bool rotate;
+  double? repeatGap;
+  double? repeatStart;
+  bool? rotate;
   Scale scale = Scale.STROKE;
 
   LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix)
@@ -94,7 +94,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
       return;
     }
 
-    double dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
+    double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (dyScale == null) {
       dyScale = this.dy;
     }

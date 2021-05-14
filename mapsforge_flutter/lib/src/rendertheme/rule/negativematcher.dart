@@ -1,5 +1,5 @@
 import '../../model/tag.dart';
-
+import 'package:collection/collection.dart';
 import 'attributematcher.dart';
 
 class NegativeMatcher implements AttributeMatcher {
@@ -19,12 +19,12 @@ class NegativeMatcher implements AttributeMatcher {
       return true;
     }
 
-    Tag tag = tags.firstWhere((element) => valueList.contains(element.value), orElse: () => null);
+    Tag? tag = tags.firstWhereOrNull((element) => valueList.contains(element.value));
     return tag != null;
   }
 
   bool keyListDoesNotContainKeys(List<Tag> tags) {
-    Tag tag = tags.firstWhere((element) => keyList.contains(element.key), orElse: () => null);
+    Tag? tag = tags.firstWhereOrNull((element) => keyList.contains(element.key));
     return tag == null;
   }
 

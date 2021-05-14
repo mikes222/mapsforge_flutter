@@ -6,11 +6,11 @@ import 'linesegment.dart';
 import 'mappoint.dart';
 
 class LineString {
-  final List<LineSegment> segments = new List();
+  final List<LineSegment> segments = [];
 
-  Rectangle _bounds;
+  Rectangle? _bounds;
 
-  double _length;
+  double? _length;
 
   /**
    * Creates a new LineString that consists of only the part between startDistance and endDistance.
@@ -29,7 +29,7 @@ class LineString {
         continue;
       }
 
-      Mappoint startPoint = null, endPoint = null;
+      Mappoint? startPoint = null, endPoint = null;
       if (startDistance >= 0) {
         // This will be our starting point
         startPoint = segment.pointAlongLineSegment(startDistance);
@@ -59,7 +59,7 @@ class LineString {
     return result;
   }
 
-  Rectangle getBounds() {
+  Rectangle? getBounds() {
     if (_bounds != null) return _bounds;
 
     double minX = double.maxFinite;
@@ -68,10 +68,10 @@ class LineString {
     double maxY = double.minPositive;
 
     for (LineSegment segment in this.segments) {
-      minX = min(minX, min(segment.start.x, segment.end.x));
-      minY = min(minY, min(segment.start.y, segment.end.y));
-      maxX = max(maxX, max(segment.start.x, segment.end.x));
-      maxY = max(maxY, max(segment.start.y, segment.end.y));
+      minX = min(minX, min(segment.start!.x, segment.end!.x));
+      minY = min(minY, min(segment.start!.y, segment.end!.y));
+      maxX = max(maxX, max(segment.start!.x, segment.end!.x));
+      maxY = max(maxY, max(segment.start!.y, segment.end!.y));
     }
     _bounds = Rectangle(minX, minY, maxX, maxY);
     return _bounds;
@@ -81,7 +81,7 @@ class LineString {
    * Interpolates on the segment and returns the coordinate of the interpolation result.
    * Returns null if distance is < 0 or > length().
    */
-  Mappoint interpolate(double distance) {
+  Mappoint? interpolate(double distance) {
     if (distance < 0) {
       return null;
     }
@@ -96,7 +96,7 @@ class LineString {
     return null;
   }
 
-  double length() {
+  double? length() {
     if (_length != null) return _length;
     double result = 0;
     for (LineSegment segment in this.segments) {

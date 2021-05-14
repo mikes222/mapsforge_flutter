@@ -5,7 +5,7 @@ class TextKey {
 
   static TextKey getInstance(String key) {
     assert(key != null && key.length > 0);
-    TextKey textKey = TEXT_KEYS[key];
+    TextKey? textKey = TEXT_KEYS[key];
     if (textKey == null) {
       textKey = new TextKey(key);
       TEXT_KEYS[key] = textKey;
@@ -18,7 +18,7 @@ class TextKey {
 
   const TextKey(this.key) : assert(key != null && key.length > 0);
 
-  String getValue(List<Tag> tags) {
+  String? getValue(List<Tag> tags) {
     assert(tags != null);
     for (int i = 0; i < tags.length; ++i) {
       if (this.key == tags[i].key) {

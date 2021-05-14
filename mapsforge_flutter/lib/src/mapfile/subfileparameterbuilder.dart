@@ -9,21 +9,21 @@ class SubFileParameterBuilder {
    */
   static final int BYTES_PER_INDEX_ENTRY = 5;
 
-  int baseZoomLevel;
-  BoundingBox boundingBox;
-  int indexStartAddress;
-  int startAddress;
-  int subFileSize;
-  int zoomLevelMax;
-  int zoomLevelMin;
+  int? baseZoomLevel;
+  BoundingBox? boundingBox;
+  int? indexStartAddress;
+  int? startAddress;
+  int? subFileSize;
+  int? zoomLevelMax;
+  int? zoomLevelMin;
 
   SubFileParameter build() {
     // calculate the XY numbers of the boundary tiles in this sub-file
-    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, this.baseZoomLevel);
-    int boundaryTileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
-    int boundaryTileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
-    int boundaryTileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
-    int boundaryTileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
+    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, this.baseZoomLevel!);
+    int boundaryTileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox!.minLatitude!);
+    int boundaryTileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox!.minLongitude!);
+    int boundaryTileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox!.maxLatitude!);
+    int boundaryTileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox!.maxLongitude!);
 
     // calculate the horizontal and vertical amount of blocks in this sub-file
     int blocksWidth = boundaryTileRight - boundaryTileLeft + 1;
@@ -40,7 +40,7 @@ class SubFileParameterBuilder {
       boundaryTileLeft,
       boundaryTileRight,
       boundaryTileTop,
-      this.indexStartAddress + numberOfBlocks * BYTES_PER_INDEX_ENTRY,
+      this.indexStartAddress! + numberOfBlocks * BYTES_PER_INDEX_ENTRY,
       indexStartAddress,
       numberOfBlocks,
       startAddress,

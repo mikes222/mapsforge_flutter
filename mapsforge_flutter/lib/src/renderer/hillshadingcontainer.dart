@@ -6,12 +6,11 @@ import 'shapetype.dart';
 
 class HillshadingContainer implements ShapeContainer {
   final double magnitude;
-  final Bitmap bitmap;
-  final Rectangle hillsRect;
-  final Rectangle tileRect;
+  final Bitmap? bitmap;
+  final Rectangle? hillsRect;
+  final Rectangle? tileRect;
 
-  HillshadingContainer(
-      this.bitmap, this.magnitude, this.hillsRect, this.tileRect);
+  HillshadingContainer(this.bitmap, this.magnitude, this.hillsRect, this.tileRect);
 
   @override
   ShapeType getShapeType() {

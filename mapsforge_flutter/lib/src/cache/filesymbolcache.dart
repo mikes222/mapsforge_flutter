@@ -29,9 +29,9 @@ class FileSymbolCache extends SymbolCache {
    */
   static int DEFAULT_SIZE = 20;
 
-  final AssetBundle bundle;
+  final AssetBundle? bundle;
 
-  final String relativePathPrefix;
+  final String? relativePathPrefix;
 
   Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
     storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
@@ -44,9 +44,9 @@ class FileSymbolCache extends SymbolCache {
   /// Creates a new FileSymbolCache. If the [relativePathPrefix] is not null the symbols will be loaded given by the [relativePathPrefix] first and if
   /// not found there the symbols will be loaded by the bundle.
   ///
-  FileSymbolCache(this.bundle, [this.relativePathPrefix]) : assert(bundle != null);
+  FileSymbolCache(AssetBundle this.bundle, [this.relativePathPrefix]) : assert(bundle != null);
 
-  FileSymbolCache.withRelativePathPrefix(this.relativePathPrefix)
+  FileSymbolCache.withRelativePathPrefix(String this.relativePathPrefix)
       : assert(relativePathPrefix != null),
         bundle = null;
 
@@ -56,13 +56,13 @@ class FileSymbolCache extends SymbolCache {
   }
 
   @override
-  Future<ResourceBitmap> getSymbol(String src, int width, int height, int percent) async {
+  Future<ResourceBitmap?> getSymbol(String? src, int width, int height, int? percent) async {
     if (src == null || src.length == 0) {
 // no image source defined
       return null;
     }
     String key = "$src-$width-$height-$percent";
-    ResourceBitmap bitmap = _cache.get(key);
+    ResourceBitmap? bitmap = _cache.get(key);
     if (bitmap != null) return bitmap;
 
     bitmap = await _createSymbol(src, width, height, percent);
@@ -73,7 +73,7 @@ class FileSymbolCache extends SymbolCache {
     return bitmap;
   }
 
-  Future<ResourceBitmap> _createSymbol(String src, int width, int height, int percent) async {
+  Future<ResourceBitmap> _createSymbol(String src, int width, int height, int? percent) async {
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
     if (src.toLowerCase().endsWith(".svg")) {
@@ -89,7 +89,7 @@ class FileSymbolCache extends SymbolCache {
   /// Returns the content of the symbol given as [src] as [ByteData]. This method reads the file or resource and returns the requested bytes.
   ///
   @protected
-  Future<ByteData> fetchResource(String src) async {
+  Future<ByteData?> fetchResource(String src) async {
     // compatibility with mapsforge
     if (src.startsWith(PREFIX_JAR)) {
       src = src.substring(PREFIX_JAR.length);
@@ -100,23 +100,23 @@ class FileSymbolCache extends SymbolCache {
     }
     if (relativePathPrefix != null) {
       Directory dir = await getApplicationDocumentsDirectory();
-      src = dir.path + "/" + relativePathPrefix + src;
+      src = dir.path + "/" + relativePathPrefix! + src;
       //_log.info("Trying to load symbol from $src");
-      File file = File(relativePathPrefix + src);
+      File file = File(relativePathPrefix! + src);
       if (await file.exists()) {
         Uint8List bytes = await file.readAsBytes();
         return ByteData.view(bytes.buffer);
       }
     }
     if (bundle != null) {
-      ByteData content = await bundle.load(src);
+      ByteData content = await bundle!.load(src);
       return content;
     }
     return null;
   }
 
-  Future<FlutterResourceBitmap> _createPngSymbol(String src, int width, int height, int percent) async {
-    ByteData content = await fetchResource(src);
+  Future<FlutterResourceBitmap> _createPngSymbol(String src, int width, int height, int? percent) async {
+    ByteData? content = await fetchResource(src);
     if (content == null) throw SymbolNotFoundException(src);
     Uint8List bytes = content.buffer.asUint8List();
     if (width != 0 && height != 0) {
@@ -160,8 +160,8 @@ class FileSymbolCache extends SymbolCache {
     //MemoryImage image = MemoryImage(content.buffer.asUint8List());
   }
 
-  Future<FlutterResourceBitmap> _createSvgSymbol(String src, int width, int height, int percent) async {
-    ByteData content = await fetchResource(src);
+  Future<FlutterResourceBitmap> _createSvgSymbol(String src, int width, int height, int? percent) async {
+    ByteData? content = await fetchResource(src);
     if (content == null) throw SymbolNotFoundException(src);
     DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 

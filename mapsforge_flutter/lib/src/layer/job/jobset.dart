@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 /// need to be finished.
 ///
 class JobSet {
-  final List<Job> jobs = List();
+  final List<Job> jobs = [];
 
   /// The resulting bitmaps after the jobs has been processed.
   final Map<Tile, TileBitmap> _bitmaps = Map();
@@ -24,14 +24,14 @@ class JobSet {
     assert(job != null);
     jobs.remove(job);
     tileBitmap.incrementRefCount();
-    TileBitmap old = _bitmaps[job.tile];
+    TileBitmap? old = _bitmaps[job.tile];
     if (old != null) {
       old.decrementRefCount();
     }
     _bitmaps[job.tile] = tileBitmap;
   }
 
-  TileBitmap getTileBitmap(Tile tile) {
+  TileBitmap? getTileBitmap(Tile tile) {
     return _bitmaps[tile];
   }
 

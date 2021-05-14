@@ -22,21 +22,21 @@ class TileLayerImpl extends TileLayer {
   static final _log = new Logger('TileLayer');
 
   final JobQueue jobQueue;
-  Matrix _matrix;
+  Matrix? _matrix;
   final MapPaint _paint;
 
   TileLayerImpl({
-    @required GraphicFactory graphicFactory,
-    @required this.jobQueue,
-    @required displayModel,
-  })  : assert(displayModel != null),
+    required GraphicFactory graphicFactory,
+    required this.jobQueue,
+    required displayModel,
+  })   : assert(displayModel != null),
         assert(graphicFactory != null),
         assert(jobQueue != null),
         _paint = graphicFactory.createPaint(),
         super(displayModel);
 
   @override
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet jobSet) {
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet? jobSet) {
     if (jobSet == null) {
       //_submitJobSet(viewModel, mapViewPosition);
       return;
@@ -53,27 +53,27 @@ class TileLayerImpl extends TileLayer {
     // to hook this into the onConfigurationChanged call chain.
     //canvas.resetClip();
 
-    canvas.setClip(0, 0, viewModel.viewDimension.width.round(), viewModel.viewDimension.height.round());
+    canvas.setClip(0, 0, viewModel.viewDimension!.width.round(), viewModel.viewDimension!.height.round());
     if (mapViewPosition.scale != 1) {
       //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
       canvas.scale(mapViewPosition.focalPoint, mapViewPosition.scale);
     }
-    mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
-    Mappoint leftUpper = mapViewPosition.leftUpper;
+    mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
+    Mappoint? leftUpper = mapViewPosition.leftUpper;
 
     jobSet.bitmaps.forEach((Tile tile, TileBitmap tileBitmap) {
-      Mappoint point = tile.getLeftUpper(viewModel.displayModel.tileSize);
+      Mappoint point = tile.getLeftUpper(viewModel.displayModel.tileSize)!;
       _paint.setAntiAlias(false);
       canvas.drawBitmap(
         bitmap: tileBitmap,
-        left: point.x - leftUpper.x,
+        left: point.x - leftUpper!.x,
         top: point.y - leftUpper.y,
         paint: _paint,
       );
     });
     if (mapViewPosition.scale != 1) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
-      (canvas as FlutterCanvas).uiCanvas.restore();
+      (canvas as FlutterCanvas).uiCanvas!.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
   }
@@ -96,12 +96,14 @@ class TileLayerImpl extends TileLayer {
    * @param tile   A tile.
    * @param bitmap The bitmap for {@code tile} currently held in the layer's cache.
    */
-  bool isTileStale(Tile tile, TileBitmap bitmap) {}
+  bool isTileStale(Tile tile, TileBitmap bitmap) {
+    return false;
+  }
 
   void retrieveLabelsOnly(Job job) {}
 
   void drawParentTileBitmap(MapCanvas canvas, Mappoint point, Tile tile) {
-    Tile cachedParentTile = getCachedParentTile(tile, 4);
+    Tile? cachedParentTile = getCachedParentTile(tile, 4);
     if (cachedParentTile != null) {
 //      Bitmap bitmap = this.tileCache.getImmediately(
 //          createJob(cachedParentTile));
@@ -157,12 +159,12 @@ class TileLayerImpl extends TileLayer {
   /**
    * @return the first parent object of the given object whose tileCacheBitmap is cached (may be null).
    */
-  Tile getCachedParentTile(Tile tile, int level) {
+  Tile? getCachedParentTile(Tile tile, int level) {
     if (level == 0) {
       return null;
     }
 
-    Tile parentTile = tile.getParent();
+    Tile? parentTile = tile.getParent();
     if (parentTile == null) {
       return null;
 //    } else if (this.tileCache.containsKey(createJob(parentTile))) {

@@ -14,8 +14,8 @@ abstract class MapDataStore extends Datastore {
   /// Example multilingual string: "Base\ren\bEnglish\rjp\bJapan\rzh_py\bPin-yin".
   /// <p/>
   /// Use '\r' delimiter among names and '\b' delimiter between each language and name.
-  static String extract(String s, String language) {
-    if (s == null || s.trim().length == 0) {
+  static String? extract(String s, String? language) {
+    if (s.trim().length == 0) {
       return null;
     }
 
@@ -24,7 +24,7 @@ abstract class MapDataStore extends Datastore {
       return langNames[0];
     }
 
-    String fallback;
+    String? fallback;
     for (int i = 1; i < langNames.length; i++) {
       List<String> langName = langNames[i].split("\b");
       if (langName.length != 2) {
@@ -50,17 +50,17 @@ abstract class MapDataStore extends Datastore {
   /// the preferred language when extracting labels from this data store. The actual
   /// implementation is up to the concrete implementation, which can also simply ignore
   /// this setting.
-  final String preferredLanguage;
+  final String? preferredLanguage;
 
   /// Ctor for MapDataStore setting preferred language.
   ///
   /// @param language the preferred language or null if default language is used.
-  const MapDataStore(String language) : preferredLanguage = language;
+  const MapDataStore(String? language) : preferredLanguage = language;
 
   /// Returns the area for which data is supplied.
   ///
   /// @return bounding box of area.
-  BoundingBox get boundingBox;
+  BoundingBox? get boundingBox;
 
   ///
   /// Closes the map database.
@@ -68,7 +68,7 @@ abstract class MapDataStore extends Datastore {
 
   /// Extracts substring of preferred language from multilingual string using
   /// the preferredLanguage setting.
-  String extractLocalized(String s) {
+  String? extractLocalized(String s) {
     return MapDataStore.extract(s, preferredLanguage);
   }
 
@@ -76,7 +76,7 @@ abstract class MapDataStore extends Datastore {
   ///
   /// @param tile A tile.
   /// @return the timestamp of the data used to render the tile
-  int getDataTimestamp(Tile tile);
+  int? getDataTimestamp(Tile tile);
 
   /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
   /// It is permissible for the MapDataStore to return more data.
@@ -85,7 +85,7 @@ abstract class MapDataStore extends Datastore {
   /// @param tile tile for which data is requested.
   /// @return label data for the tile.
   @override
-  Future<DatastoreReadResult> readLabelsSingle(Tile tile) async {
+  Future<DatastoreReadResult?> readLabelsSingle(Tile tile) async {
     return readMapDataSingle(tile);
   }
 
@@ -98,7 +98,7 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
@@ -117,7 +117,7 @@ abstract class MapDataStore extends Datastore {
   /// @param tile tile for which data is requested.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readMapDataSingle(Tile tile);
+  Future<DatastoreReadResult?> readMapDataSingle(Tile tile);
 
   /// Reads data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -128,7 +128,7 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult?> readMapData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
@@ -149,7 +149,7 @@ abstract class MapDataStore extends Datastore {
    * @return poi data for the tile.
    */
   @override
-  Future<DatastoreReadResult> readPoiDataSingle(Tile tile);
+  Future<DatastoreReadResult?> readPoiDataSingle(Tile tile);
 
   /// Reads POI data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -160,7 +160,7 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readPoiData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
@@ -177,14 +177,14 @@ abstract class MapDataStore extends Datastore {
   /// Gets the initial map position.
   ///
   /// @return the start position, if available.
-  LatLong get startPosition;
+  LatLong? get startPosition;
 
   /**
    * Gets the initial zoom level.
    *
    * @return the start zoom level.
    */
-  int get startZoomLevel;
+  int? get startZoomLevel;
 
   /// Returns true if a way should be included in the result set for readLabels()
   /// By default only ways with names, house numbers or a ref are included in the result set

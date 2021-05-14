@@ -19,7 +19,7 @@ void main() {
     MemoryTileBitmapCache cache = MemoryTileBitmapCache();
 
     await tester.runAsync(() async {
-      ResourceBitmap resourceBitmap = await symbolCache.getSymbol("arrow.png", 0, 0, 0);
+      ResourceBitmap resourceBitmap = (await (symbolCache.getSymbol("arrow.png", 0, 0, 0)))!;
       // ByteData content = await bundle.load("arrow.png");
       // assert(content != null);
       //
@@ -32,7 +32,7 @@ void main() {
       Tile tile = Tile(0, 0, 0, 0);
       cache.addTileBitmap(tile, bitmap);
 
-      TileBitmap result = await cache.getTileBitmapAsync(tile);
+      TileBitmap? result = await cache.getTileBitmapAsync(tile);
       assert(result == bitmap);
       cache.purgeAll();
     });

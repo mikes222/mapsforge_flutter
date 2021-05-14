@@ -6,14 +6,14 @@ import 'package:mapsforge_flutter/src/model/tag.dart';
 
 class PoiPage extends StatelessWidget {
   /// The read POIs.
-  final List<PointOfInterest> pointOfInterests;
+  final List<PointOfInterest>? pointOfInterests;
 
-  const PoiPage({Key key, this.pointOfInterests}) : super(key: key);
+  const PoiPage({Key? key, this.pointOfInterests}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: pointOfInterests
+      children: pointOfInterests!
           .map(
             (e) => Card(
               child: Column(

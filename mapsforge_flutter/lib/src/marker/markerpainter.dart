@@ -18,7 +18,7 @@ class MarkerPainter implements CustomPainter {
 
   final MarkerRenderer markerRenderer;
 
-  MarkerPainter({@required this.position, @required this.displayModel, @required this.markerRenderer})
+  MarkerPainter({required this.position, required this.displayModel, required this.markerRenderer})
       : assert(position != null),
         assert(displayModel != null),
         assert(markerRenderer != null) {}
@@ -39,7 +39,7 @@ class MarkerPainter implements CustomPainter {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
-  bool hitTest(Offset position) => null;
+  bool? hitTest(Offset position) => null;
 
   @override
   get semanticsBuilder => null;

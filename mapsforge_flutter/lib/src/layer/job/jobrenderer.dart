@@ -16,7 +16,7 @@ abstract class JobRenderer {
   /// @returns the tilebitmap or null if no data available for this tile
   /// @returns an exception e.g. if the server is not reachable
   ///
-  Future<TileBitmap> executeJob(Job job);
+  Future<TileBitmap?> executeJob(Job job);
 
   String getRenderKey();
 

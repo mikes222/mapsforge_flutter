@@ -44,7 +44,7 @@ class RequiredFields {
     mapFileInfoBuilder.boundingBox = new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 
-  static void readFileSize(ReadBuffer readBuffer, int fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readFileSize(ReadBuffer readBuffer, int? fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the file size (8 bytes)
     int headerFileSize = readBuffer.readLong();
     if (headerFileSize != fileSize) {
@@ -66,7 +66,7 @@ class RequiredFields {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
-    ReadBuffer readBuffer = await readBufferMaster.readFromFile(length: magicByteLength + 4);
+    ReadBuffer readBuffer = (await (readBufferMaster.readFromFile(length: magicByteLength + 4)))!;
     assert(readBuffer != null);
 
     // get and check the magic byte
@@ -95,7 +95,7 @@ class RequiredFields {
       throw new Exception("invalid number of POI tags: $numberOfPoiTags");
     }
 
-    List<Tag> poiTags = List<Tag>();
+    List<Tag> poiTags = [];
     for (int currentTagId = 0; currentTagId < numberOfPoiTags; ++currentTagId) {
 // get and check the POI tag
       String tag = readBuffer.readUTF8EncodedString();
@@ -132,7 +132,7 @@ class RequiredFields {
       throw new Exception("invalid number of way tags: $numberOfWayTags");
     }
 
-    List<Tag> wayTags = List<Tag>();
+    List<Tag> wayTags = [];
 
     for (int currentTagId = 0; currentTagId < numberOfWayTags; ++currentTagId) {
 // get and check the way tag

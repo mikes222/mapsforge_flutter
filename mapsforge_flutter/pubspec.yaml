@@ -1,51 +1,52 @@
 name: mapsforge_flutter
 description: A port of mapsforge for pure flutter
-version: 1.1.0
+version: 2.0.0
 # author: devemux86, mikes222
 homepage: https://github.com/mikes222/mapsforge_flutter
 
 environment:
-  sdk: ">=2.2.10 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
   # BSD License
-  logging: ^0.11.4
+  logging: ^1.0.1
 
   # BSD License
-  convert: ^2.1.0
+  convert: ^3.0.0
 
   # MIT License
-  ecache: ^1.0.1
+  ecache: ^2.0.0
 #    git:
 #      url: https://github.com/mikes222/dcache
     #path: ../../github_dcache/
 
   # MIT License
-  xml: ^4.2.0
+  xml: ^5.1.0
 
   # Apache 2.0 License
-  rxdart: ^0.25.0
+  rxdart: ^0.27.0
 
   # BSD License
-  synchronized: ^2.2.0+2
+  synchronized: ^3.0.0
 
   # BSD License
-  flutter_svg: ^0.19.3
+  flutter_svg: ^0.22.0
 
   # BSD License
   #image: 2.1.13
 
   # BSD License, currently no WEB support
-  path_provider: ^1.6.28
+  path_provider: ^2.0.1
 
   # MIT License
-  provider: ^4.3.3
+  provider: ^5.0.0
 
   # BSD License
-  http: ^0.12.2
+  http: ^0.13.3
+  collection: ^1.15.0-nullsafety.4
 
 
 dev_dependencies:

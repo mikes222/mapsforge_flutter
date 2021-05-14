@@ -5,7 +5,7 @@ import '../model/tag.dart';
 /// An immutable container for all data associated with a single way or area (closed way).
 class Way {
   /// The position of the area label (may be null).
-  final ILatLong labelPosition;
+  final ILatLong? labelPosition;
 
   /// The geographical coordinates of the way nodes.
   final List<List<ILatLong>> latLongs;

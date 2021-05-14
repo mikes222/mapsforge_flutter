@@ -18,8 +18,8 @@ class LayerUtil {
    */
   static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
-    int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
-    int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
+    int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude!);
+    int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude!);
     return new Tile(tileLeft, tileTop, zoomLevel, indoorLevel);
   }
 
@@ -33,8 +33,8 @@ class LayerUtil {
    */
   static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
-    int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
-    int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
+    int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude!);
+    int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude!);
     return new Tile(tileRight, tileBottom, zoomLevel, indoorLevel);
   }
 
@@ -54,17 +54,17 @@ class LayerUtil {
   /// the user (tile in the middle should be created first
   ///
   static List<Tile> getTiles(ViewModel viewModel, MapViewPosition mapViewPosition) {
-    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
+    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension!)!;
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
-    int tileLeft = mapViewPosition.mercatorProjection.longitudeToTileX(boundingBox.minLongitude);
-    int tileTop = mapViewPosition.mercatorProjection.latitudeToTileY(boundingBox.maxLatitude);
-    int tileRight = mapViewPosition.mercatorProjection.longitudeToTileX(boundingBox.maxLongitude);
-    int tileBottom = mapViewPosition.mercatorProjection.latitudeToTileY(boundingBox.minLatitude);
+    int tileLeft = mapViewPosition.mercatorProjection!.longitudeToTileX(boundingBox.minLongitude!);
+    int tileTop = mapViewPosition.mercatorProjection!.latitudeToTileY(boundingBox.maxLatitude!);
+    int tileRight = mapViewPosition.mercatorProjection!.longitudeToTileX(boundingBox.maxLongitude!);
+    int tileBottom = mapViewPosition.mercatorProjection!.latitudeToTileY(boundingBox.minLatitude!);
     int tileHalfX = ((tileRight - tileLeft) / 2).round() + tileLeft;
     int tileHalfY = ((tileBottom - tileTop) / 2).round() + tileTop;
 
-    List<Tile> tiles = List<Tile>();
+    List<Tile> tiles = [];
 
     // build tiles starting from the center tile
     for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
@@ -116,7 +116,7 @@ class LayerUtil {
     //Collections.sort(input, Collections.reverseOrder());
     // in order of priority, see if an item can be drawn, i.e. none of the items
     // in the currentItemsToDraw list clashes with it.
-    List<MapElementContainer> output = new List<MapElementContainer>();
+    List<MapElementContainer> output = [];
     for (MapElementContainer item in input) {
       bool hasSpace = true;
       for (MapElementContainer outputElement in output) {

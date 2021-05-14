@@ -52,7 +52,7 @@ class IndexNoCache {
 
     // check for cached index block
     // cache miss, seek to the correct index block in the file and read it
-    int indexBlockPosition = subFileParameter.indexStartAddress + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
+    int indexBlockPosition = subFileParameter.indexStartAddress! + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
 
     int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
     int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);

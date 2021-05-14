@@ -9,8 +9,8 @@ class ElementNodeMatcher implements ElementMatcher {
   }
 
   @override
-  bool isCoveredByElementMatcher(ElementMatcher elementMatcher) {
-    return elementMatcher.matchesElement(Element.NODE);
+  bool isCoveredByElementMatcher(ElementMatcher? elementMatcher) {
+    return elementMatcher!.matchesElement(Element.NODE);
   }
 
   @override

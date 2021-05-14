@@ -56,8 +56,7 @@ class GraphicUtils {
    * @param height      requested height (0: no change)
    * @param percent     requested scale percent (100: no change)
    */
-  static List<double> imageSize(double picWidth, double picHeight,
-      double scaleFactor, int width, int height, int percent) {
+  static List<double> imageSize(double picWidth, double picHeight, double scaleFactor, int width, int height, int percent) {
     double bitmapWidth = picWidth * scaleFactor;
     double bitmapHeight = picHeight * scaleFactor;
 
@@ -82,6 +81,6 @@ class GraphicUtils {
       bitmapHeight *= percent / 100;
     }
 
-    return new List<double>(); //{bitmapWidth, bitmapHeight};
+    return []; //{bitmapWidth, bitmapHeight};
   }
 }

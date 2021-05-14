@@ -21,7 +21,7 @@ class XmlRenderThemeStyleMenu {
     return style;
   }
 
-  XmlRenderThemeStyleLayer getLayer(String id) {
+  XmlRenderThemeStyleLayer? getLayer(String id) {
     return this.layers[id];
   }
 

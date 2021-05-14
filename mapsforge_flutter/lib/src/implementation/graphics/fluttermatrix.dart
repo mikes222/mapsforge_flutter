@@ -3,10 +3,10 @@ import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 class FlutterMatrix implements Matrix {
   //Matrix4 matrix = new Matrix4.identity();
 
-  double theta;
+  double? theta;
 
-  double pivotX;
-  double pivotY;
+  double? pivotX;
+  double? pivotY;
 
   // @override
   // void reset() {
@@ -17,7 +17,7 @@ class FlutterMatrix implements Matrix {
    * @param theta an angle measured in radians.
    */
   @override
-  void rotate(double theta, {double pivotX = 0, double pivotY = 0}) {
+  void rotate(double? theta, {double? pivotX = 0, double? pivotY = 0}) {
     this.theta = theta;
     this.pivotX = pivotX;
     this.pivotY = pivotY;

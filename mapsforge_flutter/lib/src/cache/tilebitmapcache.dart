@@ -14,9 +14,9 @@ abstract class TileBitmapCache {
   ///
   /// Returns the requested bitmap for the given [Tile]
   ///
-  TileBitmap getTileBitmapSync(Tile tile);
+  TileBitmap? getTileBitmapSync(Tile tile);
 
-  Future<TileBitmap> getTileBitmapAsync(Tile tile);
+  Future<TileBitmap?> getTileBitmapAsync(Tile tile);
 
   ///
   /// Adds a bitmap to the cache

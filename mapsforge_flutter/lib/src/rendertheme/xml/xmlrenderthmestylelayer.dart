@@ -12,11 +12,10 @@ class XmlRenderThemeStyleLayer {
   final bool visible;
   final bool enabled;
 
-  XmlRenderThemeStyleLayer(
-      this.id, this.visible, this.enabled, this.defaultLanguage)
+  XmlRenderThemeStyleLayer(this.id, this.visible, this.enabled, this.defaultLanguage)
       : titles = new Map<String, String>(),
         categories = new Set(),
-        overlays = new List<XmlRenderThemeStyleLayer>() {}
+        overlays = [] {}
 
   void addCategory(String category) {
     this.categories.add(category);
@@ -42,8 +41,8 @@ class XmlRenderThemeStyleLayer {
     return this.overlays;
   }
 
-  String getTitle(String language) {
-    String result = this.titles[language];
+  String? getTitle(String language) {
+    String? result = this.titles[language];
     if (result == null) {
       return this.titles[this.defaultLanguage];
     }

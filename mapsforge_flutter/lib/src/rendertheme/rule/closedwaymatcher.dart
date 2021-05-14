@@ -9,8 +9,8 @@ class ClosedWayMatcher implements ClosedMatcher {
   }
 
   @override
-  bool isCoveredByClosedMatcher(ClosedMatcher closedMatcher) {
-    return closedMatcher.matchesClosed(Closed.YES);
+  bool isCoveredByClosedMatcher(ClosedMatcher? closedMatcher) {
+    return closedMatcher!.matchesClosed(Closed.YES);
   }
 
   @override

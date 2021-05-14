@@ -11,9 +11,9 @@ import 'mappoint.dart';
 class MapViewPosition {
   static final _log = new Logger('MapViewPosition');
 
-  double _latitude;
+  double? _latitude;
 
-  double _longitude;
+  double? _longitude;
 
   final double tileSize;
 
@@ -23,16 +23,16 @@ class MapViewPosition {
 
   final double scale;
 
-  final Mappoint focalPoint;
+  final Mappoint? focalPoint;
 
   /// the latitude/longitude boundaries of the current map view.
   /// This property must be calculated if needed based on the current view
-  BoundingBox boundingBox;
+  BoundingBox? boundingBox;
 
   // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
-  Mappoint _leftUpper;
+  Mappoint? _leftUpper;
 
-  MercatorProjectionImpl _mercatorProjection;
+  MercatorProjectionImpl? _mercatorProjection;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this.indoorLevel, this.tileSize)
       : scale = 1,
@@ -150,25 +150,25 @@ class MapViewPosition {
         focalPoint = old.focalPoint,
         _mercatorProjection = old._mercatorProjection {
     //calculateBoundingBox(tileSize, viewSize);
-    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _mercatorProjection.mapSize - viewDimension.width / 2),
-        min(max(upper, -viewDimension.height / 2), _mercatorProjection.mapSize - viewDimension.height / 2));
+    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _mercatorProjection!.mapSize! - viewDimension.width / 2),
+        min(max(upper, -viewDimension.height / 2), _mercatorProjection!.mapSize! - viewDimension.height / 2));
 
-    double rightX = _leftUpper.x + viewDimension.width;
-    double bottomY = _leftUpper.y + viewDimension.height;
+    double rightX = _leftUpper!.x + viewDimension.width;
+    double bottomY = _leftUpper!.y + viewDimension.height;
 
     boundingBox = BoundingBox(
-        _mercatorProjection.pixelYToLatitude(min(bottomY, _mercatorProjection.mapSize)),
-        _mercatorProjection.pixelXToLongitude(max(_leftUpper.x, 0)),
-        _mercatorProjection.pixelYToLatitude(max(_leftUpper.y, 0)),
-        _mercatorProjection.pixelXToLongitude(min(rightX, _mercatorProjection.mapSize)));
+        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize!)),
+        _mercatorProjection!.pixelXToLongitude(max(_leftUpper!.x, 0)),
+        _mercatorProjection!.pixelYToLatitude(max(_leftUpper!.y, 0)),
+        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize!)));
 
-    _latitude = _mercatorProjection.pixelYToLatitude(_leftUpper.y + viewDimension.height / 2);
+    _latitude = _mercatorProjection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
 
-    _longitude = _mercatorProjection.pixelXToLongitude(_leftUpper.x + viewDimension.width / 2);
+    _longitude = _mercatorProjection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
 
-    MercatorProjectionImpl.checkLatitude(_latitude);
+    MercatorProjectionImpl.checkLatitude(_latitude!);
 
-    MercatorProjectionImpl.checkLongitude(_longitude);
+    MercatorProjectionImpl.checkLongitude(_longitude!);
   }
 
   void sizeChanged() {
@@ -180,28 +180,28 @@ class MapViewPosition {
     return _latitude != null && _longitude != null;
   }
 
-  BoundingBox calculateBoundingBox(Dimension viewDimension) {
+  BoundingBox? calculateBoundingBox(Dimension viewDimension) {
     assert(viewDimension != null);
     if (boundingBox != null) return boundingBox;
 
-    double centerY = _mercatorProjection.latitudeToPixelY(_latitude);
-    double centerX = _mercatorProjection.longitudeToPixelX(_longitude);
+    double centerY = _mercatorProjection!.latitudeToPixelY(_latitude!);
+    double centerX = _mercatorProjection!.longitudeToPixelX(_longitude!);
     double leftX = centerX - viewDimension.width / 2;
     double rightX = centerX + viewDimension.width / 2;
     double topY = centerY - viewDimension.height / 2;
     double bottomY = centerY + viewDimension.height / 2;
     boundingBox = BoundingBox(
-        _mercatorProjection.pixelYToLatitude(min(bottomY, _mercatorProjection.mapSize)),
-        _mercatorProjection.pixelXToLongitude(max(leftX, 0)),
-        _mercatorProjection.pixelYToLatitude(max(topY, 0)),
-        _mercatorProjection.pixelXToLongitude(min(rightX, _mercatorProjection.mapSize)));
+        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize!)),
+        _mercatorProjection!.pixelXToLongitude(max(leftX, 0)),
+        _mercatorProjection!.pixelYToLatitude(max(topY, 0)),
+        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize!)));
     _leftUpper = Mappoint(leftX, topY);
     return boundingBox;
   }
 
-  MercatorProjectionImpl get mercatorProjection => _mercatorProjection;
+  MercatorProjectionImpl? get mercatorProjection => _mercatorProjection;
 
-  Mappoint get leftUpper => _leftUpper;
+  Mappoint? get leftUpper => _leftUpper;
 
   // MercatorProjectionImpl get mercatorProjection {
   //   if (_mercatorProjection != null) return _mercatorProjection;
@@ -209,9 +209,9 @@ class MapViewPosition {
   //   return _mercatorProjection;
   // }
 
-  double get latitude => _latitude;
+  double? get latitude => _latitude;
 
-  double get longitude => _longitude;
+  double? get longitude => _longitude;
 
   @override
   bool operator ==(Object other) =>

@@ -29,22 +29,22 @@ class Caption extends RenderInstruction {
   static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
-  Display display;
+  Display? display;
   double dy = 0;
   final Map<int, double> dyScaled;
-  MapPaint fill;
+  MapPaint? fill;
   final Map<int, MapPaint> fills;
   double fontSize = 10;
-  double gap;
+  late double gap;
   final int maxTextWidth;
-  Position position;
+  Position? position;
   int priority = 0;
-  MapPaint stroke;
+  MapPaint? stroke;
   final Map<int, MapPaint> strokes;
-  String symbolId;
+  String? symbolId;
   final Map<String, RenderSymbol> symbols;
-  TextKey textKey;
-  RenderSymbol renderSymbol;
+  TextKey? textKey;
+  RenderSymbol? renderSymbol;
 
   Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbols)
       : fills = new Map(),
@@ -53,12 +53,12 @@ class Caption extends RenderInstruction {
         maxTextWidth = displayModel.getMaxTextWidth(),
         super(graphicFactory, displayModel) {
     this.fill = graphicFactory.createPaint();
-    this.fill.setColor(Color.BLACK);
-    this.fill.setStyle(Style.FILL);
+    this.fill!.setColor(Color.BLACK);
+    this.fill!.setStyle(Style.FILL);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.BLACK);
-    this.stroke.setStyle(Style.STROKE);
+    this.stroke!.setColor(Color.BLACK);
+    this.stroke!.setStyle(Style.STROKE);
 
     this.display = Display.IFSPACE;
 
@@ -74,7 +74,7 @@ class Caption extends RenderInstruction {
         Position.BELOW_LEFT == this.position ||
         Position.ABOVE_RIGHT == this.position ||
         Position.ABOVE_LEFT == this.position) {
-      double horizontalOffset = this.renderSymbol.bitmap.getWidth() / 2 + this.gap;
+      double horizontalOffset = this.renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
       if (Position.LEFT == this.position || Position.BELOW_LEFT == this.position || Position.ABOVE_LEFT == this.position) {
         horizontalOffset *= -1;
       }
@@ -84,15 +84,15 @@ class Caption extends RenderInstruction {
   }
 
   double computeVerticalOffset(int zoomLevel) {
-    double verticalOffset = this.dyScaled[zoomLevel];
+    double? verticalOffset = this.dyScaled[zoomLevel];
     if (verticalOffset == null) {
       verticalOffset = this.dy;
     }
 
     if (Position.ABOVE == this.position || Position.ABOVE_LEFT == this.position || Position.ABOVE_RIGHT == this.position) {
-      verticalOffset -= this.renderSymbol.bitmap.getHeight() / 2 + this.gap;
+      verticalOffset -= this.renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
     } else if (Position.BELOW == this.position || Position.BELOW_LEFT == this.position || Position.BELOW_RIGHT == this.position) {
-      verticalOffset += this.renderSymbol.bitmap.getHeight() / 2 + this.gap;
+      verticalOffset += this.renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
     }
     return verticalOffset;
   }
@@ -114,7 +114,7 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
@@ -126,9 +126,9 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
+        this.stroke!.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {
@@ -136,13 +136,13 @@ class Caption extends RenderInstruction {
       }
     });
 
-    this.fill.setTypeface(fontFamily, fontStyle);
-    this.stroke.setTypeface(fontFamily, fontStyle);
+    this.fill!.setTypeface(fontFamily, fontStyle);
+    this.stroke!.setTypeface(fontFamily, fontStyle);
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
 
     if (this.symbolId != null) {
-      renderSymbol = symbols[this.symbolId];
+      renderSymbol = symbols[this.symbolId!];
       if (renderSymbol == null) {
         _log.warning("Symbol $symbolId referenced in caption in render.xml, but not defined as symbol before");
       }
@@ -181,19 +181,19 @@ class Caption extends RenderInstruction {
   }
 
   MapPaint getFillPaint(int zoomLevel) {
-    MapPaint paint = fills[zoomLevel];
+    MapPaint? paint = fills[zoomLevel];
     if (paint == null) {
       paint = this.fill;
     }
-    return paint;
+    return paint!;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint paint = strokes[zoomLevel];
+    MapPaint? paint = strokes[zoomLevel];
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint;
+    return paint!;
   }
 
   @override
@@ -203,7 +203,7 @@ class Caption extends RenderInstruction {
       return;
     }
 
-    String caption = this.textKey.getValue(poi.tags);
+    String? caption = this.textKey!.getValue(poi.tags);
     if (caption == null) {
       //_log.info("caption is null for $textKey");
       return;
@@ -211,12 +211,12 @@ class Caption extends RenderInstruction {
 
     double horizontalOffset = 0;
 
-    double verticalOffset = this.dyScaled[renderContext.job.tile.zoomLevel];
+    double? verticalOffset = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (verticalOffset == null) {
       verticalOffset = this.dy;
     }
 
-    if (renderSymbol != null && renderSymbol.bitmap != null) {
+    if (renderSymbol != null && renderSymbol!.bitmap != null) {
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -241,18 +241,18 @@ class Caption extends RenderInstruction {
       return;
     }
 
-    String caption = this.textKey.getValue(way.getTags());
+    String? caption = this.textKey!.getValue(way.getTags());
     if (caption == null) {
       return;
     }
 
     double horizontalOffset = 0;
-    double verticalOffset = this.dyScaled[renderContext.job.tile.zoomLevel];
+    double? verticalOffset = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (verticalOffset == null) {
       verticalOffset = this.dy;
     }
 
-    if (renderSymbol != null && renderSymbol.bitmap != null) {
+    if (renderSymbol != null && renderSymbol!.bitmap != null) {
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -293,7 +293,7 @@ class Caption extends RenderInstruction {
   void dispose() {}
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
+  Future<void>? initResources(GraphicFactory graphicFactory) {
     return null;
   }
 }

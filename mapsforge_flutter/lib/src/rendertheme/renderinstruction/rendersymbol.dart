@@ -16,8 +16,8 @@ import '../rendercontext.dart';
 /// The [RenderSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementation.
 ///
 class RenderSymbol extends RenderInstruction with BitmapMixin {
-  Display display;
-  String id;
+  Display? display;
+  String? id;
   int priority = 0;
 
   RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel) : super(graphicFactory, displayModel) {
@@ -55,7 +55,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     if (src != null) initPendings.add(this);
   }
 
-  String getId() {
+  String? getId() {
     return this.id;
   }
 

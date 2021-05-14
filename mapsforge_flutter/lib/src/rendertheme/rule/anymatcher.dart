@@ -19,12 +19,12 @@ class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
   }
 
   @override
-  bool isCoveredByClosedMatcher(ClosedMatcher closedMatcher) {
+  bool isCoveredByClosedMatcher(ClosedMatcher? closedMatcher) {
     return closedMatcher == this;
   }
 
   @override
-  bool isCoveredByElementMatcher(ElementMatcher elementMatcher) {
+  bool isCoveredByElementMatcher(ElementMatcher? elementMatcher) {
     return elementMatcher == this;
   }
 
@@ -39,7 +39,7 @@ class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
   }
 
   @override
-  bool matchesTagList(List<Tag> tags) {
+  bool matchesTagList(List<Tag?>? tags) {
     return true;
   }
 }

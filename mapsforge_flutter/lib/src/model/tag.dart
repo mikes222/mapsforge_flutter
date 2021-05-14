@@ -7,12 +7,12 @@ class Tag implements Comparable<Tag> {
   /**
    * The key of this tag.
    */
-  final String key;
+  final String? key;
 
   /**
    * The value of this tag.
    */
-  final String value;
+  final String? value;
 
   /**
    * @param key   the key of the tag.
@@ -36,13 +36,13 @@ class Tag implements Comparable<Tag> {
    */
   @override
   int compareTo(Tag tag) {
-    int keyResult = this.key.compareTo(tag.key);
+    int keyResult = this.key!.compareTo(tag.key!);
 
     if (keyResult != 0) {
       return keyResult;
     }
 
-    return this.value.compareTo(tag.value);
+    return this.value!.compareTo(tag.value!);
   }
 
   @override

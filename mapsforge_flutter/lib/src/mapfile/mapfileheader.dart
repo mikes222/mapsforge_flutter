@@ -33,18 +33,18 @@ class MapFileHeader {
    */
   static final String SPACE = ' ';
 
-  MapFileInfo mapFileInfo;
+  MapFileInfo? mapFileInfo;
 
-  List<SubFileParameter> subFileParameters;
+  late List<SubFileParameter?> subFileParameters;
 
-  int zoomLevelMaximum;
+  int? zoomLevelMaximum;
 
-  int zoomLevelMinimum;
+  int? zoomLevelMinimum;
 
   /**
    * @return a MapFileInfo containing the header data.
    */
-  MapFileInfo getMapFileInfo() {
+  MapFileInfo? getMapFileInfo() {
     // execute the init() method before using mapfiles
     assert(mapFileInfo != null);
     return this.mapFileInfo;
@@ -54,10 +54,10 @@ class MapFileHeader {
    * @param zoomLevel the originally requested zoom level.
    * @return the closest possible zoom level which is covered by a sub-file.
    */
-  int getQueryZoomLevel(int zoomLevel) {
-    if (zoomLevel > this.zoomLevelMaximum) {
+  int? getQueryZoomLevel(int zoomLevel) {
+    if (zoomLevel > this.zoomLevelMaximum!) {
       return this.zoomLevelMaximum;
-    } else if (zoomLevel < this.zoomLevelMinimum) {
+    } else if (zoomLevel < this.zoomLevelMinimum!) {
       return this.zoomLevelMinimum;
     }
     return zoomLevel;
@@ -67,7 +67,7 @@ class MapFileHeader {
    * @param queryZoomLevel the zoom level for which the sub-file parameters are needed.
    * @return the sub-file parameters for the given zoom level.
    */
-  SubFileParameter getSubFileParameter(int queryZoomLevel) {
+  SubFileParameter? getSubFileParameter(int queryZoomLevel) {
     return this.subFileParameters[queryZoomLevel];
   }
 
@@ -76,8 +76,8 @@ class MapFileHeader {
   /// @param readBuffer the ReadBuffer for the file data.
   /// @param fileSize   the size of the map file in bytes.
   /// @throws IOException if an error occurs while reading the file.
-  Future<void> readHeader(ReadBufferMaster readBufferMaster, int fileSize) async {
-    ReadBuffer readBuffer = await RequiredFields.readMagicByte(readBufferMaster);
+  Future<void> readHeader(ReadBufferMaster readBufferMaster, int? fileSize) async {
+    ReadBuffer? readBuffer = await RequiredFields.readMagicByte(readBufferMaster);
 
     // get and check the size of the remaining file header (4 bytes)
     int remainingHeaderSize = readBuffer.readInt();
@@ -86,7 +86,7 @@ class MapFileHeader {
     }
 
 // read the header data into the buffer
-    readBuffer = await readBufferMaster.readFromFile(length: remainingHeaderSize);
+    readBuffer = await (readBufferMaster.readFromFile(length: remainingHeaderSize));
     if (readBuffer == null) {
       throw new Exception("reading header data has failed: $remainingHeaderSize");
     }
@@ -117,13 +117,13 @@ class MapFileHeader {
   }
 
   void debug() {
-    _log.info("mapfile is version ${mapFileInfo.fileVersion} from " +
-        DateTime.fromMillisecondsSinceEpoch(mapFileInfo.mapDate, isUtc: true).toIso8601String());
+    _log.info("mapfile is version ${mapFileInfo!.fileVersion} from " +
+        DateTime.fromMillisecondsSinceEpoch(mapFileInfo!.mapDate!, isUtc: true).toIso8601String());
     _log.info(mapFileInfo.toString());
     _log.info("zoomLevel: $zoomLevelMinimum - $zoomLevelMaximum");
   }
 
-  void _readSubFileParameters(ReadBuffer readBuffer, int fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
+  void _readSubFileParameters(ReadBuffer readBuffer, int? fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the number of sub-files (1 byte)
     int numberOfSubFiles = readBuffer.readByte();
     if (numberOfSubFiles < 1) {
@@ -131,7 +131,7 @@ class MapFileHeader {
     }
     mapFileInfoBuilder.numberOfSubFiles = numberOfSubFiles;
 
-    List<SubFileParameter> tempSubFileParameters = List<SubFileParameter>();
+    List<SubFileParameter> tempSubFileParameters = [];
     this.zoomLevelMinimum = 65536;
     this.zoomLevelMaximum = -65536;
 
@@ -167,13 +167,13 @@ class MapFileHeader {
 
       // get and check the start address of the sub-file (8 bytes)
       int startAddress = readBuffer.readLong();
-      if (startAddress < HEADER_SIZE_MIN || startAddress >= fileSize) {
+      if (startAddress < HEADER_SIZE_MIN || startAddress >= fileSize!) {
         throw new Exception("invalid start address: $startAddress");
       }
       subFileParameterBuilder.startAddress = startAddress;
 
       int indexStartAddress = startAddress;
-      if (mapFileInfoBuilder.optionalFields.isDebugFile) {
+      if (mapFileInfoBuilder.optionalFields.isDebugFile!) {
         // the sub-file has an index signature before the index
         indexStartAddress += SIGNATURE_LENGTH_INDEX;
       }
@@ -193,21 +193,21 @@ class MapFileHeader {
       tempSubFileParameters.add(subFileParameter);
 
       // update the global minimum and maximum zoom level information
-      if (this.zoomLevelMinimum > subFileParameter.zoomLevelMin) {
+      if (this.zoomLevelMinimum! > subFileParameter.zoomLevelMin!) {
         this.zoomLevelMinimum = subFileParameter.zoomLevelMin;
         mapFileInfoBuilder.zoomLevelMin = this.zoomLevelMinimum;
       }
-      if (this.zoomLevelMaximum < subFileParameter.zoomLevelMax) {
+      if (this.zoomLevelMaximum! < subFileParameter.zoomLevelMax!) {
         this.zoomLevelMaximum = subFileParameter.zoomLevelMax;
         mapFileInfoBuilder.zoomLevelMax = this.zoomLevelMaximum;
       }
     }
 
     // create and fill the lookup table for the sub-files
-    this.subFileParameters = new List<SubFileParameter>(this.zoomLevelMaximum + 1);
+    this.subFileParameters = new List<SubFileParameter?>.filled(this.zoomLevelMaximum! + 1, null);
     for (int currentMapFile = 0; currentMapFile < numberOfSubFiles; ++currentMapFile) {
       SubFileParameter subFileParameter = tempSubFileParameters.elementAt(currentMapFile);
-      for (int zoomLevel = subFileParameter.zoomLevelMin; zoomLevel <= subFileParameter.zoomLevelMax; ++zoomLevel) {
+      for (int zoomLevel = subFileParameter.zoomLevelMin!; zoomLevel <= subFileParameter.zoomLevelMax!; ++zoomLevel) {
         this.subFileParameters[zoomLevel] = subFileParameter;
       }
     }

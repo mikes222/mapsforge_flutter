@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 abstract class ContextMenuBuilder {
-  Widget build(BuildContext context, MapModel mapModel, ViewModel viewModel, Dimension screen, double x, double y, TapEvent event,
+  Widget build(BuildContext context, MapModel mapModel, ViewModel viewModel, Dimension? screen, double x, double y, TapEvent event,
       ContextMenuCallback callback);
 }
 

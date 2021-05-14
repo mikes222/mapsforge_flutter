@@ -8,10 +8,10 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 
 class MemoryDatastore extends Datastore {
   /// The read POIs.
-  final List<PointOfInterest> pointOfInterests = List();
+  final List<PointOfInterest> pointOfInterests = [];
 
   /// The read ways.
-  final List<Way> ways = List();
+  final List<Way> ways = [];
 
   @override
   Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) {
@@ -34,14 +34,14 @@ class MemoryDatastore extends Datastore {
   @override
   Future<DatastoreReadResult> readMapDataSingle(Tile tile) {
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, 16);
-    List poiResults = pointOfInterests.where((poi) => tile.getBoundingBox(mercatorProjection).containsLatLong(poi.position)).toList();
-    List<Way> wayResults = List();
+    List poiResults = pointOfInterests.where((poi) => tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)).toList();
+    List<Way> wayResults = [];
     for (Way way in ways) {
-      if (tile.getBoundingBox(mercatorProjection).intersectsArea(way.latLongs)) {
+      if (tile.getBoundingBox(mercatorProjection)!.intersectsArea(way.latLongs)) {
         wayResults.add(way);
       }
     }
-    return Future.value(DatastoreReadResult(pointOfInterests: poiResults, ways: wayResults));
+    return Future.value(DatastoreReadResult(pointOfInterests: poiResults as List<PointOfInterest>?, ways: wayResults));
   }
 
   @override
@@ -60,12 +60,12 @@ class MemoryDatastore extends Datastore {
   bool supportsTile(Tile tile) {
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, 16);
     for (PointOfInterest poi in pointOfInterests) {
-      if (tile.getBoundingBox(mercatorProjection).containsLatLong(poi.position)) return true;
+      if (tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)) return true;
     }
     for (Way way in ways) {
-      for (List<ILatLong> list in way.latLongs) {
-        for (ILatLong latLong in list) {
-          if (tile.getBoundingBox(mercatorProjection).containsLatLong(latLong)) return true;
+      for (List<ILatLong?>? list in way.latLongs) {
+        for (ILatLong? latLong in list!) {
+          if (tile.getBoundingBox(mercatorProjection)!.containsLatLong(latLong as LatLong)) return true;
         }
       }
     }
@@ -73,7 +73,7 @@ class MemoryDatastore extends Datastore {
   }
 
   @override
-  Future<void> init() {
+  Future<void>? init() {
     return null;
   }
 

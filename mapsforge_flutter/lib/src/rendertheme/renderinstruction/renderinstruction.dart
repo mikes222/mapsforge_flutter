@@ -41,7 +41,7 @@ abstract class RenderInstruction {
   static final String SYMBOL_SCALING = "symbol-scaling";
   static final String SYMBOL_WIDTH = "symbol-width";
 
-  String category;
+  String? category;
   final DisplayModel displayModel;
   final GraphicFactory graphicFactory;
 
@@ -54,9 +54,9 @@ abstract class RenderInstruction {
   ///
   void dispose();
 
-  Future<void> initResources(GraphicFactory graphicFactory);
+  Future<void>? initResources(GraphicFactory graphicFactory);
 
-  String getCategory() {
+  String? getCategory() {
     return this.category;
   }
 

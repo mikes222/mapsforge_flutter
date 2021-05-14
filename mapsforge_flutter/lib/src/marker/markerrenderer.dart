@@ -28,10 +28,10 @@ class MarkerRenderer {
 
   void draw(FlutterCanvas flutterCanvas, MapViewPosition position) {
     //flutterCanvas.resetClip();
-    flutterCanvas.setClip(0, 0, viewModel.viewDimension.width.round(), viewModel.viewDimension.height.round());
+    flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width.round(), viewModel.viewDimension!.height.round());
     MarkerContext context = MarkerContext(flutterCanvas, graphicFactory, position);
     List<BasicMarker> markers =
-        dataStore.getMarkers(graphicFactory, position.calculateBoundingBox(viewModel.viewDimension), position.zoomLevel);
+        dataStore.getMarkers(graphicFactory, position.calculateBoundingBox(viewModel.viewDimension!), position.zoomLevel);
     // _log.info("Drawing ${markers?.length ?? -1} markers");
     if (markers != null && markers.length > 0) {
       markers.forEach((element) {

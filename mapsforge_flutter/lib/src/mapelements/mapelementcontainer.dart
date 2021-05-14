@@ -17,11 +17,11 @@ import '../graphics/filter.dart';
 /// priority. If there is not enough space on the map, elements with lower priority should then not be
 /// drawn.
 abstract class MapElementContainer implements Comparable<MapElementContainer> {
-  Rectangle boundary;
-  Rectangle boundaryAbsolute;
-  final Display display;
+  Rectangle? boundary;
+  Rectangle? boundaryAbsolute;
+  final Display? display;
   final int priority;
-  final Mappoint xy;
+  final Mappoint? xy;
 
   MapElementContainer(this.xy, this.display, this.priority);
 
@@ -46,20 +46,20 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
    * Drawing method: element will draw itself on canvas shifted by origin point of canvas and
    * using the matrix if rotation is required. Additionally a color filter can be applied.
    */
-  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter);
+  void draw(MapCanvas canvas, Mappoint? origin, Matrix matrix, Filter filter);
 
   /// Gets the pixel absolute boundary for this element.
   ///
   /// @return Rectangle with absolute pixel coordinates.
-  Rectangle getBoundaryAbsolute() {
+  Rectangle? getBoundaryAbsolute() {
     if (boundaryAbsolute == null) {
-      boundaryAbsolute = this.boundary.shift(xy);
+      boundaryAbsolute = this.boundary!.shift(xy!);
     }
     return boundaryAbsolute;
   }
 
   bool intersects(Rectangle rectangle) {
-    return this.getBoundaryAbsolute().intersects(rectangle);
+    return this.getBoundaryAbsolute()!.intersects(rectangle);
   }
 
   /**
@@ -73,7 +73,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
     if (Display.ALWAYS == this.display || Display.ALWAYS == other.display) {
       return false;
     }
-    return this.getBoundaryAbsolute().intersects(other.getBoundaryAbsolute());
+    return this.getBoundaryAbsolute()!.intersects(other.getBoundaryAbsolute());
   }
 
   /**
@@ -81,7 +81,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
    *
    * @return Point with absolute center pixel coordinates.
    */
-  Mappoint getPoint() {
+  Mappoint? getPoint() {
     return this.xy;
   }
 

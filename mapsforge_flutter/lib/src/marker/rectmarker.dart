@@ -16,19 +16,19 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   ILatLong minLatLon;
   ILatLong maxLatLon;
 
-  MapPaint fill;
+  MapPaint? fill;
 
   double fillWidth;
 
-  int fillColor;
+  int? fillColor;
 
-  MapPaint stroke;
+  MapPaint? stroke;
 
   final double strokeWidth;
 
   final int strokeColor;
 
-  List<double> strokeDasharray;
+  List<double>? strokeDasharray;
 
   RectMarker({
     display = Display.ALWAYS,
@@ -36,7 +36,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     maxZoomLevel = 65535,
     rotation,
     item,
-    String src,
+    String? src,
     symbolCache,
     markerCaption,
     this.fillWidth = 1.0,
@@ -44,8 +44,8 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
     this.strokeDasharray,
-    @required this.minLatLon,
-    @required this.maxLatLon,
+    required this.minLatLon,
+    required this.maxLatLon,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -74,33 +74,33 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     await initBitmap(graphicFactory);
     if (fill == null && (fillColor != null || bitmap != null)) {
       this.fill = graphicFactory.createPaint();
-      if (fillColor != null) this.fill.setColorFromNumber(fillColor);
-      this.fill.setStyle(Style.FILL);
-      this.fill.setStrokeWidth(fillWidth);
+      if (fillColor != null) this.fill!.setColorFromNumber(fillColor);
+      this.fill!.setStyle(Style.FILL);
+      this.fill!.setStrokeWidth(fillWidth);
       if (bitmap != null) {
-        fill.setBitmapShader(bitmap);
+        fill!.setBitmapShader(bitmap);
       }
       //this.stroke.setTextSize(fontSize);
     }
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
-      this.stroke.setColorFromNumber(strokeColor);
-      this.stroke.setStyle(Style.STROKE);
-      this.stroke.setStrokeWidth(strokeWidth);
+      this.stroke!.setColorFromNumber(strokeColor);
+      this.stroke!.setStyle(Style.STROKE);
+      this.stroke!.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
-      if (strokeDasharray != null) stroke.setStrokeDasharray(strokeDasharray);
+      if (strokeDasharray != null) stroke!.setStrokeDasharray(strokeDasharray);
     }
-    if (markerCaption != null && markerCaption.latLong == null) {
-      markerCaption.latLong = LatLong(minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
-          minLatLon.longitude + (maxLatLon.longitude - minLatLon.longitude) / 2); //GeometryUtils.calculateCenter(path);
+    if (markerCaption != null && markerCaption!.latLong == null) {
+      markerCaption!.latLong = LatLong(minLatLon.latitude! + (maxLatLon.latitude! - minLatLon.latitude!) / 2,
+          minLatLon.longitude! + (maxLatLon.longitude! - minLatLon.longitude!) / 2); //GeometryUtils.calculateCenter(path);
     }
   }
 
   @override
-  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
-        boundary.intersects(BoundingBox(
+        boundary!.intersects(BoundingBox(
           minLatLon.latitude,
           minLatLon.longitude,
           maxLatLon.latitude,
@@ -111,13 +111,13 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     MapRect mapRect = markerCallback.graphicFactory.createRect(
-        markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(minLatLon.longitude) -
-            markerCallback.mapViewPosition.leftUpper.x,
-        markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(maxLatLon.latitude) - markerCallback.mapViewPosition.leftUpper.y,
-        markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(maxLatLon.longitude) -
-            markerCallback.mapViewPosition.leftUpper.x,
-        markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(minLatLon.latitude) -
-            markerCallback.mapViewPosition.leftUpper.y);
+        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(minLatLon.longitude!) -
+            markerCallback.mapViewPosition.leftUpper!.x,
+        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(maxLatLon.latitude!) - markerCallback.mapViewPosition.leftUpper!.y,
+        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(maxLatLon.longitude!) -
+            markerCallback.mapViewPosition.leftUpper!.x,
+        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(minLatLon.latitude!) -
+            markerCallback.mapViewPosition.leftUpper!.y);
 
 //    markerCallback.renderRect(mapRect, stroke);
 
@@ -128,11 +128,11 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     ILatLong latLong =
-        mapViewPosition.mercatorProjection.getLatLong(tappedX + mapViewPosition.leftUpper.x, tappedY + mapViewPosition.leftUpper.y);
+        mapViewPosition.mercatorProjection!.getLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
-    return latLong.latitude > minLatLon.latitude &&
-        latLong.latitude < maxLatLon.latitude &&
-        latLong.longitude > minLatLon.longitude &&
-        latLong.longitude < maxLatLon.longitude;
+    return latLong.latitude! > minLatLon.latitude! &&
+        latLong.latitude! < maxLatLon.latitude! &&
+        latLong.longitude! > minLatLon.longitude! &&
+        latLong.longitude! < maxLatLon.longitude!;
   }
 }

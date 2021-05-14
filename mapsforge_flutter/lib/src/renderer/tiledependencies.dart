@@ -13,11 +13,11 @@ import '../model/tile.dart';
  * label has already been drawn.
  */
 class TileDependencies {
-  Map<Tile, Map<Tile, Set<MapElementContainer>>> overlapData;
+  late Map<Tile, Map<Tile, Set<MapElementContainer>>> overlapData;
 
   // for the multithreaded renderer we also need to keep track of tiles that are in progress
   // and not yet in the TileCache to avoid truncated labels.
-  Set<Tile> tilesInProgress;
+  late Set<Tile> tilesInProgress;
 
   TileDependencies() {
     overlapData = new Map<Tile, Map<Tile, Set<MapElementContainer>>>();
@@ -36,10 +36,10 @@ class TileDependencies {
     if (!overlapData.containsKey(from)) {
       overlapData[from] = new Map<Tile, Set<MapElementContainer>>();
     }
-    if (!overlapData[from].containsKey(to)) {
-      overlapData[from][to] = new Set<MapElementContainer>();
+    if (!overlapData[from]!.containsKey(to)) {
+      overlapData[from]![to] = new Set<MapElementContainer>();
     }
-    overlapData[from][to].add(element);
+    overlapData[from]![to]!.add(element);
   }
 
   /**
@@ -49,9 +49,9 @@ class TileDependencies {
    * @param to   the tile the label clashesWith to
    * @return a List of the elements
    */
-  Set<MapElementContainer> getOverlappingElements(Tile from, Tile to) {
-    if (overlapData.containsKey(from) && overlapData[from].containsKey(to)) {
-      return overlapData[from][to];
+  Set<MapElementContainer>? getOverlappingElements(Tile from, Tile to) {
+    if (overlapData.containsKey(from) && overlapData[from]!.containsKey(to)) {
+      return overlapData[from]![to];
     }
     return new Set<MapElementContainer>();
   }
@@ -62,10 +62,10 @@ class TileDependencies {
    *
    * @param from
    */
-  void removeTileData(Tile from, {Tile to}) {
+  void removeTileData(Tile from, {Tile? to}) {
     if (to != null) {
       if (overlapData.containsKey(from)) {
-        overlapData[from].remove(to);
+        overlapData[from]!.remove(to);
       }
       return;
     }

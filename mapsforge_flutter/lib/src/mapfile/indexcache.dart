@@ -21,7 +21,7 @@ class IndexCache {
 
   final LruCache<IndexCacheEntryKey, Uint8List> _map;
 
-  final String filename;
+  final String? filename;
 
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.
@@ -55,10 +55,10 @@ class IndexCache {
     IndexCacheEntryKey indexCacheEntryKey = new IndexCacheEntryKey(subFileParameter, indexBlockNumber);
 
     // check for cached index block
-    Uint8List indexBlock = this._map[indexCacheEntryKey];
+    Uint8List? indexBlock = this._map[indexCacheEntryKey];
     if (indexBlock == null) {
       // cache miss, seek to the correct index block in the file and read it
-      int indexBlockPosition = subFileParameter.indexStartAddress + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
+      int indexBlockPosition = subFileParameter.indexStartAddress! + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
 
       int remainingIndexSize = (subFileParameter.indexEndAddress - indexBlockPosition);
       int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);

@@ -1,11 +1,11 @@
 import '../../model/tag.dart';
-
+import 'package:collection/collection.dart';
 import 'attributematcher.dart';
 
 class KeyMatcher implements AttributeMatcher {
   final List<String> keys;
 
-  List<Tag> _tags;
+  List<Tag>? _tags;
 
   KeyMatcher(this.keys);
 
@@ -16,18 +16,18 @@ class KeyMatcher implements AttributeMatcher {
     }
 
     if (_tags == null) {
-      List<Tag> tags = new List<Tag>(this.keys.length);
-      for (int i = 0, n = this.keys.length; i < n; ++i) {
-        tags.add(new Tag(this.keys.elementAt(i), null));
-      }
+      List<Tag> tags = [];
+      keys.forEach((element) {
+        tags.add(Tag(element, null));
+      });
       _tags = tags;
     }
-    return attributeMatcher.matchesTagList(_tags);
+    return attributeMatcher.matchesTagList(_tags!);
   }
 
   @override
   bool matchesTagList(List<Tag> tags) {
-    Tag tag = tags.firstWhere((element) => keys.contains(element.key), orElse: () => null);
+    Tag? tag = tags.firstWhereOrNull((element) => keys.contains(element.key));
     return tag != null;
   }
 

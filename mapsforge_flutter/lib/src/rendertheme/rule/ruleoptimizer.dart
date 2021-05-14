@@ -33,9 +33,9 @@ class RuleOptimizer {
     }
 
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
-      if (ruleStack.elementAt(i).closedMatcher.isCoveredByClosedMatcher(closedMatcher)) {
+      if (ruleStack.elementAt(i).closedMatcher!.isCoveredByClosedMatcher(closedMatcher)) {
         return AnyMatcher.INSTANCE;
-      } else if (!closedMatcher.isCoveredByClosedMatcher(ruleStack.elementAt(i).closedMatcher)) {
+      } else if (!closedMatcher.isCoveredByClosedMatcher(ruleStack.elementAt(i).closedMatcher!)) {
         _log.warning("unreachable rule (closed)");
       }
     }
@@ -50,7 +50,7 @@ class RuleOptimizer {
 
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
       Rule rule = ruleStack.elementAt(i);
-      if (rule.elementMatcher.isCoveredByElementMatcher(elementMatcher)) {
+      if (rule.elementMatcher!.isCoveredByElementMatcher(elementMatcher)) {
         return AnyMatcher.INSTANCE;
       } else if (!elementMatcher.isCoveredByElementMatcher(rule.elementMatcher)) {
         _log.warning("unreachable rule (e)");
@@ -63,7 +63,7 @@ class RuleOptimizer {
   static AttributeMatcher optimizeKeyMatcher(AttributeMatcher attributeMatcher, List<Rule> ruleStack) {
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
       if (ruleStack.elementAt(i) is PositiveRule) {
-        PositiveRule positiveRule = ruleStack.elementAt(i);
+        PositiveRule positiveRule = ruleStack.elementAt(i) as PositiveRule;
         if (positiveRule.keyMatcher.isCoveredByAttributeMatcher(attributeMatcher)) {
           return AnyMatcher.INSTANCE;
         }
@@ -76,7 +76,7 @@ class RuleOptimizer {
   static AttributeMatcher optimizeValueMatcher(AttributeMatcher attributeMatcher, List<Rule> ruleStack) {
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
       if (ruleStack.elementAt(i) is PositiveRule) {
-        PositiveRule positiveRule = ruleStack.elementAt(i);
+        PositiveRule positiveRule = ruleStack.elementAt(i) as PositiveRule;
         if (positiveRule.valueMatcher.isCoveredByAttributeMatcher(attributeMatcher)) {
           return AnyMatcher.INSTANCE;
         }

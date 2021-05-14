@@ -6,14 +6,14 @@ import 'package:mapsforge_flutter/src/model/tag.dart';
 
 class WayPage extends StatelessWidget {
   /// The read POIs.
-  final List<Way> ways;
+  final List<Way>? ways;
 
-  const WayPage({Key key, this.ways}) : super(key: key);
+  const WayPage({Key? key, this.ways}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: ways
+      children: ways!
           .map(
             (e) => Card(
               child: Column(

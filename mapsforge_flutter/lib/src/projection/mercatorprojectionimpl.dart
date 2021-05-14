@@ -38,7 +38,7 @@ class MercatorProjectionImpl {
   ///
   /// the size of the map in pixel. At scalefactor 1 the _mapSize is equal to the tileSize.
   ///
-  double _mapSize;
+  double? _mapSize;
 
   MercatorProjectionImpl(this.tileSize, int zoomLevel) : _scaleFactor = zoomLevelToScaleFactor(zoomLevel) {
     _mapSize = _mapSizeWithScaleFactor(_scaleFactor);
@@ -75,7 +75,7 @@ class MercatorProjectionImpl {
   /// @return the corresponding scale factor.
   static double zoomLevelToScaleFactor(int zoomLevel) {
     assert(zoomLevel >= 0 && zoomLevel <= 65535);
-    return pow(2, zoomLevel.toDouble());
+    return pow(2, zoomLevel.toDouble()) as double;
   }
 
   /// Converts a latitude coordinate (in degrees) to a pixel Y coordinate at a certain zoom level.
@@ -87,8 +87,8 @@ class MercatorProjectionImpl {
     checkLatitude(latitude);
     double sinLatitude = sin(latitude * (pi / 180));
 // FIXME improve this formula so that it works correctly without the clipping
-    double pixelY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * _mapSize;
-    return min(max(0, pixelY), _mapSize);
+    double pixelY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * pi)) * _mapSize!;
+    return min(max(0, pixelY), _mapSize!);
   }
 
   /// Converts a pixel Y coordinate at a certain map size to a latitude coordinate.
@@ -99,8 +99,8 @@ class MercatorProjectionImpl {
   /// @throws IllegalArgumentException if the given pixelY coordinate is invalid.
   double pixelYToLatitude(double pixelY) {
     assert(pixelY >= 0);
-    assert(pixelY <= _mapSize);
-    double y = 0.5 - (pixelY / _mapSize);
+    assert(pixelY <= _mapSize!);
+    double y = 0.5 - (pixelY / _mapSize!);
     return 90 - 360 * atan(exp(-y * (2 * pi))) / pi;
   }
 
@@ -116,7 +116,7 @@ class MercatorProjectionImpl {
   /// @return the pixel X coordinate of the longitude value.
   double longitudeToPixelX(double longitude) {
     checkLongitude(longitude);
-    return (longitude + 180) / 360 * _mapSize;
+    return (longitude + 180) / 360 * _mapSize!;
   }
 
   /// Converts a pixel X coordinate at a certain map size to a longitude coordinate.
@@ -127,8 +127,8 @@ class MercatorProjectionImpl {
   /// @throws IllegalArgumentException if the given pixelX coordinate is invalid.
   double pixelXToLongitude(double pixelX) {
     assert(pixelX >= 0);
-    assert(pixelX <= _mapSize);
-    return 360 * ((pixelX / _mapSize) - 0.5);
+    assert(pixelX <= _mapSize!);
+    return 360 * ((pixelX / _mapSize!) - 0.5);
   }
 
   /// Calculates the absolute pixel position for a map size and tile size
@@ -139,7 +139,7 @@ class MercatorProjectionImpl {
 
   Mappoint getPixel(ILatLong latLong) {
     assert(latLong != null);
-    return Mappoint(longitudeToPixelX(latLong.longitude), latitudeToPixelY(latLong.latitude));
+    return Mappoint(longitudeToPixelX(latLong.longitude!), latitudeToPixelY(latLong.latitude!));
   }
 
   /// Calculates the absolute pixel position for a tile and tile size relative to origin
@@ -149,7 +149,7 @@ class MercatorProjectionImpl {
   /// @return the relative pixel position to the origin values (e.g. for a tile)
   Mappoint getPixelRelativeToTile(ILatLong latLong, Tile tile) {
     Mappoint mappoint = getPixel(latLong);
-    return mappoint.offset(-tile.getLeftUpper(tileSize).x, -tile.getLeftUpper(tileSize).y);
+    return mappoint.offset(-tile.getLeftUpper(tileSize)!.x, -tile.getLeftUpper(tileSize)!.y);
   }
 
   /// Calculates the absolute pixel position for a tile and tile size relative to origin
@@ -232,7 +232,7 @@ class MercatorProjectionImpl {
     return true;
   }
 
-  double get mapSize => _mapSize;
+  double? get mapSize => _mapSize;
 
   /// Converts degree to radian
   static double degToRadian(final double deg) => deg * (pi / 180.0);
@@ -264,10 +264,10 @@ class MercatorProjectionImpl {
 
     final double a = distanceInMeter / EQUATOR_RADIUS;
 
-    final double lat2 = asin(sin(degToRadian(from.latitude)) * cos(a) + cos(degToRadian(from.latitude)) * sin(a) * cos(h));
+    final double lat2 = asin(sin(degToRadian(from.latitude!)) * cos(a) + cos(degToRadian(from.latitude!)) * sin(a) * cos(h));
 
-    final double lng2 = degToRadian(from.longitude) +
-        atan2(sin(h) * sin(a) * cos(degToRadian(from.latitude)), cos(a) - sin(degToRadian(from.latitude)) * sin(lat2));
+    final double lng2 = degToRadian(from.longitude!) +
+        atan2(sin(h) * sin(a) * cos(degToRadian(from.latitude!)), cos(a) - sin(degToRadian(from.latitude!)) * sin(lat2));
 
     return new LatLong(radianToDeg(lat2), radianToDeg(lng2));
   }
@@ -278,11 +278,11 @@ class MercatorProjectionImpl {
   /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)
   //@override
   static double distance(final ILatLong p1, final ILatLong p2) {
-    final sinDLat = sin((degToRadian(p2.latitude) - degToRadian(p1.latitude)) / 2);
-    final sinDLng = sin((degToRadian(p2.longitude) - degToRadian(p1.longitude)) / 2);
+    final sinDLat = sin((degToRadian(p2.latitude!) - degToRadian(p1.latitude!)) / 2);
+    final sinDLng = sin((degToRadian(p2.longitude!) - degToRadian(p1.longitude!)) / 2);
 
     // Sides
-    final a = sinDLat * sinDLat + sinDLng * sinDLng * cos(degToRadian(p1.latitude)) * cos(degToRadian(p2.latitude));
+    final a = sinDLat * sinDLat + sinDLng * sinDLng * cos(degToRadian(p1.latitude!)) * cos(degToRadian(p2.latitude!));
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
     return EQUATOR_RADIUS * c;

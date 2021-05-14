@@ -15,7 +15,7 @@ class BasicMarker<T> {
   ///
   /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
   ///
-  ILatLong latLong;
+  ILatLong? latLong;
 
 //  double imageOffsetX = 0;
 
@@ -29,12 +29,12 @@ class BasicMarker<T> {
 
   int maxZoomLevel;
 
-  double rotation;
+  double? rotation;
 
   // the item this marker represents
-  T item;
+  T? item;
 
-  final MarkerCaption markerCaption;
+  final MarkerCaption? markerCaption;
 
   BasicMarker({
     this.display = Display.ALWAYS,
@@ -56,7 +56,7 @@ class BasicMarker<T> {
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (markerCaption != null) markerCaption.initResources(graphicFactory);
+    if (markerCaption != null) markerCaption!.initResources(graphicFactory);
   }
 
   void dispose() {}
@@ -66,23 +66,23 @@ class BasicMarker<T> {
   ///
   void render(MarkerCallback markerCallback) {
     renderBitmap(markerCallback);
-    if (markerCaption != null) markerCaption.renderCaption(markerCallback);
+    if (markerCaption != null) markerCaption!.renderCaption(markerCallback);
   }
 
   ///
   /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
   /// only if shouldPoint() returns true, do not test for available resources here.
-  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
     return display != Display.NEVER &&
         minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
-        boundary.contains(latLong.latitude, latLong.longitude);
+        boundary!.contains(latLong!.latitude!, latLong!.longitude);
   }
 
   void renderBitmap(MarkerCallback markerCallback) {}
 
-  String get title {
-    if (markerCaption?.text != null && markerCaption.text.length > 0) return markerCaption.text;
+  String? get title {
+    if (markerCaption?.text != null && markerCaption!.text!.length > 0) return markerCaption!.text;
     return null;
   }
 
@@ -94,15 +94,15 @@ class BasicMarker<T> {
 /////////////////////////////////////////////////////////////////////////////
 
 class MarkerCaption {
-  final String text;
+  final String? text;
 
-  ILatLong latLong;
+  ILatLong? latLong;
 
   double captionOffsetX;
 
   double captionOffsetY;
 
-  MapPaint stroke;
+  MapPaint? stroke;
 
   final double strokeWidth;
 
@@ -129,16 +129,16 @@ class MarkerCaption {
   void initResources(GraphicFactory graphicFactory) {
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
-      this.stroke.setColorFromNumber(strokeColor);
-      this.stroke.setStyle(Style.STROKE);
-      this.stroke.setStrokeWidth(strokeWidth);
-      this.stroke.setTextSize(fontSize);
+      this.stroke!.setColorFromNumber(strokeColor);
+      this.stroke!.setStyle(Style.STROKE);
+      this.stroke!.setStrokeWidth(strokeWidth);
+      this.stroke!.setTextSize(fontSize);
     }
   }
 
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
-    if (text != null && text.length > 0 && stroke != null && latLong != null) {
+    if (text != null && text!.length > 0 && stroke != null && latLong != null) {
       markerCallback.renderText(text, latLong, captionOffsetX, captionOffsetY, stroke);
     }
   }

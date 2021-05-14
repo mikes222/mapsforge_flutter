@@ -8,11 +8,11 @@ import 'main.dart';
 import 'mapmodelhelper.dart';
 
 class Showmap extends StatefulWidget {
-  final MapInfo mapInfo;
+  final MapInfo? mapInfo;
 
   final bool online;
 
-  const Showmap({Key key, this.mapInfo, this.online = false})
+  const Showmap({Key? key, this.mapInfo, this.online = false})
       : assert(online != null),
         super(key: key);
 
@@ -25,16 +25,16 @@ class Showmap extends StatefulWidget {
 /////////////////////////////////////////////////////////////////////////////
 
 class ShowmapState extends State<Showmap> {
-  Timer timer;
+  Timer? timer;
 
-  MapModel mapModel;
+  MapModel? mapModel;
 
-  ViewModel viewModel;
+  late ViewModel viewModel;
 
   @override
   void initState() {
     super.initState();
-    MapModelHelper.prepareMapModel(widget.mapInfo.mapfile, widget.mapInfo.lat, widget.mapInfo.lon, 8, widget.online).then((mapModel) {
+    MapModelHelper.prepareMapModel(widget.mapInfo!.mapfile, widget.mapInfo!.lat, widget.mapInfo!.lon, 8, widget.online).then((mapModel) {
       setState(() {
         this.mapModel = mapModel;
         viewModel = ViewModel(displayModel: mapModel.displayModel);
@@ -52,7 +52,7 @@ class ShowmapState extends State<Showmap> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : _buildMapModel(mapModel),
+          : _buildMapModel(mapModel!),
     );
   }
 
@@ -64,7 +64,7 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("Set Location"),
               onPressed: () {
-                viewModel.setMapViewPosition(activeMapInfo.lat, activeMapInfo.lon);
+                viewModel.setMapViewPosition(activeMapInfo.lat!, activeMapInfo.lon!);
               },
             ),
             RaisedButton(
@@ -72,15 +72,15 @@ class ShowmapState extends State<Showmap> {
               onPressed: () {
                 if (timer != null) return;
                 timer = Timer.periodic(Duration(seconds: 1), (timer) {
-                  viewModel.mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
-                  viewModel.setLeftUpper(viewModel.mapViewPosition.leftUpper.x + 10, viewModel.mapViewPosition.leftUpper.y + 10);
+                  viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
+                  viewModel.setLeftUpper(viewModel.mapViewPosition!.leftUpper!.x + 10, viewModel.mapViewPosition!.leftUpper!.y + 10);
                 });
               },
             ),
             RaisedButton(
               child: Text("stop"),
               onPressed: () {
-                timer.cancel();
+                timer!.cancel();
                 timer = null;
               },
             ),
@@ -103,7 +103,7 @@ class ShowmapState extends State<Showmap> {
             ),
             StreamBuilder(
               stream: viewModel.observePosition,
-              builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
+              builder: (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
                 if (!snapshot.hasData) return Container();
                 return Padding(
                   padding: const EdgeInsets.only(left: 8.0),
@@ -115,7 +115,7 @@ class ShowmapState extends State<Showmap> {
               stream: viewModel.observeTap,
               builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
                 if (!snapshot.hasData) return Container();
-                TapEvent event = snapshot.data;
+                TapEvent event = snapshot.data!;
                 return Padding(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text("Tapped ${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}"),

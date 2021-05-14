@@ -4,7 +4,7 @@ abstract class Matrix {
   /**
    * @param theta an angle measured in radians.
    */
-  void rotate(double theta, {double pivotX, double pivotY});
+  void rotate(double? theta, {double? pivotX, double? pivotY});
 
   /**
    * Scale around center.

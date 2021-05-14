@@ -18,7 +18,7 @@ import 'map-file-data.dart';
 class MapPageView extends StatefulWidget {
   final MapFileData mapFileData;
 
-  const MapPageView({Key key, @required this.mapFileData}) : super(key: key);
+  const MapPageView({Key? key, required this.mapFileData}) : super(key: key);
 
   @override
   MapPageViewState createState() => MapPageViewState();
@@ -27,14 +27,14 @@ class MapPageView extends StatefulWidget {
 class MapPageViewState extends State<MapPageView> with SingleTickerProviderStateMixin {
   final BehaviorSubject<int> indoorLevelSubject = new BehaviorSubject<int>.seeded(0);
 
-  double downloadProgress;
+  double? downloadProgress;
 
-  MapModel mapModel;
+  MapModel? mapModel;
 
-  ViewModel viewModel;
+  late ViewModel viewModel;
 
-  AnimationController fadeAnimationController;
-  CurvedAnimation fadeAnimation;
+  late AnimationController fadeAnimationController;
+  CurvedAnimation? fadeAnimation;
 
   final double toolbarSpacing = 15;
 
@@ -68,13 +68,13 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
               ),
               Center(
                   child: Text(
-                      downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress * 100).round()}%")),
+                      downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress! * 100).round()}%")),
             ],
           ));
     }
 
     return Scaffold(
-      appBar: _buildHead(context),
+      appBar: _buildHead(context) as PreferredSizeWidget?,
       body: _buildBody(context),
     );
   }
@@ -96,7 +96,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
               child: Text("Analyse Mapfile"),
             ),
             PopupMenuItem<String>(
-                enabled: false, value: "current_zoom_level", child: Text("Zoom level: ${this.viewModel.mapViewPosition.zoomLevel}")),
+                enabled: false, value: "current_zoom_level", child: Text("Zoom level: ${this.viewModel.mapViewPosition!.zoomLevel}")),
           ],
         ),
       ],
@@ -106,7 +106,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
   Widget _buildBody(BuildContext context) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       FlutterMapView(
-        mapModel: mapModel,
+        mapModel: mapModel!,
         viewModel: viewModel,
       ),
       Positioned(
@@ -199,7 +199,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
                 setState(() {
                   downloadProgress = progress / 100;
                 });
-                return ExtractOperation.extract;
+                return ZipFileOperation.includeItem;
               });
           filePath = filePath.replaceAll(".zip", ".map");
         }
@@ -208,9 +208,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       }
     }
 
-    final MapFile mapFile = MapFile(filePath, null, null);
-    await mapFile.init();
-    //mapFile.debug();
+    final MapFile mapFile = await MapFile.create(filePath, null, null);
     final MapDataStore mapDataStore = mapFile;
     final SymbolCache symbolCache = FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
     final GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
@@ -220,7 +218,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     renderThemeBuilder.parseXml(content);
     final RenderTheme renderTheme = renderThemeBuilder.build();
     final JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, true);
-    final FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
+    final FileTileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 
     mapModel = MapModel(
       displayModel: displayModel,
@@ -229,7 +227,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       tileBitmapCache: bitmapCache,
     );
 
-    viewModel = ViewModel(displayModel: mapModel.displayModel);
+    viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
     // set default position
     viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);

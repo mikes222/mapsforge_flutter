@@ -13,7 +13,7 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   PoiMarker({
     display = Display.ALWAYS,
-    String src,
+    String? src,
     double width = 20,
     double height = 20,
     symbolCache,
@@ -49,34 +49,34 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
   Future<void> initResources(GraphicFactory graphicFactory) async {
     super.initResources(graphicFactory);
     await initBitmap(graphicFactory);
-    if (markerCaption != null && markerCaption.latLong == null) {
-      markerCaption.latLong = latLong;
+    if (markerCaption != null && markerCaption!.latLong == null) {
+      markerCaption!.latLong = latLong;
     }
 
     if (bitmap != null) {
-      imageOffsetX = -bitmap.getWidth() / 2;
-      imageOffsetY = -bitmap.getHeight() / 2;
+      imageOffsetX = -bitmap!.getWidth() / 2;
+      imageOffsetY = -bitmap!.getHeight() / 2;
 
       if (markerCaption != null) {
-        markerCaption.captionOffsetX = 0;
-        markerCaption.captionOffsetY = bitmap.getHeight() / 2;
+        markerCaption!.captionOffsetX = 0;
+        markerCaption!.captionOffsetY = bitmap!.getHeight() / 2;
       }
     }
   }
 
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null) {
-      markerCallback.renderBitmap(bitmap, latLong.latitude, latLong.longitude, imageOffsetX, imageOffsetY, rotation, symbolPaint);
+      markerCallback.renderBitmap(bitmap, latLong!.latitude, latLong!.longitude, imageOffsetX, imageOffsetY, rotation, symbolPaint);
     }
   }
 
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     if (bitmap == null) return false;
-    double y = mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude);
-    double x = mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude);
-    x = x + imageOffsetX - mapViewPosition.leftUpper.x;
-    y = y + imageOffsetY - mapViewPosition.leftUpper.y;
-    return tappedX >= x && tappedX <= x + bitmap.getWidth() && tappedY >= y && tappedY <= y + bitmap.getHeight();
+    double y = mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong!.latitude!);
+    double x = mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong!.longitude!);
+    x = x + imageOffsetX - mapViewPosition.leftUpper!.x;
+    y = y + imageOffsetY - mapViewPosition.leftUpper!.y;
+    return tappedX >= x && tappedX <= x + bitmap!.getWidth() && tappedY >= y && tappedY <= y + bitmap!.getHeight();
   }
 }

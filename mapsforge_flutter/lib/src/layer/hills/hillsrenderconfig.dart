@@ -13,7 +13,7 @@ import 'memorycachinghgtreadertilesource.dart';
  * Eager indexing on a dedicated thread can be triggered with {@link #indexOnThread} (e.g. after a configuration change or during setup)</p>
  */
 class HillsRenderConfig {
-  ShadeTileSource tileSource;
+  ShadeTileSource? tileSource;
 
   double maginuteScaleFactor = 1;
 
@@ -27,15 +27,15 @@ class HillsRenderConfig {
         ? new MemoryCachingHgtReaderTileSource(
             demFolder, algorithm, graphicsFactory)
         : tileSource;
-    this.tileSource.setDemFolder(demFolder);
-    this.tileSource.setShadingAlgorithm(algorithm);
+    this.tileSource!.setDemFolder(demFolder);
+    this.tileSource!.setShadingAlgorithm(algorithm);
   }
 
   /**
    * call after initialization, after a set of changes to the settable properties or after forceReindex to initiate background indexing
    */
   HillsRenderConfig indexOnThread() {
-    ShadeTileSource cache = tileSource;
+    ShadeTileSource? cache = tileSource;
     if (cache != null) cache.applyConfiguration(true);
     return this;
   }
@@ -49,12 +49,12 @@ class HillsRenderConfig {
    * @throws ExecutionException
    * @throws InterruptedException
    */
-  HillshadingBitmap getShadingTile(int latitudeOfSouthWestCorner,
+  HillshadingBitmap? getShadingTile(int latitudeOfSouthWestCorner,
       int longituedOfSouthWestCorner, double pxPerLat, double pxPerLng) {
-    ShadeTileSource tileSource = this.tileSource;
+    ShadeTileSource? tileSource = this.tileSource;
     if (tileSource == null) return null;
 
-    HillshadingBitmap ret = tileSource.getHillshadingBitmap(
+    HillshadingBitmap? ret = tileSource.getHillshadingBitmap(
         latitudeOfSouthWestCorner,
         longituedOfSouthWestCorner,
         pxPerLat,
@@ -83,7 +83,7 @@ class HillsRenderConfig {
     this.maginuteScaleFactor = maginuteScaleFactor;
   }
 
-  ShadeTileSource getTileSource() {
+  ShadeTileSource? getTileSource() {
     return tileSource;
   }
 

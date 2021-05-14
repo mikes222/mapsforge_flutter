@@ -13,7 +13,7 @@ void main() {
     SymbolCache symbolCache = FileSymbolCache(bundle);
 
     await tester.runAsync(() async {
-      ResourceBitmap resourceBitmap = await symbolCache.getSymbol("arrow.png", 0, 0, 0);
+      ResourceBitmap resourceBitmap = (await (symbolCache.getSymbol("arrow.png", 0, 0, 0)))!;
       assert(resourceBitmap != null);
     });
   });

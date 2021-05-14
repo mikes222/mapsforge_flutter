@@ -46,7 +46,7 @@ class Hillshading {
     int zoomLevel = tile.zoomLevel;
     if (zoomLevel > maxZoom || zoomLevel < minZoom) return;
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, zoomLevel);
-    Mappoint origin = tile.getLeftUpper(renderContext.job.tileSize);
+    Mappoint origin = tile.getLeftUpper(renderContext.job.tileSize)!;
     double maptileTopLat = mercatorProjection.pixelYToLatitude(origin.y);
     double maptileLeftLng = mercatorProjection.pixelXToLongitude(origin.x);
 
@@ -58,7 +58,7 @@ class Hillshading {
     double pxPerLat = (renderContext.job.tileSize / mapTileLatDegrees);
     double pxPerLng = (renderContext.job.tileSize / mapTileLngDegrees);
 
-    if (maptileRightLng < maptileLeftLng) maptileRightLng += mercatorProjection.mapSize;
+    if (maptileRightLng < maptileLeftLng) maptileRightLng += mercatorProjection.mapSize!;
 
     int shadingLngStep = 1;
     int shadingLatStep = 1;
@@ -67,7 +67,7 @@ class Hillshading {
         int shadingRightLng = shadingLeftLng + 1;
         int shadingTopLat = shadingBottomLat + 1;
 
-        HillshadingBitmap shadingTile = null;
+        HillshadingBitmap? shadingTile = null;
         shadingTile = hillsRenderConfig.getShadingTile(shadingBottomLat, shadingLeftLng, pxPerLat, pxPerLng);
         if (shadingTile == null) {
           if (!always) {
@@ -132,7 +132,7 @@ class Hillshading {
               mercatorProjection.longitudeToPixelX(shadingRightLng + (shadingPixelOffset / shadingInnerHeight)) - origin.x;
         }
 
-        Rectangle hillsRect =
+        Rectangle? hillsRect =
             (shadingTile == null) ? null : new Rectangle(shadingSubrectLeft, shadingSubrectTop, shadingSubrectRight, shadingSubrectBottom);
         Rectangle maptileRect = new Rectangle(maptileSubrectLeft, maptileSubrectTop, maptileSubrectRight, maptileSubrectBottom);
         ShapeContainer hillShape = new HillshadingContainer(shadingTile, effectiveMagnitude, hillsRect, maptileRect);

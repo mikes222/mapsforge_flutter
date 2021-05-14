@@ -13,7 +13,7 @@ import 'labelstore.dart';
  */
 
 class TileBasedLabelStore extends WorkingSetCache<Tile, List<MapElementContainer>> implements LabelStore {
-  Set<Tile> lastVisibleTileSet;
+  late Set<Tile> lastVisibleTileSet;
   int version = 0;
 
   TileBasedLabelStore(int capacity) : super(capacity) {
@@ -48,10 +48,10 @@ class TileBasedLabelStore extends WorkingSetCache<Tile, List<MapElementContainer
   List<MapElementContainer> getVisibleItemsInternal(Set<Tile> tiles) {
     lastVisibleTileSet = tiles;
 
-    List<MapElementContainer> visibleItems = new List<MapElementContainer>();
+    List<MapElementContainer> visibleItems = [];
     for (Tile tile in lastVisibleTileSet) {
       if (containsKey(tile)) {
-        visibleItems.addAll(get(tile));
+        visibleItems.addAll(get(tile)!);
       }
     }
     return visibleItems;

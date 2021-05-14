@@ -8,19 +8,19 @@ class DatastoreReadResult {
   bool isWater = false;
 
   /// The read POIs.
-  List<PointOfInterest> pointOfInterests;
+  List<PointOfInterest>? pointOfInterests;
 
   /// The read ways.
-  List<Way> ways;
+  List<Way>? ways;
 
   DatastoreReadResult({this.pointOfInterests, this.ways}) {
-    if (pointOfInterests == null) pointOfInterests = List();
-    if (ways == null) ways = List();
+    if (pointOfInterests == null) pointOfInterests = [];
+    if (ways == null) ways = [];
   }
 
   void add(PoiWayBundle poiWayBundle) {
-    this.pointOfInterests.addAll(poiWayBundle.pois);
-    this.ways.addAll(poiWayBundle.ways);
+    this.pointOfInterests!.addAll(poiWayBundle.pois);
+    this.ways!.addAll(poiWayBundle.ways!);
   }
 
   /**
@@ -30,21 +30,21 @@ class DatastoreReadResult {
    * @param other       the MapReadResult to add to this.
    * @param deduplicate true if check for duplicates is required.
    */
-  void addDeduplicate(DatastoreReadResult other, bool deduplicate) {
+  void addDeduplicate(DatastoreReadResult? other, bool deduplicate) {
     if (deduplicate) {
-      for (PointOfInterest poi in other.pointOfInterests) {
-        if (!this.pointOfInterests.contains(poi)) {
-          this.pointOfInterests.add(poi);
+      for (PointOfInterest poi in other!.pointOfInterests!) {
+        if (!this.pointOfInterests!.contains(poi)) {
+          this.pointOfInterests!.add(poi);
         }
       }
-      for (Way way in other.ways) {
-        if (!this.ways.contains(way)) {
-          this.ways.add(way);
+      for (Way way in other.ways!) {
+        if (!this.ways!.contains(way)) {
+          this.ways!.add(way);
         }
       }
     } else {
-      this.pointOfInterests.addAll(other.pointOfInterests);
-      this.ways.addAll(other.ways);
+      this.pointOfInterests!.addAll(other!.pointOfInterests!);
+      this.ways!.addAll(other.ways!);
     }
   }
 

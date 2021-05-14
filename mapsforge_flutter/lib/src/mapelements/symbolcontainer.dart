@@ -11,37 +11,37 @@ import 'mapelementcontainer.dart';
 
 class SymbolContainer extends MapElementContainer {
   final bool alignCenter;
-  final Bitmap symbol;
-  final double theta;
+  final Bitmap? symbol;
+  final double? theta;
   final MapPaint paint;
 
-  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = true, @required this.paint})
+  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = true, required this.paint})
       : assert(paint != null),
         super(point, display, priority) {
     assert(symbol != null);
     if (alignCenter) {
-      double halfWidth = this.symbol.getWidth() / 2;
-      double halfHeight = this.symbol.getHeight() / 2;
+      double halfWidth = this.symbol!.getWidth() / 2;
+      double halfHeight = this.symbol!.getHeight() / 2;
       this.boundary = new Rectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
     } else {
-      this.boundary = new Rectangle(0, 0, this.symbol.getWidth().toDouble(), this.symbol.getHeight().toDouble());
+      this.boundary = new Rectangle(0, 0, this.symbol!.getWidth().toDouble(), this.symbol!.getHeight().toDouble());
     }
 
-    this.symbol.incrementRefCount();
+    this.symbol!.incrementRefCount();
   }
 
   @mustCallSuper
   dispose() {
-    symbol.decrementRefCount();
+    symbol!.decrementRefCount();
   }
 
   @override
-  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
+  void draw(MapCanvas canvas, Mappoint? origin, Matrix matrix, Filter filter) {
     //matrix.reset();
     // We cast to int for pixel perfect positioning
     //matrix.translate((this.xy.x - origin.x + boundary.left), (this.xy.y - origin.y + boundary.top));
     if (theta != 0 && alignCenter) {
-      matrix.rotate(theta, pivotX: -boundary.left, pivotY: -boundary.top);
+      matrix.rotate(theta, pivotX: -boundary!.left, pivotY: -boundary!.top);
     } else {
       matrix.rotate(theta);
     }
@@ -50,8 +50,8 @@ class SymbolContainer extends MapElementContainer {
         bitmap: this.symbol,
         matrix: matrix,
         filter: filter,
-        left: this.xy.x - origin.x + boundary.left,
-        top: this.xy.y - origin.y + boundary.top,
+        left: this.xy!.x - origin!.x + boundary!.left,
+        top: this.xy!.y - origin.y + boundary!.top,
         paint: paint);
   }
 

@@ -41,7 +41,7 @@ class FlutterGraphicFactory extends GraphicFactory {
   // }
 
   @override
-  MapCanvas createCanvas(double width, double height, [String src]) {
+  MapCanvas createCanvas(double width, double height, [String? src]) {
     return FlutterCanvas.forRecorder(width, height, src);
   }
 
@@ -67,8 +67,8 @@ class FlutterGraphicFactory extends GraphicFactory {
   // }
 
   @override
-  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
-      MapPaint paintBack, SymbolContainer symbolContainer, Position position, int maxTextWidth) {
+  PointTextContainer createPointTextContainer(Mappoint xy, Display? display, int priority, String text, MapPaint paintFront,
+      MapPaint paintBack, SymbolContainer? symbolContainer, Position? position, int maxTextWidth) {
     return FlutterPointTextContainer(xy, display, priority, text, paintFront, paintBack, symbolContainer, position, maxTextWidth);
   }
 
@@ -102,8 +102,8 @@ class FlutterGraphicFactory extends GraphicFactory {
   }
 
   @override
-  MapPaint createPaintFrom(MapPaint from) {
-    return FlutterPaint.from(from);
+  MapPaint createPaintFrom(MapPaint? from) {
+    return FlutterPaint.from(from as FlutterPaint);
   }
 
   @override

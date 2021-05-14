@@ -58,7 +58,7 @@ class FileHelper {
     String _localPath = await findLocalPath();
     File zipfile = File(_localPath + "/" + zippedFilename);
     Uint8List content = await zipfile.readAsBytes();
-    Uint8List unzipped = gzip.decoder.convert(content);
+    Uint8List unzipped = gzip.decoder.convert(content) as Uint8List;
     File file = File(_localPath + "/" + filename);
     file.writeAsBytes(unzipped);
     zipfile.delete();

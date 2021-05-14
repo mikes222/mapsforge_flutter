@@ -18,33 +18,33 @@ import 'markercallback.dart';
 class PolygonMarker<T> extends BasicMarker<T> {
   static final _log = new Logger('PolygonMarker');
 
-  List<ILatLong> path = List();
+  List<ILatLong> path = [];
 
-  MapPaint fill;
+  MapPaint? fill;
 
   double fillWidth;
 
-  int fillColor;
+  int? fillColor;
 
-  MapPaint stroke;
+  MapPaint? stroke;
 
   final double strokeWidth;
 
   final int strokeColor;
 
-  Bitmap _bitmap;
+  Bitmap? _bitmap;
 
   bool _bitmapInvalid = false;
 
-  String src;
+  String? src;
 
-  SymbolCache symbolCache;
+  SymbolCache? symbolCache;
 
   final int width;
 
   final int height;
 
-  final int percent;
+  final int? percent;
 
   PolygonMarker({
     this.symbolCache,
@@ -88,25 +88,25 @@ class PolygonMarker<T> extends BasicMarker<T> {
     super.initResources(graphicFactory);
     if (fill == null && fillColor != null) {
       this.fill = graphicFactory.createPaint();
-      this.fill.setColorFromNumber(fillColor);
-      this.fill.setStyle(Style.FILL);
-      this.fill.setStrokeWidth(fillWidth);
+      this.fill!.setColorFromNumber(fillColor);
+      this.fill!.setStyle(Style.FILL);
+      this.fill!.setStrokeWidth(fillWidth);
       //this.stroke.setTextSize(fontSize);
     }
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
-      this.stroke.setColorFromNumber(strokeColor);
-      this.stroke.setStyle(Style.STROKE);
-      this.stroke.setStrokeWidth(strokeWidth);
+      this.stroke!.setColorFromNumber(strokeColor);
+      this.stroke!.setStyle(Style.STROKE);
+      this.stroke!.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
     }
-    if (_bitmapInvalid == null && src != null && !src.isEmpty && fill != null) {
+    if (_bitmapInvalid == null && src != null && !src!.isEmpty && fill != null) {
       try {
-        this._bitmap = await symbolCache.getSymbol(src, width, height, percent);
+        this._bitmap = await symbolCache!.getSymbol(src, width, height, percent);
         if (_bitmap != null) {
           _bitmapInvalid = false;
-          fill.setBitmapShader(_bitmap);
-          _bitmap.incrementRefCount();
+          fill!.setBitmapShader(_bitmap);
+          _bitmap!.incrementRefCount();
         }
       } catch (ioException, stacktrace) {
         _log.warning(ioException.toString());
@@ -114,8 +114,8 @@ class PolygonMarker<T> extends BasicMarker<T> {
         _bitmapInvalid = true;
       }
     }
-    if (markerCaption != null && markerCaption.latLong == null) {
-      markerCaption.latLong = GeometryUtils.calculateCenter(path);
+    if (markerCaption != null && markerCaption!.latLong == null) {
+      markerCaption!.latLong = GeometryUtils.calculateCenter(path);
 //      List<Mappoint> points = path
 //          .map((latLong) => markerCallback.mapViewPosition.mercatorProjection
 //                  .getPixelRelativeToLeftUpper(latLong, markerCallback.mapViewPosition.leftUpper)
@@ -135,7 +135,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
   }
 
@@ -145,9 +145,9 @@ class PolygonMarker<T> extends BasicMarker<T> {
 
     path.forEach((latLong) {
       double y =
-          markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude) - markerCallback.mapViewPosition.leftUpper.y;
-      double x = markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude) -
-          markerCallback.mapViewPosition.leftUpper.x;
+          markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude!) - markerCallback.mapViewPosition.leftUpper!.y;
+      double x = markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong.longitude!) -
+          markerCallback.mapViewPosition.leftUpper!.x;
 
       if (mapPath.isEmpty())
         mapPath.moveTo(x, y);
@@ -162,7 +162,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     ILatLong latLong =
-        mapViewPosition.mercatorProjection.getLatLong(tappedX + mapViewPosition.leftUpper.x, tappedY + mapViewPosition.leftUpper.y);
+        mapViewPosition.mercatorProjection!.getLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
     return LatLongUtils.contains(path, latLong);
   }

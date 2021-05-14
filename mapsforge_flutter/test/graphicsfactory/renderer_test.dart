@@ -43,7 +43,7 @@ void main() {
     GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
 
-    var img = await tester.runAsync(() async {
+    var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
@@ -74,17 +74,17 @@ void main() {
       assert(datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       print(result);
-      assert(result.ways.length > 0);
-      assert(result.pointOfInterests.length > 0);
+      assert(result.ways!.length > 0);
+      assert(result.pointOfInterests!.length > 0);
       print("Calculating tile ${tile.toString()}");
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
 
-      TileBitmap resultTile = await _dataStoreRenderer.executeJob(mapGeneratorJob);
+      TileBitmap resultTile = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
       assert(resultTile != null);
       var img = (resultTile as FlutterTileBitmap).bitmap;
       return img;
-    });
+    }));
 
     assert(img != null);
 

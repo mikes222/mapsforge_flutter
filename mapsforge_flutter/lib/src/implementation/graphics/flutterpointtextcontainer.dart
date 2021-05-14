@@ -22,12 +22,12 @@ class FlutterPointTextContainer extends PointTextContainer {
 //  StaticLayout backLayout;
 //  StaticLayout frontLayout;
 
-  ui.ParagraphBuilder frontBuilder;
+  late ui.ParagraphBuilder frontBuilder;
 
-  ui.ParagraphBuilder backBuilder;
+  late ui.ParagraphBuilder backBuilder;
 
-  FlutterPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
-      SymbolContainer symbolContainer, Position position, int maxTextWidth)
+  FlutterPointTextContainer(Mappoint xy, Display? display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
+      SymbolContainer? symbolContainer, Position? position, int maxTextWidth)
       : super(xy, display, priority, text, paintFront, paintBack, symbolContainer, position, maxTextWidth) {
     double boxWidth;
     double boxHeight;
@@ -78,8 +78,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      boxWidth = frontLayout.getWidth();
 //      boxHeight = frontLayout.getHeight();
 
-    boxWidth = textWidth.toDouble();
-    boxHeight = textHeight.toDouble();
+    boxWidth = textWidth!.toDouble();
+    boxHeight = textHeight!.toDouble();
 
     switch (this.position) {
       case Position.CENTER:
@@ -115,12 +115,12 @@ class FlutterPointTextContainer extends PointTextContainer {
   }
 
   @override
-  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
-    if (!this.isVisible) {
+  void draw(MapCanvas canvas, Mappoint? origin, Matrix matrix, Filter filter) {
+    if (!this.isVisible!) {
       return;
     }
 
-    ui.Canvas flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
+    ui.Canvas? flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
 
     // the origin of the text is the base line, so we need to make adjustments
     // so that the text will be within its box
@@ -129,19 +129,19 @@ class FlutterPointTextContainer extends PointTextContainer {
       case Position.CENTER:
       case Position.LEFT:
       case Position.RIGHT:
-        textOffset = textHeight / 2;
+        textOffset = textHeight! / 2;
         break;
       case Position.BELOW:
       case Position.BELOW_LEFT:
       case Position.BELOW_RIGHT:
-        textOffset = textHeight.toDouble();
+        textOffset = textHeight!.toDouble();
         break;
       default:
         break;
     }
 
-    double adjustedX = (this.xy.x - origin.x) + boundary.left;
-    double adjustedY = (this.xy.y - origin.y) + textOffset + boundary.top;
+    double adjustedX = (this.xy!.x - origin!.x) + boundary!.left;
+    double adjustedY = (this.xy!.y - origin.y) + textOffset + boundary!.top;
 
 //    _log.info("Adjusted is $adjustedX/$adjustedY and witdht is $textWidth for $text");
 //    Paint p = Paint();
@@ -156,8 +156,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(GraphicUtils.filterColor(color, filter));
 //      }
-      flutterCanvas.drawParagraph(
-          backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble())), Offset(adjustedX, adjustedY));
+      flutterCanvas!.drawParagraph(
+          backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth!.toDouble())), Offset(adjustedX, adjustedY));
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(color);
 //      }
@@ -166,8 +166,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(GraphicUtils.filterColor(color, filter));
 //    }
-    flutterCanvas.drawParagraph(
-        frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble())), Offset(adjustedX, adjustedY));
+    flutterCanvas!.drawParagraph(
+        frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth!.toDouble())), Offset(adjustedX, adjustedY));
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(color);
 //    }

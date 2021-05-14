@@ -28,7 +28,7 @@ class CanvasRasterer {
   final Matrix symbolMatrix;
   final double tileSize;
 
-  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, this.tileSize, [String src])
+  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, this.tileSize, [String? src])
       : canvas = graphicFactory.createCanvas(width, height, src),
         path = graphicFactory.createPath(),
         symbolMatrix = graphicFactory.createMatrix(),
@@ -42,15 +42,15 @@ class CanvasRasterer {
     //int levelsPerLayer = renderContext.ways.elementAt(0).length;
 //    int layers = renderContext.ways.length;
 
-    for (List<List<ShapePaintContainer>> shapePaintContainers in renderContext.ways) {
+    for (List<List<ShapePaintContainer>?>? shapePaintContainers in renderContext.ways) {
       // for (int layer = 0; layer < layers; ++layer) {
       //   List<List<ShapePaintContainer>> shapePaintContainers = renderContext.ways.elementAt(layer);
 
-      for (List<ShapePaintContainer> wayList in shapePaintContainers) {
+      for (List<ShapePaintContainer>? wayList in shapePaintContainers!) {
         // for (int level = 0; level < levelsPerLayer; ++level) {
         //   List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
 
-        for (int index = wayList.length - 1; index >= 0; --index) {
+        for (int index = wayList!.length - 1; index >= 0; --index) {
           _drawShapePaintContainer(wayList.elementAt(index));
         }
       }
@@ -119,7 +119,7 @@ class CanvasRasterer {
   }
 
   void drawCircleContainer(ShapePaintContainer shapePaintContainer) {
-    CircleContainer circleContainer = shapePaintContainer.shapeContainer;
+    CircleContainer circleContainer = shapePaintContainer.shapeContainer as CircleContainer;
     Mappoint point = circleContainer.point;
     this.canvas.drawCircle(point.x.toInt(), point.y.toInt(), circleContainer.radius.toInt(), shapePaintContainer.paint);
   }
@@ -128,21 +128,21 @@ class CanvasRasterer {
   //   canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
   // }
 
-  void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
+  void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint?>?> coordinates, double dy) {
     this.path.clear();
 
-    for (List<Mappoint> innerList in coordinates) {
-      List<Mappoint> points;
+    for (List<Mappoint?>? innerList in coordinates) {
+      List<Mappoint?>? points;
       if (dy != 0) {
-        points = RendererUtils.parallelPath(innerList, dy);
+        points = RendererUtils.parallelPath(innerList!, dy);
       } else {
         points = innerList;
       }
 
-      Mappoint point = points[0];
+      Mappoint point = points![0]!;
       this.path.moveTo(point.x, point.y);
       for (int i = 1; i < points.length; i++) {
-        point = points[i];
+        point = points[i]!;
         this.path.lineTo(point.x, point.y);
       }
     }
@@ -158,11 +158,11 @@ class CanvasRasterer {
         drawCircleContainer(shapePaintContainer);
         break;
       case ShapeType.HILLSHADING:
-        HillshadingContainer hillshadingContainer = shapeContainer;
+        HillshadingContainer hillshadingContainer = shapeContainer as HillshadingContainer;
         //drawHillshading(hillshadingContainer);
         break;
       case ShapeType.POLYLINE:
-        PolylineContainer polylineContainer = shapeContainer;
+        PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
         //_log.info("drawing line " + polylineContainer.toString());
         _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(tileSize), shapePaintContainer.dy);
         break;

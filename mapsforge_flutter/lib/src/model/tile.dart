@@ -29,10 +29,10 @@ class Tile {
    */
   final int indoorLevel;
 
-  BoundingBox _boundingBox;
+  BoundingBox? _boundingBox;
 
   // the left/upper corner of the current tile in pixels in relation to the current lat/lon.
-  Mappoint _leftUpper;
+  Mappoint? _leftUpper;
 
   /**
    * Return the BoundingBox of a rectangle of tiles defined by upper left and lower right tile.
@@ -42,8 +42,8 @@ class Tile {
    * @return BoundingBox defined by the area around upperLeft and lowerRight Tile.
    */
   static BoundingBox getBoundingBoxStatic(MercatorProjectionImpl mercatorProjection, Tile upperLeft, Tile lowerRight) {
-    BoundingBox ul = upperLeft.getBoundingBox(mercatorProjection);
-    BoundingBox lr = lowerRight.getBoundingBox(mercatorProjection);
+    BoundingBox ul = upperLeft.getBoundingBox(mercatorProjection)!;
+    BoundingBox lr = lowerRight.getBoundingBox(mercatorProjection)!;
     return ul.extendBoundingBox(lr);
   }
 
@@ -122,7 +122,7 @@ class Tile {
   /// Gets the geographic extend of this Tile as a BoundingBox.
   ///
   /// @return boundaries of this tile.
-  BoundingBox getBoundingBox(MercatorProjectionImpl mercatorProjection) {
+  BoundingBox? getBoundingBox(MercatorProjectionImpl mercatorProjection) {
     if (this._boundingBox == null) {
       assert(MercatorProjectionImpl.zoomLevelToScaleFactor(zoomLevel) == mercatorProjection.scaleFactor);
       double minLatitude = max(MercatorProjectionImpl.LATITUDE_MIN, mercatorProjection.tileYToLatitude(tileY + 1));
@@ -159,7 +159,7 @@ class Tile {
   /// @return rectangle with the absolute coordinates.
   Rectangle getBoundaryAbsolute(double tileSize) {
     return new Rectangle(
-        getLeftUpper(tileSize).x, getLeftUpper(tileSize).y, getLeftUpper(tileSize).x + tileSize, getLeftUpper(tileSize).y + tileSize);
+        getLeftUpper(tileSize)!.x, getLeftUpper(tileSize)!.y, getLeftUpper(tileSize)!.x + tileSize, getLeftUpper(tileSize)!.y + tileSize);
   }
 
   /// Extend of this tile in relative (tile) coordinates.
@@ -174,7 +174,7 @@ class Tile {
    *
    * @return the top-left point
    */
-  Mappoint getLeftUpper(double tileSize) {
+  Mappoint? getLeftUpper(double tileSize) {
     if (_leftUpper == null) {
       _leftUpper = Mappoint(tileX * tileSize, tileY * tileSize);
     }
@@ -305,7 +305,7 @@ class Tile {
   /**
    * @return the parent tile of this tile or null, if the zoom level of this tile is 0.
    */
-  Tile getParent() {
+  Tile? getParent() {
     if (this.zoomLevel == 0) {
       return null;
     }
@@ -318,7 +318,7 @@ class Tile {
       return 0;
     }
 
-    return this.tileX % 2 + 2 * getParent().getShiftX(otherTile);
+    return this.tileX % 2 + 2 * getParent()!.getShiftX(otherTile);
   }
 
   int getShiftY(Tile otherTile) {
@@ -326,7 +326,7 @@ class Tile {
       return 0;
     }
 
-    return this.tileY % 2 + 2 * getParent().getShiftY(otherTile);
+    return this.tileY % 2 + 2 * getParent()!.getShiftY(otherTile);
   }
 
   @override

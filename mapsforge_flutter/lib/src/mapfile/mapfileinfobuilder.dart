@@ -5,18 +5,18 @@ import '../model/tag.dart';
 import 'mapfileinfo.dart';
 
 class MapFileInfoBuilder {
-  BoundingBox boundingBox;
-  int fileSize;
-  int fileVersion;
-  int mapDate;
-  int numberOfSubFiles;
-  OptionalFields optionalFields;
-  List<Tag> poiTags;
-  String projectionName;
-  int tilePixelSize;
-  List<Tag> wayTags;
-  int zoomLevelMin;
-  int zoomLevelMax;
+  BoundingBox? boundingBox;
+  int? fileSize;
+  int? fileVersion;
+  int? mapDate;
+  int? numberOfSubFiles;
+  late OptionalFields optionalFields;
+  List<Tag>? poiTags;
+  String? projectionName;
+  int? tilePixelSize;
+  List<Tag>? wayTags;
+  int? zoomLevelMin;
+  int? zoomLevelMax;
 
   MapFileInfo build() {
     return new MapFileInfo(

@@ -25,11 +25,10 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    MapModel mapModel = await tester.runAsync(() async {
+    MapModel? mapModel = await (tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
 
-      MapFile mapDataStore = MapFile(TestAssetBundle().correctFilename("monaco.map"), null, null);
-      await mapDataStore.init();
+      MapFile mapDataStore = await MapFile.create(TestAssetBundle().correctFilename("monaco.map"), null, null);
 
       SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
       GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
@@ -52,9 +51,9 @@ void main() {
       );
 
       return mapModel;
-    });
+    }));
 
-    ViewModel viewModel = ViewModel(displayModel: mapModel.displayModel);
+    ViewModel viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
     viewModel.setMapViewPosition(43.7399, 7.4262);
 
@@ -64,7 +63,7 @@ void main() {
         home: Scaffold(
           body: Center(
             child: FlutterMapView(
-              mapModel: mapModel,
+              mapModel: mapModel!,
               viewModel: viewModel,
             ),
           ),

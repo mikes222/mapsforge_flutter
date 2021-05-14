@@ -9,8 +9,8 @@ class ElementWayMatcher implements ElementMatcher {
   }
 
   @override
-  bool isCoveredByElementMatcher(ElementMatcher elementMatcher) {
-    return elementMatcher.matchesElement(Element.WAY);
+  bool isCoveredByElementMatcher(ElementMatcher? elementMatcher) {
+    return elementMatcher!.matchesElement(Element.WAY);
   }
 
   @override

@@ -6,19 +6,19 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ViewModel {
-  NoPositionView noPositionView;
-  MapViewPosition _mapViewPosition;
+  NoPositionView? noPositionView;
+  MapViewPosition? _mapViewPosition;
   final DisplayModel displayModel;
-  ContextMenuBuilder contextMenuBuilder;
+  ContextMenuBuilder? contextMenuBuilder;
 
   ///
   /// The width and height of the view
   ///
-  Dimension _viewDimension;
+  Dimension? _viewDimension;
 
-  Subject<MapViewPosition> _injectPosition = PublishSubject();
+  Subject<MapViewPosition?> _injectPosition = PublishSubject();
 
-  Stream<MapViewPosition> get observePosition => _injectPosition.stream;
+  Stream<MapViewPosition?> get observePosition => _injectPosition.stream;
 
   Subject<TapEvent> _injectTap = PublishSubject();
 
@@ -28,7 +28,7 @@ class ViewModel {
 
   Stream<GestureEvent> get observeGesture => _injectGesture.stream;
 
-  ViewModel({this.contextMenuBuilder, @required this.displayModel, this.noPositionView}) : assert(displayModel != null) {
+  ViewModel({this.contextMenuBuilder, required this.displayModel, this.noPositionView}) : assert(displayModel != null) {
     if (noPositionView == null) noPositionView = NoPositionView();
   }
 
@@ -38,12 +38,12 @@ class ViewModel {
     _injectGesture.close();
   }
 
-  MapViewPosition get mapViewPosition => _mapViewPosition;
+  MapViewPosition? get mapViewPosition => _mapViewPosition;
 
   void setMapViewPosition(double latitude, double longitude) {
     if (_mapViewPosition != null) {
       MapViewPosition newPosition =
-          MapViewPosition(latitude, longitude, _mapViewPosition.zoomLevel, _mapViewPosition.indoorLevel, displayModel.tileSize);
+          MapViewPosition(latitude, longitude, _mapViewPosition!.zoomLevel, _mapViewPosition!.indoorLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -56,24 +56,24 @@ class ViewModel {
 
   void zoomIn() {
     assert(_mapViewPosition != null);
-    if (_mapViewPosition.zoomLevel >= displayModel.maxZoomLevel) return;
-    MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition);
+    if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
+    MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   void zoomInAround(double latitude, double longitude) {
     assert(_mapViewPosition != null);
-    if (_mapViewPosition.zoomLevel >= displayModel.maxZoomLevel) return;
-    MapViewPosition newPosition = MapViewPosition.zoomInAround(_mapViewPosition, latitude, longitude);
+    if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
+    MapViewPosition newPosition = MapViewPosition.zoomInAround(_mapViewPosition!, latitude, longitude);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   void zoomOut() {
     assert(_mapViewPosition != null);
-    if (_mapViewPosition.zoomLevel <= 0) return;
-    MapViewPosition newPosition = MapViewPosition.zoomOut(_mapViewPosition);
+    if (_mapViewPosition!.zoomLevel <= 0) return;
+    MapViewPosition newPosition = MapViewPosition.zoomOut(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
@@ -82,7 +82,7 @@ class ViewModel {
     if (zoomLevel > displayModel.maxZoomLevel) zoomLevel = displayModel.maxZoomLevel;
     if (zoomLevel < 0) zoomLevel = 0;
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition, zoomLevel);
+      MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition!, zoomLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -96,22 +96,22 @@ class ViewModel {
 
   void indoorLevelUp() {
     assert(_mapViewPosition != null);
-    if (_mapViewPosition.zoomLevel >= displayModel.maxZoomLevel) return;
-    MapViewPosition newPosition = MapViewPosition.indoorLevelUp(_mapViewPosition);
+    if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
+    MapViewPosition newPosition = MapViewPosition.indoorLevelUp(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   void indoorLevelDown() {
     assert(_mapViewPosition != null);
-    MapViewPosition newPosition = MapViewPosition.indoorLevelDown(_mapViewPosition);
+    MapViewPosition newPosition = MapViewPosition.indoorLevelDown(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   MapViewPosition setIndoorLevel(int indoorLevel) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition.setIndoorLevel(_mapViewPosition, indoorLevel);
+      MapViewPosition newPosition = MapViewPosition.setIndoorLevel(_mapViewPosition!, indoorLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -128,25 +128,25 @@ class ViewModel {
   /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
   /// >1 means zoom-in.
   ///
-  MapViewPosition setScale(Mappoint focalPoint, double scale) {
+  MapViewPosition? setScale(Mappoint focalPoint, double scale) {
     assert(scale != null);
     assert(scale > 0);
     // do not scale if the scale is too minor to do anything
     if ((scale - 1).abs() < 0.01) return _mapViewPosition;
     if (_mapViewPosition != null) {
       //print("Scaling ${_mapViewPosition.zoomLevel} * $scale");
-      if (MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel) * scale < 1) {
+      if (MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel) * scale < 1) {
         // zoom out until we reached zoomlevel 0
-        scale = 1 / MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel);
+        scale = 1 / MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel);
       } else {
-        double scaleFactor = MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel) * scale;
+        double scaleFactor = MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel) * scale;
         if (scaleFactor > MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel)) {
           // zoom in until we reach the maximum zoom level, limit the zoom then
           scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel) /
-              MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition.zoomLevel);
+              MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel);
         }
       }
-      MapViewPosition newPosition = MapViewPosition.scale(_mapViewPosition, focalPoint, scale);
+      MapViewPosition newPosition = MapViewPosition.scale(_mapViewPosition!, focalPoint, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -162,7 +162,7 @@ class ViewModel {
 
   void setLeftUpper(double left, double upper) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition.setLeftUpper(_mapViewPosition, left, upper, _viewDimension);
+      MapViewPosition newPosition = MapViewPosition.setLeftUpper(_mapViewPosition!, left, upper, _viewDimension!);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -175,9 +175,9 @@ class ViewModel {
 
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
-    _mapViewPosition.calculateBoundingBox(_viewDimension);
-    TapEvent event = TapEvent(_mapViewPosition.mercatorProjection.pixelYToLatitude(_mapViewPosition.leftUpper.y + upper),
-        _mapViewPosition.mercatorProjection.pixelXToLongitude(_mapViewPosition.leftUpper.x + left), left, upper);
+    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    TapEvent event = TapEvent(_mapViewPosition!.mercatorProjection!.pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
+        _mapViewPosition!.mercatorProjection!.pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left), left, upper);
     _injectTap.add(event);
   }
 
@@ -185,10 +185,10 @@ class ViewModel {
     _injectGesture.add(GestureEvent());
   }
 
-  Dimension get viewDimension => _viewDimension;
+  Dimension? get viewDimension => _viewDimension;
 
-  Dimension setViewDimension(double width, double height) {
-    if (_viewDimension != null && _viewDimension.width == width && _viewDimension.height == height) return _viewDimension;
+  Dimension? setViewDimension(double width, double height) {
+    if (_viewDimension != null && _viewDimension!.width == width && _viewDimension!.height == height) return _viewDimension;
     _viewDimension = Dimension(width, height);
     _injectPosition.add(mapViewPosition);
     return _viewDimension;

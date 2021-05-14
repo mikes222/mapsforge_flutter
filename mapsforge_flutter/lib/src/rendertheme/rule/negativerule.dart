@@ -14,20 +14,20 @@ class NegativeRule extends Rule {
 
   @override
   bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel) {
-    return this.zoomMin <= zoomLevel &&
-        this.zoomMax >= zoomLevel &&
+    return this.zoomMin! <= zoomLevel &&
+        this.zoomMax! >= zoomLevel &&
         IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.NODE) &&
+        this.elementMatcher!.matchesElement(Element.NODE) &&
         this.attributeMatcher.matchesTagList(tags);
   }
 
   @override
   bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed) {
-    return this.zoomMin <= zoomLevel &&
-        this.zoomMax >= zoomLevel &&
+    return this.zoomMin! <= zoomLevel &&
+        this.zoomMax! >= zoomLevel &&
         IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.WAY) &&
-        this.closedMatcher.matchesClosed(closed) &&
+        this.elementMatcher!.matchesElement(Element.WAY) &&
+        this.closedMatcher!.matchesClosed(closed) &&
         this.attributeMatcher.matchesTagList(tags);
   }
 

@@ -20,41 +20,37 @@ import 'geometryutils.dart';
  */
 
 class PolylineContainer implements ShapeContainer {
-  Mappoint center;
-  List<List<Mappoint>> coordinatesAbsolute;
-  List<List<Mappoint>> coordinatesRelativeToTile;
+  Mappoint? center;
+  List<List<Mappoint>>? coordinatesAbsolute;
+  List<List<Mappoint>>? coordinatesRelativeToTile;
   final List<Tag> tags;
   final int layer;
   final Tile upperLeft;
   final Tile lowerRight;
   final bool isClosedWay;
-  Way way;
+  late Way way;
 
   PolylineContainer(Way way, this.upperLeft, this.lowerRight)
       : tags = way.tags,
         layer = way.layer,
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]) {
-    this.coordinatesAbsolute = null;
-    this.coordinatesRelativeToTile = null;
     this.way = way;
     if (this.way.labelPosition != null) {
       // Todo get correct tilesize
       MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
-      this.center = mercatorProjection.getPixel(this.way.labelPosition);
+      this.center = mercatorProjection.getPixel(this.way.labelPosition!);
     }
   }
 
   PolylineContainer.fromList(List<Mappoint> coordinates, this.upperLeft, this.lowerRight, this.tags)
       : layer = 0,
         isClosedWay = coordinates[0] == (coordinates[coordinates.length - 1]) {
-    this.coordinatesAbsolute = new List<List<Mappoint>>(1);
+    this.coordinatesAbsolute = [];
     this.coordinatesRelativeToTile = null;
-    this.coordinatesAbsolute[0] = new List<Mappoint>(); //[coordinates.length];
-//    System.arraycopy(
-//        coordinates, 0, coordinatesAbsolute[0], 0, coordinates.length);
+    this.coordinatesAbsolute!.add(List.from(coordinates));
   }
 
-  Mappoint getCenterAbsolute() {
+  Mappoint? getCenterAbsolute() {
     if (this.center == null) {
       this.center = GeometryUtils.calculateCenterOfBoundingBox(getCoordinatesAbsolute()[0]);
     }
@@ -65,12 +61,12 @@ class PolylineContainer implements ShapeContainer {
     // deferred evaluation as some PolyLineContainers will never be drawn. However,
     // to save memory, after computing the absolute coordinates, the way is released.
     if (coordinatesAbsolute == null) {
-      coordinatesAbsolute = List<List<Mappoint>>();
+      coordinatesAbsolute = [];
       // Todo get correct tilesize
       MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
       for (int i = 0; i < way.latLongs.length; ++i) {
-        List<Mappoint> mp1 = List<Mappoint>();
-        coordinatesAbsolute.add(mp1);
+        List<Mappoint> mp1 = [];
+        coordinatesAbsolute!.add(mp1);
         for (int j = 0; j < way.latLongs[i].length; ++j) {
           Mappoint mp2 = mercatorProjection.getPixel(way.latLongs[i][j]);
           mp1.add(mp2);
@@ -78,23 +74,24 @@ class PolylineContainer implements ShapeContainer {
       }
       //this.way = null;
     }
-    return coordinatesAbsolute;
+    return coordinatesAbsolute!;
   }
 
   List<List<Mappoint>> getCoordinatesRelativeToOrigin(double tileSize) {
     if (coordinatesRelativeToTile == null) {
-      Mappoint tileOrigin = upperLeft.getLeftUpper(tileSize);
-      coordinatesRelativeToTile = List<List<Mappoint>>(getCoordinatesAbsolute().length);
-      for (int i = 0; i < coordinatesRelativeToTile.length; ++i) {
-        List<Mappoint> mp1 = List<Mappoint>(coordinatesAbsolute[i].length);
-        coordinatesRelativeToTile[i] = mp1;
-        for (int j = 0; j < coordinatesRelativeToTile[i].length; ++j) {
-          Mappoint mp2 = coordinatesAbsolute[i][j].offset(-tileOrigin.x, -tileOrigin.y);
-          mp1[j] = (mp2);
+      Mappoint? tileOrigin = upperLeft.getLeftUpper(tileSize);
+      int count = getCoordinatesAbsolute().length;
+      coordinatesRelativeToTile = [];
+      for (int i = 0; i < count; ++i) {
+        List<Mappoint> mp1 = [];
+        coordinatesRelativeToTile!.add(mp1);
+        for (int j = 0; j < getCoordinatesAbsolute()[i].length; ++j) {
+          Mappoint mp2 = coordinatesAbsolute![i][j].offset(-tileOrigin!.x, -tileOrigin.y);
+          mp1.add(mp2);
         }
       }
     }
-    return coordinatesRelativeToTile;
+    return coordinatesRelativeToTile!;
   }
 
   int getLayer() {
