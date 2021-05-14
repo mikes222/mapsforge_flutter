@@ -33,13 +33,13 @@ dependencies:
   synchronized: ^2.2.0+2
 
   # BSD License
-  flutter_svg: ^0.19.1
+  flutter_svg: ^0.19.3
 
   # BSD License
   #image: 2.1.13
 
-  # BSD License
-  path_provider: ^1.6.27
+  # BSD License, currently no WEB support
+  path_provider: ^1.6.28
 
   # MIT License
   provider: ^4.3.3

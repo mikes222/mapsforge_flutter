@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:flutter/material.dart' as mat;
-import 'package:mapsforge_flutter/src/graphics/align.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
@@ -12,13 +11,12 @@ import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import 'flutterbitmap.dart';
 import 'fluttercanvas.dart';
 import 'fluttercolor.dart';
 
-class FlutterPaint extends ui.Paint implements MapPaint {
+class FlutterPaint implements MapPaint {
   final ui.Paint paint;
 
   FlutterBitmap _shaderBitmap;
