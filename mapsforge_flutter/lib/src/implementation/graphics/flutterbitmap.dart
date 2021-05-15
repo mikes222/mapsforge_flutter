@@ -15,7 +15,7 @@ class FlutterBitmap implements Bitmap {
   ///
   final String? src;
 
-  FlutterBitmap(this.bitmap, [this.src]) : assert(bitmap != null);
+  FlutterBitmap(this.bitmap, [this.src]);
 
   @override
   void incrementRefCount() {

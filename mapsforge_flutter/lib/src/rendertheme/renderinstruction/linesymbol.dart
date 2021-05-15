@@ -19,7 +19,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   static final double REPEAT_START_DEFAULT = 30;
 
   bool alignCenter = true;
-  Display? display;
+  Display display = Display.IFSPACE;
   double dy = 0;
   final Map<int, double> dyScaled;
   int priority = 0;
@@ -34,7 +34,6 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
       : dyScaled = new Map(),
         super(graphicFactory, displayModel) {
     this.symbolCache = graphicFactory.symbolCache;
-    this.display = Display.IFSPACE;
     this.rotate = true;
   }
 

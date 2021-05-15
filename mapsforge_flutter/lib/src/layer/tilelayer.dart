@@ -11,7 +11,7 @@ abstract class TileLayer {
   bool _visible = true;
   bool needsRepaint = false;
 
-  TileLayer(this.displayModel) : assert(displayModel != null);
+  TileLayer(this.displayModel);
 
   /**
    * Draws this {@code Layer} on the given canvas.

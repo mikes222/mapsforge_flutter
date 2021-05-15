@@ -45,11 +45,11 @@ abstract class MapCanvas {
 
   void drawLine(int x1, int y1, int x2, int y2, MapPaint paint);
 
-  void drawPath(MapPath path, MapPaint? paint);
+  void drawPath(MapPath path, MapPaint paint);
 
   void drawRect(MapRect rect, MapPaint paint);
 
-  void drawPathText(String text, LineString lineString, Mappoint? origin, MapPaint paint);
+  void drawPathText(String text, LineString lineString, Mappoint origin, MapPaint paint);
 
   void drawText(String text, int x, int y, MapPaint paint);
 
@@ -78,5 +78,5 @@ abstract class MapCanvas {
   /// Shade tileRect with bitmap otherwise.
 //  void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude);
 
-  void scale(Mappoint? focalPoint, double scale);
+  void scale(Mappoint focalPoint, double scale);
 }

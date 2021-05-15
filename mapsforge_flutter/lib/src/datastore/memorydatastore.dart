@@ -34,14 +34,15 @@ class MemoryDatastore extends Datastore {
   @override
   Future<DatastoreReadResult> readMapDataSingle(Tile tile) {
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, 16);
-    List poiResults = pointOfInterests.where((poi) => tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)).toList();
+    List<PointOfInterest> poiResults =
+        pointOfInterests.where((poi) => tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)).toList();
     List<Way> wayResults = [];
     for (Way way in ways) {
       if (tile.getBoundingBox(mercatorProjection)!.intersectsArea(way.latLongs)) {
         wayResults.add(way);
       }
     }
-    return Future.value(DatastoreReadResult(pointOfInterests: poiResults as List<PointOfInterest>?, ways: wayResults));
+    return Future.value(DatastoreReadResult(pointOfInterests: poiResults, ways: wayResults));
   }
 
   @override
@@ -63,18 +64,13 @@ class MemoryDatastore extends Datastore {
       if (tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)) return true;
     }
     for (Way way in ways) {
-      for (List<ILatLong?>? list in way.latLongs) {
-        for (ILatLong? latLong in list!) {
+      for (List<ILatLong> list in way.latLongs) {
+        for (ILatLong latLong in list) {
           if (tile.getBoundingBox(mercatorProjection)!.containsLatLong(latLong as LatLong)) return true;
         }
       }
     }
     return false;
-  }
-
-  @override
-  Future<void>? init() {
-    return null;
   }
 
   void addPoi(PointOfInterest poi) {

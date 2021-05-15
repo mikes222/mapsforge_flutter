@@ -1,7 +1,7 @@
 class SymbolNotFoundException implements Exception {
   final String src;
 
-  SymbolNotFoundException(this.src) : assert(src != null);
+  SymbolNotFoundException(this.src);
 
   @override
   String toString() {

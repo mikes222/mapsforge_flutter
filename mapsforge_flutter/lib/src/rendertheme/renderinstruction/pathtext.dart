@@ -23,15 +23,15 @@ class PathText extends RenderInstruction {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
 
-  Display? display;
+  Display display = Display.IFSPACE;
   double dy = 0;
   final Map<int, double> dyScaled;
-  MapPaint? fill;
+  late MapPaint fill;
   final Map<int, MapPaint> fills;
   double fontSize = 10;
   int priority = 0;
   Scale scale = Scale.STROKE;
-  MapPaint? stroke;
+  late MapPaint stroke;
   final Map<int, MapPaint> strokes;
   bool? repeat;
   double? repeatGap;
@@ -45,18 +45,17 @@ class PathText extends RenderInstruction {
         dyScaled = new Map(),
         super(graphicFactory, displayModel) {
     this.fill = graphicFactory.createPaint();
-    this.fill!.setColor(Color.BLACK);
-    this.fill!.setStyle(Style.FILL);
+    this.fill.setColor(Color.BLACK);
+    this.fill.setStyle(Style.FILL);
     //this.fill.setTextAlign(Align.CENTER);
     this.rotate = true;
     this.repeat = true;
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke!.setColor(Color.BLACK);
-    this.stroke!.setStyle(Style.STROKE);
+    this.stroke.setColor(Color.BLACK);
+    this.stroke.setStyle(Style.STROKE);
     //this.stroke.setTextAlign(Align.CENTER);
-    this.stroke!.setStrokeWidth(1);
-    this.display = Display.IFSPACE;
+    this.stroke.setStrokeWidth(1);
   }
 
   @override
@@ -82,7 +81,7 @@ class PathText extends RenderInstruction {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values.firstWhere((v) => v.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
@@ -102,16 +101,16 @@ class PathText extends RenderInstruction {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke!.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
+        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
       } else {
         throw Exception("PathText probs");
       }
     });
 
-    this.fill!.setTypeface(fontFamily, fontStyle);
-    this.stroke!.setTypeface(fontFamily, fontStyle);
+    this.fill.setTypeface(fontFamily, fontStyle);
+    this.stroke.setTypeface(fontFamily, fontStyle);
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
   }
@@ -121,7 +120,7 @@ class PathText extends RenderInstruction {
     if (paint == null) {
       paint = this.fill;
     }
-    return paint!;
+    return paint;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
@@ -129,7 +128,7 @@ class PathText extends RenderInstruction {
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint!;
+    return paint;
   }
 
   @override

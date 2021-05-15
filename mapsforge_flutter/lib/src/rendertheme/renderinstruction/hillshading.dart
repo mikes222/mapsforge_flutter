@@ -24,20 +24,14 @@ class Hillshading {
   final int maxZoom;
   final double magnitude;
 
-  Hillshading(this.minZoom, this.maxZoom, this.magnitude, this.layer, this.always, this.level)
-      : assert(always != null),
-        assert(level != null),
-        assert(layer != null),
-        assert(minZoom != null),
-        assert(maxZoom != null),
-        assert(magnitude != null);
+  Hillshading(this.minZoom, this.maxZoom, this.magnitude, this.layer, this.always, this.level);
 
   void render(final RenderContext renderContext, HillsRenderConfig hillsRenderConfig) {
     if (hillsRenderConfig == null) {
       if (always) {
         renderContext.setDrawingLayers(layer);
         ShapeContainer hillShape = new HillshadingContainer(null, this.magnitude, null, null);
-        renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(hillShape, null, 0));
+        //renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(hillShape, null, 0));
       }
       return;
     }
@@ -46,7 +40,7 @@ class Hillshading {
     int zoomLevel = tile.zoomLevel;
     if (zoomLevel > maxZoom || zoomLevel < minZoom) return;
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, zoomLevel);
-    Mappoint origin = tile.getLeftUpper(renderContext.job.tileSize)!;
+    Mappoint origin = tile.getLeftUpper(renderContext.job.tileSize);
     double maptileTopLat = mercatorProjection.pixelYToLatitude(origin.y);
     double maptileLeftLng = mercatorProjection.pixelXToLongitude(origin.x);
 
@@ -138,7 +132,7 @@ class Hillshading {
         ShapeContainer hillShape = new HillshadingContainer(shadingTile, effectiveMagnitude, hillsRect, maptileRect);
 
         renderContext.setDrawingLayers(layer);
-        renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(hillShape, null, 0));
+        //renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(hillShape, graphicFactory.createPaint(), 0));
       }
     }
   }

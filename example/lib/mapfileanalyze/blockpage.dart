@@ -32,8 +32,8 @@ class BlockPage extends StatelessWidget {
             child: CircularProgressIndicator(),
           );
         DatastoreReadResult mapReadResult = snapshot.data;
-        int? items = mapReadResult.ways!.length < 1000
-            ? mapReadResult.ways!.fold<int>(
+        int? items = mapReadResult.ways.length < 1000
+            ? mapReadResult.ways.fold<int>(
                 0,
                 ((previousValue, element) =>
                     previousValue + element.latLongs.fold(0, ((previousValue, element) => previousValue + element.length))))
@@ -48,7 +48,7 @@ class BlockPage extends StatelessWidget {
                   InkWell(
                     child: Row(
                       children: <Widget>[
-                        Text("Pois ${mapReadResult.pointOfInterests!.length}, "),
+                        Text("Pois ${mapReadResult.pointOfInterests.length}, "),
                         Icon(Icons.more_horiz),
                       ],
                     ),
@@ -60,7 +60,7 @@ class BlockPage extends StatelessWidget {
                   InkWell(
                     child: Row(
                       children: <Widget>[
-                        Text("Ways ${mapReadResult.ways!.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
+                        Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
                         Icon(Icons.more_horiz),
                       ],
                     ),

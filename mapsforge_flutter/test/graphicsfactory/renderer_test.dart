@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
-import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/memorydatastore.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
@@ -69,13 +68,12 @@ void main() {
             [LatLong(45.998, 17.95), LatLong(45.998, 18.05)]
           ],
           null));
-      await datastore.init();
       Tile tile = new Tile(x, y, z, l);
       assert(datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       print(result);
-      assert(result.ways!.length > 0);
-      assert(result.pointOfInterests!.length > 0);
+      assert(result.ways.length > 0);
+      assert(result.pointOfInterests.length > 0);
       print("Calculating tile ${tile.toString()}");
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);

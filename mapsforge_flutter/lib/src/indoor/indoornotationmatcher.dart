@@ -38,18 +38,27 @@ class IndoorNotationMatcher {
    * Range values are converted to multiple values
    * Returns null if the String couldn't be parsed successfully
    */
-  static Iterable<int?>? parseLevelNumbers(String levelTagValue) {
+  static Iterable<int>? parseLevelNumbers(String levelTagValue) {
     if (IndoorNotationMatcher.matchesSingleNotation(levelTagValue)) {
-      return [IndoorNotationMatcher.parseLevelNumber(levelTagValue)];
+      return [IndoorNotationMatcher.parseLevelNumber(levelTagValue)].where((element) => element != null).map((e) => e as int).toList();
     } else if (IndoorNotationMatcher.matchesMultipleNotation(levelTagValue)) {
       // split on ";" and convert values to int
-      return levelTagValue.split(";").map(IndoorNotationMatcher.parseLevelNumber);
+      return levelTagValue
+          .split(";")
+          .map(IndoorNotationMatcher.parseLevelNumber)
+          .where((element) => element != null)
+          .map((e) => e as int)
+          .toList();
     } else if (IndoorNotationMatcher.matchesRangeNotation(levelTagValue)) {
       // split on "-" if number precedes and convert to int
-      Iterable<int?> levelRange = levelTagValue.split(RegExp(r"(?<=\d)-")).map(IndoorNotationMatcher.parseLevelNumber);
-      List<int> levelRange2 = levelRange.where((element) => element != null).map((e) => e as int).toList();
-      int lowerLevelValue = levelRange2.reduce(min);
-      int upperLevelValue = levelRange2.reduce(max);
+      Iterable<int> levelRange = levelTagValue
+          .split(RegExp(r"(?<=\d)-"))
+          .map(IndoorNotationMatcher.parseLevelNumber)
+          .where((element) => element != null)
+          .map((e) => e as int)
+          .toList();
+      int lowerLevelValue = levelRange.reduce(min);
+      int upperLevelValue = levelRange.reduce(max);
       int levelCount = (lowerLevelValue - upperLevelValue).abs() + 1;
       return Iterable.generate(levelCount, (i) => lowerLevelValue + i);
     }

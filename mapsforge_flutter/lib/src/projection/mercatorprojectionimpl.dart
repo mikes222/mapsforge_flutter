@@ -149,7 +149,7 @@ class MercatorProjectionImpl {
   /// @return the relative pixel position to the origin values (e.g. for a tile)
   Mappoint getPixelRelativeToTile(ILatLong latLong, Tile tile) {
     Mappoint mappoint = getPixel(latLong);
-    return mappoint.offset(-tile.getLeftUpper(tileSize)!.x, -tile.getLeftUpper(tileSize)!.y);
+    return mappoint.offset(-tile.getLeftUpper(tileSize).x, -tile.getLeftUpper(tileSize).y);
   }
 
   /// Calculates the absolute pixel position for a tile and tile size relative to origin

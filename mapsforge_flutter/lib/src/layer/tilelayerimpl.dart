@@ -30,15 +30,13 @@ class TileLayerImpl extends TileLayer {
     required this.jobQueue,
     required displayModel,
   })   : assert(displayModel != null),
-        assert(graphicFactory != null),
-        assert(jobQueue != null),
         _paint = graphicFactory.createPaint(),
         super(displayModel);
 
   @override
   void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet? jobSet) {
     if (jobSet == null) {
-      //_submitJobSet(viewModel, mapViewPosition);
+      //   //_submitJobSet(viewModel, mapViewPosition);
       return;
     }
     //_log.info("tiles: ${tiles.toString()}");
@@ -54,15 +52,15 @@ class TileLayerImpl extends TileLayer {
     //canvas.resetClip();
 
     canvas.setClip(0, 0, viewModel.viewDimension!.width.round(), viewModel.viewDimension!.height.round());
-    if (mapViewPosition.scale != 1) {
+    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
       //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
-      canvas.scale(mapViewPosition.focalPoint, mapViewPosition.scale);
+      canvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
     }
     mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
     Mappoint? leftUpper = mapViewPosition.leftUpper;
 
     jobSet.bitmaps.forEach((Tile tile, TileBitmap tileBitmap) {
-      Mappoint point = tile.getLeftUpper(viewModel.displayModel.tileSize)!;
+      Mappoint point = tile.getLeftUpper(viewModel.displayModel.tileSize);
       _paint.setAntiAlias(false);
       canvas.drawBitmap(
         bitmap: tileBitmap,
@@ -73,7 +71,7 @@ class TileLayerImpl extends TileLayer {
     });
     if (mapViewPosition.scale != 1) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
-      (canvas as FlutterCanvas).uiCanvas!.restore();
+      (canvas as FlutterCanvas).uiCanvas.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
   }

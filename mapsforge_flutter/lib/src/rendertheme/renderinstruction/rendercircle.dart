@@ -16,13 +16,13 @@ import 'renderinstruction.dart';
  * Represents a round area on the map.
  */
 class RenderCircle extends RenderInstruction {
-  MapPaint? fill;
+  late MapPaint fill;
   final int level;
   double? radius;
   double? renderRadius;
   final Map<int, double> renderRadiusScaled;
   bool scaleRadius = false;
-  MapPaint? stroke;
+  late MapPaint stroke;
   final Map<int, MapPaint> strokes;
   double strokeWidth = 1;
 
@@ -31,12 +31,12 @@ class RenderCircle extends RenderInstruction {
         renderRadiusScaled = new Map(),
         super(graphicFactory, displayModel) {
     this.fill = graphicFactory.createPaint();
-    this.fill!.setColor(Color.TRANSPARENT);
-    this.fill!.setStyle(Style.FILL);
+    this.fill.setColor(Color.TRANSPARENT);
+    this.fill.setStyle(Style.FILL);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke!.setColor(Color.TRANSPARENT);
-    this.stroke!.setStyle(Style.STROKE);
+    this.stroke.setColor(Color.TRANSPARENT);
+    this.stroke.setStyle(Style.STROKE);
   }
 
   @override
@@ -52,11 +52,11 @@ class RenderCircle extends RenderInstruction {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE_RADIUS == name) {
         this.scaleRadius = value == "true";
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else {
@@ -68,7 +68,7 @@ class RenderCircle extends RenderInstruction {
 
     if (!this.scaleRadius) {
       this.renderRadius = this.radius;
-      this.stroke!.setStrokeWidth(this.strokeWidth);
+      this.stroke.setStrokeWidth(this.strokeWidth);
     } else {
       this.renderRadius = this.radius;
     }
@@ -91,7 +91,7 @@ class RenderCircle extends RenderInstruction {
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint!;
+    return paint;
   }
 
   @override

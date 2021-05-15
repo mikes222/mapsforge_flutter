@@ -123,8 +123,7 @@ class MapViewPosition {
   /// >1 means zoom-in.
   ///
   MapViewPosition.scale(MapViewPosition old, this.focalPoint, this.scale)
-      : assert(scale != null),
-        assert(scale > 0),
+      : assert(scale > 0),
         _latitude = old._latitude,
         _longitude = old._longitude,
         this.zoomLevel = old.zoomLevel,

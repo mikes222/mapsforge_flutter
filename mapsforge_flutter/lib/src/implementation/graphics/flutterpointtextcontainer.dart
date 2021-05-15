@@ -26,7 +26,7 @@ class FlutterPointTextContainer extends PointTextContainer {
 
   late ui.ParagraphBuilder backBuilder;
 
-  FlutterPointTextContainer(Mappoint xy, Display? display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
+  FlutterPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
       SymbolContainer? symbolContainer, Position? position, int maxTextWidth)
       : super(xy, display, priority, text, paintFront, paintBack, symbolContainer, position, maxTextWidth) {
     double boxWidth;
@@ -140,8 +140,8 @@ class FlutterPointTextContainer extends PointTextContainer {
         break;
     }
 
-    double adjustedX = (this.xy!.x - origin!.x) + boundary!.left;
-    double adjustedY = (this.xy!.y - origin.y) + textOffset + boundary!.top;
+    double adjustedX = (this.xy.x - origin!.x) + boundary!.left;
+    double adjustedY = (this.xy.y - origin.y) + textOffset + boundary!.top;
 
 //    _log.info("Adjusted is $adjustedX/$adjustedY and witdht is $textWidth for $text");
 //    Paint p = Paint();
@@ -156,7 +156,7 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(GraphicUtils.filterColor(color, filter));
 //      }
-      flutterCanvas!.drawParagraph(
+      flutterCanvas.drawParagraph(
           backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth!.toDouble())), Offset(adjustedX, adjustedY));
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(color);
@@ -166,7 +166,7 @@ class FlutterPointTextContainer extends PointTextContainer {
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(GraphicUtils.filterColor(color, filter));
 //    }
-    flutterCanvas!.drawParagraph(
+    flutterCanvas.drawParagraph(
         frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth!.toDouble())), Offset(adjustedX, adjustedY));
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(color);

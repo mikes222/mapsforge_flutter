@@ -41,7 +41,7 @@ class FlutterMapView extends StatefulWidget {
 class _FlutterMapState extends State<FlutterMapView> {
   static final _log = new Logger('_FlutterMapState');
 
-  TileLayerImpl? _tileLayer;
+  late TileLayerImpl _tileLayer;
 
   List<MarkerRenderer> _markerRenderer = [];
 
@@ -108,11 +108,11 @@ class _FlutterMapState extends State<FlutterMapView> {
 
     // then draw the map
     _widgets.add(
-      StreamBuilder<JobSet?>(
+      StreamBuilder<JobSet>(
         stream: _jobQueue!.observeJobResult,
-        builder: (BuildContext context, AsyncSnapshot<JobSet?> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<JobSet> snapshot) {
           //_log.info("Streambuilder called with ${snapshot.data}");
-          _tileLayer!.needsRepaint = true;
+          _tileLayer.needsRepaint = true;
           return CustomPaint(
             foregroundPainter: TileLayerPainter(_tileLayer, position!, widget.viewModel, snapshot.data),
             child: Container(),

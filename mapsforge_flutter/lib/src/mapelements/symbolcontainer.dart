@@ -50,8 +50,8 @@ class SymbolContainer extends MapElementContainer {
         bitmap: this.symbol,
         matrix: matrix,
         filter: filter,
-        left: this.xy!.x - origin!.x + boundary!.left,
-        top: this.xy!.y - origin.y + boundary!.top,
+        left: this.xy.x - origin!.x + boundary!.left,
+        top: this.xy.y - origin.y + boundary!.top,
         paint: paint);
   }
 

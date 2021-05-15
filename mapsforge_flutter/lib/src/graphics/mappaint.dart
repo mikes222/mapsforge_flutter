@@ -29,7 +29,7 @@ abstract class MapPaint {
 
   bool getAntiAlias();
 
-  void setBitmapShader(Bitmap? bitmap);
+  void setBitmapShader(Bitmap bitmap);
 
 //  void setBitmapShaderShift(Mappoint origin);
 
@@ -38,7 +38,7 @@ abstract class MapPaint {
   /**
    * The default value is {@link Color#BLACK}.
    */
-  void setColorFromNumber(int? color);
+  void setColorFromNumber(int color);
 
   /**
    * The default value is {@link Cap#ROUND}.
@@ -47,7 +47,7 @@ abstract class MapPaint {
 
   void setStrokeJoin(Join join);
 
-  void setStrokeWidth(double? strokeWidth);
+  void setStrokeWidth(double strokeWidth);
 
   /**
    * The default value is {@link Style#FILL}.

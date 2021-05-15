@@ -63,7 +63,7 @@ void main() {
         home: Scaffold(
           body: Center(
             child: FlutterMapView(
-              mapModel: mapModel!,
+              mapModel: mapModel,
               viewModel: viewModel,
             ),
           ),

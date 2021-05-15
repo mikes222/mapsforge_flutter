@@ -68,10 +68,10 @@ class LineString {
     double maxY = double.minPositive;
 
     for (LineSegment segment in this.segments) {
-      minX = min(minX, min(segment.start!.x, segment.end!.x));
-      minY = min(minY, min(segment.start!.y, segment.end!.y));
-      maxX = max(maxX, max(segment.start!.x, segment.end!.x));
-      maxY = max(maxY, max(segment.start!.y, segment.end!.y));
+      minX = min(minX, min(segment.start.x, segment.end.x));
+      minY = min(minY, min(segment.start.y, segment.end.y));
+      maxX = max(maxX, max(segment.start.x, segment.end.x));
+      maxY = max(maxY, max(segment.start.y, segment.end.y));
     }
     _bounds = Rectangle(minX, minY, maxX, maxY);
     return _bounds;

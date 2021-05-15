@@ -44,11 +44,9 @@ class FileSymbolCache extends SymbolCache {
   /// Creates a new FileSymbolCache. If the [relativePathPrefix] is not null the symbols will be loaded given by the [relativePathPrefix] first and if
   /// not found there the symbols will be loaded by the bundle.
   ///
-  FileSymbolCache(AssetBundle this.bundle, [this.relativePathPrefix]) : assert(bundle != null);
+  FileSymbolCache(AssetBundle this.bundle, [this.relativePathPrefix]);
 
-  FileSymbolCache.withRelativePathPrefix(String this.relativePathPrefix)
-      : assert(relativePathPrefix != null),
-        bundle = null;
+  FileSymbolCache.withRelativePathPrefix(String this.relativePathPrefix) : bundle = null;
 
   @override
   void dispose() {
@@ -66,10 +64,8 @@ class FileSymbolCache extends SymbolCache {
     if (bitmap != null) return bitmap;
 
     bitmap = await _createSymbol(src, width, height, percent);
-    if (bitmap != null) {
-      bitmap.incrementRefCount();
-      _cache.set(key, bitmap);
-    }
+    bitmap.incrementRefCount();
+    _cache.set(key, bitmap);
     return bitmap;
   }
 

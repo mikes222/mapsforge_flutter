@@ -36,7 +36,7 @@ abstract class RenderCallback {
  * @param maxTextWidth     maximum text width .
  * @param way              the way for the caption.
  */
-  void renderAreaCaption(final RenderContext renderContext, Display? display, int priority, String caption, double horizontalOffset,
+  void renderAreaCaption(final RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
       double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PolylineContainer way);
 
 /**
@@ -46,7 +46,7 @@ abstract class RenderCallback {
  * @param symbol
  */
   void renderAreaSymbol(
-      final RenderContext renderContext, Display? display, int priority, Bitmap? symbol, PolylineContainer way, MapPaint? symbolPaint);
+      final RenderContext renderContext, Display display, int priority, Bitmap? symbol, PolylineContainer way, MapPaint? symbolPaint);
 
 /**
  * Renders a point of interest caption with the given text.
@@ -61,7 +61,7 @@ abstract class RenderCallback {
  */
   void renderPointOfInterestCaption(
       final RenderContext renderContext,
-      Display? display,
+      Display display,
       int priority,
       String caption,
       double horizontalOffset,
@@ -91,7 +91,7 @@ abstract class RenderCallback {
  * @param symbol
  */
   void renderPointOfInterestSymbol(
-      final RenderContext renderContext, Display? display, int priority, Bitmap? symbol, PointOfInterest poi, MapPaint? symbolPaint);
+      final RenderContext renderContext, Display display, int priority, Bitmap? symbol, PointOfInterest poi, MapPaint? symbolPaint);
 
 /**
  * Renders a way with the given parameters.
@@ -114,7 +114,7 @@ abstract class RenderCallback {
  * @param repeatGap     distance between repetitions.
  * @param repeatStart
  */
-  void renderWaySymbol(final RenderContext renderContext, Display? display, int priority, Bitmap? symbol, double dy, bool alignCenter,
+  void renderWaySymbol(final RenderContext renderContext, Display display, int priority, Bitmap? symbol, double dy, bool alignCenter,
       bool repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way, MapPaint? symbolPaint);
 
 /**
@@ -126,6 +126,6 @@ abstract class RenderCallback {
  * @param fill          the paint to be used for rendering the text.
  * @param stroke
  */
-  void renderWayText(final RenderContext renderContext, Display? display, int priority, String text, double dy, MapPaint fill,
+  void renderWayText(final RenderContext renderContext, Display display, int priority, String text, double dy, MapPaint fill,
       MapPaint stroke, bool? repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way);
 }

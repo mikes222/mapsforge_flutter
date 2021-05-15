@@ -26,10 +26,10 @@ class Line extends RenderInstruction with BitmapMixin {
   final int level;
   final String? relativePathPrefix;
   Scale scale = Scale.STROKE;
-  MapPaint? stroke;
+  late MapPaint stroke;
   List<double>? strokeDasharray;
   late Map<int, MapPaint> strokes;
-  double? strokeWidth;
+  late double strokeWidth;
 
   Line(GraphicFactory graphicFactory, DisplayModel displayModel, String elementName, this.level, this.relativePathPrefix)
       : super(
@@ -39,11 +39,11 @@ class Line extends RenderInstruction with BitmapMixin {
     this.symbolCache = graphicFactory.symbolCache;
     strokeWidth = 1;
     this.stroke = graphicFactory.createPaint();
-    this.stroke!.setColor(Color.BLACK);
-    this.stroke!.setStyle(Style.STROKE);
-    this.stroke!.setStrokeCap(Cap.ROUND);
-    this.stroke!.setStrokeJoin(Join.ROUND);
-    this.stroke!.setStrokeWidth(strokeWidth);
+    this.stroke.setColor(Color.BLACK);
+    this.stroke.setStyle(Style.STROKE);
+    this.stroke.setStrokeCap(Cap.ROUND);
+    this.stroke.setStrokeJoin(Join.ROUND);
+    this.stroke.setStrokeWidth(strokeWidth);
     strokes = new Map();
     dyScaled = new Map();
     dy = 0;
@@ -63,17 +63,17 @@ class Line extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_DASHARRAY == name) {
         this.strokeDasharray = parseFloatArray(name, value);
         for (int f = 0; f < this.strokeDasharray!.length; ++f) {
           this.strokeDasharray![f] = this.strokeDasharray![f] * displayModel.getScaleFactor();
         }
-        this.stroke!.setStrokeDasharray(this.strokeDasharray);
+        this.stroke.setStrokeDasharray(this.strokeDasharray);
       } else if (RenderInstruction.STROKE_LINECAP == name) {
-        this.stroke!.setStrokeCap(Cap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        this.stroke.setStrokeCap(Cap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_LINEJOIN == name) {
-        this.stroke!.setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        this.stroke.setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
@@ -96,7 +96,7 @@ class Line extends RenderInstruction with BitmapMixin {
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint!;
+    return paint;
   }
 
   static List<double> parseFloatArray(String name, String dashString) {
@@ -130,22 +130,20 @@ class Line extends RenderInstruction with BitmapMixin {
     if (this.scale == Scale.NONE) {
       scaleFactor = 1;
     }
-    if (this.stroke != null) {
-      MapPaint paint = graphicFactory.createPaintFrom(stroke);
-      paint.setStrokeWidth(this.strokeWidth! * scaleFactor);
+    MapPaint paint = graphicFactory.createPaintFrom(stroke);
+    paint.setStrokeWidth(this.strokeWidth * scaleFactor);
 
-      if (this.scale == Scale.ALL || this.scale == Scale.STROKE) {
-        if (strokeDasharray != null) {
-          List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
-            return dash * scaleFactor;
-          }).toList();
-          paint.setStrokeDasharray(strokeDasharrayScaled);
-        }
+    if (this.scale == Scale.ALL || this.scale == Scale.STROKE) {
+      if (strokeDasharray != null) {
+        List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
+          return dash * scaleFactor;
+        }).toList();
+        paint.setStrokeDasharray(strokeDasharrayScaled);
       }
-
-      //paint.setStrokeDasharray(this.strokeDasharray);
-      strokes[zoomLevel] = paint;
     }
+
+    //paint.setStrokeDasharray(this.strokeDasharray);
+    strokes[zoomLevel] = paint;
     this.dyScaled[zoomLevel] = this.dy! * scaleFactor;
   }
 
@@ -157,10 +155,10 @@ class Line extends RenderInstruction with BitmapMixin {
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
     await initBitmap(graphicFactory);
-    if (stroke != null && bitmap != null) {
-      stroke!.setBitmapShader(bitmap);
+    if (bitmap != null) {
+      stroke.setBitmapShader(bitmap!);
       strokes.forEach((key, value) {
-        value.setBitmapShader(bitmap);
+        value.setBitmapShader(bitmap!);
       });
       //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
       //bitmap.incrementRefCount();
@@ -169,7 +167,7 @@ class Line extends RenderInstruction with BitmapMixin {
 
   @override
   void dispose() {
-    stroke?.dispose();
+    stroke.dispose();
     strokes.values.forEach((element) {
       element.dispose();
     });

@@ -22,7 +22,8 @@ class MarkerContext implements MarkerCallback {
 
   MarkerContext(this.flutterCanvas, this.graphicFactory, this.mapViewPosition);
 
-  void renderBitmap(Bitmap? bitmap, double? latitude, double? longitude, double offsetX, double offsetY, double? rotation, MapPaint? paint) {
+  void renderBitmap(
+      Bitmap? bitmap, double? latitude, double? longitude, double offsetX, double offsetY, double? rotation, MapPaint? paint) {
     double y = mapViewPosition.mercatorProjection!.latitudeToPixelY(latitude!);
     double x = mapViewPosition.mercatorProjection!.longitudeToPixelX(longitude!);
     FlutterMatrix? matrix;
@@ -51,7 +52,7 @@ class MarkerContext implements MarkerCallback {
   }
 
   @override
-  void renderPath(MapPath path, MapPaint? paint) {
+  void renderPath(MapPath path, MapPaint paint) {
     flutterCanvas.drawPath(path, paint);
   }
 

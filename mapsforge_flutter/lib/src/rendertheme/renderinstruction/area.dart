@@ -20,7 +20,7 @@ class Area extends RenderInstruction with BitmapMixin {
   MapPaint? fill;
   final int level;
   Scale scale = Scale.STROKE;
-  MapPaint? stroke;
+  late MapPaint stroke;
   late Map<int, MapPaint> strokes;
   late double strokeWidth;
 
@@ -32,9 +32,9 @@ class Area extends RenderInstruction with BitmapMixin {
     this.fill!.setStrokeCap(Cap.ROUND);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke!.setColor(Color.TRANSPARENT);
-    this.stroke!.setStyle(Style.STROKE);
-    this.stroke!.setStrokeCap(Cap.ROUND);
+    this.stroke.setColor(Color.TRANSPARENT);
+    this.stroke.setStyle(Style.STROKE);
+    this.stroke.setStrokeCap(Cap.ROUND);
 
     this.strokes = new Map();
     strokeWidth = 1;
@@ -54,7 +54,7 @@ class Area extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
@@ -81,7 +81,7 @@ class Area extends RenderInstruction with BitmapMixin {
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint!;
+    return paint;
   }
 
   @override
@@ -102,15 +102,13 @@ class Area extends RenderInstruction with BitmapMixin {
 
   @override
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
-    if (this.stroke != null) {
-      if (this.scale == Scale.NONE) {
-        return;
-      }
-      if (this.strokes[zoomLevel] != null) return;
-      MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
-      paint.setStrokeWidth(this.strokeWidth * scaleFactor);
-      this.strokes[zoomLevel] = paint;
+    if (this.scale == Scale.NONE) {
+      return;
     }
+    if (this.strokes[zoomLevel] != null) return;
+    MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
+    paint.setStrokeWidth(this.strokeWidth * scaleFactor);
+    this.strokes[zoomLevel] = paint;
   }
 
   @override
@@ -123,7 +121,7 @@ class Area extends RenderInstruction with BitmapMixin {
     await initBitmap(graphicFactory);
 
     if (fill != null && bitmap != null) {
-      fill!.setBitmapShader(bitmap);
+      fill!.setBitmapShader(bitmap!);
       //bitmap.incrementRefCount();
     }
 

@@ -86,7 +86,7 @@ class PolylineContainer implements ShapeContainer {
         List<Mappoint> mp1 = [];
         coordinatesRelativeToTile!.add(mp1);
         for (int j = 0; j < getCoordinatesAbsolute()[i].length; ++j) {
-          Mappoint mp2 = coordinatesAbsolute![i][j].offset(-tileOrigin!.x, -tileOrigin.y);
+          Mappoint mp2 = coordinatesAbsolute![i][j].offset(-tileOrigin.x, -tileOrigin.y);
           mp1.add(mp2);
         }
       }

@@ -159,7 +159,7 @@ class Tile {
   /// @return rectangle with the absolute coordinates.
   Rectangle getBoundaryAbsolute(double tileSize) {
     return new Rectangle(
-        getLeftUpper(tileSize)!.x, getLeftUpper(tileSize)!.y, getLeftUpper(tileSize)!.x + tileSize, getLeftUpper(tileSize)!.y + tileSize);
+        getLeftUpper(tileSize).x, getLeftUpper(tileSize).y, getLeftUpper(tileSize).x + tileSize, getLeftUpper(tileSize).y + tileSize);
   }
 
   /// Extend of this tile in relative (tile) coordinates.
@@ -174,11 +174,11 @@ class Tile {
    *
    * @return the top-left point
    */
-  Mappoint? getLeftUpper(double tileSize) {
+  Mappoint getLeftUpper(double tileSize) {
     if (_leftUpper == null) {
       _leftUpper = Mappoint(tileX * tileSize, tileY * tileSize);
     }
-    return this._leftUpper;
+    return this._leftUpper!;
   }
 
   /**

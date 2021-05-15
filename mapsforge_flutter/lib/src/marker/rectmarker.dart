@@ -46,7 +46,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     this.strokeDasharray,
     required this.minLatLon,
     required this.maxLatLon,
-  })  : assert(display != null),
+  })   : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
@@ -74,11 +74,11 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     await initBitmap(graphicFactory);
     if (fill == null && (fillColor != null || bitmap != null)) {
       this.fill = graphicFactory.createPaint();
-      if (fillColor != null) this.fill!.setColorFromNumber(fillColor);
+      if (fillColor != null) this.fill!.setColorFromNumber(fillColor!);
       this.fill!.setStyle(Style.FILL);
       this.fill!.setStrokeWidth(fillWidth);
       if (bitmap != null) {
-        fill!.setBitmapShader(bitmap);
+        fill!.setBitmapShader(bitmap!);
       }
       //this.stroke.setTextSize(fontSize);
     }
@@ -113,7 +113,8 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     MapRect mapRect = markerCallback.graphicFactory.createRect(
         markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(minLatLon.longitude!) -
             markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(maxLatLon.latitude!) - markerCallback.mapViewPosition.leftUpper!.y,
+        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(maxLatLon.latitude!) -
+            markerCallback.mapViewPosition.leftUpper!.y,
         markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(maxLatLon.longitude!) -
             markerCallback.mapViewPosition.leftUpper!.x,
         markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(minLatLon.latitude!) -

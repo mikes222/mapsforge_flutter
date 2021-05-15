@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 class TileLayerPainter extends ChangeNotifier implements CustomPainter {
-  final TileLayer? _tileLayer;
+  final TileLayer _tileLayer;
 
   final MapViewPosition position;
 
@@ -15,21 +15,19 @@ class TileLayerPainter extends ChangeNotifier implements CustomPainter {
 
   final JobSet? jobSet;
 
-  TileLayerPainter(this._tileLayer, this.position, this.viewModel, this.jobSet)
-      : assert(position != null),
-        assert(viewModel != null);
+  TileLayerPainter(this._tileLayer, this.position, this.viewModel, this.jobSet);
 
   @override
   void paint(Canvas canvas, Size size) {
     viewModel.setViewDimension(size.width, size.height);
 
-    _tileLayer!.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet);
+    _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet);
   }
 
   @override
   bool shouldRepaint(TileLayerPainter oldDelegate) {
     if (oldDelegate.position != position) return true;
-    if (_tileLayer!.needsRepaint) return true;
+    if (_tileLayer.needsRepaint) return true;
     return false;
   }
 

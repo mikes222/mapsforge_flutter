@@ -24,7 +24,7 @@ class JobQueue {
   final DisplayModel displayModel;
   final JobRenderer jobRenderer;
 
-  Subject<JobSet?> _injectJobResult = PublishSubject();
+  Subject<JobSet> _injectJobResult = PublishSubject();
   ListQueue<Job> _listQueue = ListQueue();
 
   JobSet? _currentJobSet;
@@ -40,7 +40,7 @@ class JobQueue {
   FlutterTileBitmap? _missingBitmap;
 
   // we have only one thread, so limit the number of concurrent renderings for now
-  final List<Lock?> _lock = [Lock()];
+  final List<Lock> _lock = [Lock()];
 
   int _roundRobin = 0;
 
@@ -63,12 +63,12 @@ class JobQueue {
   ///
   /// Called whenever a new bitmap is created
   ///
-  Stream<JobSet?> get observeJobResult => _injectJobResult.stream;
+  Stream<JobSet> get observeJobResult => _injectJobResult.stream;
 
   TileBitmap? getMissingBitmap(double tileSize) {
-    if (_missingBitmap != null) return _missingBitmap;
-    jobRenderer.createMissingBitmap(tileSize).then((value) {
-      _missingBitmap = value as FlutterTileBitmap?;
+    if (_missingBitmap != null) return _missingBitmap!;
+    jobRenderer.createMissingBitmap(tileSize).then((TileBitmap value) {
+      _missingBitmap = value as FlutterTileBitmap;
     });
     return _missingBitmap;
   }
@@ -108,7 +108,7 @@ class JobQueue {
     //_log.info("ListQueue has ${_listQueue.length} elements");
     if (_listQueue.isEmpty) return;
     // let the job in the queue until it is finished, so we prevent adding the job to the queue again
-    _lock[_roundRobin++ % _lock.length]!.synchronized(() async {
+    _lock[_roundRobin++ % _lock.length].synchronized(() async {
       // recheck, it may have changed in the meantime
       if (_listQueue.isEmpty) return;
       Job nextJob = _listQueue.first;
@@ -129,7 +129,7 @@ class JobQueue {
     TileBitmap? tileBitmap = await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       _currentJobSet!.removeJob(job, tileBitmap);
-      _injectJobResult.add(_currentJobSet);
+      _injectJobResult.add(_currentJobSet!);
       _startNextJob(jobSet);
       return;
     }
@@ -141,16 +141,15 @@ class JobQueue {
     if (tileBitmap != null) {
       _currentJobSet!.removeJob(job, tileBitmap);
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
-      _injectJobResult.add(_currentJobSet);
+      _injectJobResult.add(_currentJobSet!);
       _startNextJob(jobSet);
       return;
     }
     tileBitmap = await renderDirect(IsolateParam(job, jobRenderer));
-    assert(tileBitmap != null);
     tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
     tileBitmapCache?.addTileBitmap(job.tile, tileBitmap);
     _currentJobSet!.removeJob(job, tileBitmap);
-    _injectJobResult.add(_currentJobSet);
+    _injectJobResult.add(_currentJobSet!);
     //_log.info("Job executed with bitmap");
     _startNextJob(jobSet);
   }
@@ -159,7 +158,7 @@ class JobQueue {
     TileBitmap? tileBitmap = await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       _currentJobSet!.removeJob(job, tileBitmap);
-      _injectJobResult.add(_currentJobSet);
+      _injectJobResult.add(_currentJobSet!);
       _startNextJob(jobSet);
       return;
     }

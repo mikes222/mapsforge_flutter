@@ -16,9 +16,7 @@ class FlutterGestureDetector extends StatefulWidget {
   final Widget child;
 
   const FlutterGestureDetector({Key? key, required this.viewModel, required this.child})
-      : assert(viewModel != null),
-        assert(child != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {

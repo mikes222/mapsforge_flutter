@@ -128,21 +128,21 @@ class CanvasRasterer {
   //   canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
   // }
 
-  void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint?>?> coordinates, double dy) {
+  void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
     this.path.clear();
 
-    for (List<Mappoint?>? innerList in coordinates) {
-      List<Mappoint?>? points;
+    for (List<Mappoint> innerList in coordinates) {
+      List<Mappoint> points;
       if (dy != 0) {
-        points = RendererUtils.parallelPath(innerList!, dy);
+        points = RendererUtils.parallelPath(innerList, dy);
       } else {
         points = innerList;
       }
 
-      Mappoint point = points![0]!;
+      Mappoint point = points[0];
       this.path.moveTo(point.x, point.y);
       for (int i = 1; i < points.length; i++) {
-        point = points[i]!;
+        point = points[i];
         this.path.lineTo(point.x, point.y);
       }
     }

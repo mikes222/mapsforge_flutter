@@ -8,43 +8,49 @@ class DatastoreReadResult {
   bool isWater = false;
 
   /// The read POIs.
-  List<PointOfInterest>? pointOfInterests;
+  late List<PointOfInterest> pointOfInterests;
 
   /// The read ways.
-  List<Way>? ways;
+  late List<Way> ways;
 
-  DatastoreReadResult({this.pointOfInterests, this.ways}) {
-    if (pointOfInterests == null) pointOfInterests = [];
-    if (ways == null) ways = [];
+  DatastoreReadResult({List<PointOfInterest>? pointOfInterests, List<Way>? ways}) {
+    if (pointOfInterests == null) {
+      this.pointOfInterests = [];
+    } else {
+      this.pointOfInterests = pointOfInterests;
+    }
+    if (ways == null) {
+      this.ways = [];
+    } else {
+      this.ways = ways;
+    }
   }
 
   void add(PoiWayBundle poiWayBundle) {
-    this.pointOfInterests!.addAll(poiWayBundle.pois);
-    this.ways!.addAll(poiWayBundle.ways!);
+    this.pointOfInterests.addAll(poiWayBundle.pois);
+    this.ways.addAll(poiWayBundle.ways);
   }
 
-  /**
-   * Adds other MapReadResult by combining pois and ways. Optionally, deduplication can
-   * be requested (much more expensive).
-   *
-   * @param other       the MapReadResult to add to this.
-   * @param deduplicate true if check for duplicates is required.
-   */
-  void addDeduplicate(DatastoreReadResult? other, bool deduplicate) {
+  /// Adds other MapReadResult by combining pois and ways. Optionally, deduplication can
+  /// be requested (much more expensive).
+  ///
+  /// @param other       the MapReadResult to add to this.
+  /// @param deduplicate true if check for duplicates is required.
+  void addDeduplicate(DatastoreReadResult other, bool deduplicate) {
     if (deduplicate) {
-      for (PointOfInterest poi in other!.pointOfInterests!) {
-        if (!this.pointOfInterests!.contains(poi)) {
-          this.pointOfInterests!.add(poi);
+      for (PointOfInterest poi in other.pointOfInterests) {
+        if (!this.pointOfInterests.contains(poi)) {
+          this.pointOfInterests.add(poi);
         }
       }
-      for (Way way in other.ways!) {
-        if (!this.ways!.contains(way)) {
-          this.ways!.add(way);
+      for (Way way in other.ways) {
+        if (!this.ways.contains(way)) {
+          this.ways.add(way);
         }
       }
     } else {
-      this.pointOfInterests!.addAll(other!.pointOfInterests!);
-      this.ways!.addAll(other.ways!);
+      this.pointOfInterests.addAll(other.pointOfInterests);
+      this.ways.addAll(other.ways);
     }
   }
 

@@ -20,8 +20,6 @@ class JobSet {
   }
 
   void removeJob(Job job, TileBitmap tileBitmap) {
-    assert(tileBitmap != null);
-    assert(job != null);
     jobs.remove(job);
     tileBitmap.incrementRefCount();
     TileBitmap? old = _bitmaps[job.tile];

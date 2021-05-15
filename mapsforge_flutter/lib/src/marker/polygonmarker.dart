@@ -88,7 +88,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
     super.initResources(graphicFactory);
     if (fill == null && fillColor != null) {
       this.fill = graphicFactory.createPaint();
-      this.fill!.setColorFromNumber(fillColor);
+      this.fill!.setColorFromNumber(fillColor!);
       this.fill!.setStyle(Style.FILL);
       this.fill!.setStrokeWidth(fillWidth);
       //this.stroke.setTextSize(fontSize);
@@ -105,7 +105,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
         this._bitmap = await symbolCache!.getSymbol(src, width, height, percent);
         if (_bitmap != null) {
           _bitmapInvalid = false;
-          fill!.setBitmapShader(_bitmap);
+          fill!.setBitmapShader(_bitmap!);
           _bitmap!.incrementRefCount();
         }
       } catch (ioException, stacktrace) {
@@ -144,8 +144,8 @@ class PolygonMarker<T> extends BasicMarker<T> {
     MapPath mapPath = markerCallback.graphicFactory.createPath();
 
     path.forEach((latLong) {
-      double y =
-          markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude!) - markerCallback.mapViewPosition.leftUpper!.y;
+      double y = markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude!) -
+          markerCallback.mapViewPosition.leftUpper!.y;
       double x = markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong.longitude!) -
           markerCallback.mapViewPosition.leftUpper!.x;
 
@@ -155,8 +155,8 @@ class PolygonMarker<T> extends BasicMarker<T> {
         mapPath.lineTo(x, y);
     });
     mapPath.close();
-    if (fill != null) markerCallback.renderPath(mapPath, fill);
-    if (stroke != null) markerCallback.renderPath(mapPath, stroke);
+    if (fill != null) markerCallback.renderPath(mapPath, fill!);
+    if (stroke != null) markerCallback.renderPath(mapPath, stroke!);
   }
 
   @override

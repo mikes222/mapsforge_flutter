@@ -135,7 +135,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   Future<DatastoreReadResult> _readLabelsDedup(Tile tile, bool deduplicate) async {
-    DatastoreReadResult mapReadResult = new DatastoreReadResult();
+    DatastoreReadResult mapReadResult = DatastoreReadResult();
     for (MapDataStore mdb in mapDatabases) {
       if (mdb.supportsTile(tile)) {
         //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");

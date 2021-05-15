@@ -70,10 +70,12 @@ class ShowmapState extends State<Showmap> {
             RaisedButton(
               child: Text("run around"),
               onPressed: () {
-                if (timer != null) return;
+                if (timer != null || viewModel.mapViewPosition == null) return;
                 timer = Timer.periodic(Duration(seconds: 1), (timer) {
-                  viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
-                  viewModel.setLeftUpper(viewModel.mapViewPosition!.leftUpper!.x + 10, viewModel.mapViewPosition!.leftUpper!.y + 10);
+                  if (viewModel.mapViewPosition != null) {
+                    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
+                    viewModel.setLeftUpper(viewModel.mapViewPosition!.leftUpper!.x + 10, viewModel.mapViewPosition!.leftUpper!.y + 10);
+                  }
                 });
               },
             ),

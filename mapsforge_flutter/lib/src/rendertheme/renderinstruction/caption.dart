@@ -29,17 +29,17 @@ class Caption extends RenderInstruction {
   static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
-  Display? display;
+  Display display = Display.IFSPACE;
   double dy = 0;
   final Map<int, double> dyScaled;
-  MapPaint? fill;
+  late MapPaint fill;
   final Map<int, MapPaint> fills;
   double fontSize = 10;
   late double gap;
   final int maxTextWidth;
   Position? position;
   int priority = 0;
-  MapPaint? stroke;
+  late MapPaint stroke;
   final Map<int, MapPaint> strokes;
   String? symbolId;
   final Map<String, RenderSymbol> symbols;
@@ -53,14 +53,12 @@ class Caption extends RenderInstruction {
         maxTextWidth = displayModel.getMaxTextWidth(),
         super(graphicFactory, displayModel) {
     this.fill = graphicFactory.createPaint();
-    this.fill!.setColor(Color.BLACK);
-    this.fill!.setStyle(Style.FILL);
+    this.fill.setColor(Color.BLACK);
+    this.fill.setStyle(Style.FILL);
 
     this.stroke = graphicFactory.createPaint();
-    this.stroke!.setColor(Color.BLACK);
-    this.stroke!.setStyle(Style.STROKE);
-
-    this.display = Display.IFSPACE;
+    this.stroke.setColor(Color.BLACK);
+    this.stroke.setStyle(Style.STROKE);
 
     this.gap = DEFAULT_GAP * displayModel.getScaleFactor();
   }
@@ -114,7 +112,7 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
@@ -126,9 +124,9 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke!.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
+        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {
@@ -136,8 +134,8 @@ class Caption extends RenderInstruction {
       }
     });
 
-    this.fill!.setTypeface(fontFamily, fontStyle);
-    this.stroke!.setTypeface(fontFamily, fontStyle);
+    this.fill.setTypeface(fontFamily, fontStyle);
+    this.stroke.setTypeface(fontFamily, fontStyle);
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
 
@@ -185,7 +183,7 @@ class Caption extends RenderInstruction {
     if (paint == null) {
       paint = this.fill;
     }
-    return paint!;
+    return paint;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
@@ -193,7 +191,7 @@ class Caption extends RenderInstruction {
     if (paint == null) {
       paint = this.stroke;
     }
-    return paint!;
+    return paint;
   }
 
   @override

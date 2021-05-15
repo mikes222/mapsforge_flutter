@@ -115,9 +115,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       return null;
     }
     if (diff > 100 && showTiming)
-      _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests!.length} pois and ${mapReadResult.ways!.length} ways");
-    if ((mapReadResult.ways?.length ?? 0) > 100000) {
-      _log.warning("Many ways (${mapReadResult.ways!.length}) in this readResult, consider shrinking your mapfile.");
+      _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests.length} pois and ${mapReadResult.ways.length} ways");
+    if ((mapReadResult.ways.length) > 100000) {
+      _log.warning("Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
     await _processReadMapData(renderContext, mapReadResult);
     diff = DateTime.now().millisecondsSinceEpoch - time;
@@ -161,11 +161,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   Future<void> _processReadMapData(final RenderContext renderContext, DatastoreReadResult mapReadResult) async {
-    for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests!) {
+    for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
       await _renderPointOfInterest(renderContext, pointOfInterest);
     }
 
-    for (Way way in mapReadResult.ways!) {
+    for (Way way in mapReadResult.ways) {
       await _renderWay(renderContext, new PolylineContainer(way, renderContext.job.tile, renderContext.job.tile));
     }
 
@@ -194,7 +194,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tileSize);
     Mappoint? tileOrigin = renderContext.job.tile.getLeftUpper(renderContext.job.tileSize);
     for (int i = 0; i < coordinates.length; i++) {
-      coordinates[i] = coordinates[i].offset(tileOrigin!.x, tileOrigin.y);
+      coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
     }
     PolylineContainer way =
         new PolylineContainer.fromList(coordinates, renderContext.job.tile, renderContext.job.tile, [TAG_NATURAL_WATER]);
@@ -218,7 +218,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderAreaCaption(RenderContext renderContext, Display? display, int priority, String caption, double horizontalOffset,
+  void renderAreaCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
       double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PolylineContainer way) {
     if (renderLabels) {
       Mappoint centerPoint = way.getCenterAbsolute()!.offset(horizontalOffset, verticalOffset);
@@ -232,7 +232,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderAreaSymbol(
-      RenderContext renderContext, Display? display, int priority, Bitmap? symbol, PolylineContainer way, MapPaint? symbolPaint) {
+      RenderContext renderContext, Display display, int priority, Bitmap? symbol, PolylineContainer way, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       Mappoint? centerPosition = way.getCenterAbsolute();
       renderContext.labels.add(new SymbolContainer(centerPosition, display, priority, symbol, paint: symbolPaint));
@@ -240,7 +240,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderPointOfInterestCaption(RenderContext renderContext, Display? display, int priority, String caption, double horizontalOffset,
+  void renderPointOfInterestCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
       double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PointOfInterest poi) {
     if (renderLabels) {
       //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
@@ -267,7 +267,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderPointOfInterestSymbol(
-      RenderContext renderContext, Display? display, int priority, Bitmap? symbol, PointOfInterest poi, MapPaint? symbolPaint) {
+      RenderContext renderContext, Display display, int priority, Bitmap? symbol, PointOfInterest poi, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       Mappoint poiPosition = renderContext.mercatorProjection!.getPixel(poi.position);
       renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint, alignCenter: true));
@@ -280,8 +280,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderWaySymbol(RenderContext renderContext, Display? display, int priority, Bitmap? symbol, double dy, bool alignCenter,
-      bool repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way, MapPaint? symbolPaint) {
+  void renderWaySymbol(RenderContext renderContext, Display display, int priority, Bitmap? symbol, double dy, bool alignCenter, bool repeat,
+      double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       WayDecorator.renderSymbol(symbol, display, priority, dy, alignCenter, repeat, repeatGap!.toInt(), repeatStart!.toInt(), rotate,
           way.getCoordinatesAbsolute(), renderContext.labels, symbolPaint);
@@ -289,7 +289,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderWayText(RenderContext renderContext, Display? display, int priority, String text, double dy, MapPaint fill, MapPaint stroke,
+  void renderWayText(RenderContext renderContext, Display display, int priority, String text, double dy, MapPaint fill, MapPaint stroke,
       bool? repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way) {
     if (renderLabels) {
       WayDecorator.renderText(graphicFactory, way.getUpperLeft(), way.getLowerRight(), text, display, priority, dy, fill, stroke, repeat,

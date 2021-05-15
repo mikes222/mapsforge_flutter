@@ -19,21 +19,14 @@ void main() {
     MemoryTileBitmapCache cache = MemoryTileBitmapCache();
 
     await tester.runAsync(() async {
-      ResourceBitmap resourceBitmap = (await (symbolCache.getSymbol("arrow.png", 0, 0, 0)))!;
-      // ByteData content = await bundle.load("arrow.png");
-      // assert(content != null);
-      //
-      // var codec = await ui.instantiateImageCodec(content.buffer.asUint8List());
-      // // add additional checking for number of frames etc here
-      // var frame = await codec.getNextFrame();
-      // ui.Image img = frame.image;
-
+      ResourceBitmap? resourceBitmap = await (symbolCache.getSymbol("arrow.png", 0, 0, 0));
+      expect(resourceBitmap, isNotNull);
       TileBitmap bitmap = FlutterTileBitmap((resourceBitmap as FlutterResourceBitmap).bitmap);
       Tile tile = Tile(0, 0, 0, 0);
       cache.addTileBitmap(tile, bitmap);
 
       TileBitmap? result = await cache.getTileBitmapAsync(tile);
-      assert(result == bitmap);
+      expect(result, bitmap);
       cache.purgeAll();
     });
   });

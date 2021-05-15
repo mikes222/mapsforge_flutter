@@ -9,10 +9,7 @@ class Job {
   final Tile tile;
   final double tileSize;
 
-  Job._(this.tile, this.hasAlpha, this.textScale, this.tileSize)
-      : assert(tile != null),
-        assert(hasAlpha != null),
-        assert(tileSize != null && tileSize > 0);
+  Job._(this.tile, this.hasAlpha, this.textScale, this.tileSize) : assert(tileSize > 0);
 
   factory Job(Tile tile, bool alpha, double scaleFactor, double tileSize) {
     Job job = Job._(tile, alpha, scaleFactor, tileSize);

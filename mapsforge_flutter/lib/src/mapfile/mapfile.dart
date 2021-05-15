@@ -456,7 +456,7 @@ class MapFile extends MapDataStore {
     return true;
   }
 
-  Future<DatastoreReadResult?> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters,
+  Future<DatastoreReadResult> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters,
       SubFileParameter subFileParameter, BoundingBox boundingBox, Selector selector) async {
     assert(_fileSize != null);
     assert(queryParameters.fromBlockX != null);
@@ -488,7 +488,7 @@ class MapFile extends MapDataStore {
         if (currentBlockPointer < 1 || currentBlockPointer > subFileParameter.subFileSize!) {
           _log.warning("invalid current block pointer: $currentBlockPointer");
           _log.warning("subFileSize: ${subFileParameter.subFileSize}");
-          return null;
+          return mapFileReadResult;
         }
 
         int? nextBlockPointer;
@@ -503,7 +503,7 @@ class MapFile extends MapDataStore {
           if (nextBlockPointer > subFileParameter.subFileSize!) {
             _log.warning("invalid next block pointer: $nextBlockPointer");
             _log.warning("sub-file size: ${subFileParameter.subFileSize}");
-            return null;
+            return mapFileReadResult;
           }
         }
 
@@ -511,7 +511,7 @@ class MapFile extends MapDataStore {
         int currentBlockSize = (nextBlockPointer! - currentBlockPointer);
         if (currentBlockSize < 0) {
           _log.warning("current block size must not be negative: $currentBlockSize");
-          return null;
+          return mapFileReadResult;
         } else if (currentBlockSize == 0) {
           // the current block is empty, continue with the next block
           continue;
@@ -521,7 +521,7 @@ class MapFile extends MapDataStore {
           continue;
         } else if (currentBlockPointer + currentBlockSize > this._fileSize!) {
           _log.warning("current block larger than file size: $currentBlockSize");
-          return null;
+          return mapFileReadResult;
         }
 
         // _log.info(

@@ -20,7 +20,7 @@ abstract class PointTextContainer extends MapElementContainer {
    * Create a new point container, that holds the x-y coordinates of a point, a text variable, two paint objects, and
    * a reference on a symbolContainer, if the text is connected with a POI.
    */
-  PointTextContainer(Mappoint point, Display? display, int priority, this.text, this.paintFront, this.paintBack, this.symbolContainer,
+  PointTextContainer(Mappoint point, Display display, int priority, this.text, this.paintFront, this.paintBack, this.symbolContainer,
       this.position, this.maxTextWidth)
       : super(point, display, priority) {
     if (paintBack != null) {
@@ -42,7 +42,7 @@ abstract class PointTextContainer extends MapElementContainer {
       return false;
     }
     PointTextContainer ptc = other;
-    if (this.text == (ptc.text) && this.xy!.distance(ptc.xy!) < 200) {
+    if (this.text == (ptc.text) && this.xy.distance(ptc.xy) < 200) {
       return true;
     }
     return false;

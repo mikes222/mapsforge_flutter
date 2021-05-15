@@ -42,7 +42,7 @@ class FlutterPaint implements MapPaint {
     _fontFamily = other._fontFamily;
     _strokeDasharray = other._strokeDasharray;
     if (other._shaderBitmap != null) {
-      setBitmapShader(other._shaderBitmap);
+      setBitmapShader(other._shaderBitmap!);
     }
   }
 
@@ -101,8 +101,8 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setStrokeWidth(double? strokeWidth) {
-    paint.strokeWidth = strokeWidth!;
+  void setStrokeWidth(double strokeWidth) {
+    paint.strokeWidth = strokeWidth;
   }
 
   @override
@@ -118,11 +118,10 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setBitmapShader(Bitmap? bitmap) {
-    assert(bitmap != null);
+  void setBitmapShader(Bitmap bitmap) {
     if (_shaderBitmap != null) _shaderBitmap!.decrementRefCount();
     _shaderBitmap = bitmap as FlutterBitmap?;
-    bitmap!.incrementRefCount();
+    bitmap.incrementRefCount();
     ui.Image img = _shaderBitmap!.bitmap;
 
     // final double devicePixelRatio = ui.window.devicePixelRatio;
@@ -173,8 +172,6 @@ class FlutterPaint implements MapPaint {
 
   @override
   void setTypeface(MapFontFamily fontFamily, MapFontStyle fontStyle) {
-    assert(fontFamily != null);
-    assert(fontStyle != null);
     _fontStyle = fontStyle;
     _fontFamily = fontFamily;
   }

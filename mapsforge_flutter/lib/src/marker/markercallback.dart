@@ -11,7 +11,7 @@ abstract class MarkerCallback {
 
   void renderText(String? caption, ILatLong? latLong, double offsetX, double offsetY, MapPaint? stroke);
 
-  void renderPath(MapPath path, MapPaint? paint);
+  void renderPath(MapPath path, MapPaint paint);
 
   void renderRect(MapRect rect, MapPaint? paint);
 

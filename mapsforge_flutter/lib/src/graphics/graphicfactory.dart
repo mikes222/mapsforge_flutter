@@ -15,7 +15,7 @@ import 'matrix.dart';
 abstract class GraphicFactory {
   final SymbolCache symbolCache;
 
-  GraphicFactory(this.symbolCache) : assert(symbolCache != null);
+  GraphicFactory(this.symbolCache);
 
   void dispose() {
     symbolCache.dispose();
@@ -40,13 +40,13 @@ abstract class GraphicFactory {
 
   MapPaint createPaint();
 
-  MapPaint createPaintFrom(MapPaint? from);
+  MapPaint createPaintFrom(MapPaint from);
 
   MapPath createPath();
 
   MapRect createRect(double left, double top, double right, double bottom);
 
-  PointTextContainer createPointTextContainer(Mappoint xy, Display? display, int priority, String text, MapPaint paintFront,
+  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
       MapPaint paintBack, SymbolContainer? symbolContainer, Position? position, int maxTextWidth);
 
 //  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);

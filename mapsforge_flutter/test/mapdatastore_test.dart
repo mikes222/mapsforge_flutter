@@ -50,7 +50,7 @@ main() async {
 
   int j = 0; //Iterator for ways
   //print each way with its key and value in the area defined by upperLeft and lowerRight
-  mapReadResult!.ways!.forEach((way) {
+  mapReadResult!.ways.forEach((way) {
     j++;
     print("Way " + j.toString());
     //just print tags of a way
@@ -69,14 +69,14 @@ main() async {
   bool indoorDetector() {
     bool indoorDataDetector = false;
     //POI's
-    mapReadResult!.pointOfInterests!.forEach((poi) {
+    mapReadResult!.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == "indoor") indoorPois = true;
       });
     });
 
     //Ways
-    mapReadResult.ways!.forEach((way) {
+    mapReadResult.ways.forEach((way) {
       way.tags.forEach((tag) {
         if (tag.key == "indoor") indoorWays = true;
       });
@@ -90,13 +90,13 @@ main() async {
   bool levelDetector() {
     bool levelDetector = false;
     //POI's
-    mapReadResult!.pointOfInterests!.forEach((poi) {
+    mapReadResult!.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == "level") levelDetector = true;
       });
     });
     //Ways
-    mapReadResult.ways!.forEach((way) {
+    mapReadResult.ways.forEach((way) {
       way.tags.forEach((tag) {
         if (tag.key == "level") levelDetector = true;
       });
@@ -108,14 +108,14 @@ main() async {
   bool objectDetected(String tagname) {
     bool objectDetector = false;
     //POI's
-    mapReadResult!.pointOfInterests!.forEach((poi) {
+    mapReadResult!.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == tagname || tag.value == tagname) objectDetector = true; //stop search, if tag was found
         //return objectDetector;
       });
     });
     //Ways
-    mapReadResult.ways!.forEach((way) {
+    mapReadResult.ways.forEach((way) {
       way.tags.forEach((tag) {
         if (tag.key == tagname || tag.value == tagname) objectDetector = true;
         //return objectDetector; //stop search, if tag was found

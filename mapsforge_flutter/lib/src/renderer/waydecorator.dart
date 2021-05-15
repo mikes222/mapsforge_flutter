@@ -121,7 +121,7 @@ class WayDecorator {
       Tile upperLeft,
       Tile lowerRight,
       String text,
-      Display? display,
+      Display display,
       int priority,
       double dy,
       MapPaint fill,
@@ -130,22 +130,20 @@ class WayDecorator {
       double repeatGap,
       double repeatStart,
       bool? rotate,
-      List<List<Mappoint>?> coordinates,
+      List<List<Mappoint>> coordinates,
       List<MapElementContainer> currentLabels) {
-    assert(repeatStart != null);
-    assert(repeatGap != null);
     if (coordinates.length == 0) {
       return;
     }
 
-    List<Mappoint?>? c;
+    List<Mappoint>? c;
     if (dy == 0) {
       c = coordinates[0];
     } else {
-      c = RendererUtils.parallelPath(coordinates[0]!, dy);
+      c = RendererUtils.parallelPath(coordinates[0], dy);
     }
 
-    if (c!.length < 2) {
+    if (c.length < 2) {
       return;
     }
 
