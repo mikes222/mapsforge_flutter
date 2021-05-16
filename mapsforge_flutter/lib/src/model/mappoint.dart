@@ -43,8 +43,6 @@ class Mappoint implements Comparable<Mappoint> {
   int get hashCode => x.hashCode ^ y.hashCode;
 
   Mappoint offset(double dx, double dy) {
-    assert(dx != null);
-    assert(dy != null);
     if (0 == dx && 0 == dy) {
       return this;
     }

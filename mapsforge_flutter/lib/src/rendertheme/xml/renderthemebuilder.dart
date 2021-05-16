@@ -30,8 +30,8 @@ class RenderThemeBuilder {
 
   final GraphicFactory graphicFactory;
   final DisplayModel displayModel;
-  double? baseStrokeWidth;
-  double? baseTextSize;
+  late double baseStrokeWidth;
+  late double baseTextSize;
   bool? hasBackgroundOutside;
   int? mapBackground;
   int? mapBackgroundOutside;
@@ -40,9 +40,7 @@ class RenderThemeBuilder {
   int level = 0;
   List<RenderInstruction> initPendings = [];
 
-  RenderThemeBuilder(this.graphicFactory, this.displayModel)
-      : assert(graphicFactory != null),
-        assert(displayModel != null) {
+  RenderThemeBuilder(this.graphicFactory, this.displayModel) {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
@@ -106,6 +104,8 @@ class RenderThemeBuilder {
           break;
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
+          break;
+        case XmlNodeType.DECLARATION:
           break;
       }
     }
@@ -223,6 +223,8 @@ class RenderThemeBuilder {
           break;
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
+          break;
+        case XmlNodeType.DECLARATION:
           break;
       }
     }

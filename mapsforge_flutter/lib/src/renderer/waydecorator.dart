@@ -17,8 +17,8 @@ class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 45;
 
   static void renderSymbol(
-      Bitmap? symbolBitmap,
-      Display? display,
+      Bitmap symbolBitmap,
+      Display display,
       int priority,
       double dy,
       bool alignCenter,
@@ -153,10 +153,10 @@ class WayDecorator {
       path.segments.add(segment);
     }
 
-    int textWidth = (stroke == null) ? fill.getTextWidth(text) : stroke.getTextWidth(text);
-    int textHeight = (stroke == null) ? fill.getTextHeight(text) : stroke.getTextHeight(text);
+    int textWidth = stroke.getTextWidth(text);
+    int textHeight = stroke.getTextHeight(text);
 
-    double pathLength = path.length()!;
+    double pathLength = path.length();
 
     for (double pos = repeatStart; pos + textWidth < pathLength; pos += repeatGap + textWidth) {
       LineString linePart = path.extractPart(pos, pos + textWidth);

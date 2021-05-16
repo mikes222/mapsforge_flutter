@@ -71,7 +71,7 @@ class DisplayModel {
 
   DisplayModel({
     this.maxZoomLevel = 25,
-  }) : assert(maxZoomLevel != null && maxZoomLevel < 65536 && maxZoomLevel > 0) {
+  }) : assert(maxZoomLevel < 65536 && maxZoomLevel > 0) {
     this._setTileSize();
   }
 

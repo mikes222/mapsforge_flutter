@@ -11,28 +11,26 @@ import 'mapelementcontainer.dart';
 
 class SymbolContainer extends MapElementContainer {
   final bool alignCenter;
-  final Bitmap? symbol;
+  final Bitmap symbol;
   final double? theta;
   final MapPaint paint;
 
   SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = true, required this.paint})
-      : assert(paint != null),
-        super(point, display, priority) {
-    assert(symbol != null);
+      : super(point, display, priority) {
     if (alignCenter) {
-      double halfWidth = this.symbol!.getWidth() / 2;
-      double halfHeight = this.symbol!.getHeight() / 2;
+      double halfWidth = this.symbol.getWidth() / 2;
+      double halfHeight = this.symbol.getHeight() / 2;
       this.boundary = new Rectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
     } else {
-      this.boundary = new Rectangle(0, 0, this.symbol!.getWidth().toDouble(), this.symbol!.getHeight().toDouble());
+      this.boundary = new Rectangle(0, 0, this.symbol.getWidth().toDouble(), this.symbol.getHeight().toDouble());
     }
 
-    this.symbol!.incrementRefCount();
+    this.symbol.incrementRefCount();
   }
 
   @mustCallSuper
   dispose() {
-    symbol!.decrementRefCount();
+    symbol.decrementRefCount();
   }
 
   @override

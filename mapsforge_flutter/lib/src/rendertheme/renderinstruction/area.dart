@@ -17,7 +17,7 @@ import 'renderinstruction.dart';
  * Represents a closed polygon on the map.
  */
 class Area extends RenderInstruction with BitmapMixin {
-  MapPaint? fill;
+  late MapPaint fill;
   final int level;
   Scale scale = Scale.STROKE;
   late MapPaint stroke;
@@ -27,9 +27,9 @@ class Area extends RenderInstruction with BitmapMixin {
   Area(graphicFactory, displayModel, String elementName, this.level) : super(graphicFactory, displayModel) {
     this.symbolCache = graphicFactory.symbolCache;
     this.fill = graphicFactory.createPaint();
-    this.fill!.setColor(Color.TRANSPARENT);
-    this.fill!.setStyle(Style.FILL);
-    this.fill!.setStrokeCap(Cap.ROUND);
+    this.fill.setColor(Color.TRANSPARENT);
+    this.fill.setStyle(Style.FILL);
+    this.fill.setStrokeCap(Cap.ROUND);
 
     this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.TRANSPARENT);
@@ -50,7 +50,7 @@ class Area extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill!.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
@@ -72,7 +72,7 @@ class Area extends RenderInstruction with BitmapMixin {
     if (src != null) initPendings.add(this);
   }
 
-  MapPaint? getFillPaint() {
+  MapPaint getFillPaint() {
     return this.fill;
   }
 
@@ -120,8 +120,8 @@ class Area extends RenderInstruction with BitmapMixin {
   Future<void> initResources(GraphicFactory graphicFactory) async {
     await initBitmap(graphicFactory);
 
-    if (fill != null && bitmap != null) {
-      fill!.setBitmapShader(bitmap!);
+    if (bitmap != null) {
+      fill.setBitmapShader(bitmap!);
       //bitmap.incrementRefCount();
     }
 
@@ -130,7 +130,7 @@ class Area extends RenderInstruction with BitmapMixin {
 
   @override
   void dispose() {
-    fill?.dispose();
+    fill.dispose();
     strokes.values.forEach((element) {
       element.dispose();
     });

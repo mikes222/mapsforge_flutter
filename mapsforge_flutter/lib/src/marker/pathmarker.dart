@@ -67,9 +67,9 @@ class PathMarker<T> extends BasicMarker<T> {
     MapPath mapPath = markerCallback.graphicFactory.createPath();
 
     path.forEach((latLong) {
-      double y = markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude!) -
+      double y = markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude) -
           markerCallback.mapViewPosition.leftUpper!.y;
-      double x = markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong.longitude!) -
+      double x = markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong.longitude) -
           markerCallback.mapViewPosition.leftUpper!.x;
 
       if (mapPath.isEmpty())

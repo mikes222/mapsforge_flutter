@@ -24,16 +24,16 @@ class BoundingBox {
 //  }
 
   /// The maximum latitude coordinate of this BoundingBox in degrees.
-  double? maxLatitude;
+  late double maxLatitude;
 
   /// The maximum longitude coordinate of this BoundingBox in degrees.
-  double? maxLongitude;
+  late double maxLongitude;
 
   /// The minimum latitude coordinate of this BoundingBox in degrees.
-  double? minLatitude;
+  late double minLatitude;
 
   /// The minimum longitude coordinate of this BoundingBox in degrees.
-  double? minLongitude;
+  late double minLongitude;
 
   /**
    * @param minLatitude  the minimum latitude coordinate in degrees.
@@ -48,9 +48,9 @@ class BoundingBox {
     LatLongUtils.validateLatitude(maxLatitude);
     LatLongUtils.validateLongitude(maxLongitude);
 
-    if (minLatitude! > maxLatitude!) {
+    if (minLatitude > maxLatitude) {
       throw new Exception("invalid latitude range: $minLatitude $maxLatitude");
-    } else if (minLongitude! > maxLongitude!) {
+    } else if (minLongitude > maxLongitude) {
       throw new Exception("invalid longitude range: $minLongitude $maxLongitude");
     }
   }
@@ -64,8 +64,8 @@ class BoundingBox {
     double maxLatitude = double.negativeInfinity;
     double maxLongitude = double.negativeInfinity;
     for (LatLong latLong in latLongs) {
-      double latitude = latLong.latitude!;
-      double longitude = latLong.longitude!;
+      double latitude = latLong.latitude;
+      double longitude = latLong.longitude;
 
       minLatitude = min(minLatitude, latitude);
       minLongitude = min(minLongitude, longitude);
@@ -85,15 +85,18 @@ class BoundingBox {
    * @return true if this BoundingBox contains the given coordinates, false otherwise.
    */
   bool contains(double latitude, double? longitude) {
-    return this.minLatitude! <= latitude && this.maxLatitude! >= latitude && this.minLongitude! <= longitude! && this.maxLongitude! >= longitude;
+    return this.minLatitude <= latitude &&
+        this.maxLatitude >= latitude &&
+        this.minLongitude <= longitude! &&
+        this.maxLongitude >= longitude;
   }
 
   /**
    * @param latLong the LatLong whose coordinates should be checked.
    * @return true if this BoundingBox contains the given LatLong, false otherwise.
    */
-  bool containsLatLong(LatLong latLong) {
-    return contains(latLong.latitude!, latLong.longitude);
+  bool containsLatLong(ILatLong latLong) {
+    return contains(latLong.latitude, latLong.longitude);
   }
 
   @override
@@ -115,8 +118,8 @@ class BoundingBox {
    * @return a BoundingBox that covers this BoundingBox and the given BoundingBox.
    */
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
-    return new BoundingBox(min(this.minLatitude!, boundingBox.minLatitude!), min(this.minLongitude!, boundingBox.minLongitude!),
-        max(this.maxLatitude!, boundingBox.maxLatitude!), max(this.maxLongitude!, boundingBox.maxLongitude!));
+    return new BoundingBox(min(this.minLatitude, boundingBox.minLatitude), min(this.minLongitude, boundingBox.minLongitude),
+        max(this.maxLatitude, boundingBox.maxLatitude), max(this.maxLongitude, boundingBox.maxLongitude));
   }
 
   /**
@@ -220,12 +223,12 @@ class BoundingBox {
     }
 
     double verticalExpansion = LatLongUtils.latitudeDistance(meters);
-    double horizontalExpansion = LatLongUtils.longitudeDistance(meters, max(minLatitude!.abs(), maxLatitude!.abs()));
+    double horizontalExpansion = LatLongUtils.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
 
-    double minLat = max(MercatorProjectionImpl.LATITUDE_MIN, this.minLatitude! - verticalExpansion);
-    double minLon = max(-180, this.minLongitude! - horizontalExpansion);
-    double maxLat = min(MercatorProjectionImpl.LATITUDE_MAX, this.maxLatitude! + verticalExpansion);
-    double maxLon = min(180, this.maxLongitude! + horizontalExpansion);
+    double minLat = max(MercatorProjectionImpl.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+    double minLon = max(-180, this.minLongitude - horizontalExpansion);
+    double maxLat = min(MercatorProjectionImpl.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
 
     return new BoundingBox(minLat, minLon, maxLat, maxLon);
   }
@@ -234,23 +237,23 @@ class BoundingBox {
    * @return a new LatLong at the horizontal and vertical center of this BoundingBox.
    */
   LatLong getCenterPoint() {
-    double latitudeOffset = (this.maxLatitude! - this.minLatitude!) / 2;
-    double longitudeOffset = (this.maxLongitude! - this.minLongitude!) / 2;
-    return new LatLong(this.minLatitude! + latitudeOffset, this.minLongitude! + longitudeOffset);
+    double latitudeOffset = (this.maxLatitude - this.minLatitude) / 2;
+    double longitudeOffset = (this.maxLongitude - this.minLongitude) / 2;
+    return new LatLong(this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
   }
 
   /**
    * @return the latitude span of this BoundingBox in degrees.
    */
   double getLatitudeSpan() {
-    return this.maxLatitude! - this.minLatitude!;
+    return this.maxLatitude - this.minLatitude;
   }
 
   /**
    * @return the longitude span of this BoundingBox in degrees.
    */
   double getLongitudeSpan() {
-    return this.maxLongitude! - this.minLongitude!;
+    return this.maxLongitude - this.minLongitude;
   }
 
   /**
@@ -274,10 +277,10 @@ class BoundingBox {
       return true;
     }
 
-    return this.maxLatitude! >= boundingBox!.minLatitude! &&
-        this.maxLongitude! >= boundingBox.minLongitude! &&
-        this.minLatitude! <= boundingBox.maxLatitude! &&
-        this.minLongitude! <= boundingBox.maxLongitude!;
+    return this.maxLatitude >= boundingBox!.minLatitude &&
+        this.maxLongitude >= boundingBox.minLongitude &&
+        this.minLatitude <= boundingBox.maxLatitude &&
+        this.minLongitude <= boundingBox.maxLongitude;
   }
 
   /**
@@ -290,13 +293,13 @@ class BoundingBox {
    * @param latLongs the points that define an area
    * @return false if there is no intersection, true if there could be an intersection
    */
-  bool intersectsArea(List<List<ILatLong?>?> latLongs) {
-    if (latLongs.length == 0 || latLongs[0]!.length == 0) {
+  bool intersectsArea(List<List<ILatLong>> latLongs) {
+    if (latLongs.length == 0 || latLongs[0].length == 0) {
       return false;
     }
-    for (List<ILatLong?>? outer in latLongs) {
-      for (ILatLong? latLong in outer!) {
-        if (this.containsLatLong(latLong as LatLong)) {
+    for (List<ILatLong> outer in latLongs) {
+      for (ILatLong latLong in outer) {
+        if (this.containsLatLong(latLong)) {
           // if any of the points is inside the bbox return early
           return true;
         }
@@ -304,17 +307,17 @@ class BoundingBox {
     }
 
     // no fast solution, so accumulate boundary points
-    double? tmpMinLat = latLongs[0]![0]!.latitude;
-    double? tmpMinLon = latLongs[0]![0]!.longitude;
-    double? tmpMaxLat = latLongs[0]![0]!.latitude;
-    double? tmpMaxLon = latLongs[0]![0]!.longitude;
+    double tmpMinLat = latLongs[0][0].latitude;
+    double tmpMinLon = latLongs[0][0].longitude;
+    double tmpMaxLat = latLongs[0][0].latitude;
+    double tmpMaxLon = latLongs[0][0].longitude;
 
-    for (List<ILatLong?>? outer in latLongs) {
-      for (ILatLong? latLong in outer!) {
-        tmpMinLat = min(tmpMinLat!, latLong!.latitude!);
-        tmpMaxLat = max(tmpMaxLat!, latLong.latitude!);
-        tmpMinLon = min(tmpMinLon!, latLong.longitude!);
-        tmpMaxLon = max(tmpMaxLon!, latLong.longitude!);
+    for (List<ILatLong> outer in latLongs) {
+      for (ILatLong latLong in outer) {
+        tmpMinLat = min(tmpMinLat, latLong.latitude);
+        tmpMaxLat = max(tmpMaxLat, latLong.latitude);
+        tmpMinLon = min(tmpMinLon, latLong.longitude);
+        tmpMaxLon = max(tmpMaxLon, latLong.longitude);
       }
     }
     return this.intersects(new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));

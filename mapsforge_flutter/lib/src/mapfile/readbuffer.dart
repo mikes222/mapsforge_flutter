@@ -18,7 +18,7 @@ class ReadBufferMaster {
   RandomAccessFile? _raf;
 
   /// The filename of the underlying file
-  final String? filename;
+  final String filename;
 
   int? _length;
 
@@ -43,12 +43,11 @@ class ReadBufferMaster {
   /// @param length the amount of bytes to read from the file.
   /// @return true if the whole data was read successfully, false otherwise.
   /// @throws IOException if an error occurs while reading the file.
-  Future<ReadBuffer?> readFromFile({int? offset, required int length}) async {
-    assert(length != null && length > 0);
+  Future<ReadBuffer> readFromFile({int? offset, required int length}) async {
+    assert(length > 0);
     // ensure that the read buffer is large enough
     if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
-      _log.warning("invalid read length: $length");
-      return null;
+      throw Exception("invalid read length: $length");
     }
 
     //int time = DateTime.now().millisecondsSinceEpoch;
@@ -74,24 +73,23 @@ class ReadBufferMaster {
     if (_raf != null) {
       return Future.value(_raf);
     }
-    assert(filename != null);
-    File file = File(filename!);
+   File file = File(filename);
     bool ok = await file.exists();
     if (!ok) {
-      throw FileNotFoundException(filename!);
+      throw FileNotFoundException(filename);
     }
     _raf = await file.open();
     return _raf;
   }
 
-  Future<int?> length() async {
-    if (_length != null) return _length;
+  Future<int> length() async {
+    if (_length != null) return _length!;
     //int time = DateTime.now().millisecondsSinceEpoch;
     await _openRaf();
     _length = await _raf!.length();
     assert(_length != null && _length! >= 0);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return _length;
+    return _length!;
   }
 }
 
@@ -116,9 +114,7 @@ class ReadBuffer {
   /// Default constructor to open a buffer for reading a mapfile
   ///
   ReadBuffer._(this._bufferData, this._offset)
-      : assert(_bufferData != null),
-        //assert(_offset != null && _offset >= 0),
-        bufferPosition = 0;
+      : bufferPosition = 0;
 
   /// copy constructor. This way one can read the same file simultaneously
 //  ReadBuffer.fromSource(ReadBuffer other)
@@ -188,8 +184,8 @@ class ReadBuffer {
   }
 
   List<Tag> readTags(List<Tag> tagsArray, int numberOfTags) {
-    List<Tag> tags =  [];
-    List<int> tagIds =  [];
+    List<Tag> tags = [];
+    List<int> tagIds = [];
 
     int maxTag = tagsArray.length;
 
@@ -239,7 +235,6 @@ class ReadBuffer {
   ///
   /// @return the int value.
   int readUnsignedInt() {
-    assert(_bufferData != null);
     assert(bufferPosition <= _bufferData.length);
     int variableByteDecode = 0;
     int variableByteShift = 0;
@@ -265,7 +260,6 @@ class ReadBuffer {
   ///
   /// @return the int value.
   int readSignedInt() {
-    assert(_bufferData != null);
     int variableByteDecode = 0;
     int variableByteShift = 0;
 
@@ -302,7 +296,6 @@ class ReadBuffer {
   /// @param stringLength the length of the string in bytes.
   /// @return the UTF-8 decoded string (may be null).
   String readUTF8EncodedString2(int stringLength) {
-    assert(_bufferData != null);
     assert(stringLength >= 0);
     if (stringLength > 0 && this.bufferPosition + stringLength <= this._bufferData.length) {
       this.bufferPosition += stringLength;

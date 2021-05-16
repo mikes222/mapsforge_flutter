@@ -52,7 +52,7 @@ class Hillshading {
     double pxPerLat = (renderContext.job.tileSize / mapTileLatDegrees);
     double pxPerLng = (renderContext.job.tileSize / mapTileLngDegrees);
 
-    if (maptileRightLng < maptileLeftLng) maptileRightLng += mercatorProjection.mapSize!;
+    if (maptileRightLng < maptileLeftLng) maptileRightLng += mercatorProjection.mapSize;
 
     int shadingLngStep = 1;
     int shadingLatStep = 1;

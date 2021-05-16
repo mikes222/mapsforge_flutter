@@ -45,8 +45,7 @@ class BasicMarker<T> {
     this.item,
     this.latLong,
     this.markerCaption,
-  })  : assert(display != null),
-        assert(minZoomLevel >= 0),
+  })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         //assert(latLong != null),
         assert(minZoomLevel <= maxZoomLevel),
@@ -76,13 +75,13 @@ class BasicMarker<T> {
     return display != Display.NEVER &&
         minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
-        boundary!.contains(latLong!.latitude!, latLong!.longitude);
+        boundary!.contains(latLong!.latitude, latLong!.longitude);
   }
 
   void renderBitmap(MarkerCallback markerCallback) {}
 
   String? get title {
-    if (markerCaption?.text != null && markerCaption!.text!.length > 0) return markerCaption!.text;
+    if (markerCaption?.text != null && markerCaption!.text.length > 0) return markerCaption!.text;
     return null;
   }
 
@@ -94,9 +93,9 @@ class BasicMarker<T> {
 /////////////////////////////////////////////////////////////////////////////
 
 class MarkerCaption {
-  final String? text;
+  final String text;
 
-  ILatLong? latLong;
+  ILatLong latLong;
 
   double captionOffsetX;
 
@@ -113,8 +112,8 @@ class MarkerCaption {
   final int minZoom;
 
   MarkerCaption({
-    this.text,
-    this.latLong,
+    required this.text,
+    required this.latLong,
     this.captionOffsetX = 0,
     this.captionOffsetY = 0,
     this.stroke,
@@ -138,8 +137,8 @@ class MarkerCaption {
 
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
-    if (text != null && text!.length > 0 && stroke != null && latLong != null) {
-      markerCallback.renderText(text, latLong, captionOffsetX, captionOffsetY, stroke);
+    if (text != null && text.length > 0 && stroke != null && latLong != null) {
+      markerCallback.renderText(text, latLong, captionOffsetX, captionOffsetY, stroke!);
     }
   }
 }

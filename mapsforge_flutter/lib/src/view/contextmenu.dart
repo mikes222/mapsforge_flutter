@@ -21,11 +21,7 @@ class ContextMenu extends StatefulWidget {
 
   ContextMenu(
       {Key? key, required this.event, required this.mapModel, required this.viewModel, required this.position, this.contextMenuBuilder})
-      : assert(event != null),
-        assert(mapModel != null),
-        assert(position != null),
-        assert(viewModel != null),
-        super(key: key) {
+      : super(key: key) {
     if (contextMenuBuilder == null) contextMenuBuilder = DefaultContextMenuBuilder();
   }
 

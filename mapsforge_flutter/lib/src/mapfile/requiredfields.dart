@@ -44,7 +44,7 @@ class RequiredFields {
     mapFileInfoBuilder.boundingBox = new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 
-  static void readFileSize(ReadBuffer readBuffer, int? fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readFileSize(ReadBuffer readBuffer, int fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the file size (8 bytes)
     int headerFileSize = readBuffer.readLong();
     if (headerFileSize != fileSize) {
@@ -66,8 +66,7 @@ class RequiredFields {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
-    ReadBuffer readBuffer = (await (readBufferMaster.readFromFile(length: magicByteLength + 4)))!;
-    assert(readBuffer != null);
+    ReadBuffer readBuffer = (await (readBufferMaster.readFromFile(length: magicByteLength + 4)));
 
     // get and check the magic byte
     String magicByte = readBuffer.readUTF8EncodedString2(magicByteLength);

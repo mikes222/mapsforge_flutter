@@ -21,10 +21,7 @@ class MarkerRenderer {
 
   final ViewModel viewModel;
 
-  MarkerRenderer(this.graphicFactory, this.viewModel, this.dataStore)
-      : assert(graphicFactory != null),
-        assert(dataStore != null),
-        assert(viewModel != null);
+  MarkerRenderer(this.graphicFactory, this.viewModel, this.dataStore);
 
   void draw(FlutterCanvas flutterCanvas, MapViewPosition position) {
     //flutterCanvas.resetClip();

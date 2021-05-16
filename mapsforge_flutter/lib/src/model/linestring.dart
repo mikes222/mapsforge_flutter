@@ -59,8 +59,8 @@ class LineString {
     return result;
   }
 
-  Rectangle? getBounds() {
-    if (_bounds != null) return _bounds;
+  Rectangle getBounds() {
+    if (_bounds != null) return _bounds!;
 
     double minX = double.maxFinite;
     double minY = double.maxFinite;
@@ -74,7 +74,7 @@ class LineString {
       maxY = max(maxY, max(segment.start.y, segment.end.y));
     }
     _bounds = Rectangle(minX, minY, maxX, maxY);
-    return _bounds;
+    return _bounds!;
   }
 
   /**
@@ -96,14 +96,14 @@ class LineString {
     return null;
   }
 
-  double? length() {
-    if (_length != null) return _length;
+  double length() {
+    if (_length != null) return _length!;
     double result = 0;
     for (LineSegment segment in this.segments) {
       result += segment.length();
     }
     _length = result;
-    return _length;
+    return _length!;
   }
 
   @override

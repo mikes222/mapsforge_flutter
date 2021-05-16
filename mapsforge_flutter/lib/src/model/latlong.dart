@@ -14,12 +14,12 @@ class LatLong implements Comparable<LatLong>, ILatLong {
   /**
    * The internal latitude value.
    */
-  final double? latitude;
+  final double latitude;
 
   /**
    * The internal longitude value.
    */
-  final double? longitude;
+  final double longitude;
 
   /**
    * Constructs a new LatLong with the given latitude and longitude values, measured in
@@ -55,9 +55,9 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    */
   @override
   int compareTo(LatLong latLong) {
-    if (this.latitude! > latLong.latitude! || this.longitude! > latLong.longitude!) {
+    if (this.latitude > latLong.latitude || this.longitude > latLong.longitude) {
       return 1;
-    } else if (this.latitude! < latLong.latitude! || this.longitude! < latLong.longitude!) {
+    } else if (this.latitude < latLong.latitude || this.longitude < latLong.longitude) {
       return -1;
     }
     return 0;
@@ -139,7 +139,7 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @return the latitude value in microdegrees of this coordinate.
    */
   int getLatitudeE6() {
-    return LatLongUtils.degreesToMicrodegrees(this.latitude!);
+    return LatLongUtils.degreesToMicrodegrees(this.latitude);
   }
 
   /**
@@ -157,7 +157,7 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @return the longitude value in microdegrees of this coordinate.
    */
   int getLongitudeE6() {
-    return LatLongUtils.degreesToMicrodegrees(this.longitude!);
+    return LatLongUtils.degreesToMicrodegrees(this.longitude);
   }
 
   /**

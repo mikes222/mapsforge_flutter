@@ -232,7 +232,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderAreaSymbol(
-      RenderContext renderContext, Display display, int priority, Bitmap? symbol, PolylineContainer way, MapPaint? symbolPaint) {
+      RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       Mappoint? centerPosition = way.getCenterAbsolute();
       renderContext.labels.add(new SymbolContainer(centerPosition, display, priority, symbol, paint: symbolPaint));
@@ -267,7 +267,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderPointOfInterestSymbol(
-      RenderContext renderContext, Display display, int priority, Bitmap? symbol, PointOfInterest poi, MapPaint? symbolPaint) {
+      RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       Mappoint poiPosition = renderContext.mercatorProjection!.getPixel(poi.position);
       renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint, alignCenter: true));
@@ -280,7 +280,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderWaySymbol(RenderContext renderContext, Display display, int priority, Bitmap? symbol, double dy, bool alignCenter, bool repeat,
+  void renderWaySymbol(RenderContext renderContext, Display display, int priority, Bitmap symbol, double dy, bool alignCenter, bool repeat,
       double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       WayDecorator.renderSymbol(symbol, display, priority, dy, alignCenter, repeat, repeatGap!.toInt(), repeatStart!.toInt(), rotate,

@@ -149,17 +149,17 @@ class MapViewPosition {
         focalPoint = old.focalPoint,
         _mercatorProjection = old._mercatorProjection {
     //calculateBoundingBox(tileSize, viewSize);
-    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _mercatorProjection!.mapSize! - viewDimension.width / 2),
-        min(max(upper, -viewDimension.height / 2), _mercatorProjection!.mapSize! - viewDimension.height / 2));
+    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _mercatorProjection!.mapSize - viewDimension.width / 2),
+        min(max(upper, -viewDimension.height / 2), _mercatorProjection!.mapSize - viewDimension.height / 2));
 
     double rightX = _leftUpper!.x + viewDimension.width;
     double bottomY = _leftUpper!.y + viewDimension.height;
 
     boundingBox = BoundingBox(
-        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize!)),
+        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize)),
         _mercatorProjection!.pixelXToLongitude(max(_leftUpper!.x, 0)),
         _mercatorProjection!.pixelYToLatitude(max(_leftUpper!.y, 0)),
-        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize!)));
+        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize)));
 
     _latitude = _mercatorProjection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
 
@@ -190,10 +190,10 @@ class MapViewPosition {
     double topY = centerY - viewDimension.height / 2;
     double bottomY = centerY + viewDimension.height / 2;
     boundingBox = BoundingBox(
-        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize!)),
+        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize)),
         _mercatorProjection!.pixelXToLongitude(max(leftX, 0)),
         _mercatorProjection!.pixelYToLatitude(max(topY, 0)),
-        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize!)));
+        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize)));
     _leftUpper = Mappoint(leftX, topY);
     return boundingBox;
   }

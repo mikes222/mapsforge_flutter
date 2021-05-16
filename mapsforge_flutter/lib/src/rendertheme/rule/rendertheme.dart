@@ -14,8 +14,8 @@ import 'matchingcachekey.dart';
 class RenderTheme {
   static final int MATCHING_CACHE_SIZE = 1024;
 
-  final double? baseStrokeWidth;
-  final double? baseTextSize;
+  final double baseStrokeWidth;
+  final double baseTextSize;
   final bool? hasBackgroundOutside;
   int? levels;
   final int? mapBackground;
@@ -145,7 +145,7 @@ class RenderTheme {
     if (!strokeScales.containsKey(zoomLevel) || scaleFactor != strokeScales[zoomLevel]) {
       rulesList.forEach((rule) {
         if (rule.zoomMin! <= zoomLevel && rule.zoomMax! >= zoomLevel) {
-          rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth!, zoomLevel);
+          rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth, zoomLevel);
         }
       });
       // for (int i = 0, n = this.rulesList.length; i < n; ++i) {
@@ -165,7 +165,7 @@ class RenderTheme {
     if (!textScales.containsKey(zoomLevel) || scaleFactor != textScales[zoomLevel]) {
       rulesList.forEach((rule) {
         if (rule.zoomMin! <= zoomLevel && rule.zoomMax! >= zoomLevel) {
-          rule.scaleTextSize(scaleFactor * this.baseTextSize!, zoomLevel);
+          rule.scaleTextSize(scaleFactor * this.baseTextSize, zoomLevel);
         }
       });
       textScales[zoomLevel] = scaleFactor;

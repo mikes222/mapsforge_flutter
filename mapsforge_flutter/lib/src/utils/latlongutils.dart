@@ -59,12 +59,12 @@ class LatLongUtils {
   static bool contains(List<ILatLong> latLongs, ILatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
-      if ((latLongs[i].latitude! > latLong.latitude!) != (latLongs[j].latitude! > latLong.latitude!) &&
-          (latLong.longitude! <
-              (latLongs[j].longitude! - latLongs[i].longitude!) *
-                      (latLong.latitude! - latLongs[i].latitude!) /
-                      (latLongs[j].latitude! - latLongs[i].latitude!) +
-                  latLongs[i].longitude!)) {
+      if ((latLongs[i].latitude > latLong.latitude) != (latLongs[j].latitude > latLong.latitude) &&
+          (latLong.longitude <
+              (latLongs[j].longitude - latLongs[i].longitude) *
+                      (latLong.latitude - latLongs[i].latitude) /
+                      (latLongs[j].latitude - latLongs[i].latitude) +
+                  latLongs[i].longitude)) {
         result = !result;
       }
     }
@@ -95,8 +95,8 @@ class LatLongUtils {
     double theta = toRadians(bearing);
     double delta = distance / EQUATORIAL_RADIUS; // angular distance in radians
 
-    double phi1 = toRadians(start.latitude!);
-    double lambda1 = toRadians(start.longitude!);
+    double phi1 = toRadians(start.latitude);
+    double lambda1 = toRadians(start.longitude);
 
     double phi2 = asin(sin(phi1) * cos(delta) + cos(phi1) * sin(delta) * cos(theta));
     double lambda2 = lambda1 + atan2(sin(theta) * sin(delta) * cos(phi1), cos(delta) - sin(phi1) * sin(phi2));
@@ -113,7 +113,7 @@ class LatLongUtils {
    * @return distance in degrees as a double
    */
   static double euclideanDistance(LatLong latLong1, LatLong latLong2) {
-    return sqrt(pow(latLong1.longitude! - latLong2.longitude!, 2) + pow(latLong1.latitude! - latLong2.latitude!, 2));
+    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) + pow(latLong1.latitude - latLong2.latitude, 2));
   }
 
   /**
@@ -248,10 +248,10 @@ class LatLongUtils {
    * @return distance in meters as a double
    */
   static double sphericalDistance(LatLong latLong1, LatLong latLong2) {
-    double dLat = toRadians(latLong2.latitude! - latLong1.latitude!);
-    double dLon = toRadians(latLong2.longitude! - latLong1.longitude!);
+    double dLat = toRadians(latLong2.latitude - latLong1.latitude);
+    double dLon = toRadians(latLong2.longitude - latLong1.longitude);
     double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(toRadians(latLong1.latitude!)) * cos(toRadians(latLong2.latitude!)) * sin(dLon / 2) * sin(dLon / 2);
+        cos(toRadians(latLong1.latitude)) * cos(toRadians(latLong2.latitude)) * sin(dLon / 2) * sin(dLon / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return c * LatLongUtils.EQUATORIAL_RADIUS;
   }
@@ -261,8 +261,8 @@ class LatLongUtils {
    * @return the latitude value
    * @throws IllegalArgumentException if the latitude coordinate is invalid or {@link Double#NaN}.
    */
-  static double? validateLatitude(double? latitude) {
-    if (latitude == double.nan || latitude! < LATITUDE_MIN || latitude > LATITUDE_MAX) {
+  static double validateLatitude(double latitude) {
+    if (latitude == double.nan || latitude < LATITUDE_MIN || latitude > LATITUDE_MAX) {
       throw new Exception("invalid latitude: $latitude");
     }
     return latitude;
@@ -273,8 +273,8 @@ class LatLongUtils {
    * @return the longitude value
    * @throws IllegalArgumentException if the longitude coordinate is invalid or {@link Double#NaN}.
    */
-  static double? validateLongitude(double? longitude) {
-    if (longitude == double.nan || longitude! < LONGITUDE_MIN || longitude > LONGITUDE_MAX) {
+  static double validateLongitude(double longitude) {
+    if (longitude == double.nan || longitude < LONGITUDE_MIN || longitude > LONGITUDE_MAX) {
       throw new Exception("invalid longitude: $longitude");
     }
     return longitude;

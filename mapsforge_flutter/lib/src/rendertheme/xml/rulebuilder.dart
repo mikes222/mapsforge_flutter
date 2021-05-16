@@ -66,7 +66,7 @@ class RuleBuilder {
   List<String>? valueList;
   String? values;
 
-  static ClosedMatcher getClosedMatcher(Closed? closed) {
+  static ClosedMatcher getClosedMatcher(Closed closed) {
     switch (closed) {
       case Closed.YES:
         return ClosedWayMatcher.INSTANCE;
@@ -79,7 +79,7 @@ class RuleBuilder {
     throw new Exception("unknown closed value: " + closed.toString());
   }
 
-  static ElementMatcher getElementMatcher(Element? element) {
+  static ElementMatcher getElementMatcher(Element element) {
     switch (element) {
       case Element.NODE:
         return ElementNodeMatcher.INSTANCE;
@@ -176,9 +176,9 @@ class RuleBuilder {
 //
     this.valueList = this.values!.split(SPLIT_PATTERN);
 
-    this.elementMatcher = getElementMatcher(this.element);
+    this.elementMatcher = getElementMatcher(this.element!);
 
-    this.closedMatcher = getClosedMatcher(this.closed);
+    this.closedMatcher = getClosedMatcher(this.closed!);
 
 //    this.elementMatcher =
 //        RuleOptimizer.optimize(this.elementMatcher, this.ruleStack);
@@ -215,6 +215,8 @@ class RuleBuilder {
           break;
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
+          break;
+        case XmlNodeType.DECLARATION:
           break;
       }
     }

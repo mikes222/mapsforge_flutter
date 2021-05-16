@@ -34,6 +34,6 @@ class PoiPage extends StatelessWidget {
 
   String formatLatLong(ILatLong latLong) {
     if (latLong == null) return "Unknown";
-    return "${latLong.latitude?.toStringAsPrecision(6) ?? "Unknown"} / ${latLong.longitude?.toStringAsPrecision(6) ?? "Unknown"}";
+    return "${latLong.latitude.toStringAsPrecision(6)} / ${latLong.longitude.toStringAsPrecision(6)}";
   }
 }

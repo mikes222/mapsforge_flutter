@@ -40,15 +40,15 @@ class GeometryUtils {
     double? pointYMax = coordinates[0].latitude;
 
     for (ILatLong immutablePoint in coordinates) {
-      if (immutablePoint.longitude! < pointXMin!) {
+      if (immutablePoint.longitude < pointXMin!) {
         pointXMin = immutablePoint.longitude;
-      } else if (immutablePoint.longitude! > pointXMax!) {
+      } else if (immutablePoint.longitude > pointXMax!) {
         pointXMax = immutablePoint.longitude;
       }
 
-      if (immutablePoint.latitude! < pointYMin!) {
+      if (immutablePoint.latitude < pointYMin!) {
         pointYMin = immutablePoint.latitude;
-      } else if (immutablePoint.latitude! > pointYMax!) {
+      } else if (immutablePoint.latitude > pointYMax!) {
         pointYMax = immutablePoint.latitude;
       }
     }

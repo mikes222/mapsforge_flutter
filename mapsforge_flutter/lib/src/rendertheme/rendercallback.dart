@@ -46,7 +46,7 @@ abstract class RenderCallback {
  * @param symbol
  */
   void renderAreaSymbol(
-      final RenderContext renderContext, Display display, int priority, Bitmap? symbol, PolylineContainer way, MapPaint? symbolPaint);
+      final RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way, MapPaint? symbolPaint);
 
 /**
  * Renders a point of interest caption with the given text.
@@ -91,7 +91,7 @@ abstract class RenderCallback {
  * @param symbol
  */
   void renderPointOfInterestSymbol(
-      final RenderContext renderContext, Display display, int priority, Bitmap? symbol, PointOfInterest poi, MapPaint? symbolPaint);
+      final RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint? symbolPaint);
 
 /**
  * Renders a way with the given parameters.
@@ -114,7 +114,7 @@ abstract class RenderCallback {
  * @param repeatGap     distance between repetitions.
  * @param repeatStart
  */
-  void renderWaySymbol(final RenderContext renderContext, Display display, int priority, Bitmap? symbol, double dy, bool alignCenter,
+  void renderWaySymbol(final RenderContext renderContext, Display display, int priority, Bitmap symbol, double dy, bool alignCenter,
       bool repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way, MapPaint? symbolPaint);
 
 /**

@@ -6,7 +6,7 @@ import '../model/mappoint.dart';
 import 'mapelementcontainer.dart';
 
 abstract class PointTextContainer extends MapElementContainer {
-  bool? isVisible;
+  late bool isVisible;
   final int maxTextWidth;
   final MapPaint paintBack;
   final MapPaint paintFront;

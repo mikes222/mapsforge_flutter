@@ -180,11 +180,11 @@ class MapFile extends MapDataStore {
 
   static int wayFilterDistance = 20;
 
-  IndexCache? _databaseIndexCache;
+  late IndexCache _databaseIndexCache;
 
-  int? _fileSize;
+  late int _fileSize;
 
-  MapFileHeader? _mapFileHeader;
+  late MapFileHeader _mapFileHeader;
   final int? timestamp;
 
   int zoomLevelMin = 0;
@@ -210,7 +210,7 @@ class MapFile extends MapDataStore {
     ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
     this._fileSize = await readBufferMaster.length();
     _mapFileHeader = MapFileHeader();
-    await this._mapFileHeader!.readHeader(readBufferMaster, this._fileSize);
+    await this._mapFileHeader.readHeader(readBufferMaster, this._fileSize);
     readBufferMaster.close();
     return this;
   }
@@ -243,7 +243,7 @@ class MapFile extends MapDataStore {
 
   @override
   BoundingBox? get boundingBox {
-    return getMapFileInfo()!.boundingBox;
+    return getMapFileInfo().boundingBox;
   }
 
   @override
@@ -256,9 +256,7 @@ class MapFile extends MapDataStore {
    * Has no effect if no map file channel is currently opened.
    */
   void closeFileChannel() {
-    if (this._databaseIndexCache != null) {
-      this._databaseIndexCache!.destroy();
-    }
+    this._databaseIndexCache.destroy();
   }
 
   List<LatLong> _decodeWayNodesDoubleDelta(int numberOfWayNodes, double tileLatitude, double tileLongitude, ReadBuffer readBuffer) {
@@ -353,30 +351,30 @@ class MapFile extends MapDataStore {
   /**
    * @return the header data for the current map file.
    */
-  MapFileHeader? getMapFileHeader() {
+  MapFileHeader getMapFileHeader() {
     return this._mapFileHeader;
   }
 
   /**
    * @return the metadata for the current map file.
    */
-  MapFileInfo? getMapFileInfo() {
-    return this._mapFileHeader!.getMapFileInfo();
+  MapFileInfo getMapFileInfo() {
+    return this._mapFileHeader.getMapFileInfo();
   }
 
   /**
    * @return the map file supported languages (may be null).
    */
   List<String>? getMapLanguages() {
-    String? languagesPreference = getMapFileInfo()!.languagesPreference;
-    if (languagesPreference != null && !languagesPreference.trim().isEmpty) {
+    String? languagesPreference = getMapFileInfo().languagesPreference;
+    if (languagesPreference != null && languagesPreference.trim().isNotEmpty) {
       return languagesPreference.split(",");
     }
     return null;
   }
 
   PoiWayBundle? _processBlock(QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox,
-      double tileLatitude, double tileLongitude, Selector selector, ReadBuffer? readBuffer) {
+      double tileLatitude, double tileLongitude, Selector selector, ReadBuffer readBuffer) {
     assert(queryParameters.queryZoomLevel != null);
     if (!_processBlockSignature(readBuffer)) {
       _log.warning("ProcessblockSignature mismatch");
@@ -389,7 +387,7 @@ class MapFile extends MapDataStore {
     int waysOnQueryZoomLevel = zoomTable[zoomTableRow]![1];
 
     // get the relative offset to the first stored way in the block
-    int firstWayOffset = readBuffer!.readUnsignedInt();
+    int firstWayOffset = readBuffer.readUnsignedInt();
     if (firstWayOffset < 0) {
       _log.warning(INVALID_FIRST_WAY_OFFSET + "$firstWayOffset");
       return null;
@@ -444,10 +442,10 @@ class MapFile extends MapDataStore {
    *
    * @return true if the block signature could be processed successfully, false otherwise.
    */
-  bool _processBlockSignature(ReadBuffer? readBuffer) {
-    if (this._mapFileHeader!.getMapFileInfo()!.debugFile!) {
+  bool _processBlockSignature(ReadBuffer readBuffer) {
+    if (this._mapFileHeader.getMapFileInfo().debugFile!) {
       // get and check the block signature
-      String signatureBlock = readBuffer!.readUTF8EncodedString2(SIGNATURE_LENGTH_BLOCK);
+      String signatureBlock = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_BLOCK);
       if (!signatureBlock.startsWith("###TileStart")) {
         _log.warning("invalid block signature: " + signatureBlock);
         return false;
@@ -458,7 +456,6 @@ class MapFile extends MapDataStore {
 
   Future<DatastoreReadResult> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters,
       SubFileParameter subFileParameter, BoundingBox boundingBox, Selector selector) async {
-    assert(_fileSize != null);
     assert(queryParameters.fromBlockX != null);
     assert(queryParameters.fromBlockY != null);
     bool queryIsWater = true;
@@ -474,7 +471,7 @@ class MapFile extends MapDataStore {
         int blockNumber = row * subFileParameter.blocksWidth + column;
 
         // get the current index entry
-        int currentBlockIndexEntry = await this._databaseIndexCache!.getIndexEntry(subFileParameter, blockNumber, readBufferMaster);
+        int currentBlockIndexEntry = await this._databaseIndexCache.getIndexEntry(subFileParameter, blockNumber, readBufferMaster);
 
         // check if the current query would still return a water tile
         if (queryIsWater) {
@@ -499,7 +496,7 @@ class MapFile extends MapDataStore {
         } else {
           // get and check the next block pointer
           nextBlockPointer =
-              (await this._databaseIndexCache!.getIndexEntry(subFileParameter, blockNumber + 1, readBufferMaster)) & BITMASK_INDEX_OFFSET;
+              (await this._databaseIndexCache.getIndexEntry(subFileParameter, blockNumber + 1, readBufferMaster)) & BITMASK_INDEX_OFFSET;
           if (nextBlockPointer > subFileParameter.subFileSize!) {
             _log.warning("invalid next block pointer: $nextBlockPointer");
             _log.warning("sub-file size: ${subFileParameter.subFileSize}");
@@ -519,7 +516,7 @@ class MapFile extends MapDataStore {
           // the current block is too large, continue with the next block
           _log.warning("current block size too large: $currentBlockSize");
           continue;
-        } else if (currentBlockPointer + currentBlockSize > this._fileSize!) {
+        } else if (currentBlockPointer + currentBlockSize > this._fileSize) {
           _log.warning("current block larger than file size: $currentBlockSize");
           return mapFileReadResult;
         }
@@ -530,7 +527,7 @@ class MapFile extends MapDataStore {
         // seek to the current block in the map file
         // read the current block into the buffer
         //ReadBuffer readBuffer = new ReadBuffer(inputChannel);
-        ReadBuffer? readBuffer =
+        ReadBuffer readBuffer =
             await readBufferMaster.readFromFile(length: currentBlockSize, offset: subFileParameter.startAddress! + currentBlockPointer);
 
         // calculate the top-left coordinates of the underlying tile
@@ -559,10 +556,10 @@ class MapFile extends MapDataStore {
   List<PointOfInterest>? processPOIs(
       double tileLatitude, double tileLongitude, int numberOfPois, BoundingBox boundingBox, bool filterRequired, ReadBuffer? readBuffer) {
     List<PointOfInterest> pois = [];
-    List<Tag>? poiTags = this._mapFileHeader!.getMapFileInfo()!.poiTags;
+    List<Tag>? poiTags = this._mapFileHeader.getMapFileInfo().poiTags;
 
     for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
-      if (this._mapFileHeader!.getMapFileInfo()!.debugFile!) {
+      if (this._mapFileHeader.getMapFileInfo().debugFile!) {
         // get and check the POI signature
         String signaturePoi = readBuffer!.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
         if (!signaturePoi.startsWith("***POIStart")) {
@@ -587,9 +584,6 @@ class MapFile extends MapDataStore {
 
       // get the tags from IDs (VBE-U)
       List<Tag> tags = readBuffer.readTags(poiTags!, numberOfTags);
-      if (tags == null) {
-        return null;
-      }
 
       // get the feature bitmask (1 byte)
       int featureByte = readBuffer.readByte();
@@ -666,12 +660,12 @@ class MapFile extends MapDataStore {
   List<Way>? _processWays(QueryParameters queryParameters, int numberOfWays, BoundingBox boundingBox, bool filterRequired,
       double tileLatitude, double tileLongitude, Selector selector, ReadBuffer? readBuffer) {
     List<Way> ways = [];
-    List<Tag>? wayTags = this._mapFileHeader!.getMapFileInfo()!.wayTags;
+    List<Tag>? wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
 
     BoundingBox wayFilterBbox = boundingBox.extendMeters(wayFilterDistance);
 
     for (int elementCounter = numberOfWays; elementCounter != 0; --elementCounter) {
-      if (this._mapFileHeader!.getMapFileInfo()!.debugFile!) {
+      if (this._mapFileHeader.getMapFileInfo().debugFile!) {
         // get and check the way signature
         String signatureWay = readBuffer!.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
         if (!signatureWay.startsWith("---WayStart")) {
@@ -786,10 +780,10 @@ class MapFile extends MapDataStore {
               continue;
             }
             if (Selector.ALL == selector || featureName || featureHouseNumber || featureRef || wayAsLabelTagFilter(tags)) {
-              LatLong? labelLatLong = null;
+              LatLong? labelLatLong;
               if (labelPosition != null) {
-                labelLatLong = new LatLong(wayNodes[0][0].latitude! + LatLongUtils.microdegreesToDegrees(labelPosition[1]!),
-                    wayNodes[0][0].longitude! + LatLongUtils.microdegreesToDegrees(labelPosition[0]!));
+                labelLatLong = new LatLong(wayNodes[0][0].latitude + LatLongUtils.microdegreesToDegrees(labelPosition[1]!),
+                    wayNodes[0][0].longitude + LatLongUtils.microdegreesToDegrees(labelPosition[0]!));
               }
               ways.add(new Way(layer, tags, wayNodes, labelLatLong));
             }
@@ -863,10 +857,10 @@ class MapFile extends MapDataStore {
     }
 
     QueryParameters queryParameters = new QueryParameters();
-    queryParameters.queryZoomLevel = this._mapFileHeader!.getQueryZoomLevel(upperLeft.zoomLevel);
+    queryParameters.queryZoomLevel = this._mapFileHeader.getQueryZoomLevel(upperLeft.zoomLevel);
 
     // get and check the sub-file for the query zoom level
-    SubFileParameter? subFileParameter = this._mapFileHeader!.getSubFileParameter(queryParameters.queryZoomLevel!);
+    SubFileParameter? subFileParameter = this._mapFileHeader.getSubFileParameter(queryParameters.queryZoomLevel!);
     if (subFileParameter == null) {
       _log.warning("no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
       return null;
@@ -970,16 +964,16 @@ class MapFile extends MapDataStore {
 
   @override
   LatLong? get startPosition {
-    if (null != getMapFileInfo()!.startPosition) {
-      return getMapFileInfo()!.startPosition;
+    if (null != getMapFileInfo().startPosition) {
+      return getMapFileInfo().startPosition;
     }
-    return getMapFileInfo()!.boundingBox!.getCenterPoint();
+    return getMapFileInfo().boundingBox!.getCenterPoint();
   }
 
   @override
   int? get startZoomLevel {
-    if (null != getMapFileInfo()!.startZoomLevel) {
-      return getMapFileInfo()!.startZoomLevel;
+    if (null != getMapFileInfo().startZoomLevel) {
+      return getMapFileInfo().startZoomLevel;
     }
     return DEFAULT_START_ZOOM_LEVEL;
   }
@@ -987,7 +981,7 @@ class MapFile extends MapDataStore {
   @override
   bool supportsTile(Tile tile) {
     MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, tile.zoomLevel);
-    return tile.getBoundingBox(mercatorProjection)!.intersects(getMapFileInfo()!.boundingBox) &&
+    return tile.getBoundingBox(mercatorProjection)!.intersects(getMapFileInfo().boundingBox) &&
         (tile.zoomLevel >= this.zoomLevelMin && tile.zoomLevel <= this.zoomLevelMax);
   }
 }

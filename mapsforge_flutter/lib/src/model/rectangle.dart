@@ -72,12 +72,12 @@ class Rectangle {
   /**
    * @return true if this Rectangle intersects with the given Rectangle, false otherwise.
    */
-  bool intersects(Rectangle? rectangle) {
+  bool intersects(Rectangle rectangle) {
     if (this == rectangle) {
       return true;
     }
 
-    return this.left <= rectangle!.right && rectangle.left <= this.right && this.top <= rectangle.bottom && rectangle.top <= this.bottom;
+    return this.left <= rectangle.right && rectangle.left <= this.right && this.top <= rectangle.bottom && rectangle.top <= this.bottom;
   }
 
   bool intersectsCircle(double pointX, double pointY, double radius) {

@@ -66,7 +66,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     }
 
     if (bitmap != null) {
-      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap, poi, symbolPaint);
+      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap!, poi, symbolPaint);
     }
   }
 
@@ -78,7 +78,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     }
 
     if (bitmap != null) {
-      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap, way, symbolPaint);
+      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap!, way, symbolPaint);
     }
   }
 

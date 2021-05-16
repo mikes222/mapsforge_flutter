@@ -21,7 +21,7 @@ import '../rendercontext.dart';
 class Line extends RenderInstruction with BitmapMixin {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
-  double? dy;
+  late double dy;
   late Map<int, double> dyScaled;
   final int level;
   final String? relativePathPrefix;
@@ -122,7 +122,7 @@ class Line extends RenderInstruction with BitmapMixin {
     if (dyScale == null) {
       dyScale = this.dy;
     }
-    renderCallback.renderWay(renderContext, strokePaint, dyScale!, this.level, way);
+    renderCallback.renderWay(renderContext, strokePaint, dyScale, this.level, way);
   }
 
   @override
@@ -144,7 +144,7 @@ class Line extends RenderInstruction with BitmapMixin {
 
     //paint.setStrokeDasharray(this.strokeDasharray);
     strokes[zoomLevel] = paint;
-    this.dyScaled[zoomLevel] = this.dy! * scaleFactor;
+    this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
 
   @override

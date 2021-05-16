@@ -90,9 +90,9 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
       //this.stroke.setTextSize(fontSize);
       if (strokeDasharray != null) stroke!.setStrokeDasharray(strokeDasharray);
     }
-    if (markerCaption != null && markerCaption!.latLong == null) {
-      markerCaption!.latLong = LatLong(minLatLon.latitude! + (maxLatLon.latitude! - minLatLon.latitude!) / 2,
-          minLatLon.longitude! + (maxLatLon.longitude! - minLatLon.longitude!) / 2); //GeometryUtils.calculateCenter(path);
+    if (markerCaption != null) {
+      markerCaption!.latLong = LatLong(minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
+          minLatLon.longitude + (maxLatLon.longitude - minLatLon.longitude) / 2); //GeometryUtils.calculateCenter(path);
     }
   }
 
@@ -111,13 +111,13 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     MapRect mapRect = markerCallback.graphicFactory.createRect(
-        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(minLatLon.longitude!) -
+        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(minLatLon.longitude) -
             markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(maxLatLon.latitude!) -
+        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(maxLatLon.latitude) -
             markerCallback.mapViewPosition.leftUpper!.y,
-        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(maxLatLon.longitude!) -
+        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(maxLatLon.longitude) -
             markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(minLatLon.latitude!) -
+        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(minLatLon.latitude) -
             markerCallback.mapViewPosition.leftUpper!.y);
 
 //    markerCallback.renderRect(mapRect, stroke);
@@ -131,9 +131,9 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     ILatLong latLong =
         mapViewPosition.mercatorProjection!.getLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
-    return latLong.latitude! > minLatLon.latitude! &&
-        latLong.latitude! < maxLatLon.latitude! &&
-        latLong.longitude! > minLatLon.longitude! &&
-        latLong.longitude! < maxLatLon.longitude!;
+    return latLong.latitude > minLatLon.latitude &&
+        latLong.latitude < maxLatLon.latitude &&
+        latLong.longitude > minLatLon.longitude &&
+        latLong.longitude < maxLatLon.longitude;
   }
 }

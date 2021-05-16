@@ -16,9 +16,9 @@ class ViewModel {
   ///
   Dimension? _viewDimension;
 
-  Subject<MapViewPosition?> _injectPosition = PublishSubject();
+  Subject<MapViewPosition> _injectPosition = PublishSubject();
 
-  Stream<MapViewPosition?> get observePosition => _injectPosition.stream;
+  Stream<MapViewPosition> get observePosition => _injectPosition.stream;
 
   Subject<TapEvent> _injectTap = PublishSubject();
 
@@ -190,7 +190,7 @@ class ViewModel {
   Dimension? setViewDimension(double width, double height) {
     if (_viewDimension != null && _viewDimension!.width == width && _viewDimension!.height == height) return _viewDimension;
     _viewDimension = Dimension(width, height);
-    _injectPosition.add(mapViewPosition);
+    if (_mapViewPosition != null) _injectPosition.add(_mapViewPosition!);
     return _viewDimension;
   }
 }

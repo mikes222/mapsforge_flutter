@@ -44,10 +44,10 @@ class MapFileHeader {
   /**
    * @return a MapFileInfo containing the header data.
    */
-  MapFileInfo? getMapFileInfo() {
+  MapFileInfo getMapFileInfo() {
     // execute the init() method before using mapfiles
     assert(mapFileInfo != null);
-    return this.mapFileInfo;
+    return this.mapFileInfo!;
   }
 
   /**
@@ -76,7 +76,7 @@ class MapFileHeader {
   /// @param readBuffer the ReadBuffer for the file data.
   /// @param fileSize   the size of the map file in bytes.
   /// @throws IOException if an error occurs while reading the file.
-  Future<void> readHeader(ReadBufferMaster readBufferMaster, int? fileSize) async {
+  Future<void> readHeader(ReadBufferMaster readBufferMaster, int fileSize) async {
     ReadBuffer? readBuffer = await RequiredFields.readMagicByte(readBufferMaster);
 
     // get and check the size of the remaining file header (4 bytes)
@@ -123,7 +123,7 @@ class MapFileHeader {
     _log.info("zoomLevel: $zoomLevelMinimum - $zoomLevelMaximum");
   }
 
-  void _readSubFileParameters(ReadBuffer readBuffer, int? fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
+  void _readSubFileParameters(ReadBuffer readBuffer, int fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the number of sub-files (1 byte)
     int numberOfSubFiles = readBuffer.readByte();
     if (numberOfSubFiles < 1) {
@@ -167,13 +167,13 @@ class MapFileHeader {
 
       // get and check the start address of the sub-file (8 bytes)
       int startAddress = readBuffer.readLong();
-      if (startAddress < HEADER_SIZE_MIN || startAddress >= fileSize!) {
+      if (startAddress < HEADER_SIZE_MIN || startAddress >= fileSize) {
         throw new Exception("invalid start address: $startAddress");
       }
       subFileParameterBuilder.startAddress = startAddress;
 
       int indexStartAddress = startAddress;
-      if (mapFileInfoBuilder.optionalFields.isDebugFile!) {
+      if (mapFileInfoBuilder.optionalFields.isDebugFile) {
         // the sub-file has an index signature before the index
         indexStartAddress += SIGNATURE_LENGTH_INDEX;
       }

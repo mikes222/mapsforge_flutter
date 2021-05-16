@@ -99,7 +99,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
     }
 
     if (bitmap != null) {
-      renderCallback.renderWaySymbol(renderContext, this.display, this.priority, this.bitmap, dyScale, this.alignCenter, this.repeat,
+      renderCallback.renderWaySymbol(renderContext, this.display, this.priority, this.bitmap!, dyScale, this.alignCenter, this.repeat,
           this.repeatGap, this.repeatStart, this.rotate, way, symbolPaint);
     }
   }

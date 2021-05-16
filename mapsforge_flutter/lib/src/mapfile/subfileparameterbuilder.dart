@@ -20,10 +20,10 @@ class SubFileParameterBuilder {
   SubFileParameter build() {
     // calculate the XY numbers of the boundary tiles in this sub-file
     MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(500, this.baseZoomLevel!);
-    int boundaryTileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox!.minLatitude!);
-    int boundaryTileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox!.minLongitude!);
-    int boundaryTileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox!.maxLatitude!);
-    int boundaryTileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox!.maxLongitude!);
+    int boundaryTileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox!.minLatitude);
+    int boundaryTileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox!.minLongitude);
+    int boundaryTileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox!.maxLatitude);
+    int boundaryTileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox!.maxLongitude);
 
     // calculate the horizontal and vertical amount of blocks in this sub-file
     int blocksWidth = boundaryTileRight - boundaryTileLeft + 1;

@@ -18,10 +18,7 @@ class MarkerPainter implements CustomPainter {
 
   final MarkerRenderer markerRenderer;
 
-  MarkerPainter({required this.position, required this.displayModel, required this.markerRenderer})
-      : assert(position != null),
-        assert(displayModel != null),
-        assert(markerRenderer != null) {}
+  MarkerPainter({required this.position, required this.displayModel, required this.markerRenderer});
 
   @override
   void paint(Canvas canvas, Size size) {

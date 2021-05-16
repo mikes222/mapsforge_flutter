@@ -53,7 +53,7 @@ class OptionalFields {
   late bool hasLanguagesPreference;
   late bool hasStartPosition;
   late bool hasStartZoomLevel;
-  bool? isDebugFile;
+  late bool isDebugFile;
   String? languagesPreference;
   LatLong? startPosition;
   int? startZoomLevel;

@@ -73,7 +73,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
     if (Display.ALWAYS == this.display || Display.ALWAYS == other.display) {
       return false;
     }
-    return this.getBoundaryAbsolute()!.intersects(other.getBoundaryAbsolute());
+    return this.getBoundaryAbsolute()!.intersects(other.getBoundaryAbsolute()!);
   }
 
   /**
@@ -101,7 +101,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
           xy == other.xy;
 
   @override
-  int get hashCode => boundary.hashCode ^ boundaryAbsolute.hashCode ^ display.hashCode ^ priority.hashCode ^ xy.hashCode;
+  int get hashCode => (boundary?.hashCode ?? 15) ^ boundaryAbsolute.hashCode ^ display.hashCode ^ priority.hashCode ^ xy.hashCode;
 
   @override
   String toString() {
