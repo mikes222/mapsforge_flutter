@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 
@@ -26,5 +28,13 @@ main() {
 
     expect(projection.longitudeToTileX(7.4262), 8); // lat/lon: 43.7399/7.4262;
     expect(projection.latitudeToTileY(43.7399), 5);
+
+    Tile upperLeft = Tile(4, 3, zoomLevel, 0);
+    Tile lowerRight = Tile(6, 5, zoomLevel, 0);
+    BoundingBox boundingBox = projection.boundingBoxOfTiles(upperLeft, lowerRight);
+    expect(boundingBox.minLongitude, -90);
+    expect(boundingBox.maxLongitude, -22.5);
+    expect(boundingBox.minLatitude, 40.97989806962013);
+    expect(boundingBox.maxLatitude, 74.01954331150228);
   });
 }

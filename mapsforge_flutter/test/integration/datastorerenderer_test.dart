@@ -28,11 +28,11 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    double tileSize = displayModel.tileSize;
+    int tileSize = displayModel.tileSize;
     int l = 0;
-    int z = 16;
-    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
+    int zoomlevel = 16;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
@@ -43,14 +43,13 @@ void main() {
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      Datastore mapDataStore = await MapFile.create(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
-      Tile tile = new Tile(x, y, z, l);
+      Datastore mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
+      Tile tile = new Tile(x, y, zoomlevel, l);
       print("Calculating tile ${tile.toString()}");
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
       TileBitmap resultTile = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
-      assert(resultTile != null);
       var img = (resultTile as FlutterTileBitmap).bitmap;
       return img;
     }));
@@ -79,26 +78,26 @@ void main() {
       maxZoomLevel: 15,
     );
 
-    double tileSize = displayModel.tileSize;
+    int tileSize = displayModel.tileSize;
     int l = 0;
-    int z = 15;
-    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(43.7399);
+    int zoomlevel = 15;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     tester.binding.window.physicalSizeTestValue = Size(tileSize * 9, tileSize * 9);
 // resets the screen to its orinal size after the test end
     addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
     List<Tile> tilesToLoad = [
-      Tile(x - 1, y - 1, z, l),
-      Tile(x, y - 1, z, l),
-      Tile(x + 1, y - 1, z, l),
-      Tile(x - 1, y, z, l),
-      Tile(x, y, z, l),
-      Tile(x + 1, y, z, l),
-      Tile(x - 1, y + 1, z, l),
-      Tile(x, y + 1, z, l),
-      Tile(x + 1, y + 1, z, l),
+      Tile(x - 1, y - 1, zoomlevel, l),
+      Tile(x, y - 1, zoomlevel, l),
+      Tile(x + 1, y - 1, zoomlevel, l),
+      Tile(x - 1, y, zoomlevel, l),
+      Tile(x, y, zoomlevel, l),
+      Tile(x + 1, y, zoomlevel, l),
+      Tile(x - 1, y + 1, zoomlevel, l),
+      Tile(x, y + 1, zoomlevel, l),
+      Tile(x + 1, y + 1, zoomlevel, l),
     ];
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
@@ -110,7 +109,7 @@ void main() {
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      Datastore mapDataStore = await MapFile.create(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
+      Datastore mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
 
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
       List imgs = [];
