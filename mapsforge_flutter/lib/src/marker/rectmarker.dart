@@ -113,13 +113,13 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     MapRect mapRect = markerCallback.graphicFactory.createRect(
-        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(minLatLon.longitude) -
+        markerCallback.mapViewPosition.projection!.longitudeToPixelX(minLatLon.longitude) -
             markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(maxLatLon.latitude) -
+        markerCallback.mapViewPosition.projection!.latitudeToPixelY(maxLatLon.latitude) -
             markerCallback.mapViewPosition.leftUpper!.y,
-        markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(maxLatLon.longitude) -
+        markerCallback.mapViewPosition.projection!.longitudeToPixelX(maxLatLon.longitude) -
             markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(minLatLon.latitude) -
+        markerCallback.mapViewPosition.projection!.latitudeToPixelY(minLatLon.latitude) -
             markerCallback.mapViewPosition.leftUpper!.y);
 
 //    markerCallback.renderRect(mapRect, stroke);
@@ -131,7 +131,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     ILatLong latLong =
-        mapViewPosition.mercatorProjection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
+        mapViewPosition.projection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
     return latLong.latitude > minLatLon.latitude &&
         latLong.latitude < maxLatLon.latitude &&

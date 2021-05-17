@@ -34,7 +34,7 @@ class MapFileInfoBuilder {
         optionalFields.startPosition,
         optionalFields.startZoomLevel,
         tilePixelSize,
-        wayTags,
+        wayTags!,
         zoomLevelMin,
         zoomLevelMax);
   }

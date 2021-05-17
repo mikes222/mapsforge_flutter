@@ -62,9 +62,9 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 //          double xCenter = widget.mapModel.mapViewPosition.leftUpper.x
           BoundingBox? boundingBox = widget.viewModel.mapViewPosition!.calculateBoundingBox(widget.viewModel.viewDimension!);
           // lat/lon of the position where we double-clicked
-          double latitude = widget.viewModel.mapViewPosition!.mercatorProjection!
+          double latitude = widget.viewModel.mapViewPosition!.projection!
               .pixelYToLatitude(widget.viewModel.mapViewPosition!.leftUpper!.y + _doubleTapOffset!.dy);
-          double longitude = widget.viewModel.mapViewPosition!.mercatorProjection!
+          double longitude = widget.viewModel.mapViewPosition!.projection!
               .pixelXToLongitude(widget.viewModel.mapViewPosition!.leftUpper!.x + _doubleTapOffset!.dx);
           // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
 

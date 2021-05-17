@@ -23,8 +23,8 @@ class MarkerContext implements MarkerCallback {
   MarkerContext(this.flutterCanvas, this.graphicFactory, this.mapViewPosition);
 
   void renderBitmap(Bitmap bitmap, double latitude, double longitude, double offsetX, double offsetY, double? rotation, MapPaint paint) {
-    double y = mapViewPosition.mercatorProjection!.latitudeToPixelY(latitude);
-    double x = mapViewPosition.mercatorProjection!.longitudeToPixelX(longitude);
+    double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
+    double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
     FlutterMatrix? matrix;
     if (rotation != null && rotation != 0) {
       matrix = FlutterMatrix();
@@ -40,7 +40,7 @@ class MarkerContext implements MarkerCallback {
 
   @override
   void renderText(String caption, ILatLong latLong, double offsetX, double offsetY, MapPaint stroke) {
-    Mappoint mappoint = mapViewPosition.mercatorProjection!.pixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
+    Mappoint mappoint = mapViewPosition.projection!.pixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
 //    print(
 //        "rendering caption $caption at latLong ${latLong.toString()}, ${mappoint.toString()} and leftUpper ${mapViewPosition.leftUpper.toString()}");
     flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(), (mappoint.y + offsetY).toInt(), stroke);
@@ -52,8 +52,8 @@ class MarkerContext implements MarkerCallback {
   }
 
   void renderCircle(double latitude, double longitude, double radius, MapPaint paint) {
-    double y = mapViewPosition.mercatorProjection!.latitudeToPixelY(latitude);
-    double x = mapViewPosition.mercatorProjection!.longitudeToPixelX(longitude);
+    double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
+    double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
     flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x).toInt(), (y - mapViewPosition.leftUpper!.y).toInt(), radius.toInt(), paint);
   }
 

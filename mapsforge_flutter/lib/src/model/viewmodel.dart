@@ -177,8 +177,8 @@ class ViewModel {
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
     _mapViewPosition!.calculateBoundingBox(_viewDimension!);
-    TapEvent event = TapEvent(_mapViewPosition!.mercatorProjection!.pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
-        _mapViewPosition!.mercatorProjection!.pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left), left, upper);
+    TapEvent event = TapEvent(_mapViewPosition!.projection!.pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
+        _mapViewPosition!.projection!.pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left), left, upper);
     _injectTap.add(event);
   }
 

@@ -151,8 +151,13 @@ void main() {
         theme: ThemeData(),
         home: Scaffold(
           body: Center(
-            child: RawImage(
-              image: img,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue, width: 1),
+              ),
+              child: RawImage(
+                image: img,
+              ),
             ),
           ),
         ),

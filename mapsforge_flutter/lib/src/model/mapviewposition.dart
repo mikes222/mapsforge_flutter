@@ -199,7 +199,7 @@ class MapViewPosition {
     return boundingBox;
   }
 
-  PixelProjection? get mercatorProjection => _projection;
+  PixelProjection? get projection => _projection;
 
   Mappoint? get leftUpper => _leftUpper;
 

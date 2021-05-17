@@ -37,11 +37,6 @@ class PolylineContainer implements ShapeContainer {
         layer = way.layer,
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]) {
     this.way = way;
-    if (this.way.labelPosition != null) {
-      // Todo get correct tilesize
-      PixelProjection projection = PixelProjection(upperLeft.zoomLevel, DisplayModel.DEFAULT_TILE_SIZE);
-      this.center = projection.latLonToPixel(this.way.labelPosition!);
-    }
   }
 
   PolylineContainer.fromList(List<Mappoint> coordinates, this.upperLeft, this.lowerRight, this.tags)
@@ -53,6 +48,9 @@ class PolylineContainer implements ShapeContainer {
   }
 
   Mappoint getCenterAbsolute(PixelProjection projection) {
+    if (this.way.labelPosition != null) {
+      this.center = projection.latLonToPixel(this.way.labelPosition!);
+    }
     if (this.center == null) {
       this.center = GeometryUtils.calculateCenterOfBoundingBox(getCoordinatesAbsolute(projection)[0]);
     }
@@ -77,9 +75,8 @@ class PolylineContainer implements ShapeContainer {
     return coordinatesAbsolute!;
   }
 
-  List<List<Mappoint>> getCoordinatesRelativeToOrigin() {
+  List<List<Mappoint>> getCoordinatesRelativeToOrigin(PixelProjection projection) {
     if (coordinatesRelativeToTile == null) {
-      PixelProjection projection = PixelProjection(upperLeft.zoomLevel, DisplayModel.DEFAULT_TILE_SIZE);
       Mappoint tileOrigin = projection.getLeftUpper(upperLeft);
       int count = getCoordinatesAbsolute(projection).length;
       coordinatesRelativeToTile = [];

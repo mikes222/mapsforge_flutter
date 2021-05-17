@@ -18,7 +18,7 @@ dependencies:
   convert: ^3.0.0
 
   # MIT License
-  ecache: ^2.0.0
+  ecache: ^2.0.1
 #    git:
 #      url: https://github.com/mikes222/dcache
     #path: ../../github_dcache/

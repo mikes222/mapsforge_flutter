@@ -24,7 +24,7 @@ class MapFileInfo {
   /**
    * True if the map file includes debug information, false otherwise.
    */
-  final bool? debugFile;
+  final bool debugFile;
 
   /**
    * The size of the map file, measured in bytes.
@@ -79,7 +79,7 @@ class MapFileInfo {
   /**
    * The way tags.
    */
-  final List<Tag>? wayTags;
+  final List<Tag> wayTags;
 
   final int? zoomLevelMin;
   final int? zoomLevelMax;
@@ -105,6 +105,6 @@ class MapFileInfo {
 
   @override
   String toString() {
-    return 'MapFileInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags!.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
+    return 'MapFileInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
   }
 }

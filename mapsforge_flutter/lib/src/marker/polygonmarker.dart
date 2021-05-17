@@ -146,10 +146,10 @@ class PolygonMarker<T> extends BasicMarker<T> {
     MapPath mapPath = markerCallback.graphicFactory.createPath();
 
     path.forEach((latLong) {
-      double y = markerCallback.mapViewPosition.mercatorProjection!.latitudeToPixelY(latLong.latitude) -
-          markerCallback.mapViewPosition.leftUpper!.y;
-      double x = markerCallback.mapViewPosition.mercatorProjection!.longitudeToPixelX(latLong.longitude) -
-          markerCallback.mapViewPosition.leftUpper!.x;
+      double y =
+          markerCallback.mapViewPosition.projection!.latitudeToPixelY(latLong.latitude) - markerCallback.mapViewPosition.leftUpper!.y;
+      double x =
+          markerCallback.mapViewPosition.projection!.longitudeToPixelX(latLong.longitude) - markerCallback.mapViewPosition.leftUpper!.x;
 
       if (mapPath.isEmpty())
         mapPath.moveTo(x, y);
@@ -164,7 +164,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     ILatLong latLong =
-        mapViewPosition.mercatorProjection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
+        mapViewPosition.projection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
     return LatLongUtils.contains(path, latLong);
   }

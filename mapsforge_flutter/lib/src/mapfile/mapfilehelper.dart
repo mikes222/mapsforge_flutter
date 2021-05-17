@@ -99,12 +99,12 @@ class MapfileHelper {
   List<Way> processWays(QueryParameters queryParameters, int numberOfWays, BoundingBox boundingBox, bool filterRequired,
       double tileLatitude, double tileLongitude, MapfileSelector selector, ReadBuffer readBuffer) {
     List<Way> ways = [];
-    List<Tag>? wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
+    List<Tag> wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
 
     BoundingBox wayFilterBbox = boundingBox.extendMeters(wayFilterDistance);
 
     for (int elementCounter = numberOfWays; elementCounter != 0; --elementCounter) {
-      if (this._mapFileHeader.getMapFileInfo().debugFile!) {
+      if (this._mapFileHeader.getMapFileInfo().debugFile) {
         // get and check the way signature
         String signatureWay = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
         if (!signatureWay.startsWith("---WayStart")) {
@@ -151,7 +151,7 @@ class MapfileHelper {
         int numberOfTags = (specialByte & WAY_NUMBER_OF_TAGS_BITMASK);
 
         // get the tags from IDs (VBE-U)
-        List<Tag> tags = readBuffer.readTags(wayTags!, numberOfTags);
+        List<Tag> tags = readBuffer.readTags(wayTags, numberOfTags);
         //_log.info("processWays for ${wayTags.toString()} and numberofTags: $numberOfTags returned ${tags.length} items");
 
         // get the feature bitmask (1 byte)
@@ -195,7 +195,7 @@ class MapfileHelper {
           }
         }
 
-        List<int?>? labelPosition;
+        List<int>? labelPosition;
         if (featureLabelPosition) {
           labelPosition = _readOptionalLabelPosition(readBuffer);
         }
@@ -206,19 +206,17 @@ class MapfileHelper {
         }
 
         for (int wayDataBlock = 0; wayDataBlock < wayDataBlocks; ++wayDataBlock) {
-          List<List<LatLong>>? wayNodes = _processWayDataBlock(tileLatitude, tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
-          if (wayNodes != null) {
-            if (filterRequired && wayFilterEnabled && !wayFilterBbox.intersectsArea(wayNodes)) {
-              continue;
+          List<List<LatLong>> wayNodes = _processWayDataBlock(tileLatitude, tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
+          if (filterRequired && wayFilterEnabled && !wayFilterBbox.intersectsArea(wayNodes)) {
+            continue;
+          }
+          if (MapfileSelector.ALL == selector || featureName || featureHouseNumber || featureRef || wayAsLabelTagFilter(tags)) {
+            LatLong? labelLatLong;
+            if (labelPosition != null) {
+              labelLatLong = LatLong(wayNodes[0][0].latitude + LatLongUtils.microdegreesToDegrees(labelPosition[1]),
+                  wayNodes[0][0].longitude + LatLongUtils.microdegreesToDegrees(labelPosition[0]));
             }
-            if (MapfileSelector.ALL == selector || featureName || featureHouseNumber || featureRef || wayAsLabelTagFilter(tags)) {
-              LatLong? labelLatLong;
-              if (labelPosition != null) {
-                labelLatLong = new LatLong(wayNodes[0][0].latitude + LatLongUtils.microdegreesToDegrees(labelPosition[1]!),
-                    wayNodes[0][0].longitude + LatLongUtils.microdegreesToDegrees(labelPosition[0]!));
-              }
-              ways.add(new Way(layer, tags, wayNodes, labelLatLong));
-            }
+            ways.add(Way(layer, tags, wayNodes, labelLatLong));
           }
         }
       } catch (e) {
@@ -352,7 +350,7 @@ class MapfileHelper {
     List<Tag> poiTags = this._mapFileHeader.getMapFileInfo().poiTags;
 
     for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
-      if (this._mapFileHeader.getMapFileInfo().debugFile!) {
+      if (this._mapFileHeader.getMapFileInfo().debugFile) {
         // get and check the POI signature
         String signaturePoi = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
         if (!signaturePoi.startsWith("***POIStart")) {
@@ -404,29 +402,31 @@ class MapfileHelper {
       // depending on the zoom level configuration the poi can lie outside
       // the tile requested, we filter them out here
       if (!filterRequired || boundingBox.containsLatLong(position)) {
-        pois.add(new PointOfInterest(layer, tags, position));
+        pois.add(PointOfInterest(layer, tags, position));
       }
     }
 
     return pois;
   }
 
-  List<int?> _readOptionalLabelPosition(ReadBuffer readBuffer) {
-    List<int?> labelPosition = new List<int?>.filled(2, null);
+  ///
+  /// returns the position of a label in longitude/latitude (sic!) format
+  List<int> _readOptionalLabelPosition(ReadBuffer readBuffer) {
+    List<int> labelPosition = [];
 
     // get the label position latitude offset (VBE-S)
-    labelPosition[1] = readBuffer.readSignedInt();
+    labelPosition.add(readBuffer.readSignedInt());
 
     // get the label position longitude offset (VBE-S)
-    labelPosition[0] = readBuffer.readSignedInt();
+    labelPosition.insert(0, readBuffer.readSignedInt());
 
     return labelPosition;
   }
 
-  int _readOptionalWayDataBlocksByte(bool featureWayDataBlocksByte, ReadBuffer? readBuffer) {
+  int _readOptionalWayDataBlocksByte(bool featureWayDataBlocksByte, ReadBuffer readBuffer) {
     if (featureWayDataBlocksByte) {
       // get and check the number of way data blocks (VBE-U)
-      return readBuffer!.readUnsignedInt();
+      return readBuffer.readUnsignedInt();
     }
     // only one way data block exists
     return 1;

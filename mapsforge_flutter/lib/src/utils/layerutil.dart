@@ -57,10 +57,10 @@ class LayerUtil {
     BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension!)!;
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
-    int tileLeft = mapViewPosition.mercatorProjection!.longitudeToTileX(boundingBox.minLongitude);
-    int tileTop = mapViewPosition.mercatorProjection!.latitudeToTileY(boundingBox.maxLatitude);
-    int tileRight = mapViewPosition.mercatorProjection!.longitudeToTileX(boundingBox.maxLongitude);
-    int tileBottom = mapViewPosition.mercatorProjection!.latitudeToTileY(boundingBox.minLatitude);
+    int tileLeft = mapViewPosition.projection!.longitudeToTileX(boundingBox.minLongitude);
+    int tileTop = mapViewPosition.projection!.latitudeToTileY(boundingBox.maxLatitude);
+    int tileRight = mapViewPosition.projection!.longitudeToTileX(boundingBox.maxLongitude);
+    int tileBottom = mapViewPosition.projection!.latitudeToTileY(boundingBox.minLatitude);
     int tileHalfX = ((tileRight - tileLeft) / 2).round() + tileLeft;
     int tileHalfY = ((tileBottom - tileTop) / 2).round() + tileTop;
 

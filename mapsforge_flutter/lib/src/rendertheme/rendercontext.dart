@@ -30,7 +30,7 @@ class RenderContext {
   final List<MapElementContainer> labels;
   late List<List<List<ShapePaintContainer>?>?> ways;
 
-  PixelProjection? _mercatorProjection;
+  PixelProjection? _projection;
 
   RenderContext(this.job, this.renderTheme, this.graphicFactory)
       : assert(graphicFactory != null),
@@ -90,8 +90,8 @@ class RenderContext {
   }
 
   PixelProjection get projection {
-    if (_mercatorProjection != null) return _mercatorProjection!;
-    _mercatorProjection = PixelProjection(job.tile.zoomLevel, job.tileSize);
-    return _mercatorProjection!;
+    if (_projection != null) return _projection!;
+    _projection = PixelProjection(job.tile.zoomLevel, job.tileSize);
+    return _projection!;
   }
 }

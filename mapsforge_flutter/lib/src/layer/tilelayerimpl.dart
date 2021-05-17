@@ -60,7 +60,7 @@ class TileLayerImpl extends TileLayer {
     Mappoint? leftUpper = mapViewPosition.leftUpper;
 
     jobSet.bitmaps.forEach((Tile tile, TileBitmap tileBitmap) {
-      Mappoint point = mapViewPosition.mercatorProjection!.getLeftUpper(tile);
+      Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
       _paint.setAntiAlias(false);
       canvas.drawBitmap(
         bitmap: tileBitmap,

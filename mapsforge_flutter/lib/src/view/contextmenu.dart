@@ -40,8 +40,8 @@ class ContextMenuState extends State<ContextMenu> implements ContextMenuCallback
   Widget build(BuildContext context) {
     if (widget.event == _lastTapEvent) return Container();
     widget.position.calculateBoundingBox(widget.viewModel.viewDimension!);
-    double x = widget.position.mercatorProjection!.longitudeToPixelX(widget.event.longitude) - widget.position.leftUpper!.x;
-    double y = widget.position.mercatorProjection!.latitudeToPixelY(widget.event.latitude) - widget.position.leftUpper!.y;
+    double x = widget.position.projection!.longitudeToPixelX(widget.event.longitude) - widget.position.leftUpper!.x;
+    double y = widget.position.projection!.latitudeToPixelY(widget.event.latitude) - widget.position.leftUpper!.y;
     //x = x + widget.viewOffset.dx;
     //y = y + widget.viewOffset.dy;
     Dimension? screen = widget.viewModel.viewDimension;

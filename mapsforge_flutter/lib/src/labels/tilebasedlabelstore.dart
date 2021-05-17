@@ -1,27 +1,35 @@
 import 'dart:core';
-import 'dart:core';
+
+import 'package:ecache/ecache.dart';
 
 import '../mapelements/mapelementcontainer.dart';
 import '../model/tile.dart';
 import '../utils/layerutil.dart';
-import '../utils/workingsetcache.dart';
-
 import 'labelstore.dart';
 
-/**
- * A LabelStore where the data is stored per tile.
- */
+/// A LabelStore where the data is stored per tile.
+class TileBasedLabelStore implements LabelStore {
+  final SimpleStorage<Tile, List<MapElementContainer>> storage = SimpleStorage<Tile, List<MapElementContainer>>();
+  late Cache<Tile, List<MapElementContainer>> _items;
 
-class TileBasedLabelStore extends WorkingSetCache<Tile, List<MapElementContainer>> implements LabelStore {
   late Set<Tile> lastVisibleTileSet;
   int version = 0;
 
-  TileBasedLabelStore(int capacity) : super(capacity) {
+  TileBasedLabelStore(int capacity) {
+    _items = new LruCache<Tile, List<MapElementContainer>>(
+      storage: storage,
+      capacity: capacity,
+    );
     lastVisibleTileSet = new Set<Tile>();
   }
 
   void destroy() {
-    this.clear();
+    _items.clear();
+  }
+
+  @override
+  void clear() {
+    _items.clear();
   }
 
   /**
@@ -31,7 +39,7 @@ class TileBasedLabelStore extends WorkingSetCache<Tile, List<MapElementContainer
    * @param mapItems the map elements.
    */
   void storeMapItems(Tile tile, List<MapElementContainer> mapItems) {
-    this.put(tile, LayerUtil.collisionFreeOrdered(mapItems));
+    _items.set(tile, LayerUtil.collisionFreeOrdered(mapItems));
     ++this.version;
   }
 
@@ -50,8 +58,8 @@ class TileBasedLabelStore extends WorkingSetCache<Tile, List<MapElementContainer
 
     List<MapElementContainer> visibleItems = [];
     for (Tile tile in lastVisibleTileSet) {
-      if (containsKey(tile)) {
-        visibleItems.addAll(get(tile)!);
+      if (_items.containsKey(tile)) {
+        visibleItems.addAll(_items.get(tile)!);
       }
     }
     return visibleItems;
@@ -64,14 +72,6 @@ class TileBasedLabelStore extends WorkingSetCache<Tile, List<MapElementContainer
    * @return true if the tile is in the current tile set, but no data is stored for it.
    */
   bool requiresTile(Tile tile) {
-    return this.lastVisibleTileSet.contains(tile) && !this.containsKey(tile);
+    return this.lastVisibleTileSet.contains(tile) && !_items.containsKey(tile);
   }
-
-//  @override
-//  bool removeEldestEntry(Map.Entry<Tile, List<MapElementContainer>> eldest) {
-//    if (size() > this.capacity) {
-//      return true;
-//    }
-//    return false;
-//  }
 }

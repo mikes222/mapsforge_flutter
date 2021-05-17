@@ -106,28 +106,6 @@ class MapFile extends MapDataStore {
     close();
   }
 
-  /**
-   * Opens the given map file, reads its header data and validates them. Uses default language.
-   *
-   * @param mapPath the path of the map file.
-   * @throws MapFileException if the given map file is null or invalid.
-   */
-//  MapFile(String mapPath) {
-//    this(mapPath, null);
-//  }
-
-  /**
-   * Opens the given map file, reads its header data and validates them.
-   *
-   * @param mapPath  the path of the map file.
-   * @param language the language to use (may be null).
-   * @throws MapFileException if the given map file is null or invalid or IOException if the file
-   *                          cannot be opened.
-   */
-//  MapFile(String mapPath, String language) {
-//    this(new File(mapPath), language);
-//  }
-
   @override
   BoundingBox get boundingBox {
     return getMapFileInfo().boundingBox;
@@ -240,7 +218,7 @@ class MapFile extends MapDataStore {
    * @return true if the block signature could be processed successfully, false otherwise.
    */
   bool _processBlockSignature(ReadBuffer readBuffer) {
-    if (this._mapFileHeader.getMapFileInfo().debugFile!) {
+    if (this._mapFileHeader.getMapFileInfo().debugFile) {
       // get and check the block signature
       String signatureBlock = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_BLOCK);
       if (!signatureBlock.startsWith("###TileStart")) {
@@ -420,7 +398,7 @@ class MapFile extends MapDataStore {
     // lies right on the border, some of this data needs to be drawn as the graphics will
     // overlap onto this tile.
     ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
-    MercatorProjection projection = MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
+    Projection projection = MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     DatastoreReadResult? result = await processBlocks(
         readBufferMaster, queryParameters, subFileParameter, projection.boundingBoxOfTiles(upperLeft, lowerRight), selector);
     diff = DateTime.now().millisecondsSinceEpoch - timer;
@@ -504,7 +482,7 @@ class MapFile extends MapDataStore {
   @override
   bool supportsTile(Tile tile) {
     if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax) return false;
-    MercatorProjection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+    Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     return projection.boundingBoxOfTile(tile).intersects(getMapFileInfo().boundingBox);
   }
 }

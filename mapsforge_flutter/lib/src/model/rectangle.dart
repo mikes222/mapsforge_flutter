@@ -10,8 +10,8 @@ class Rectangle {
   final double top;
 
   const Rectangle(this.left, this.top, this.right, this.bottom)
-      : assert(left < right),
-        assert(bottom > top);
+      : assert(left <= right),
+        assert(bottom >= top);
 
   /**
    * @return true if this Rectangle contains the given point, false otherwise.

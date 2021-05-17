@@ -3,7 +3,6 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../graphics/bitmap.dart';
-import '../graphics/color.dart';
 import '../graphics/filter.dart';
 import '../graphics/graphicfactory.dart';
 import '../graphics/graphicutils.dart';
@@ -12,7 +11,6 @@ import '../graphics/mappath.dart';
 import '../graphics/matrix.dart';
 import '../mapelements/mapelementcontainer.dart';
 import '../model/mappoint.dart';
-import '../model/rectangle.dart';
 import '../model/tile.dart';
 import '../renderer/polylinecontainer.dart';
 import '../renderer/rendererutils.dart';
@@ -51,7 +49,7 @@ class CanvasRasterer {
         //   List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
 
         for (int index = wayList!.length - 1; index >= 0; --index) {
-          _drawShapePaintContainer(wayList.elementAt(index));
+          _drawShapePaintContainer(wayList.elementAt(index), renderContext.projection);
         }
       }
     }
@@ -151,7 +149,7 @@ class CanvasRasterer {
     this.canvas.drawPath(this.path, shapePaintContainer.paint);
   }
 
-  void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer) {
+  void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer, PixelProjection projection) {
     ShapeContainer shapeContainer = shapePaintContainer.shapeContainer;
     ShapeType shapeType = shapeContainer.getShapeType();
     switch (shapeType) {
@@ -165,7 +163,7 @@ class CanvasRasterer {
       case ShapeType.POLYLINE:
         PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
         //_log.info("drawing line " + polylineContainer.toString());
-        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(), shapePaintContainer.dy);
+        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(projection), shapePaintContainer.dy);
         break;
     }
   }

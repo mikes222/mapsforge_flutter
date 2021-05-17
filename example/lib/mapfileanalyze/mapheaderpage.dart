@@ -117,7 +117,7 @@ class MapHeaderPage extends StatelessWidget {
                       Text("Zoomlevel ${mapFile.getMapFileInfo().zoomLevelMin} - ${mapFile.getMapFileInfo().zoomLevelMax}, "),
                       Text("Boundingbox ${formatBoundingbox(mapFile.getMapFileInfo().boundingBox)}, "),
                       Text("PoiTags ${mapFile.getMapFileInfo().poiTags.length}, "),
-                      Text("WayTags ${mapFile.getMapFileInfo().wayTags!.length}, "),
+                      Text("WayTags ${mapFile.getMapFileInfo().wayTags.length}, "),
                       Text("numberOfSubFiles ${mapFile.getMapFileInfo().numberOfSubFiles}, "),
                       // poiTags
                       // wayTags
