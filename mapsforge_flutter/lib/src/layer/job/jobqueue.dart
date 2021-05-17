@@ -65,7 +65,7 @@ class JobQueue {
   ///
   Stream<JobSet> get observeJobResult => _injectJobResult.stream;
 
-  TileBitmap? getMissingBitmap(double tileSize) {
+  TileBitmap? getMissingBitmap(int tileSize) {
     if (_missingBitmap != null) return _missingBitmap!;
     jobRenderer.createMissingBitmap(tileSize).then((TileBitmap value) {
       _missingBitmap = value as FlutterTileBitmap;

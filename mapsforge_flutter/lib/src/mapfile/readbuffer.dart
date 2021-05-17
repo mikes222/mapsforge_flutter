@@ -22,10 +22,7 @@ class ReadBufferMaster {
 
   int? _length;
 
-  /// the _raf needs a lock otherwise the pointer to the raf could get corrupted when reading from multiple positions concurrently
-  final Lock _lock;
-
-  ReadBufferMaster(this.filename) : _lock = Lock();
+  ReadBufferMaster(this.filename);
 
   Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
     //int time = DateTime.now().millisecondsSinceEpoch;
@@ -73,7 +70,7 @@ class ReadBufferMaster {
     if (_raf != null) {
       return Future.value(_raf);
     }
-   File file = File(filename);
+    File file = File(filename);
     bool ok = await file.exists();
     if (!ok) {
       throw FileNotFoundException(filename);
@@ -113,8 +110,7 @@ class ReadBuffer {
   ///
   /// Default constructor to open a buffer for reading a mapfile
   ///
-  ReadBuffer._(this._bufferData, this._offset)
-      : bufferPosition = 0;
+  ReadBuffer._(this._bufferData, this._offset) : bufferPosition = 0;
 
   /// copy constructor. This way one can read the same file simultaneously
 //  ReadBuffer.fromSource(ReadBuffer other)

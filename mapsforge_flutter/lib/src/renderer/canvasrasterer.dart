@@ -1,4 +1,6 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../graphics/bitmap.dart';
 import '../graphics/color.dart';
@@ -26,13 +28,11 @@ class CanvasRasterer {
   final MapCanvas canvas;
   final MapPath path;
   final Matrix symbolMatrix;
-  final double tileSize;
 
-  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, this.tileSize, [String? src])
+  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, [String? src])
       : canvas = graphicFactory.createCanvas(width, height, src),
         path = graphicFactory.createPath(),
-        symbolMatrix = graphicFactory.createMatrix(),
-        assert(tileSize != null);
+        symbolMatrix = graphicFactory.createMatrix();
 
   void destroy() {
     this.canvas.destroy();
@@ -57,7 +57,7 @@ class CanvasRasterer {
     }
   }
 
-  void drawMapElements(Set<MapElementContainer> elements, Tile tile, double tileSize) {
+  void drawMapElements(Set<MapElementContainer> elements, Tile tile, int tilesize) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -66,10 +66,11 @@ class CanvasRasterer {
     // draw elements in order of priority: lower priority first, so more important
     // elements will be drawn on top (in case of display=true) items.
     elementsAsList.sort();
+    PixelProjection projection = PixelProjection(tile.zoomLevel, tilesize);
 
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
-      element.draw(canvas, tile.getLeftUpper(tileSize), this.symbolMatrix, Filter.NONE);
+      element.draw(canvas, projection.getLeftUpper(tile), this.symbolMatrix, Filter.NONE);
     }
   }
 
@@ -164,7 +165,7 @@ class CanvasRasterer {
       case ShapeType.POLYLINE:
         PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
         //_log.info("drawing line " + polylineContainer.toString());
-        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(tileSize), shapePaintContainer.dy);
+        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(), shapePaintContainer.dy);
         break;
     }
   }

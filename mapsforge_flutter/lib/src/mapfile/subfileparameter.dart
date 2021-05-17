@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/maps.dart';
+
 /// Holds all parameters of a sub-file. A subfile is a portion of a map. It is not necessarily dependent on a mapFILE.
 class SubFileParameter {
   /**
@@ -53,7 +55,7 @@ class SubFileParameter {
   /**
    * Absolute start address of the sub-file in the enclosing file.
    */
-  final int? startAddress;
+  final int startAddress;
 
   /**
    * Size of the sub-file in bytes.
@@ -63,12 +65,14 @@ class SubFileParameter {
   /**
    * Maximum zoom level for which the block entries tables are made.
    */
-  final int? zoomLevelMax;
+  final int zoomLevelMax;
 
   /**
    * Minimum zoom level for which the block entries tables are made.
    */
-  final int? zoomLevelMin;
+  final int zoomLevelMin;
+
+  Projection? _projection;
 
   SubFileParameter(
     this.baseZoomLevel,
@@ -127,5 +131,11 @@ class SubFileParameter {
   @override
   String toString() {
     return 'SubFileParameter{baseZoomLevel: $baseZoomLevel, blocksHeight: $blocksHeight, blocksWidth: $blocksWidth, boundaryTileBottom: $boundaryTileBottom, boundaryTileLeft: $boundaryTileLeft, boundaryTileRight: $boundaryTileRight, boundaryTileTop: $boundaryTileTop, indexEndAddress: $indexEndAddress, indexStartAddress: $indexStartAddress, numberOfBlocks: $numberOfBlocks, startAddress: $startAddress, subFileSize: $subFileSize, zoomLevelMax: $zoomLevelMax, zoomLevelMin: $zoomLevelMin}';
+  }
+
+  Projection projection() {
+    if (_projection != null) return _projection!;
+    _projection = MercatorProjection.fromZoomlevel(baseZoomLevel!);
+    return _projection!;
   }
 }

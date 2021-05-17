@@ -40,7 +40,7 @@ class MarkerContext implements MarkerCallback {
 
   @override
   void renderText(String caption, ILatLong latLong, double offsetX, double offsetY, MapPaint stroke) {
-    Mappoint mappoint = mapViewPosition.mercatorProjection!.getPixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
+    Mappoint mappoint = mapViewPosition.mercatorProjection!.pixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
 //    print(
 //        "rendering caption $caption at latLong ${latLong.toString()}, ${mappoint.toString()} and leftUpper ${mapViewPosition.leftUpper.toString()}");
     flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(), (mappoint.y + offsetY).toInt(), stroke);

@@ -95,7 +95,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       return null;
     }
     CanvasRasterer canvasRasterer =
-        CanvasRasterer(graphicFactory, job.tileSize, job.tileSize, job.tileSize, "MapDatastoreRenderer ${job.tile.toString()}");
+        CanvasRasterer(graphicFactory, job.tileSize.toDouble(), job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
     DatastoreReadResult? mapReadResult;
     if (useIsolate) {
@@ -192,7 +192,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void _renderWaterBackground(final RenderContext renderContext) {
     renderContext.setDrawingLayers(0);
     List<Mappoint> coordinates = getTilePixelCoordinates(renderContext.job.tileSize);
-    Mappoint? tileOrigin = renderContext.job.tile.getLeftUpper(renderContext.job.tileSize);
+    Mappoint tileOrigin = renderContext.projection.getLeftUpper(renderContext.job.tile);
     for (int i = 0; i < coordinates.length; i++) {
       coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
     }
@@ -201,7 +201,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
   }
 
-  static List<Mappoint> getTilePixelCoordinates(double tileSize) {
+  static List<Mappoint> getTilePixelCoordinates(int tileSize) {
     List<Mappoint> result = [];
     result.add(Mappoint(0, 0));
     result.add(Mappoint(tileSize.toDouble(), 0));
@@ -212,16 +212,16 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderArea(RenderContext renderContext, MapPaint? fill, MapPaint stroke, int level, PolylineContainer way) {
+  void renderArea(RenderContext renderContext, MapPaint fill, MapPaint stroke, int level, PolylineContainer way) {
     if (!stroke.isTransparent()) renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, stroke, 0));
-    if (!fill!.isTransparent()) renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, fill, 0));
+    if (!fill.isTransparent()) renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, fill, 0));
   }
 
   @override
   void renderAreaCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
       double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PolylineContainer way) {
     if (renderLabels) {
-      Mappoint centerPoint = way.getCenterAbsolute()!.offset(horizontalOffset, verticalOffset);
+      Mappoint centerPoint = way.getCenterAbsolute(renderContext.projection).offset(horizontalOffset, verticalOffset);
       //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
       PointTextContainer label =
           this.graphicFactory.createPointTextContainer(centerPoint, display, priority, caption, fill, stroke, null, position, maxTextWidth);
@@ -234,7 +234,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderAreaSymbol(
       RenderContext renderContext, Display display, int priority, Bitmap symbol, PolylineContainer way, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
-      Mappoint? centerPosition = way.getCenterAbsolute();
+      Mappoint centerPosition = way.getCenterAbsolute(renderContext.projection);
       renderContext.labels.add(new SymbolContainer(centerPosition, display, priority, symbol, paint: symbolPaint));
     }
   }
@@ -245,7 +245,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     if (renderLabels) {
       //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
       //MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, renderContext.job.tile.zoomLevel);
-      Mappoint poiPosition = renderContext.mercatorProjection!.getPixel(poi.position);
+      Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
 
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));
@@ -257,7 +257,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       RenderContext renderContext, double radius, MapPaint? fill, MapPaint stroke, int level, PointOfInterest poi) {
     // ShapePaintContainers does not shift the position relative to the tile by themself. In case of ways this is done in the [PolylineContainer], but
     // in case of cirles this is not done at all so do it here for now
-    Mappoint poiPosition = renderContext.mercatorProjection!.getPixelRelativeToTile(poi.position, renderContext.job.tile);
+    Mappoint poiPosition = renderContext.projection.pixelRelativeToTile(poi.position, renderContext.job.tile);
     //_log.info("Adding circle $poiPosition with $radius");
     if (stroke != null && !stroke.isTransparent())
       renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), stroke, 0));
@@ -269,7 +269,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderPointOfInterestSymbol(
       RenderContext renderContext, Display display, int priority, Bitmap symbol, PointOfInterest poi, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
-      Mappoint poiPosition = renderContext.mercatorProjection!.getPixel(poi.position);
+      Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
       renderContext.labels.add(new SymbolContainer(poiPosition, display, priority, symbol, paint: symbolPaint, alignCenter: true));
     }
   }
@@ -284,7 +284,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way, MapPaint? symbolPaint) {
     if (renderLabels && !symbolPaint!.isTransparent()) {
       WayDecorator.renderSymbol(symbol, display, priority, dy, alignCenter, repeat, repeatGap!.toInt(), repeatStart!.toInt(), rotate,
-          way.getCoordinatesAbsolute(), renderContext.labels, symbolPaint);
+          way.getCoordinatesAbsolute(renderContext.projection), renderContext.labels, symbolPaint);
     }
   }
 
@@ -293,7 +293,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       bool? repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way) {
     if (renderLabels) {
       WayDecorator.renderText(graphicFactory, way.getUpperLeft(), way.getLowerRight(), text, display, priority, dy, fill, stroke, repeat,
-          repeatGap!, repeatStart!, rotate, way.getCoordinatesAbsolute(), renderContext.labels);
+          repeatGap!, repeatStart!, rotate, way.getCoordinatesAbsolute(renderContext.projection), renderContext.labels);
     }
   }
 
@@ -325,7 +325,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
         // but we need to remove the labels for this tile that overlap onto a tile that has been drawn
         for (MapElementContainer current in renderContext.labels) {
-          if (current.intersects(neighbour.getBoundaryAbsolute(renderContext.job.tileSize))) {
+          if (current.intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
             undrawableElements.add(current);
           }
         }
@@ -369,7 +369,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     for (Tile tile in neighbours) {
       tileDependencies!.removeTileData(renderContext.job.tile, to: tile);
       for (MapElementContainer element in labelsToDraw) {
-        if (element.intersects(tile.getBoundaryAbsolute(renderContext.job.tileSize))) {
+        if (element.intersects(renderContext.projection.boundaryAbsolute(tile))) {
           tileDependencies!.addOverlappingElement(renderContext.job.tile, tile, element);
         }
       }

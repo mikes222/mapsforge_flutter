@@ -1,5 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 import '../datastore/way.dart';
 import '../model/mappoint.dart';
@@ -37,8 +39,8 @@ class PolylineContainer implements ShapeContainer {
     this.way = way;
     if (this.way.labelPosition != null) {
       // Todo get correct tilesize
-      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
-      this.center = mercatorProjection.getPixel(this.way.labelPosition!);
+      PixelProjection projection = PixelProjection(upperLeft.zoomLevel, DisplayModel.DEFAULT_TILE_SIZE);
+      this.center = projection.latLonToPixel(this.way.labelPosition!);
     }
   }
 
@@ -50,25 +52,23 @@ class PolylineContainer implements ShapeContainer {
     this.coordinatesAbsolute!.add(List.from(coordinates));
   }
 
-  Mappoint? getCenterAbsolute() {
+  Mappoint getCenterAbsolute(PixelProjection projection) {
     if (this.center == null) {
-      this.center = GeometryUtils.calculateCenterOfBoundingBox(getCoordinatesAbsolute()[0]);
+      this.center = GeometryUtils.calculateCenterOfBoundingBox(getCoordinatesAbsolute(projection)[0]);
     }
-    return this.center;
+    return this.center!;
   }
 
-  List<List<Mappoint>> getCoordinatesAbsolute() {
+  List<List<Mappoint>> getCoordinatesAbsolute(PixelProjection projection) {
     // deferred evaluation as some PolyLineContainers will never be drawn. However,
     // to save memory, after computing the absolute coordinates, the way is released.
     if (coordinatesAbsolute == null) {
       coordinatesAbsolute = [];
-      // Todo get correct tilesize
-      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
       for (int i = 0; i < way.latLongs.length; ++i) {
         List<Mappoint> mp1 = [];
         coordinatesAbsolute!.add(mp1);
         for (int j = 0; j < way.latLongs[i].length; ++j) {
-          Mappoint mp2 = mercatorProjection.getPixel(way.latLongs[i][j]);
+          Mappoint mp2 = projection.latLonToPixel(way.latLongs[i][j]);
           mp1.add(mp2);
         }
       }
@@ -77,15 +77,16 @@ class PolylineContainer implements ShapeContainer {
     return coordinatesAbsolute!;
   }
 
-  List<List<Mappoint>> getCoordinatesRelativeToOrigin(double tileSize) {
+  List<List<Mappoint>> getCoordinatesRelativeToOrigin() {
     if (coordinatesRelativeToTile == null) {
-      Mappoint? tileOrigin = upperLeft.getLeftUpper(tileSize);
-      int count = getCoordinatesAbsolute().length;
+      PixelProjection projection = PixelProjection(upperLeft.zoomLevel, DisplayModel.DEFAULT_TILE_SIZE);
+      Mappoint tileOrigin = projection.getLeftUpper(upperLeft);
+      int count = getCoordinatesAbsolute(projection).length;
       coordinatesRelativeToTile = [];
       for (int i = 0; i < count; ++i) {
         List<Mappoint> mp1 = [];
         coordinatesRelativeToTile!.add(mp1);
-        for (int j = 0; j < getCoordinatesAbsolute()[i].length; ++j) {
+        for (int j = 0; j < getCoordinatesAbsolute(projection)[i].length; ++j) {
           Mappoint mp2 = coordinatesAbsolute![i][j].offset(-tileOrigin.x, -tileOrigin.y);
           mp1.add(mp2);
         }

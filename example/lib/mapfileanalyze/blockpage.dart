@@ -11,11 +11,11 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
 
 class BlockPage extends StatelessWidget {
-  final MapFile? mapFile;
+  final MapFile mapFile;
 
-  final SubFileParameter? subFileParameter;
+  final SubFileParameter subFileParameter;
 
-  const BlockPage({Key? key, this.mapFile, this.subFileParameter}) : super(key: key);
+  const BlockPage({Key? key, required this.mapFile, required this.subFileParameter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,23 +79,21 @@ class BlockPage extends StatelessWidget {
 
   Future<DatastoreReadResult?> _readBlock() async {
     try {
-      ReadBufferMaster readBufferMaster = ReadBufferMaster(mapFile!.filename);
+      ReadBufferMaster readBufferMaster = ReadBufferMaster(mapFile.filename);
 
       QueryParameters queryParameters = new QueryParameters();
-      queryParameters.queryZoomLevel = subFileParameter!.baseZoomLevel;
-      MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(256, subFileParameter!.baseZoomLevel!);
-      Tile upperLeft = Tile(subFileParameter!.boundaryTileLeft, subFileParameter!.boundaryTileTop, subFileParameter!.baseZoomLevel!, 0);
-      Tile lowerRight =
-          Tile(subFileParameter!.boundaryTileRight, subFileParameter!.boundaryTileBottom, subFileParameter!.baseZoomLevel!, 0);
-      queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter!);
-      queryParameters.calculateBlocks(subFileParameter!);
+      queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
+      MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
+      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel!, 0);
+      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel!, 0);
+      queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
+      queryParameters.calculateBlocks(subFileParameter);
       print(
           "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
 
-      BoundingBox boundingBox = Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight);
-      Selector selector = Selector.ALL;
-      DatastoreReadResult? result =
-          await mapFile!.processBlocks(readBufferMaster, queryParameters, subFileParameter!, boundingBox, selector);
+      BoundingBox boundingBox = mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
+      MapfileSelector selector = MapfileSelector.ALL;
+      DatastoreReadResult? result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {

@@ -1,7 +1,8 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
+import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 import '../utils/latlongutils.dart';
 import 'latlong.dart';
@@ -24,16 +25,16 @@ class BoundingBox {
 //  }
 
   /// The maximum latitude coordinate of this BoundingBox in degrees.
-  late double maxLatitude;
+  final double maxLatitude;
 
   /// The maximum longitude coordinate of this BoundingBox in degrees.
-  late double maxLongitude;
+  final double maxLongitude;
 
   /// The minimum latitude coordinate of this BoundingBox in degrees.
-  late double minLatitude;
+  final double minLatitude;
 
   /// The minimum longitude coordinate of this BoundingBox in degrees.
-  late double minLongitude;
+  final double minLongitude;
 
   /**
    * @param minLatitude  the minimum latitude coordinate in degrees.
@@ -42,23 +43,21 @@ class BoundingBox {
    * @param maxLongitude the maximum longitude coordinate in degrees.
    * @throws IllegalArgumentException if a coordinate is invalid.
    */
-  BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude) {
-    LatLongUtils.validateLatitude(minLatitude);
-    LatLongUtils.validateLongitude(minLongitude);
-    LatLongUtils.validateLatitude(maxLatitude);
-    LatLongUtils.validateLongitude(maxLongitude);
+  const BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude)
+      : assert(minLatitude <= maxLatitude),
+        assert(minLongitude <= maxLongitude);
 
-    if (minLatitude > maxLatitude) {
-      throw new Exception("invalid latitude range: $minLatitude $maxLatitude");
-    } else if (minLongitude > maxLongitude) {
-      throw new Exception("invalid longitude range: $minLongitude $maxLongitude");
-    }
-  }
+  // {
+  //   Projection.checkLatitude(minLatitude);
+  //   Projection.checkLongitude(minLongitude);
+  //   Projection.checkLatitude(maxLatitude);
+  //   Projection.checkLongitude(maxLongitude);
+  // }
 
   /**
    * @param latLongs the coordinates list.
    */
-  BoundingBox.fromLatLongs(List<LatLong> latLongs) {
+  static BoundingBox fromLatLongs(List<LatLong> latLongs) {
     double minLatitude = double.infinity;
     double minLongitude = double.infinity;
     double maxLatitude = double.negativeInfinity;
@@ -73,10 +72,11 @@ class BoundingBox {
       maxLongitude = max(maxLongitude, longitude);
     }
 
-    this.minLatitude = minLatitude;
-    this.minLongitude = minLongitude;
-    this.maxLatitude = maxLatitude;
-    this.maxLongitude = maxLongitude;
+    Projection.checkLatitude(minLatitude);
+    Projection.checkLongitude(minLongitude);
+    Projection.checkLatitude(maxLatitude);
+    Projection.checkLongitude(maxLongitude);
+    return BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 
   /**
@@ -216,19 +216,18 @@ class BoundingBox {
    * @return an extended BoundingBox or this (if meters == 0)
    */
   BoundingBox extendMeters(int meters) {
+    assert(meters >= 0);
     if (meters == 0) {
       return this;
-    } else if (meters < 0) {
-      throw new Exception("BoundingBox extend operation does not accept negative values");
     }
 
-    double verticalExpansion = LatLongUtils.latitudeDistance(meters);
-    double horizontalExpansion = LatLongUtils.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
+    double verticalExpansion = Projection.latitudeDistance(meters);
+    double horizontalExpansion = Projection.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
 
-    double minLat = max(MercatorProjectionImpl.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon = max(-180, this.minLongitude - horizontalExpansion);
-    double maxLat = min(MercatorProjectionImpl.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
+    double minLat = max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+    double minLon = max(Projection.LONGITUDE_MIN, this.minLongitude - horizontalExpansion);
+    double maxLat = min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+    double maxLon = min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
 
     return new BoundingBox(minLat, minLon, maxLat, maxLon);
   }

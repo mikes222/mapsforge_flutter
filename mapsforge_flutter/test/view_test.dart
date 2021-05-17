@@ -28,7 +28,7 @@ void main() {
     MapModel? mapModel = await (tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
 
-      MapFile mapDataStore = await MapFile.create(TestAssetBundle().correctFilename("monaco.map"), null, null);
+      MapFile mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), null, null);
 
       SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
       GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);

@@ -5,6 +5,8 @@ import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
+import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 class MemoryDatastore extends Datastore {
   /// The read POIs.
@@ -33,12 +35,12 @@ class MemoryDatastore extends Datastore {
 
   @override
   Future<DatastoreReadResult> readMapDataSingle(Tile tile) {
-    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, 16);
+    Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     List<PointOfInterest> poiResults =
-        pointOfInterests.where((poi) => tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)).toList();
+        pointOfInterests.where((poi) => projection.boundingBoxOfTile(tile).containsLatLong(poi.position)).toList();
     List<Way> wayResults = [];
     for (Way way in ways) {
-      if (tile.getBoundingBox(mercatorProjection)!.intersectsArea(way.latLongs)) {
+      if (projection.boundingBoxOfTile(tile).intersectsArea(way.latLongs)) {
         wayResults.add(way);
       }
     }
@@ -59,14 +61,14 @@ class MemoryDatastore extends Datastore {
 
   @override
   bool supportsTile(Tile tile) {
-    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, 16);
+    Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     for (PointOfInterest poi in pointOfInterests) {
-      if (tile.getBoundingBox(mercatorProjection)!.containsLatLong(poi.position)) return true;
+      if (projection.boundingBoxOfTile(tile).containsLatLong(poi.position)) return true;
     }
     for (Way way in ways) {
       for (List<ILatLong> list in way.latLongs) {
         for (ILatLong latLong in list) {
-          if (tile.getBoundingBox(mercatorProjection)!.containsLatLong(latLong as LatLong)) return true;
+          if (projection.boundingBoxOfTile(tile).containsLatLong(latLong)) return true;
         }
       }
     }

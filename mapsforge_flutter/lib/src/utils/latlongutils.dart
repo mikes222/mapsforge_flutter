@@ -23,26 +23,6 @@ class LatLongUtils {
   static final double POLAR_RADIUS = 6356752.3142;
 
   /**
-   * Maximum possible latitude coordinate.
-   */
-  static final double LATITUDE_MAX = 90;
-
-  /**
-   * Minimum possible latitude coordinate.
-   */
-  static final double LATITUDE_MIN = -LATITUDE_MAX;
-
-  /**
-   * Maximum possible longitude coordinate.
-   */
-  static final double LONGITUDE_MAX = 180;
-
-  /**
-   * Minimum possible longitude coordinate.
-   */
-  static final double LONGITUDE_MIN = -LONGITUDE_MAX;
-
-  /**
    * Conversion factor from degrees to microdegrees.
    */
   static final double CONVERSION_FACTOR = 1000000.0;
@@ -149,27 +129,6 @@ class LatLongUtils {
   }
 
   /**
-   * Calculates the amount of degrees of latitude for a given distance in meters.
-   *
-   * @param meters distance in meters
-   * @return latitude degrees
-   */
-  static double latitudeDistance(int meters) {
-    return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS);
-  }
-
-  /**
-   * Calculates the amount of degrees of longitude for a given distance in meters.
-   *
-   * @param meters   distance in meters
-   * @param latitude the latitude at which the calculation should be performed
-   * @return longitude degrees
-   */
-  static double longitudeDistance(int meters, double latitude) {
-    return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS * cos(toRadians(latitude)));
-  }
-
-  /**
    * Converts a coordinate from microdegrees (degrees * 10^6) to degrees. No validation is performed.
    *
    * @param coordinate the coordinate in microdegrees (degrees * 10^6).
@@ -254,30 +213,6 @@ class LatLongUtils {
         cos(toRadians(latLong1.latitude)) * cos(toRadians(latLong2.latitude)) * sin(dLon / 2) * sin(dLon / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return c * LatLongUtils.EQUATORIAL_RADIUS;
-  }
-
-  /**
-   * @param latitude the latitude coordinate in degrees which should be validated.
-   * @return the latitude value
-   * @throws IllegalArgumentException if the latitude coordinate is invalid or {@link Double#NaN}.
-   */
-  static double validateLatitude(double latitude) {
-    if (latitude == double.nan || latitude < LATITUDE_MIN || latitude > LATITUDE_MAX) {
-      throw new Exception("invalid latitude: $latitude");
-    }
-    return latitude;
-  }
-
-  /**
-   * @param longitude the longitude coordinate in degrees which should be validated.
-   * @return the longitude value
-   * @throws IllegalArgumentException if the longitude coordinate is invalid or {@link Double#NaN}.
-   */
-  static double validateLongitude(double longitude) {
-    if (longitude == double.nan || longitude < LONGITUDE_MIN || longitude > LONGITUDE_MAX) {
-      throw new Exception("invalid longitude: $longitude");
-    }
-    return longitude;
   }
 
   /**

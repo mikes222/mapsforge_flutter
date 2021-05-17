@@ -156,8 +156,12 @@ class Line extends RenderInstruction with BitmapMixin {
   Future<void> initResources(GraphicFactory graphicFactory) async {
     await initBitmap(graphicFactory);
     if (bitmap != null) {
+      // make sure the color is not transparent
+      if (stroke.isTransparent()) stroke.setColorFromNumber(0xff000000);
       stroke.setBitmapShader(bitmap!);
       strokes.forEach((key, value) {
+        // make sure the color is not transparent
+        if (value.isTransparent()) value.setColorFromNumber(0xff000000);
         value.setBitmapShader(bitmap!);
       });
       //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());

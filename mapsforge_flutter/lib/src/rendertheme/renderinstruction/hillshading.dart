@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/hillsrenderconfig.dart';
@@ -38,21 +40,20 @@ class Hillshading {
     double effectiveMagnitude = min(max(0, this.magnitude * hillsRenderConfig.getMaginuteScaleFactor()), 255) / 255;
     Tile tile = renderContext.job.tile;
     int zoomLevel = tile.zoomLevel;
-    if (zoomLevel > maxZoom || zoomLevel < minZoom) return;
-    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, zoomLevel);
-    Mappoint origin = tile.getLeftUpper(renderContext.job.tileSize);
-    double maptileTopLat = mercatorProjection.pixelYToLatitude(origin.y);
-    double maptileLeftLng = mercatorProjection.pixelXToLongitude(origin.x);
+    PixelProjection projection = PixelProjection(zoomLevel, renderContext.job.tileSize);
+    Mappoint origin = projection.getLeftUpper(tile);
+    double maptileTopLat = projection.pixelYToLatitude(origin.y);
+    double maptileLeftLng = projection.pixelXToLongitude(origin.x);
 
-    double maptileBottomLat = mercatorProjection.pixelYToLatitude(origin.y + renderContext.job.tileSize);
-    double maptileRightLng = mercatorProjection.pixelXToLongitude(origin.x + renderContext.job.tileSize);
+    double maptileBottomLat = projection.pixelYToLatitude(origin.y + renderContext.job.tileSize);
+    double maptileRightLng = projection.pixelXToLongitude(origin.x + renderContext.job.tileSize);
 
     double mapTileLatDegrees = maptileTopLat - maptileBottomLat;
     double mapTileLngDegrees = maptileRightLng - maptileLeftLng;
     double pxPerLat = (renderContext.job.tileSize / mapTileLatDegrees);
     double pxPerLng = (renderContext.job.tileSize / mapTileLngDegrees);
 
-    if (maptileRightLng < maptileLeftLng) maptileRightLng += mercatorProjection.mapSize;
+    if (maptileRightLng < maptileLeftLng) maptileRightLng += projection.mapsize;
 
     int shadingLngStep = 1;
     int shadingLatStep = 1;
@@ -102,28 +103,26 @@ class Hillshading {
           // map tile ends in shading tile
           shadingSubrectTop = padding + shadingInnerHeight * ((shadingTopLat - maptileTopLat) / shadingLatStep);
         } else if (maptileTopLat > shadingTopLat) {
-          maptileSubrectTop = mercatorProjection.latitudeToPixelY(shadingTopLat + (shadingPixelOffset / shadingInnerHeight)) - origin.y;
+          maptileSubrectTop = projection.latitudeToPixelY(shadingTopLat + (shadingPixelOffset / shadingInnerHeight)) - origin.y;
         }
         if (shadingBottomLat < maptileBottomLat) {
           // map tile ends in shading tile
           shadingSubrectBottom =
               padding + shadingInnerHeight - shadingInnerHeight * ((maptileBottomLat - shadingBottomLat) / shadingLatStep);
         } else if (maptileBottomLat < shadingBottomLat) {
-          maptileSubrectBottom =
-              mercatorProjection.latitudeToPixelY(shadingBottomLat + (shadingPixelOffset / shadingInnerHeight)) - origin.y;
+          maptileSubrectBottom = projection.latitudeToPixelY(shadingBottomLat + (shadingPixelOffset / shadingInnerHeight)) - origin.y;
         }
         if (shadingLeftLng < maptileLeftLng) {
           // map tile ends in shading tile
           shadingSubrectLeft = padding + shadingInnerWidth * ((maptileLeftLng - shadingLeftLng) / shadingLngStep);
         } else if (maptileLeftLng < shadingLeftLng) {
-          maptileSubrectLeft = mercatorProjection.longitudeToPixelX(shadingLeftLng + (shadingPixelOffset / shadingInnerWidth)) - origin.x;
+          maptileSubrectLeft = projection.longitudeToPixelX(shadingLeftLng + (shadingPixelOffset / shadingInnerWidth)) - origin.x;
         }
         if (shadingRightLng > maptileRightLng) {
           // map tile ends in shading tile
           shadingSubrectRight = padding + shadingInnerWidth - shadingInnerWidth * ((shadingRightLng - maptileRightLng) / shadingLngStep);
         } else if (maptileRightLng > shadingRightLng) {
-          maptileSubrectRight =
-              mercatorProjection.longitudeToPixelX(shadingRightLng + (shadingPixelOffset / shadingInnerHeight)) - origin.x;
+          maptileSubrectRight = projection.longitudeToPixelX(shadingRightLng + (shadingPixelOffset / shadingInnerHeight)) - origin.x;
         }
 
         Rectangle? hillsRect =

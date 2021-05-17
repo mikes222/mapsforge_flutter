@@ -51,15 +51,15 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
   /// Gets the pixel absolute boundary for this element.
   ///
   /// @return Rectangle with absolute pixel coordinates.
-  Rectangle? getBoundaryAbsolute() {
+  Rectangle getBoundaryAbsolute() {
     if (boundaryAbsolute == null) {
       boundaryAbsolute = this.boundary!.shift(xy);
     }
-    return boundaryAbsolute;
+    return boundaryAbsolute!;
   }
 
   bool intersects(Rectangle rectangle) {
-    return this.getBoundaryAbsolute()!.intersects(rectangle);
+    return this.getBoundaryAbsolute().intersects(rectangle);
   }
 
   /**
@@ -73,7 +73,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
     if (Display.ALWAYS == this.display || Display.ALWAYS == other.display) {
       return false;
     }
-    return this.getBoundaryAbsolute()!.intersects(other.getBoundaryAbsolute()!);
+    return this.getBoundaryAbsolute().intersects(other.getBoundaryAbsolute());
   }
 
   /**

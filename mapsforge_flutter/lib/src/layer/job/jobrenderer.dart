@@ -27,7 +27,7 @@ abstract class JobRenderer {
   /// be replaced
   /// when the rendering finishes.
   ///
-  Future<TileBitmap> createMissingBitmap(double tileSize) async {
+  Future<TileBitmap> createMissingBitmap(int tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -45,7 +45,7 @@ abstract class JobRenderer {
     )
       ..pushStyle(ui.TextStyle(color: paint.color))
       ..addText("Waiting for rendering...");
-    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize)), Offset(0, tileSize / 2));
+    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize.toDouble())), Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
     ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
@@ -57,7 +57,7 @@ abstract class JobRenderer {
   ///
   /// Creates a tilebitmap which denotes that there are no maps with any data found for the given tile.
   ///
-  Future<TileBitmap> createNoDataBitmap(double tileSize) async {
+  Future<TileBitmap> createNoDataBitmap(int tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -75,7 +75,7 @@ abstract class JobRenderer {
     )
       ..pushStyle(ui.TextStyle(color: Colors.red))
       ..addText("No data available");
-    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize)), Offset(0, tileSize / 2));
+    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize.toDouble())), Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
     ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
@@ -88,7 +88,7 @@ abstract class JobRenderer {
   ///
   /// creates a bitmap tile with the given errormessage
   ///
-  Future<TileBitmap> createErrorBitmap(double tileSize, dynamic error) async {
+  Future<TileBitmap> createErrorBitmap(int tileSize, dynamic error) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -109,7 +109,7 @@ abstract class JobRenderer {
     canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize - _margin * 2)), Offset(_margin, _margin));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
+    ui.Image img = await pic.toImage(tileSize, tileSize);
 //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
 

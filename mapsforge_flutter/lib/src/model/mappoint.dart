@@ -1,8 +1,6 @@
 import 'dart:math';
 
-/**
- * A Point represents an immutable pair of double coordinates in screen pixels.
- */
+/// A Point represents an immutable pair of double coordinates in screen pixels.
 class Mappoint implements Comparable<Mappoint> {
   /// The x coordinate of this point in pixels.
   final double x;
@@ -12,7 +10,7 @@ class Mappoint implements Comparable<Mappoint> {
 
   /// @param x the x coordinate of this point.
   /// @param y the y coordinate of this point.
-  Mappoint(this.x, this.y) {}
+  const Mappoint(this.x, this.y);
 
   @override
   int compareTo(Mappoint point) {
@@ -28,9 +26,7 @@ class Mappoint implements Comparable<Mappoint> {
     return 0;
   }
 
-  /**
-   * @return the euclidian distance from this point to the given point.
-   */
+  /// @return the euclidian distance from this point to the given point.
   double distance(Mappoint point) {
     return sqrt(pow(this.x - point.x, 2) + pow(this.y - point.y, 2));
   }
@@ -46,7 +42,7 @@ class Mappoint implements Comparable<Mappoint> {
     if (0 == dx && 0 == dy) {
       return this;
     }
-    return new Mappoint(this.x + dx, this.y + dy);
+    return Mappoint(this.x + dx, this.y + dy);
   }
 
   @override

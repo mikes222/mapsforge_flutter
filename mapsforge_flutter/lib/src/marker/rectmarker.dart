@@ -78,6 +78,8 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
       this.fill!.setStyle(Style.FILL);
       this.fill!.setStrokeWidth(fillWidth);
       if (bitmap != null) {
+        // make sure the color is not transparent
+        if (fill!.isTransparent()) fill!.setColorFromNumber(0xff000000);
         fill!.setBitmapShader(bitmap!);
       }
       //this.stroke.setTextSize(fontSize);
@@ -129,7 +131,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     ILatLong latLong =
-        mapViewPosition.mercatorProjection!.getLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
+        mapViewPosition.mercatorProjection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
     return latLong.latitude > minLatLon.latitude &&
         latLong.latitude < maxLatLon.latitude &&

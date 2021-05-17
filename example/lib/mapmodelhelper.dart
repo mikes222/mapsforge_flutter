@@ -37,7 +37,7 @@ class MapModelHelper {
       //mapDataStore = MapOnlineRenderer();
     } else {
       _log.info("opening mapfile ${_localPath + "/" + filename!}");
-      MapFile mapFile = await MapFile.create(_localPath + "/" + filename, null, null);
+      MapFile mapFile = await MapFile.from(_localPath + "/" + filename, null, null);
       //await mapFile.debug();
       //mapDataStore.addMapDataStore(mapFile, false, false);
       mapDataStore = mapFile;

@@ -1,4 +1,5 @@
-import '../model/latlong.dart';
+import 'package:mapsforge_flutter/core.dart';
+
 import '../model/tag.dart';
 
 /// An immutable container for all data associated with a single point of interest node (POI).
@@ -7,7 +8,7 @@ class PointOfInterest {
   final int layer;
 
   /// The position of this POI.
-  final LatLong position;
+  final ILatLong position;
 
   /// The tags of this POI.
   final List<Tag> tags;

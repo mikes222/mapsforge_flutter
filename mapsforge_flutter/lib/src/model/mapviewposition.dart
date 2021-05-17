@@ -3,7 +3,9 @@ import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
-import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
+import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
+import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 import 'boundingbox.dart';
 import 'mappoint.dart';
@@ -15,7 +17,7 @@ class MapViewPosition {
 
   double? _longitude;
 
-  final double tileSize;
+  final int tileSize;
 
   final int zoomLevel;
 
@@ -32,16 +34,16 @@ class MapViewPosition {
   // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
   Mappoint? _leftUpper;
 
-  MercatorProjectionImpl? _mercatorProjection;
+  PixelProjection? _projection;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this.indoorLevel, this.tileSize)
       : scale = 1,
         focalPoint = null,
         assert(zoomLevel >= 0),
         assert(tileSize > 0),
-        assert(_latitude == null || MercatorProjectionImpl.checkLatitude(_latitude)),
-        assert(_longitude == null || MercatorProjectionImpl.checkLongitude(_longitude)),
-        _mercatorProjection = MercatorProjectionImpl(tileSize, zoomLevel);
+        assert(_latitude == null || Projection.checkLatitude(_latitude)),
+        assert(_longitude == null || Projection.checkLongitude(_longitude)),
+        _projection = PixelProjection(zoomLevel, tileSize);
 
   MapViewPosition.zoomIn(MapViewPosition old)
       : _latitude = old._latitude,
@@ -51,7 +53,7 @@ class MapViewPosition {
         tileSize = old.tileSize,
         scale = 1,
         focalPoint = null {
-    _mercatorProjection = MercatorProjectionImpl(old.tileSize, zoomLevel);
+    _projection = PixelProjection(zoomLevel, tileSize);
   }
 
   MapViewPosition.zoomInAround(MapViewPosition old, double latitude, double longitude)
@@ -62,7 +64,7 @@ class MapViewPosition {
         tileSize = old.tileSize,
         scale = 1,
         focalPoint = null {
-    _mercatorProjection = MercatorProjectionImpl(old.tileSize, zoomLevel);
+    _projection = PixelProjection(zoomLevel, old.tileSize);
   }
 
   MapViewPosition.zoomOut(MapViewPosition old)
@@ -73,7 +75,7 @@ class MapViewPosition {
         tileSize = old.tileSize,
         scale = 1,
         focalPoint = null {
-    _mercatorProjection = MercatorProjectionImpl(old.tileSize, zoomLevel);
+    _projection = PixelProjection(zoomLevel, old.tileSize);
   }
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
@@ -84,7 +86,7 @@ class MapViewPosition {
         tileSize = old.tileSize,
         scale = 1,
         focalPoint = null {
-    _mercatorProjection = MercatorProjectionImpl(old.tileSize, zoomLevel);
+    _projection = PixelProjection(zoomLevel, old.tileSize);
   }
 
   MapViewPosition.indoorLevelUp(MapViewPosition old)
@@ -93,7 +95,7 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel + 1,
         tileSize = old.tileSize,
-        _mercatorProjection = old._mercatorProjection,
+        _projection = old._projection,
         scale = 1,
         focalPoint = null;
 
@@ -103,7 +105,7 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel - 1,
         tileSize = old.tileSize,
-        _mercatorProjection = old._mercatorProjection,
+        _projection = old._projection,
         scale = 1,
         focalPoint = null;
 
@@ -113,7 +115,7 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel,
         this.indoorLevel = indoorLevel,
         tileSize = old.tileSize,
-        _mercatorProjection = old._mercatorProjection,
+        _projection = old._projection,
         scale = 1,
         focalPoint = null;
 
@@ -129,17 +131,17 @@ class MapViewPosition {
         this.zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
-        _mercatorProjection = old._mercatorProjection;
+        _projection = old._projection;
 
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
-        _mercatorProjection = old._mercatorProjection,
+        _projection = old._projection,
         scale = old.scale,
         focalPoint = old.focalPoint,
-        assert(_latitude == null || MercatorProjectionImpl.checkLatitude(_latitude)),
-        assert(_longitude == null || MercatorProjectionImpl.checkLongitude(_longitude));
+        assert(_latitude == null || Projection.checkLatitude(_latitude)),
+        assert(_longitude == null || Projection.checkLongitude(_longitude));
 
   MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, Dimension viewDimension)
       : zoomLevel = old.zoomLevel,
@@ -147,27 +149,27 @@ class MapViewPosition {
         tileSize = old.tileSize,
         scale = old.scale,
         focalPoint = old.focalPoint,
-        _mercatorProjection = old._mercatorProjection {
+        _projection = old._projection {
     //calculateBoundingBox(tileSize, viewSize);
-    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _mercatorProjection!.mapSize - viewDimension.width / 2),
-        min(max(upper, -viewDimension.height / 2), _mercatorProjection!.mapSize - viewDimension.height / 2));
+    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _projection!.mapsize - viewDimension.width / 2),
+        min(max(upper, -viewDimension.height / 2), _projection!.mapsize - viewDimension.height / 2));
 
     double rightX = _leftUpper!.x + viewDimension.width;
     double bottomY = _leftUpper!.y + viewDimension.height;
 
     boundingBox = BoundingBox(
-        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize)),
-        _mercatorProjection!.pixelXToLongitude(max(_leftUpper!.x, 0)),
-        _mercatorProjection!.pixelYToLatitude(max(_leftUpper!.y, 0)),
-        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize)));
+        _projection!.pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
+        _projection!.pixelXToLongitude(max(_leftUpper!.x, 0)),
+        _projection!.pixelYToLatitude(max(_leftUpper!.y, 0)),
+        _projection!.pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
 
-    _latitude = _mercatorProjection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
+    _latitude = _projection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
 
-    _longitude = _mercatorProjection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
+    _longitude = _projection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
 
-    MercatorProjectionImpl.checkLatitude(_latitude!);
+    Projection.checkLatitude(_latitude!);
 
-    MercatorProjectionImpl.checkLongitude(_longitude!);
+    Projection.checkLongitude(_longitude!);
   }
 
   void sizeChanged() {
@@ -180,25 +182,24 @@ class MapViewPosition {
   }
 
   BoundingBox? calculateBoundingBox(Dimension viewDimension) {
-    assert(viewDimension != null);
     if (boundingBox != null) return boundingBox;
 
-    double centerY = _mercatorProjection!.latitudeToPixelY(_latitude!);
-    double centerX = _mercatorProjection!.longitudeToPixelX(_longitude!);
+    double centerY = _projection!.latitudeToPixelY(_latitude!);
+    double centerX = _projection!.longitudeToPixelX(_longitude!);
     double leftX = centerX - viewDimension.width / 2;
     double rightX = centerX + viewDimension.width / 2;
     double topY = centerY - viewDimension.height / 2;
     double bottomY = centerY + viewDimension.height / 2;
     boundingBox = BoundingBox(
-        _mercatorProjection!.pixelYToLatitude(min(bottomY, _mercatorProjection!.mapSize)),
-        _mercatorProjection!.pixelXToLongitude(max(leftX, 0)),
-        _mercatorProjection!.pixelYToLatitude(max(topY, 0)),
-        _mercatorProjection!.pixelXToLongitude(min(rightX, _mercatorProjection!.mapSize)));
+        _projection!.pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
+        _projection!.pixelXToLongitude(max(leftX, 0)),
+        _projection!.pixelYToLatitude(max(topY, 0)),
+        _projection!.pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
     _leftUpper = Mappoint(leftX, topY);
     return boundingBox;
   }
 
-  MercatorProjectionImpl? get mercatorProjection => _mercatorProjection;
+  PixelProjection? get mercatorProjection => _projection;
 
   Mappoint? get leftUpper => _leftUpper;
 

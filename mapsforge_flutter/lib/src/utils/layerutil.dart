@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
-import 'package:mapsforge_flutter/src/projection/mercatorprojectionimpl.dart';
+import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
 
 import '../mapelements/mapelementcontainer.dart';
 import '../model/boundingbox.dart';
@@ -16,12 +16,12 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the upper left of the bbox.
    */
-  static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
-    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
-    int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
-    int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
-    return new Tile(tileLeft, tileTop, zoomLevel, indoorLevel);
-  }
+  // static Tile getUpperLeft(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
+  //   MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
+  //   int tileLeft = mercatorProjectionImpl.longitudeToTileX(boundingBox.minLongitude);
+  //   int tileTop = mercatorProjectionImpl.latitudeToTileY(boundingBox.maxLatitude);
+  //   return new Tile(tileLeft, tileTop, zoomLevel, indoorLevel);
+  // }
 
   /**
    * Lower right tile for an area.
@@ -31,12 +31,12 @@ class LayerUtil {
    * @param tileSize    the tile size.
    * @return the tile at the lower right of the bbox.
    */
-  static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
-    MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
-    int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
-    int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
-    return new Tile(tileRight, tileBottom, zoomLevel, indoorLevel);
-  }
+  // static Tile getLowerRight(BoundingBox boundingBox, int zoomLevel, int indoorLevel, double tileSize) {
+  //   MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(tileSize, zoomLevel);
+  //   int tileRight = mercatorProjectionImpl.longitudeToTileX(boundingBox.maxLongitude);
+  //   int tileBottom = mercatorProjectionImpl.latitudeToTileY(boundingBox.minLatitude);
+  //   return new Tile(tileRight, tileBottom, zoomLevel, indoorLevel);
+  // }
 
   static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {
     Set<Tile> tiles = new Set<Tile>();

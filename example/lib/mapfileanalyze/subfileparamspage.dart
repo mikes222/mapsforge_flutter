@@ -5,11 +5,11 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 
 class SubfileParamsPage extends StatelessWidget {
-  final MapFile? mapFile;
+  final MapFile mapFile;
 
   final List<SubFileParameter?>? subFileParameters;
 
-  const SubfileParamsPage({Key? key, this.mapFile, this.subFileParameters}) : super(key: key);
+  const SubfileParamsPage({Key? key, required this.mapFile, this.subFileParameters}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

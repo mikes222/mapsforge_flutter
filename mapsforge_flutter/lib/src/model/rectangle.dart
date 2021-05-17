@@ -9,13 +9,9 @@ class Rectangle {
   final double right;
   final double top;
 
-  Rectangle(this.left, this.top, this.right, this.bottom) {
-    if (left > right) {
-      throw new Exception("left: $left, right: $right");
-    } else if (top > bottom) {
-      throw new Exception("top: $top, bottom: $bottom");
-    }
-  }
+  const Rectangle(this.left, this.top, this.right, this.bottom)
+      : assert(left < right),
+        assert(bottom > top);
 
   /**
    * @return true if this Rectangle contains the given point, false otherwise.

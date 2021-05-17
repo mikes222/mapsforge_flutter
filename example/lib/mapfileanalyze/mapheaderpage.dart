@@ -34,12 +34,12 @@ class MapHeaderPage extends StatelessWidget {
                     "Static Properties",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Wrap(
-                    children: <Widget>[
-                      Text("WayFilterEnabled: ${MapFile.wayFilterEnabled}, "),
-                      Text("WayFilterDistance: ${MapFile.wayFilterDistance}, "),
-                    ],
-                  ),
+                  // Wrap(
+                  //   children: <Widget>[
+                  //     Text("WayFilterEnabled: ${MapFile.wayFilterEnabled}, "),
+                  //     Text("WayFilterDistance: ${MapFile.wayFilterDistance}, "),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -115,8 +115,8 @@ class MapHeaderPage extends StatelessWidget {
                       Text("StartPosition ${formatLatLong(mapFile.getMapFileInfo().startPosition)}, "),
                       Text("TilePixelSize ${mapFile.getMapFileInfo().tilePixelSize}, "),
                       Text("Zoomlevel ${mapFile.getMapFileInfo().zoomLevelMin} - ${mapFile.getMapFileInfo().zoomLevelMax}, "),
-                      Text("Boundingbox ${formatBoundingbox(mapFile.getMapFileInfo().boundingBox!)}, "),
-                      Text("PoiTags ${mapFile.getMapFileInfo().poiTags!.length}, "),
+                      Text("Boundingbox ${formatBoundingbox(mapFile.getMapFileInfo().boundingBox)}, "),
+                      Text("PoiTags ${mapFile.getMapFileInfo().poiTags.length}, "),
                       Text("WayTags ${mapFile.getMapFileInfo().wayTags!.length}, "),
                       Text("numberOfSubFiles ${mapFile.getMapFileInfo().numberOfSubFiles}, "),
                       // poiTags
@@ -134,7 +134,7 @@ class MapHeaderPage extends StatelessWidget {
 
   Future<MapFile> _loadMapfile() async {
     String _localFilePath = await mapFileData.getLocalFilePath();
-    MapFile mapFile = await MapFile.create(_localFilePath, null, null);
+    MapFile mapFile = await MapFile.from(_localFilePath, null, null);
     return mapFile;
   }
 
@@ -148,7 +148,7 @@ class MapHeaderPage extends StatelessWidget {
 
   String formatLatLong(ILatLong? latLong) {
     if (latLong == null) return "Unknown";
-    return "${latLong.latitude.toStringAsPrecision(6) } / ${latLong.longitude.toStringAsPrecision(6) }";
+    return "${latLong.latitude.toStringAsPrecision(6)} / ${latLong.longitude.toStringAsPrecision(6)}";
   }
 
   String formatBoundingbox(BoundingBox boundingBox) {

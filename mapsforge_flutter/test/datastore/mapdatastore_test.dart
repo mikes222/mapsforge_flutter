@@ -1,22 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
-import 'testassetbundle.dart';
+import '../testassetbundle.dart';
 
 main() async {
   //create a mapfile from .map
-  MapFile mapFile = await MapFile.create(
+  MapFile mapFile = await MapFile.from(
       TestAssetBundle().correctFilename("campus_level.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
 
   ////Maps that contain single rooms in the NHG
-  MapFile N115 = await MapFile.create(TestAssetBundle().correctFilename("N115.map"), null, null);
+  MapFile N115 = await MapFile.from(TestAssetBundle().correctFilename("N115.map"), null, null);
 
-  MapFile N112 = await MapFile.create(TestAssetBundle().correctFilename("N112.map"), null, null);
+  MapFile N112 = await MapFile.from(TestAssetBundle().correctFilename("N112.map"), null, null);
 
-  MapFile NHG_WC = await MapFile.create(TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
+  MapFile NHG_WC = await MapFile.from(TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
 
   //x- and y-Coordinates from upperLeft- and lowerRight-Tile that define the map-area,
   //here we are using the coordinates of 4 Tiles around the NHG in Reichenhainer Straße 70, 09126
@@ -25,40 +26,34 @@ main() async {
   int ul_y = 87974; //y of upperLeft
   int lr_x = 140487; //x of lowerRight
   int lr_y = 87975; //y of lowerRight
-  int z = 18; //zoomlevel
-  int iz = 18; // indoor zoomlevel
-  double tileSize = 256.0; //standard tilesize
-  MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(tileSize, z);
+  int zoomlevel = 18; //zoomlevel
+  int indoorLevel = 0; // indoor level
 
   //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
-  Tile upperLeft = new Tile(ul_x, ul_y, z, iz);
-  Tile lowerRight = new Tile(lr_x, lr_y, z, iz);
-  Tile Single = new Tile(140486, 87975, z, iz);
+  Tile upperLeft = new Tile(ul_x, ul_y, zoomlevel, indoorLevel);
+  Tile lowerRight = new Tile(lr_x, lr_y, zoomlevel, indoorLevel);
+  Tile single = new Tile(140486, 87975, zoomlevel, indoorLevel);
 
   //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
   //Campus
-  DatastoreReadResult? mapReadResult; //area
-  mapReadResult = await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult = await mapFile.readMapData(upperLeft, lowerRight);
 
   //Single rooms on Campus
-  DatastoreReadResult? mapReadResult_N115; //area
-  mapReadResult_N115 = await mapFile.readMapData(upperLeft, lowerRight);
-  DatastoreReadResult? mapReadResult_N112; //area
-  mapReadResult_N112 = await mapFile.readMapData(upperLeft, lowerRight);
-  DatastoreReadResult? mapReadResult_NHG_WC; //area
-  mapReadResult_NHG_WC = await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult_N115 = await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult_N112 = await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult_NHG_WC = await mapFile.readMapData(upperLeft, lowerRight);
 
-  int j = 0; //Iterator for ways
-  //print each way with its key and value in the area defined by upperLeft and lowerRight
-  mapReadResult!.ways.forEach((way) {
-    j++;
-    print("Way " + j.toString());
-    //just print tags of a way
-    way.tags.forEach((tag) {
-      print("Key: " + tag.key!);
-      print("Value: " + tag.value!);
-    });
-  });
+  // int j = 0; //Iterator for ways
+  // //print each way with its key and value in the area defined by upperLeft and lowerRight
+  // mapReadResult.ways.forEach((way) {
+  //   j++;
+  //   print("Way " + j.toString());
+  //   //just print tags of a way
+  //   way.tags.forEach((tag) {
+  //     print("Key: " + tag.key!);
+  //     print("Value: " + tag.value!);
+  //   });
+  // });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +64,7 @@ main() async {
   bool indoorDetector() {
     bool indoorDataDetector = false;
     //POI's
-    mapReadResult!.pointOfInterests.forEach((poi) {
+    mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == "indoor") indoorPois = true;
       });
@@ -90,7 +85,7 @@ main() async {
   bool levelDetector() {
     bool levelDetector = false;
     //POI's
-    mapReadResult!.pointOfInterests.forEach((poi) {
+    mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == "level") levelDetector = true;
       });
@@ -108,7 +103,7 @@ main() async {
   bool objectDetected(String tagname) {
     bool objectDetector = false;
     //POI's
-    mapReadResult!.pointOfInterests.forEach((poi) {
+    mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
         if (tag.key == tagname || tag.value == tagname) objectDetector = true; //stop search, if tag was found
         //return objectDetector;
@@ -123,6 +118,13 @@ main() async {
     });
     return objectDetector;
   }
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  test("ReadMapData", () {
+    expect(mapReadResult.ways.length, greaterThan(0));
+    expect(mapReadResult.pointOfInterests.length, greaterThan(0));
+  });
 
   //Test, if Indoor-data in general is found
   test("Indoor-Data", () {

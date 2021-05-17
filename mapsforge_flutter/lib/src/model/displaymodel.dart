@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import '../graphics/filter.dart';
 
 /// Encapsulates the display characteristics for a MapView, such as tile size and background color. The size of map tiles
@@ -11,7 +9,7 @@ import '../graphics/filter.dart';
 class DisplayModel {
   static final int DEFAULT_BACKGROUND_COLOR = 0xffeeeeee; // format AARRGGBB
   /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 4 tiles to fit on it and so on.
-  static final double DEFAULT_TILE_SIZE = 256;
+  static final int DEFAULT_TILE_SIZE = 256;
   static final double DEFAULT_MAX_TEXT_WIDTH_FACTOR = 0.7;
   static final int DEFAULT_MAX_TEXT_WIDTH = (DEFAULT_TILE_SIZE * DEFAULT_MAX_TEXT_WIDTH_FACTOR).ceil();
   final int DEFAULT_ZOOM = 10;
@@ -59,11 +57,9 @@ class DisplayModel {
 
   int backgroundColor = DEFAULT_BACKGROUND_COLOR;
   Filter filter = Filter.NONE;
-  double fixedTileSize = DEFAULT_TILE_SIZE;
   int maxTextWidth = DEFAULT_MAX_TEXT_WIDTH;
   double maxTextWidthFactor = DEFAULT_MAX_TEXT_WIDTH_FACTOR;
-  double tileSize = DEFAULT_TILE_SIZE;
-  double tileSizeMultiple = 64;
+  int tileSize = DEFAULT_TILE_SIZE;
   double userScaleFactor = defaultUserScaleFactor;
 
   /// maximum zoomlevel
@@ -71,7 +67,7 @@ class DisplayModel {
 
   DisplayModel({
     this.maxZoomLevel = 25,
-  }) : assert(maxZoomLevel < 65536 && maxZoomLevel > 0) {
+  }) : assert(maxZoomLevel <= 30 && maxZoomLevel > 0) {
     this._setTileSize();
   }
 
@@ -112,15 +108,8 @@ class DisplayModel {
   /**
    * Width and height of a map tile in pixel after system and user scaling is applied.
    */
-  double getTileSize() {
+  int getTileSize() {
     return tileSize;
-  }
-
-  /**
-   * Gets the tile size multiple.
-   */
-  double getTileSizeMultiple() {
-    return this.tileSizeMultiple;
   }
 
   /**
@@ -149,16 +138,6 @@ class DisplayModel {
   }
 
   /**
-   * Forces the tile size to a fixed value
-   *
-   * @param tileSize the fixed tile size to use if != 0, if 0 the tile size will be calculated
-   */
-  void setFixedTileSize(double tileSize) {
-    this.fixedTileSize = tileSize;
-    _setTileSize();
-  }
-
-  /**
    * Sets the factor to compute the maxTextWidth
    *
    * @param maxTextWidthFactor to compute maxTextWidth
@@ -166,22 +145,6 @@ class DisplayModel {
   void setMaxTextWidthFactor(double maxTextWidthFactor) {
     this.maxTextWidthFactor = maxTextWidthFactor;
     this.setMaxTextWidth();
-  }
-
-  /**
-   * Clamps the tile size to a multiple of the supplied value.
-   * <p/>
-   * The default value of tileSizeMultiple will be overwritten with this call.
-   * The default value should be good enough for most applications and setting
-   * this value should rarely be required.
-   * Applications that allow external renderthemes might negatively impact
-   * their layout as area fills may depend on the default value being used.
-   *
-   * @param multiple tile size multiple
-   */
-  void setTileSizeMultiple(double multiple) {
-    this.tileSizeMultiple = multiple;
-    _setTileSize();
   }
 
   /**
@@ -199,14 +162,6 @@ class DisplayModel {
   }
 
   void _setTileSize() {
-    if (this.fixedTileSize == 0) {
-      double temp = DEFAULT_TILE_SIZE * deviceScaleFactor * userScaleFactor;
-      // this will clamp to the nearest multiple of the tileSizeMultiple
-      // and make sure we do not end up with 0
-      this.tileSize = max(tileSizeMultiple, (temp / this.tileSizeMultiple).round() * this.tileSizeMultiple);
-    } else {
-      this.tileSize = this.fixedTileSize;
-    }
-    this.setMaxTextWidth();
+    tileSize = (DEFAULT_TILE_SIZE * deviceScaleFactor * userScaleFactor).ceil();
   }
 }

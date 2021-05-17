@@ -19,7 +19,7 @@ abstract class RenderCallback {
  * @param stroke        an optional paint for the area casing (may be null).
  * @param level
  */
-  void renderArea(final RenderContext renderContext, MapPaint? fill, MapPaint stroke, int level, PolylineContainer way);
+  void renderArea(final RenderContext renderContext, MapPaint fill, MapPaint stroke, int level, PolylineContainer way);
 
 /**
  * Renders an area caption with the given text.

@@ -10,4 +10,6 @@ export 'src/renderer/dummyrenderer.dart';
 export 'src/layer/job/jobrenderer.dart';
 export 'src/renderer/maponlinerenderer.dart';
 
-export 'src/projection/mercatorprojectionimpl.dart';
+export 'src/projection/mercatorprojection.dart';
+export 'src/projection/pixelprojection.dart';
+export 'src/projection/projection.dart';

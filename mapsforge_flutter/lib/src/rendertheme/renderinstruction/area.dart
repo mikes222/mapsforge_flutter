@@ -94,7 +94,7 @@ class Area extends RenderInstruction with BitmapMixin {
 //    synchronized(this) {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
-    MapPaint? fillPaint = getFillPaint();
+    MapPaint fillPaint = getFillPaint();
 
     renderCallback.renderArea(renderContext, fillPaint, getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
 //}
@@ -121,6 +121,8 @@ class Area extends RenderInstruction with BitmapMixin {
     await initBitmap(graphicFactory);
 
     if (bitmap != null) {
+      // make sure the color is not transparent
+      if (fill.isTransparent()) fill.setColorFromNumber(0xff000000);
       fill.setBitmapShader(bitmap!);
       //bitmap.incrementRefCount();
     }

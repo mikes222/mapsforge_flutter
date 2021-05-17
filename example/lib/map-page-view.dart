@@ -208,7 +208,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       }
     }
 
-    final MapFile mapFile = await MapFile.create(filePath, null, null);
+    final MapFile mapFile = await MapFile.from(filePath, null, null);
     final MapDataStore mapDataStore = mapFile;
     final SymbolCache symbolCache = FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
     final GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);

@@ -193,11 +193,11 @@ class MapFileHeader {
       tempSubFileParameters.add(subFileParameter);
 
       // update the global minimum and maximum zoom level information
-      if (this.zoomLevelMinimum! > subFileParameter.zoomLevelMin!) {
+      if (this.zoomLevelMinimum! > subFileParameter.zoomLevelMin) {
         this.zoomLevelMinimum = subFileParameter.zoomLevelMin;
         mapFileInfoBuilder.zoomLevelMin = this.zoomLevelMinimum;
       }
-      if (this.zoomLevelMaximum! < subFileParameter.zoomLevelMax!) {
+      if (this.zoomLevelMaximum! < subFileParameter.zoomLevelMax) {
         this.zoomLevelMaximum = subFileParameter.zoomLevelMax;
         mapFileInfoBuilder.zoomLevelMax = this.zoomLevelMaximum;
       }
@@ -207,7 +207,7 @@ class MapFileHeader {
     this.subFileParameters = new List<SubFileParameter?>.filled(this.zoomLevelMaximum! + 1, null);
     for (int currentMapFile = 0; currentMapFile < numberOfSubFiles; ++currentMapFile) {
       SubFileParameter subFileParameter = tempSubFileParameters.elementAt(currentMapFile);
-      for (int zoomLevel = subFileParameter.zoomLevelMin!; zoomLevel <= subFileParameter.zoomLevelMax!; ++zoomLevel) {
+      for (int zoomLevel = subFileParameter.zoomLevelMin; zoomLevel <= subFileParameter.zoomLevelMax; ++zoomLevel) {
         this.subFileParameters[zoomLevel] = subFileParameter;
       }
     }

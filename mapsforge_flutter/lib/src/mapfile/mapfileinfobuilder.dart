@@ -20,7 +20,7 @@ class MapFileInfoBuilder {
 
   MapFileInfo build() {
     return new MapFileInfo(
-        boundingBox,
+        boundingBox!,
         optionalFields.comment,
         optionalFields.createdBy,
         optionalFields.isDebugFile,
@@ -29,7 +29,7 @@ class MapFileInfoBuilder {
         optionalFields.languagesPreference,
         mapDate,
         numberOfSubFiles,
-        poiTags,
+        poiTags!,
         projectionName,
         optionalFields.startPosition,
         optionalFields.startZoomLevel,

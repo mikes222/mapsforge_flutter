@@ -29,15 +29,17 @@ abstract class MapPaint {
 
   bool getAntiAlias();
 
+  /// sets the bitmap shader. Note that the shader uses the opaquicity of the color currently set so make sure the color is not transparent
+  ///
   void setBitmapShader(Bitmap bitmap);
+
+  Bitmap? getBitmapShader();
 
 //  void setBitmapShaderShift(Mappoint origin);
 
   void setColor(Color color);
 
-  /**
-   * The default value is {@link Color#BLACK}.
-   */
+  /// The default value is {@link Color#BLACK}. The [color] is a 32 bit ARGB format, eg. 0xff003300 (opaquicity, red, green, blue)
   void setColorFromNumber(int color);
 
   /**

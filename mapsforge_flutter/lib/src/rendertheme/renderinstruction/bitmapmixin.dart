@@ -60,33 +60,33 @@ class BitmapMixin {
     symbolPaint!.setColorFromNumber(0xff000000);
   }
 
-  @protected
-  Future<Bitmap?>? getOrCreateBitmap(GraphicFactory graphicFactory, String src) async {
-    if (bitmapInvalid) return null;
-    if (null == src || src.isEmpty) {
-      bitmapInvalid = true;
-      return null;
-    }
-    assert(symbolCache != null);
-
-    if (bitmap != null) return bitmap;
-
-    if (_future != null) {
-      return _future;
-    }
-    try {
-      _future = symbolCache!.getSymbol(src, width.round(), height.round(), percent);
-      bitmap = await _future;
-      bitmap?.incrementRefCount();
-      _future = null;
-      bitmapInvalid = false;
-      return bitmap;
-    } catch (e, stacktrace) {
-      _log.warning("Exception $e\nStacktrace $stacktrace");
-      bitmap = null;
-      _future = null;
-      bitmapInvalid = true;
-      return bitmap;
-    }
-  }
+  // @protected
+  // Future<Bitmap?>? getOrCreateBitmap(GraphicFactory graphicFactory, String src) async {
+  //   if (bitmapInvalid) return null;
+  //   if (src.isEmpty) {
+  //     bitmapInvalid = true;
+  //     return null;
+  //   }
+  //   assert(symbolCache != null);
+  //
+  //   if (bitmap != null) return bitmap;
+  //
+  //   if (_future != null) {
+  //     return _future;
+  //   }
+  //   try {
+  //     _future = symbolCache!.getSymbol(src, width.round(), height.round(), percent);
+  //     bitmap = await _future;
+  //     bitmap?.incrementRefCount();
+  //     _future = null;
+  //     bitmapInvalid = false;
+  //     return bitmap;
+  //   } catch (e, stacktrace) {
+  //     _log.warning("Exception $e\nStacktrace $stacktrace");
+  //     bitmap = null;
+  //     _future = null;
+  //     bitmapInvalid = true;
+  //     return bitmap;
+  //   }
+  // }
 }

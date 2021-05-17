@@ -50,9 +50,8 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   @override
   void purgeByBoundary(BoundingBox boundingBox) {
     _bitmaps.storage.keys.where((Tile tile) {
-      // TODO find the correct tilesize
-      MercatorProjectionImpl mercatorProjectionImpl = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, tile.zoomLevel);
-      if (tile.getBoundingBox(mercatorProjectionImpl)!.intersects(boundingBox)) {
+      MercatorProjection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+      if (projection.boundingBoxOfTile(tile).intersects(boundingBox)) {
         return true;
       }
       return false;

@@ -66,8 +66,8 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setColorFromNumber(int? color) {
-    paint.color = ui.Color(color!);
+  void setColorFromNumber(int color) {
+    paint.color = ui.Color(color);
   }
 
   @override
@@ -132,6 +132,11 @@ class FlutterPaint implements MapPaint {
     //   ..[15] = 2.0;
     Float64List deviceTransform = Float64List.fromList(mat.Matrix4.identity().storage);
     paint.shader = ui.ImageShader(img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
+  }
+
+  @override
+  Bitmap? getBitmapShader() {
+    return _shaderBitmap;
   }
 
   @override

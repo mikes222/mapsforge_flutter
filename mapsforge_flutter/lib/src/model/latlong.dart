@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/projection/projection.dart';
+
 import '../utils/latlongutils.dart';
 import 'ilatlong.dart';
 
@@ -29,9 +31,11 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @param longitude the longitude value in degrees.
    * @throws IllegalArgumentException if the latitude or longitude value is invalid.
    */
-  LatLong(double latitude, double longitude)
-      : this.latitude = LatLongUtils.validateLatitude(latitude),
-        this.longitude = LatLongUtils.validateLongitude(longitude);
+  const LatLong(double this.latitude, this.longitude);
+  // {
+  //   Projection.checkLatitude(latitude);
+  //   Projection.checkLongitude(longitude);
+  // }
 
   /**
    * Constructs a new LatLong from a Well-Known-Text (WKT) representation of a point.

@@ -1,11 +1,13 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/mapfile/mapfilehelper.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfileinfo.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
 
-import '../datastore/mapdatastore.dart';
 import '../datastore/datastorereadresult.dart';
+import '../datastore/mapdatastore.dart';
 import '../datastore/pointofinterest.dart';
 import '../datastore/poiwaybundle.dart';
 import '../datastore/way.dart';
@@ -13,7 +15,7 @@ import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
 import '../model/tile.dart';
-import '../projection/mercatorprojectionimpl.dart';
+import '../projection/mercatorprojection.dart';
 import '../reader/queryparameters.dart';
 import '../utils/latlongutils.dart';
 import 'indexcache.dart';
@@ -55,130 +57,12 @@ class MapFile extends MapDataStore {
   static final String INVALID_FIRST_WAY_OFFSET = "invalid first way offset: ";
 
   /**
-   * Bitmask for the optional POI feature "elevation".
-   */
-  static final int POI_FEATURE_ELEVATION = 0x20;
-
-  /**
-   * Bitmask for the optional POI feature "house number".
-   */
-  static final int POI_FEATURE_HOUSE_NUMBER = 0x40;
-
-  /**
-   * Bitmask for the optional POI feature "name".
-   */
-  static final int POI_FEATURE_NAME = 0x80;
-
-  /**
-   * Bitmask for the POI layer.
-   */
-  static final int POI_LAYER_BITMASK = 0xf0;
-
-  /**
-   * Bit shift for calculating the POI layer.
-   */
-  static final int POI_LAYER_SHIFT = 4;
-
-  /**
-   * Bitmask for the number of POI tags.
-   */
-  static final int POI_NUMBER_OF_TAGS_BITMASK = 0x0f;
-
-  /**
    * Length of the debug signature at the beginning of each block.
    */
   static final int SIGNATURE_LENGTH_BLOCK = 32;
 
-  /**
-   * Length of the debug signature at the beginning of each POI.
-   */
-  static final int SIGNATURE_LENGTH_POI = 32;
-
-  /**
-   * Length of the debug signature at the beginning of each way.
-   */
-  static final int SIGNATURE_LENGTH_WAY = 32;
-
-  /**
-   * The key of the elevation OpenStreetMap tag.
-   */
-  static final String TAG_KEY_ELE = "ele";
-
-  /**
-   * The key of the house number OpenStreetMap tag.
-   */
-  static final String TAG_KEY_HOUSE_NUMBER = "addr:housenumber";
-
-  /**
-   * The key of the name OpenStreetMap tag.
-   */
-  static final String TAG_KEY_NAME = "name";
-
-  /**
-   * The key of the reference OpenStreetMap tag.
-   */
-  static final String TAG_KEY_REF = "ref";
-
-  /**
-   * Bitmask for the optional way data blocks byte.
-   */
-  static final int WAY_FEATURE_DATA_BLOCKS_BYTE = 0x08;
-
-  /**
-   * Bitmask for the optional way double delta encoding.
-   */
-  static final int WAY_FEATURE_DOUBLE_DELTA_ENCODING = 0x04;
-
-  /**
-   * Bitmask for the optional way feature "house number".
-   */
-  static final int WAY_FEATURE_HOUSE_NUMBER = 0x40;
-
-  /**
-   * Bitmask for the optional way feature "label position".
-   */
-  static final int WAY_FEATURE_LABEL_POSITION = 0x10;
-
-  /**
-   * Bitmask for the optional way feature "name".
-   */
-  static final int WAY_FEATURE_NAME = 0x80;
-
-  /**
-   * Bitmask for the optional way feature "reference".
-   */
-  static final int WAY_FEATURE_REF = 0x20;
-
-  /**
-   * Bitmask for the way layer.
-   */
-  static final int WAY_LAYER_BITMASK = 0xf0;
-
-  /**
-   * Bit shift for calculating the way layer.
-   */
-  static final int WAY_LAYER_SHIFT = 4;
-
-  /**
-   * Bitmask for the number of way tags.
-   */
-  static final int WAY_NUMBER_OF_TAGS_BITMASK = 0x0f;
-
   /// for debugging purposes
   static final bool complete = true;
-
-  /**
-   * Way filtering reduces the number of ways returned to only those that are
-   * relevant for the tile requested, leading to performance gains, but can
-   * cause line clipping artifacts (particularly at higher zoom levels). The
-   * risk of clipping can be reduced by either turning way filtering off or by
-   * increasing the wayFilterDistance which governs how large an area surrounding
-   * the requested tile will be returned.
-   * For most use cases the standard settings should be sufficient.
-   */
-  static bool wayFilterEnabled = true;
-
-  static int wayFilterDistance = 20;
 
   late IndexCache _databaseIndexCache;
 
@@ -188,11 +72,13 @@ class MapFile extends MapDataStore {
   final int? timestamp;
 
   int zoomLevelMin = 0;
-  int zoomLevelMax = 65536;
+  int zoomLevelMax = 30;
 
   final String filename;
 
-  static Future<MapFile> create(String filename, int? timestamp, String? language) async {
+  late MapfileHelper _helper;
+
+  static Future<MapFile> from(String filename, int? timestamp, String? language) async {
     MapFile mapFile = MapFile._(filename, timestamp, language);
     await mapFile._init();
     return mapFile;
@@ -212,6 +98,7 @@ class MapFile extends MapDataStore {
     _mapFileHeader = MapFileHeader();
     await this._mapFileHeader.readHeader(readBufferMaster, this._fileSize);
     readBufferMaster.close();
+    _helper = MapfileHelper(_mapFileHeader, preferredLanguage);
     return this;
   }
 
@@ -242,7 +129,7 @@ class MapFile extends MapDataStore {
 //  }
 
   @override
-  BoundingBox? get boundingBox {
+  BoundingBox get boundingBox {
     return getMapFileInfo().boundingBox;
   }
 
@@ -257,84 +144,6 @@ class MapFile extends MapDataStore {
    */
   void closeFileChannel() {
     this._databaseIndexCache.destroy();
-  }
-
-  List<LatLong> _decodeWayNodesDoubleDelta(int numberOfWayNodes, double tileLatitude, double tileLongitude, ReadBuffer readBuffer) {
-    // get the first way node latitude offset (VBE-S)
-    double wayNodeLatitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-    // get the first way node longitude offset (VBE-S)
-    double wayNodeLongitude = tileLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-    List<LatLong> waySegment = [];
-    // store the first way node
-    waySegment.add(LatLong(wayNodeLatitude, wayNodeLongitude));
-
-    double previousSingleDeltaLatitude = 0;
-    double previousSingleDeltaLongitude = 0;
-
-    for (int wayNodesIndex = 0; wayNodesIndex < numberOfWayNodes - 1; ++wayNodesIndex) {
-      // get the way node latitude double-delta offset (VBE-S)
-      double doubleDeltaLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-      // get the way node longitude double-delta offset (VBE-S)
-      double doubleDeltaLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-      double singleDeltaLatitude = doubleDeltaLatitude + previousSingleDeltaLatitude;
-      double singleDeltaLongitude = doubleDeltaLongitude + previousSingleDeltaLongitude;
-
-      wayNodeLatitude = wayNodeLatitude + singleDeltaLatitude;
-      wayNodeLongitude = wayNodeLongitude + singleDeltaLongitude;
-
-      // Decoding near international date line can return values slightly outside valid [-180°, 180°] due to calculation precision
-      if (wayNodeLongitude < LatLongUtils.LONGITUDE_MIN) {
-        wayNodeLongitude = LatLongUtils.LONGITUDE_MIN;
-      } else if (wayNodeLongitude > LatLongUtils.LONGITUDE_MAX) {
-        wayNodeLongitude = LatLongUtils.LONGITUDE_MAX;
-      }
-      if (wayNodeLatitude < LatLongUtils.LATITUDE_MIN) {
-        wayNodeLatitude = LatLongUtils.LATITUDE_MIN;
-      } else if (wayNodeLatitude > LatLongUtils.LATITUDE_MAX) {
-        wayNodeLatitude = LatLongUtils.LATITUDE_MAX;
-      }
-
-      waySegment.add(LatLong(wayNodeLatitude, wayNodeLongitude));
-
-      previousSingleDeltaLatitude = singleDeltaLatitude;
-      previousSingleDeltaLongitude = singleDeltaLongitude;
-    }
-    return waySegment;
-  }
-
-  List<LatLong> _decodeWayNodesSingleDelta(int numberOfWayNodes, double tileLatitude, double tileLongitude, ReadBuffer readBuffer) {
-    // get the first way node latitude single-delta offset (VBE-S)
-    double wayNodeLatitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-    // get the first way node longitude single-delta offset (VBE-S)
-    double wayNodeLongitude = tileLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-    // store the first way node
-    List<LatLong> waySegment = [];
-    waySegment.add(LatLong(wayNodeLatitude, wayNodeLongitude));
-
-    for (int wayNodesIndex = 0; wayNodesIndex < numberOfWayNodes - 1; ++wayNodesIndex) {
-      // get the way node latitude offset (VBE-S)
-      wayNodeLatitude = wayNodeLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-      // get the way node longitude offset (VBE-S)
-      wayNodeLongitude = wayNodeLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-      // Decoding near international date line can return values slightly outside valid [-180°, 180°] due to calculation precision
-      if (wayNodeLongitude < LatLongUtils.LONGITUDE_MIN) {
-        wayNodeLongitude = LatLongUtils.LONGITUDE_MIN;
-      } else if (wayNodeLongitude > LatLongUtils.LONGITUDE_MAX) {
-        wayNodeLongitude = LatLongUtils.LONGITUDE_MAX;
-      }
-      if (wayNodeLatitude < LatLongUtils.LATITUDE_MIN) {
-        wayNodeLatitude = LatLongUtils.LATITUDE_MIN;
-      } else if (wayNodeLatitude > LatLongUtils.LATITUDE_MAX) {
-        wayNodeLatitude = LatLongUtils.LATITUDE_MAX;
-      }
-
-      waySegment.add(LatLong(wayNodeLatitude, wayNodeLongitude));
-    }
-    return waySegment;
   }
 
   /**
@@ -373,49 +182,42 @@ class MapFile extends MapDataStore {
     return null;
   }
 
-  PoiWayBundle? _processBlock(QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox,
-      double tileLatitude, double tileLongitude, Selector selector, ReadBuffer readBuffer) {
+  PoiWayBundle _processBlock(QueryParameters queryParameters, SubFileParameter subFileParameter, BoundingBox boundingBox,
+      double tileLatitude, double tileLongitude, MapfileSelector selector, ReadBuffer readBuffer) {
     assert(queryParameters.queryZoomLevel != null);
     if (!_processBlockSignature(readBuffer)) {
-      _log.warning("ProcessblockSignature mismatch");
-      return null;
+      throw Exception("ProcessblockSignature mismatch");
     }
 
-    List<List<int>?> zoomTable = _readZoomTable(subFileParameter, readBuffer);
-    int zoomTableRow = queryParameters.queryZoomLevel! - subFileParameter.zoomLevelMin!;
-    int poisOnQueryZoomLevel = zoomTable[zoomTableRow]![0];
-    int waysOnQueryZoomLevel = zoomTable[zoomTableRow]![1];
+    List<List<int>> zoomTable = _readZoomTable(subFileParameter, readBuffer);
+    int zoomTableRow = queryParameters.queryZoomLevel! - subFileParameter.zoomLevelMin;
+    int poisOnQueryZoomLevel = zoomTable[zoomTableRow][0];
+    int waysOnQueryZoomLevel = zoomTable[zoomTableRow][1];
 
     // get the relative offset to the first stored way in the block
     int firstWayOffset = readBuffer.readUnsignedInt();
     if (firstWayOffset < 0) {
-      _log.warning(INVALID_FIRST_WAY_OFFSET + "$firstWayOffset");
-      return null;
+      throw Exception(INVALID_FIRST_WAY_OFFSET + "$firstWayOffset");
     }
 
     // add the current buffer position to the relative first way offset
     firstWayOffset += readBuffer.bufferPosition;
     if (firstWayOffset > readBuffer.getBufferSize()) {
-      _log.warning(INVALID_FIRST_WAY_OFFSET + "$firstWayOffset");
-      return null;
+      throw Exception(INVALID_FIRST_WAY_OFFSET + "$firstWayOffset");
     }
 
     bool filterRequired = queryParameters.queryZoomLevel! > subFileParameter.baseZoomLevel!;
 
-    List<PointOfInterest>? pois = processPOIs(tileLatitude, tileLongitude, poisOnQueryZoomLevel, boundingBox, filterRequired, readBuffer);
-    if (pois == null) {
-      _log.warning("No Pois");
-      return null;
-    }
+    List<PointOfInterest> pois =
+        _helper.processPOIs(tileLatitude, tileLongitude, poisOnQueryZoomLevel, boundingBox, filterRequired, readBuffer);
 
     List<Way>? ways;
-    if (Selector.POIS == selector) {
+    if (MapfileSelector.POIS == selector) {
       ways = [];
     } else {
       // finished reading POIs, check if the current buffer position is valid
       if (readBuffer.getBufferPosition() > firstWayOffset) {
-        _log.warning("invalid buffer position: ${readBuffer.getBufferPosition()}");
-        return null;
+        throw Exception("invalid buffer position: ${readBuffer.getBufferPosition()}");
       }
       if (firstWayOffset == readBuffer.getBufferSize()) {
         // no ways in this block
@@ -424,13 +226,8 @@ class MapFile extends MapDataStore {
         // move the pointer to the first way
         readBuffer.setBufferPosition(firstWayOffset);
 
-        ways = _processWays(
+        ways = _helper.processWays(
             queryParameters, waysOnQueryZoomLevel, boundingBox, filterRequired, tileLatitude, tileLongitude, selector, readBuffer);
-        if (ways == null) {
-          _log.warning("No Ways");
-          ways = [];
-          //return null;
-        }
       }
     }
 
@@ -454,13 +251,15 @@ class MapFile extends MapDataStore {
     return true;
   }
 
+  ///
+  /// don't make this method private since we are using it in the example APP to analyze mapfiles
+  ///
   Future<DatastoreReadResult> processBlocks(ReadBufferMaster readBufferMaster, QueryParameters queryParameters,
-      SubFileParameter subFileParameter, BoundingBox boundingBox, Selector selector) async {
+      SubFileParameter subFileParameter, BoundingBox boundingBox, MapfileSelector selector) async {
     assert(queryParameters.fromBlockX != null);
     assert(queryParameters.fromBlockY != null);
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
-    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, subFileParameter.baseZoomLevel!);
 
     DatastoreReadResult mapFileReadResult = new DatastoreReadResult();
 
@@ -528,19 +327,18 @@ class MapFile extends MapDataStore {
         // read the current block into the buffer
         //ReadBuffer readBuffer = new ReadBuffer(inputChannel);
         ReadBuffer readBuffer =
-            await readBufferMaster.readFromFile(length: currentBlockSize, offset: subFileParameter.startAddress! + currentBlockPointer);
+            await readBufferMaster.readFromFile(length: currentBlockSize, offset: subFileParameter.startAddress + currentBlockPointer);
 
         // calculate the top-left coordinates of the underlying tile
-        double tileLatitude = mercatorProjection.tileYToLatitude((subFileParameter.boundaryTileTop + row));
-        double tileLongitude = mercatorProjection.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
-        LatLongUtils.validateLatitude(tileLatitude);
-        LatLongUtils.validateLongitude(tileLongitude);
+        Projection projection = subFileParameter.projection();
+        double tileLatitude = projection.tileYToLatitude((subFileParameter.boundaryTileTop + row));
+        double tileLongitude = projection.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
+        Projection.checkLatitude(tileLatitude);
+        Projection.checkLongitude(tileLongitude);
 
-        PoiWayBundle? poiWayBundle =
+        PoiWayBundle poiWayBundle =
             _processBlock(queryParameters, subFileParameter, boundingBox, tileLatitude, tileLongitude, selector, readBuffer);
-        if (poiWayBundle != null) {
-          mapFileReadResult.add(poiWayBundle);
-        }
+        mapFileReadResult.add(poiWayBundle);
       }
     }
 
@@ -553,307 +351,55 @@ class MapFile extends MapDataStore {
     return mapFileReadResult;
   }
 
-  List<PointOfInterest>? processPOIs(
-      double tileLatitude, double tileLongitude, int numberOfPois, BoundingBox boundingBox, bool filterRequired, ReadBuffer? readBuffer) {
-    List<PointOfInterest> pois = [];
-    List<Tag>? poiTags = this._mapFileHeader.getMapFileInfo().poiTags;
-
-    for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
-      if (this._mapFileHeader.getMapFileInfo().debugFile!) {
-        // get and check the POI signature
-        String signaturePoi = readBuffer!.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
-        if (!signaturePoi.startsWith("***POIStart")) {
-          _log.warning("invalid POI signature: " + signaturePoi);
-          return null;
-        }
-      }
-
-      // get the POI latitude offset (VBE-S)
-      double latitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer!.readSignedInt());
-
-      // get the POI longitude offset (VBE-S)
-      double longitude = tileLongitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-      // get the special int which encodes multiple flags
-      int specialByte = readBuffer.readByte();
-
-      // bit 1-4 represent the layer
-      int layer = ((specialByte & POI_LAYER_BITMASK) >> POI_LAYER_SHIFT);
-      // bit 5-8 represent the number of tag IDs
-      int numberOfTags = (specialByte & POI_NUMBER_OF_TAGS_BITMASK);
-
-      // get the tags from IDs (VBE-U)
-      List<Tag> tags = readBuffer.readTags(poiTags!, numberOfTags);
-
-      // get the feature bitmask (1 byte)
-      int featureByte = readBuffer.readByte();
-
-      // bit 1-3 enable optional features
-      bool featureName = (featureByte & POI_FEATURE_NAME) != 0;
-      bool featureHouseNumber = (featureByte & POI_FEATURE_HOUSE_NUMBER) != 0;
-      bool featureElevation = (featureByte & POI_FEATURE_ELEVATION) != 0;
-
-      // check if the POI has a name
-      if (featureName) {
-        tags.add(new Tag(TAG_KEY_NAME, extractLocalized(readBuffer.readUTF8EncodedString())));
-      }
-
-      // check if the POI has a house number
-      if (featureHouseNumber) {
-        tags.add(new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
-      }
-
-      // check if the POI has an elevation
-      if (featureElevation) {
-        tags.add(new Tag(TAG_KEY_ELE, readBuffer.readSignedInt().toString()));
-      }
-
-      LatLong position = new LatLong(latitude, longitude);
-      // depending on the zoom level configuration the poi can lie outside
-      // the tile requested, we filter them out here
-      if (!filterRequired || boundingBox.containsLatLong(position)) {
-        pois.add(new PointOfInterest(layer, tags, position));
-      }
-    }
-
-    return pois;
-  }
-
-  List<List<LatLong>>? _processWayDataBlock(double tileLatitude, double tileLongitude, bool doubleDeltaEncoding, ReadBuffer readBuffer) {
-    // get and check the number of way coordinate blocks (VBE-U)
-    int numberOfWayCoordinateBlocks = readBuffer.readUnsignedInt();
-    if (numberOfWayCoordinateBlocks < 1 || numberOfWayCoordinateBlocks > 32767) {
-      _log.warning("invalid number of way coordinate blocks: $numberOfWayCoordinateBlocks");
-      return null;
-    }
-
-    // create the array which will store the different way coordinate blocks
-    List<List<LatLong>> wayCoordinates = [];
-
-    // read the way coordinate blocks
-    for (int coordinateBlock = 0; coordinateBlock < numberOfWayCoordinateBlocks; ++coordinateBlock) {
-      // get and check the number of way nodes (VBE-U)
-      int numberOfWayNodes = readBuffer.readUnsignedInt();
-      if (numberOfWayNodes < 2 || numberOfWayNodes > 32767) {
-        _log.warning("invalid number of way nodes: $numberOfWayNodes");
-        // returning null here will actually leave the tile blank as the
-        // position on the ReadBuffer will not be advanced correctly. However,
-        // it will not crash the app.
-        return null;
-      }
-
-      // create the array which will store the current way segment
-      List<LatLong> waySegment = [];
-
-      if (doubleDeltaEncoding) {
-        waySegment = _decodeWayNodesDoubleDelta(numberOfWayNodes, tileLatitude, tileLongitude, readBuffer);
-      } else {
-        waySegment = _decodeWayNodesSingleDelta(numberOfWayNodes, tileLatitude, tileLongitude, readBuffer);
-      }
-
-      wayCoordinates.add(waySegment);
-    }
-
-    return wayCoordinates;
-  }
-
-  List<Way>? _processWays(QueryParameters queryParameters, int numberOfWays, BoundingBox boundingBox, bool filterRequired,
-      double tileLatitude, double tileLongitude, Selector selector, ReadBuffer? readBuffer) {
-    List<Way> ways = [];
-    List<Tag>? wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
-
-    BoundingBox wayFilterBbox = boundingBox.extendMeters(wayFilterDistance);
-
-    for (int elementCounter = numberOfWays; elementCounter != 0; --elementCounter) {
-      if (this._mapFileHeader.getMapFileInfo().debugFile!) {
-        // get and check the way signature
-        String signatureWay = readBuffer!.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
-        if (!signatureWay.startsWith("---WayStart")) {
-          _log.warning("invalid way signature: " + signatureWay);
-          return null;
-        }
-      }
-
-      int wayDataSize;
-      try {
-        // get the size of the way (VBE-U)
-        wayDataSize = readBuffer!.readUnsignedInt();
-        if (wayDataSize < 0) {
-          _log.warning("invalid way data size: $wayDataSize");
-          return null;
-        }
-      } catch (e) {
-        Error error = e as Error;
-        print(e.toString());
-        print(error.stackTrace);
-        // reset position to next way
-        break;
-      }
-      int pos = readBuffer.bufferPosition;
-      try {
-        if (queryParameters.useTileBitmask!) {
-          // get the way tile bitmask (2 bytes)
-          int tileBitmask = readBuffer.readShort();
-          // check if the way is inside the requested tile
-          if ((queryParameters.queryTileBitmask! & tileBitmask) == 0) {
-            // skip the rest of the way and continue with the next way
-            readBuffer.skipBytes(wayDataSize - 2);
-            continue;
-          }
-        } else {
-          // ignore the way tile bitmask (2 bytes)
-          readBuffer.skipBytes(2);
-        }
-
-        // get the special int which encodes multiple flags
-        int specialByte = readBuffer.readByte();
-
-        // bit 1-4 represent the layer
-        int layer = ((specialByte & WAY_LAYER_BITMASK) >> WAY_LAYER_SHIFT);
-        // bit 5-8 represent the number of tag IDs
-        int numberOfTags = (specialByte & WAY_NUMBER_OF_TAGS_BITMASK);
-
-        // get the tags from IDs (VBE-U)
-        List<Tag> tags = readBuffer.readTags(wayTags!, numberOfTags);
-        if (tags == null) {
-          return null;
-        }
-//      _log.info(
-//          "processWays for ${wayTags.toString()} and numberofTags: $numberOfTags returned ${tags.length} items");
-
-        // get the feature bitmask (1 byte)
-        int featureByte = readBuffer.readByte();
-
-        // bit 1-6 enable optional features
-        bool featureName = (featureByte & WAY_FEATURE_NAME) != 0;
-        bool featureHouseNumber = (featureByte & WAY_FEATURE_HOUSE_NUMBER) != 0;
-        bool featureRef = (featureByte & WAY_FEATURE_REF) != 0;
-        bool featureLabelPosition = (featureByte & WAY_FEATURE_LABEL_POSITION) != 0;
-        bool featureWayDataBlocksByte = (featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0;
-        bool featureWayDoubleDeltaEncoding = (featureByte & WAY_FEATURE_DOUBLE_DELTA_ENCODING) != 0;
-
-        // check if the way has a name
-        if (featureName) {
-          try {
-            tags.add(new Tag(TAG_KEY_NAME, extractLocalized(readBuffer.readUTF8EncodedString())));
-          } catch (e) {
-            _log.warning(e.toString());
-            //tags.add(Tag(TAG_KEY_NAME, "unknown"));
-          }
-        }
-
-        // check if the way has a house number
-        if (featureHouseNumber) {
-          try {
-            tags.add(new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
-          } catch (e) {
-            _log.warning(e.toString());
-            //tags.add(Tag(TAG_KEY_NAME, "unknown"));
-          }
-        }
-
-        // check if the way has a reference
-        if (featureRef) {
-          try {
-            tags.add(new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
-          } catch (e) {
-            _log.warning(e.toString());
-            //tags.add(Tag(TAG_KEY_NAME, "unknown"));
-          }
-        }
-
-        List<int?>? labelPosition;
-        if (featureLabelPosition) {
-          labelPosition = _readOptionalLabelPosition(readBuffer);
-        }
-
-        int wayDataBlocks = _readOptionalWayDataBlocksByte(featureWayDataBlocksByte, readBuffer);
-        if (wayDataBlocks < 1) {
-          _log.warning("invalid number of way data blocks: $wayDataBlocks");
-          return null;
-        }
-
-        for (int wayDataBlock = 0; wayDataBlock < wayDataBlocks; ++wayDataBlock) {
-          List<List<LatLong>>? wayNodes = _processWayDataBlock(tileLatitude, tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
-          if (wayNodes != null) {
-            if (filterRequired && wayFilterEnabled && !wayFilterBbox.intersectsArea(wayNodes)) {
-              continue;
-            }
-            if (Selector.ALL == selector || featureName || featureHouseNumber || featureRef || wayAsLabelTagFilter(tags)) {
-              LatLong? labelLatLong;
-              if (labelPosition != null) {
-                labelLatLong = new LatLong(wayNodes[0][0].latitude + LatLongUtils.microdegreesToDegrees(labelPosition[1]!),
-                    wayNodes[0][0].longitude + LatLongUtils.microdegreesToDegrees(labelPosition[0]!));
-              }
-              ways.add(new Way(layer, tags, wayNodes, labelLatLong));
-            }
-          }
-        }
-      } catch (e) {
-        print(e.toString());
-        if (e is Error) print(e.stackTrace);
-        // reset position to next way
-        readBuffer.bufferPosition = pos + wayDataSize;
-      }
-    }
-
-    return ways;
-  }
-
-  /**
-   * Reads only labels for tile.
-   *
-   * @param tile tile for which data is requested.
-   * @return label data for the tile.
-   */
+  /// Reads only labels for tile.
+  ///
+  /// @param tile tile for which data is requested.
+  /// @return label data for the tile.
   @override
-  Future<DatastoreReadResult?> readLabelsSingle(Tile tile) async {
-    return _readMapDataComplete(tile, tile, Selector.LABELS);
+  Future<DatastoreReadResult> readLabelsSingle(Tile tile) async {
+    return _readMapDataComplete(tile, tile, MapfileSelector.LABELS);
   }
 
-  /**
-   * Reads data for an area defined by the tile in the upper left and the tile in
-   * the lower right corner.
-   * Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
-   *
-   * @param upperLeft  tile that defines the upper left corner of the requested area.
-   * @param lowerRight tile that defines the lower right corner of the requested area.
-   * @return map data for the tile.
-   */
+  /// Reads data for an area defined by the tile in the upper left and the tile in
+  /// the lower right corner.
+  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  ///
+  /// @param upperLeft  tile that defines the upper left corner of the requested area.
+  /// @param lowerRight tile that defines the lower right corner of the requested area.
+  /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) async {
-    return _readMapDataComplete(upperLeft, lowerRight, Selector.LABELS);
+  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
+    return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.LABELS);
   }
 
-  /**
-   * Reads all map data for the area covered by the given tile at the tile zoom level.
-   *
-   * @param tile defines area and zoom level of read map data.
-   * @return the read map data.
-   */
+  /// Reads all map data for the area covered by the given tile at the tile zoom level.
+  ///
+  /// @param tile defines area and zoom level of read map data.
+  /// @return the read map data.
   @override
-  Future<DatastoreReadResult?> readMapDataSingle(Tile tile) async {
-    return _readMapDataComplete(tile, tile, Selector.ALL);
+  Future<DatastoreReadResult> readMapDataSingle(Tile tile) async {
+    return _readMapDataComplete(tile, tile, MapfileSelector.ALL);
   }
 
-  /**
-   * Reads data for an area defined by the tile in the upper left and the tile in
-   * the lower right corner.
-   * Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
-   *
-   * @param upperLeft  tile that defines the upper left corner of the requested area.
-   * @param lowerRight tile that defines the lower right corner of the requested area.
-   * @return map data for the tile.
-   */
+  /// Reads data for an area defined by the tile in the upper left and the tile in
+  /// the lower right corner.
+  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  ///
+  /// @param upperLeft  tile that defines the upper left corner of the requested area.
+  /// @param lowerRight tile that defines the lower right corner of the requested area.
+  /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readMapData(Tile upperLeft, Tile lowerRight) async {
-    return _readMapDataComplete(upperLeft, lowerRight, Selector.ALL);
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+    return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.ALL);
   }
 
-  Future<DatastoreReadResult?> _readMapDataComplete(Tile upperLeft, Tile lowerRight, Selector selector) async {
+  Future<DatastoreReadResult> _readMapDataComplete(Tile upperLeft, Tile lowerRight, MapfileSelector selector) async {
+    assert(supportsTile(upperLeft));
+    assert(supportsTile(lowerRight));
+    assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
     int timer = DateTime.now().millisecondsSinceEpoch;
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
-      new Exception("upperLeft tile must be above and left of lowerRight tile");
+      throw Exception("upperLeft tile must be above and left of lowerRight tile");
     }
 
     QueryParameters queryParameters = new QueryParameters();
@@ -862,8 +408,7 @@ class MapFile extends MapDataStore {
     // get and check the sub-file for the query zoom level
     SubFileParameter? subFileParameter = this._mapFileHeader.getSubFileParameter(queryParameters.queryZoomLevel!);
     if (subFileParameter == null) {
-      _log.warning("no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
-      return null;
+      throw Exception("no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
     }
 
     queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
@@ -875,35 +420,13 @@ class MapFile extends MapDataStore {
     // lies right on the border, some of this data needs to be drawn as the graphics will
     // overlap onto this tile.
     ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
-    // todo get actual tilesize
-    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, upperLeft.zoomLevel);
-    DatastoreReadResult? result = await processBlocks(readBufferMaster, queryParameters, subFileParameter,
-        Tile.getBoundingBoxStatic(mercatorProjection, upperLeft, lowerRight), selector);
+    MercatorProjection projection = MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
+    DatastoreReadResult? result = await processBlocks(
+        readBufferMaster, queryParameters, subFileParameter, projection.boundingBoxOfTiles(upperLeft, lowerRight), selector);
     diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100) _log.info("readMapDataComplete took $diff ms");
     readBufferMaster.close();
     return result;
-  }
-
-  List<int?> _readOptionalLabelPosition(ReadBuffer readBuffer) {
-    List<int?> labelPosition = new List<int?>.filled(2, null);
-
-    // get the label position latitude offset (VBE-S)
-    labelPosition[1] = readBuffer.readSignedInt();
-
-    // get the label position longitude offset (VBE-S)
-    labelPosition[0] = readBuffer.readSignedInt();
-
-    return labelPosition;
-  }
-
-  int _readOptionalWayDataBlocksByte(bool featureWayDataBlocksByte, ReadBuffer? readBuffer) {
-    if (featureWayDataBlocksByte) {
-      // get and check the number of way data blocks (VBE-U)
-      return readBuffer!.readUnsignedInt();
-    }
-    // only one way data block exists
-    return 1;
   }
 
   /**
@@ -914,7 +437,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<DatastoreReadResult?> readPoiDataSingle(Tile tile) async {
-    return _readMapDataComplete(tile, tile, Selector.POIS);
+    return _readMapDataComplete(tile, tile, MapfileSelector.POIS);
   }
 
   /**
@@ -928,23 +451,23 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) async {
-    return _readMapDataComplete(upperLeft, lowerRight, Selector.POIS);
+    return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.POIS);
   }
 
-  List<List<int>?> _readZoomTable(SubFileParameter subFileParameter, ReadBuffer? readBuffer) {
-    int rows = subFileParameter.zoomLevelMax! - subFileParameter.zoomLevelMin! + 1;
-    List<List<int>?> zoomTable = new List<List<int>?>.filled(rows, null);
+  List<List<int>> _readZoomTable(SubFileParameter subFileParameter, ReadBuffer readBuffer) {
+    int rows = subFileParameter.zoomLevelMax - subFileParameter.zoomLevelMin + 1;
+    List<List<int>> zoomTable = [];
 
     int cumulatedNumberOfPois = 0;
     int cumulatedNumberOfWays = 0;
 
     for (int row = 0; row < rows; ++row) {
-      cumulatedNumberOfPois += readBuffer!.readUnsignedInt();
+      cumulatedNumberOfPois += readBuffer.readUnsignedInt();
       cumulatedNumberOfWays += readBuffer.readUnsignedInt();
       List<int> inner = [];
       inner.add(cumulatedNumberOfPois);
       inner.add(cumulatedNumberOfWays);
-      zoomTable[row] = inner;
+      zoomTable.add(inner);
     }
 
     return zoomTable;
@@ -967,7 +490,7 @@ class MapFile extends MapDataStore {
     if (null != getMapFileInfo().startPosition) {
       return getMapFileInfo().startPosition;
     }
-    return getMapFileInfo().boundingBox!.getCenterPoint();
+    return getMapFileInfo().boundingBox.getCenterPoint();
   }
 
   @override
@@ -980,18 +503,16 @@ class MapFile extends MapDataStore {
 
   @override
   bool supportsTile(Tile tile) {
-    MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(DisplayModel.DEFAULT_TILE_SIZE, tile.zoomLevel);
-    return tile.getBoundingBox(mercatorProjection)!.intersects(getMapFileInfo().boundingBox) &&
-        (tile.zoomLevel >= this.zoomLevelMin && tile.zoomLevel <= this.zoomLevelMax);
+    if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax) return false;
+    MercatorProjection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+    return projection.boundingBoxOfTile(tile).intersects(getMapFileInfo().boundingBox);
   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-/**
- * The Selector enum is used to specify which data subset is to be retrieved from a MapFile:
- * ALL: all data (as in version 0.6.0)
- * POIS: only poi data, no ways (new after 0.6.0)
- * LABELS: poi data and ways that have a name (new after 0.6.0)
- */
-enum Selector { ALL, POIS, LABELS }
+/// The Selector enum is used to specify which data subset is to be retrieved from a MapFile:
+/// ALL: all data (as in version 0.6.0)
+/// POIS: only poi data, no ways (new after 0.6.0)
+/// LABELS: poi data and ways that have a name (new after 0.6.0)
+enum MapfileSelector { ALL, POIS, LABELS }

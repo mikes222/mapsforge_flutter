@@ -105,6 +105,8 @@ class PolygonMarker<T> extends BasicMarker<T> {
         this._bitmap = await symbolCache!.getSymbol(src, width, height, percent);
         if (_bitmap != null) {
           _bitmapInvalid = false;
+          // make sure the color is not transparent
+          if (fill!.isTransparent()) fill!.setColorFromNumber(0xff000000);
           fill!.setBitmapShader(_bitmap!);
           _bitmap!.incrementRefCount();
         }
@@ -162,7 +164,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     ILatLong latLong =
-        mapViewPosition.mercatorProjection!.getLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
+        mapViewPosition.mercatorProjection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
     return LatLongUtils.contains(path, latLong);
   }

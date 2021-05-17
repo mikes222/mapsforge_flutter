@@ -9,7 +9,7 @@ class MapFileInfo {
   /**
    * The bounding box of the map file.
    */
-  final BoundingBox? boundingBox;
+  final BoundingBox boundingBox;
 
   /**
    * The comment field of the map file (may be null).
@@ -54,7 +54,7 @@ class MapFileInfo {
   /**
    * The POI tags.
    */
-  final List<Tag>? poiTags;
+  final List<Tag> poiTags;
 
   /**
    * The name of the projection used in the map file.
@@ -105,6 +105,6 @@ class MapFileInfo {
 
   @override
   String toString() {
-    return 'MapFileInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags!.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags!.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
+    return 'MapFileInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags!.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
   }
 }

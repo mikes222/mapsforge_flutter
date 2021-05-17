@@ -32,11 +32,11 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    double tileSize = displayModel.tileSize;
+    int tileSize = displayModel.tileSize;
     int l = 0;
-    int z = 16;
-    int x = MercatorProjectionImpl(tileSize, z).longitudeToTileX(18);
-    int y = MercatorProjectionImpl(tileSize, z).latitudeToTileY(46);
+    int zoomlevel = 16;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
@@ -68,23 +68,23 @@ void main() {
             [LatLong(45.998, 17.95), LatLong(45.998, 18.05)]
           ],
           null));
-      Tile tile = new Tile(x, y, z, l);
-      assert(datastore.supportsTile(tile), true);
+      Tile tile = new Tile(x, y, zoomlevel, l);
+      expect(datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       print(result);
-      assert(result.ways.length > 0);
-      assert(result.pointOfInterests.length > 0);
+      expect(result.ways.length, greaterThan(0));
+      expect(result.pointOfInterests.length, greaterThan(0));
       print("Calculating tile ${tile.toString()}");
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
 
       TileBitmap resultTile = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
-      assert(resultTile != null);
+      expect(resultTile, isNotNull);
       var img = (resultTile as FlutterTileBitmap).bitmap;
       return img;
     }));
 
-    assert(img != null);
+    expect(img, isNotNull);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -101,6 +101,66 @@ void main() {
     await tester.pumpAndSettle();
     //await tester.pump();
     await expectLater(find.byType(RawImage), matchesGoldenFile('renderer.png'));
+  });
+
+  testWidgets('Test areas with images', (WidgetTester tester) async {
+    final DisplayModel displayModel = DisplayModel(
+      maxZoomLevel: 14,
+    );
+
+    int tileSize = displayModel.tileSize;
+    int l = 0;
+    int zoomlevel = 13;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
+
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+
+    var img = await (tester.runAsync(() async {
+      String content = await TestAssetBundle().loadString("rendertheme.xml");
+      renderThemeBuilder.parseXml(content);
+      RenderTheme renderTheme = renderThemeBuilder.build();
+
+      MemoryDatastore datastore = MemoryDatastore();
+      datastore.addWay(Way(
+          0,
+          [Tag('name', 'OurForest'), Tag('natural', 'wood')],
+          [
+            [LatLong(45.95, 17.95), LatLong(46.05, 17.99), LatLong(46.00, 17.990), LatLong(45.95, 17.95)]
+          ],
+          null));
+      Tile tile = new Tile(x, y, zoomlevel, l);
+      expect(datastore.supportsTile(tile), true);
+      DatastoreReadResult result = await datastore.readMapDataSingle(tile);
+      expect(result.ways.length, greaterThan(0));
+      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+
+      TileBitmap resultTile = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
+      expect(resultTile, isNotNull);
+      var img = (resultTile as FlutterTileBitmap).bitmap;
+      return img;
+    }));
+
+    expect(img, isNotNull);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(),
+        home: Scaffold(
+          body: Center(
+            child: RawImage(
+              image: img,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    //await tester.pump();
+    await expectLater(find.byType(RawImage), matchesGoldenFile('forest.png'));
   });
 }
 

@@ -3,6 +3,8 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/projection/projection.dart';
+import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ViewModel {
@@ -129,21 +131,20 @@ class ViewModel {
   /// >1 means zoom-in.
   ///
   MapViewPosition? setScale(Mappoint focalPoint, double scale) {
-    assert(scale != null);
     assert(scale > 0);
     // do not scale if the scale is too minor to do anything
     if ((scale - 1).abs() < 0.01) return _mapViewPosition;
     if (_mapViewPosition != null) {
       //print("Scaling ${_mapViewPosition.zoomLevel} * $scale");
-      if (MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel) * scale < 1) {
+      if (Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) * scale < 1) {
         // zoom out until we reached zoomlevel 0
-        scale = 1 / MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel);
+        scale = 1 / Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
       } else {
-        double scaleFactor = MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel) * scale;
-        if (scaleFactor > MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel)) {
+        double scaleFactor = Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) * scale;
+        if (scaleFactor > Scalefactor.zoomlevelToScalefactor(displayModel.maxZoomLevel)) {
           // zoom in until we reach the maximum zoom level, limit the zoom then
-          scale = MercatorProjectionImpl.zoomLevelToScaleFactor(displayModel.maxZoomLevel) /
-              MercatorProjectionImpl.zoomLevelToScaleFactor(_mapViewPosition!.zoomLevel);
+          scale = Scalefactor.zoomlevelToScalefactor(displayModel.maxZoomLevel) /
+              Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
         }
       }
       MapViewPosition newPosition = MapViewPosition.scale(_mapViewPosition!, focalPoint, scale);

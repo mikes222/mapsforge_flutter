@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../layer/job/job.dart';
 import '../mapelements/mapelementcontainer.dart';
@@ -29,7 +30,7 @@ class RenderContext {
   final List<MapElementContainer> labels;
   late List<List<List<ShapePaintContainer>?>?> ways;
 
-  MercatorProjectionImpl? _mercatorProjection;
+  PixelProjection? _mercatorProjection;
 
   RenderContext(this.job, this.renderTheme, this.graphicFactory)
       : assert(graphicFactory != null),
@@ -88,9 +89,9 @@ class RenderContext {
     this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff) as double, this.job.tile.zoomLevel);
   }
 
-  MercatorProjectionImpl? get mercatorProjection {
-    if (_mercatorProjection != null) return _mercatorProjection;
-    _mercatorProjection = MercatorProjectionImpl(job.tileSize, job.tile.zoomLevel);
-    return _mercatorProjection;
+  PixelProjection get projection {
+    if (_mercatorProjection != null) return _mercatorProjection!;
+    _mercatorProjection = PixelProjection(job.tile.zoomLevel, job.tileSize);
+    return _mercatorProjection!;
   }
 }
