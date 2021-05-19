@@ -19,8 +19,8 @@ abstract class Rule {
   String? cat;
   final ClosedMatcher? closedMatcher;
   final ElementMatcher? elementMatcher;
-  final int? zoomMax;
-  final int? zoomMin;
+  final int zoomMax;
+  final int zoomMin;
   final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<Rule> subRules; // NOSONAR NOPMD we need specific interface
 
@@ -51,12 +51,12 @@ abstract class Rule {
     v.apply(this);
   }
 
-  void destroy() {
+  void dispose() {
     for (RenderInstruction ri in this.renderInstructions) {
       ri.dispose();
     }
     for (Rule sr in this.subRules) {
-      sr.destroy();
+      sr.dispose();
     }
   }
 

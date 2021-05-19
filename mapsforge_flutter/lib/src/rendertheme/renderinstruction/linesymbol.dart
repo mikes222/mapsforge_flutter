@@ -11,9 +11,7 @@ import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'renderinstruction.dart';
 
-/**
- * Represents an icon along a polyline on the map.
- */
+/// Represents an icon along a polyline on the map.
 class LineSymbol extends RenderInstruction with BitmapMixin {
   static final double REPEAT_GAP_DEFAULT = 200;
   static final double REPEAT_START_DEFAULT = 30;
@@ -118,7 +116,8 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
-    return initBitmap(graphicFactory);
+  Future<LineSymbol> initResources(GraphicFactory graphicFactory) async {
+    await initBitmap(graphicFactory);
+    return this;
   }
 }

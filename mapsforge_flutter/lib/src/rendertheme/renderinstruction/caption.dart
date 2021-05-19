@@ -215,6 +215,7 @@ class Caption extends RenderInstruction {
     }
 
     if (renderSymbol != null && renderSymbol!.bitmap != null) {
+      // the symbol itself is already drawn by the [RenderSymbol] class. Now just position the text accordingly
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -251,6 +252,7 @@ class Caption extends RenderInstruction {
     }
 
     if (renderSymbol != null && renderSymbol!.bitmap != null) {
+      // the symbol itself is already drawn by the [RenderSymbol] class. Now just position the text accordingly
       horizontalOffset = computeHorizontalOffset();
       verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
     }
@@ -277,11 +279,17 @@ class Caption extends RenderInstruction {
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     MapPaint f = graphicFactory.createPaintFrom(this.fill);
-    f.setTextSize(this.fontSize * scaleFactor);
+    if (zoomLevel >= 20)
+      f.setTextSize(this.fontSize * scaleFactor * (zoomLevel - 18));
+    else
+      f.setTextSize(this.fontSize * scaleFactor);
     this.fills[zoomLevel] = f;
 
     MapPaint s = graphicFactory.createPaintFrom(this.stroke);
-    s.setTextSize(this.fontSize * scaleFactor);
+    if (zoomLevel >= 20)
+      s.setTextSize(this.fontSize * scaleFactor * (zoomLevel - 18));
+    else
+      s.setTextSize(this.fontSize * scaleFactor);
     this.strokes[zoomLevel] = s;
 
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
@@ -291,7 +299,7 @@ class Caption extends RenderInstruction {
   void dispose() {}
 
   @override
-  Future<void>? initResources(GraphicFactory graphicFactory) {
-    return null;
+  Future<Caption> initResources(GraphicFactory graphicFactory) {
+    return Future.value(this);
   }
 }

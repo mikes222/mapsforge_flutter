@@ -1,9 +1,7 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
-import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 
@@ -41,8 +39,6 @@ class MapViewPosition {
         focalPoint = null,
         assert(zoomLevel >= 0),
         assert(tileSize > 0),
-        assert(_latitude == null || Projection.checkLatitude(_latitude)),
-        assert(_longitude == null || Projection.checkLongitude(_longitude)),
         _projection = PixelProjection(zoomLevel, tileSize);
 
   MapViewPosition.zoomIn(MapViewPosition old)
@@ -140,8 +136,8 @@ class MapViewPosition {
         _projection = old._projection,
         scale = old.scale,
         focalPoint = old.focalPoint,
-        assert(_latitude == null || Projection.checkLatitude(_latitude)),
-        assert(_longitude == null || Projection.checkLongitude(_longitude));
+        assert(_latitude == null),
+        assert(_longitude == null);
 
   MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, Dimension viewDimension)
       : zoomLevel = old.zoomLevel,
@@ -167,9 +163,8 @@ class MapViewPosition {
 
     _longitude = _projection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
 
-    Projection.checkLatitude(_latitude!);
-
-    Projection.checkLongitude(_longitude!);
+    // Projection.checkLatitude(_latitude!);
+    // Projection.checkLongitude(_longitude!);
   }
 
   void sizeChanged() {

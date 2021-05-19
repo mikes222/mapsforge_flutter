@@ -6,6 +6,8 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
+///
+/// this class presents the whole map by requesting the tiles and drawing them when available
 abstract class TileLayer {
   final DisplayModel displayModel;
   bool _visible = true;
@@ -13,15 +15,13 @@ abstract class TileLayer {
 
   TileLayer(this.displayModel);
 
-  /**
-   * Draws this {@code Layer} on the given canvas.
-   *
-   * @param boundingBox  the geographical area which should be drawn.
-   * @param zoomLevel    the zoom level at which this {@code Layer} should draw itself.
-   * @param canvas       the canvas on which this {@code Layer} should draw itself.
-   * @param topLeftPoint the top-left pixel position of the canvas relative to the top-left map position.
-   */
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet? jobSet);
+  /// Draws this {@code Layer} on the given canvas.
+  ///
+  /// @param boundingBox  the geographical area which should be drawn.
+  /// @param zoomLevel    the zoom level at which this {@code Layer} should draw itself.
+  /// @param canvas       the canvas on which this {@code Layer} should draw itself.
+  /// @param topLeftPoint the top-left pixel position of the canvas relative to the top-left map position.
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet jobSet);
 
   /**
    * Gets the geographic position of this layer element, if it exists.

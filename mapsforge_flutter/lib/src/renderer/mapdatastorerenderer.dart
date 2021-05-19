@@ -15,10 +15,12 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/labels/tilebasedlabelstore.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/mapelements/mapelementcontainer.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/mapelements/symbolcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/model/rectangle.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
@@ -57,15 +59,14 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   Isolate? _isolate;
 
-  PublishSubject<DatastoreReadResult> _subject = PublishSubject<DatastoreReadResult>();
+  PublishSubject<DatastoreReadResult?> _subject = PublishSubject<DatastoreReadResult?>();
 
   MapDataStoreRenderer(
     this.datastore,
     this.renderTheme,
     this.graphicFactory,
     this.renderLabels,
-  )   : assert(renderLabels != null),
-        labelStore = TileBasedLabelStore(100) {
+  ) : labelStore = TileBasedLabelStore(100) {
     if (!renderLabels) {
       this.tileDependencies = null;
     } else {
@@ -85,14 +86,14 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   /// @returns null if the datastore does not support the requested tile
   /// @returns the Bitmap for the requested tile
   @override
-  Future<TileBitmap?> executeJob(Job job) async {
+  Future<JobResult> executeJob(Job job) async {
     bool showTiming = false;
     bool useIsolate = true;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     if (!this.datastore.supportsTile(job.tile)) {
       // return if we do not have data for the requested tile in the datastore
-      return null;
+      return JobResult(null, JOBRESULT.UNSUPPORTED);
     }
     CanvasRasterer canvasRasterer =
         CanvasRasterer(graphicFactory, job.tileSize.toDouble(), job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
@@ -110,32 +111,49 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       mapReadResult = await readMapDataInIsolate(IsolateParam(datastore, job.tile));
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (mapReadResult == null) {
-      _log.info("Executing ${job.toString()} has no mapReadResult for tile ${job.tile.toString()}");
-      return null;
-    }
     if (diff > 100 && showTiming)
-      _log.info("mapReadResult took $diff ms for ${mapReadResult.pointOfInterests.length} pois and ${mapReadResult.ways.length} ways");
+      _log.info("mapReadResult took $diff ms for ${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois");
+    if (mapReadResult == null) return JobResult(null, JOBRESULT.UNSUPPORTED);
     if ((mapReadResult.ways.length) > 100000) {
       _log.warning("Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
     await _processReadMapData(renderContext, mapReadResult);
     diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming) _log.info("_processReadMapData took $diff ms");
+    if (diff > 100 && showTiming) {
+      _log.info(
+          "_processReadMapData took $diff ms for ${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois");
+      // Mappoint leftUpper = renderContext.projection.getLeftUpper(job.tile);
+      // mapReadResult.ways.forEach((element1) {
+      //   _log.info("  ${element1.latLongs.length} items");
+      //   element1.latLongs.forEach((element2) {
+      //     element2.forEach((element3) {
+      //       _log.info(
+      //           "    ${element3} is ${leftUpper.x - renderContext.projection.longitudeToPixelX(element3.longitude)} / ${leftUpper.y - renderContext.projection.latitudeToPixelY(element3.latitude)}");
+      //     });
+      //   });
+      // });
+    }
     canvasRasterer.startCanvasBitmap();
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
     canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming) _log.info("drawWays took $diff ms");
+    if (diff > 100 && showTiming) _log.info("drawWays took $diff ms for ${renderContext.ways.length} items");
 
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
       //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
-      canvasRasterer.drawMapElements(labelsToDraw, job.tile, job.tileSize);
+      canvasRasterer.drawMapElements(labelsToDraw, renderContext.projection, job.tile);
       diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff > 100 && showTiming) _log.info("drawMapElements took $diff ms");
-    }
-    if (this.labelStore != null) {
+      if (diff > 100 && showTiming) {
+        _log.info("drawMapElements took $diff ms for ${labelsToDraw.length} labels");
+        // labelsToDraw.forEach((element) {
+        //   _log.info(
+        //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
+        // });
+      }
+    } else {
       // store elements for this tile in the label cache
       this.labelStore.storeMapItems(job.tile, renderContext.labels);
       diff = DateTime.now().millisecondsSinceEpoch - time;
@@ -151,13 +169,13 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 //        renderContext.canvasRasterer.fillOutsideAreas(Color.TRANSPARENT, insideArea);
 //      }
 //    }
-
+    renderContext.dispose();
     TileBitmap? bitmap = (await canvasRasterer.finalizeCanvasBitmap() as TileBitmap?);
     canvasRasterer.destroy();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("finalizeCanvasBitmap took $diff ms");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
-    return bitmap;
+    return JobResult(bitmap, JOBRESULT.NORMAL);
   }
 
   Future<void> _processReadMapData(final RenderContext renderContext, DatastoreReadResult mapReadResult) async {
@@ -225,7 +243,6 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
       PointTextContainer label =
           this.graphicFactory.createPointTextContainer(centerPoint, display, priority, caption, fill, stroke, null, position, maxTextWidth);
-      assert(label != null);
       renderContext.labels.add(label);
     }
   }
@@ -324,11 +341,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
         labelsToDraw.addAll(tileDependencies!.getOverlappingElements(neighbour, renderContext.job.tile)!);
 
         // but we need to remove the labels for this tile that overlap onto a tile that has been drawn
-        for (MapElementContainer current in renderContext.labels) {
-          if (current.intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
-            undrawableElements.add(current);
-          }
-        }
+        // for (MapElementContainer current in renderContext.labels) {
+        //   if (current.intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
+        //     undrawableElements.add(current);
+        //   }
+        // }
         // since we already have the data from that tile, we do not need to get the data for
         // it, so remove it from the neighbours list.
         //neighbours.remove(neighbour);
@@ -409,6 +426,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       } else if (data is DatastoreReadResult) {
         DatastoreReadResult result = data;
         _subject.add(result);
+      } else if (data == null) {
+        _subject.add(null);
       }
     }
   }

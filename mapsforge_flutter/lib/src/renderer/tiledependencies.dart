@@ -83,4 +83,9 @@ class TileDependencies {
   void removeTileInProgress(Tile tileFinished) {
     tilesInProgress.remove(tileFinished);
   }
+
+  @override
+  String toString() {
+    return 'TileDependencies{overlapData: $overlapData, tilesInProgress: $tilesInProgress}';
+  }
 }

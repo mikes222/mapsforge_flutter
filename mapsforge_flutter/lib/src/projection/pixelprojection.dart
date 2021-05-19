@@ -52,7 +52,6 @@ class PixelProjection extends MercatorProjection {
   /// @param zoomLevel the zoom level at which the coordinate should be converted.
   /// @return the pixel Y coordinate of the latitude value.
   double latitudeToPixelY(double latitude) {
-    Projection.checkLatitude(latitude);
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;
     double sinLatitude = sin(latitude * pi180);
@@ -87,7 +86,6 @@ class PixelProjection extends MercatorProjection {
   /// @param tileSize  the tile size
   /// @return the pixel X coordinate of the longitude value.
   double longitudeToPixelX(double longitude) {
-    Projection.checkLongitude(longitude);
     return (longitude + 180) / 360 * _mapSize;
   }
 

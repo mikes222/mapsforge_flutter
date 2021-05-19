@@ -178,16 +178,22 @@ class PathText extends RenderInstruction {
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     MapPaint zlPaint = graphicFactory.createPaintFrom(this.fill);
-    zlPaint.setTextSize(this.fontSize * scaleFactor);
+    if (zoomLevel >= 22)
+      zlPaint.setTextSize(this.fontSize * scaleFactor * (zoomLevel - 20));
+    else
+      zlPaint.setTextSize(this.fontSize * scaleFactor);
     this.fills[zoomLevel] = zlPaint;
 
     MapPaint zlStroke = graphicFactory.createPaintFrom(this.stroke);
-    zlStroke.setTextSize(this.fontSize * scaleFactor);
+    if (zoomLevel >= 22)
+      zlStroke.setTextSize(this.fontSize * scaleFactor * (zoomLevel - 20));
+    else
+      zlStroke.setTextSize(this.fontSize * scaleFactor);
     this.strokes[zoomLevel] = zlStroke;
   }
 
   @override
-  Future<void>? initResources(GraphicFactory graphicFactory) {
-    return null;
+  Future<RenderInstruction> initResources(GraphicFactory graphicFactory) {
+    return Future.value(this);
   }
 }

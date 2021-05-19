@@ -1,5 +1,4 @@
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/area.dart';
@@ -53,8 +52,8 @@ class RuleBuilder {
   String? cat;
   ClosedMatcher? closedMatcher;
   ElementMatcher? elementMatcher;
-  int? zoomMax;
-  int? zoomMin;
+  int zoomMax;
+  int zoomMin;
   Closed? closed;
   Element? element;
   List<String>? keyList;
@@ -119,12 +118,11 @@ class RuleBuilder {
   }
 
   RuleBuilder(this.graphicFactory, this.displayModel, this.symbols, this.level)
-      : assert(symbols != null),
-        ruleBuilderStack = [],
-        renderInstructions = [] {
+      : ruleBuilderStack = [],
+        renderInstructions = [],
+        this.zoomMin = 0,
+        this.zoomMax = 65536 {
     this.closed = Closed.ANY;
-    this.zoomMin = 0;
-    this.zoomMax = 65536;
   }
 
   /**
@@ -139,8 +137,8 @@ class RuleBuilder {
     AttributeMatcher keyMatcher = getKeyMatcher(this.keyList!);
     AttributeMatcher valueMatcher = getValueMatcher(this.valueList!);
 
-//    keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleStack);
-//    valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleStack);
+    //keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleBuilderStack);
+    //valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleStack);
 
     return new PositiveRule(this, keyMatcher, valueMatcher);
   }
@@ -180,11 +178,9 @@ class RuleBuilder {
 
     this.closedMatcher = getClosedMatcher(this.closed!);
 
-//    this.elementMatcher =
-//        RuleOptimizer.optimize(this.elementMatcher, this.ruleStack);
-//
-//    this.closedMatcher =
-//        RuleOptimizer.optimize(this.closedMatcher, this.ruleStack);
+    //this.elementMatcher = RuleOptimizer.optimize(this.elementMatcher, this.ruleStack);
+
+    //this.closedMatcher = RuleOptimizer.optimize(this.closedMatcher, this.ruleStack);
 
     for (XmlNode node in rootElement.children) {
       //rootElement.children.forEach((node) async {
@@ -229,7 +225,7 @@ class RuleBuilder {
 
     XmlUtils.checkMandatoryAttribute(elementName, V, this.values);
 
-    if (this.zoomMin! > this.zoomMax!) {
+    if (this.zoomMin > this.zoomMax) {
       throw new Exception('\'' + ZOOM_MIN + "' > '" + ZOOM_MAX + "': $zoomMin $zoomMax");
     }
   }

@@ -72,10 +72,10 @@ class BoundingBox {
       maxLongitude = max(maxLongitude, longitude);
     }
 
-    Projection.checkLatitude(minLatitude);
-    Projection.checkLongitude(minLongitude);
-    Projection.checkLatitude(maxLatitude);
-    Projection.checkLongitude(maxLongitude);
+    // Projection.checkLatitude(minLatitude);
+    // Projection.checkLongitude(minLongitude);
+    // Projection.checkLatitude(maxLatitude);
+    // Projection.checkLongitude(maxLongitude);
     return BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 

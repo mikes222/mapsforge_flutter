@@ -17,7 +17,7 @@ class RenderThemeHandler {
   static final String UNEXPECTED_ELEMENT = "unexpected element: ";
 
   Set<String>? categories;
-  Rule? currentRule;
+  //Rule? currentRule;
   final DisplayModel displayModel;
   final List<Element> elementStack = [];
   final GraphicFactory graphicFactory;
@@ -25,7 +25,7 @@ class RenderThemeHandler {
   String? qName;
   final String relativePathPrefix;
   RenderTheme? renderTheme;
-  final List<Rule> ruleStack = [];
+  //final List<Rule> ruleStack = [];
   Map<String, Symbol> symbols = new Map<String, Symbol>();
   final XmlRenderTheme xmlRenderTheme;
   late XmlRenderThemeStyleMenu renderThemeStyleMenu;

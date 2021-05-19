@@ -7,8 +7,8 @@ class Scalefactor {
 
   final int zoomlevel;
 
-  static Scalefactor fromZoomlevel(int zoomLevel) {
-    return Scalefactor._(zoomlevelToScalefactor(zoomLevel), zoomLevel);
+  static Scalefactor fromZoomlevel(int zoomlevel) {
+    return Scalefactor._(zoomlevelToScalefactor(zoomlevel), zoomlevel);
   }
 
   static Scalefactor fromScalefactor(double scalefactor) {

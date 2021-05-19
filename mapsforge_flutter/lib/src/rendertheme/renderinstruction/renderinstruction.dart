@@ -54,7 +54,7 @@ abstract class RenderInstruction {
   ///
   void dispose();
 
-  Future<void>? initResources(GraphicFactory graphicFactory);
+  Future<RenderInstruction> initResources(GraphicFactory graphicFactory);
 
   String? getCategory() {
     return this.category;
@@ -86,11 +86,9 @@ abstract class RenderInstruction {
    */
   void scaleStrokeWidth(double scaleFactor, int zoomLevel);
 
-  /**
-   * Scales the text size of this RenderInstruction by the given factor.
-   *
-   * @param scaleFactor the factor by which the text size should be scaled.
-   */
+  /// Scales the text size of this RenderInstruction by the given factor.
+  ///
+  /// @param scaleFactor the factor by which the text size should be scaled. This property comes from [DisplayModel].userScaleFactor
   void scaleTextSize(double scaleFactor, int zoomLevel);
 
 //  int getMaxLevel() {

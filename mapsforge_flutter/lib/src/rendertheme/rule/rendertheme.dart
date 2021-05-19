@@ -43,11 +43,11 @@ class RenderTheme {
   /**
    * Must be called when this RenderTheme gets destroyed to clean up and free resources.
    */
-  void destroy() {
+  void dispose() {
     this.poiMatchingCache.clear();
     this.wayMatchingCache.clear();
     for (Rule r in this.rulesList) {
-      r.destroy();
+      r.dispose();
     }
   }
 
@@ -144,7 +144,7 @@ class RenderTheme {
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (!strokeScales.containsKey(zoomLevel) || scaleFactor != strokeScales[zoomLevel]) {
       rulesList.forEach((rule) {
-        if (rule.zoomMin! <= zoomLevel && rule.zoomMax! >= zoomLevel) {
+        if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth, zoomLevel);
         }
       });
@@ -158,13 +158,13 @@ class RenderTheme {
   /**
    * Scales the text size of this RenderTheme by the given factor for a given zoom level.
    *
-   * @param scaleFactor the factor by which the text size should be scaled.
+   * @param scaleFactor the factor by which the text size should be scaled. This comes from [DisplayModel].userScaleFactor
    * @param zoomLevel   the zoom level to which this is applied.
    */
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     if (!textScales.containsKey(zoomLevel) || scaleFactor != textScales[zoomLevel]) {
       rulesList.forEach((rule) {
-        if (rule.zoomMin! <= zoomLevel && rule.zoomMax! >= zoomLevel) {
+        if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.scaleTextSize(scaleFactor * this.baseTextSize, zoomLevel);
         }
       });

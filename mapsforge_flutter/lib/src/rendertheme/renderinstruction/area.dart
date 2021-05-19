@@ -117,7 +117,7 @@ class Area extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
+  Future<Area> initResources(GraphicFactory graphicFactory) async {
     await initBitmap(graphicFactory);
 
     if (bitmap != null) {
@@ -128,6 +128,7 @@ class Area extends RenderInstruction with BitmapMixin {
     }
 
     //fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
+    return this;
   }
 
   @override

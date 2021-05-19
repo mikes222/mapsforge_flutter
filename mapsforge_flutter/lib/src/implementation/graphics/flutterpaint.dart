@@ -120,8 +120,8 @@ class FlutterPaint implements MapPaint {
   @override
   void setBitmapShader(Bitmap bitmap) {
     if (_shaderBitmap != null) _shaderBitmap!.decrementRefCount();
-    _shaderBitmap = bitmap as FlutterBitmap?;
-    bitmap.incrementRefCount();
+    _shaderBitmap = bitmap as FlutterBitmap;
+    _shaderBitmap!.incrementRefCount();
     ui.Image img = _shaderBitmap!.bitmap;
 
     // final double devicePixelRatio = ui.window.devicePixelRatio;

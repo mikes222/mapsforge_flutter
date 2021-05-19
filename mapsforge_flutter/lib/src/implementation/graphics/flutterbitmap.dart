@@ -23,6 +23,7 @@ class FlutterBitmap implements Bitmap {
     ++_refcount;
     if ((_refcount % 10) == 0) {
       _log.warning("Bitmap $this ($bitmap) refcount is $_refcount");
+      //_log.warning(StackTrace.current);
     }
   }
 

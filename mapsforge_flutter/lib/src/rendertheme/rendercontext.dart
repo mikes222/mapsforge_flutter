@@ -1,13 +1,11 @@
 import 'dart:math';
 
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../layer/job/job.dart';
 import '../mapelements/mapelementcontainer.dart';
-import '../model/tile.dart';
 import '../renderer/shapepaintcontainer.dart';
 import '../rendertheme/rule/rendertheme.dart';
 
@@ -26,18 +24,22 @@ class RenderContext {
   final GraphicFactory graphicFactory;
 
   // Data generated for the rendering process
-  List<List<ShapePaintContainer>?>? drawingLayers;
+  List<List<ShapePaintContainer>>? drawingLayers;
   final List<MapElementContainer> labels;
-  late List<List<List<ShapePaintContainer>?>?> ways;
+  late List<List<List<ShapePaintContainer>>> ways;
 
   PixelProjection? _projection;
 
-  RenderContext(this.job, this.renderTheme, this.graphicFactory)
-      : assert(graphicFactory != null),
-        labels = [] {
+  RenderContext(this.job, this.renderTheme, this.graphicFactory) : labels = [] {
     this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
     this.ways = _createWayLists();
     setScaleStrokeWidth(this.job.tile.zoomLevel);
+  }
+
+  void dispose() {
+    labels.forEach((element) {
+      element.dispose();
+    });
   }
 
   void setDrawingLayers(int layer) {
@@ -51,7 +53,7 @@ class RenderContext {
 
   void addToCurrentDrawingLayer(int level, ShapePaintContainer element) {
     //_log.info("Adding level $level to layer with ${drawingLayers.length} levels");
-    this.drawingLayers![level]!.add(element);
+    this.drawingLayers![level].add(element);
   }
 
   /**
@@ -64,17 +66,17 @@ class RenderContext {
   //   return Job(tile, this.job.hasAlpha, this.job.textScale);
   // }
 
-  List<List<List<ShapePaintContainer>?>?> _createWayLists() {
-    List<List<List<ShapePaintContainer>?>?> result = new List.filled(LAYERS, null);
+  List<List<List<ShapePaintContainer>>> _createWayLists() {
+    List<List<List<ShapePaintContainer>>> result = [];
     int levels = this.renderTheme.getLevels()!;
     assert(levels > 0);
 
-    for (int i = LAYERS - 1; i >= 0; --i) {
-      List<List<ShapePaintContainer>?> innerWayList = new List.filled(levels, null);
-      for (int j = levels - 1; j >= 0; --j) {
-        innerWayList[j] = [];
+    for (int i = 0; i < LAYERS; ++i) {
+      List<List<ShapePaintContainer>> innerWayList = [];
+      for (int j = 0; j < levels; ++j) {
+        innerWayList.add([]);
       }
-      result[i] = innerWayList;
+      result.add(innerWayList);
     }
     return result;
   }

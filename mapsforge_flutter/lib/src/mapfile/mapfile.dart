@@ -311,8 +311,6 @@ class MapFile extends MapDataStore {
         Projection projection = subFileParameter.projection();
         double tileLatitude = projection.tileYToLatitude((subFileParameter.boundaryTileTop + row));
         double tileLongitude = projection.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
-        Projection.checkLatitude(tileLatitude);
-        Projection.checkLongitude(tileLongitude);
 
         PoiWayBundle poiWayBundle =
             _processBlock(queryParameters, subFileParameter, boundingBox, tileLatitude, tileLongitude, selector, readBuffer);

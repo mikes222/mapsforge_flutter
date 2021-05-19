@@ -27,17 +27,15 @@ abstract class Projection {
 
   static final double LONGITUDE_MIN = -LONGITUDE_MAX;
 
-  static bool checkLatitude(double latitude) {
-    assert(latitude >= LATITUDE_MIN);
-    assert(latitude <= LATITUDE_MAX);
-    return true;
-  }
+//  static void checkLatitude(double latitude) {
+  // assert(latitude >= LATITUDE_MIN);
+  // assert(latitude <= LATITUDE_MAX);
+//  }
 
-  static bool checkLongitude(double longitude) {
-    assert(longitude >= LONGITUDE_MIN);
-    assert(longitude <= LONGITUDE_MAX);
-    return true;
-  }
+//  static void checkLongitude(double longitude) {
+  // assert(longitude >= LONGITUDE_MIN);
+  // assert(longitude <= LONGITUDE_MAX);
+//  }
 
   /// Converts degree to radian
   static double degToRadian(final double deg) => deg * (pi / 180.0);

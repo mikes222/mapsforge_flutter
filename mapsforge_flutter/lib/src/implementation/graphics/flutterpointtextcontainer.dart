@@ -114,6 +114,9 @@ class FlutterPointTextContainer extends PointTextContainer {
     }
   }
 
+  @mustCallSuper
+  dispose() {}
+
   @override
   void draw(MapCanvas canvas, Mappoint? origin, Matrix matrix, Filter filter) {
     if (!this.isVisible) {

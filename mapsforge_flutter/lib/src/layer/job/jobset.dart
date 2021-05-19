@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
@@ -13,32 +14,32 @@ class JobSet {
   final List<Job> jobs = [];
 
   /// The resulting bitmaps after the jobs has been processed.
-  final Map<Tile, TileBitmap> _bitmaps = Map();
+  final Map<Tile, JobResult> _bitmaps = Map();
 
   void add(Job job) {
     jobs.add(job);
   }
 
-  void removeJob(Job job, TileBitmap tileBitmap) {
+  void jobFinished(Job job, JobResult jobResult) {
     jobs.remove(job);
-    tileBitmap.incrementRefCount();
-    TileBitmap? old = _bitmaps[job.tile];
+    jobResult.bitmap?.incrementRefCount();
+    TileBitmap? old = _bitmaps[job.tile]?.bitmap;
     if (old != null) {
       old.decrementRefCount();
     }
-    _bitmaps[job.tile] = tileBitmap;
+    _bitmaps[job.tile] = jobResult;
   }
 
-  TileBitmap? getTileBitmap(Tile tile) {
+  JobResult? getJobResult(Tile tile) {
     return _bitmaps[tile];
   }
 
   @mustCallSuper
   void dispose() {
     _bitmaps.values.forEach((element) {
-      element.decrementRefCount();
+      element.bitmap?.decrementRefCount();
     });
   }
 
-  Map<Tile, TileBitmap> get bitmaps => _bitmaps;
+  Map<Tile, JobResult> get results => _bitmaps;
 }

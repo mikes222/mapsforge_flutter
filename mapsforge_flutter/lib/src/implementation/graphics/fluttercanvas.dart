@@ -46,6 +46,7 @@ class FlutterCanvas extends MapCanvas {
         assert(width >= 0),
         assert(height >= 0) {
     uiCanvas = ui.Canvas(pictureRecorder!);
+    //uiCanvas.clipRect(Rect.fromLTWH(0, 0, width, height), doAntiAlias: true);
   }
 
   @override
@@ -150,7 +151,7 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void setClip(int left, int top, int width, int height) {
-    uiCanvas.clipRect(ui.Rect.fromLTWH(left.toDouble(), top.toDouble(), width.toDouble(), height.toDouble()));
+    uiCanvas.clipRect(ui.Rect.fromLTWH(left.toDouble(), top.toDouble(), width.toDouble(), height.toDouble()), doAntiAlias: true);
   }
 
   // @override
@@ -175,6 +176,7 @@ class FlutterCanvas extends MapCanvas {
     //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
     pictureRecorder = null;
+    pic.dispose();
 
     return FlutterTileBitmap(img, src);
   }

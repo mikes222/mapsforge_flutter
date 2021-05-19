@@ -6,13 +6,14 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
 ///
 /// The dummy renderer renders dummy bitmaps for each given job
 ///
 class DummyRenderer extends JobRenderer {
   @override
-  Future<TileBitmap> executeJob(Job job) async {
+  Future<JobResult> executeJob(Job job) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -39,7 +40,7 @@ class DummyRenderer extends JobRenderer {
 //    var buffer = byteData.buffer.asUint8List();
 
     FlutterTileBitmap tileBitmap = FlutterTileBitmap(img);
-    return tileBitmap; //Future.value(tileBitmap);
+    return JobResult(tileBitmap, JOBRESULT.NORMAL); //Future.value(tileBitmap);
   }
 
   @override

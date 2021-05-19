@@ -15,8 +15,8 @@ class PositiveRule extends Rule {
 
   @override
   bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel) {
-    return this.zoomMin! <= zoomLevel &&
-        this.zoomMax! >= zoomLevel &&
+    return this.zoomMin <= zoomLevel &&
+        this.zoomMax >= zoomLevel &&
         IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) &&
         this.elementMatcher!.matchesElement(Element.NODE) &&
         this.keyMatcher.matchesTagList(tags) &&
@@ -25,8 +25,8 @@ class PositiveRule extends Rule {
 
   @override
   bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed) {
-    return this.zoomMin! <= zoomLevel &&
-        this.zoomMax! >= zoomLevel &&
+    return this.zoomMin <= zoomLevel &&
+        this.zoomMax >= zoomLevel &&
         IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) &&
         this.elementMatcher!.matchesElement(Element.WAY) &&
         this.closedMatcher!.matchesClosed(closed) &&

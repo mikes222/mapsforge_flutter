@@ -66,7 +66,7 @@ class Tile {
     if (tileX > maxTileNumber) {
       throw new Exception("invalid tileX number on zoom level $zoomLevel: $tileX");
     } else if (tileY > maxTileNumber) {
-      throw new Exception("invalid tileY number on zoom level $zoomLevel: $tileY");
+      throw new Exception("invalid tileY number on zoom level $zoomLevel: $tileY (max is $maxTileNumber)");
     }
   }
 

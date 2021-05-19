@@ -123,7 +123,7 @@ class RenderCircle extends RenderInstruction {
   }
 
   @override
-  Future<void>? initResources(GraphicFactory graphicFactory) {
-    return null;
+  Future<RenderCircle> initResources(GraphicFactory graphicFactory) {
+    return Future.value(this);
   }
 }

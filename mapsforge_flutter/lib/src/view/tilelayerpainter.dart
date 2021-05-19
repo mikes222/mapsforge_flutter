@@ -20,8 +20,7 @@ class TileLayerPainter extends ChangeNotifier implements CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     viewModel.setViewDimension(size.width, size.height);
-
-    _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet);
+    if (jobSet != null) _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet!);
   }
 
   @override

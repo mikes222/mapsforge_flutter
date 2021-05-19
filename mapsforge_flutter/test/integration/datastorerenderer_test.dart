@@ -5,9 +5,9 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
@@ -49,8 +49,8 @@ void main() {
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
-      TileBitmap resultTile = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
-      var img = (resultTile as FlutterTileBitmap).bitmap;
+      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
+      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
       return img;
     }));
 
@@ -116,9 +116,9 @@ void main() {
       for (Tile tile in tilesToLoad) {
         print("Calculating tile ${tile.toString()}");
         Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-        TileBitmap resultTile = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
-        assert(resultTile != null);
-        var img = (resultTile as FlutterTileBitmap).bitmap;
+        JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
+        expect(jobResult.bitmap, isNotNull);
+        var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
         imgs.add(img);
       }
 

@@ -25,12 +25,13 @@ class SymbolContainer extends MapElementContainer {
       this.boundary = new Rectangle(0, 0, this.symbol.getWidth().toDouble(), this.symbol.getHeight().toDouble());
     }
 
-    this.symbol.incrementRefCount();
+    // we get the image from the [RenderSymbol] class which lives as long as we have the rendertheme. So no need to keep track of the short-living image here
+    //this.symbol.incrementRefCount();
   }
 
   @mustCallSuper
   dispose() {
-    symbol.decrementRefCount();
+    //symbol.decrementRefCount();
   }
 
   @override

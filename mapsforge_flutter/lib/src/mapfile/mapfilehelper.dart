@@ -101,7 +101,7 @@ class MapfileHelper {
     List<Way> ways = [];
     List<Tag> wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
 
-    BoundingBox wayFilterBbox = boundingBox.extendMeters(wayFilterDistance);
+    BoundingBox wayFilterBbox = boundingBox.extendMeters(queryParameters.queryZoomLevel! > 20 ? wayFilterDistance ~/ 4 : wayFilterDistance);
 
     for (int elementCounter = numberOfWays; elementCounter != 0; --elementCounter) {
       if (this._mapFileHeader.getMapFileInfo().debugFile) {

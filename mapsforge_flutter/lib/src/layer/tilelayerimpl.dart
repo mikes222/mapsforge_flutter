@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
@@ -18,6 +19,8 @@ import 'job/job.dart';
 import 'job/jobqueue.dart';
 import 'tilelayer.dart';
 
+///
+/// this class presents the whole map by requesting the tiles and drawing them when available
 class TileLayerImpl extends TileLayer {
   static final _log = new Logger('TileLayer');
 
@@ -34,11 +37,7 @@ class TileLayerImpl extends TileLayer {
         super(displayModel);
 
   @override
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet? jobSet) {
-    if (jobSet == null) {
-      //   //_submitJobSet(viewModel, mapViewPosition);
-      return;
-    }
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet jobSet) {
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -59,11 +58,11 @@ class TileLayerImpl extends TileLayer {
     mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
     Mappoint? leftUpper = mapViewPosition.leftUpper;
 
-    jobSet.bitmaps.forEach((Tile tile, TileBitmap tileBitmap) {
+    jobSet.results.forEach((Tile tile, JobResult jobResult) {
       Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
-      _paint.setAntiAlias(false);
+      _paint.setAntiAlias(true);
       canvas.drawBitmap(
-        bitmap: tileBitmap,
+        bitmap: jobResult.bitmap,
         left: point.x - leftUpper!.x,
         top: point.y - leftUpper.y,
         paint: _paint,

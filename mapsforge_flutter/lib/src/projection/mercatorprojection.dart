@@ -14,12 +14,16 @@ class MercatorProjection implements Projection {
   /// The scalefactor. The scaleFactor is dependent on the zoomLevel (scaleFactor similar to pow(2, zoomLevel) ). The whole world fits into on tile in zoomLevel 0 (=scaleFactor 1).
   final Scalefactor _scalefactor;
 
+  late final int _maxTileCount;
+
   MercatorProjection.fromZoomlevel(int zoomLevel) : _scalefactor = Scalefactor.fromZoomlevel(zoomLevel) {
     //_mapSize = _mapSizeWithScaleFactor(_scaleFactor.scalefactor);
+    _maxTileCount = _scalefactor.scalefactor.floor();
   }
 
   MercatorProjection.fromScalefactor(double scaleFactor) : _scalefactor = Scalefactor.fromScalefactor(scaleFactor) {
     //_mapSize = _mapSizeWithScaleFactor(_scaleFactor);
+    _maxTileCount = Scalefactor.zoomlevelToScalefactor(_scalefactor.zoomlevel).floor();
   }
 
   Scalefactor get scalefactor => _scalefactor;
@@ -39,7 +43,6 @@ class MercatorProjection implements Projection {
   /// @return the tile X number of the longitude value.
   @override
   int longitudeToTileX(double longitude) {
-    Projection.checkLongitude(longitude);
     if (longitude == 180) {
       return (_scalefactor.scalefactor - 1).floor();
     }
@@ -84,12 +87,16 @@ class MercatorProjection implements Projection {
   /// @return the tile Y number of the latitude value.
   @override
   int latitudeToTileY(double latitude) {
-    Projection.checkLatitude(latitude);
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;
     double sinLatitude = sin(latitude * pi180);
     double tileY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / pi4);
-    return (tileY * _scalefactor.scalefactor).floor();
+    int result = (tileY * _scalefactor.scalefactor).floor();
+    //print("Mercator: ${tileY * _scalefactor.scalefactor}");
+    // seems with Latitude boundingBox.maxLatitude we get -1.5543122344752192e-15 so correct it to 0
+    if (result < 0) return 0;
+    if (result >= _maxTileCount) return _maxTileCount - 1;
+    return result;
   }
 
   ///

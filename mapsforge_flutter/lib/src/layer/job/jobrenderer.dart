@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
 ///
 /// This abstract class provides the foundation to render a bitmap for the given tile.
@@ -16,7 +17,7 @@ abstract class JobRenderer {
   /// @returns the tilebitmap or null if no data available for this tile
   /// @returns an exception e.g. if the server is not reachable
   ///
-  Future<TileBitmap?> executeJob(Job job);
+  Future<JobResult> executeJob(Job job);
 
   String getRenderKey();
 

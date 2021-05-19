@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import '../graphics/display.dart';
 import '../graphics/filter.dart';
 import '../graphics/graphicfactory.dart';
@@ -30,11 +32,14 @@ class WayTextContainer extends MapElementContainer {
     this.boundaryAbsolute = lineString.getBounds().enlarge(textHeight / 2, textHeight / 2, textHeight / 2, textHeight / 2);
   }
 
+  @mustCallSuper
+  dispose() {}
+
   @override
   void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
     //MapPath path = _generatePath(origin);
 
-    if (this.paintBack != null) {
+    {
       int color = this.paintBack.getColor();
       if (filter != Filter.NONE) {
         this.paintBack.setColorFromNumber(GraphicUtils.filterColor(color, filter));
@@ -52,32 +57,6 @@ class WayTextContainer extends MapElementContainer {
     if (filter != Filter.NONE) {
       this.paintFront.setColorFromNumber(color);
     }
-  }
-
-  MapPath _generatePath(Mappoint origin) {
-    LineSegment firstSegment = this.lineString.segments.elementAt(0);
-    // So text isn't upside down
-    bool doInvert = firstSegment.end.x <= firstSegment.start.x;
-    MapPath path = this.graphicFactory.createPath();
-
-    if (!doInvert) {
-      Mappoint start = firstSegment.start.offset(-origin.x, -origin.y);
-      path.moveTo(start.x, start.y);
-      for (int i = 0; i < this.lineString.segments.length; i++) {
-        LineSegment segment = this.lineString.segments.elementAt(i);
-        Mappoint end = segment.end.offset(-origin.x, -origin.y);
-        path.lineTo(end.x, end.y);
-      }
-    } else {
-      Mappoint end = this.lineString.segments.elementAt(this.lineString.segments.length - 1).end.offset(-origin.x, -origin.y);
-      path.moveTo(end.x, end.y);
-      for (int i = this.lineString.segments.length - 1; i >= 0; i--) {
-        LineSegment segment = this.lineString.segments.elementAt(i);
-        Mappoint start = segment.start.offset(-origin.x, -origin.y);
-        path.lineTo(start.x, start.y);
-      }
-    }
-    return path;
   }
 
   @override

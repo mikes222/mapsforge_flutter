@@ -37,34 +37,25 @@ class CanvasRasterer {
   }
 
   void drawWays(RenderContext renderContext) {
-    //int levelsPerLayer = renderContext.ways.elementAt(0).length;
-//    int layers = renderContext.ways.length;
-
-    for (List<List<ShapePaintContainer>?>? shapePaintContainers in renderContext.ways) {
-      // for (int layer = 0; layer < layers; ++layer) {
-      //   List<List<ShapePaintContainer>> shapePaintContainers = renderContext.ways.elementAt(layer);
-
-      for (List<ShapePaintContainer>? wayList in shapePaintContainers!) {
-        // for (int level = 0; level < levelsPerLayer; ++level) {
-        //   List<ShapePaintContainer> wayList = shapePaintContainers.elementAt(level);
-
-        for (int index = wayList!.length - 1; index >= 0; --index) {
-          _drawShapePaintContainer(wayList.elementAt(index), renderContext.projection);
-        }
+    for (List<List<ShapePaintContainer>> shapePaintContainers in renderContext.ways) {
+      for (List<ShapePaintContainer> wayList in shapePaintContainers) {
+        wayList.reversed.forEach((element) {
+          _drawShapePaintContainer(element, renderContext.projection);
+        });
+        // for (int index = wayList.length - 1; index >= 0; --index) {
+        //   _drawShapePaintContainer(wayList.elementAt(index), renderContext.projection);
+        // }
       }
     }
   }
 
-  void drawMapElements(Set<MapElementContainer> elements, Tile tile, int tilesize) {
+  void drawMapElements(Set<MapElementContainer> elements, PixelProjection projection, Tile tile) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
-    List<MapElementContainer> elementsAsList = [];
-    elementsAsList.addAll(elements);
     // draw elements in order of priority: lower priority first, so more important
     // elements will be drawn on top (in case of display=true) items.
-    elementsAsList.sort();
-    PixelProjection projection = PixelProjection(tile.zoomLevel, tilesize);
+    List<MapElementContainer> elementsAsList = elements.toList()..sort();
 
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
@@ -137,13 +128,37 @@ class CanvasRasterer {
       } else {
         points = innerList;
       }
-
+      // bool below = true;
+      // bool left = true;
+      // bool right = true;
+      // bool top = true;
+      // points.forEach((element) {
+      //   if (element.y >= 0) {
+      //     below = false;
+      //     return;
+      //   }
+      //   if (element.x >= 0) {
+      //     left = false;
+      //     return;
+      //   }
+      //   if (element.x <= 256) {
+      //     right = false;
+      //     return;
+      //   }
+      //   if (element.y <= 256) {
+      //     top = false;
+      //     return;
+      //   }
+      // });
+      // if (!below || !left || !top || !right) {
+      //_log.info("Path is ${points.join(",")}");
       Mappoint point = points[0];
       this.path.moveTo(point.x, point.y);
       for (int i = 1; i < points.length; i++) {
         point = points[i];
         this.path.lineTo(point.x, point.y);
       }
+//      }
     }
 
     this.canvas.drawPath(this.path, shapePaintContainer.paint);

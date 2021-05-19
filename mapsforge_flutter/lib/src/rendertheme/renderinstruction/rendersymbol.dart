@@ -100,7 +100,8 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   // }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) {
-    return initBitmap(graphicFactory);
+  Future<RenderSymbol> initResources(GraphicFactory graphicFactory) async {
+    await initBitmap(graphicFactory);
+    return this;
   }
 }

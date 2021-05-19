@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
 ///
 /// This renderer fetches the desired bitmap from openstreetmap website. Since the bitmaps are 256 pixels in size the same size must be
@@ -25,7 +26,7 @@ class MapOnlineRenderer extends JobRenderer {
   }
 
   @override
-  Future<TileBitmap> executeJob(Job job) async {
+  Future<JobResult> executeJob(Job job) async {
     Uri uri = Uri.parse("$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png");
     HttpClientRequest request = await _httpClient.getUrl(uri);
     //_log.info("GET >> " + uri.toString());
@@ -43,7 +44,7 @@ class MapOnlineRenderer extends JobRenderer {
     ui.Image img = frame.image;
 
     TileBitmap result = FlutterTileBitmap(img);
-    return result;
+    return JobResult(result, JOBRESULT.NORMAL);
   }
 
   @override

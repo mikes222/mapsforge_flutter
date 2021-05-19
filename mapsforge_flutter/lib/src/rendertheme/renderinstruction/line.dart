@@ -153,7 +153,7 @@ class Line extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
+  Future<Line> initResources(GraphicFactory graphicFactory) async {
     await initBitmap(graphicFactory);
     if (bitmap != null) {
       // make sure the color is not transparent
@@ -167,6 +167,7 @@ class Line extends RenderInstruction with BitmapMixin {
       //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
       //bitmap.incrementRefCount();
     }
+    return this;
   }
 
   @override

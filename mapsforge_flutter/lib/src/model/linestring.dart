@@ -29,7 +29,7 @@ class LineString {
         continue;
       }
 
-      Mappoint? startPoint = null, endPoint = null;
+      Mappoint? startPoint, endPoint;
       if (startDistance >= 0) {
         // This will be our starting point
         startPoint = segment.pointAlongLineSegment(startDistance);

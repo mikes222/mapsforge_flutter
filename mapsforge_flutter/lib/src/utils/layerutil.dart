@@ -1,4 +1,9 @@
+import 'dart:collection';
+import 'dart:math';
+
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
@@ -8,6 +13,7 @@ import '../model/boundingbox.dart';
 import '../model/tile.dart';
 
 class LayerUtil {
+  static final _log = new Logger('LayerUtil');
   /**
    * Upper left tile for an area.
    *
@@ -53,55 +59,41 @@ class LayerUtil {
   /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
   /// the user (tile in the middle should be created first
   ///
-  static List<Tile> getTiles(ViewModel viewModel, MapViewPosition mapViewPosition) {
+  static List<Tile> getTiles(ViewModel viewModel, MapViewPosition mapViewPosition, int time) {
     BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension!)!;
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
     int tileLeft = mapViewPosition.projection!.longitudeToTileX(boundingBox.minLongitude);
-    int tileTop = mapViewPosition.projection!.latitudeToTileY(boundingBox.maxLatitude);
     int tileRight = mapViewPosition.projection!.longitudeToTileX(boundingBox.maxLongitude);
+    int diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 50) _log.info("diff: $diff ms, tileBoundaries1");
+    int tileTop = mapViewPosition.projection!.latitudeToTileY(boundingBox.maxLatitude);
     int tileBottom = mapViewPosition.projection!.latitudeToTileY(boundingBox.minLatitude);
-    int tileHalfX = ((tileRight - tileLeft) / 2).round() + tileLeft;
-    int tileHalfY = ((tileBottom - tileTop) / 2).round() + tileTop;
-
-    List<Tile> tiles = [];
-
-    // build tiles starting from the center tile
-    for (int tileY = tileHalfY; tileY <= tileBottom; ++tileY) {
-      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel));
-      int xDiff = 1;
-      while (true) {
-        bool xAdded = false;
-        if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel));
-          xAdded = true;
-        }
-        if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel));
-          xAdded = true;
-        }
-        if (!xAdded) break;
-        ++xDiff;
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 50) _log.info("diff: $diff ms, tileBoundaries2");
+    Mappoint center = mapViewPosition.projection!.latLonToPixel(LatLong(
+        boundingBox.minLatitude + (boundingBox.maxLatitude - boundingBox.minLatitude) / 2,
+        boundingBox.minLongitude + (boundingBox.maxLongitude - boundingBox.minLongitude) / 2));
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 50) _log.info("diff: $diff ms, shift");
+    // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
+    center = center.offset(-viewModel.displayModel.tileSize / 2, -viewModel.displayModel.tileSize / 2);
+    Map<Tile, double> tileMap = Map<Tile, double>();
+    for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
+      for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
+        Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
+        Mappoint leftUpper = mapViewPosition.projection!.getLeftUpper(tile);
+        tileMap[tile] = (pow(leftUpper.x - center.x, 2) + pow(leftUpper.y - center.y, 2)).toDouble();
       }
     }
-    for (int tileY = tileHalfY - 1; tileY >= tileTop; --tileY) {
-      tiles.add(Tile(tileHalfX, tileY, zoomLevel, indoorLevel));
-      int xDiff = 1;
-      while (true) {
-        bool xAdded = false;
-        if (tileHalfX + xDiff <= tileRight) {
-          tiles.add(Tile(tileHalfX + xDiff, tileY, zoomLevel, indoorLevel));
-          xAdded = true;
-        }
-        if (tileHalfX - xDiff >= tileLeft) {
-          tiles.add(Tile(tileHalfX - xDiff, tileY, zoomLevel, indoorLevel));
-          xAdded = true;
-        }
-        if (!xAdded) break;
-        ++xDiff;
-      }
-    }
-    return tiles;
+    //print("${boundingBox.minLatitude}, $tileTop, $tileBottom, sort ${tileMap.length} items");
+
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 50) _log.info("diff: $diff ms, forfor");
+    List<Tile> sortedKeys = tileMap.keys.toList(growable: false)..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 50) _log.info("diff: $diff ms, sort");
+    return sortedKeys;
   }
 
   /// Transforms a list of MapElements, orders it and removes those elements that overlap.
