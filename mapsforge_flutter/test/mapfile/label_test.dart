@@ -1,0 +1,112 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/datastore.dart';
+import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
+import 'package:mapsforge_flutter/src/layer/job/job.dart';
+import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
+import 'package:mapsforge_flutter/src/model/tag.dart';
+import 'package:mapsforge_flutter/src/model/tile.dart';
+
+import '../testassetbundle.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    _initLogging();
+  });
+
+  testWidgets("Split label between two tiles", (WidgetTester tester) async {
+    final DisplayModel displayModel = DisplayModel();
+
+    int l = 0;
+    int zoomlevel = 21;
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
+
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+
+    List<dynamic>? imgs = await (tester.runAsync(() async {
+      String content = await TestAssetBundle().loadString("rendertheme.xml");
+      renderThemeBuilder.parseXml(content);
+      RenderTheme renderTheme = renderThemeBuilder.build();
+
+      MemoryDatastore datastore = MemoryDatastore();
+      datastore
+          .addPoi(PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'atLeftTile'), Tag('ele', '5645')], LatLong(46.00002, 18.00005)));
+      datastore.addPoi(PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
+
+      Tile tile0 = new Tile(x, y, zoomlevel, l);
+      expect(datastore.supportsTile(tile0), true);
+      DatastoreReadResult result = await datastore.readMapDataSingle(tile0);
+      print(result);
+      expect(result.pointOfInterests.length, greaterThan(0));
+      print("Calculating tile0 ${tile0.toString()}");
+      Job mapGeneratorJob0 = new Job(tile0, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+
+      JobResult jobResult0 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      var img0 = (jobResult0.bitmap as FlutterTileBitmap).bitmap;
+
+      _dataStoreRenderer.labelStore.debug();
+      _dataStoreRenderer.tileDependencies!.debug();
+      expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
+
+      Tile tile1 = new Tile(x + 1, y, zoomlevel, l);
+      Job mapGeneratorJob1 = new Job(tile1, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
+      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
+      var img1 = (jobResult1.bitmap as FlutterTileBitmap).bitmap;
+
+      _dataStoreRenderer.labelStore.debug();
+      _dataStoreRenderer.tileDependencies!.debug();
+      expect(_dataStoreRenderer.tileDependencies!.overlapData[tile1]!.length, greaterThan(0));
+
+      return [img0, img1];
+    }));
+
+    assert(imgs != null);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(),
+        home: Scaffold(
+          body: Center(
+            child: Container(
+              decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.blue)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RawImage(image: imgs![0]),
+                  RawImage(image: imgs[1]),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    //await tester.pump();
+    await expectLater(find.byType(Row), matchesGoldenFile('splittedlabel.png'));
+  });
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void _initLogging() {
+// Print output to console.
+  Logger.root.onRecord.listen((LogRecord r) {
+    print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+  });
+
+// Root logger level.
+  Logger.root.level = Level.FINEST;
+}

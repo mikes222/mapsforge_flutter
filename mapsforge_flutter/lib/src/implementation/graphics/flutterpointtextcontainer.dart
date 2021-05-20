@@ -22,9 +22,9 @@ class FlutterPointTextContainer extends PointTextContainer {
 //  StaticLayout backLayout;
 //  StaticLayout frontLayout;
 
-  late ui.ParagraphBuilder frontBuilder;
+  late ui.Paragraph front;
 
-  late ui.ParagraphBuilder backBuilder;
+  late ui.Paragraph back;
 
   FlutterPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
       SymbolContainer? symbolContainer, Position? position, int maxTextWidth)
@@ -48,12 +48,12 @@ class FlutterPointTextContainer extends PointTextContainer {
     // strange Android behaviour: if alignment is set to center, then
     // text is rendered with right alignment if using StaticLayout
 
-    frontBuilder = (paintFront as FlutterPaint).buildParagraphBuilder(text);
+    ui.ParagraphBuilder frontBuilder = (paintFront as FlutterPaint).buildParagraphBuilder(text);
+    front = frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
 
-    if (this.paintBack != null) {
-      //backTextPaint.setTextAlign(android.graphics.Paint.Align.LEFT);
-      backBuilder = (paintBack as FlutterPaint).buildParagraphBuilder(text);
-    }
+    //backTextPaint.setTextAlign(android.graphics.Paint.Align.LEFT);
+    ui.ParagraphBuilder backBuilder = (paintBack as FlutterPaint).buildParagraphBuilder(text);
+    back = backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
 
 //      frontLayout = new StaticLayout(
 //          this.text,
@@ -78,8 +78,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      boxWidth = frontLayout.getWidth();
 //      boxHeight = frontLayout.getHeight();
 
-    boxWidth = textWidth!.toDouble();
-    boxHeight = textHeight!.toDouble();
+    boxWidth = textWidth.toDouble();
+    boxHeight = textHeight.toDouble();
 
     switch (this.position) {
       case Position.CENTER:
@@ -132,12 +132,12 @@ class FlutterPointTextContainer extends PointTextContainer {
       case Position.CENTER:
       case Position.LEFT:
       case Position.RIGHT:
-        textOffset = textHeight! / 2;
+        textOffset = textHeight / 2;
         break;
       case Position.BELOW:
       case Position.BELOW_LEFT:
       case Position.BELOW_RIGHT:
-        textOffset = textHeight!.toDouble();
+        textOffset = textHeight.toDouble();
         break;
       default:
         break;
@@ -154,13 +154,12 @@ class FlutterPointTextContainer extends PointTextContainer {
 //    flutterCanvas.drawRect(Rect.fromLTWH(adjustedX, adjustedY, textWidth.toDouble(), textHeight.toDouble()), p);
 //    flutterCanvas.drawLine(Offset(adjustedX, adjustedY), Offset(adjustedX + textWidth, adjustedY - 20), (paintFront as FlutterPaint).paint);
 
-    if (this.paintBack != null) {
+    {
 //      int color = this.paintBack.getColor();
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(GraphicUtils.filterColor(color, filter));
 //      }
-      flutterCanvas.drawParagraph(
-          backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth!.toDouble())), Offset(adjustedX, adjustedY));
+      flutterCanvas.drawParagraph(back, Offset(adjustedX, adjustedY));
 //      if (filter != Filter.NONE) {
 //        this.paintBack.setColor(color);
 //      }
@@ -169,8 +168,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(GraphicUtils.filterColor(color, filter));
 //    }
-    flutterCanvas.drawParagraph(
-        frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth!.toDouble())), Offset(adjustedX, adjustedY));
+    flutterCanvas.drawParagraph(front, Offset(adjustedX, adjustedY));
+    //print("FlutterPointTextContainer for $adjustedX / $adjustedY and boundary $boundary and offset $textOffset, textWidth: $textWidth");
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(color);
 //    }
@@ -178,6 +177,6 @@ class FlutterPointTextContainer extends PointTextContainer {
 
   @override
   String toString() {
-    return 'FlutterPointTextContainer{frontBuilder: $frontBuilder, backBuilder: $backBuilder, ${super.toString()}';
+    return 'FlutterPointTextContainer{front: $front, back: $back, ${super.toString()}';
   }
 }

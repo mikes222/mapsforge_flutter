@@ -49,7 +49,7 @@ void main() {
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
+      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
       return img;
     }));
@@ -116,7 +116,7 @@ void main() {
       for (Tile tile in tilesToLoad) {
         print("Calculating tile ${tile.toString()}");
         Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-        JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)))!;
+        JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
         expect(jobResult.bitmap, isNotNull);
         var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
         imgs.add(img);

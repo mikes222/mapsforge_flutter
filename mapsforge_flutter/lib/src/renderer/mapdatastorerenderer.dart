@@ -67,10 +67,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     this.graphicFactory,
     this.renderLabels,
   ) : labelStore = TileBasedLabelStore(100) {
-    if (!renderLabels) {
-      this.tileDependencies = null;
+    if (renderLabels) {
+      this.tileDependencies = TileDependencies();
     } else {
-      this.tileDependencies = new TileDependencies();
+      this.tileDependencies = null;
     }
   }
 
@@ -316,78 +316,75 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   Future<Set<MapElementContainer>> _processLabels(RenderContext renderContext) async {
     //return renderContext.labels.toSet();
-    // if we are drawing the labels per tile, we need to establish which tile-overlapping
+    // if we are drawing the labels per neighbour, we need to establish which neighbour-overlapping
     // elements need to be drawn.
     Set<MapElementContainer> labelsToDraw = new Set();
 
     // first we need to get the labels from the adjacent tiles if they have already been drawn
-    // as those overlapping items must also be drawn on the current tile. They must be drawn regardless
+    // as those overlapping items must also be drawn on the current neighbour. They must be drawn regardless
     // of priority clashes as a part of them has alread been drawn.
     Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
-    Set<MapElementContainer> undrawableElements = new Set();
-
-    tileDependencies!.addTileInProgress(renderContext.job.tile);
-    List toRemove = [];
+    //Set<MapElementContainer> undrawableElements = new Set();
+    bool fullybuilt = true;
     neighbours.forEach((Tile neighbour) {
-      if (tileDependencies!.isTileInProgress(neighbour) //||
-//            tileCache
-//                .containsKey(renderContext.rendererJob.otherTile(neighbour))
-          ) {
-        // if a tile has already been drawn, the elements drawn that overlap onto the
-        // current tile should be in the tile dependencies, we add them to the labels that
-        // need to be drawn onto this tile. For the multi-threaded renderer we also need to take
-        // those tiles into account that are not yet in the TileCache: this is taken care of by the
-        // set of tilesInProgress inside the TileDependencies.
-        labelsToDraw.addAll(tileDependencies!.getOverlappingElements(neighbour, renderContext.job.tile)!);
+      // get the overlapping elements for the current tile which were found while rendering the [neighbour]
+      Set<MapElementContainer>? labels = tileDependencies!.getOverlappingElements(renderContext.job.tile, neighbour);
+      // if a neighbour has already been drawn, the elements drawn that overlap onto the
+      // current neighbour should be in the neighbour dependencies, we add them to the labels that
+      // need to be drawn onto this neighbour. For the multi-threaded renderer we also need to take
+      // those tiles into account that are not yet in the TileCache: this is taken care of by the
+      // set of tilesInProgress inside the TileDependencies.
+      if (labels != null) {
+        labelsToDraw.addAll(labels);
 
-        // but we need to remove the labels for this tile that overlap onto a tile that has been drawn
+        // but we need to remove the labels for this neighbour that overlap onto a neighbour that has been drawn
         // for (MapElementContainer current in renderContext.labels) {
         //   if (current.intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
         //     undrawableElements.add(current);
         //   }
         // }
-        // since we already have the data from that tile, we do not need to get the data for
+        // since we already have the data from that neighbour, we do not need to get the data for
         // it, so remove it from the neighbours list.
         //neighbours.remove(neighbour);
-        toRemove.add(neighbour);
       } else {
-        tileDependencies!.removeTileData(neighbour);
+        // the neighbour was not built up to now, this means we do not know whether we have to draw some labels
+        fullybuilt = false;
       }
+      //toRemove.add(neighbour);
     });
     //_log.info("undrawable: $undrawableElements");
     //_log.info("toRemove: $toRemove");
-    neighbours.removeWhere((tile) => toRemove.contains(tile));
-    // now we remove the elements that overlap onto a drawn tile from the list of labels
-    // for this tile
-    renderContext.labels.removeWhere((toTest) => undrawableElements.contains(toTest));
+    //neighbours.removeWhere((tile) => toRemove.contains(tile));
+    // now we remove the elements that overlap onto a drawn neighbour from the list of labels
+    // for this neighbour
+    //renderContext.labels.removeWhere((toTest) => undrawableElements.contains(toTest));
 
     // at this point we have two lists: one is the list of labels that must be drawn because
     // they already overlap from other tiles. The second one is currentLabels that contains
-    // the elements on this tile that do not overlap onto a drawn tile. Now we sort this list and
+    // the elements on this neighbour that do not overlap onto a drawn neighbour. Now we sort this list and
     // remove those elements that clash in this list already.
     List<MapElementContainer> currentElementsOrdered = LayerUtil.collisionFreeOrdered(renderContext.labels);
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
-    List<MapElementContainer> toRemove2 = [];
+    List<MapElementContainer> toDraw2 = [];
     currentElementsOrdered.forEach((MapElementContainer current) {
+      bool removed = false;
       for (MapElementContainer label in labelsToDraw) {
         if (label.clashesWith(current)) {
-          toRemove2.add(current);
-          //currentElementsOrdered.remove(current);
+          removed = true;
           break;
         }
       }
+      if (!removed) toDraw2.add(current);
     });
-    currentElementsOrdered.removeWhere((item) => toRemove2.contains(item));
 
-    labelsToDraw.addAll(currentElementsOrdered);
+    labelsToDraw.addAll(toDraw2);
 
     // update dependencies, add to the dependencies list all the elements that overlap to the
     // neighbouring tiles, first clearing out the cache for this relation.
-    for (Tile tile in neighbours) {
-      tileDependencies!.removeTileData(renderContext.job.tile, to: tile);
-      for (MapElementContainer element in labelsToDraw) {
-        if (element.intersects(renderContext.projection.boundaryAbsolute(tile))) {
-          tileDependencies!.addOverlappingElement(renderContext.job.tile, tile, element);
+    for (Tile neighbour in neighbours) {
+      for (MapElementContainer element in toDraw2) {
+        if (element.intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
+          tileDependencies!.addOverlappingElement(renderContext.job.tile, neighbour, element);
         }
       }
     }

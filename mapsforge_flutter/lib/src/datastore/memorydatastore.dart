@@ -61,18 +61,20 @@ class MemoryDatastore extends Datastore {
 
   @override
   bool supportsTile(Tile tile) {
-    Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-    for (PointOfInterest poi in pointOfInterests) {
-      if (projection.boundingBoxOfTile(tile).containsLatLong(poi.position)) return true;
-    }
-    for (Way way in ways) {
-      for (List<ILatLong> list in way.latLongs) {
-        for (ILatLong latLong in list) {
-          if (projection.boundingBoxOfTile(tile).containsLatLong(latLong)) return true;
-        }
-      }
-    }
-    return false;
+    // you may want to show neighbouring tiles too in order to display labels.
+    return true;
+    // Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+    // for (PointOfInterest poi in pointOfInterests) {
+    //   if (projection.boundingBoxOfTile(tile).containsLatLong(poi.position)) return true;
+    // }
+    // for (Way way in ways) {
+    //   for (List<ILatLong> list in way.latLongs) {
+    //     for (ILatLong latLong in list) {
+    //       if (projection.boundingBoxOfTile(tile).containsLatLong(latLong)) return true;
+    //     }
+    //   }
+    // }
+    // return false;
   }
 
   void addPoi(PointOfInterest poi) {

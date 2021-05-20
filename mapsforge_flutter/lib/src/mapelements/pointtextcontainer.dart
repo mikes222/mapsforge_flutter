@@ -13,8 +13,8 @@ abstract class PointTextContainer extends MapElementContainer {
   final Position? position;
   final SymbolContainer? symbolContainer;
   final String text;
-  int? textHeight;
-  int? textWidth;
+  late int textHeight;
+  late int textWidth;
 
   /**
    * Create a new point container, that holds the x-y coordinates of a point, a text variable, two paint objects, and
@@ -30,7 +30,7 @@ abstract class PointTextContainer extends MapElementContainer {
       this.textWidth = paintFront.getTextWidth(text);
       this.textHeight = paintFront.getTextHeight(text);
     }
-    this.isVisible = !this.paintFront.isTransparent() || (this.paintBack != null && !this.paintBack.isTransparent());
+    this.isVisible = !this.paintFront.isTransparent() || !this.paintBack.isTransparent();
   }
 
   @override

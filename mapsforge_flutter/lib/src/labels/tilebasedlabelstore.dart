@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:ecache/ecache.dart';
+import 'package:logging/logging.dart';
 
 import '../mapelements/mapelementcontainer.dart';
 import '../model/tile.dart';
@@ -9,11 +10,22 @@ import 'labelstore.dart';
 
 /// A LabelStore where the data is stored per tile.
 class TileBasedLabelStore implements LabelStore {
+  static final _log = new Logger('TileBasedLabelStore');
   final SimpleStorage<Tile, List<MapElementContainer>> storage = SimpleStorage<Tile, List<MapElementContainer>>();
   late Cache<Tile, List<MapElementContainer>> _items;
 
   late Set<Tile> lastVisibleTileSet;
   int version = 0;
+
+  void debug() {
+    _log.info("version: $version, items in Cache: ${_items.length}");
+    lastVisibleTileSet.forEach((element) {
+      _log.info("LastVisibleTile: $element");
+    });
+    storage.keys.forEach((key) {
+      _log.info("Storage: $key - ${storage.get(key)!.value!.length} items");
+    });
+  }
 
   TileBasedLabelStore(int capacity) {
     _items = new LruCache<Tile, List<MapElementContainer>>(

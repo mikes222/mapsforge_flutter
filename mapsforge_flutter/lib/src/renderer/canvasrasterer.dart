@@ -59,6 +59,7 @@ class CanvasRasterer {
 
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
+      //print("label to draw now: $element");
       element.draw(canvas, projection.getLeftUpper(tile), this.symbolMatrix, Filter.NONE);
     }
   }
