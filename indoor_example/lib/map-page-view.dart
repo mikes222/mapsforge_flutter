@@ -145,7 +145,6 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
                         child: IndoorLevelBar(
                           indoorLevelSubject: indoorLevelSubject,
                           indoorLevels: levelDetector.levelMappings.value,
-                          //{ 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
                           width: 45,
                           fillColor: Colors.white,
                           elevation: 2.0,
@@ -225,8 +224,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       }
     }
 
-    final MapFile mapFile = MapFile(filePath, null, null);
-    await mapFile.init();
+    final MapFile mapFile = await MapFile.from(filePath, null, null);
     //mapFile.debug();
     final MapDataStore mapDataStore = mapFile;
     final SymbolCache symbolCache = FileSymbolCache(rootBundle);
@@ -237,7 +235,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     renderThemeBuilder.parseXml(content);
     final RenderTheme renderTheme = renderThemeBuilder.build();
     final JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, true);
-    final FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
+    final FileTileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 
     mapModel = MapModel(
       displayModel: displayModel,

@@ -47,7 +47,7 @@ class LevelDetector {
   void _getTileCacheData (MapViewPosition mapViewPosition) {
     if (_viewModel.viewDimension == null || mapViewPosition.zoomLevel < maxZoomLevel) return;
 
-    List<Tile> tiles = LayerUtil.getTiles(_viewModel, mapViewPosition);
+    List<Tile> tiles = LayerUtil.getTiles(_viewModel, mapViewPosition, DateTime.now().millisecondsSinceEpoch);
 
     // batch all missing tiles together so isolate only needs to be created once for each bundle
     List<Tile> missingTiles = [];
@@ -77,7 +77,7 @@ class LevelDetector {
   void _updateLevelMappings ([MapViewPosition mapViewPosition]) {
     if (_viewModel.viewDimension == null) return;
 
-    List<Tile> tiles = LayerUtil.getTiles(_viewModel, _viewModel.mapViewPosition);
+    List<Tile> tiles = LayerUtil.getTiles(_viewModel, _viewModel.mapViewPosition, DateTime.now().millisecondsSinceEpoch);
 
     SplayTreeMap<int, String> combinedLevelMappings = new SplayTreeMap<int, String>();
 
