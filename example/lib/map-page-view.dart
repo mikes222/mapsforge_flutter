@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_archive/flutter_archive.dart';
-import 'package:mapsforge_example/level-bar.dart';
 import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
@@ -110,52 +109,64 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
         viewModel: viewModel,
       ),
       Positioned(
-          bottom: toolbarSpacing,
-          right: toolbarSpacing,
-          top: toolbarSpacing,
-          // this widget has an unbound width
-          // left: toolbarSpacing,
-          child: Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+        bottom: toolbarSpacing,
+        right: toolbarSpacing,
+        top: toolbarSpacing,
+        // this widget has an unbound width
+        // left: toolbarSpacing,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
             Flexible(
               child: FadeTransition(
                 opacity: fadeAnimationController,
                 child: IndoorLevelBar(
                   indoorLevelSubject: indoorLevelSubject,
-                  indoorLevels: {5: null, 4: null, 3: null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null},
+                  indoorLevels: { 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
                   width: 45,
                   fillColor: Colors.white,
                   elevation: 2.0,
                   borderRadius: BorderRadius.all(Radius.circular(20)),
-                ),
+                )
               ),
             ),
-            SizedBox(height: toolbarSpacing),
+            SizedBox (
+                height: toolbarSpacing
+            ),
             RawMaterialButton(
               onPressed: () {
                 viewModel.zoomIn();
               },
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(Icons.add),
+              child: Icon(
+                  Icons.add
+              ),
               padding: EdgeInsets.all(10.0),
               shape: CircleBorder(),
               constraints: BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            SizedBox(height: toolbarSpacing),
+            SizedBox (
+              height: toolbarSpacing
+            ),
             RawMaterialButton(
               onPressed: () {
                 viewModel.zoomOut();
               },
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(Icons.remove),
+              child: Icon(
+                  Icons.remove
+              ),
               padding: EdgeInsets.all(10.0),
               shape: CircleBorder(),
               constraints: BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-          ]))
+          ]
+        )
+      )
     ]);
   }
 

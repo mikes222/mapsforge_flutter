@@ -10,7 +10,7 @@ import 'package:rxdart/rxdart.dart';
  */
 class IndoorLevelBar extends StatefulWidget {
   final BehaviorSubject<int> indoorLevelSubject;
-  final Map<int, String> indoorLevels;
+  final Map<int, String?> indoorLevels;
   final double width;
   final double itemHeight;
   final int maxVisibleItems;
@@ -20,26 +20,24 @@ class IndoorLevelBar extends StatefulWidget {
   final BorderRadius borderRadius;
 
   const IndoorLevelBar ({
-    Key key,
-    @required this.indoorLevels,
-    @required this.indoorLevelSubject,
+    Key? key,
+    required this.indoorLevels,
+    required this.indoorLevelSubject,
     this.width: 30,
     this.itemHeight: 45,
     this.maxVisibleItems: 5,
     this.fillColor: Colors.white,
     this.activeColor: Colors.blue,
     this.elevation: 2,
-    this.borderRadius
-  }) : assert(indoorLevels != null),
-       assert(indoorLevelSubject != null),
-       super(key: key);
+    this.borderRadius: const BorderRadius.all(Radius.circular(20))
+  }) : super(key: key);
 
   @override
   IndoorLevelBarState createState() => IndoorLevelBarState();
 }
 
 class IndoorLevelBarState extends State<IndoorLevelBar> {
-  ScrollController _scrollController;
+  ScrollController? _scrollController;
 
   ValueNotifier<bool> _onTop = ValueNotifier<bool>(false);
   ValueNotifier<bool> _onBottom = ValueNotifier<bool>(false);
@@ -47,8 +45,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
   @override
   void dispose () {
     _scrollController?.dispose();
-    _onTop?.dispose();
-    _onBottom?.dispose();
+    _onTop.dispose();
+    _onBottom.dispose();
     super.dispose();
   }
 
@@ -84,7 +82,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
             double selectedItemOffset = max(itemIndex * widget.itemHeight - (maxHeight - 3 * widget.itemHeight), 0);
             // create scroll controller if not existing and set item scroll offset
             if (_scrollController == null) _scrollController = ScrollController(initialScrollOffset: selectedItemOffset);
-            else _scrollController.jumpTo(selectedItemOffset);
+            else _scrollController!.jumpTo(selectedItemOffset);
 
             // disable/enable scroll buttons accordingly
             _onTop.value = selectedItemOffset == 0;
@@ -106,9 +104,9 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                   visible: isScrollable,
                   child: ValueListenableBuilder(
                     valueListenable: _onTop,
-                    builder: (BuildContext context, bool onTop, Widget childWidget) {
+                    builder: (BuildContext context, bool onTop, Widget? child) {
                       return TextButton(
-                          style: TextButton.styleFrom(
+                        style: TextButton.styleFrom(
                           primary: Colors.black,
                           shape: ContinuousRectangleBorder(),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -131,7 +129,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       initialData: widget.indoorLevelSubject.value,
                       builder: (context, snapshot) {
                         // get current indoor level from stream/subject
-                        int currentIndoorLevel = snapshot.data;
+                        int currentIndoorLevel = snapshot.data as int;
                         // widget
                         return ListView.builder(
                           controller: _scrollController,
@@ -172,7 +170,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                   visible: isScrollable,
                   child: ValueListenableBuilder(
                     valueListenable: _onBottom,
-                    builder: (BuildContext context, bool onBottom, Widget childWidget) {
+                    builder: (BuildContext context, bool onBottom, Widget? child) {
                       return TextButton(
                         style: TextButton.styleFrom(
                           primary: Colors.black,
@@ -214,10 +212,12 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
   }
 
   void scrollLevelUp () {
+    if (_scrollController == null) return;
+
     double itemHeight = widget.itemHeight;
-    double nextPosition = _scrollController.offset - itemHeight;
+    double nextPosition = _scrollController!.offset - itemHeight;
     double roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
-    _scrollController.animateTo(
+    _scrollController!.animateTo(
       roundToNextItemPosition,
       duration: Duration(milliseconds: 200),
       curve: Curves.fastOutSlowIn,
@@ -225,10 +225,12 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
   }
 
   void scrollLevelDown () {
+    if (_scrollController == null) return;
+
     double itemHeight = widget.itemHeight;
-    double nextPosition = _scrollController.offset + itemHeight;
+    double nextPosition = _scrollController!.offset + itemHeight;
     double roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
-    _scrollController.animateTo(
+    _scrollController!.animateTo(
       roundToNextItemPosition,
       duration: Duration(milliseconds: 200),
       curve: Curves.fastOutSlowIn,
