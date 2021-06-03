@@ -12,6 +12,7 @@ export 'src/implementation/graphics/fluttergraphicsfactory.dart';
 export 'src/view/mapview.dart';
 export 'src/view/defaultcontextmenubuilder.dart';
 export 'src/view/contextmenubuilder.dart';
+export 'src/view/indoorlevelbar.dart';
 export 'src/view/nopositionview.dart';
 
 export 'src/graphics/graphicfactory.dart';

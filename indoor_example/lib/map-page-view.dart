@@ -9,7 +9,6 @@ import 'package:mapsforge_flutter/maps.dart';
 
 import 'package:rxdart/rxdart.dart';
 
-import 'level-bar.dart';
 import 'level-detector.dart';
 import 'map-file-data.dart';
 
