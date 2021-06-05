@@ -1,13 +1,7 @@
-export 'src/marker/markerdatastore.dart';
-export 'src/marker/basicmarker.dart';
-export 'src/marker/poimarker.dart';
-export 'src/marker/pathmarker.dart';
-export 'src/marker/polygonmarker.dart';
-export 'src/marker/rectmarker.dart';
+library mapsforge_flutter;
+
 export 'src/datastore/datastore.dart';
 export 'src/datastore/memorydatastore.dart';
 export 'src/datastore/multimapdatastore.dart';
 export 'src/datastore/mapdatastore.dart';
 export 'src/datastore/pointofinterest.dart';
-export 'src/marker/markercallback.dart';
-export 'src/graphics/mappath.dart';

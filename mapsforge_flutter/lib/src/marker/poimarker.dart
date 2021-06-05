@@ -6,7 +6,7 @@ import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
-class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
+class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
   double imageOffsetX = 0;
 
   double imageOffsetY = 0;
@@ -17,7 +17,7 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
     double width = 20,
     double height = 20,
     symbolCache,
-    latLong,
+    required latLong,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
     imageColor = 0xff000000,
@@ -47,10 +47,10 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    super.initResources(graphicFactory);
+    await super.initResources(graphicFactory);
     await initBitmap(graphicFactory);
     if (markerCaption != null && markerCaption!.latLong == null) {
-      markerCaption!.latLong = latLong!;
+      markerCaption!.latLong = latLong;
     }
 
     if (bitmap != null) {
@@ -66,15 +66,15 @@ class PoiMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null && symbolPaint != null) {
-      markerCallback.renderBitmap(bitmap!, latLong!.latitude, latLong!.longitude, imageOffsetX, imageOffsetY, rotation, symbolPaint!);
+      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude, imageOffsetX, imageOffsetY, rotation, symbolPaint!);
     }
   }
 
   @override
   bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     if (bitmap == null) return false;
-    double y = mapViewPosition.projection!.latitudeToPixelY(latLong!.latitude);
-    double x = mapViewPosition.projection!.longitudeToPixelX(latLong!.longitude);
+    double y = mapViewPosition.projection!.latitudeToPixelY(latLong.latitude);
+    double x = mapViewPosition.projection!.longitudeToPixelX(latLong.longitude);
     x = x + imageOffsetX - mapViewPosition.leftUpper!.x;
     y = y + imageOffsetY - mapViewPosition.leftUpper!.y;
     return tappedX >= x && tappedX <= x + bitmap!.getWidth() && tappedY >= y && tappedY <= y + bitmap!.getHeight();

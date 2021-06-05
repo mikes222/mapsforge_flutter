@@ -57,7 +57,7 @@ class PathMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
   }
 

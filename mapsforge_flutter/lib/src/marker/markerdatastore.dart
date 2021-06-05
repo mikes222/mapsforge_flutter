@@ -13,7 +13,7 @@ class MarkerDataStore with ChangeNotifier {
 
   bool _needsRepaint = false;
 
-  List<BasicMarker> getMarkers(GraphicFactory graphicFactory, BoundingBox? boundary, int zoomLevel) {
+  List<BasicMarker> getMarkers(GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
     List<BasicMarker> markers = _markers.where((marker) => marker.shouldPaint(boundary, zoomLevel)).toList();
     List<BasicMarker> markersToInit = markers.where((element) => _markersNeedInit.contains(element)).toList();
     markersToInit.forEach((element) {

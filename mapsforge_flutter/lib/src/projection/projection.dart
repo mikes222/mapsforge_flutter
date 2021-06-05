@@ -11,6 +11,9 @@ abstract class Projection {
   /// ellipsoid</a>. WGS84 is the reference coordinate system used by the Global Positioning System.
   static final double EQUATORIAL_RADIUS = 6378137.0;
 
+  /// Polar radius of earth is required for distance computation.
+  static final double POLAR_RADIUS = 6356752.3142;
+
   /// Maximum possible latitude coordinate of the map.
   static final double LATITUDE_MAX = 85.05112877980659;
 
@@ -26,6 +29,9 @@ abstract class Projection {
   static final double LONGITUDE_MAX = 180;
 
   static final double LONGITUDE_MIN = -LONGITUDE_MAX;
+
+  /// The flattening factor of the earth's ellipsoid is required for distance computation.
+  static final double INVERSE_FLATTENING = 298.257223563;
 
 //  static void checkLatitude(double latitude) {
   // assert(latitude >= LATITUDE_MIN);
@@ -75,10 +81,23 @@ abstract class Projection {
     return new LatLong(radianToDeg(lat2), radianToDeg(lng2));
   }
 
+  /// calculates the startbearing in degrees of the distance from [p1] to [p2]
+  /// see https://www.movable-type.co.uk/scripts/latlong.html
+  static double startBearing(final ILatLong p1, final ILatLong p2) {
+    double longDiff = degToRadian(p2.longitude) - degToRadian(p1.longitude);
+    double cosP2Lat = cos(degToRadian(p2.latitude));
+    double y = sin(longDiff) * cosP2Lat;
+    double x = cos(degToRadian(p1.latitude)) * sin(degToRadian(p2.latitude)) - sin(degToRadian(p1.latitude)) * cosP2Lat * cos(longDiff);
+    double c = atan2(y, x);
+    double result = (c * 180 / pi + 360) % 360;
+    return result;
+  }
+
   /// Calculates distance with Haversine algorithm.
   ///
   /// Accuracy can be out by 0.3%
   /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)
+  /// @return the distance in meters
   //@override
   static double distance(final ILatLong p1, final ILatLong p2) {
     final sinDLat = sin((degToRadian(p2.latitude) - degToRadian(p1.latitude)) / 2);
@@ -89,6 +108,91 @@ abstract class Projection {
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
     return EQUATORIAL_RADIUS * c;
+  }
+
+  /**
+   * Calculates geodetic distance between two LatLongs using Vincenty inverse formula
+   * for ellipsoids. This is very accurate but consumes more resources and time than the
+   * sphericalDistance method.
+   * <p/>
+   * Adaptation of Chriss Veness' JavaScript Code on
+   * http://www.movable-type.co.uk/scripts/latlong-vincenty.html
+   * <p/>
+   * Paper: Vincenty inverse formula - T Vincenty, "Direct and Inverse Solutions of Geodesics
+   * on the Ellipsoid with application of nested equations", Survey Review, vol XXII no 176,
+   * 1975 (http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf)
+   *
+   * @param latLong1 first LatLong
+   * @param latLong2 second LatLong
+   * @return distance in meters between points as a double
+   */
+  static double vincentyDistance(ILatLong latLong1, ILatLong latLong2) {
+    double f = 1 / INVERSE_FLATTENING;
+    double L = degToRadian(latLong2.longitude - latLong1.longitude);
+    double U1 = atan((1 - f) * tan(degToRadian(latLong1.latitude)));
+    double U2 = atan((1 - f) * tan(degToRadian(latLong2.latitude)));
+    double sinU1 = sin(U1), cosU1 = cos(U1);
+    double sinU2 = sin(U2), cosU2 = cos(U2);
+
+    double lambda = L, lambdaP, iterLimit = 100;
+
+    double cosSqAlpha = 0, sinSigma = 0, cosSigma = 0, cos2SigmaM = 0, sigma = 0, sinLambda = 0, sinAlpha = 0, cosLambda = 0;
+    do {
+      sinLambda = sin(lambda);
+      cosLambda = cos(lambda);
+      sinSigma = sqrt((cosU2 * sinLambda) * (cosU2 * sinLambda) +
+          (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) * (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+      if (sinSigma == 0) return 0; // co-incident points
+      cosSigma = sinU1 * sinU2 + cosU1 * cosU2 * cosLambda;
+      sigma = atan2(sinSigma, cosSigma);
+      sinAlpha = cosU1 * cosU2 * sinLambda / sinSigma;
+      cosSqAlpha = 1 - sinAlpha * sinAlpha;
+      if (cosSqAlpha != 0) {
+        cos2SigmaM = cosSigma - 2 * sinU1 * sinU2 / cosSqAlpha;
+      } else {
+        cos2SigmaM = 0;
+      }
+      double C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha));
+      lambdaP = lambda;
+      lambda = L + (1 - C) * f * sinAlpha * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
+    } while ((lambda - lambdaP).abs() > 1e-12 && --iterLimit > 0);
+
+    if (iterLimit == 0) return 0; // formula failed to converge
+
+    double uSq = cosSqAlpha * (pow(EQUATORIAL_RADIUS, 2) - pow(POLAR_RADIUS, 2)) / pow(POLAR_RADIUS, 2);
+    double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+    double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
+    double deltaSigma = B *
+        sinSigma *
+        (cos2SigmaM +
+            B /
+                4 *
+                (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) -
+                    B / 6 * cos2SigmaM * (-3 + 4 * sinSigma * sinSigma) * (-3 + 4 * cos2SigmaM * cos2SigmaM)));
+    double s = POLAR_RADIUS * A * (sigma - deltaSigma);
+
+    return s;
+  }
+
+  /// Returns the destination point from this point having travelled the given distance on the
+  /// given initial bearing (bearing normally varies around path followed).
+  ///
+  /// @param start    the start point
+  /// @param distance the distance travelled, in same units as earth radius (default: meters)
+  /// @param bearing  the initial bearing in degrees from north
+  /// @return the destination point
+  /// @see <a href="http://www.movable-type.co.uk/scripts/latlon.js">latlon.js</a>
+  static ILatLong destinationPoint(ILatLong start, double distance, double bearing) {
+    double theta = degToRadian(bearing);
+    double delta = distance / EQUATORIAL_RADIUS; // angular distance in radians
+
+    double phi1 = degToRadian(start.latitude);
+    double lambda1 = degToRadian(start.longitude);
+
+    double phi2 = asin(sin(phi1) * cos(delta) + cos(phi1) * sin(delta) * cos(theta));
+    double lambda2 = lambda1 + atan2(sin(theta) * sin(delta) * cos(phi1), cos(delta) - sin(phi1) * sin(phi2));
+
+    return new LatLong(radianToDeg(phi2), radianToDeg(lambda2));
   }
 
   /**

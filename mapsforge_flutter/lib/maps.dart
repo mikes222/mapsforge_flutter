@@ -1,3 +1,5 @@
+library mapsforge_flutter;
+
 export 'src/mapfile/mapfile.dart';
 
 export 'src/labels/tilebasedlabelstore.dart';

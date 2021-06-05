@@ -3,35 +3,38 @@ import 'package:mapsforge_flutter/src/projection/projection.dart';
 import '../utils/latlongutils.dart';
 import 'ilatlong.dart';
 
-/**
- * This immutable class represents a geographic coordinate with a latitude and longitude value.
- */
+/// This immutable class represents a geographic coordinate with a latitude and longitude value.
 class LatLong implements Comparable<LatLong>, ILatLong {
+  /// Conversion factor from degrees to microdegrees.
+  static final double CONVERSION_FACTOR = 1000000.0;
+
   /**
    * The RegEx pattern to read WKT points.
    */
 //  static final Pattern WKT_POINT_PATTERN =
 //      Pattern.compile(".*POINT\\s?\\(([\\d\\.]+)\\s([\\d\\.]+)\\).*");
 
-  /**
-   * The internal latitude value.
-   */
+  /// The internal latitude value.
   final double latitude;
 
-  /**
-   * The internal longitude value.
-   */
+  /// The internal longitude value.
   final double longitude;
 
-  /**
-   * Constructs a new LatLong with the given latitude and longitude values, measured in
-   * degrees.
-   *
-   * @param latitude  the latitude value in degrees.
-   * @param longitude the longitude value in degrees.
-   * @throws IllegalArgumentException if the latitude or longitude value is invalid.
-   */
-  const LatLong(double this.latitude, this.longitude);
+  /// Converts a coordinate from degrees to microdegrees (degrees * 10^6). No validation is performed.
+  ///
+  /// @param coordinate the coordinate in degrees.
+  /// @return the coordinate in microdegrees (degrees * 10^6).
+  static int degreesToMicrodegrees(double coordinate) {
+    return (coordinate * CONVERSION_FACTOR).floor();
+  }
+
+  /// Constructs a new LatLong with the given latitude and longitude values, measured in
+  /// degrees.
+  ///
+  /// @param latitude  the latitude value in degrees.
+  /// @param longitude the longitude value in degrees.
+  /// @throws IllegalArgumentException if the latitude or longitude value is invalid.
+  const LatLong(this.latitude, this.longitude);
   // {
   //   Projection.checkLatitude(latitude);
   //   Projection.checkLongitude(longitude);
@@ -143,7 +146,7 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @return the latitude value in microdegrees of this coordinate.
    */
   int getLatitudeE6() {
-    return LatLongUtils.degreesToMicrodegrees(this.latitude);
+    return degreesToMicrodegrees(this.latitude);
   }
 
   /**
@@ -161,7 +164,7 @@ class LatLong implements Comparable<LatLong>, ILatLong {
    * @return the longitude value in microdegrees of this coordinate.
    */
   int getLongitudeE6() {
-    return LatLongUtils.degreesToMicrodegrees(this.longitude);
+    return degreesToMicrodegrees(this.longitude);
   }
 
   /**

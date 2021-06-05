@@ -9,13 +9,11 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 import 'markercallback.dart';
 
-class BasicMarker<T> {
-  final Display display;
-
+class BasicPointMarker<T> extends BasicMarker<T> {
   ///
   /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
   ///
-  ILatLong? latLong;
+  ILatLong latLong;
 
 //  double imageOffsetX = 0;
 
@@ -25,37 +23,65 @@ class BasicMarker<T> {
 
 //  int imageColor;
 
+  BasicPointMarker({
+    display = Display.ALWAYS,
+    minZoomLevel = 0,
+    maxZoomLevel = 65535,
+    required this.latLong,
+    rotation = 0,
+    item,
+    markerCaption,
+  })  : assert(minZoomLevel >= 0),
+        assert(maxZoomLevel <= 65535),
+        assert(minZoomLevel <= maxZoomLevel),
+        assert(rotation == null || (rotation >= 0 && rotation <= 360)),
+        super(
+            display: display,
+            minZoomLevel: minZoomLevel,
+            maxZoomLevel: maxZoomLevel,
+            rotation: rotation,
+            item: item,
+            markerCaption: markerCaption);
+
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    return super.shouldPaint(boundary, zoomLevel) && boundary.contains(latLong.latitude, latLong.longitude);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class BasicMarker<T> {
+  final Display display;
+
   int minZoomLevel;
 
   int maxZoomLevel;
 
-  double? rotation;
+  double rotation;
 
-  // the item this marker represents
+  /// the item this marker represents.
+  ///
+  /// This property is NOT used by mapsforge.
   T? item;
 
+  /// The caption of the marker or [null]
   final MarkerCaption? markerCaption;
 
   BasicMarker({
     this.display = Display.ALWAYS,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
-//    this.imageColor = 0xff000000,
-    this.rotation,
+    this.rotation = 0,
     this.item,
-    this.latLong,
     this.markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        //assert(latLong != null),
         assert(minZoomLevel <= maxZoomLevel),
-        assert(rotation == null || (rotation >= 0 && rotation <= 360))
-  //      assert(imageColor != null)
-  ;
+        assert((rotation >= 0 && rotation <= 360));
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (markerCaption != null) markerCaption!.initResources(graphicFactory);
+    if (markerCaption != null) await markerCaption!.initResources(graphicFactory);
   }
 
   void dispose() {}
@@ -71,11 +97,8 @@ class BasicMarker<T> {
   ///
   /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
   /// only if shouldPoint() returns true, do not test for available resources here.
-  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
-    return display != Display.NEVER &&
-        minZoomLevel <= zoomLevel &&
-        maxZoomLevel >= zoomLevel &&
-        boundary!.contains(latLong!.latitude, latLong!.longitude);
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    return display != Display.NEVER && minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
   }
 
   void renderBitmap(MarkerCallback markerCallback) {}
@@ -93,9 +116,13 @@ class BasicMarker<T> {
 /////////////////////////////////////////////////////////////////////////////
 
 class MarkerCaption {
+  /// The text to show.
+  ///
   final String text;
 
-  ILatLong latLong;
+  /// The position of the text.
+  ///
+  ILatLong? latLong;
 
   double captionOffsetX;
 
@@ -113,7 +140,7 @@ class MarkerCaption {
 
   MarkerCaption({
     required this.text,
-    required this.latLong,
+    this.latLong,
     this.captionOffsetX = 0,
     this.captionOffsetY = 0,
     this.stroke,
@@ -122,10 +149,10 @@ class MarkerCaption {
     this.fontSize = 10.0,
     this.minZoom = 0,
   })  : assert(strokeWidth >= 0),
-        assert(strokeColor != null),
-        assert(minZoom != null && minZoom >= 0);
+        assert(minZoom >= 0),
+        assert(text.length > 0);
 
-  void initResources(GraphicFactory graphicFactory) {
+  Future<void> initResources(GraphicFactory graphicFactory) {
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
       this.stroke!.setColorFromNumber(strokeColor);
@@ -133,12 +160,13 @@ class MarkerCaption {
       this.stroke!.setStrokeWidth(strokeWidth);
       this.stroke!.setTextSize(fontSize);
     }
+    return Future.value(null);
   }
 
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
-    if (text != null && text.length > 0 && stroke != null && latLong != null) {
-      markerCallback.renderText(text, latLong, captionOffsetX, captionOffsetY, stroke!);
+    if (stroke != null && latLong != null) {
+      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY, stroke!);
     }
   }
 }

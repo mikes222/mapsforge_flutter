@@ -176,8 +176,8 @@ class MapViewPosition {
     return _latitude != null && _longitude != null;
   }
 
-  BoundingBox? calculateBoundingBox(Dimension viewDimension) {
-    if (boundingBox != null) return boundingBox;
+  BoundingBox calculateBoundingBox(Dimension viewDimension) {
+    if (boundingBox != null) return boundingBox!;
 
     double centerY = _projection!.latitudeToPixelY(_latitude!);
     double centerX = _projection!.longitudeToPixelX(_longitude!);
@@ -191,7 +191,7 @@ class MapViewPosition {
         _projection!.pixelYToLatitude(max(topY, 0)),
         _projection!.pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
     _leftUpper = Mappoint(leftX, topY);
-    return boundingBox;
+    return boundingBox!;
   }
 
   PixelProjection? get projection => _projection;

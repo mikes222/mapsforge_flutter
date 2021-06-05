@@ -60,7 +60,7 @@ class LayerUtil {
   /// the user (tile in the middle should be created first
   ///
   static List<Tile> getTiles(ViewModel viewModel, MapViewPosition mapViewPosition, int time) {
-    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension!)!;
+    BoundingBox boundingBox = mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
     int tileLeft = mapViewPosition.projection!.longitudeToTileX(boundingBox.minLongitude);

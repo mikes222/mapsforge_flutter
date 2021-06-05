@@ -37,4 +37,8 @@ main() {
     expect(boundingBox.minLatitude, 40.97989806962013);
     expect(boundingBox.maxLatitude, 74.01954331150228);
   });
+
+  test("Bearingtest", () {
+    expect(Projection.startBearing(LatLong(35, 45), LatLong(35, 135)), 60.16243352168624);
+  });
 }
