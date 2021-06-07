@@ -6,7 +6,8 @@ import 'package:rxdart/rxdart.dart';
 /**
  * Statefull Widget to display a level bar
  * requires a BehaviourSubject of type int for the current indoor level
- * requires an ordered map of levels with an optional level code string
+ * requires a map of levels with an optional level code string
+ * The map will be automatically ordered from high to low
  */
 class IndoorLevelBar extends StatefulWidget {
   final BehaviorSubject<int> indoorLevelSubject;
@@ -63,8 +64,9 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
         builder: (context, constraints) {
           // get the total number of levels
           int totalIndoorLevels = widget.indoorLevels.length;
-          // extract levels to list and reverse it so it starts with the biggest number
-          List<int> indoorLevels = widget.indoorLevels.keys.toList().reversed.toList();
+          // extract levels to list and sorts all levels from high to low (descending)
+          List<int> indoorLevels = widget.indoorLevels.keys.toList();
+          indoorLevels.sort((b, a) => a.compareTo(b));
 
           double maxHeight = min(constraints.maxHeight, widget.maxVisibleItems * widget.itemHeight);
           // calculate nearest multiple item height
