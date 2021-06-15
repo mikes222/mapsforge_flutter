@@ -1,3 +1,8 @@
+## [2.0.0] - 2021-06-15
+
+* Implementation for Flutter nullSafety
+* Major improvements and bugfixes
+
 ## [1.1.0] - 2021-01-20
 
 * Major speed improvements
