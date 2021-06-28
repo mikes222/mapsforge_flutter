@@ -99,6 +99,7 @@ class MapFile extends MapDataStore {
     this._fileSize = await readBufferMaster!.length();
     _mapFileHeader = MapFileHeader();
     await this._mapFileHeader.readHeader(readBufferMaster!, this._fileSize);
+    // we will send this structure to the isolate later on. Unfortunately we cannot send the io library status to the isolate so we need to close and nullify it for now.
     readBufferMaster!.close();
     readBufferMaster = null;
     _helper = MapfileHelper(_mapFileHeader, preferredLanguage);
@@ -407,9 +408,6 @@ class MapFile extends MapDataStore {
     int diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100) _log.info("  readMapDataComplete took $diff ms up to query subfileparams");
 
-    // we enlarge the bounding box for the tile slightly in order to retain any data that
-    // lies right on the border, some of this data needs to be drawn as the graphics will
-    // overlap onto this tile.
     if (readBufferMaster == null) {
       _log.info("Creating ReadBuffer");
       readBufferMaster = ReadBufferMaster(filename);
