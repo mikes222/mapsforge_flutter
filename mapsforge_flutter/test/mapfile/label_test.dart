@@ -31,8 +31,8 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -45,7 +45,8 @@ void main() {
       datastore.addPoi(PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
 
       Tile tile0 = new Tile(x, y, zoomlevel, l);
-      expect(datastore.supportsTile(tile0), true);
+      Projection projection = MercatorProjection.fromZoomlevel(tile0.zoomLevel);
+      expect(datastore.supportsTile(tile0, projection), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile0);
       print(result);
       expect(result.pointOfInterests.length, greaterThan(0));

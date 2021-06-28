@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/area.dart';
@@ -46,6 +47,7 @@ class RuleBuilder {
   static final String ZOOM_MIN = "zoom-min";
 
   final GraphicFactory graphicFactory;
+  final SymbolCache symbolCache;
   final DisplayModel displayModel;
   int level;
 
@@ -117,7 +119,7 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.graphicFactory, this.displayModel, this.symbols, this.level)
+  RuleBuilder(this.graphicFactory, this.symbolCache, this.displayModel, this.symbols, this.level)
       : ruleBuilderStack = [],
         renderInstructions = [],
         this.zoomMin = 0,
@@ -235,7 +237,7 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, symbols, level++);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, symbols, level++);
       ruleBuilder.parse(rootElement, initPendings);
       level = ruleBuilder.level;
       ruleBuilderStack.add(ruleBuilder);
@@ -247,7 +249,7 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(graphicFactory, displayModel, qName, level++);
+      Area area = new Area(graphicFactory, symbolCache, displayModel, qName, level++);
       area.parse(rootElement, initPendings);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
@@ -297,14 +299,14 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line = new Line(this.graphicFactory, this.displayModel, qName, level++, null);
+      Line line = new Line(this.graphicFactory, symbolCache, this.displayModel, qName, level++, null);
       line.parse(rootElement, initPendings);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.displayModel, null);
+      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.symbolCache, this.displayModel, null);
       lineSymbol.parse(rootElement, initPendings);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
@@ -342,7 +344,7 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.displayModel);
+      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.symbolCache, this.displayModel);
       symbol.parse(rootElement, initPendings);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);

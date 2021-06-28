@@ -25,10 +25,9 @@ class FlutterMapView extends StatefulWidget {
 
   final ViewModel viewModel;
 
-  const FlutterMapView({Key? key, required this.mapModel, required this.viewModel})
-      : assert(mapModel != null),
-        assert(viewModel != null),
-        super(key: key);
+  final GraphicFactory graphicFactory;
+
+  const FlutterMapView({Key? key, required this.mapModel, required this.viewModel, required this.graphicFactory}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -55,11 +54,11 @@ class _FlutterMapState extends State<FlutterMapView> {
     _jobQueue = JobQueue(widget.mapModel.displayModel, widget.mapModel.renderer, widget.mapModel.tileBitmapCache);
     _tileLayer = TileLayerImpl(
       displayModel: widget.mapModel.displayModel,
-      graphicFactory: widget.mapModel.graphicsFactory,
+      graphicFactory: widget.graphicFactory,
       jobQueue: _jobQueue,
     );
     widget.mapModel.markerDataStores.forEach((MarkerDataStore dataStore) {
-      MarkerRenderer markerRenderer = MarkerRenderer(widget.mapModel.graphicsFactory, widget.viewModel, dataStore);
+      MarkerRenderer markerRenderer = MarkerRenderer(widget.graphicFactory, widget.viewModel, dataStore);
       _markerRenderer.add(markerRenderer);
     });
   }

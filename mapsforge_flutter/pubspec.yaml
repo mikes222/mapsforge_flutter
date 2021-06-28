@@ -24,10 +24,10 @@ dependencies:
     #path: ../../github_dcache/
 
   # MIT License
-  xml: ^5.1.0
+  xml: ^5.1.2
 
   # Apache 2.0 License
-  rxdart: ^0.27.0
+  rxdart: ^0.27.1
 
   # BSD License
   synchronized: ^3.0.0
@@ -39,13 +39,15 @@ dependencies:
   #image: 2.1.13
 
   # BSD License, currently no WEB support
-  path_provider: ^2.0.1
+  path_provider: ^2.0.2
 
   # MIT License
   provider: ^5.0.0
 
   # BSD License
   http: ^0.13.3
+
+
   collection: ^1.15.0-nullsafety.4
 
 

@@ -37,6 +37,8 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
   final double toolbarSpacing = 15;
 
+  GraphicFactory? _graphicFactory;
+
   @override
   void initState() {
     _prepare();
@@ -107,70 +109,93 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       FlutterMapView(
         mapModel: mapModel!,
         viewModel: viewModel,
+        graphicFactory: _graphicFactory!,
       ),
       Positioned(
-        bottom: toolbarSpacing,
-        right: toolbarSpacing,
-        top: toolbarSpacing,
-        // this widget has an unbound width
-        // left: toolbarSpacing,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
+          bottom: toolbarSpacing,
+          right: toolbarSpacing,
+          top: toolbarSpacing,
+          // this widget has an unbound width
+          // left: toolbarSpacing,
+          child: Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
             Flexible(
               child: FadeTransition(
-                opacity: fadeAnimationController,
-                child: IndoorLevelBar(
-                  indoorLevelSubject: indoorLevelSubject,
-                  indoorLevels: { 5:null, 4:null,3:null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null },
-                  width: 45,
-                  fillColor: Colors.white,
-                  elevation: 2.0,
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                )
-              ),
+                  opacity: fadeAnimationController,
+                  child: IndoorLevelBar(
+                    indoorLevelSubject: indoorLevelSubject,
+                    indoorLevels: {
+                      5: null,
+                      4: null,
+                      3: null,
+                      2: "OG2",
+                      1: "OG1",
+                      0: "EG",
+                      -1: "UG1",
+                      -2: null,
+                      -3: null,
+                      -4: null,
+                      -5: null
+                    },
+                    width: 45,
+                    fillColor: Colors.white,
+                    elevation: 2.0,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                  )),
             ),
-            SizedBox (
-                height: toolbarSpacing
-            ),
+            SizedBox(height: toolbarSpacing),
             RawMaterialButton(
               onPressed: () {
                 viewModel.zoomIn();
               },
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(
-                  Icons.add
-              ),
+              child: Icon(Icons.add),
               padding: EdgeInsets.all(10.0),
               shape: CircleBorder(),
               constraints: BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            SizedBox (
-              height: toolbarSpacing
-            ),
+            SizedBox(height: toolbarSpacing),
             RawMaterialButton(
               onPressed: () {
                 viewModel.zoomOut();
               },
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(
-                  Icons.remove
-              ),
+              child: Icon(Icons.remove),
               padding: EdgeInsets.all(10.0),
               shape: CircleBorder(),
               constraints: BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-          ]
-        )
-      )
+          ]))
     ]);
   }
 
   Future<void> _prepare() async {
+    if (widget.mapFileData.onlinemap) {
+      _graphicFactory = FlutterGraphicFactory();
+
+      final DisplayModel displayModel = DisplayModel();
+      JobRenderer jobRenderer = MapOnlineRenderer();
+      TileBitmapCache bitmapCache = await MemoryTileBitmapCache();
+      mapModel = MapModel(
+        displayModel: displayModel,
+        renderer: jobRenderer,
+        tileBitmapCache: bitmapCache,
+      );
+
+      viewModel = ViewModel(displayModel: mapModel!.displayModel);
+
+      // set default position
+      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
+      viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+      // attach indoor level stream to indoor change function
+      //indoorLevelSubject.listen(viewModel.setIndoorLevel);
+      downloadProgress = 1;
+      setState(() {});
+      return;
+    }
     String filePath = await widget.mapFileData.getLocalFilePath();
     print("Using $filePath");
 
@@ -222,18 +247,17 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     final MapFile mapFile = await MapFile.from(filePath, null, null);
     final MapDataStore mapDataStore = mapFile;
     final SymbolCache symbolCache = FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
-    final GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
+    _graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
-    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
     final String content = await rootBundle.loadString(widget.mapFileData.theme);
     renderThemeBuilder.parseXml(content);
     final RenderTheme renderTheme = renderThemeBuilder.build();
-    final JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, true);
+    final JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, _graphicFactory!, true);
     final FileTileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 
     mapModel = MapModel(
       displayModel: displayModel,
-      graphicsFactory: graphicFactory,
       renderer: jobRenderer,
       tileBitmapCache: bitmapCache,
     );

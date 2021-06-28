@@ -1,4 +1,4 @@
-import 'package:mapsforge_flutter/core.dart';
+import 'package:flutter/widgets.dart';
 
 import '../graphics/position.dart';
 import '../mapelements/pointtextcontainer.dart';
@@ -13,13 +13,10 @@ import 'maprect.dart';
 import 'matrix.dart';
 
 abstract class GraphicFactory {
-  final SymbolCache symbolCache;
+  GraphicFactory();
 
-  GraphicFactory(this.symbolCache);
-
-  void dispose() {
-    symbolCache.dispose();
-  }
+  @mustCallSuper
+  void dispose() {}
 
   //Bitmap createBitmap(int width, int height, bool isTransparent);
 

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile.dart';

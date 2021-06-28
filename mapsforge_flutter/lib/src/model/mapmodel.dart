@@ -10,7 +10,7 @@ import 'displaymodel.dart';
 
 class MapModel {
   final DisplayModel displayModel;
-  final GraphicFactory graphicsFactory;
+  //final GraphicFactory graphicsFactory;
   final JobRenderer renderer;
   final List<MarkerDataStore> markerDataStores = [];
   final TileBitmapCache? tileBitmapCache;
@@ -18,17 +18,15 @@ class MapModel {
   MapModel({
     required this.displayModel,
     required this.renderer,
-    required this.graphicsFactory,
+    //required this.graphicsFactory,
     this.tileBitmapCache,
-  })  : assert(displayModel != null),
-        assert(renderer != null),
-        assert(graphicsFactory != null) {}
+  }); // : assert(graphicsFactory != null) {}
 
   void dispose() {
     markerDataStores.forEach((datastore) {
       datastore.dispose();
     });
-    graphicsFactory.dispose();
+    //graphicsFactory.dispose();
     tileBitmapCache?.dispose();
   }
 }

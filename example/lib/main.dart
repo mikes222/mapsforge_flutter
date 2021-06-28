@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_example/map-page-view.dart';
-import 'package:mapsforge_example/showmap.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
 
 final List<MapFileData> MAP_FILE_DATA_LIST = [
+  new MapFileData.online("Online Austria", 48.089415, 16.311374, 12),
   new MapFileData("https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET", "Chemnitz Uni.map",
       "Indoor Chemnitz - University", "assets/custom.xml", null, 50.81348, 12.92936, 18),
   new MapFileData("https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS", "Louvre.map", "Indoor Paris - Louvre",
@@ -27,23 +27,6 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
 ];
 
 void main() => runApp(MyApp());
-
-MapInfo dfbMap = MapInfo(
-  mapfilesource: "http://dailyflightbuddy.com/dfb_flutter/map_v1_48_16.map.gz",
-  mapfile: "map_v1_48_16.map",
-  lat: 48.089415,
-  lon: 16.311374,
-);
-
-MapInfo dfbMap2 = MapInfo(
-  mapfilesource: "http://dailyflightbuddy.com/dfb_flutter/map_lowras_simplnew.map.gz",
-  mapfile: "map_lowras_simplnew.map",
-  lat: 48.089415,
-  lon: 15.711374,
-);
-
-// TODO create a drop-down in UI to let the user choose from different maps
-MapInfo activeMapInfo = dfbMap2;
 
 /// This Widget is the main application widget.
 class MyApp extends StatelessWidget {
@@ -109,22 +92,11 @@ class MyStatelessWidget extends StatelessWidget {
   Widget _buildBody(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
-        children: [
-          _buildCard(context, "Online map", () {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext context) => Showmap(
-                      mapInfo: activeMapInfo,
-                      online: true,
-                    )));
-          }),
-          Column(
-            children: MAP_FILE_DATA_LIST.map((element) {
-              return _buildCard(context, element.name, () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: element)));
-              });
-            }).toList(),
-          ),
-        ],
+        children: MAP_FILE_DATA_LIST.map((element) {
+          return _buildCard(context, element.name, () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: element)));
+          });
+        }).toList(),
       ),
     );
   }

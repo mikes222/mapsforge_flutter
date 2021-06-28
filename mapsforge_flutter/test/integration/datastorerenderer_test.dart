@@ -35,8 +35,8 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -101,8 +101,8 @@ void main() {
     ];
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");

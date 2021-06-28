@@ -91,13 +91,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     bool useIsolate = true;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
-    if (!this.datastore.supportsTile(job.tile)) {
+    RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
+    if (!this.datastore.supportsTile(job.tile, renderContext.projection)) {
       // return if we do not have data for the requested tile in the datastore
       return JobResult(null, JOBRESULT.UNSUPPORTED);
     }
-    CanvasRasterer canvasRasterer =
-        CanvasRasterer(graphicFactory, job.tileSize.toDouble(), job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
-    RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
     DatastoreReadResult? mapReadResult;
     if (useIsolate) {
       if (showTiming) _log.info("Before starting the isolate to read map data from file");
@@ -133,6 +131,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       //   });
       // });
     }
+    CanvasRasterer canvasRasterer =
+        CanvasRasterer(graphicFactory, job.tileSize.toDouble(), job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
@@ -464,11 +464,17 @@ class IsolateParam {
 
 /////////////////////////////////////////////////////////////////////////////
 
+Datastore? mapDataStore;
+
 ///
 /// This is the execution of reading the mapdata. If called directly the execution is done in the main thread. If called
 /// via [entryPoint] the execution is done in an isolate.
 ///
 Future<DatastoreReadResult?> readMapDataInIsolate(IsolateParam isolateParam) async {
-  DatastoreReadResult? mapReadResult = await isolateParam.mapDataStore.readMapDataSingle(isolateParam.tile);
+  if (mapDataStore == null) {
+    print("Storing datastore in isolate");
+    mapDataStore = isolateParam.mapDataStore;
+  }
+  DatastoreReadResult? mapReadResult = await mapDataStore!.readMapDataSingle(isolateParam.tile);
   return mapReadResult;
 }

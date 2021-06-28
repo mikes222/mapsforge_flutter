@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
@@ -24,8 +25,9 @@ class Area extends RenderInstruction with BitmapMixin {
   late Map<int, MapPaint> strokes;
   late double strokeWidth;
 
-  Area(graphicFactory, displayModel, String elementName, this.level) : super(graphicFactory, displayModel) {
-    this.symbolCache = graphicFactory.symbolCache;
+  Area(GraphicFactory graphicFactory, SymbolCache symbolCache, displayModel, String elementName, this.level)
+      : super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
     this.fill.setColor(Color.TRANSPARENT);
     this.fill.setStyle(Style.FILL);

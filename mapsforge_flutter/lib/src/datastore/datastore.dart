@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
@@ -63,5 +64,5 @@ abstract class Datastore {
   ///
   /// @param tile tile to be rendered.
   /// @return true if tile is part of database.
-  bool supportsTile(Tile tile);
+  bool supportsTile(Tile tile, Projection projection);
 }

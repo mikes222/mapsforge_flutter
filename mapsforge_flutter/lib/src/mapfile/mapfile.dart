@@ -46,9 +46,7 @@ class MapFile extends MapDataStore {
    */
   static final int DEFAULT_START_ZOOM_LEVEL = 12;
 
-  /**
-   * Amount of cache blocks that the index cache should store.
-   */
+  /// Amount of cache blocks that the index cache should store.
   static final int INDEX_CACHE_SIZE = 64;
 
   /**
@@ -78,6 +76,10 @@ class MapFile extends MapDataStore {
 
   late MapfileHelper _helper;
 
+  final Set<int> _blockSet = Set();
+
+  ReadBufferMaster? readBufferMaster;
+
   static Future<MapFile> from(String filename, int? timestamp, String? language) async {
     MapFile mapFile = MapFile._(filename, timestamp, language);
     await mapFile._init();
@@ -93,17 +95,25 @@ class MapFile extends MapDataStore {
 
   Future<MapFile> _init() async {
     _databaseIndexCache = new IndexCache(filename, INDEX_CACHE_SIZE);
-    ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
-    this._fileSize = await readBufferMaster.length();
+    this.readBufferMaster = ReadBufferMaster(filename);
+    this._fileSize = await readBufferMaster!.length();
     _mapFileHeader = MapFileHeader();
-    await this._mapFileHeader.readHeader(readBufferMaster, this._fileSize);
-    readBufferMaster.close();
+    await this._mapFileHeader.readHeader(readBufferMaster!, this._fileSize);
+    readBufferMaster!.close();
+    readBufferMaster = null;
     _helper = MapfileHelper(_mapFileHeader, preferredLanguage);
     return this;
   }
 
+  @override
+  String toString() {
+    return 'MapFile{_databaseIndexCache: $_databaseIndexCache, _fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, filename: $filename, _helper: $_helper}';
+  }
+
   void dispose() {
+    _databaseIndexCache.dispose();
     close();
+    readBufferMaster?.close();
   }
 
   @override
@@ -116,12 +126,10 @@ class MapFile extends MapDataStore {
     closeFileChannel();
   }
 
-  /**
-   * Closes the map file channel and destroys all internal caches.
-   * Has no effect if no map file channel is currently opened.
-   */
+  /// Closes the map file channel and destroys all internal caches.
+  /// Has no effect if no map file channel is currently opened.
   void closeFileChannel() {
-    this._databaseIndexCache.destroy();
+    this._databaseIndexCache.dispose();
   }
 
   /**
@@ -238,6 +246,7 @@ class MapFile extends MapDataStore {
     assert(queryParameters.fromBlockY != null);
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
+    Projection projection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
 
     DatastoreReadResult mapFileReadResult = new DatastoreReadResult();
 
@@ -246,6 +255,12 @@ class MapFile extends MapDataStore {
       for (int column = queryParameters.fromBlockX!; column <= queryParameters.toBlockX!; ++column) {
         // calculate the actual block number of the needed block in the file
         int blockNumber = row * subFileParameter.blocksWidth + column;
+
+        if (_blockSet.contains(blockNumber)) {
+          _log.warning("Reading block $blockNumber again");
+        } else {
+          _blockSet.add(blockNumber);
+        }
 
         // get the current index entry
         int currentBlockIndexEntry = await this._databaseIndexCache.getIndexEntry(subFileParameter, blockNumber, readBufferMaster);
@@ -308,7 +323,6 @@ class MapFile extends MapDataStore {
             await readBufferMaster.readFromFile(length: currentBlockSize, offset: subFileParameter.startAddress + currentBlockPointer);
 
         // calculate the top-left coordinates of the underlying tile
-        Projection projection = subFileParameter.projection();
         double tileLatitude = projection.tileYToLatitude((subFileParameter.boundaryTileTop + row));
         double tileLongitude = projection.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
 
@@ -370,8 +384,9 @@ class MapFile extends MapDataStore {
   }
 
   Future<DatastoreReadResult> _readMapDataComplete(Tile upperLeft, Tile lowerRight, MapfileSelector selector) async {
-    assert(supportsTile(upperLeft));
-    assert(supportsTile(lowerRight));
+    Projection projection = MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
+    assert(supportsTile(upperLeft, projection));
+    assert(supportsTile(lowerRight, projection));
     assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
     int timer = DateTime.now().millisecondsSinceEpoch;
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
@@ -395,13 +410,15 @@ class MapFile extends MapDataStore {
     // we enlarge the bounding box for the tile slightly in order to retain any data that
     // lies right on the border, some of this data needs to be drawn as the graphics will
     // overlap onto this tile.
-    ReadBufferMaster readBufferMaster = ReadBufferMaster(filename);
-    Projection projection = MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
+    if (readBufferMaster == null) {
+      _log.info("Creating ReadBuffer");
+      readBufferMaster = ReadBufferMaster(filename);
+    }
     DatastoreReadResult? result = await processBlocks(
-        readBufferMaster, queryParameters, subFileParameter, projection.boundingBoxOfTiles(upperLeft, lowerRight), selector);
+        readBufferMaster!, queryParameters, subFileParameter, projection.boundingBoxOfTiles(upperLeft, lowerRight), selector);
     diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100) _log.info("readMapDataComplete took $diff ms");
-    readBufferMaster.close();
+    //readBufferMaster.close();
     return result;
   }
 
@@ -478,9 +495,8 @@ class MapFile extends MapDataStore {
   }
 
   @override
-  bool supportsTile(Tile tile) {
+  bool supportsTile(Tile tile, Projection projection) {
     if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax) return false;
-    Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     return projection.boundingBoxOfTile(tile).intersects(getMapFileInfo().boundingBox);
   }
 }

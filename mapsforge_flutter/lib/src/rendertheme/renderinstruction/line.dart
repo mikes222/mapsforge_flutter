@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
@@ -15,9 +16,7 @@ import 'package:xml/xml.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
 
-/**
- * Represents a polyline on the map.
- */
+/// Represents a polyline on the map.
 class Line extends RenderInstruction with BitmapMixin {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
@@ -31,12 +30,12 @@ class Line extends RenderInstruction with BitmapMixin {
   late Map<int, MapPaint> strokes;
   late double strokeWidth;
 
-  Line(GraphicFactory graphicFactory, DisplayModel displayModel, String elementName, this.level, this.relativePathPrefix)
+  Line(GraphicFactory graphicFactory, SymbolCache symbolCache, DisplayModel displayModel, String elementName, this.level, this.relativePathPrefix)
       : super(
           graphicFactory,
           displayModel,
         ) {
-    this.symbolCache = graphicFactory.symbolCache;
+    this.symbolCache = symbolCache;
     strokeWidth = 1;
     this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.BLACK);

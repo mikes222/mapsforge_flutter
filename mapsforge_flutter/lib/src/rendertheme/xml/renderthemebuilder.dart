@@ -29,6 +29,7 @@ class RenderThemeBuilder {
   static final String XSI_SCHEMALOCATION = "xsi:schemaLocation";
 
   final GraphicFactory graphicFactory;
+  final SymbolCache symbolCache;
   final DisplayModel displayModel;
   late double baseStrokeWidth;
   late double baseTextSize;
@@ -40,7 +41,7 @@ class RenderThemeBuilder {
   int level = 0;
   List<RenderInstruction> initPendings = [];
 
-  RenderThemeBuilder(this.graphicFactory, this.displayModel) {
+  RenderThemeBuilder(this.graphicFactory, this.symbolCache, this.displayModel) {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
@@ -159,7 +160,7 @@ class RenderThemeBuilder {
             XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, displayModel, Map<String, RenderSymbol>(), level++);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, Map<String, RenderSymbol>(), level++);
               ruleBuilder.parse(element, initPendings);
               level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);

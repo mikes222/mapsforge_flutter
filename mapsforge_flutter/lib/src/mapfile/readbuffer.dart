@@ -55,7 +55,6 @@ class ReadBufferMaster {
       _newRaf = await this._raf!.setPosition(offset);
     }
     Uint8List _bufferData = await _newRaf!.read(length);
-    assert(_bufferData != null);
     assert(_bufferData.length == length);
     //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return ReadBuffer._(_bufferData, offset);
@@ -99,10 +98,10 @@ class ReadBuffer {
   static final String CHARSET_UTF8 = "UTF-8";
 
   /// A chunk of data read from the underlying file
-  Uint8List _bufferData;
+  final Uint8List _bufferData;
 
   /// The current offset in the underlying file which denotes the start of the _bufferData
-  int? _offset;
+  final int? _offset;
 
   /// The current position of the read pointer in the _bufferData. The position cannot exceed the amount of byte in _bufferData
   int bufferPosition;
@@ -151,7 +150,6 @@ class ReadBuffer {
   ///
   /// @return the int value.
   int readInt() {
-    assert(_bufferData != null);
     this.bufferPosition += 4;
     return Deserializer.getInt(this._bufferData, this.bufferPosition - 4);
   }
@@ -162,7 +160,6 @@ class ReadBuffer {
   ///
   /// @return the long value.
   int readLong() {
-    assert(_bufferData != null);
     this.bufferPosition += 8;
     return Deserializer.getLong(this._bufferData, this.bufferPosition - 8);
   }
@@ -173,7 +170,6 @@ class ReadBuffer {
   ///
   /// @return the int value.
   int readShort() {
-    assert(_bufferData != null);
     assert(bufferPosition < _bufferData.length);
     this.bufferPosition += 2;
     return Deserializer.getShort(this._bufferData, this.bufferPosition - 2);
@@ -311,7 +307,6 @@ class ReadBuffer {
 
   /// @return the current size of the read buffer.
   int getBufferSize() {
-    assert(_bufferData != null);
     return this._bufferData.length;
   }
 

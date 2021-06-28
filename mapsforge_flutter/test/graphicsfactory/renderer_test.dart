@@ -40,8 +40,8 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -70,7 +70,8 @@ void main() {
           ],
           null));
       Tile tile = new Tile(x, y, zoomlevel, l);
-      expect(datastore.supportsTile(tile), true);
+      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+      expect(datastore.supportsTile(tile, projection), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       print(result);
       expect(result.ways.length, greaterThan(0));
@@ -116,8 +117,8 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -133,7 +134,8 @@ void main() {
           ],
           null));
       Tile tile = new Tile(x, y, zoomlevel, l);
-      expect(datastore.supportsTile(tile), true);
+      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+      expect(datastore.supportsTile(tile, projection), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, greaterThan(0));
       Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);

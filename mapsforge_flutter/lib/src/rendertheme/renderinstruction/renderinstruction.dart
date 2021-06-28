@@ -45,9 +45,7 @@ abstract class RenderInstruction {
   final DisplayModel displayModel;
   final GraphicFactory graphicFactory;
 
-  RenderInstruction(this.graphicFactory, this.displayModel)
-      : assert(graphicFactory != null),
-        assert(displayModel != null);
+  RenderInstruction(this.graphicFactory, this.displayModel);
 
   ///
   /// disposes all resources. The class is not usable afterwards.

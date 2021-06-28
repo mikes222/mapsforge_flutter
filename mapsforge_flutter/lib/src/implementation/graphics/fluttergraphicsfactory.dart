@@ -1,27 +1,18 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/graphics/hillshadingbitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/inputstream.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/mapelements/symbolcontainer.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
-import '../../graphics/bitmap.dart';
 import 'fluttercanvas.dart';
 import 'fluttercolor.dart';
 import 'fluttermatrix.dart';
@@ -29,10 +20,9 @@ import 'flutterpaint.dart';
 import 'flutterpath.dart';
 import 'flutterpointtextcontainer.dart';
 import 'flutterrect.dart';
-import 'fluttertilebitmap.dart';
 
 class FlutterGraphicFactory extends GraphicFactory {
-  FlutterGraphicFactory(SymbolCache symbolCache) : super(symbolCache);
+  FlutterGraphicFactory();
 
   // @override
   // Bitmap createBitmap(int width, int height, bool isTransparent) {

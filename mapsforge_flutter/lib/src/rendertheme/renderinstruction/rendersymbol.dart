@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -20,8 +21,8 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   String? id;
   int priority = 0;
 
-  RenderSymbol(GraphicFactory graphicFactory, DisplayModel displayModel) : super(graphicFactory, displayModel) {
-    this.symbolCache = graphicFactory.symbolCache;
+  RenderSymbol(GraphicFactory graphicFactory, SymbolCache symbolCache, DisplayModel displayModel) : super(graphicFactory, displayModel) {
+    this.symbolCache = symbolCache;
   }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {

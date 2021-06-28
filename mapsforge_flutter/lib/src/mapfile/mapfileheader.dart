@@ -50,23 +50,19 @@ class MapFileHeader {
     return this.mapFileInfo!;
   }
 
-  /**
-   * @param zoomLevel the originally requested zoom level.
-   * @return the closest possible zoom level which is covered by a sub-file.
-   */
-  int? getQueryZoomLevel(int zoomLevel) {
+  /// @param zoomLevel the originally requested zoom level.
+  /// @return the closest possible zoom level which is covered by a sub-file.
+  int getQueryZoomLevel(int zoomLevel) {
     if (zoomLevel > this.zoomLevelMaximum!) {
-      return this.zoomLevelMaximum;
+      return this.zoomLevelMaximum!;
     } else if (zoomLevel < this.zoomLevelMinimum!) {
-      return this.zoomLevelMinimum;
+      return this.zoomLevelMinimum!;
     }
     return zoomLevel;
   }
 
-  /**
-   * @param queryZoomLevel the zoom level for which the sub-file parameters are needed.
-   * @return the sub-file parameters for the given zoom level.
-   */
+  /// @param queryZoomLevel the zoom level for which the sub-file parameters are needed.
+  /// @return the sub-file parameters for the given zoom level.
   SubFileParameter? getSubFileParameter(int queryZoomLevel) {
     return this.subFileParameters[queryZoomLevel];
   }
@@ -87,9 +83,6 @@ class MapFileHeader {
 
 // read the header data into the buffer
     readBuffer = await (readBufferMaster.readFromFile(length: remainingHeaderSize));
-    if (readBuffer == null) {
-      throw new Exception("reading header data has failed: $remainingHeaderSize");
-    }
 
     MapFileInfoBuilder mapFileInfoBuilder = MapFileInfoBuilder();
 

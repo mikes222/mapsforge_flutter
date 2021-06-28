@@ -20,6 +20,7 @@ export 'src/graphics/graphicfactory.dart';
 
 export 'src/cache/symbolcache.dart';
 export 'src/cache/filesymbolcache.dart';
+export 'src/cache/memorysymbolcache.dart';
 export 'src/cache/tilebitmapcache.dart';
 export 'src/cache/filetilebitmapcache.dart';
 export 'src/cache/memorytilebitmapcache.dart';

@@ -66,7 +66,7 @@ class RequiredFields {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
-    ReadBuffer readBuffer = (await (readBufferMaster.readFromFile(length: magicByteLength + 4)));
+    ReadBuffer readBuffer = (await (readBufferMaster.readFromFile(length: magicByteLength + 4, offset: 0)));
 
     // get and check the magic byte
     String magicByte = readBuffer.readUTF8EncodedString2(magicByteLength);

@@ -4,6 +4,12 @@ import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 /// An abstract cache for symbols (small bitmaps used in the map, eg. stopsigns, arrows). The class retrieves and caches requested symbols. It also resizes them if desired.
 ///
 abstract class SymbolCache {
+
+  /**
+   * Default size is 20x20px (400px) at baseline mdpi (160dpi).
+   */
+  static int DEFAULT_SIZE = 20;
+
   SymbolCache();
 
   ///

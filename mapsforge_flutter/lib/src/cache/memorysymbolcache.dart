@@ -1,52 +1,22 @@
-import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:ecache/ecache.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/exceptions/symbolnotfoundexception.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
-import 'package:path_provider/path_provider.dart';
+import 'dart:ui' as ui;
 
-///
-/// A cache for symbols (small bitmaps used in the map, eg. stopsigns, arrows). The [src] parameter specifies the filename including the
-/// extension starting from the assets-path. eg. "patterns/arrow.png"
-///
-class FileSymbolCache extends SymbolCache {
-  static final _log = new Logger('FileSymbolCache');
-
-  static final String PREFIX_JAR = "jar:";
-
-  static final String PREFIX_JAR_V1 = "jar:/org/mapsforge/android/maps/rendertheme";
-
-  final AssetBundle? bundle;
-
-  final String? relativePathPrefix;
-
+class MemorySymbolCache extends SymbolCache {
   Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
     storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
       item.decrementRefCount();
     }),
     capacity: 100,
   );
-
-  ///
-  /// Creates a new FileSymbolCache. If the [relativePathPrefix] is not null the symbols will be loaded given by the [relativePathPrefix] first and if
-  /// not found there the symbols will be loaded by the bundle.
-  ///
-  FileSymbolCache(AssetBundle this.bundle, [this.relativePathPrefix]);
-
-  FileSymbolCache.withRelativePathPrefix(String this.relativePathPrefix) : bundle = null;
-
-  @override
-  void dispose() {
-    _cache.clear();
-  }
 
   @override
   Future<ResourceBitmap?> getSymbol(String? src, int width, int height, int? percent) async {
@@ -81,28 +51,6 @@ class FileSymbolCache extends SymbolCache {
   ///
   @protected
   Future<ByteData?> fetchResource(String src) async {
-    // compatibility with mapsforge
-    if (src.startsWith(PREFIX_JAR)) {
-      src = src.substring(PREFIX_JAR.length);
-      src = "packages/mapsforge_flutter/assets/" + src;
-    } else if (src.startsWith(PREFIX_JAR_V1)) {
-      src = src.substring(PREFIX_JAR_V1.length);
-      src = "packages/mapsforge_flutter/assets/" + src;
-    }
-    if (relativePathPrefix != null) {
-      Directory dir = await getApplicationDocumentsDirectory();
-      src = dir.path + "/" + relativePathPrefix! + src;
-      //_log.info("Trying to load symbol from $src");
-      File file = File(relativePathPrefix! + src);
-      if (await file.exists()) {
-        Uint8List bytes = await file.readAsBytes();
-        return ByteData.view(bytes.buffer);
-      }
-    }
-    if (bundle != null) {
-      ByteData content = await bundle!.load(src);
-      return content;
-    }
     return null;
   }
 

@@ -133,9 +133,9 @@ class SubFileParameter {
     return 'SubFileParameter{baseZoomLevel: $baseZoomLevel, blocksHeight: $blocksHeight, blocksWidth: $blocksWidth, boundaryTileBottom: $boundaryTileBottom, boundaryTileLeft: $boundaryTileLeft, boundaryTileRight: $boundaryTileRight, boundaryTileTop: $boundaryTileTop, indexEndAddress: $indexEndAddress, indexStartAddress: $indexStartAddress, numberOfBlocks: $numberOfBlocks, startAddress: $startAddress, subFileSize: $subFileSize, zoomLevelMax: $zoomLevelMax, zoomLevelMin: $zoomLevelMin}';
   }
 
-  Projection projection() {
-    if (_projection != null) return _projection!;
-    _projection = MercatorProjection.fromZoomlevel(baseZoomLevel!);
-    return _projection!;
-  }
+  // Projection projection() {
+  //   if (_projection != null) return _projection!;
+  //   _projection = MercatorProjection.fromZoomlevel(baseZoomLevel!);
+  //   return _projection!;
+  // }
 }

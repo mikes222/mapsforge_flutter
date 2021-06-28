@@ -23,15 +23,17 @@ class IndexCache {
 
   final String? filename;
 
+  int _successes = 0;
+
+  int _misses = 0;
+
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.
   /// @throws IllegalArgumentException if the capacity is negative.
   IndexCache(this.filename, int capacity) : _map = LruCache<IndexCacheEntryKey, Uint8List>(storage: SimpleStorage(), capacity: capacity);
 
-  /**
-   * Destroy the cache at the end of its lifetime.
-   */
-  void destroy() {
+  /// Destroy the cache at the end of its lifetime.
+  void dispose() {
     this._map.clear();
   }
 
@@ -69,6 +71,9 @@ class IndexCache {
 
       // put the index block in the map
       this._map[indexCacheEntryKey] = indexBlock;
+      ++_misses;
+    } else {
+      ++_successes;
     }
 
     // calculate the address of the index entry inside the index block
@@ -81,6 +86,6 @@ class IndexCache {
 
   @override
   String toString() {
-    return 'IndexCache{map: $_map}';
+    return 'IndexCache{map: $_map, successes: $_successes, misses: $_misses}';
   }
 }

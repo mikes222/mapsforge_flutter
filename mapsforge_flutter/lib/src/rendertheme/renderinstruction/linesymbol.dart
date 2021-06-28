@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -28,10 +29,10 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   bool? rotate;
   Scale scale = Scale.STROKE;
 
-  LineSymbol(GraphicFactory graphicFactory, DisplayModel displayModel, this.relativePathPrefix)
+  LineSymbol(GraphicFactory graphicFactory, SymbolCache symbolCache, DisplayModel displayModel, this.relativePathPrefix)
       : dyScaled = new Map(),
         super(graphicFactory, displayModel) {
-    this.symbolCache = graphicFactory.symbolCache;
+    this.symbolCache = symbolCache;
     this.rotate = true;
   }
 

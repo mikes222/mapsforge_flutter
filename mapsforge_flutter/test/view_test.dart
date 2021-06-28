@@ -25,16 +25,17 @@ void main() {
       maxZoomLevel: 14,
     );
 
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    GraphicFactory graphicFactory = FlutterGraphicFactory();
+
     MapModel? mapModel = await (tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
 
       MapFile mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), null, null);
 
-      SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-      GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
       final DisplayModel displayModel = DisplayModel();
 
-      RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+      RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
@@ -45,7 +46,6 @@ void main() {
 
       MapModel mapModel = MapModel(
         displayModel: displayModel,
-        graphicsFactory: graphicFactory,
         renderer: _dataStoreRenderer,
         //tileBitmapCache: bitmapCache,
       );
@@ -65,6 +65,7 @@ void main() {
             child: FlutterMapView(
               mapModel: mapModel,
               viewModel: viewModel,
+              graphicFactory: graphicFactory,
             ),
           ),
         ),
