@@ -63,7 +63,7 @@ main() async {
 
     int mn = 100000;
     int mx = 0;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 5; ++i) {
       int time = DateTime.now().millisecondsSinceEpoch;
       await runOnce(0, 0);
       int diff = DateTime.now().millisecondsSinceEpoch - time;

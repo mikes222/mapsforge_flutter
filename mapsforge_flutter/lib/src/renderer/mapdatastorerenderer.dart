@@ -91,7 +91,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    bool showTiming = true;
+    bool showTiming = false;
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     bool useIsolate = false;
@@ -110,7 +110,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       _sendPort!.send(IsolateParam(job.tile));
       mapReadResult = await _subject.stream.first;
     } else {
-      if (showTiming) _log.info("Before reading map data from file");
+      //if (showTiming) _log.info("Before reading map data from file");
       // read the mapdata directly in this thread
       mapDataStore = this.datastore;
       mapReadResult = await readMapDataInIsolate(IsolateParam(job.tile));
