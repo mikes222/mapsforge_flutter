@@ -46,7 +46,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     this.strokeDasharray,
     required this.minLatLon,
     required this.maxLatLon,
-  })   : assert(display != null),
+  })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation == null || (rotation >= 0 && rotation <= 360)),
@@ -64,7 +64,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
           item: item,
           markerCaption: markerCaption,
         ) {
-    this.src = src;
+    this.bitmapSrc = src;
     this.symbolCache = symbolCache;
   }
 
@@ -113,14 +113,10 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     MapRect mapRect = markerCallback.graphicFactory.createRect(
-        markerCallback.mapViewPosition.projection!.longitudeToPixelX(minLatLon.longitude) -
-            markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.projection!.latitudeToPixelY(maxLatLon.latitude) -
-            markerCallback.mapViewPosition.leftUpper!.y,
-        markerCallback.mapViewPosition.projection!.longitudeToPixelX(maxLatLon.longitude) -
-            markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.projection!.latitudeToPixelY(minLatLon.latitude) -
-            markerCallback.mapViewPosition.leftUpper!.y);
+        markerCallback.mapViewPosition.projection!.longitudeToPixelX(minLatLon.longitude) - markerCallback.mapViewPosition.leftUpper!.x,
+        markerCallback.mapViewPosition.projection!.latitudeToPixelY(maxLatLon.latitude) - markerCallback.mapViewPosition.leftUpper!.y,
+        markerCallback.mapViewPosition.projection!.longitudeToPixelX(maxLatLon.longitude) - markerCallback.mapViewPosition.leftUpper!.x,
+        markerCallback.mapViewPosition.projection!.latitudeToPixelY(minLatLon.latitude) - markerCallback.mapViewPosition.leftUpper!.y);
 
 //    markerCallback.renderRect(mapRect, stroke);
 

@@ -67,24 +67,32 @@ abstract class Rule {
   void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction>? matchingList,
       PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
     if (matchesNode(pointOfInterest.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel)) {
-      for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-        matchingList!.add(this.renderInstructions.elementAt(i));
-      }
-      for (int i = 0, n = this.subRules.length; i < n; ++i) {
-        this.subRules.elementAt(i).matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
-      }
+      matchingList!.addAll(renderInstructions);
+      // for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
+      //   matchingList!.add(this.renderInstructions.elementAt(i));
+      // }
+      subRules.forEach((element) {
+        element.matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
+      });
+      // for (int i = 0, n = this.subRules.length; i < n; ++i) {
+      //   this.subRules.elementAt(i).matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
+      // }
     }
   }
 
   void matchWay(RenderCallback renderCallback, PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction>? matchingList,
       final RenderContext renderContext, List<RenderInstruction> initPendings) {
     if (matchesWay(way.getTags(), tile.zoomLevel, tile.indoorLevel, closed)) {
-      for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-        matchingList!.add(this.renderInstructions.elementAt(i));
-      }
-      for (int i = 0, n = this.subRules.length; i < n; ++i) {
-        this.subRules.elementAt(i).matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);
-      }
+      matchingList!.addAll(renderInstructions);
+      // for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
+      //   matchingList!.add(this.renderInstructions.elementAt(i));
+      // }
+      subRules.forEach((element) {
+        element.matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);
+      });
+      // for (int i = 0, n = this.subRules.length; i < n; ++i) {
+      //   this.subRules.elementAt(i).matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);
+      // }
     }
   }
 

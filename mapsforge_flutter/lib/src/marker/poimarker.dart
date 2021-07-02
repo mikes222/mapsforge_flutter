@@ -39,9 +39,9 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
           item: item,
           latLong: latLong,
         ) {
-    this.src = src;
-    this.width = width;
-    this.height = height;
+    this.bitmapSrc = src;
+    this.bitmapWidth = width;
+    this.bitmapHeight = height;
     this.symbolCache = symbolCache;
   }
 
@@ -65,8 +65,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
   }
 
   void renderBitmap(MarkerCallback markerCallback) {
-    if (bitmap != null && symbolPaint != null) {
-      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude, imageOffsetX, imageOffsetY, rotation, symbolPaint!);
+    if (bitmap != null && bitmapPaint != null) {
+      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude, imageOffsetX, imageOffsetY, rotation, bitmapPaint!);
     }
   }
 

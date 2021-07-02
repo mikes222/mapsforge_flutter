@@ -64,6 +64,7 @@ void main() {
           [
             Tag('highway', 'service'),
             Tag('access', 'private'),
+            //Tag('name', 'highwayService'),
           ],
           [
             [LatLong(45.998, 17.95), LatLong(45.998, 18.05)]
@@ -93,8 +94,13 @@ void main() {
         theme: ThemeData(),
         home: Scaffold(
           body: Center(
-            child: RawImage(
-              image: img,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue, width: 1),
+              ),
+              child: RawImage(
+                image: img,
+              ),
             ),
           ),
         ),

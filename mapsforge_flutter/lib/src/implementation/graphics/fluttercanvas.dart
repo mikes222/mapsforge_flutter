@@ -56,7 +56,7 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawBitmap(
-      {required Bitmap? bitmap,
+      {required Bitmap bitmap,
       required double left,
       required double top,
       required MapPaint paint,
@@ -70,8 +70,6 @@ class FlutterCanvas extends MapCanvas {
       int? dstBottom,
       Matrix? matrix,
       Filter? filter}) {
-    assert(bitmap != null);
-
     ui.Image bmp = (bitmap as FlutterBitmap).bitmap;
     assert(bmp.width > 0);
     assert(bmp.height > 0);
@@ -182,7 +180,7 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawCircle(int x, int y, int radius, MapPaint? paint) {
+  void drawCircle(int x, int y, int radius, MapPaint paint) {
     //_log.info("draw circle at $x $y $radius $paint at ${ui.Offset(x.toDouble(), y.toDouble())}");
     uiCanvas.drawCircle(ui.Offset(x.toDouble(), y.toDouble()), radius.toDouble(), (paint as FlutterPaint).paint);
   }
@@ -339,7 +337,7 @@ class FlutterCanvas extends MapCanvas {
       maxLines: 1,
     );
     renderParagraph.layout(constraints);
-    double textlen = renderParagraph.getMinIntrinsicWidth(fontSize).ceilToDouble(); // + 1;
+    double textlen = renderParagraph.getMinIntrinsicWidth(fontSize).ceilToDouble();
 //    _log.info("Textlen: $textlen for $text");
     return textlen;
   }

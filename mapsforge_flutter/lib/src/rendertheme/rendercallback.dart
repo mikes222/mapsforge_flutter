@@ -37,7 +37,7 @@ abstract class RenderCallback {
  * @param way              the way for the caption.
  */
   void renderAreaCaption(final RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
-      double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PolylineContainer way);
+      double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PolylineContainer way);
 
 /**
  * Renders an area symbol with the given bitmap.
@@ -68,7 +68,7 @@ abstract class RenderCallback {
       double verticalOffset,
       MapPaint fill,
       MapPaint stroke,
-      Position? position,
+      Position position,
       int maxTextWidth,
       PointOfInterest poi);
 

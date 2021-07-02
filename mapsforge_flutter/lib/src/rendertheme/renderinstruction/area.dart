@@ -48,7 +48,7 @@ class Area extends RenderInstruction with BitmapMixin {
       String value = element.value;
       //_log.info("checking $name=$value");
       if (RenderInstruction.SRC == name) {
-        this.src = value;
+        this.bitmapSrc = value;
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
@@ -60,18 +60,18 @@ class Area extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.height = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.percent = XmlUtils.parseNonNegativeInteger(name, value);
+        this.bitmapPercent = XmlUtils.parseNonNegativeInteger(name, value);
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.width = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
       } else {
         throw Exception(name + "=" + value);
       }
     });
-    if (src != null) initPendings.add(this);
+    if (bitmapSrc != null) initPendings.add(this);
   }
 
   MapPaint getFillPaint() {

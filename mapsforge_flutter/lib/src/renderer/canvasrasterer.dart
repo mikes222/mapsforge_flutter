@@ -7,29 +7,19 @@ import '../graphics/filter.dart';
 import '../graphics/graphicfactory.dart';
 import '../graphics/graphicutils.dart';
 import '../graphics/mapcanvas.dart';
-import '../graphics/mappath.dart';
 import '../graphics/matrix.dart';
 import '../mapelements/mapelementcontainer.dart';
-import '../model/mappoint.dart';
 import '../model/tile.dart';
-import '../renderer/polylinecontainer.dart';
-import '../renderer/rendererutils.dart';
-import '../renderer/shapecontainer.dart';
 import '../renderer/shapepaintcontainer.dart';
-import '../renderer/shapetype.dart';
 import '../rendertheme/rendercontext.dart';
-import 'circlecontainer.dart';
-import 'hillshadingcontainer.dart';
 
 class CanvasRasterer {
   static final _log = new Logger('CanvasRasterer');
   final MapCanvas canvas;
-  final MapPath path;
   final Matrix symbolMatrix;
 
   CanvasRasterer(GraphicFactory graphicFactory, double width, double height, [String? src])
       : canvas = graphicFactory.createCanvas(width, height, src),
-        path = graphicFactory.createPath(),
         symbolMatrix = graphicFactory.createMatrix();
 
   void destroy() {
@@ -37,14 +27,11 @@ class CanvasRasterer {
   }
 
   void drawWays(RenderContext renderContext) {
-    for (List<List<ShapePaintContainer>> shapePaintContainers in renderContext.ways) {
-      for (List<ShapePaintContainer> wayList in shapePaintContainers) {
-        wayList.reversed.forEach((element) {
-          _drawShapePaintContainer(element, renderContext.projection);
+    for (LayerPaintContainer layerPaintContainer in renderContext.layerWays) {
+      for (List<ShapePaintContainer> wayList in layerPaintContainer.ways) {
+        wayList.forEach((ShapePaintContainer element) {
+          element.draw(this.canvas, renderContext.projection);
         });
-        // for (int index = wayList.length - 1; index >= 0; --index) {
-        //   _drawShapePaintContainer(wayList.elementAt(index), renderContext.projection);
-        // }
       }
     }
   }
@@ -109,78 +96,8 @@ class CanvasRasterer {
     return await canvas.finalizeBitmap();
   }
 
-  void drawCircleContainer(ShapePaintContainer shapePaintContainer) {
-    CircleContainer circleContainer = shapePaintContainer.shapeContainer as CircleContainer;
-    Mappoint point = circleContainer.point;
-    this.canvas.drawCircle(point.x.toInt(), point.y.toInt(), circleContainer.radius.toInt(), shapePaintContainer.paint);
-  }
+// void drawHillshading(HillshadingContainer container) {
+//   canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
+// }
 
-  // void drawHillshading(HillshadingContainer container) {
-  //   canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
-  // }
-
-  void _drawPath(ShapePaintContainer shapePaintContainer, List<List<Mappoint>> coordinates, double dy) {
-    this.path.clear();
-
-    for (List<Mappoint> innerList in coordinates) {
-      List<Mappoint> points;
-      if (dy != 0) {
-        points = RendererUtils.parallelPath(innerList, dy);
-      } else {
-        points = innerList;
-      }
-      // bool below = true;
-      // bool left = true;
-      // bool right = true;
-      // bool top = true;
-      // points.forEach((element) {
-      //   if (element.y >= 0) {
-      //     below = false;
-      //     return;
-      //   }
-      //   if (element.x >= 0) {
-      //     left = false;
-      //     return;
-      //   }
-      //   if (element.x <= 256) {
-      //     right = false;
-      //     return;
-      //   }
-      //   if (element.y <= 256) {
-      //     top = false;
-      //     return;
-      //   }
-      // });
-      // if (!below || !left || !top || !right) {
-      //_log.info("Path is ${points.join(",")}");
-      Mappoint point = points[0];
-      this.path.moveTo(point.x, point.y);
-      for (int i = 1; i < points.length; i++) {
-        point = points[i];
-        this.path.lineTo(point.x, point.y);
-      }
-//      }
-    }
-
-    this.canvas.drawPath(this.path, shapePaintContainer.paint);
-  }
-
-  void _drawShapePaintContainer(ShapePaintContainer shapePaintContainer, PixelProjection projection) {
-    ShapeContainer shapeContainer = shapePaintContainer.shapeContainer;
-    ShapeType shapeType = shapeContainer.getShapeType();
-    switch (shapeType) {
-      case ShapeType.CIRCLE:
-        drawCircleContainer(shapePaintContainer);
-        break;
-      case ShapeType.HILLSHADING:
-        HillshadingContainer hillshadingContainer = shapeContainer as HillshadingContainer;
-        //drawHillshading(hillshadingContainer);
-        break;
-      case ShapeType.POLYLINE:
-        PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
-        //_log.info("drawing line " + polylineContainer.toString());
-        _drawPath(shapePaintContainer, polylineContainer.getCoordinatesRelativeToOrigin(projection), shapePaintContainer.dy);
-        break;
-    }
-  }
 }

@@ -45,7 +45,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
       String value = element.value;
 
       if (RenderInstruction.SRC == name) {
-        this.src = value;
+        this.bitmapSrc = value;
       } else if (RenderInstruction.ALIGN_CENTER == name) {
         this.alignCenter = "true" == (value);
       } else if (RenderInstruction.CAT == name) {
@@ -67,18 +67,18 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.height = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.percent = XmlUtils.parseNonNegativeInteger(name, value);
+        this.bitmapPercent = XmlUtils.parseNonNegativeInteger(name, value);
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.width = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
       } else {
         throw Exception("LineSymbol probs");
       }
     });
-    if (src != null) initPendings.add(this);
+    if (bitmapSrc != null) initPendings.add(this);
   }
 
   @override
@@ -92,6 +92,8 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
       return;
     }
 
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+
     double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     if (dyScale == null) {
       dyScale = this.dy;
@@ -99,7 +101,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
 
     if (bitmap != null) {
       renderCallback.renderWaySymbol(renderContext, this.display, this.priority, this.bitmap!, dyScale, this.alignCenter, this.repeat,
-          this.repeatGap, this.repeatStart, this.rotate, way, symbolPaint);
+          this.repeatGap, this.repeatStart, this.rotate, way, bitmapPaint);
     }
   }
 

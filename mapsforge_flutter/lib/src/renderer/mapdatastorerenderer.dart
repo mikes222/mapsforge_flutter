@@ -23,9 +23,13 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
+import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/shapepaintcirclecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/shapepaintcontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/shapepaintpolylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
+import 'package:mapsforge_flutter/src/renderer/watercontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
@@ -87,8 +91,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    bool showTiming = false;
-    bool useIsolate = true;
+    bool showTiming = true;
+    // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
+    // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
+    bool useIsolate = false;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext = RenderContext(job, renderTheme, graphicFactory);
@@ -139,7 +145,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
     canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming) _log.info("drawWays took $diff ms for ${renderContext.ways.length} items");
+    if (diff > 100 && showTiming) _log.info("drawWays took $diff ms for ${renderContext.layerWays.length} items");
 
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw = await _processLabels(renderContext);
@@ -185,7 +191,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     }
 
     for (Way way in mapReadResult.ways) {
-      await _renderWay(renderContext, new PolylineContainer(way, renderContext.job.tile, renderContext.job.tile));
+      await _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile));
     }
 
     if (mapReadResult.isWater) {
@@ -215,8 +221,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     for (int i = 0; i < coordinates.length; i++) {
       coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
     }
-    PolylineContainer way =
-        new PolylineContainer.fromList(coordinates, renderContext.job.tile, renderContext.job.tile, [TAG_NATURAL_WATER]);
+    Watercontainer way = Watercontainer(coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
     //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
   }
 
@@ -232,18 +237,18 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderArea(RenderContext renderContext, MapPaint fill, MapPaint stroke, int level, PolylineContainer way) {
-    if (!stroke.isTransparent()) renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, stroke, 0));
-    if (!fill.isTransparent()) renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, fill, 0));
+    if (!stroke.isTransparent()) renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, stroke, 0));
+    if (!fill.isTransparent()) renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, fill, 0));
   }
 
   @override
   void renderAreaCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
-      double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PolylineContainer way) {
+      double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PolylineContainer way) {
     if (renderLabels) {
       Mappoint centerPoint = way.getCenterAbsolute(renderContext.projection).offset(horizontalOffset, verticalOffset);
       //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
       PointTextContainer label =
-          this.graphicFactory.createPointTextContainer(centerPoint, display, priority, caption, fill, stroke, null, position, maxTextWidth);
+          this.graphicFactory.createPointTextContainer(centerPoint, display, priority, caption, fill, stroke, position, maxTextWidth);
       renderContext.labels.add(label);
     }
   }
@@ -259,14 +264,12 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderPointOfInterestCaption(RenderContext renderContext, Display display, int priority, String caption, double horizontalOffset,
-      double verticalOffset, MapPaint fill, MapPaint stroke, Position? position, int maxTextWidth, PointOfInterest poi) {
+      double verticalOffset, MapPaint fill, MapPaint stroke, Position position, int maxTextWidth, PointOfInterest poi) {
     if (renderLabels) {
-      //Mappoint poiPosition = renderContext.job.tile.mercatorProjection.getPixelRelativeToTile(poi.position, renderContext.job.tile);
-      //MercatorProjectionImpl mercatorProjection = MercatorProjectionImpl(renderContext.job.tileSize, renderContext.job.tile.zoomLevel);
       Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
-
+      //_log.info("poiCaption $caption at $poiPosition, postion $position, offset: $horizontalOffset, $verticalOffset ");
       renderContext.labels.add(this.graphicFactory.createPointTextContainer(
-          poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, null, position, maxTextWidth));
+          poiPosition.offset(horizontalOffset, verticalOffset), display, priority, caption, fill, stroke, position, maxTextWidth));
     }
   }
 
@@ -277,10 +280,10 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     // in case of cirles this is not done at all so do it here for now
     Mappoint poiPosition = renderContext.projection.pixelRelativeToTile(poi.position, renderContext.job.tile);
     //_log.info("Adding circle $poiPosition with $radius");
-    if (stroke != null && !stroke.isTransparent())
-      renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), stroke, 0));
     if (fill != null && !fill.isTransparent())
-      renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(new CircleContainer(poiPosition, radius), fill, 0));
+      renderContext.addToCurrentDrawingLayer(level, ShapePaintCircleContainer(new CircleContainer(poiPosition, radius), fill, 0));
+    if (!stroke.isTransparent())
+      renderContext.addToCurrentDrawingLayer(level, ShapePaintCircleContainer(new CircleContainer(poiPosition, radius), stroke, 0));
   }
 
   @override
@@ -294,7 +297,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderWay(RenderContext renderContext, MapPaint stroke, double dy, int level, PolylineContainer way) {
-    if (!stroke.isTransparent()) renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(way, stroke, dy));
+    if (!stroke.isTransparent())
+      renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, stroke, dy));
   }
 
   @override
@@ -310,8 +314,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   void renderWayText(RenderContext renderContext, Display display, int priority, String text, double dy, MapPaint fill, MapPaint stroke,
       bool? repeat, double? repeatGap, double? repeatStart, bool? rotate, PolylineContainer way) {
     if (renderLabels) {
-      WayDecorator.renderText(graphicFactory, way.getUpperLeft(), way.getLowerRight(), text, display, priority, dy, fill, stroke, repeat,
-          repeatGap!, repeatStart!, rotate, way.getCoordinatesAbsolute(renderContext.projection), renderContext.labels);
+      WayDecorator.renderText(graphicFactory, way.getUpperLeft(), text, display, priority, dy, fill, stroke, repeat, repeatGap!,
+          repeatStart!, rotate, way.getCoordinatesAbsolute(renderContext.projection), renderContext.labels);
     }
   }
 

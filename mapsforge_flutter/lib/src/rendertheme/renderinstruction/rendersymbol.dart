@@ -31,7 +31,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
       String value = element.value;
 
       if (RenderInstruction.SRC == name) {
-        this.src = value;
+        this.bitmapSrc = value;
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.DISPLAY == name) {
@@ -41,18 +41,18 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.height = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.percent = XmlUtils.parseNonNegativeInteger(name, value);
+        this.bitmapPercent = XmlUtils.parseNonNegativeInteger(name, value);
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.width = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
       } else {
         throw Exception("Symbol probs");
       }
     });
-    if (src != null) initPendings.add(this);
+    if (bitmapSrc != null) initPendings.add(this);
   }
 
   String? getId() {
@@ -67,7 +67,7 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     }
 
     if (bitmap != null) {
-      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap!, poi, symbolPaint);
+      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap!, poi, bitmapPaint);
     }
   }
 
@@ -78,8 +78,10 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
       return;
     }
 
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+
     if (bitmap != null) {
-      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap!, way, symbolPaint);
+      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap!, way, bitmapPaint);
     }
   }
 
@@ -102,6 +104,10 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
 
   @override
   Future<RenderSymbol> initResources(GraphicFactory graphicFactory) async {
+    if (Display.NEVER == this.display) {
+      //_log.info("display is never for $textKey");
+      return this;
+    }
     await initBitmap(graphicFactory);
     return this;
   }

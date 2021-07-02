@@ -13,6 +13,7 @@ import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/textkey.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -32,21 +33,22 @@ class Caption extends RenderInstruction {
   Display display = Display.IFSPACE;
   double dy = 0;
   final Map<int, double> dyScaled;
+  double _horizontalOffset = 0;
+  double _verticalOffset = 0;
   late MapPaint fill;
   final Map<int, MapPaint> fills;
   double fontSize = 10;
   late double gap;
   final int maxTextWidth;
-  Position? position;
+  Position position = Position.CENTER;
   int priority = 0;
   late MapPaint stroke;
   final Map<int, MapPaint> strokes;
   String? symbolId;
-  final Map<String, RenderSymbol> symbols;
+  final SymbolFinder symbolFinder;
   TextKey? textKey;
-  RenderSymbol? renderSymbol;
 
-  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbols)
+  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbolFinder)
       : fills = new Map(),
         strokes = new Map(),
         dyScaled = new Map(),
@@ -61,38 +63,6 @@ class Caption extends RenderInstruction {
     this.stroke.setStyle(Style.STROKE);
 
     this.gap = DEFAULT_GAP * displayModel.getScaleFactor();
-  }
-
-  double computeHorizontalOffset() {
-    // compute only the offset required by the bitmap, not the text size,
-    // because at this point we do not know the text boxing
-    if (Position.RIGHT == this.position ||
-        Position.LEFT == this.position ||
-        Position.BELOW_RIGHT == this.position ||
-        Position.BELOW_LEFT == this.position ||
-        Position.ABOVE_RIGHT == this.position ||
-        Position.ABOVE_LEFT == this.position) {
-      double horizontalOffset = this.renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
-      if (Position.LEFT == this.position || Position.BELOW_LEFT == this.position || Position.ABOVE_LEFT == this.position) {
-        horizontalOffset *= -1;
-      }
-      return horizontalOffset;
-    }
-    return 0;
-  }
-
-  double computeVerticalOffset(int zoomLevel) {
-    double? verticalOffset = this.dyScaled[zoomLevel];
-    if (verticalOffset == null) {
-      verticalOffset = this.dy;
-    }
-
-    if (Position.ABOVE == this.position || Position.ABOVE_LEFT == this.position || Position.ABOVE_RIGHT == this.position) {
-      verticalOffset -= this.renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
-    } else if (Position.BELOW == this.position || Position.BELOW_LEFT == this.position || Position.BELOW_RIGHT == this.position) {
-      verticalOffset += this.renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
-    }
-    return verticalOffset;
   }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
@@ -139,43 +109,7 @@ class Caption extends RenderInstruction {
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
 
-    if (this.symbolId != null) {
-      renderSymbol = symbols[this.symbolId!];
-      if (renderSymbol == null) {
-        _log.warning("Symbol $symbolId referenced in caption in render.xml, but not defined as symbol before");
-      }
-    }
-
-    if (this.position == null) {
-      // sensible defaults: below if symbolContainer is present, center if not
-      if (this.renderSymbol == null) {
-        this.position = Position.CENTER;
-      } else {
-        this.position = Position.BELOW;
-      }
-    }
-    switch (this.position) {
-      case Position.CENTER:
-      case Position.BELOW:
-      case Position.ABOVE:
-        //this.stroke.setTextAlign(Align.CENTER);
-        //this.fill.setTextAlign(Align.CENTER);
-        break;
-      case Position.BELOW_LEFT:
-      case Position.ABOVE_LEFT:
-      case Position.LEFT:
-        //this.stroke.setTextAlign(Align.RIGHT);
-        //this.fill.setTextAlign(Align.RIGHT);
-        break;
-      case Position.BELOW_RIGHT:
-      case Position.ABOVE_RIGHT:
-      case Position.RIGHT:
-        //this.stroke.setTextAlign(Align.LEFT);
-        //this.fill.setTextAlign(Align.LEFT);
-        break;
-      default:
-        throw new Exception("Position invalid");
-    }
+    initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {
@@ -207,29 +141,16 @@ class Caption extends RenderInstruction {
       return;
     }
 
-    double horizontalOffset = 0;
-
-    double? verticalOffset = this.dyScaled[renderContext.job.tile.zoomLevel];
-    if (verticalOffset == null) {
-      verticalOffset = this.dy;
-    }
-
-    if (renderSymbol != null && renderSymbol!.bitmap != null) {
-      // the symbol itself is already drawn by the [RenderSymbol] class. Now just position the text accordingly
-      horizontalOffset = computeHorizontalOffset();
-      verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
-    }
-
     renderCallback.renderPointOfInterestCaption(
         renderContext,
         this.display,
         this.priority,
         caption,
-        horizontalOffset,
-        verticalOffset,
+        _horizontalOffset,
+        _verticalOffset + dyScaled[renderContext.job.tile.zoomLevel]!,
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
-        this.position,
+        position,
         this.maxTextWidth,
         poi);
   }
@@ -245,25 +166,15 @@ class Caption extends RenderInstruction {
       return;
     }
 
-    double horizontalOffset = 0;
-    double? verticalOffset = this.dyScaled[renderContext.job.tile.zoomLevel];
-    if (verticalOffset == null) {
-      verticalOffset = this.dy;
-    }
-
-    if (renderSymbol != null && renderSymbol!.bitmap != null) {
-      // the symbol itself is already drawn by the [RenderSymbol] class. Now just position the text accordingly
-      horizontalOffset = computeHorizontalOffset();
-      verticalOffset = computeVerticalOffset(renderContext.job.tile.zoomLevel);
-    }
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
 
     renderCallback.renderAreaCaption(
         renderContext,
         this.display,
         this.priority,
         caption,
-        horizontalOffset,
-        verticalOffset,
+        _horizontalOffset,
+        _verticalOffset + dyScaled[renderContext.job.tile.zoomLevel]!,
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         this.position,
@@ -299,7 +210,55 @@ class Caption extends RenderInstruction {
   void dispose() {}
 
   @override
-  Future<Caption> initResources(GraphicFactory graphicFactory) {
-    return Future.value(this);
+  Future<Caption> initResources(GraphicFactory graphicFactory) async {
+    _verticalOffset = 0;
+
+    RenderSymbol? renderSymbol;
+    if (this.symbolId != null) {
+      renderSymbol = await symbolFinder.find(this.symbolId!);
+      if (renderSymbol == null) {
+        _log.warning("Symbol $symbolId referenced in caption in render.xml, but not defined as symbol");
+      }
+    }
+
+    if (this.position == Position.CENTER && renderSymbol?.bitmap != null) {
+      // sensible defaults: below if symbolContainer is present, center if not
+      this.position = Position.BELOW;
+    }
+    switch (this.position) {
+      case Position.CENTER:
+      case Position.BELOW:
+        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        break;
+      case Position.ABOVE:
+        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        break;
+      case Position.BELOW_LEFT:
+        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        break;
+      case Position.ABOVE_LEFT:
+        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        break;
+      case Position.LEFT:
+        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        break;
+      case Position.BELOW_RIGHT:
+        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset += (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        break;
+      case Position.ABOVE_RIGHT:
+        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset += (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        break;
+      case Position.RIGHT:
+        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset += (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+        break;
+      default:
+        throw new Exception("Position invalid");
+    }
+
+    return this;
   }
 }

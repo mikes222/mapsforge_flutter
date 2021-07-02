@@ -9,7 +9,6 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
-import 'package:mapsforge_flutter/src/mapelements/symbolcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
 
@@ -26,17 +25,15 @@ class FlutterPointTextContainer extends PointTextContainer {
 
   late ui.Paragraph back;
 
-  FlutterPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack,
-      SymbolContainer? symbolContainer, Position? position, int maxTextWidth)
-      : super(xy, display, priority, text, paintFront, paintBack, symbolContainer, position, maxTextWidth) {
+  FlutterPointTextContainer(
+      Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack, Position position, int maxTextWidth)
+      : super(xy, display, priority, text, paintFront, paintBack, position, maxTextWidth) {
     double boxWidth;
     double boxHeight;
 
     // TextPaint frontTextPaint = new TextPaint(AndroidGraphicFactory.getPaint(this.paintFront));
     //TextPaint backTextPaint = null;
-    if (this.paintBack != null) {
-      //backTextPaint = new TextPaint(AndroidGraphicFactory.getPaint(this.paintBack));
-    }
+    //backTextPaint = new TextPaint(AndroidGraphicFactory.getPaint(this.paintBack));
 
     ui.TextAlign alignment = ui.TextAlign.center;
     if (Position.LEFT == this.position || Position.BELOW_LEFT == this.position || Position.ABOVE_LEFT == this.position) {
@@ -109,7 +106,8 @@ class FlutterPointTextContainer extends PointTextContainer {
       case Position.RIGHT:
         boundary = new Rectangle(0, -boxHeight / 2, boxWidth, boxHeight / 2);
         break;
-      default:
+      case Position.AUTO:
+        boundary = new Rectangle(-boxWidth / 2, -boxHeight / 2, boxWidth / 2, boxHeight / 2);
         break;
     }
   }
@@ -118,11 +116,7 @@ class FlutterPointTextContainer extends PointTextContainer {
   dispose() {}
 
   @override
-  void draw(MapCanvas canvas, Mappoint? origin, Matrix matrix, Filter filter) {
-    if (!this.isVisible) {
-      return;
-    }
-
+  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
     ui.Canvas? flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
 
     // the origin of the text is the base line, so we need to make adjustments
@@ -132,18 +126,18 @@ class FlutterPointTextContainer extends PointTextContainer {
       case Position.CENTER:
       case Position.LEFT:
       case Position.RIGHT:
-        textOffset = textHeight / 2;
+        //textOffset = textHeight / 2;
         break;
       case Position.BELOW:
       case Position.BELOW_LEFT:
       case Position.BELOW_RIGHT:
-        textOffset = textHeight.toDouble();
+        //textOffset = textHeight.toDouble();
         break;
       default:
         break;
     }
 
-    double adjustedX = (this.xy.x - origin!.x) + boundary!.left;
+    double adjustedX = (this.xy.x - origin.x) + boundary!.left;
     double adjustedY = (this.xy.y - origin.y) + textOffset + boundary!.top;
 
 //    _log.info("Adjusted is $adjustedX/$adjustedY and witdht is $textWidth for $text");
@@ -169,7 +163,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      this.paintFront.setColor(GraphicUtils.filterColor(color, filter));
 //    }
     flutterCanvas.drawParagraph(front, Offset(adjustedX, adjustedY));
-    //print("FlutterPointTextContainer for $adjustedX / $adjustedY and boundary $boundary and offset $textOffset, textWidth: $textWidth");
+    // print(
+    //     "FlutterPointTextContainer for $text: $adjustedX / $adjustedY and boundary $boundary and offset $textOffset, textHeight: $textHeight, textWidth: $textWidth");
 //    if (filter != Filter.NONE) {
 //      this.paintFront.setColor(color);
 //    }

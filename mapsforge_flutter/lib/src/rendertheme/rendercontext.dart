@@ -9,10 +9,8 @@ import '../mapelements/mapelementcontainer.dart';
 import '../renderer/shapepaintcontainer.dart';
 import '../rendertheme/rule/rendertheme.dart';
 
-/**
- * A RenderContext contains all the information and data to render a map area, it is passed between
- * calls in order to avoid local data stored in the DatabaseRenderer.
- */
+/// A RenderContext contains all the information and data to render a map area, it is passed between
+/// calls in order to avoid local data stored in the DatabaseRenderer.
 class RenderContext {
   static final int LAYERS = 11;
 
@@ -24,16 +22,19 @@ class RenderContext {
   final GraphicFactory graphicFactory;
 
   // Data generated for the rendering process
-  List<List<ShapePaintContainer>>? drawingLayers;
+  late LayerPaintContainer drawingLayers;
   final List<MapElementContainer> labels;
-  late List<List<List<ShapePaintContainer>>> ways;
+  late List<LayerPaintContainer> layerWays;
 
-  PixelProjection? _projection;
+  final PixelProjection projection;
 
-  RenderContext(this.job, this.renderTheme, this.graphicFactory) : labels = [] {
+  RenderContext(this.job, this.renderTheme, this.graphicFactory)
+      : labels = [],
+        projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
     this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
-    this.ways = _createWayLists();
+    this.layerWays = _createWayLists();
     setScaleStrokeWidth(this.job.tile.zoomLevel);
+    drawingLayers = layerWays[0];
   }
 
   void dispose() {
@@ -48,12 +49,11 @@ class RenderContext {
     } else if (layer >= RenderContext.LAYERS) {
       layer = RenderContext.LAYERS - 1;
     }
-    this.drawingLayers = ways.elementAt(layer);
+    this.drawingLayers = layerWays.elementAt(layer);
   }
 
   void addToCurrentDrawingLayer(int level, ShapePaintContainer element) {
-    //_log.info("Adding level $level to layer with ${drawingLayers.length} levels");
-    this.drawingLayers![level].add(element);
+    drawingLayers.add(level, element);
   }
 
   /**
@@ -66,17 +66,13 @@ class RenderContext {
   //   return Job(tile, this.job.hasAlpha, this.job.textScale);
   // }
 
-  List<List<List<ShapePaintContainer>>> _createWayLists() {
-    List<List<List<ShapePaintContainer>>> result = [];
-    int levels = this.renderTheme.getLevels()!;
-    assert(levels > 0);
+  List<LayerPaintContainer> _createWayLists() {
+    List<LayerPaintContainer> result = [];
+    int levels = this.renderTheme.getLevels();
+    //print("LAYERS: $LAYERS, levels: $levels");
 
     for (int i = 0; i < LAYERS; ++i) {
-      List<List<ShapePaintContainer>> innerWayList = [];
-      for (int j = 0; j < levels; ++j) {
-        innerWayList.add([]);
-      }
-      result.add(innerWayList);
+      result.add(LayerPaintContainer(levels));
     }
     return result;
   }
@@ -90,10 +86,25 @@ class RenderContext {
     int zoomLevelDiff = max(zoomLevel - STROKE_MIN_ZOOM_LEVEL, 0);
     this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff) as double, this.job.tile.zoomLevel);
   }
+}
 
-  PixelProjection get projection {
-    if (_projection != null) return _projection!;
-    _projection = PixelProjection(job.tile.zoomLevel, job.tileSize);
-    return _projection!;
+/////////////////////////////////////////////////////////////////////////////
+
+///
+/// A container which holds all paintings for one layer. A layer is defined by the datastore. It is a property of the ways
+/// in the datastore. So in other words you can define which way should be drawn in the back and which should be drawn
+/// at the front.
+class LayerPaintContainer {
+  late List<List<ShapePaintContainer>> ways;
+
+  ///
+  /// Define the maximum number of levels.
+  LayerPaintContainer(int levels) {
+    ways = List.generate(levels, (int index) => []);
+  }
+
+  void add(int level, ShapePaintContainer element) {
+    //_log.info("Adding level $level to layer with ${drawingLayers.length} levels");
+    this.ways[level].add(element);
   }
 }

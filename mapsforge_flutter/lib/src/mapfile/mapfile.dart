@@ -76,6 +76,7 @@ class MapFile extends MapDataStore {
 
   late MapfileHelper _helper;
 
+  /// just to see if we should create a cache for blocks
   final Set<int> _blockSet = Set();
 
   ReadBufferMaster? readBufferMaster;

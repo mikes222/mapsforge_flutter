@@ -9,3 +9,4 @@ mapsforge_flutter/test/failures/
 example/.gradle/
 mapsforge_flutter/test/integration/failures/
 mapsforge_flutter/test/graphicsfactory/failures/
+mapsforge_flutter/test_resources/austria.map

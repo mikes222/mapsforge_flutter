@@ -9,21 +9,19 @@ class BitmapMixin {
 
   SymbolCache? symbolCache;
 
-  String? src;
+  String? bitmapSrc;
 
   Bitmap? bitmap;
 
   bool bitmapInvalid = false;
 
-  Future<Bitmap?>? _future;
+  double bitmapHeight = 0;
 
-  double height = 0;
+  double bitmapWidth = 0;
 
-  double width = 0;
+  int bitmapPercent = 100;
 
-  int percent = 100;
-
-  MapPaint? symbolPaint;
+  MapPaint? bitmapPaint;
 
   @mustCallSuper
   void dispose() {
@@ -31,7 +29,6 @@ class BitmapMixin {
       this.bitmap!.decrementRefCount();
       bitmap = null;
     }
-    _future = null;
   }
 
   @mustCallSuper
@@ -41,52 +38,24 @@ class BitmapMixin {
 
     if (bitmap != null) return;
 
-    if (symbolCache != null) {
-      if (src == null || src!.isEmpty) {
-        return;
-      }
-      try {
-        bitmap = await symbolCache!.getSymbol(src, width.round(), height.round(), percent);
-        bitmap!.incrementRefCount();
-      } catch (e, stacktrace) {
-        _log.warning("${e.toString()}, ignore missing bitmap in rendering");
-        //print("Exception $e\nStacktrace $stacktrace");
-        bitmap = null;
-        bitmapInvalid = true;
-      }
+    if (bitmapSrc == null || bitmapSrc!.isEmpty) {
+      return;
     }
 
-    symbolPaint = graphicFactory.createPaint();
-    symbolPaint!.setColorFromNumber(0xff000000);
+    if (symbolCache == null) {
+      _log.warning("SymbolCache for bitmapMixin $bitmapSrc not defined");
+      return;
+    }
+    try {
+      bitmap = await symbolCache!.getSymbol(bitmapSrc, bitmapWidth.round(), bitmapHeight.round(), bitmapPercent);
+      bitmap!.incrementRefCount();
+      bitmapPaint = graphicFactory.createPaint();
+      bitmapPaint!.setColorFromNumber(0xff000000);
+    } catch (e) {
+      _log.warning("${e.toString()}, ignore missing bitmap in rendering");
+      //print("Exception $e\nStacktrace $stacktrace");
+      bitmap = null;
+      bitmapInvalid = true;
+    }
   }
-
-  // @protected
-  // Future<Bitmap?>? getOrCreateBitmap(GraphicFactory graphicFactory, String src) async {
-  //   if (bitmapInvalid) return null;
-  //   if (src.isEmpty) {
-  //     bitmapInvalid = true;
-  //     return null;
-  //   }
-  //   assert(symbolCache != null);
-  //
-  //   if (bitmap != null) return bitmap;
-  //
-  //   if (_future != null) {
-  //     return _future;
-  //   }
-  //   try {
-  //     _future = symbolCache!.getSymbol(src, width.round(), height.round(), percent);
-  //     bitmap = await _future;
-  //     bitmap?.incrementRefCount();
-  //     _future = null;
-  //     bitmapInvalid = false;
-  //     return bitmap;
-  //   } catch (e, stacktrace) {
-  //     _log.warning("Exception $e\nStacktrace $stacktrace");
-  //     bitmap = null;
-  //     _future = null;
-  //     bitmapInvalid = true;
-  //     return bitmap;
-  //   }
-  // }
 }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -50,6 +52,7 @@ class RuleBuilder {
   final SymbolCache symbolCache;
   final DisplayModel displayModel;
   int level;
+  int maxLevel;
 
   String? cat;
   ClosedMatcher? closedMatcher;
@@ -62,7 +65,7 @@ class RuleBuilder {
   String? keys;
   final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<RuleBuilder> ruleBuilderStack;
-  final Map<String, RenderSymbol> symbols;
+  final SymbolFinder symbolFinder;
   List<Hillshading> hillShadings = []; // NOPMD specific interface for trimToSize
   List<String>? valueList;
   String? values;
@@ -119,11 +122,14 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.graphicFactory, this.symbolCache, this.displayModel, this.symbols, this.level)
+  RuleBuilder(this.graphicFactory, this.symbolCache, this.displayModel, SymbolFinder? parentSymbolFinder,
+      List<RenderInstruction> initPendings, this.level)
       : ruleBuilderStack = [],
         renderInstructions = [],
         this.zoomMin = 0,
-        this.zoomMax = 65536 {
+        this.zoomMax = 65536,
+        maxLevel = level,
+        this.symbolFinder = SymbolFinder(parentSymbolFinder, initPendings, graphicFactory) {
     this.closed = Closed.ANY;
   }
 
@@ -237,10 +243,10 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, symbols, level++);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, symbolFinder, initPendings, ++level);
       ruleBuilder.parse(rootElement, initPendings);
-      level = ruleBuilder.level;
       ruleBuilderStack.add(ruleBuilder);
+      maxLevel = max(level, ruleBuilder.maxLevel);
 //      Rule rule = new RuleBuilder(qName, pullParser, this.ruleStack).build();
 //      if (!this.ruleStack.empty() && isVisible(rule)) {
 //        this.currentRule.addSubRule(rule);
@@ -249,14 +255,15 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(graphicFactory, symbolCache, displayModel, qName, level++);
+      Area area = new Area(graphicFactory, symbolCache, displayModel, qName, level);
       area.parse(rootElement, initPendings);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
+        maxLevel = max(maxLevel, level);
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbols);
+      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbolFinder);
       caption.parse(rootElement, initPendings);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
@@ -266,10 +273,11 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, this.level++);
+      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, level);
       circle.parse(rootElement, initPendings);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
+        maxLevel = max(maxLevel, level);
       }
     }
 
@@ -299,10 +307,11 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line = new Line(this.graphicFactory, symbolCache, this.displayModel, qName, level++, null);
+      Line line = new Line(this.graphicFactory, symbolCache, this.displayModel, qName, level, null);
       line.parse(rootElement, initPendings);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
+        maxLevel = max(maxLevel, level);
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
@@ -351,7 +360,7 @@ class RuleBuilder {
       }
       String? symbolId = symbol.getId();
       if (symbolId != null) {
-        this.symbols[symbolId] = symbol;
+        symbolFinder.add(symbolId, symbol);
       }
     } else if ("hillshading" == qName) {
       checkState(qName, XmlElementType.RULE);
@@ -382,7 +391,8 @@ class RuleBuilder {
         }
       });
 
-      Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, this.level++);
+      Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, this.level);
+      maxLevel = max(maxLevel, level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
       hillShadings.add(hillshading);
@@ -450,4 +460,36 @@ enum XmlElementType {
   RENDERING_INSTRUCTION,
   RULE,
   RENDERING_STYLE,
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class SymbolFinder {
+  final SymbolFinder? parentSymbolFinder;
+
+  final Map<String, RenderSymbol> _symbols = Map();
+
+  final List<RenderInstruction> initPendings;
+
+  final GraphicFactory graphicFactory;
+
+  SymbolFinder(this.parentSymbolFinder, this.initPendings, this.graphicFactory);
+
+  void add(String symbolId, RenderSymbol renderSymbol) {
+    assert(!_symbols.containsKey(symbolId));
+    _symbols[symbolId] = renderSymbol;
+  }
+
+  Future<RenderSymbol?> find(String symbolId) async {
+    RenderSymbol? result = _symbols[symbolId];
+    if (result != null) {
+      if (initPendings.contains(result)) {
+        await result.initResources(graphicFactory);
+        initPendings.remove(result);
+      }
+      return result;
+    }
+    if (parentSymbolFinder == null) return null;
+    return parentSymbolFinder!.find(symbolId);
+  }
 }

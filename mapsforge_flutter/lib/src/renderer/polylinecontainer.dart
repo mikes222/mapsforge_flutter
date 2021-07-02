@@ -1,26 +1,21 @@
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
-import 'package:mapsforge_flutter/src/projection/projection.dart';
+import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
 
 import '../datastore/way.dart';
 import '../model/mappoint.dart';
 import '../model/tag.dart';
 import '../model/tile.dart';
 import '../renderer/shapecontainer.dart';
-import '../renderer/shapetype.dart';
 import '../utils/latlongutils.dart';
 import 'geometryutils.dart';
 
-/**
- * A PolylineContainer encapsulates the way data retrieved from a map file.
- * <p/>
- * The class uses deferred evaluation for computing the absolute and relative
- * pixel coordinates of the way as many ways will not actually be rendered on a
- * map. In order to save memory, after evaluation, the internally stored way is
- * released.
- */
-
+/// A PolylineContainer encapsulates the way data retrieved from a map file.
+/// <p/>
+/// The class uses deferred evaluation for computing the absolute and relative
+/// pixel coordinates of the way as many ways will not actually be rendered on a
+/// map. In order to save memory, after evaluation, the internally stored way is
+/// released.
 class PolylineContainer implements ShapeContainer {
   Mappoint? center;
   List<List<Mappoint>>? coordinatesAbsolute;
@@ -28,24 +23,13 @@ class PolylineContainer implements ShapeContainer {
   final List<Tag> tags;
   final int layer;
   final Tile upperLeft;
-  final Tile lowerRight;
   final bool isClosedWay;
-  late Way way;
+  final Way way;
 
-  PolylineContainer(Way way, this.upperLeft, this.lowerRight)
+  PolylineContainer(this.way, this.upperLeft)
       : tags = way.tags,
         layer = way.layer,
-        isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]) {
-    this.way = way;
-  }
-
-  PolylineContainer.fromList(List<Mappoint> coordinates, this.upperLeft, this.lowerRight, this.tags)
-      : layer = 0,
-        isClosedWay = coordinates[0] == (coordinates[coordinates.length - 1]) {
-    this.coordinatesAbsolute = [];
-    this.coordinatesRelativeToTile = null;
-    this.coordinatesAbsolute!.add(List.from(coordinates));
-  }
+        isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
 
   Mappoint getCenterAbsolute(PixelProjection projection) {
     if (this.way.labelPosition != null) {
@@ -62,15 +46,12 @@ class PolylineContainer implements ShapeContainer {
     // to save memory, after computing the absolute coordinates, the way is released.
     if (coordinatesAbsolute == null) {
       coordinatesAbsolute = [];
-      for (int i = 0; i < way.latLongs.length; ++i) {
-        List<Mappoint> mp1 = [];
-        coordinatesAbsolute!.add(mp1);
-        for (int j = 0; j < way.latLongs[i].length; ++j) {
-          Mappoint mp2 = projection.latLonToPixel(way.latLongs[i][j]);
-          mp1.add(mp2);
-        }
-      }
-      //this.way = null;
+      way.latLongs.forEach((outer) {
+        List<Mappoint> mp1 = outer.map((position) => projection.latLonToPixel(position)).toList();
+        // check if the area to draw is too small. This saves 100ms for complex structures
+        MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);
+        if (minMaxMappoint.maxX - minMaxMappoint.minX > 3 || minMaxMappoint.maxY - minMaxMappoint.minY > 3) coordinatesAbsolute!.add(mp1);
+      });
     }
     return coordinatesAbsolute!;
   }
@@ -78,16 +59,16 @@ class PolylineContainer implements ShapeContainer {
   List<List<Mappoint>> getCoordinatesRelativeToOrigin(PixelProjection projection) {
     if (coordinatesRelativeToTile == null) {
       Mappoint tileOrigin = projection.getLeftUpper(upperLeft);
-      int count = getCoordinatesAbsolute(projection).length;
+      getCoordinatesAbsolute(projection);
       coordinatesRelativeToTile = [];
-      for (int i = 0; i < count; ++i) {
-        List<Mappoint> mp1 = [];
+
+      coordinatesAbsolute!.forEach((outer) {
+        List<Mappoint> mp1 = outer.map((inner) => inner.offset(-tileOrigin.x, -tileOrigin.y)).toList();
         coordinatesRelativeToTile!.add(mp1);
-        for (int j = 0; j < getCoordinatesAbsolute(projection)[i].length; ++j) {
-          Mappoint mp2 = coordinatesAbsolute![i][j].offset(-tileOrigin.x, -tileOrigin.y);
-          mp1.add(mp2);
-        }
-      }
+
+        // MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);
+        // print(minMaxMappoint);
+      });
     }
     return coordinatesRelativeToTile!;
   }
@@ -96,21 +77,12 @@ class PolylineContainer implements ShapeContainer {
     return layer;
   }
 
-  @override
-  ShapeType getShapeType() {
-    return ShapeType.POLYLINE;
-  }
-
   List<Tag> getTags() {
     return tags;
   }
 
   Tile getUpperLeft() {
     return this.upperLeft;
-  }
-
-  Tile getLowerRight() {
-    return this.lowerRight;
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -38,7 +40,8 @@ class RenderThemeBuilder {
   int? mapBackgroundOutside;
   late int version;
   final List<RuleBuilder> ruleBuilderStack = [];
-  int level = 0;
+  int _level = 0;
+  int maxLevel = 0;
   List<RenderInstruction> initPendings = [];
 
   RenderThemeBuilder(this.graphicFactory, this.symbolCache, this.displayModel) {
@@ -52,14 +55,11 @@ class RenderThemeBuilder {
    */
   RenderTheme build() {
     assert(ruleBuilderStack.length > 0);
-    RenderTheme renderTheme = RenderTheme(this);
+    RenderTheme renderTheme = RenderTheme(this, initPendings);
     ruleBuilderStack.forEach((ruleBuilder) {
       Rule rule = ruleBuilder.build();
-      assert(rule != null);
       renderTheme.addRule(rule);
     });
-    renderTheme.setLevels(level);
-    renderTheme.initPendings = initPendings;
     return renderTheme;
   }
 
@@ -160,11 +160,13 @@ class RenderThemeBuilder {
             XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, Map<String, RenderSymbol>(), level++);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, null, initPendings, _level);
               ruleBuilder.parse(element, initPendings);
-              level = ruleBuilder.level;
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;
+              ++_level;
+              maxLevel = max(maxLevel, _level);
+              maxLevel = max(maxLevel, ruleBuilder.maxLevel);
               //print("Time ${DateTime.now().millisecondsSinceEpoch - time} after rule ${element.toString()}");
               break;
             } else if ("hillshading" == element.name.toString()) {
@@ -195,7 +197,7 @@ class RenderThemeBuilder {
                 }
               });
 
-              Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, level++);
+              Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, _level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
               //hillShadings.add(hillshading);

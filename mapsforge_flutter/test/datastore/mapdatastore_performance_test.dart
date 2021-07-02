@@ -34,6 +34,40 @@ main() async {
     mapFile.dispose();
   }
 
+  Future<void> runOnceSingle(int dx, int dy) async {
+    MapFile mapFile = await MapFile.from(
+        TestAssetBundle().correctFilename("austria.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
+
+    int zoomlevel = 8;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(14.545150); // lat/lon: 43.7399/7.4262;
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(48.469632);
+    int indoorLevel = 0;
+
+    //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
+    Tile upperLeft = new Tile(x + dx, y + dy, zoomlevel, indoorLevel);
+
+    DatastoreReadResult mapReadResult = await mapFile.readMapDataSingle(upperLeft);
+    expect(mapReadResult.ways.length, equals(44956));
+    expect(mapReadResult.pointOfInterests.length, equals(1));
+    print(mapFile.toString());
+    mapFile.dispose();
+  }
+
+  test("SingleCallMapSinglePerformance", () async {
+    _initLogging();
+
+    int mn = 100000;
+    int mx = 0;
+    for (int i = 0; i < 10; ++i) {
+      int time = DateTime.now().millisecondsSinceEpoch;
+      await runOnceSingle(0, 0);
+      int diff = DateTime.now().millisecondsSinceEpoch - time;
+      mn = min(mn, diff);
+      mx = max(mx, diff);
+    }
+    print("Diff for Single: $mn - $mx   -> 80 - 220 ms on my machine");
+  });
+
   test("SingleCallMapPerformance", () async {
     _initLogging();
 

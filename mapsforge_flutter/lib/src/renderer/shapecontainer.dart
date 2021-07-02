@@ -1,5 +1,1 @@
-import '../renderer/shapetype.dart';
-
-abstract class ShapeContainer {
-  ShapeType getShapeType();
-}
+abstract class ShapeContainer {}

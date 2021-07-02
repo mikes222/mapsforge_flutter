@@ -26,7 +26,7 @@ abstract class MapCanvas {
   Future<Bitmap> finalizeBitmap();
 
   void drawBitmap(
-      {required Bitmap? bitmap,
+      {required Bitmap bitmap,
       required double left,
       required double top,
       required MapPaint paint,
@@ -41,7 +41,8 @@ abstract class MapCanvas {
       Matrix? matrix,
       Filter? filter});
 
-  void drawCircle(int x, int y, int radius, MapPaint? paint);
+  /// Draws a circle whereas the center of the circle is denoted by [x] and [y]
+  void drawCircle(int x, int y, int radius, MapPaint paint);
 
   void drawLine(int x1, int y1, int x2, int y2, MapPaint paint);
 

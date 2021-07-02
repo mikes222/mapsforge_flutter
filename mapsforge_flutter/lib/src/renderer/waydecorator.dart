@@ -119,7 +119,6 @@ class WayDecorator {
   static void renderText(
       GraphicFactory graphicFactory,
       Tile upperLeft,
-      Tile lowerRight,
       String text,
       Display display,
       int priority,

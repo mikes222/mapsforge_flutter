@@ -35,7 +35,7 @@ class SymbolContainer extends MapElementContainer {
   }
 
   @override
-  void draw(MapCanvas canvas, Mappoint? origin, Matrix matrix, Filter filter) {
+  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
     //matrix.reset();
     // We cast to int for pixel perfect positioning
     //matrix.translate((this.xy.x - origin.x + boundary.left), (this.xy.y - origin.y + boundary.top));
@@ -49,7 +49,7 @@ class SymbolContainer extends MapElementContainer {
         bitmap: this.symbol,
         matrix: matrix,
         filter: filter,
-        left: this.xy.x - origin!.x + boundary!.left,
+        left: this.xy.x - origin.x + boundary!.left,
         top: this.xy.y - origin.y + boundary!.top,
         paint: paint);
   }

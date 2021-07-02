@@ -17,25 +17,29 @@ class RenderTheme {
   final double baseStrokeWidth;
   final double baseTextSize;
   final bool? hasBackgroundOutside;
-  int? levels;
+
+  /// the maximum number of levels in the rendertheme
+  final int levels;
   final int? mapBackground;
   final int? mapBackgroundOutside;
   late Map<MatchingCacheKey, List<RenderInstruction>> wayMatchingCache;
   late Map<MatchingCacheKey, List<RenderInstruction>> poiMatchingCache;
   final List<Rule> rulesList; // NOPMD we need specific interface
   List<Hillshading> hillShadings = []; // NOPMD specific interface for trimToSize
-  List<RenderInstruction> initPendings = [];
+  final List<RenderInstruction> initPendings;
 
   final Map<int, double> strokeScales = new Map();
   final Map<int, double> textScales = new Map();
 
-  RenderTheme(RenderThemeBuilder renderThemeBuilder)
-      : baseStrokeWidth = renderThemeBuilder.baseStrokeWidth,
+  RenderTheme(RenderThemeBuilder renderThemeBuilder, this.initPendings)
+      : //assert(renderThemeBuilder.maxLevel > 0),
+        baseStrokeWidth = renderThemeBuilder.baseStrokeWidth,
         baseTextSize = renderThemeBuilder.baseTextSize,
         hasBackgroundOutside = renderThemeBuilder.hasBackgroundOutside,
         mapBackground = renderThemeBuilder.mapBackground,
         mapBackgroundOutside = renderThemeBuilder.mapBackgroundOutside,
-        rulesList = [] {
+        rulesList = [],
+        levels = renderThemeBuilder.maxLevel + 1 {
     this.poiMatchingCache = new Map();
     this.wayMatchingCache = new Map();
   }
@@ -54,7 +58,7 @@ class RenderTheme {
   /**
    * @return the number of distinct drawing levels required by this RenderTheme.
    */
-  int? getLevels() {
+  int getLevels() {
     return this.levels;
   }
 
@@ -188,9 +192,9 @@ class RenderTheme {
     });
   }
 
-  void setLevels(int? levels) {
-    this.levels = levels;
-  }
+  // void setLevels(int? levels) {
+  //   this.levels = levels;
+  // }
 
   Future<void> _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) async {
     MatchingCacheKey matchingCacheKey =
@@ -212,6 +216,7 @@ class RenderTheme {
         await renderInstruction.initResources(renderContext.graphicFactory);
         initPendings.remove(renderInstruction);
       }
+      //print("render way $renderInstruction for $way");
       renderInstruction.renderWay(renderCallback, renderContext, way);
     }
   }

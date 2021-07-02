@@ -13,7 +13,7 @@ import 'maprect.dart';
 import 'matrix.dart';
 
 abstract class GraphicFactory {
-  GraphicFactory();
+  const GraphicFactory();
 
   @mustCallSuper
   void dispose() {}
@@ -44,7 +44,7 @@ abstract class GraphicFactory {
   MapRect createRect(double left, double top, double right, double bottom);
 
   PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
-      MapPaint paintBack, SymbolContainer? symbolContainer, Position? position, int maxTextWidth);
+      MapPaint paintBack, Position position, int maxTextWidth);
 
 //  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 

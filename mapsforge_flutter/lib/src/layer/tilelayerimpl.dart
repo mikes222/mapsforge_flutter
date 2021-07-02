@@ -32,7 +32,7 @@ class TileLayerImpl extends TileLayer {
     required GraphicFactory graphicFactory,
     required this.jobQueue,
     required displayModel,
-  })   : assert(displayModel != null),
+  })  : assert(displayModel != null),
         _paint = graphicFactory.createPaint(),
         super(displayModel);
 
@@ -61,12 +61,13 @@ class TileLayerImpl extends TileLayer {
     jobSet.results.forEach((Tile tile, JobResult jobResult) {
       Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
       _paint.setAntiAlias(true);
-      canvas.drawBitmap(
-        bitmap: jobResult.bitmap,
-        left: point.x - leftUpper!.x,
-        top: point.y - leftUpper.y,
-        paint: _paint,
-      );
+      if (jobResult.bitmap != null)
+        canvas.drawBitmap(
+          bitmap: jobResult.bitmap!,
+          left: point.x - leftUpper!.x,
+          top: point.y - leftUpper.y,
+          paint: _paint,
+        );
     });
     if (mapViewPosition.scale != 1) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());

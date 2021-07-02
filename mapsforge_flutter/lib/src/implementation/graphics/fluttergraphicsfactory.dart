@@ -22,7 +22,7 @@ import 'flutterpointtextcontainer.dart';
 import 'flutterrect.dart';
 
 class FlutterGraphicFactory extends GraphicFactory {
-  FlutterGraphicFactory();
+  const FlutterGraphicFactory();
 
   // @override
   // Bitmap createBitmap(int width, int height, bool isTransparent) {
@@ -58,8 +58,8 @@ class FlutterGraphicFactory extends GraphicFactory {
 
   @override
   PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
-      MapPaint paintBack, SymbolContainer? symbolContainer, Position? position, int maxTextWidth) {
-    return FlutterPointTextContainer(xy, display, priority, text, paintFront, paintBack, symbolContainer, position, maxTextWidth);
+      MapPaint paintBack, Position position, int maxTextWidth) {
+    return FlutterPointTextContainer(xy, display, priority, text, paintFront, paintBack, position, maxTextWidth);
   }
 
   // @override
