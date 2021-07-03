@@ -33,6 +33,8 @@ import 'package:mapsforge_flutter/src/renderer/watercontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/area.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rendertheme.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:rxdart/rxdart.dart';
@@ -182,35 +184,68 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("finalizeCanvasBitmap took $diff ms");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
+    //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL);
   }
 
   Future<void> _processReadMapData(final RenderContext renderContext, DatastoreReadResult mapReadResult) async {
     for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
-      await _renderPointOfInterest(renderContext, pointOfInterest);
+      List<RenderInstruction> renderInstructions = _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
+      for (RenderInstruction element in renderInstructions) {
+        if (renderContext.renderTheme.initPendings.contains(element)) {
+          await element.initResources(renderContext.graphicFactory);
+          renderContext.renderTheme.initPendings.remove(element);
+        }
+      }
+      renderInstructions.forEach((element) {
+        element.renderNode(this, renderContext, pointOfInterest);
+      });
     }
 
+    // never ever call an async method 44000 times. It takes 2 seconds to do so!
+//    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
     for (Way way in mapReadResult.ways) {
-      await _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile));
+      PolylineContainer container = PolylineContainer(way, renderContext.job.tile);
+      List<RenderInstruction> renderInstructions = _retrieveRenderInstructionsForWay(renderContext, container);
+      if (renderContext.renderTheme.initPendings.isNotEmpty)
+        for (RenderInstruction renderInstruction in renderInstructions) {
+          if (renderContext.renderTheme.initPendings.contains(renderInstruction)) {
+            await renderInstruction.initResources(renderContext.graphicFactory);
+            renderContext.renderTheme.initPendings.remove(renderInstruction);
+          }
+          //print("render way $renderInstruction for $way");
+          //renderInstruction.renderWay(renderCallback, renderContext, way);
+        }
+      renderInstructions.forEach((element) {
+        element.renderWay(this, renderContext, container);
+      });
     }
-
     if (mapReadResult.isWater) {
       _renderWaterBackground(renderContext);
     }
   }
 
-  Future<void> _renderPointOfInterest(final RenderContext renderContext, PointOfInterest pointOfInterest) async {
+  List<RenderInstruction> _retrieveRenderInstructionsForPoi(final RenderContext renderContext, PointOfInterest pointOfInterest) {
     renderContext.setDrawingLayers(pointOfInterest.layer);
-    await renderContext.renderTheme.matchNode(this, renderContext, pointOfInterest);
+    List<RenderInstruction> renderInstructions = renderContext.renderTheme.matchNode(renderContext, pointOfInterest);
+    return renderInstructions;
   }
 
-  Future<void> _renderWay(final RenderContext renderContext, PolylineContainer way) async {
+  List<RenderInstruction> _retrieveRenderInstructionsForWay(final RenderContext renderContext, PolylineContainer way) {
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return [];
     renderContext.setDrawingLayers(way.getLayer());
-    //_log.info("drawing way " + way.toString());
     if (way.isClosedWay) {
-      await renderContext.renderTheme.matchClosedWay(this, renderContext, way);
+      List<RenderInstruction> renderInstructions = renderContext.renderTheme.matchClosedWay(renderContext, way);
+      return renderInstructions;
+      // renderInstructions.forEach((element) {
+      //   element.renderWay(this, renderContext, way);
+      // });
     } else {
-      await renderContext.renderTheme.matchLinearWay(this, renderContext, way);
+      List<RenderInstruction> renderInstructions = renderContext.renderTheme.matchLinearWay(renderContext, way);
+      return renderInstructions;
+      // renderInstructions.forEach((element) {
+      //   element.renderWay(this, renderContext, way);
+      // });
     }
   }
 
@@ -237,8 +272,12 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderArea(RenderContext renderContext, MapPaint fill, MapPaint stroke, int level, PolylineContainer way) {
-    if (!stroke.isTransparent()) renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, stroke, 0));
-    if (!fill.isTransparent()) renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, fill, 0));
+    if (!stroke.isTransparent()) {
+      renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, stroke, 0));
+    }
+    if (!fill.isTransparent()) {
+      renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, fill, 0));
+    }
   }
 
   @override
@@ -297,8 +336,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderWay(RenderContext renderContext, MapPaint stroke, double dy, int level, PolylineContainer way) {
-    if (!stroke.isTransparent())
+    if (!stroke.isTransparent()) {
       renderContext.addToCurrentDrawingLayer(level, ShapePaintPolylineContainer(graphicFactory, way, stroke, dy));
+    }
   }
 
   @override

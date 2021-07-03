@@ -122,6 +122,9 @@ class Line extends RenderInstruction with BitmapMixin {
     if (dyScale == null) {
       dyScale = this.dy;
     }
+
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+
     renderCallback.renderWay(renderContext, strokePaint, dyScale, this.level, way);
   }
 

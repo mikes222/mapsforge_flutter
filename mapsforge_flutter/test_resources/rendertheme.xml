@@ -60,35 +60,37 @@
     <rule e="way" k="landuse" v="field|farm|farmland|orchard|vineyard" zoom-min="13">
         <area src="jar:patterns/farmland.svg" symbol-height="70" symbol-width="70" />
     </rule>
-    <rule e="way" k="natural" v="marsh|wetland|mud" zoom-min="13">
-        <area fill="#88D0D9BF" stroke="#D0D9BF" stroke-width="0.1" />
-        <area src="jar:patterns/swamp.svg" symbol-height="40" symbol-width="40" />
-    </rule>
-    <rule e="way" k="natural" v="beach|sand" zoom-min="14">
-        <area fill="#FAEBB9" />
-    </rule>
-    <rule e="way" k="natural" v="rock|stone|bare_rock|bedrock" zoom-min="14">
-        <area fill="#BBF1F1F1" stroke="#F1F1F1" stroke-width="0.1" />
-        <area src="jar:patterns/hills.svg" symbol-height="40" symbol-width="40" />
-    </rule>
-    <rule e="way" k="natural" v="heath" zoom-min="14">
-        <area fill="#BBEBF7E4" stroke="#EBF7E4" stroke-width="0.1" />
-        <area src="jar:patterns/grass.svg" symbol-percent="30" />
-    </rule>
-    <rule e="way" k="natural" v="scrub" zoom-min="14">
-        <area fill="#BBB7EBA4" stroke="#B7EBA4" stroke-width="0.1" />
-        <area src="jar:patterns/scrub.svg" symbol-percent="50" />
-    </rule>
-    <rule e="way" k="natural" v="fell" zoom-min="14">
-        <area fill="#BBE9FCE6" stroke="#E9FCE6" stroke-width="0.1" />
-        <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
-    </rule>
-    <rule e="way" k="natural" v="scree" zoom-min="14">
-        <area fill="#BBF5F5F5" stroke="#F5F5F5" stroke-width="0.1" />
-        <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
-    </rule>
-    <rule e="way" k="natural" v="glacier" zoom-min="12">
-        <area fill="#BBE0FFFF" stroke="#E0FFFF" stroke-width="0.8" />
+    <rule e="way" k="natural" v="*">
+        <rule e="way" k="natural" v="marsh|wetland|mud" zoom-min="13">
+            <area fill="#88D0D9BF" stroke="#D0D9BF" stroke-width="0.1" />
+            <area src="jar:patterns/swamp.svg" symbol-height="40" symbol-width="40" />
+        </rule>
+        <rule e="way" k="natural" v="beach|sand" zoom-min="14">
+            <area fill="#FAEBB9" />
+        </rule>
+        <rule e="way" k="natural" v="rock|stone|bare_rock|bedrock" zoom-min="14">
+            <area fill="#BBF1F1F1" stroke="#F1F1F1" stroke-width="0.1" />
+            <area src="jar:patterns/hills.svg" symbol-height="40" symbol-width="40" />
+        </rule>
+        <rule e="way" k="natural" v="heath" zoom-min="14">
+            <area fill="#BBEBF7E4" stroke="#EBF7E4" stroke-width="0.1" />
+            <area src="jar:patterns/grass.svg" symbol-percent="30" />
+        </rule>
+        <rule e="way" k="natural" v="scrub" zoom-min="14">
+            <area fill="#BBB7EBA4" stroke="#B7EBA4" stroke-width="0.1" />
+            <area src="jar:patterns/scrub.svg" symbol-percent="50" />
+        </rule>
+        <rule e="way" k="natural" v="fell" zoom-min="14">
+            <area fill="#BBE9FCE6" stroke="#E9FCE6" stroke-width="0.1" />
+            <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
+        </rule>
+        <rule e="way" k="natural" v="scree" zoom-min="14">
+            <area fill="#BBF5F5F5" stroke="#F5F5F5" stroke-width="0.1" />
+            <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
+        </rule>
+        <rule e="way" k="natural" v="glacier" zoom-min="12">
+            <area fill="#BBE0FFFF" stroke="#E0FFFF" stroke-width="0.8" />
+        </rule>
     </rule>
     <rule e="way" k="landuse" v="landfill|quarry" zoom-min="14">
         <area fill="#CCF2EFE4" stroke="#9EA199" stroke-width="0.2" />
@@ -1105,7 +1107,7 @@
     </rule>
 
     <!-- food -->
-    <rule e="any" k="*" v="*">
+    <rule e="any" k="amenity" v="*">
         <rule e="any" k="amenity" v="restaurant" zoom-min="14">
             <rule e="node" k="*" v="*" zoom-min="16">
                 <caption fill="#734A08" font-size="12" font-style="bold" k="name" position="above"

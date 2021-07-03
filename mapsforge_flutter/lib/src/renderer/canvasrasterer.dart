@@ -27,9 +27,13 @@ class CanvasRasterer {
   }
 
   void drawWays(RenderContext renderContext) {
+    //print("drawing now ${renderContext.layerWays.length} layers");
     for (LayerPaintContainer layerPaintContainer in renderContext.layerWays) {
+      //print("   drawing now ${layerPaintContainer.ways.length} levels");
       for (List<ShapePaintContainer> wayList in layerPaintContainer.ways) {
+        //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
         wayList.forEach((ShapePaintContainer element) {
+          //print("         drawing now ${element}");
           element.draw(this.canvas, renderContext.projection);
         });
       }

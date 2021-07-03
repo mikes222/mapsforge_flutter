@@ -9,9 +9,7 @@ import 'elementmatcher.dart';
 class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
   static final AnyMatcher INSTANCE = new AnyMatcher();
 
-  AnyMatcher() {
-    // do nothing
-  }
+  const AnyMatcher();
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {

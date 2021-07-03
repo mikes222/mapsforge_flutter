@@ -13,6 +13,7 @@ import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/pathtext.dar
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendercircle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
+import 'package:mapsforge_flutter/src/rendertheme/rule/ruleoptimizer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -145,10 +146,10 @@ class RuleBuilder {
     AttributeMatcher keyMatcher = getKeyMatcher(this.keyList!);
     AttributeMatcher valueMatcher = getValueMatcher(this.valueList!);
 
-    //keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleBuilderStack);
-    //valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleStack);
+    keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleBuilderStack);
+    valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleBuilderStack);
 
-    return new PositiveRule(this, keyMatcher, valueMatcher);
+    return PositiveRule(this, keyMatcher, valueMatcher);
   }
 
   void parse(XmlNode rootElement, List<RenderInstruction> initPendings) {
@@ -186,9 +187,9 @@ class RuleBuilder {
 
     this.closedMatcher = getClosedMatcher(this.closed!);
 
-    //this.elementMatcher = RuleOptimizer.optimize(this.elementMatcher, this.ruleStack);
+    this.elementMatcher = RuleOptimizer.optimizeElementMatcher(this.elementMatcher!, this.ruleBuilderStack);
 
-    //this.closedMatcher = RuleOptimizer.optimize(this.closedMatcher, this.ruleStack);
+    this.closedMatcher = RuleOptimizer.optimizeClosedMatcher(this.closedMatcher!, this.ruleBuilderStack);
 
     for (XmlNode node in rootElement.children) {
       //rootElement.children.forEach((node) async {

@@ -4,9 +4,7 @@ import 'elementmatcher.dart';
 class ElementWayMatcher implements ElementMatcher {
   static final ElementWayMatcher INSTANCE = new ElementWayMatcher();
 
-  ElementWayMatcher() {
-    // do nothing
-  }
+  const ElementWayMatcher();
 
   @override
   bool isCoveredByElementMatcher(ElementMatcher? elementMatcher) {

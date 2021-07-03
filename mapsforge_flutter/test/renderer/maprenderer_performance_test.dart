@@ -44,7 +44,7 @@ main() async {
     if (renderer == null) renderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true);
 
     int zoomlevel = 8;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(14.545150); // lat/lon: 43.7399/7.4262;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(14.545150);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(48.469632);
     int indoorLevel = 0;
 
@@ -63,14 +63,14 @@ main() async {
 
     int mn = 100000;
     int mx = 0;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 10; ++i) {
       int time = DateTime.now().millisecondsSinceEpoch;
       await runOnce(0, 0);
       int diff = DateTime.now().millisecondsSinceEpoch - time;
       mn = min(mn, diff);
       mx = max(mx, diff);
     }
-    print("Diff: $mn - $mx   -> 3200 - 3700 ms on my machine");
+    print("Diff: $mn - $mx   -> 210 - 500 ms on my machine");
   });
 }
 

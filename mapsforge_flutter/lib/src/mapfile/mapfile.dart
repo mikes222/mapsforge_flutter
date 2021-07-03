@@ -1,3 +1,4 @@
+import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfilehelper.dart';
@@ -77,7 +78,9 @@ class MapFile extends MapDataStore {
   late MapfileHelper _helper;
 
   /// just to see if we should create a cache for blocks
-  final Set<int> _blockSet = Set();
+  //final Set<int> _blockSet = Set();
+
+  //LruCache<String, PoiWayBundle> blockCache = LruCache(storage: SimpleStorage(), capacity: 100);
 
   ReadBufferMaster? readBufferMaster;
 
@@ -257,12 +260,18 @@ class MapFile extends MapDataStore {
       for (int column = queryParameters.fromBlockX!; column <= queryParameters.toBlockX!; ++column) {
         // calculate the actual block number of the needed block in the file
         int blockNumber = row * subFileParameter.blocksWidth + column;
-
-        if (_blockSet.contains(blockNumber)) {
-          _log.warning("Reading block $blockNumber again");
-        } else {
-          _blockSet.add(blockNumber);
-        }
+        // String cacheKey = "$blockNumber-${queryParameters.queryZoomLevel}";
+        // PoiWayBundle? bundle = blockCache.get(cacheKey);
+        // if (bundle != null) {
+        //   mapFileReadResult.add(bundle);
+        //   continue;
+        // }
+        //
+        // if (_blockSet.contains(blockNumber)) {
+        //   _log.warning("Reading block $blockNumber again");
+        // } else {
+        //   _blockSet.add(blockNumber);
+        // }
 
         // get the current index entry
         int currentBlockIndexEntry = await this._databaseIndexCache.getIndexEntry(subFileParameter, blockNumber, readBufferMaster);
@@ -330,6 +339,7 @@ class MapFile extends MapDataStore {
 
         PoiWayBundle poiWayBundle =
             _processBlock(queryParameters, subFileParameter, boundingBox, tileLatitude, tileLongitude, selector, readBuffer);
+        //blockCache.set(cacheKey, poiWayBundle);
         mapFileReadResult.add(poiWayBundle);
       }
     }

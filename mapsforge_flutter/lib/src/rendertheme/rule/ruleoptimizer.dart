@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
 import '../../rendertheme/rule/valuematcher.dart';
-
 import 'anymatcher.dart';
 import 'attributematcher.dart';
 import 'closedmatcher.dart';
@@ -9,13 +9,12 @@ import 'elementmatcher.dart';
 import 'keymatcher.dart';
 import 'negativematcher.dart';
 import 'positiverule.dart';
-import 'rule.dart';
 
 // TODO implement RuleOptimizer again
 class RuleOptimizer {
   static final _log = new Logger('RuleOptimizer');
 
-  static AttributeMatcher optimize(AttributeMatcher attributeMatcher, List<Rule> ruleStack) {
+  static AttributeMatcher optimize(AttributeMatcher attributeMatcher, List<RuleBuilder> ruleStack) {
     if (attributeMatcher is AnyMatcher || attributeMatcher is NegativeMatcher) {
       return attributeMatcher;
     } else if (attributeMatcher is KeyMatcher) {
@@ -27,7 +26,7 @@ class RuleOptimizer {
     throw new Exception("unknown AttributeMatcher:$attributeMatcher");
   }
 
-  static ClosedMatcher optimizeClosedMatcher(ClosedMatcher closedMatcher, List<Rule> ruleStack) {
+  static ClosedMatcher optimizeClosedMatcher(ClosedMatcher closedMatcher, List<RuleBuilder> ruleStack) {
     if (closedMatcher is AnyMatcher) {
       return closedMatcher;
     }
@@ -43,13 +42,13 @@ class RuleOptimizer {
     return closedMatcher;
   }
 
-  static ElementMatcher optimizeElementMatcher(ElementMatcher elementMatcher, List<Rule> ruleStack) {
+  static ElementMatcher optimizeElementMatcher(ElementMatcher elementMatcher, List<RuleBuilder> ruleStack) {
     if (elementMatcher is AnyMatcher) {
       return elementMatcher;
     }
 
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
-      Rule rule = ruleStack.elementAt(i);
+      RuleBuilder rule = ruleStack.elementAt(i);
       if (rule.elementMatcher!.isCoveredByElementMatcher(elementMatcher)) {
         return AnyMatcher.INSTANCE;
       } else if (!elementMatcher.isCoveredByElementMatcher(rule.elementMatcher)) {
@@ -60,7 +59,7 @@ class RuleOptimizer {
     return elementMatcher;
   }
 
-  static AttributeMatcher optimizeKeyMatcher(AttributeMatcher attributeMatcher, List<Rule> ruleStack) {
+  static AttributeMatcher optimizeKeyMatcher(AttributeMatcher attributeMatcher, List<RuleBuilder> ruleStack) {
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
       if (ruleStack.elementAt(i) is PositiveRule) {
         PositiveRule positiveRule = ruleStack.elementAt(i) as PositiveRule;
@@ -73,7 +72,7 @@ class RuleOptimizer {
     return attributeMatcher;
   }
 
-  static AttributeMatcher optimizeValueMatcher(AttributeMatcher attributeMatcher, List<Rule> ruleStack) {
+  static AttributeMatcher optimizeValueMatcher(AttributeMatcher attributeMatcher, List<RuleBuilder> ruleStack) {
     for (int i = 0, n = ruleStack.length; i < n; ++i) {
       if (ruleStack.elementAt(i) is PositiveRule) {
         PositiveRule positiveRule = ruleStack.elementAt(i) as PositiveRule;

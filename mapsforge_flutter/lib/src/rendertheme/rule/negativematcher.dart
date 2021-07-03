@@ -6,7 +6,7 @@ class NegativeMatcher implements AttributeMatcher {
   final List<String> keyList;
   final List<String> valueList;
 
-  NegativeMatcher(this.keyList, this.valueList);
+  const NegativeMatcher(this.keyList, this.valueList);
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {

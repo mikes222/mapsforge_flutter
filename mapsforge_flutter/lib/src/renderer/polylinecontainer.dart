@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
@@ -28,7 +30,7 @@ class PolylineContainer implements ShapeContainer {
 
   PolylineContainer(this.way, this.upperLeft)
       : tags = way.tags,
-        layer = way.layer,
+        layer = max(0, way.layer),
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
 
   Mappoint getCenterAbsolute(PixelProjection projection) {

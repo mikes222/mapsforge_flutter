@@ -4,9 +4,7 @@ import 'closedmatcher.dart';
 class LinearWayMatcher implements ClosedMatcher {
   static final LinearWayMatcher INSTANCE = new LinearWayMatcher();
 
-  LinearWayMatcher() {
-    // do nothing
-  }
+  const LinearWayMatcher();
 
   @override
   bool isCoveredByClosedMatcher(ClosedMatcher closedMatcher) {

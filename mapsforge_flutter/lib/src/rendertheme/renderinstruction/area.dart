@@ -18,6 +18,8 @@ import 'renderinstruction.dart';
  * Represents a closed polygon on the map.
  */
 class Area extends RenderInstruction with BitmapMixin {
+  static int count = 0;
+
   late MapPaint fill;
   final int level;
   Scale scale = Scale.STROKE;
@@ -98,7 +100,10 @@ class Area extends RenderInstruction with BitmapMixin {
     // the shift is particular to the tile when rendered in multi-thread mode
     MapPaint fillPaint = getFillPaint();
 
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+
     renderCallback.renderArea(renderContext, fillPaint, getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
+    ++count;
 //}
   }
 
@@ -140,5 +145,10 @@ class Area extends RenderInstruction with BitmapMixin {
       element.dispose();
     });
     super.dispose();
+  }
+
+  @override
+  String toString() {
+    return 'Area{fill: $fill, level: $level, scale: $scale, stroke: $stroke, strokes: $strokes, strokeWidth: $strokeWidth}';
   }
 }

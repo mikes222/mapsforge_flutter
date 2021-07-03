@@ -90,8 +90,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  Future<void> matchClosedWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
-    return _matchWay(renderCallback, renderContext, Closed.YES, way);
+  List<RenderInstruction> matchClosedWay(final RenderContext renderContext, PolylineContainer way) {
+    return _matchWay(renderContext, Closed.YES, way);
   }
 
   /**
@@ -101,8 +101,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  Future<void> matchLinearWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) async {
-    return _matchWay(renderCallback, renderContext, Closed.NO, way);
+  List<RenderInstruction> matchLinearWay(final RenderContext renderContext, PolylineContainer way) {
+    return _matchWay(renderContext, Closed.NO, way);
   }
 
   /**
@@ -112,7 +112,7 @@ class RenderTheme {
    * @param renderContext
    * @param poi            the point of interest.
    */
-  Future<void> matchNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) async {
+  List<RenderInstruction> matchNode(final RenderContext renderContext, PointOfInterest poi) {
     MatchingCacheKey matchingCacheKey =
         new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel, Closed.NO);
 
@@ -122,21 +122,11 @@ class RenderTheme {
       matchingList = [];
 
       rulesList.forEach((element) {
-        element.matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
+        element.matchNode(renderContext, matchingList!, poi, initPendings);
       });
-      // for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-      //   this.rulesList.elementAt(i).matchNode(renderCallback, renderContext, matchingList, poi, initPendings);
-      // }
       this.poiMatchingCache[matchingCacheKey] = matchingList;
     }
-    // render from cache
-    for (RenderInstruction element in matchingList) {
-      if (initPendings.contains(element)) {
-        await element.initResources(renderContext.graphicFactory);
-        initPendings.remove(element);
-      }
-      element.renderNode(renderCallback, renderContext, poi);
-    }
+    return matchingList;
   }
 
   /**
@@ -196,7 +186,7 @@ class RenderTheme {
   //   this.levels = levels;
   // }
 
-  Future<void> _matchWay(RenderCallback renderCallback, final RenderContext renderContext, Closed closed, PolylineContainer way) async {
+  List<RenderInstruction> _matchWay(final RenderContext renderContext, Closed closed, PolylineContainer way) {
     MatchingCacheKey matchingCacheKey =
         MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
 
@@ -205,20 +195,12 @@ class RenderTheme {
       // build cache
       matchingList = [];
       this.rulesList.forEach((rule) {
-        rule.matchWay(renderCallback, way, way.getUpperLeft(), closed, matchingList, renderContext, initPendings);
+        rule.matchWay(way, way.getUpperLeft(), closed, matchingList!);
       });
 
       this.wayMatchingCache[matchingCacheKey] = matchingList;
     }
-    // render from cache
-    for (RenderInstruction renderInstruction in matchingList) {
-      if (initPendings.contains(renderInstruction)) {
-        await renderInstruction.initResources(renderContext.graphicFactory);
-        initPendings.remove(renderInstruction);
-      }
-      //print("render way $renderInstruction for $way");
-      renderInstruction.renderWay(renderCallback, renderContext, way);
-    }
+    return matchingList;
   }
 
   void traverseRules(RuleVisitor visitor) {

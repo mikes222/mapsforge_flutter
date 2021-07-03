@@ -15,6 +15,8 @@ import '../renderer/shapecontainer.dart';
 class ShapePaintPolylineContainer extends ShapePaintContainer {
   late MapPath path;
 
+  static int count = 0;
+
   ShapePaintPolylineContainer(GraphicFactory graphicFactory, ShapeContainer shapeContainer, MapPaint paint, double dy)
       : super(shapeContainer, paint, dy) {
     path = graphicFactory.createPath();
@@ -22,6 +24,7 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   @override
   void draw(MapCanvas canvas, PixelProjection projection) {
+    ++count;
     PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
     this.path.clear();
 
@@ -45,7 +48,7 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
         //  print(minMaxMappoint);
         continue;
       }
-      if (minMaxMappoint.minY > (canvas as FlutterCanvas).size.height + 3) {
+      if (minMaxMappoint.minY > (canvas).size.height + 3) {
         //   print(minMaxMappoint);
         continue;
       }
@@ -53,6 +56,7 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
         //   print(minMaxMappoint);
         continue;
       }
+      //print("Drawing ShapePaintPolyline $minMaxMappoint with $paint");
       Mappoint point = points[0];
       this.path.moveTo(point.x, point.y);
       for (int i = 1; i < points.length; i++) {
@@ -62,5 +66,10 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
     }
 
     canvas.drawPath(this.path, paint);
+  }
+
+  @override
+  String toString() {
+    return 'ShapePaintPolylineContainer{path: $path}';
   }
 }

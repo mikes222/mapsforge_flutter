@@ -44,9 +44,8 @@ class RenderContext {
   }
 
   void setDrawingLayers(int layer) {
-    if (layer < 0) {
-      layer = 0;
-    } else if (layer >= RenderContext.LAYERS) {
+    assert(layer >= 0);
+    if (layer >= RenderContext.LAYERS) {
       layer = RenderContext.LAYERS - 1;
     }
     this.drawingLayers = layerWays.elementAt(layer);

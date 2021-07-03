@@ -16,7 +16,7 @@ abstract class Rule {
   static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY = new Map();
   static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE = new Map<List<String>, AttributeMatcher>();
 
-  String? cat;
+  final String? cat;
   final ClosedMatcher? closedMatcher;
   final ElementMatcher? elementMatcher;
   final int zoomMax;
@@ -30,8 +30,8 @@ abstract class Rule {
         zoomMax = ruleBuilder.zoomMax,
         zoomMin = ruleBuilder.zoomMin,
         renderInstructions = [],
-        subRules = [] {
-    this.cat = ruleBuilder.cat;
+        subRules = [],
+        cat = ruleBuilder.cat {
     this.renderInstructions.addAll(ruleBuilder.renderInstructions);
     ruleBuilder.ruleBuilderStack.forEach((ruleBuilder) {
       Rule rule = ruleBuilder.build();
@@ -64,35 +64,22 @@ abstract class Rule {
 
   bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
 
-  void matchNode(RenderCallback renderCallback, final RenderContext renderContext, List<RenderInstruction>? matchingList,
-      PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
+  void matchNode(final RenderContext renderContext, List<RenderInstruction> matchingList, PointOfInterest pointOfInterest,
+      List<RenderInstruction> initPendings) {
     if (matchesNode(pointOfInterest.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel)) {
-      matchingList!.addAll(renderInstructions);
-      // for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      //   matchingList!.add(this.renderInstructions.elementAt(i));
-      // }
+      matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
-        element.matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
+        element.matchNode(renderContext, matchingList, pointOfInterest, initPendings);
       });
-      // for (int i = 0, n = this.subRules.length; i < n; ++i) {
-      //   this.subRules.elementAt(i).matchNode(renderCallback, renderContext, matchingList, pointOfInterest, initPendings);
-      // }
     }
   }
 
-  void matchWay(RenderCallback renderCallback, PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction>? matchingList,
-      final RenderContext renderContext, List<RenderInstruction> initPendings) {
+  void matchWay(PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction> matchingList) {
     if (matchesWay(way.getTags(), tile.zoomLevel, tile.indoorLevel, closed)) {
-      matchingList!.addAll(renderInstructions);
-      // for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      //   matchingList!.add(this.renderInstructions.elementAt(i));
-      // }
+      matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
-        element.matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);
+        element.matchWay(way, tile, closed, matchingList);
       });
-      // for (int i = 0, n = this.subRules.length; i < n; ++i) {
-      //   this.subRules.elementAt(i).matchWay(renderCallback, way, tile, closed, matchingList, renderContext, initPendings);
-      // }
     }
   }
 
