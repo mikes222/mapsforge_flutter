@@ -21,14 +21,14 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
     minZoomLevel = 0,
     maxZoomLevel = 65535,
     imageColor = 0xff000000,
-    rotation,
+    double rotation = 0,
     item,
     markerCaption,
   })  : assert(markerCaption != null || src != null),
         assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(rotation == null || (rotation >= 0 && rotation <= 360)),
+        assert(rotation >= 0 && rotation <= 360),
         assert(imageColor != null),
         super(
           markerCaption: markerCaption,
@@ -66,17 +66,22 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
 
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null && bitmapPaint != null) {
-      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude, imageOffsetX, imageOffsetY, rotation, bitmapPaint!);
+      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
+          imageOffsetX, imageOffsetY, rotation, bitmapPaint!);
     }
   }
 
   @override
-  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+  bool isTapped(
+      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     if (bitmap == null) return false;
     double y = mapViewPosition.projection!.latitudeToPixelY(latLong.latitude);
     double x = mapViewPosition.projection!.longitudeToPixelX(latLong.longitude);
     x = x + imageOffsetX - mapViewPosition.leftUpper!.x;
     y = y + imageOffsetY - mapViewPosition.leftUpper!.y;
-    return tappedX >= x && tappedX <= x + bitmap!.getWidth() && tappedY >= y && tappedY <= y + bitmap!.getHeight();
+    return tappedX >= x &&
+        tappedX <= x + bitmap!.getWidth() &&
+        tappedY >= y &&
+        tappedY <= y + bitmap!.getHeight();
   }
 }

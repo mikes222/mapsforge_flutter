@@ -51,7 +51,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
     display = Display.ALWAYS,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    rotation,
+    double rotation = 0,
     item,
     markerCaption,
     this.width = 20,
@@ -65,7 +65,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(rotation == null || (rotation >= 0 && rotation <= 360)),
+        assert(rotation >= 0 && rotation <= 360),
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
         assert(strokeColor != null),
@@ -100,9 +100,13 @@ class PolygonMarker<T> extends BasicMarker<T> {
       this.stroke!.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
     }
-    if (_bitmapInvalid == null && src != null && !src!.isEmpty && fill != null) {
+    if (_bitmapInvalid == null &&
+        src != null &&
+        !src!.isEmpty &&
+        fill != null) {
       try {
-        this._bitmap = await symbolCache!.getSymbol(src, width, height, percent);
+        this._bitmap =
+            await symbolCache!.getSymbol(src, width, height, percent);
         if (_bitmap != null) {
           _bitmapInvalid = false;
           // make sure the color is not transparent
@@ -146,10 +150,12 @@ class PolygonMarker<T> extends BasicMarker<T> {
     MapPath mapPath = markerCallback.graphicFactory.createPath();
 
     path.forEach((latLong) {
-      double y =
-          markerCallback.mapViewPosition.projection!.latitudeToPixelY(latLong.latitude) - markerCallback.mapViewPosition.leftUpper!.y;
-      double x =
-          markerCallback.mapViewPosition.projection!.longitudeToPixelX(latLong.longitude) - markerCallback.mapViewPosition.leftUpper!.x;
+      double y = markerCallback.mapViewPosition.projection!
+              .latitudeToPixelY(latLong.latitude) -
+          markerCallback.mapViewPosition.leftUpper!.y;
+      double x = markerCallback.mapViewPosition.projection!
+              .longitudeToPixelX(latLong.longitude) -
+          markerCallback.mapViewPosition.leftUpper!.x;
 
       if (mapPath.isEmpty())
         mapPath.moveTo(x, y);
@@ -162,9 +168,11 @@ class PolygonMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    ILatLong latLong =
-        mapViewPosition.projection!.pixelToLatLong(tappedX + mapViewPosition.leftUpper!.x, tappedY + mapViewPosition.leftUpper!.y);
+  bool isTapped(
+      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+    ILatLong latLong = mapViewPosition.projection!.pixelToLatLong(
+        tappedX + mapViewPosition.leftUpper!.x,
+        tappedY + mapViewPosition.leftUpper!.y);
     //print("Testing ${latLong.toString()} against ${title}");
     return LatLongUtils.contains(path, latLong);
   }

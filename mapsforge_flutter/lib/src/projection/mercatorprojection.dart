@@ -16,14 +16,17 @@ class MercatorProjection implements Projection {
 
   late final int _maxTileCount;
 
-  MercatorProjection.fromZoomlevel(int zoomLevel) : _scalefactor = Scalefactor.fromZoomlevel(zoomLevel) {
+  MercatorProjection.fromZoomlevel(int zoomLevel)
+      : _scalefactor = Scalefactor.fromZoomlevel(zoomLevel) {
     //_mapSize = _mapSizeWithScaleFactor(_scaleFactor.scalefactor);
     _maxTileCount = _scalefactor.scalefactor.floor();
   }
 
-  MercatorProjection.fromScalefactor(double scaleFactor) : _scalefactor = Scalefactor.fromScalefactor(scaleFactor) {
+  MercatorProjection.fromScalefactor(double scaleFactor)
+      : _scalefactor = Scalefactor.fromScalefactor(scaleFactor) {
     //_mapSize = _mapSizeWithScaleFactor(_scaleFactor);
-    _maxTileCount = Scalefactor.zoomlevelToScalefactor(_scalefactor.zoomlevel).floor();
+    _maxTileCount =
+        Scalefactor.zoomlevelToScalefactor(_scalefactor.zoomlevel).floor();
   }
 
   Scalefactor get scalefactor => _scalefactor;
@@ -90,7 +93,12 @@ class MercatorProjection implements Projection {
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;
     double sinLatitude = sin(latitude * pi180);
+    // exceptions for 90 and -90 degrees
+    if (sinLatitude == 1.0) return _scalefactor.scalefactor.floor() - 1;
+    if (sinLatitude == -1.0) return 0;
     double tileY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / pi4);
+    // print(
+    //     "tileY: $tileY, sinLat: $sinLatitude, log: ${log((1 + sinLatitude) / (1 - sinLatitude))}");
     int result = (tileY * _scalefactor.scalefactor).floor();
     //print("Mercator: ${tileY * _scalefactor.scalefactor}");
     // seems with Latitude boundingBox.maxLatitude we get -1.5543122344752192e-15 so correct it to 0
@@ -103,10 +111,14 @@ class MercatorProjection implements Projection {
   /// The bounding box of this tile in lat/lon coordinates
   @override
   BoundingBox boundingBoxOfTile(Tile tile) {
-    double minLatitude = max(Projection.LATITUDE_MIN, tileYToLatitude(tile.tileY + 1));
-    double minLongitude = max(Projection.LONGITUDE_MIN, tileXToLongitude(tile.tileX));
-    double maxLatitude = min(Projection.LATITUDE_MAX, tileYToLatitude(tile.tileY));
-    double maxLongitude = min(Projection.LONGITUDE_MAX, tileXToLongitude(tile.tileX + 1));
+    double minLatitude =
+        max(Projection.LATITUDE_MIN, tileYToLatitude(tile.tileY + 1));
+    double minLongitude =
+        max(Projection.LONGITUDE_MIN, tileXToLongitude(tile.tileX));
+    double maxLatitude =
+        min(Projection.LATITUDE_MAX, tileYToLatitude(tile.tileY));
+    double maxLongitude =
+        min(Projection.LONGITUDE_MAX, tileXToLongitude(tile.tileX + 1));
     if (maxLongitude == -180) {
       // fix for dateline crossing, where the right tile starts at -180 and causes an invalid bbox
       maxLongitude = 180;
@@ -119,10 +131,14 @@ class MercatorProjection implements Projection {
     assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
     assert(upperLeft.tileY <= lowerRight.tileY);
     assert(upperLeft.tileX <= lowerRight.tileX);
-    double minLatitude = max(Projection.LATITUDE_MIN, tileYToLatitude(lowerRight.tileY + 1));
-    double minLongitude = max(Projection.LONGITUDE_MIN, tileXToLongitude(upperLeft.tileX));
-    double maxLatitude = min(Projection.LATITUDE_MAX, tileYToLatitude(upperLeft.tileY));
-    double maxLongitude = min(Projection.LONGITUDE_MAX, tileXToLongitude(lowerRight.tileX + 1));
+    double minLatitude =
+        max(Projection.LATITUDE_MIN, tileYToLatitude(lowerRight.tileY + 1));
+    double minLongitude =
+        max(Projection.LONGITUDE_MIN, tileXToLongitude(upperLeft.tileX));
+    double maxLatitude =
+        min(Projection.LATITUDE_MAX, tileYToLatitude(upperLeft.tileY));
+    double maxLongitude =
+        min(Projection.LONGITUDE_MAX, tileXToLongitude(lowerRight.tileX + 1));
     if (maxLongitude == -180) {
       // fix for dateline crossing, where the right tile starts at -180 and causes an invalid bbox
       maxLongitude = 180;

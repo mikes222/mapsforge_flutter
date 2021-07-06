@@ -28,13 +28,13 @@ class BasicPointMarker<T> extends BasicMarker<T> {
     minZoomLevel = 0,
     maxZoomLevel = 65535,
     required this.latLong,
-    rotation = 0,
+    double rotation = 0,
     item,
     markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
-        assert(rotation == null || (rotation >= 0 && rotation <= 360)),
+        assert(rotation >= 0 && rotation <= 360),
         super(
             display: display,
             minZoomLevel: minZoomLevel,
@@ -44,7 +44,8 @@ class BasicPointMarker<T> extends BasicMarker<T> {
             markerCaption: markerCaption);
 
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return super.shouldPaint(boundary, zoomLevel) && boundary.contains(latLong.latitude, latLong.longitude);
+    return super.shouldPaint(boundary, zoomLevel) &&
+        boundary.contains(latLong.latitude, latLong.longitude);
   }
 }
 
@@ -81,7 +82,8 @@ class BasicMarker<T> {
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (markerCaption != null) await markerCaption!.initResources(graphicFactory);
+    if (markerCaption != null)
+      await markerCaption!.initResources(graphicFactory);
   }
 
   void dispose() {}
@@ -98,17 +100,21 @@ class BasicMarker<T> {
   /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
   /// only if shouldPoint() returns true, do not test for available resources here.
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return display != Display.NEVER && minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
+    return display != Display.NEVER &&
+        minZoomLevel <= zoomLevel &&
+        maxZoomLevel >= zoomLevel;
   }
 
   void renderBitmap(MarkerCallback markerCallback) {}
 
   String? get title {
-    if (markerCaption?.text != null && markerCaption!.text.length > 0) return markerCaption!.text;
+    if (markerCaption?.text != null && markerCaption!.text.length > 0)
+      return markerCaption!.text;
     return null;
   }
 
-  bool isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+  bool isTapped(
+      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     return false;
   }
 }
@@ -166,7 +172,8 @@ class MarkerCaption {
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
     if (stroke != null && latLong != null) {
-      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY, stroke!);
+      markerCallback.renderText(
+          text, latLong!, captionOffsetX, captionOffsetY, stroke!);
     }
   }
 }

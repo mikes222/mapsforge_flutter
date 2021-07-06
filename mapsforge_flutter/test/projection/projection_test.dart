@@ -29,9 +29,16 @@ main() {
     expect(projection.longitudeToTileX(7.4262), 8); // lat/lon: 43.7399/7.4262;
     expect(projection.latitudeToTileY(43.7399), 5);
 
+    expect(projection.latitudeToTileY(90), 15);
+    expect(projection.latitudeToTileY(-90), 0);
+
+    expect(projection.longitudeToTileX(-180), 0);
+    expect(projection.longitudeToTileX(180), 15);
+
     Tile upperLeft = Tile(4, 3, zoomLevel, 0);
     Tile lowerRight = Tile(6, 5, zoomLevel, 0);
-    BoundingBox boundingBox = projection.boundingBoxOfTiles(upperLeft, lowerRight);
+    BoundingBox boundingBox =
+        projection.boundingBoxOfTiles(upperLeft, lowerRight);
     expect(boundingBox.minLongitude, -90);
     expect(boundingBox.maxLongitude, -22.5);
     expect(boundingBox.minLatitude, 40.97989806962013);
@@ -39,6 +46,7 @@ main() {
   });
 
   test("Bearingtest", () {
-    expect(Projection.startBearing(LatLong(35, 45), LatLong(35, 135)), 60.16243352168624);
+    expect(Projection.startBearing(LatLong(35, 45), LatLong(35, 135)),
+        60.16243352168624);
   });
 }
