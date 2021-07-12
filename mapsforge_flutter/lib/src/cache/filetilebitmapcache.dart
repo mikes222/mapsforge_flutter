@@ -28,8 +28,14 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   late String _dir;
 
+  static final Map<String, FileTileBitmapCache> _instances = Map();
+
   static Future<FileTileBitmapCache> create(String renderkey) async {
-    FileTileBitmapCache result = FileTileBitmapCache._(renderkey);
+    FileTileBitmapCache? result = _instances[renderkey];
+    if (result != null) return result;
+
+    result = FileTileBitmapCache._(renderkey);
+    _instances[renderkey] = result;
     await result._init();
     return result;
   }
@@ -39,7 +45,8 @@ class FileTileBitmapCache extends TileBitmapCache {
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
     _files = await FileHelper.getFiles(_dir);
-    _log.info("Starting cache for renderkey $renderkey with ${_files!.length} items in filecache");
+    _log.info(
+        "Starting cache for renderkey $renderkey with ${_files!.length} items in filecache");
 //    files.forEach((file) {
 //      _log.info("  file in cache: $file");
 //    });
@@ -82,10 +89,12 @@ class FileTileBitmapCache extends TileBitmapCache {
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       Image img = frame.image;
-      TileBitmap tileBitmap = FlutterTileBitmap(img, "FileTileBitmapCache ${tile.toString()}");
+      TileBitmap tileBitmap =
+          FlutterTileBitmap(img, "FileTileBitmapCache ${tile.toString()}");
       return tileBitmap;
     } catch (e, stacktrace) {
-      _log.warning("Error while reading image from file, deleting file $filename");
+      _log.warning(
+          "Error while reading image from file, deleting file $filename");
       await file.delete();
     }
     return null;

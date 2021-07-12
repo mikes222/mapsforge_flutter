@@ -22,13 +22,15 @@ class MarkerContext implements MarkerCallback {
 
   MarkerContext(this.flutterCanvas, this.graphicFactory, this.mapViewPosition);
 
-  void renderBitmap(Bitmap bitmap, double latitude, double longitude, double offsetX, double offsetY, double? rotation, MapPaint paint) {
+  void renderBitmap(Bitmap bitmap, double latitude, double longitude,
+      double offsetX, double offsetY, double rotation, MapPaint paint) {
     double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
     double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
     FlutterMatrix? matrix;
-    if (rotation != null && rotation != 0) {
+    if (rotation != 0) {
       matrix = FlutterMatrix();
-      matrix.rotate(rotation / 180 * pi, pivotX: bitmap.getWidth() / 2, pivotY: bitmap.getHeight() / 2);
+      matrix.rotate(rotation / 180 * pi,
+          pivotX: bitmap.getWidth() / 2, pivotY: bitmap.getHeight() / 2);
     }
     flutterCanvas.drawBitmap(
         bitmap: bitmap,
@@ -39,11 +41,14 @@ class MarkerContext implements MarkerCallback {
   }
 
   @override
-  void renderText(String caption, ILatLong latLong, double offsetX, double offsetY, MapPaint stroke) {
-    Mappoint mappoint = mapViewPosition.projection!.pixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
+  void renderText(String caption, ILatLong latLong, double offsetX,
+      double offsetY, MapPaint stroke) {
+    Mappoint mappoint = mapViewPosition.projection!
+        .pixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
 //    print(
 //        "rendering caption $caption at latLong ${latLong.toString()}, ${mappoint.toString()} and leftUpper ${mapViewPosition.leftUpper.toString()}");
-    flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(), (mappoint.y + offsetY).toInt(), stroke);
+    flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(),
+        (mappoint.y + offsetY).toInt(), stroke);
   }
 
   @override
@@ -51,14 +56,16 @@ class MarkerContext implements MarkerCallback {
     flutterCanvas.drawPath(path, paint);
   }
 
-  void renderCircle(double latitude, double longitude, double radius, MapPaint paint) {
+  void renderCircle(
+      double latitude, double longitude, double radius, MapPaint paint) {
     double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
     double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
-    flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x).toInt(), (y - mapViewPosition.leftUpper!.y).toInt(), radius.toInt(), paint);
+    flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x).toInt(),
+        (y - mapViewPosition.leftUpper!.y).toInt(), radius.toInt(), paint);
   }
 
   @override
-  void renderRect(MapRect rect, MapPaint? paint) {
-    flutterCanvas.drawRect(rect, paint!);
+  void renderRect(MapRect rect, MapPaint paint) {
+    flutterCanvas.drawRect(rect, paint);
   }
 }

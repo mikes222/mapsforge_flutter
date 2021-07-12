@@ -13,20 +13,26 @@ class MarkerDataStore with ChangeNotifier {
 
   bool _needsRepaint = false;
 
-  List<BasicMarker> getMarkers(GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
-    List<BasicMarker> markers = _markers.where((marker) => marker.shouldPaint(boundary, zoomLevel)).toList();
-    List<BasicMarker> markersToInit = markers.where((element) => _markersNeedInit.contains(element)).toList();
+  /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
+  List<BasicMarker> getMarkers(
+      GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
+    List<BasicMarker> markers = _markers
+        .where((marker) => marker.shouldPaint(boundary, zoomLevel))
+        .toList();
+    List<BasicMarker> markersToInit =
+        markers.where((element) => _markersNeedInit.contains(element)).toList();
     markersToInit.forEach((element) {
       _markersNeedInit.remove(element);
     });
     if (markersToInit.length > 0) {
-      print("Initializing ${markersToInit.length} markers now");
       _initMarkers(graphicFactory, markersToInit);
     }
     return markers;
   }
 
-  void _initMarkers(GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
+  void _initMarkers(
+      GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
+    print("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
       await m.initResources(graphicFactory);
     }
@@ -68,8 +74,11 @@ class MarkerDataStore with ChangeNotifier {
     _markers.clear();
   }
 
-  List<BasicMarker> isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    return _markers.where((element) => element.isTapped(mapViewPosition, tappedX, tappedY)).toList();
+  List<BasicMarker> isTapped(
+      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+    return _markers
+        .where((element) => element.isTapped(mapViewPosition, tappedX, tappedY))
+        .toList();
   }
 
   void replaceMarkerWithItem(var item, BasicMarker marker) {

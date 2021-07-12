@@ -6,7 +6,8 @@ import 'package:flutter/services.dart';
 class TestAssetBundle extends CachingAssetBundle {
   @override
   Future<ByteData> load(String key) {
-    if (key.contains("packages/mapsforge_flutter/assets/")) key = key.replaceAll("packages/mapsforge_flutter/assets/", "");
+    if (key.contains("packages/mapsforge_flutter/assets/"))
+      key = key.replaceAll("packages/mapsforge_flutter/assets/", "");
     String prefix = "test_resources";
     if (!File("$prefix/arrow.png").existsSync()) {
       prefix = "../test_resources";
@@ -23,5 +24,14 @@ class TestAssetBundle extends CachingAssetBundle {
       prefix = "../test_resources";
     }
     return prefix + "/$key";
+  }
+
+  void delete(String key) {
+    String prefix = "test_resources";
+    if (!File("$prefix/arrow.png").existsSync()) {
+      prefix = "../test_resources";
+    }
+    File file = File('$prefix/$key');
+    file.deleteSync();
   }
 }

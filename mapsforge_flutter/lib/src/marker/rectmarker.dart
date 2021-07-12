@@ -32,13 +32,13 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   RectMarker({
     display = Display.ALWAYS,
-    minZoomLevel = 0,
-    maxZoomLevel = 65535,
+    int minZoomLevel = 0,
+    int maxZoomLevel = 65535,
     double rotation = 0,
-    item,
-    String? src,
-    symbolCache,
-    markerCaption,
+    T? item,
+    String? bitmapSrc,
+    SymbolCache? symbolCache,
+    MarkerCaption? markerCaption,
     this.fillWidth = 1.0,
     this.fillColor,
     this.strokeWidth = 1.0,
@@ -52,9 +52,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
         assert(rotation >= 0 && rotation <= 360),
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
-        assert(strokeColor != null),
-        assert(minLatLon != null),
-        assert(maxLatLon != null),
         assert(strokeDasharray == null || strokeDasharray.length == 2),
         super(
           display: display,
@@ -64,13 +61,13 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
           item: item,
           markerCaption: markerCaption,
         ) {
-    this.bitmapSrc = src;
+    this.bitmapSrc = bitmapSrc;
     this.symbolCache = symbolCache;
   }
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    super.initResources(graphicFactory);
+    await super.initResources(graphicFactory);
     await initBitmap(graphicFactory);
     if (fill == null && (fillColor != null || bitmap != null)) {
       this.fill = graphicFactory.createPaint();
@@ -131,8 +128,8 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
 
 //    markerCallback.renderRect(mapRect, stroke);
 
-    if (fill != null) markerCallback.renderRect(mapRect, fill);
-    if (stroke != null) markerCallback.renderRect(mapRect, stroke);
+    if (fill != null) markerCallback.renderRect(mapRect, fill!);
+    if (stroke != null) markerCallback.renderRect(mapRect, stroke!);
   }
 
   @override

@@ -25,12 +25,12 @@ class BasicPointMarker<T> extends BasicMarker<T> {
 
   BasicPointMarker({
     display = Display.ALWAYS,
-    minZoomLevel = 0,
-    maxZoomLevel = 65535,
+    int minZoomLevel = 0,
+    int maxZoomLevel = 65535,
     required this.latLong,
     double rotation = 0,
-    item,
-    markerCaption,
+    T? item,
+    MarkerCaption? markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
@@ -43,6 +43,7 @@ class BasicPointMarker<T> extends BasicMarker<T> {
             item: item,
             markerCaption: markerCaption);
 
+  /// returns true if the marker should be painted. The [boundary] represents the currently visible area
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     return super.shouldPaint(boundary, zoomLevel) &&
         boundary.contains(latLong.latitude, latLong.longitude);
@@ -82,21 +83,21 @@ class BasicMarker<T> {
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    if (markerCaption != null)
-      await markerCaption!.initResources(graphicFactory);
+    await markerCaption?.initResources(graphicFactory);
   }
 
-  void dispose() {}
+  void dispose() {
+    markerCaption?.dispose();
+  }
 
   ///
-  /// called by markerPointer -> markerRenderer
+  /// Renders this object. Called by markerPointer -> markerRenderer
   ///
   void render(MarkerCallback markerCallback) {
     renderBitmap(markerCallback);
     if (markerCaption != null) markerCaption!.renderCaption(markerCallback);
   }
 
-  ///
   /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
   /// only if shouldPoint() returns true, do not test for available resources here.
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
@@ -105,6 +106,7 @@ class BasicMarker<T> {
         maxZoomLevel >= zoomLevel;
   }
 
+  /// renders the bitmap portion of this marker. This method is called by [render()] which also call the render method for the caption
   void renderBitmap(MarkerCallback markerCallback) {}
 
   String? get title {
@@ -113,6 +115,7 @@ class BasicMarker<T> {
     return null;
   }
 
+  /// returns true if the position specified by [tappedX], [tappedY] relative to the [mapViewPosition] is in the area of this marker.
   bool isTapped(
       MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     return false;
@@ -121,15 +124,17 @@ class BasicMarker<T> {
 
 /////////////////////////////////////////////////////////////////////////////
 
+/// The caption of a marker
 class MarkerCaption {
   /// The text to show.
   ///
   final String text;
 
-  /// The position of the text.
+  /// The position of the text or [null] if the position should be calculated based on the position of the marker
   ///
   ILatLong? latLong;
 
+  /// The offset of the caption in screen pixels
   double captionOffsetX;
 
   double captionOffsetY;
@@ -168,6 +173,8 @@ class MarkerCaption {
     }
     return Future.value(null);
   }
+
+  void dispose() {}
 
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
