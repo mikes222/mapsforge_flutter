@@ -10,36 +10,52 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 /// If the screen changes (move, zoom or changes its size) a totally different jobset may be needed and the old jobset does not
 /// need to be finished.
 ///
-class JobSet {
+class JobSet extends ChangeNotifier {
   final List<Job> jobs = [];
 
   /// The resulting bitmaps after the jobs has been processed.
-  final Map<Tile, JobResult> _bitmaps = Map();
+  Map<Tile, JobResult>? _bitmaps = Map();
 
   void add(Job job) {
     jobs.add(job);
   }
 
   void jobFinished(Job job, JobResult jobResult) {
+    if (_bitmaps == null) return;
     jobs.remove(job);
     jobResult.bitmap?.incrementRefCount();
-    TileBitmap? old = _bitmaps[job.tile]?.bitmap;
+    TileBitmap? old = _bitmaps![job.tile]?.bitmap;
     if (old != null) {
       old.decrementRefCount();
     }
-    _bitmaps[job.tile] = jobResult;
+    _bitmaps![job.tile] = jobResult;
+    //print("jobSet job finished ${_bitmaps!.length}");
+    if (_bitmaps == null) return;
+    notifyListeners();
   }
 
   JobResult? getJobResult(Tile tile) {
-    return _bitmaps[tile];
+    return _bitmaps![tile];
   }
 
   @mustCallSuper
   void dispose() {
-    _bitmaps.values.forEach((element) {
+    _bitmaps!.values.forEach((element) {
       element.bitmap?.decrementRefCount();
     });
+    _bitmaps = null;
+    jobs.clear();
+    super.dispose();
   }
 
-  Map<Tile, JobResult> get results => _bitmaps;
+  Map<Tile, JobResult> get results => _bitmaps!;
+
+  void removeJobs() {
+    jobs.clear();
+  }
+
+  @override
+  String toString() {
+    return 'JobSet{jobs: $jobs, _bitmaps: $_bitmaps}';
+  }
 }

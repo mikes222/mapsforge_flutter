@@ -15,7 +15,7 @@ dependencies:
   logging: ^1.0.1
 
   # BSD License
-  convert: ^3.0.0
+  convert: ^3.0.1
 
   # MIT License
   ecache: ^2.0.1
@@ -50,6 +50,7 @@ dependencies:
 
   collection: ^1.15.0-nullsafety.4
 
+  execution_queue: ^1.2.0
 
 dev_dependencies:
   flutter_test:

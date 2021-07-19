@@ -24,7 +24,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   ///
   String renderkey;
 
-  List<String>? _files;
+  late Set<String> _files;
 
   late String _dir;
 
@@ -44,24 +44,23 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
-    _files = await FileHelper.getFiles(_dir);
+    _files = (await FileHelper.getFiles(_dir)).toSet();
     _log.info(
-        "Starting cache for renderkey $renderkey with ${_files!.length} items in filecache");
+        "Starting cache for renderkey $renderkey with ${_files.length} items in filecache");
 //    files.forEach((file) {
 //      _log.info("  file in cache: $file");
 //    });
   }
 
   void purgeAll() async {
-    if (_files == null) return;
     int count = 0;
-    for (String file in _files!) {
+    for (String file in _files) {
       _log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
     }
     _log.info("purged $count files from cache $renderkey");
-    _files!.clear();
+    _files.clear();
   }
 
   @override
@@ -76,15 +75,14 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   @override
   Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
-    if (_files == null) throw Exception("FileTileBitmapCache not initialized");
     String filename = _calculateFilename(tile);
-    if (!_files!.contains(filename)) {
+    if (!_files.contains(filename)) {
       // not yet initialized or not in cache
       return null;
     }
     File file = File(filename);
-    Uint8List content = await file.readAsBytes();
     try {
+      Uint8List content = await file.readAsBytes();
       var codec = await instantiateImageCodec(content.buffer.asUint8List());
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
@@ -95,21 +93,25 @@ class FileTileBitmapCache extends TileBitmapCache {
     } catch (e, stacktrace) {
       _log.warning(
           "Error while reading image from file, deleting file $filename");
-      await file.delete();
+      _files.remove(filename);
+      try {
+        await file.delete();
+      } catch (error) {
+        // ignore problem, file is already deleted
+      }
     }
     return null;
   }
 
   Future _storeFile(Tile tile, TileBitmap tileBitmap) async {
-    if (_files == null) throw Exception("FileTileBitmapCache not initialized");
     String filename = _calculateFilename(tile);
-    if (_files!.contains(filename)) return;
+    if (_files.contains(filename)) return;
     Image img = (tileBitmap as FlutterTileBitmap).bitmap;
     ByteData? content = await (img.toByteData(format: ImageByteFormat.png));
     if (content != null) {
       File file = File(filename);
       file.writeAsBytes(content.buffer.asUint8List(), mode: FileMode.write);
-      _files!.add(filename);
+      _files.add(filename);
     }
   }
 
@@ -123,14 +125,13 @@ class FileTileBitmapCache extends TileBitmapCache {
   @override
   Future<void> purgeByBoundary(BoundingBox boundingBox) async {
     // todo find a method to remove only affected files. For now we clear the whole cache
-    if (_files == null) throw Exception("FileTileBitmapCache not initialized");
     int count = 0;
-    for (String file in _files!) {
+    for (String file in _files) {
       _log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
     }
     _log.info("purged $count files from cache $renderkey");
-    _files!.clear();
+    _files.clear();
   }
 }

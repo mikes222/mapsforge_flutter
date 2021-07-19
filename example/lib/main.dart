@@ -4,26 +4,69 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_example/map-page-view.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
 
 final List<MapFileData> MAP_FILE_DATA_LIST = [
   new MapFileData.online("Online Austria", 48.089415, 16.311374, 12),
-  new MapFileData("https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET", "Chemnitz Uni.map",
-      "Indoor Chemnitz - University", "assets/custom.xml", null, 50.81348, 12.92936, 18),
-  new MapFileData("https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS", "Louvre.map", "Indoor Paris - Louvre",
-      "assets/custom.xml", null, 48.86085, 2.33665, 17),
-  new MapFileData("https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
-      "ile-de-france.map", "Indoor ile-de-france", "assets/custom.xml", null, 48.86085, 2.33665, 17),
-  new MapFileData("https://download.mapsforge.org/maps/v5/europe/germany/sachsen.map", "sachsen.map", "Offline Saxony",
-      "assets/defaultrender.xml", null, 50.81287701030895, 12.94189453125, 12),
-  new MapFileData("https://download.mapsforge.org/maps/v5/europe/austria.map", "austria.map", "Offline Austria", "assets/defaultrender.xml",
-      null, 48.089415, 16.311374, 12),
   new MapFileData(
-      "https://www.dailyflightbuddy.com/monaco.map", "monaco.map", "Offline Monaco", "assets/defaultrender.xml", null, 43.7399, 7.4262, 15),
-  new MapFileData("https://www.dailyflightbuddy.com/sicilia_oam.zip", "sicilia_oam.zip", "Contour Sizilia", "assets/sicilia_oam.xml",
-      "sicilia_oam/", 37.5, 14.3, 15),
+      "https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET",
+      "Chemnitz Uni.map",
+      "Indoor Chemnitz - University",
+      "assets/custom.xml",
+      null,
+      50.81348,
+      12.92936,
+      18),
+  new MapFileData(
+      "https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS",
+      "Louvre.map",
+      "Indoor Paris - Louvre",
+      "assets/custom.xml",
+      null,
+      48.86085,
+      2.33665,
+      17),
+  new MapFileData(
+      "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
+      "ile-de-france.map",
+      "Indoor ile-de-france",
+      "assets/custom.xml",
+      null,
+      48.86085,
+      2.33665,
+      17),
+  new MapFileData(
+      "https://download.mapsforge.org/maps/v5/europe/germany/sachsen.map",
+      "sachsen.map",
+      "Offline Saxony",
+      "assets/defaultrender.xml",
+      null,
+      50.81287701030895,
+      12.94189453125,
+      12),
+  new MapFileData(
+      "https://download.mapsforge.org/maps/v5/europe/austria.map",
+      "austria.map",
+      "Offline Austria",
+      "assets/defaultrender.xml",
+      null,
+      48.089415,
+      16.311374,
+      12),
+  new MapFileData("https://www.dailyflightbuddy.com/monaco.map", "monaco.map",
+      "Offline Monaco", "assets/defaultrender.xml", null, 43.7399, 7.4262, 15),
+  new MapFileData(
+      "https://www.dailyflightbuddy.com/sicilia_oam.zip",
+      "sicilia_oam.zip",
+      "Contour Sizilia",
+      "assets/sicilia_oam.xml",
+      "sicilia_oam/",
+      37.5,
+      14.3,
+      15),
 ];
 
 void main() => runApp(MyApp());
@@ -94,14 +137,17 @@ class MyStatelessWidget extends StatelessWidget {
       child: Column(
         children: MAP_FILE_DATA_LIST.map((element) {
           return _buildCard(context, element.name, () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: element)));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) =>
+                    MapPageView(mapFileData: element)));
           });
         }).toList(),
       ),
     );
   }
 
-  Card _buildCard(BuildContext context, String caption, action, [bool enabled = true]) {
+  Card _buildCard(BuildContext context, String caption, action,
+      [bool enabled = true]) {
     return Card(
       margin: EdgeInsets.only(top: 7, bottom: 7),
       elevation: 4,
@@ -119,7 +165,8 @@ class MyStatelessWidget extends StatelessWidget {
   Future<void> _handleMenuItemSelect(String value) async {
     switch (value) {
       case 'clear_tile_cache':
-        String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
+        String fileCachePath =
+            (await getTemporaryDirectory()).path + "/mapsforgetiles";
         var fileCacheDir = Directory(fileCachePath);
         if (await fileCacheDir.exists()) {
           fileCacheDir.list(recursive: false).forEach((f) async {

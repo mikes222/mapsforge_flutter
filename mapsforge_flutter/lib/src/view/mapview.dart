@@ -8,7 +8,6 @@ import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
-import 'package:mapsforge_flutter/src/marker/markerrenderer.dart';
 import 'package:mapsforge_flutter/src/model/mapmodel.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
@@ -47,8 +46,6 @@ class _FlutterMapState extends State<FlutterMapView> {
 
   late TileLayerImpl _tileLayer;
 
-  List<MarkerRenderer> _markerRenderer = [];
-
   GlobalKey _keyView = GlobalKey();
 
   late JobQueue _jobQueue;
@@ -63,11 +60,6 @@ class _FlutterMapState extends State<FlutterMapView> {
       graphicFactory: widget.graphicFactory,
       jobQueue: _jobQueue,
     );
-    widget.mapModel.markerDataStores.forEach((MarkerDataStore dataStore) {
-      MarkerRenderer markerRenderer =
-          MarkerRenderer(widget.graphicFactory, widget.viewModel, dataStore);
-      _markerRenderer.add(markerRenderer);
-    });
   }
 
   @override
@@ -84,14 +76,15 @@ class _FlutterMapState extends State<FlutterMapView> {
           (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.hasPosition()) {
-//            _log.info("I have a new position ${snapshot.data.toString()}");
+            //_log.info("I have a new position ${snapshot.data.toString()}");
             return _buildMapView(snapshot.data!);
           }
-          return _buildNoPositionView();
+          //return _buildNoPositionView();
         }
         if (widget.viewModel.mapViewPosition != null &&
             widget.viewModel.mapViewPosition!.hasPosition()) {
-//          _log.info("I have an old position ${widget.mapModel.mapViewPosition.toString()}");
+          //_log.info(
+          //    "I have an old position ${widget.viewModel.mapViewPosition!.toString()}");
           return _buildMapView(widget.viewModel.mapViewPosition!);
         }
         return _buildNoPositionView();
@@ -104,90 +97,100 @@ class _FlutterMapState extends State<FlutterMapView> {
         .buildNoPositionView(context, widget.mapModel, widget.viewModel);
   }
 
-  Widget _buildMapView(MapViewPosition position) {
-    List<Widget> _widgets = [];
+  Widget? _buildBackgroundView() {
     if (widget.mapModel.displayModel.backgroundColor !=
         Colors.transparent.value) {
       // draw the background first
-      _widgets.add(
-        CustomPaint(
-          foregroundPainter: BackgroundPainter(
-              position: position, displayModel: widget.mapModel.displayModel),
-          child: Container(),
-        ),
+      return CustomPaint(
+        foregroundPainter:
+            BackgroundPainter(displayModel: widget.mapModel.displayModel),
+        child: Container(),
       );
     }
+    return null;
+  }
 
-    // then draw the map
-    _widgets.add(
-      StreamBuilder<JobSet>(
-        stream: _jobQueue.observeJobResult,
-        builder: (BuildContext context, AsyncSnapshot<JobSet> snapshot) {
-          //_log.info("Streambuilder called with ${snapshot.data}");
-          _tileLayer.needsRepaint = true;
-          return CustomPaint(
-            foregroundPainter: TileLayerPainter(
-                _tileLayer, position, widget.viewModel, snapshot.data),
-            child: Container(),
-          );
-        },
-      ),
-    );
+  Widget _buildMapView(MapViewPosition position) {
+    List<Widget> _widgets = [];
 
     // now draw all markers
-    _widgets.addAll(_markerRenderer
+    _widgets.addAll(widget.mapModel.markerDataStores
         .map(
-          (MarkerRenderer markerRenderer) =>
+          (MarkerDataStore markerDataStore) =>
               ChangeNotifierProvider<MarkerDataStore>.value(
             child: Consumer<MarkerDataStore>(
-              builder:
-                  (BuildContext context, MarkerDataStore value, Widget? child) {
+              builder: (BuildContext context, MarkerDataStore markerDataStore,
+                  Widget? child) {
                 return CustomPaint(
                   foregroundPainter: MarkerPainter(
                       position: position,
                       displayModel: widget.mapModel.displayModel,
-                      markerRenderer: markerRenderer),
+                      dataStore: markerDataStore,
+                      viewModel: widget.viewModel,
+                      graphicFactory: widget.graphicFactory),
                   child: Container(),
                 );
               },
             ),
-            value: markerRenderer.dataStore,
+            value: markerDataStore,
           ),
         )
         .toList());
 
-    _submitJobSet(widget.viewModel, position, _jobQueue);
-
-    return Stack(
-      key: _keyView,
-      children: <Widget>[
-        FlutterGestureDetector(
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        widget.viewModel
+            .setViewDimension(constraints.maxWidth, constraints.maxHeight);
+        JobSet? jobSet = _submitJobSet(widget.viewModel, position, _jobQueue);
+//        _log.info("JobSet is $jobSet");
+        return FlutterGestureDetector(
+          key: _keyView,
           viewModel: widget.viewModel,
           child: Stack(
-            children: _widgets,
+            children: [
+              _buildBackgroundView() ?? Container(),
+              if (jobSet != null && jobSet.results != null)
+                ChangeNotifierProvider<JobSet>.value(
+                  value: jobSet,
+                  child: Consumer<JobSet>(
+                    builder:
+                        (BuildContext context, JobSet jobSet, Widget? child) {
+                      //_log.info("consume with $jobSet");
+                      return CustomPaint(
+                        foregroundPainter: TileLayerPainter(
+                            _tileLayer, position, widget.viewModel, jobSet),
+                        child: Container(),
+                      );
+                    },
+                  ),
+                ),
+              for (Widget widget in _widgets) widget,
+              StreamBuilder<TapEvent>(
+                stream: widget.viewModel.observeTap,
+                builder:
+                    (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+                  if (!snapshot.hasData) return Container();
+                  TapEvent event = snapshot.data!;
+                  return ContextMenu(
+                    mapModel: widget.mapModel,
+                    viewModel: widget.viewModel,
+                    position: position,
+                    event: event,
+                    contextMenuBuilder: widget.viewModel.contextMenuBuilder,
+                  );
+                },
+              ),
+            ],
           ),
-        ),
-        StreamBuilder<TapEvent>(
-          stream: widget.viewModel.observeTap,
-          builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
-            if (!snapshot.hasData) return Container();
-            TapEvent event = snapshot.data!;
-            return ContextMenu(
-              mapModel: widget.mapModel,
-              viewModel: widget.viewModel,
-              position: position,
-              event: event,
-              contextMenuBuilder: widget.viewModel.contextMenuBuilder,
-            );
-          },
-        ),
-      ],
+        );
+      },
     );
   }
 
-  void _submitJobSet(
+  JobSet? _submitJobSet(
       ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
-    if (viewModel.viewDimension == null) return;
+    //_log.info("viewModel ${viewModel.viewDimension}");
+    if (viewModel.viewDimension == null) return null;
     int time = DateTime.now().millisecondsSinceEpoch;
     List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
     JobSet jobSet = JobSet();
@@ -202,7 +205,8 @@ class _FlutterMapState extends State<FlutterMapView> {
     //_log.info("JobSets created: ${jobSet.jobs.length}");
     if (jobSet.jobs.length > 0) {
       jobQueue.processJobset(jobSet);
-//      needsRepaint = true;
+      return jobSet;
     }
+    return null;
   }
 }

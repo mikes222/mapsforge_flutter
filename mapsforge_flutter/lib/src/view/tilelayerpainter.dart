@@ -13,21 +13,21 @@ class TileLayerPainter extends ChangeNotifier implements CustomPainter {
 
   final ViewModel viewModel;
 
-  final JobSet? jobSet;
+  final JobSet jobSet;
 
   TileLayerPainter(this._tileLayer, this.position, this.viewModel, this.jobSet);
 
   @override
   void paint(Canvas canvas, Size size) {
-    viewModel.setViewDimension(size.width, size.height);
-    if (jobSet != null) _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet!);
+    //viewModel.setViewDimension(size.width, size.height);
+    _tileLayer.draw(viewModel, position, FlutterCanvas(canvas, size), jobSet);
   }
 
   @override
   bool shouldRepaint(TileLayerPainter oldDelegate) {
     if (oldDelegate.position != position) return true;
     if (_tileLayer.needsRepaint) return true;
-    return false;
+    return true;
   }
 
   @override

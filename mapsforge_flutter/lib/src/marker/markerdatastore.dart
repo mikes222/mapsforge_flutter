@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/marker/basicmarker.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
@@ -7,11 +8,13 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 /// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas)
 ///
 class MarkerDataStore with ChangeNotifier {
+  static final _log = new Logger('MarkerDataStore');
+
   final List<BasicMarker> _markers = [];
 
-  final List<BasicMarker> _markersNeedInit = [];
+  final Set<BasicMarker> _markersNeedInit = Set();
 
-  bool _needsRepaint = false;
+  //bool _needsRepaint = false;
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   List<BasicMarker> getMarkers(
@@ -21,18 +24,17 @@ class MarkerDataStore with ChangeNotifier {
         .toList();
     List<BasicMarker> markersToInit =
         markers.where((element) => _markersNeedInit.contains(element)).toList();
-    markersToInit.forEach((element) {
-      _markersNeedInit.remove(element);
-    });
+    _markersNeedInit.removeAll(markersToInit);
     if (markersToInit.length > 0) {
       _initMarkers(graphicFactory, markersToInit);
+      return [];
     }
     return markers;
   }
 
   void _initMarkers(
       GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
-    print("Initializing ${markersToInit.length} markers now");
+    _log.info("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
       await m.initResources(graphicFactory);
     }
@@ -48,16 +50,17 @@ class MarkerDataStore with ChangeNotifier {
     super.dispose();
   }
 
+  @protected
   void setRepaint() {
-    _needsRepaint = true;
+    //_needsRepaint = true;
     notifyListeners();
   }
 
   void resetRepaint() {
-    _needsRepaint = false;
+    //_needsRepaint = false;
   }
 
-  bool get needsRepaint => _needsRepaint;
+  //bool get needsRepaint => _needsRepaint;
 
   void addMarker(BasicMarker marker) {
     _markersNeedInit.add(marker);

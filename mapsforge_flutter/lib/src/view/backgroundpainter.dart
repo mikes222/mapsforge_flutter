@@ -5,13 +5,9 @@ import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 class BackgroundPainter extends ChangeNotifier implements CustomPainter {
-  final MapViewPosition position;
-
   final DisplayModel displayModel;
 
-  BackgroundPainter({required this.position, required this.displayModel})
-      : assert(position != null),
-        assert(displayModel != null);
+  BackgroundPainter({required this.displayModel});
 
   @override
   void paint(Canvas canvas, Size size) {
