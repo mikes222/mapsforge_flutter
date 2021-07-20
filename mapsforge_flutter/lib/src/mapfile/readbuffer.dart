@@ -1,98 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/exceptions/filenotfoundexception.dart';
-import 'package:mapsforge_flutter/src/parameters.dart';
-import 'package:synchronized/synchronized.dart';
 
-import '../model/tag.dart';
 import '../datastore/deserializer.dart';
+import '../model/tag.dart';
 
-class ReadBufferMaster {
-  static final _log = new Logger('ReadBufferMaster');
-
-  /// The Random access file handle to the underlying file
-  RandomAccessFile? _raf;
-
-  /// The filename of the underlying file
-  final String filename;
-
-  int? _length;
-
-  ReadBufferMaster(this.filename);
-
-  Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) async {
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    RandomAccessFile newInstance = await _raf!.setPosition(indexBlockPosition);
-    //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    Uint8List result = await newInstance.read(indexBlockSize);
-    assert(result.length == indexBlockSize);
-    return result;
-  }
-
-  /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
-  /// the capacity of the read buffer is too small, a larger one is created automatically.
-  ///
-  /// @param length the amount of bytes to read from the file.
-  /// @return true if the whole data was read successfully, false otherwise.
-  /// @throws IOException if an error occurs while reading the file.
-  Future<ReadBuffer> readFromFile({int? offset, required int length}) async {
-    assert(length > 0);
-    // ensure that the read buffer is large enough
-    if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
-      throw Exception("invalid read length: $length");
-    }
-
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    RandomAccessFile? _newRaf = _raf;
-    if (offset != null) {
-      assert(offset >= 0);
-      _newRaf = await this._raf!.setPosition(offset);
-    }
-    Uint8List _bufferData = await _newRaf!.read(length);
-    assert(_bufferData.length == length);
-    //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return ReadBuffer._(_bufferData, offset);
-  }
-
-  void close() {
-    _raf?.close();
-    _raf = null;
-  }
-
-  Future<RandomAccessFile?> _openRaf() async {
-    if (_raf != null) {
-      return Future.value(_raf);
-    }
-    File file = File(filename);
-    bool ok = await file.exists();
-    if (!ok) {
-      throw FileNotFoundException(filename);
-    }
-    _raf = await file.open();
-    return _raf;
-  }
-
-  Future<int> length() async {
-    if (_length != null) return _length!;
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    _length = await _raf!.length();
-    assert(_length != null && _length! >= 0);
-    //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return _length!;
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-/// Reads from a {@link RandomAccessFile} into a buffer and decodes the data.
-class ReadBuffer {
+/// A portion of a mapfile
+class Readbuffer {
   static final _log = new Logger('ReadBuffer');
 
   static final String CHARSET_UTF8 = "UTF-8";
@@ -100,22 +15,16 @@ class ReadBuffer {
   /// A chunk of data read from the underlying file
   final Uint8List _bufferData;
 
-  /// The current offset in the underlying file which denotes the start of the _bufferData
+  /// The current offset in the underlying file which denotes the start of the [_bufferData] or [null] if unknown
   final int? _offset;
 
-  /// The current position of the read pointer in the _bufferData. The position cannot exceed the amount of byte in _bufferData
+  /// The current position of the read pointer in the [_bufferData]. The position cannot exceed the amount of bytes in [_bufferData]
   int bufferPosition;
 
   ///
   /// Default constructor to open a buffer for reading a mapfile
   ///
-  ReadBuffer._(this._bufferData, this._offset) : bufferPosition = 0;
-
-  /// copy constructor. This way one can read the same file simultaneously
-//  ReadBuffer.fromSource(ReadBuffer other)
-//      : assert(other.filename != null && other.filename.length > 0),
-//        _raf = null,
-//        filename = other.filename;
+  Readbuffer(this._bufferData, this._offset) : bufferPosition = 0;
 
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
@@ -233,13 +142,15 @@ class ReadBuffer {
 
     // check if the continuation bit is set
     while ((this._bufferData[this.bufferPosition] & 0x80) != 0) {
-      variableByteDecode |= (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+      variableByteDecode |=
+          (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
       variableByteShift += 7;
       ++bufferPosition;
     }
 
     // read the seven data bits from the last byte
-    variableByteDecode |= (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+    variableByteDecode |=
+        (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
     variableByteShift += 7;
     ++bufferPosition;
     return variableByteDecode;
@@ -257,12 +168,14 @@ class ReadBuffer {
 
     // check if the continuation bit is set
     while ((this._bufferData[this.bufferPosition] & 0x80) != 0) {
-      variableByteDecode |= (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+      variableByteDecode |=
+          (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
       variableByteShift += 7;
       ++bufferPosition;
     }
 
-    variableByteDecode |= (this._bufferData[this.bufferPosition] & 0x3f) << variableByteShift;
+    variableByteDecode |=
+        (this._bufferData[this.bufferPosition] & 0x3f) << variableByteShift;
     variableByteShift += 6;
 
     // read the six data bits from the last byte
@@ -289,10 +202,12 @@ class ReadBuffer {
   /// @return the UTF-8 decoded string (may be null).
   String readUTF8EncodedString2(int stringLength) {
     assert(stringLength >= 0);
-    if (stringLength > 0 && this.bufferPosition + stringLength <= this._bufferData.length) {
+    if (stringLength > 0 &&
+        this.bufferPosition + stringLength <= this._bufferData.length) {
       this.bufferPosition += stringLength;
       //_log.info("Reading utf8 $stringLength bytes");
-      String result = utf8.decoder.convert(_bufferData, bufferPosition - stringLength, bufferPosition);
+      String result = utf8.decoder
+          .convert(_bufferData, bufferPosition - stringLength, bufferPosition);
       //_log.info("String found $result");
       return result;
     }

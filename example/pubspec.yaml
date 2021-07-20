@@ -48,6 +48,9 @@ dependencies:
 
   flutter_archive: ^4.0.1
 
+  # Apache 2.0 License
+  archive: ^3.1.2
+
 
 dev_dependencies:
   flutter_test:

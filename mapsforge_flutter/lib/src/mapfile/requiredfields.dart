@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
+
 import 'mapfileinfobuilder.dart';
 import '../model/boundingbox.dart';
 import '../model/tag.dart';
@@ -35,38 +37,50 @@ class RequiredFields {
    */
   static final int SUPPORTED_FILE_VERSION_MAX = 5;
 
-  static void readBoundingBox(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
-    double minLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
-    double minLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
-    double maxLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
-    double maxLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
+  static void readBoundingBox(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+    double minLatitude =
+        LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
+    double minLongitude =
+        LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
+    double maxLatitude =
+        LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
+    double maxLongitude =
+        LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
 
-    mapFileInfoBuilder.boundingBox = new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+    mapFileInfoBuilder.boundingBox =
+        new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 
-  static void readFileSize(ReadBuffer readBuffer, int fileSize, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readFileSize(Readbuffer readBuffer, int fileSize,
+      MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the file size (8 bytes)
     int headerFileSize = readBuffer.readLong();
     if (headerFileSize != fileSize) {
-      throw new Exception("invalid file size: $headerFileSize, expected $fileSize bytes instead");
+      throw new Exception(
+          "invalid file size: $headerFileSize, expected $fileSize bytes instead");
     }
     mapFileInfoBuilder.fileSize = fileSize;
   }
 
-  static void readFileVersion(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readFileVersion(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
     // get and check the file version (4 bytes)
     int fileVersion = readBuffer.readInt();
-    if (fileVersion < SUPPORTED_FILE_VERSION_MIN || fileVersion > SUPPORTED_FILE_VERSION_MAX) {
+    if (fileVersion < SUPPORTED_FILE_VERSION_MIN ||
+        fileVersion > SUPPORTED_FILE_VERSION_MAX) {
       throw new Exception("unsupported file version: $fileVersion");
     }
     mapFileInfoBuilder.fileVersion = fileVersion;
   }
 
-  static Future<ReadBuffer> readMagicByte(ReadBufferMaster readBufferMaster) async {
+  static Future<Readbuffer> readMagicByte(
+      ReadbufferSource readBufferMaster) async {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
-    ReadBuffer readBuffer = (await (readBufferMaster.readFromFile(length: magicByteLength + 4, offset: 0)));
+    Readbuffer readBuffer = (await (readBufferMaster.readFromFile(
+        length: magicByteLength + 4, offset: 0)));
 
     // get and check the magic byte
     String magicByte = readBuffer.readUTF8EncodedString2(magicByteLength);
@@ -77,7 +91,8 @@ class RequiredFields {
     return readBuffer;
   }
 
-  static void readMapDate(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readMapDate(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
 // get and check the the map date (8 bytes)
     int mapDate = readBuffer.readLong();
 // is the map date before 2010-01-10 ?
@@ -87,7 +102,8 @@ class RequiredFields {
     mapFileInfoBuilder.mapDate = mapDate;
   }
 
-  static void readPoiTags(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readPoiTags(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
 // get and check the number of POI tags (2 bytes)
     int numberOfPoiTags = readBuffer.readShort();
     if (numberOfPoiTags < 0) {
@@ -106,7 +122,8 @@ class RequiredFields {
     mapFileInfoBuilder.poiTags = poiTags;
   }
 
-  static void readProjectionName(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readProjectionName(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
 // get and check the projection name
     String projectionName = readBuffer.readUTF8EncodedString();
     if (MERCATOR != projectionName) {
@@ -115,7 +132,8 @@ class RequiredFields {
     mapFileInfoBuilder.projectionName = projectionName;
   }
 
-  static void readTilePixelSize(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readTilePixelSize(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
 // get and check the tile pixel size (2 bytes)
     int tilePixelSize = readBuffer.readShort();
 // if (tilePixelSize != Tile.TILE_SIZE) {
@@ -124,7 +142,8 @@ class RequiredFields {
     mapFileInfoBuilder.tilePixelSize = tilePixelSize;
   }
 
-  static void readWayTags(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readWayTags(
+      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
 // get and check the number of way tags (2 bytes)
     int numberOfWayTags = readBuffer.readShort();
     if (numberOfWayTags < 0) {

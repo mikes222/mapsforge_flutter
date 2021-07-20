@@ -4,13 +4,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_example/map-page-view.dart';
-import 'package:mapsforge_flutter/core.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
 
 final List<MapFileData> MAP_FILE_DATA_LIST = [
-  new MapFileData.online("Online Austria", 48.089415, 16.311374, 12),
+  new MapFileData.online(
+      "Online Austria (Supports web)", 48.089415, 16.311374, 12),
   new MapFileData(
       "https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET",
       "Chemnitz Uni.map",
@@ -56,8 +56,15 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
       48.089415,
       16.311374,
       12),
-  new MapFileData("https://www.dailyflightbuddy.com/monaco.map", "monaco.map",
-      "Offline Monaco", "assets/defaultrender.xml", null, 43.7399, 7.4262, 15),
+  new MapFileData(
+      "https://www.dailyflightbuddy.com/monaco.map",
+      "monaco.map",
+      "Offline Monaco (Supports web)",
+      "assets/defaultrender.xml",
+      null,
+      43.7399,
+      7.4262,
+      15),
   new MapFileData(
       "https://www.dailyflightbuddy.com/sicilia_oam.zip",
       "sicilia_oam.zip",

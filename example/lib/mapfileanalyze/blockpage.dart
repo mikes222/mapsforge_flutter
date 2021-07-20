@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
+import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
@@ -15,7 +15,9 @@ class BlockPage extends StatelessWidget {
 
   final SubFileParameter subFileParameter;
 
-  const BlockPage({Key? key, required this.mapFile, required this.subFileParameter}) : super(key: key);
+  const BlockPage(
+      {Key? key, required this.mapFile, required this.subFileParameter})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,11 @@ class BlockPage extends StatelessWidget {
             ? mapReadResult.ways.fold<int>(
                 0,
                 ((previousValue, element) =>
-                    previousValue + element.latLongs.fold(0, ((previousValue, element) => previousValue + element.length))))
+                    previousValue +
+                    element.latLongs.fold(
+                        0,
+                        ((previousValue, element) =>
+                            previousValue + element.length))))
             : null;
         return ListView(
           children: <Widget>[
@@ -53,19 +59,24 @@ class BlockPage extends StatelessWidget {
                       ],
                     ),
                     onTap: () {
-                      Navigator.of(context).push(
-                          MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: mapReadResult.pointOfInterests)));
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) => PoiPage(
+                              pointOfInterests:
+                                  mapReadResult.pointOfInterests)));
                     },
                   ),
                   InkWell(
                     child: Row(
                       children: <Widget>[
-                        Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
+                        Text(
+                            "Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
                         Icon(Icons.more_horiz),
                       ],
                     ),
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => WayPage(ways: mapReadResult.ways)));
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              WayPage(ways: mapReadResult.ways)));
                     },
                   ),
                 ],
@@ -79,21 +90,34 @@ class BlockPage extends StatelessWidget {
 
   Future<DatastoreReadResult?> _readBlock() async {
     try {
-      ReadBufferMaster readBufferMaster = ReadBufferMaster(mapFile.filename);
+      ReadbufferFile readBufferMaster = ReadbufferFile(mapFile.filename!);
 
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
-      MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
-      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel!, 0);
-      Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel!, 0);
-      queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
+      MercatorProjection mercatorProjection =
+          MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
+      Tile upperLeft = Tile(subFileParameter.boundaryTileLeft,
+          subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel!, 0);
+      Tile lowerRight = Tile(
+          subFileParameter.boundaryTileRight,
+          subFileParameter.boundaryTileBottom,
+          subFileParameter.baseZoomLevel!,
+          0);
+      queryParameters.calculateBaseTiles(
+          upperLeft, lowerRight, subFileParameter);
       queryParameters.calculateBlocks(subFileParameter);
       print(
           "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
 
-      BoundingBox boundingBox = mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
+      BoundingBox boundingBox =
+          mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
       MapfileSelector selector = MapfileSelector.ALL;
-      DatastoreReadResult? result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
+      DatastoreReadResult? result = await mapFile.processBlocks(
+          readBufferMaster,
+          queryParameters,
+          subFileParameter,
+          boundingBox,
+          selector);
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {

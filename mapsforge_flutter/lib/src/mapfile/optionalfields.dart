@@ -39,7 +39,7 @@ class OptionalFields {
    */
   static final int START_ZOOM_LEVEL_MAX = 22;
 
-  static void readOptionalFieldsStatic(ReadBuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
+  static void readOptionalFieldsStatic(Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
     OptionalFields optionalFields = new OptionalFields(readBuffer.readByte());
     mapFileInfoBuilder.optionalFields = optionalFields;
 
@@ -67,13 +67,13 @@ class OptionalFields {
     this.hasCreatedBy = (flags & HEADER_BITMASK_CREATED_BY) != 0;
   }
 
-  void readLanguagesPreference(ReadBuffer readBuffer) {
+  void readLanguagesPreference(Readbuffer readBuffer) {
     if (this.hasLanguagesPreference) {
       this.languagesPreference = readBuffer.readUTF8EncodedString();
     }
   }
 
-  void readMapStartPosition(ReadBuffer readBuffer) {
+  void readMapStartPosition(Readbuffer readBuffer) {
     if (this.hasStartPosition) {
       double mapStartLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
       double mapStartLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
@@ -81,7 +81,7 @@ class OptionalFields {
     }
   }
 
-  void readMapStartZoomLevel(ReadBuffer readBuffer) {
+  void readMapStartZoomLevel(Readbuffer readBuffer) {
     if (this.hasStartZoomLevel) {
       // get and check the start zoom level (1 byte)
       int mapStartZoomLevel = readBuffer.readByte();
@@ -93,7 +93,7 @@ class OptionalFields {
     }
   }
 
-  void readOptionalFields(ReadBuffer readBuffer) {
+  void readOptionalFields(Readbuffer readBuffer) {
     readMapStartPosition(readBuffer);
 
     readMapStartZoomLevel(readBuffer);

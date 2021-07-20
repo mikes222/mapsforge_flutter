@@ -11,6 +11,7 @@ export 'src/renderer/mapdatastorerenderer.dart';
 export 'src/renderer/dummyrenderer.dart';
 export 'src/layer/job/jobrenderer.dart';
 export 'src/renderer/maponlinerenderer.dart';
+export 'src/renderer/maponlinerendererweb.dart';
 
 export 'src/projection/mercatorprojection.dart';
 export 'src/projection/pixelprojection.dart';
