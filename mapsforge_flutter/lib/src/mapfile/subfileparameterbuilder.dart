@@ -19,12 +19,20 @@ class SubFileParameterBuilder {
   int? zoomLevelMin;
 
   SubFileParameter build() {
+    assert(boundingBox!.minLatitude <= boundingBox!.maxLatitude);
+    assert(boundingBox!.minLongitude <= boundingBox!.maxLongitude);
     // calculate the XY numbers of the boundary tiles in this sub-file
     Projection projection = MercatorProjection.fromZoomlevel(baseZoomLevel!);
-    int boundaryTileBottom = projection.latitudeToTileY(boundingBox!.minLatitude);
-    int boundaryTileLeft = projection.longitudeToTileX(boundingBox!.minLongitude);
+    int boundaryTileBottom =
+        projection.latitudeToTileY(boundingBox!.minLatitude);
+    int boundaryTileLeft =
+        projection.longitudeToTileX(boundingBox!.minLongitude);
     int boundaryTileTop = projection.latitudeToTileY(boundingBox!.maxLatitude);
-    int boundaryTileRight = projection.longitudeToTileX(boundingBox!.maxLongitude);
+    int boundaryTileRight =
+        projection.longitudeToTileX(boundingBox!.maxLongitude);
+    assert(boundaryTileTop <= boundaryTileBottom,
+        "lat ${boundingBox!.minLatitude} to ${boundingBox!.maxLatitude} recalculated to $boundaryTileBottom to $boundaryTileTop");
+    assert(boundaryTileLeft <= boundaryTileRight);
 
     // calculate the horizontal and vertical amount of blocks in this sub-file
     int blocksWidth = boundaryTileRight - boundaryTileLeft + 1;

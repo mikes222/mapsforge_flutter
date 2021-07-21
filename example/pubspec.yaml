@@ -29,10 +29,11 @@ dependencies:
 
  # MIT License
   dio: ^4.0.0
+
   # BSD License
   # This lib is not androidX compliant, so you need to change the flutter\.pub-cache\hosted\pub.dartlang.org\flutter_downloader-1.4.4\android\gradle.properties (add android.useAndroidX=true)
   # and flutter\.pub-cache\hosted\pub.dartlang.org\flutter_downloader-1.4.4\android\gradle\wrapper\gradle-wrapper.properties (distributionUrl=https\://services.gradle.org/distributions/gradle-5.6.4-all.zip)
-  flutter_downloader: ^1.6.1
+  #flutter_downloader: ^1.6.1
 
  # BSD License
   intl: ^0.17.0

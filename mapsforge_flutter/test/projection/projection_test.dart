@@ -29,8 +29,13 @@ main() {
     expect(projection.longitudeToTileX(7.4262), 8); // lat/lon: 43.7399/7.4262;
     expect(projection.latitudeToTileY(43.7399), 5);
 
-    expect(projection.latitudeToTileY(90), 15);
-    expect(projection.latitudeToTileY(-90), 0);
+    expect(projection.latitudeToTileY(90), 0);
+    expect(projection.latitudeToTileY(70), 3);
+    expect(projection.latitudeToTileY(50), 5);
+    expect(projection.latitudeToTileY(30), 6);
+    expect(projection.latitudeToTileY(0), 8);
+    expect(projection.latitudeToTileY(-70), 12);
+    expect(projection.latitudeToTileY(-90), 15);
 
     expect(projection.longitudeToTileX(-180), 0);
     expect(projection.longitudeToTileX(180), 15);

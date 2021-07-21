@@ -94,8 +94,8 @@ class MercatorProjection implements Projection {
     const double pi4 = 4 * pi;
     double sinLatitude = sin(latitude * pi180);
     // exceptions for 90 and -90 degrees
-    if (sinLatitude == 1.0) return _scalefactor.scalefactor.floor() - 1;
-    if (sinLatitude == -1.0) return 0;
+    if (sinLatitude == 1.0) return 0;
+    if (sinLatitude == -1.0) return _scalefactor.scalefactor.floor() - 1;
     double tileY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / pi4);
     // print(
     //     "tileY: $tileY, sinLat: $sinLatitude, log: ${log((1 + sinLatitude) / (1 - sinLatitude))}");

@@ -74,6 +74,15 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
       37.5,
       14.3,
       15),
+  new MapFileData(
+      "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/world/world.map",
+      "world.map",
+      "Worldmap",
+      "assets/defaultrender.xml",
+      null,
+      43.7399,
+      7.4262,
+      5),
 ];
 
 void main() => runApp(MyApp());
