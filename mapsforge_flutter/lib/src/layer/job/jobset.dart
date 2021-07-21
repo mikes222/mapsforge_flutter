@@ -52,6 +52,10 @@ class JobSet extends ChangeNotifier {
 
   void removeJobs() {
     jobs.clear();
+    _bitmaps!.values.forEach((element) {
+      element.bitmap?.decrementRefCount();
+    });
+    _bitmaps!.clear();
   }
 
   @override

@@ -53,8 +53,11 @@ class _FlutterMapState extends State<FlutterMapView> {
   @override
   void initState() {
     super.initState();
-    _jobQueue = JobQueue(widget.mapModel.displayModel, widget.mapModel.renderer,
-        widget.mapModel.tileBitmapCache);
+    _jobQueue = JobQueue(
+        widget.mapModel.displayModel,
+        widget.mapModel.renderer,
+        widget.mapModel.tileBitmapCache,
+        widget.mapModel.tileBitmapCacheFirstLevel);
     _tileLayer = TileLayerImpl(
       displayModel: widget.mapModel.displayModel,
       graphicFactory: widget.graphicFactory,

@@ -27,8 +27,8 @@ class JobQueue {
 
   final ExecutionQueue _executionQueue = ExecutionQueue();
 
-  JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache)
-      : tileBitmapCache1stLevel = MemoryTileBitmapCache() {}
+  JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
+      this.tileBitmapCache1stLevel);
 
   void dispose() {}
 
@@ -117,24 +117,12 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
   try {
     JobResult jobResult = await isolateParam.jobRenderer.executeJob(job);
     if (jobResult.bitmap != null) {
-      int diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff >= 250)
-        _log.info("Renderer needed $diff ms for job ${job.toString()}");
-      //isolateParam.tileBitmapCache.addTileBitmap(job.tile, tileBitmap);
       jobResult.bitmap!.incrementRefCount();
-      return jobResult;
-    } else {
-      // no datastore for that tile
-      int diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff >= 250)
-        _log.info(
-            "Renderer needed $diff ms for non-existent job ${job.toString()}");
-      TileBitmap bmp =
-          await isolateParam.jobRenderer.createNoDataBitmap(job.tileSize);
-      //isolateParam.tileBitmapCache.addTileBitmap(job.tile, bmp);
-      bmp.incrementRefCount();
-      return JobResult(bmp, JOBRESULT.UNSUPPORTED);
     }
+    int diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff >= 250)
+      _log.info("Renderer needed $diff ms for job ${job.toString()}");
+    return jobResult;
   } catch (error, stackTrace) {
     _log.warning(error.toString());
     if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());

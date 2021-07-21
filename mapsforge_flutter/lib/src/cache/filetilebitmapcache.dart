@@ -55,11 +55,11 @@ class FileTileBitmapCache extends TileBitmapCache {
   void purgeAll() async {
     int count = 0;
     for (String file in _files) {
-      _log.info("  purging file from cache: $file");
+      //_log.info("  purging file from cache: $file");
       bool ok = await FileHelper.delete(file);
       if (ok) ++count;
     }
-    _log.info("purged $count files from cache $renderkey");
+    _log.info("purged $count files from FileTileBitmapCache $renderkey");
     _files.clear();
   }
 
