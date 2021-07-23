@@ -76,9 +76,14 @@ class SubfileParamsPage extends StatelessWidget {
                               ],
                             ),
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
                                   builder: (BuildContext context) => BlockPage(
-                                      mapFile: mapFile, subFileParameter: e)));
+                                    mapFile: mapFile,
+                                    subFileParameter: e,
+                                  ),
+                                ),
+                              );
                             },
                           ),
                         ],

@@ -40,9 +40,10 @@ class BlockPage extends StatelessWidget {
                 ((previousValue, element) =>
                     previousValue +
                     element.latLongs.fold(
-                        0,
-                        ((previousValue, element) =>
-                            previousValue + element.length))))
+                      0,
+                      ((previousValue, element) =>
+                          previousValue + element.length),
+                    )))
             : null;
         return ListView(
           children: <Widget>[
@@ -59,10 +60,13 @@ class BlockPage extends StatelessWidget {
                       ],
                     ),
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
                           builder: (BuildContext context) => PoiPage(
-                              pointOfInterests:
-                                  mapReadResult.pointOfInterests)));
+                            pointOfInterests: mapReadResult.pointOfInterests,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   InkWell(
@@ -74,9 +78,12 @@ class BlockPage extends StatelessWidget {
                       ],
                     ),
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              WayPage(ways: mapReadResult.ways)));
+                              WayPage(ways: mapReadResult.ways),
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -113,11 +120,12 @@ class BlockPage extends StatelessWidget {
           mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
       MapfileSelector selector = MapfileSelector.ALL;
       DatastoreReadResult? result = await mapFile.processBlocks(
-          readBufferMaster,
-          queryParameters,
-          subFileParameter,
-          boundingBox,
-          selector);
+        readBufferMaster,
+        queryParameters,
+        subFileParameter,
+        boundingBox,
+        selector,
+      );
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {

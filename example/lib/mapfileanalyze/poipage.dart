@@ -19,10 +19,13 @@ class PoiPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Layer ${e.layer}, Position ${formatLatLong(e.position)}"),
+                  Text(
+                      "Layer ${e.layer}, Position ${formatLatLong(e.position)}"),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: e.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList(),
+                    children: e.tags
+                        .map((Tag e) => Text("${e.key} = ${e.value}"))
+                        .toList(),
                   ),
                 ],
               ),
