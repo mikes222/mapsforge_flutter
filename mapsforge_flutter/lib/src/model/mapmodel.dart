@@ -19,8 +19,9 @@ class MapModel {
     required this.displayModel,
     required this.renderer,
     this.tileBitmapCache,
-    //this.tileBitmapCacheFirstLevel,
-  }) : tileBitmapCacheFirstLevel = MemoryTileBitmapCache();
+    TileBitmapCache? tileBitmapCacheFirstLevel,
+  }) : tileBitmapCacheFirstLevel =
+            tileBitmapCacheFirstLevel ?? MemoryTileBitmapCache();
 
   void dispose() {
     markerDataStores.forEach((datastore) {

@@ -26,7 +26,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   final double strokeWidth;
 
-  final int strokeColor;
+  int strokeColor;
 
   List<double>? strokeDasharray;
 

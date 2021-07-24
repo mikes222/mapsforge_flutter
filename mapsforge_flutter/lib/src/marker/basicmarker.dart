@@ -67,7 +67,7 @@ class BasicMarker<T> {
   T? item;
 
   /// The caption of the marker or [null]
-  final MarkerCaption? markerCaption;
+  MarkerCaption? markerCaption;
 
   BasicMarker({
     this.display = Display.ALWAYS,

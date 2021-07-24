@@ -11,7 +11,7 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 ///
 /// The flutter-derived class to paint all markers in the visible canvas area
 ///
-class MarkerPainter extends ChangeNotifier implements CustomPainter {
+class MarkerPainter extends CustomPainter {
   static final _log = new Logger('MarkerPainter');
 
   final MapViewPosition position;
@@ -29,7 +29,8 @@ class MarkerPainter extends ChangeNotifier implements CustomPainter {
       required this.displayModel,
       required this.dataStore,
       required this.viewModel,
-      required this.graphicFactory});
+      required this.graphicFactory})
+      : super(repaint: dataStore);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -56,7 +57,7 @@ class MarkerPainter extends ChangeNotifier implements CustomPainter {
   @override
   bool shouldRepaint(MarkerPainter oldDelegate) {
     //if (oldDelegate.position != position) return true;
-    return false; //dataStore.needsRepaint;
+    return true; //dataStore.needsRepaint;
   }
 
   @override
@@ -68,15 +69,4 @@ class MarkerPainter extends ChangeNotifier implements CustomPainter {
 
   @override
   get semanticsBuilder => null;
-
-  // @override
-  // void addListener(listener) {
-  //   // informs a listener if a repaint is needed because a marker is finally initialized and ready to draw itself
-  //   dataStore.addListener(listener);
-  // }
-  //
-  // @override
-  // void removeListener(listener) {
-  //   dataStore.removeListener(listener);
-  // }
 }

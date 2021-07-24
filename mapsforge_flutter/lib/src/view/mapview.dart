@@ -118,27 +118,33 @@ class _FlutterMapState extends State<FlutterMapView> {
 
     // now draw all markers
     _widgets.addAll(widget.mapModel.markerDataStores
-        .map(
-          (MarkerDataStore markerDataStore) =>
-              ChangeNotifierProvider<MarkerDataStore>.value(
-            child: Consumer<MarkerDataStore>(
-              builder: (BuildContext context, MarkerDataStore markerDataStore,
-                  Widget? child) {
-                return CustomPaint(
-                  foregroundPainter: MarkerPainter(
-                      position: position,
-                      displayModel: widget.mapModel.displayModel,
-                      dataStore: markerDataStore,
-                      viewModel: widget.viewModel,
-                      graphicFactory: widget.graphicFactory),
-                  child: Container(),
-                );
-              },
-            ),
-            value: markerDataStore,
-          ),
-        )
+        .map((MarkerDataStore markerDataStore) => CustomPaint(
+              foregroundPainter: MarkerPainter(
+                  position: position,
+                  displayModel: widget.mapModel.displayModel,
+                  dataStore: markerDataStore,
+                  viewModel: widget.viewModel,
+                  graphicFactory: widget.graphicFactory),
+              child: Container(),
+            ))
         .toList());
+
+    //   ChangeNotifierProvider<MarkerDataStore>.value(
+    // child: Consumer<MarkerDataStore>(
+    //   builder: (BuildContext context, MarkerDataStore markerDataStore,
+    //       Widget? child) {
+    //     return CustomPaint(
+    //       foregroundPainter: MarkerPainter(
+    //           position: position,
+    //           displayModel: widget.mapModel.displayModel,
+    //           dataStore: markerDataStore,
+    //           viewModel: widget.viewModel,
+    //           graphicFactory: widget.graphicFactory),
+    //       child: Container(),
+    //     );
+    //   },
+    // ),
+    // value: markerDataStore,
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
