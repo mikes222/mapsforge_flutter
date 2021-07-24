@@ -14,10 +14,11 @@ class MapHeaderPage extends StatelessWidget {
   final MapFileData mapFileData;
 
   MapHeaderPage(this.mapFileData);
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _loadMapfile(),
+      future: _loadMapFile(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.data == null)
           return Center(
@@ -55,8 +56,10 @@ class MapHeaderPage extends StatelessWidget {
                     children: <Widget>[
                       Text("Filename: ${mapFile.filename}, "),
                       // _fileSize is private but only used to verify header and to check if read beyond file
-                      Text("Zoomlevel ${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}, "),
-                      Text("Timestamp ${formatMsToDatetimeMs(mapFile.timestamp)}, "),
+                      Text(
+                          "Zoomlevel ${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}, "),
+                      Text(
+                          "Timestamp ${formatMsToDatetimeMs(mapFile.timestamp)}, "),
                     ],
                   ),
                 ],
@@ -72,7 +75,8 @@ class MapHeaderPage extends StatelessWidget {
                   ),
                   Wrap(
                     children: <Widget>[
-                      Text("Zoomlevel ${mapFile.getMapFileHeader().zoomLevelMinimum} - ${mapFile.getMapFileHeader().zoomLevelMaximum}, "),
+                      Text(
+                          "Zoomlevel ${mapFile.getMapFileHeader().zoomLevelMinimum} - ${mapFile.getMapFileHeader().zoomLevelMaximum}, "),
                       InkWell(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -82,9 +86,17 @@ class MapHeaderPage extends StatelessWidget {
                           ],
                         ),
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
                               builder: (BuildContext context) =>
-                                  SubfileParamsPage(mapFile: mapFile, subFileParameters: mapFile.getMapFileHeader().subFileParameters)));
+                                  SubfileParamsPage(
+                                mapFile: mapFile,
+                                subFileParameters: mapFile
+                                    .getMapFileHeader()
+                                    .subFileParameters,
+                              ),
+                            ),
+                          );
                         },
                       ),
                       // subFileParameters
@@ -105,20 +117,33 @@ class MapHeaderPage extends StatelessWidget {
                     children: <Widget>[
                       Text("Comment ${mapFile.getMapFileInfo().comment}, "),
                       Text("CreatedBy ${mapFile.getMapFileInfo().createdBy}, "),
-                      Text("IncludeDebug ${mapFile.getMapFileInfo().debugFile}, "),
+                      Text(
+                          "IncludeDebug ${mapFile.getMapFileInfo().debugFile}, "),
                       Text("FileSize ${mapFile.getMapFileInfo().fileSize}, "),
-                      Text("FileVersion ${mapFile.getMapFileInfo().fileVersion}, "),
-                      Text("LanguagesPreferences ${mapFile.getMapFileInfo().languagesPreference}, "),
-                      Text("MapTimestamp ${formatMsToDatetimeMs(mapFile.getMapFileInfo().mapDate)}, "),
-                      Text("ProjectionName ${mapFile.getMapFileInfo().projectionName}, "),
-                      Text("StartZoomLevel ${mapFile.getMapFileInfo().startZoomLevel}, "),
-                      Text("StartPosition ${formatLatLong(mapFile.getMapFileInfo().startPosition)}, "),
-                      Text("TilePixelSize ${mapFile.getMapFileInfo().tilePixelSize}, "),
-                      Text("Zoomlevel ${mapFile.getMapFileInfo().zoomLevelMin} - ${mapFile.getMapFileInfo().zoomLevelMax}, "),
-                      Text("Boundingbox ${formatBoundingbox(mapFile.getMapFileInfo().boundingBox)}, "),
-                      Text("PoiTags ${mapFile.getMapFileInfo().poiTags.length}, "),
-                      Text("WayTags ${mapFile.getMapFileInfo().wayTags.length}, "),
-                      Text("numberOfSubFiles ${mapFile.getMapFileInfo().numberOfSubFiles}, "),
+                      Text(
+                          "FileVersion ${mapFile.getMapFileInfo().fileVersion}, "),
+                      Text(
+                          "LanguagesPreferences ${mapFile.getMapFileInfo().languagesPreference}, "),
+                      Text(
+                          "MapTimestamp ${formatMsToDatetimeMs(mapFile.getMapFileInfo().mapDate)}, "),
+                      Text(
+                          "ProjectionName ${mapFile.getMapFileInfo().projectionName}, "),
+                      Text(
+                          "StartZoomLevel ${mapFile.getMapFileInfo().startZoomLevel}, "),
+                      Text(
+                          "StartPosition ${formatLatLong(mapFile.getMapFileInfo().startPosition)}, "),
+                      Text(
+                          "TilePixelSize ${mapFile.getMapFileInfo().tilePixelSize}, "),
+                      Text(
+                          "Zoomlevel ${mapFile.getMapFileInfo().zoomLevelMin} - ${mapFile.getMapFileInfo().zoomLevelMax}, "),
+                      Text(
+                          "Boundingbox ${formatBoundingbox(mapFile.getMapFileInfo().boundingBox)}, "),
+                      Text(
+                          "PoiTags ${mapFile.getMapFileInfo().poiTags.length}, "),
+                      Text(
+                          "WayTags ${mapFile.getMapFileInfo().wayTags.length}, "),
+                      Text(
+                          "numberOfSubFiles ${mapFile.getMapFileInfo().numberOfSubFiles}, "),
                       // poiTags
                       // wayTags
                     ],
@@ -132,7 +157,7 @@ class MapHeaderPage extends StatelessWidget {
     );
   }
 
-  Future<MapFile> _loadMapfile() async {
+  Future<MapFile> _loadMapFile() async {
     String _localFilePath = await mapFileData.getLocalFilePath();
     MapFile mapFile = await MapFile.from(_localFilePath, null, null);
     return mapFile;

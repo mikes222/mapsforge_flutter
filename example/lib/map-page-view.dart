@@ -49,13 +49,16 @@ class MapPageViewState extends State<MapPageView>
     _prepare();
 
     fadeAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 200),
-        value: 1,
-        vsync: this,
-        lowerBound: 0,
-        upperBound: 1);
-    fadeAnimation =
-        CurvedAnimation(parent: fadeAnimationController, curve: Curves.ease);
+      duration: const Duration(milliseconds: 200),
+      value: 1,
+      vsync: this,
+      lowerBound: 0,
+      upperBound: 1,
+    );
+    fadeAnimation = CurvedAnimation(
+      parent: fadeAnimationController,
+      curve: Curves.ease,
+    );
 
     super.initState();
   }
@@ -64,27 +67,29 @@ class MapPageViewState extends State<MapPageView>
   Widget build(BuildContext context) {
     if (this.mapModel == null || this.downloadProgress != 1) {
       return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.mapFileData.name),
-          ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              CircularProgressIndicator(
-                value: downloadProgress == null || downloadProgress == 1
-                    ? null
-                    : downloadProgress,
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Center(
-                  child: Text(downloadProgress == null || downloadProgress == 1
-                      ? "Loading"
-                      : "Downloading ${(downloadProgress! * 100).round()}%")),
-            ],
-          ));
+        appBar: AppBar(
+          title: Text(widget.mapFileData.name),
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            CircularProgressIndicator(
+              value: downloadProgress == null || downloadProgress == 1
+                  ? null
+                  : downloadProgress,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Center(
+              child: Text(downloadProgress == null || downloadProgress == 1
+                  ? "Loading"
+                  : "Downloading ${(downloadProgress! * 100).round()}%"),
+            ),
+          ],
+        ),
+      );
     }
 
     return Scaffold(
@@ -110,10 +115,12 @@ class MapPageViewState extends State<MapPageView>
               child: Text("Analyse Mapfile"),
             ),
             PopupMenuItem<String>(
-                enabled: false,
-                value: "current_zoom_level",
-                child: Text(
-                    "Zoom level: ${this.viewModel.mapViewPosition!.zoomLevel}")),
+              enabled: false,
+              value: "current_zoom_level",
+              child: Text(
+                "Zoom level: ${this.viewModel.mapViewPosition!.zoomLevel}",
+              ),
+            ),
           ],
         ),
       ],
@@ -121,73 +128,75 @@ class MapPageViewState extends State<MapPageView>
   }
 
   Widget _buildBody(BuildContext context) {
-    return Stack(fit: StackFit.expand, children: <Widget>[
-      FlutterMapView(
-        mapModel: mapModel!,
-        viewModel: viewModel,
-        graphicFactory: _graphicFactory!,
-      ),
-      Positioned(
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        FlutterMapView(
+          mapModel: mapModel!,
+          viewModel: viewModel,
+          graphicFactory: _graphicFactory!,
+        ),
+        Positioned(
           bottom: toolbarSpacing,
           right: toolbarSpacing,
           top: toolbarSpacing,
           // this widget has an unbound width
           // left: toolbarSpacing,
           child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Flexible(
-                  child: FadeTransition(
-                      opacity: fadeAnimationController,
-                      child: IndoorLevelBar(
-                        indoorLevelSubject: indoorLevelSubject,
-                        indoorLevels: {
-                          5: null,
-                          4: null,
-                          3: null,
-                          2: "OG2",
-                          1: "OG1",
-                          0: "EG",
-                          -1: "UG1",
-                          -2: null,
-                          -3: null,
-                          -4: null,
-                          -5: null
-                        },
-                        width: 45,
-                        fillColor: Colors.white,
-                        elevation: 2.0,
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      )),
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Flexible(
+                child: FadeTransition(
+                  opacity: fadeAnimationController,
+                  child: IndoorLevelBar(
+                    indoorLevelSubject: indoorLevelSubject,
+                    indoorLevels: {
+                      5: null,
+                      4: null,
+                      3: null,
+                      2: "OG2",
+                      1: "OG1",
+                      0: "EG",
+                      -1: "UG1",
+                      -2: null,
+                      -3: null,
+                      -4: null,
+                      -5: null
+                    },
+                    width: 45,
+                    fillColor: Colors.white,
+                    elevation: 2.0,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                  ),
                 ),
-                SizedBox(height: toolbarSpacing),
-                RawMaterialButton(
-                  onPressed: () {
-                    viewModel.zoomIn();
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  child: Icon(Icons.add),
-                  padding: EdgeInsets.all(10.0),
-                  shape: CircleBorder(),
-                  constraints: BoxConstraints(),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                SizedBox(height: toolbarSpacing),
-                RawMaterialButton(
-                  onPressed: () {
-                    viewModel.zoomOut();
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  child: Icon(Icons.remove),
-                  padding: EdgeInsets.all(10.0),
-                  shape: CircleBorder(),
-                  constraints: BoxConstraints(),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ]))
-    ]);
+              ),
+              SizedBox(height: toolbarSpacing),
+              RawMaterialButton(
+                onPressed: () => viewModel.zoomIn(),
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(Icons.add),
+                padding: EdgeInsets.all(10.0),
+                shape: CircleBorder(),
+                constraints: BoxConstraints(),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              SizedBox(height: toolbarSpacing),
+              RawMaterialButton(
+                onPressed: () => viewModel.zoomOut(),
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(Icons.remove),
+                padding: EdgeInsets.all(10.0),
+                shape: CircleBorder(),
+                constraints: BoxConstraints(),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _prepare() async {
@@ -215,7 +224,7 @@ class MapPageViewState extends State<MapPageView>
       setState(() {});
       return;
     } else {
-      final MapDataStore mapDataStore = await _prepareOfflinemap();
+      final MapDataStore mapDataStore = await _prepareOfflineMap();
       final SymbolCache symbolCache =
           FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
       _graphicFactory = FlutterGraphicFactory();
@@ -227,7 +236,11 @@ class MapPageViewState extends State<MapPageView>
       renderThemeBuilder.parseXml(content);
       final RenderTheme renderTheme = renderThemeBuilder.build();
       final JobRenderer jobRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme, _graphicFactory!, true);
+        mapDataStore,
+        renderTheme,
+        _graphicFactory!,
+        true,
+      );
       final TileBitmapCache bitmapCache;
       if (kIsWeb) {
         bitmapCache = MemoryTileBitmapCache();
@@ -259,7 +272,7 @@ class MapPageViewState extends State<MapPageView>
     }
   }
 
-  Future<MapFile> _prepareOfflinemap() async {
+  Future<MapFile> _prepareOfflineMap() async {
     if (kIsWeb) return _prepareOfflinemapForWeb();
     String filePath = await widget.mapFileData.getLocalFilePath();
     //print("Using $filePath");
@@ -294,14 +307,15 @@ class MapPageViewState extends State<MapPageView>
           print("Unzipping $filePath");
           Directory dir = await getApplicationDocumentsDirectory();
           await filearchive.ZipFile.extractToDirectory(
-              zipFile: File(filePath),
-              destinationDir: dir,
-              onExtracting: (zipEntry, progress) {
-                setState(() {
-                  downloadProgress = progress / 100;
-                });
-                return filearchive.ZipFileOperation.includeItem;
+            zipFile: File(filePath),
+            destinationDir: dir,
+            onExtracting: (zipEntry, progress) {
+              setState(() {
+                downloadProgress = progress / 100;
               });
+              return filearchive.ZipFileOperation.includeItem;
+            },
+          );
           filePath = filePath.replaceAll(".zip", ".map");
         }
       } catch (e) {
@@ -370,9 +384,12 @@ class MapPageViewState extends State<MapPageView>
         break;
 
       case 'analyse_mapfile':
-        Navigator.of(context).push(MaterialPageRoute(
+        Navigator.of(context).push(
+          MaterialPageRoute(
             builder: (BuildContext context) =>
-                MapHeaderPage(widget.mapFileData)));
+                MapHeaderPage(widget.mapFileData),
+          ),
+        );
         break;
     }
   }
