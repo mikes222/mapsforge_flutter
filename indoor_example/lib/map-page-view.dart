@@ -6,20 +6,15 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-
 import 'package:rxdart/rxdart.dart';
 
 import 'level-detector.dart';
 import 'map-file-data.dart';
 
-
 class MapPageView extends StatefulWidget {
   final MapFileData mapFileData;
 
-  const MapPageView ({
-    Key key,
-    @required this.mapFileData
-  }) : super(key: key);
+  const MapPageView({Key key, @required this.mapFileData}) : super(key: key);
 
   @override
   MapPageViewState createState() => MapPageViewState();
@@ -27,41 +22,36 @@ class MapPageView extends StatefulWidget {
 
 class MapPageViewState extends State<MapPageView> with SingleTickerProviderStateMixin {
   final BehaviorSubject<int> indoorLevelSubject = new BehaviorSubject<int>.seeded(0);
+  final double toolbarSpacing = 15;
 
   double downloadProgress;
-
   MapModel mapModel;
-
   ViewModel viewModel;
-
   LevelDetector levelDetector;
-
   AnimationController fadeAnimationController;
   CurvedAnimation fadeAnimation;
 
-  final double toolbarSpacing = 15;
-
   @override
-  void dispose () {
+  void dispose() {
     fadeAnimationController?.dispose();
     super.dispose();
   }
 
   @override
-  void initState () {
+  void initState() {
     _prepare();
 
     fadeAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 300),
-        reverseDuration: const Duration(milliseconds: 300),
-        value: 0,
-        vsync: this,
-        lowerBound: 0,
-        upperBound: 1
+      duration: const Duration(milliseconds: 300),
+      reverseDuration: const Duration(milliseconds: 300),
+      value: 0,
+      vsync: this,
+      lowerBound: 0,
+      upperBound: 1,
     );
     fadeAnimation = CurvedAnimation(
-        parent: fadeAnimationController,
-        curve: Curves.ease
+      parent: fadeAnimationController,
+      curve: Curves.ease,
     );
 
     super.initState();
@@ -71,7 +61,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
   Widget build(BuildContext context) {
     if (this.mapModel == null || this.downloadProgress != 1) {
       return Scaffold(
-        appBar:AppBar(
+        appBar: AppBar(
           title: Text(widget.mapFileData.name),
         ),
         body: Column(
@@ -79,16 +69,20 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             CircularProgressIndicator(
-              value: downloadProgress == null || downloadProgress == 1 ? null : downloadProgress,
+              value: downloadProgress == null || downloadProgress == 1
+                  ? null
+                  : downloadProgress,
             ),
             SizedBox(
               height: 20,
             ),
             Center(
-              child: Text(downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress*100).round()}%")
+              child: Text(downloadProgress == null || downloadProgress == 1
+                  ? "Loading"
+                  : "Downloading ${(downloadProgress * 100).round()}%"),
             ),
           ],
-        )
+        ),
       );
     }
 
@@ -112,7 +106,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
             PopupMenuItem<String>(
               enabled: false,
               value: "current_zoom_level",
-              child:  Text("Zoom level: ${this.viewModel.mapViewPosition.zoomLevel}")
+              child: Text("Zoom level: ${this.viewModel.mapViewPosition.zoomLevel}"),
             ),
           ],
         ),
@@ -122,85 +116,76 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
   Widget _buildBody(BuildContext context) {
     return Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          FlutterMapView(
-              mapModel: mapModel,
-              viewModel: viewModel,
+      fit: StackFit.expand,
+      children: <Widget>[
+        FlutterMapView(
+          mapModel: mapModel,
+          viewModel: viewModel,
+        ),
+        Positioned(
+          bottom: toolbarSpacing,
+          right: toolbarSpacing,
+          top: toolbarSpacing,
+          // this widget has an unbound width
+          // left: toolbarSpacing,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Flexible(
+                child: Visibility(
+                  visible: !fadeAnimationController.isDismissed,
+                  child: FadeTransition(
+                    opacity: fadeAnimationController,
+                    child: IndoorLevelBar(
+                      indoorLevelSubject: indoorLevelSubject,
+                      indoorLevels: levelDetector.levelMappings.value,
+                      width: 45,
+                      fillColor: Colors.white,
+                      elevation: 2.0,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: toolbarSpacing),
+              RawMaterialButton(
+                onPressed: () {
+                  viewModel.zoomIn();
+                },
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(Icons.add),
+                padding: EdgeInsets.all(10.0),
+                shape: CircleBorder(),
+                constraints: BoxConstraints(),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              SizedBox(height: toolbarSpacing),
+              RawMaterialButton(
+                onPressed: () {
+                  viewModel.zoomOut();
+                },
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(Icons.remove),
+                padding: EdgeInsets.all(10.0),
+                shape: CircleBorder(),
+                constraints: BoxConstraints(),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
           ),
-          Positioned(
-              bottom: toolbarSpacing,
-              right: toolbarSpacing,
-              top: toolbarSpacing,
-              // this widget has an unbound width
-              // left: toolbarSpacing,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Flexible(
-                    child: Visibility(
-                      visible: !fadeAnimationController.isDismissed,
-                      child: FadeTransition(
-                        opacity: fadeAnimationController,
-                        child: IndoorLevelBar(
-                          indoorLevelSubject: indoorLevelSubject,
-                          indoorLevels: levelDetector.levelMappings.value,
-                          width: 45,
-                          fillColor: Colors.white,
-                          elevation: 2.0,
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                        )
-                      ),
-                    ),
-                  ),
-                  SizedBox (
-                      height: toolbarSpacing
-                  ),
-                  RawMaterialButton(
-                    onPressed: () {
-                      viewModel.zoomIn();
-                    },
-                    elevation: 2.0,
-                    fillColor: Colors.white,
-                    child: Icon(
-                        Icons.add
-                    ),
-                    padding: EdgeInsets.all(10.0),
-                    shape: CircleBorder(),
-                    constraints: BoxConstraints(),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  SizedBox (
-                    height: toolbarSpacing
-                  ),
-                  RawMaterialButton(
-                    onPressed: () {
-                      viewModel.zoomOut();
-                    },
-                    elevation: 2.0,
-                    fillColor: Colors.white,
-                    child: Icon(
-                        Icons.remove
-                    ),
-                    padding: EdgeInsets.all(10.0),
-                    shape: CircleBorder(),
-                    constraints: BoxConstraints(),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ]
-              )
-            )
-        ]
+        ),
+      ],
     );
   }
 
-  Future<void> _prepare () async {
+  Future<void> _prepare() async {
     String filePath = await widget.mapFileData.getLocalFilePath();
 
     if (await widget.mapFileData.fileExists()) {
       downloadProgress = 1;
-    }
-    else {
+    } else {
       Dio dio = Dio();
       try {
         Response response = await dio.download(
@@ -218,8 +203,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
             followRedirects: true,
           ),
         );
-      }
-      catch (e) {
+      } catch (e) {
         print("Download Error - $e");
       }
     }
@@ -254,15 +238,16 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
     levelDetector.levelMappings.listen((levelMappings) {
       if (levelMappings.length > 1) {
-        if (fadeAnimationController.isDismissed || fadeAnimationController.status == AnimationStatus.reverse) {
+        if (fadeAnimationController.isDismissed ||
+            fadeAnimationController.status == AnimationStatus.reverse) {
           // fade in level bar
           fadeAnimationController.forward();
         }
         // update level mappings and show level bar
         setState(() {});
-      }
-      else {
-        if (fadeAnimationController.isCompleted  || fadeAnimationController.status == AnimationStatus.forward) {
+      } else {
+        if (fadeAnimationController.isCompleted ||
+            fadeAnimationController.status == AnimationStatus.forward) {
           // fade out and hide level bar
           fadeAnimationController.reverse().whenComplete(() => setState(() {}));
         }
@@ -275,8 +260,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     setState(() {});
   }
 
-
-  void _handleMenuItemSelect (String value, BuildContext context) {
+  void _handleMenuItemSelect(String value, BuildContext context) {
     switch (value) {
       case 'start_location':
         this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
