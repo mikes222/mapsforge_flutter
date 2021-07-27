@@ -26,22 +26,15 @@ class MapPageView extends StatefulWidget {
   MapPageViewState createState() => MapPageViewState();
 }
 
-class MapPageViewState extends State<MapPageView>
-    with SingleTickerProviderStateMixin {
-  final BehaviorSubject<int> indoorLevelSubject =
-      new BehaviorSubject<int>.seeded(0);
-
-  double? downloadProgress;
-
-  MapModel? mapModel;
-
-  late ViewModel viewModel;
-
-  late AnimationController fadeAnimationController;
-  CurvedAnimation? fadeAnimation;
-
+class MapPageViewState extends State<MapPageView> with SingleTickerProviderStateMixin {
+  final BehaviorSubject<int> indoorLevelSubject = new BehaviorSubject<int>.seeded(0);
   final double toolbarSpacing = 15;
 
+  late ViewModel viewModel;
+  late AnimationController fadeAnimationController;
+  CurvedAnimation? fadeAnimation;
+  double? downloadProgress;
+  MapModel? mapModel;
   GraphicFactory? _graphicFactory;
 
   @override
@@ -68,7 +61,7 @@ class MapPageViewState extends State<MapPageView>
     if (this.mapModel == null || this.downloadProgress != 1) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(widget.mapFileData.name),
+          title: Text(widget.mapFileData.displayedName),
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -100,7 +93,7 @@ class MapPageViewState extends State<MapPageView>
 
   Widget _buildHead(BuildContext context) {
     return AppBar(
-      title: Text(widget.mapFileData.name),
+      title: Text(widget.mapFileData.displayedName),
       actions: <Widget>[
         PopupMenuButton<String>(
           offset: Offset(0, 50),
@@ -200,7 +193,7 @@ class MapPageViewState extends State<MapPageView>
   }
 
   Future<void> _prepare() async {
-    if (widget.mapFileData.onlinemap) {
+    if (widget.mapFileData.isOnlineMap) {
       _graphicFactory = FlutterGraphicFactory();
 
       final DisplayModel displayModel = DisplayModel();
@@ -215,8 +208,7 @@ class MapPageViewState extends State<MapPageView>
       viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
       // set default position
-      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
-          widget.mapFileData.initialPositionLong);
+      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
       viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
       // attach indoor level stream to indoor change function
       //indoorLevelSubject.listen(viewModel.setIndoorLevel);
@@ -225,22 +217,14 @@ class MapPageViewState extends State<MapPageView>
       return;
     } else {
       final MapDataStore mapDataStore = await _prepareOfflineMap();
-      final SymbolCache symbolCache =
-          FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
+      final SymbolCache symbolCache = FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
       _graphicFactory = FlutterGraphicFactory();
       final DisplayModel displayModel = DisplayModel();
-      final RenderThemeBuilder renderThemeBuilder =
-          RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
-      final String content =
-          await rootBundle.loadString(widget.mapFileData.theme);
+      final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
+      final String content = await rootBundle.loadString(widget.mapFileData.theme);
       renderThemeBuilder.parseXml(content);
       final RenderTheme renderTheme = renderThemeBuilder.build();
-      final JobRenderer jobRenderer = MapDataStoreRenderer(
-        mapDataStore,
-        renderTheme,
-        _graphicFactory!,
-        true,
-      );
+      final JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, _graphicFactory!, true);
       final TileBitmapCache bitmapCache;
       if (kIsWeb) {
         bitmapCache = MemoryTileBitmapCache();
@@ -258,8 +242,7 @@ class MapPageViewState extends State<MapPageView>
       viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
       // set default position
-      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
-          widget.mapFileData.initialPositionLong);
+      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
       viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
       // attach indoor level stream to indoor change function
       indoorLevelSubject.listen(viewModel.setIndoorLevel);
@@ -378,16 +361,14 @@ class MapPageViewState extends State<MapPageView>
   void _handleMenuItemSelect(String value, BuildContext context) {
     switch (value) {
       case 'start_location':
-        this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
-            widget.mapFileData.initialPositionLong);
+        this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
         this.viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
         break;
 
       case 'analyse_mapfile':
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (BuildContext context) =>
-                MapHeaderPage(widget.mapFileData),
+            builder: (BuildContext context) => MapHeaderPage(widget.mapFileData),
           ),
         );
         break;
