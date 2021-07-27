@@ -261,12 +261,128 @@
 
     <!-- indoor -->
 
-    <rule e="any" k="indoor" v="*" zoom-min="17">
-        <rule e="way" k="indoor" v="*" closed="yes">
-            <area fill="#fff9ed" stroke="#cfcdca" stroke-width="0.1" />
+    <rule e="any" k="indoor|level" v="*" zoom-min="18">
 
-            <rule e="way" k="indoor" v="wall">
-                <area fill="#888888"/>
+        <!-- first draw all room types (except walls) with same color and shade them later so the circle doors will be shaded too -->
+
+        <rule e="way" k="indoor|level" v="*" closed="yes">
+            <rule e="any" k="indoor" v="room">
+                <area fill="#fff9ed" stroke="#cfcdca" stroke-width="0.01" />
+            </rule>
+            <rule e="any" k="indoor" v="wall">
+                <area fill="#cfcdca"/>
+                <rule e="any" k="material" v="glass">
+                    <area fill="#bbeeff"/>
+                </rule>
+                <rule e="any" k="material" v="wood">
+                    <area fill="#c8805a"/>
+                </rule>
+            </rule>
+        </rule>
+
+        <rule e="way" k="indoor" v="wall" closed="no">
+            <line stroke="#cfcdca" stroke-width="0.1"/>
+        </rule>
+
+        <!-- 2D door as colored wall -->
+
+        <rule e="way" k="door" v="*" zoom-min="19" closed="yes">
+            <area fill="#f9f9ed" />
+        </rule>
+
+        <!-- draw door node as circle in room color -->
+
+        <rule e="node" k="door" v="*" zoom-min="19">
+            <circle fill="#f9f9ed" radius="0.175" scale-radius="true" />
+        </rule>
+
+        <!-- shade special rooms like corridor or toilets with transparent colors -->
+
+        <rule e="way" k="indoor|level" v="*" closed="yes">
+            <rule e="any" k="indoor" v="area|corridor">
+                <area fill="#DDfff9ed"/>
+            </rule>
+
+            <rule e="any" k="amenity" v="toilets">
+                <area fill="#99bde6ff" />
+            </rule>
+
+            <rule e="any" k="access" v="no|private">
+                <area fill="#33828282" />
+            </rule>
+        </rule>
+
+        <!-- special indoor elements -->
+
+        <rule e="way" k="highway" v="elevator|steps" closed="yes">
+            <area fill="#edf9ed" />
+        </rule>
+
+        <rule e="way" k="highway" v="steps" zoom-min="19" closed="no">
+            <area fill="#edf9ed"/>
+            <line stroke="#fff9ed" stroke-linecap="butt" stroke-width="0.5"/>
+            <line stroke="#cfcdca" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
+        </rule>
+
+        <rule e="way" k="indoor|level" v="*" zoom-min="19" closed="yes">
+            <rule e="way" k="public_bookcase:type" v="shelf">
+                <area fill="#c8805a" stroke="#80000000" stroke-width="0.01"/>
+            </rule>
+            <rule e="way" k="amenity" v="table">
+                <area fill="#d59e7e" stroke="#80000000" stroke-width="0.01"/>
+            </rule>
+            <rule e="way" k="amenity" v="bench">
+                <area fill="#e3bca3" stroke="#80000000" stroke-width="0.01"/>
+            </rule>
+        </rule>
+
+        <rule e="node" k="support" v="column" zoom-min="19">
+            <circle fill="#cfcdca" radius="0.1" scale-radius="true" stroke="#B0000000" stroke-width="0.01"/>
+        </rule>
+
+        <!-- indoor symbols -->
+
+        <rule e="any" k="highway" v="elevator" zoom-min="18">
+            <symbol src="assets/icons/elevator.svg"/>
+        </rule>
+
+        <rule e="any" k="stairs" v="yes" zoom-min="20">
+            <symbol src="assets/icons/stairs.svg"/>
+        </rule>
+
+        <rule e="any" k="shop" v="*" zoom-min="18">
+            <symbol src="assets/icons/shop.svg"/>
+        </rule>
+
+        <rule e="any" k="amenity" v="*">
+            <rule e="any" k="*" v="toilets" zoom-min="18">
+                <symbol src="assets/icons/wc.svg"/>
+                <rule e="any" k="female" v="yes">
+                    <symbol src="assets/icons/wc_female.svg"/>
+                </rule>
+                <rule e="any" k="male" v="yes">
+                    <symbol src="assets/icons/wc_male.svg"/>
+                </rule>
+            </rule>
+
+            <rule e="any" k="*" v="restaurant|fast_food" zoom-min="18">
+                <symbol src="assets/icons/restaurant.svg"/>
+            </rule>
+
+            <rule e="any" k="*" v="parking">
+                <symbol src="assets/icons/parking.svg"/>
+            </rule>
+        </rule>
+
+        <rule e="any" k="entrance" v="*" zoom-min="19">
+            <rule e="any" k="entrance" v="main" zoom-min="19">
+                <symbol src="assets/icons/entrance.svg"/>
+            </rule>
+            <rule e="any" k="entrance" v="exit" zoom-min="19">
+                <symbol src="assets/icons/exit.svg"/>
+            </rule>
+            <rule e="any" k="entrance" v="emergency" zoom-min="19">
+                <symbol src="assets/icons/escape.svg"/>
             </rule>
         </rule>
     </rule>
@@ -281,9 +397,12 @@
     </rule>
 
     <!-- indoor -->
-    <rule e="any" k="indoor" v="*" zoom-min="17">
+    <rule e="any" k="indoor|level" v="*" zoom-min="18">
+        <rule e="any" k="name" v="*">
+            <caption font-size="14" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="3.0" />
+        </rule>
         <rule e="any" k="ref" v="*">
-            <caption font-style="bold" font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
         </rule>
     </rule>
 </rendertheme>

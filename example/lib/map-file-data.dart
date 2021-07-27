@@ -4,24 +4,35 @@ import 'package:path_provider/path_provider.dart';
 class MapFileData {
   final String url;
   final String fileName;
-  final String name;
+  final String displayedName;
   final String theme;
   final double initialPositionLat;
   final double initialPositionLong;
   final int initialZoomLevel;
   final String? relativePathPrefix;
-  final bool onlinemap;
+  final bool isOnlineMap;
 
-  MapFileData(this.url, this.fileName, this.name, this.theme, this.relativePathPrefix, this.initialPositionLat, this.initialPositionLong,
-      this.initialZoomLevel)
-      : onlinemap = false;
+  MapFileData({
+    required this.url,
+    required this.fileName,
+    required this.displayedName,
+    required this.initialPositionLat,
+    required this.initialPositionLong,
+    this.theme = "assets/custom.xml",
+    this.relativePathPrefix,
+    this.initialZoomLevel = 16,
+  }) : isOnlineMap = false;
 
-  MapFileData.online(this.name, this.initialPositionLat, this.initialPositionLong, this.initialZoomLevel)
-      : url = "online",
+  MapFileData.online({
+    required this.displayedName,
+    required this.initialPositionLat,
+    required this.initialPositionLong,
+    this.initialZoomLevel = 14,
+  })  : url = "online",
         fileName = "online",
         theme = "online",
         relativePathPrefix = null,
-        onlinemap = true;
+        isOnlineMap = true;
 
   Future<String> getLocalFilePath() async {
     Directory dir = await getApplicationDocumentsDirectory();
