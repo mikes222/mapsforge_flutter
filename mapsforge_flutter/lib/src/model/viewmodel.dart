@@ -16,7 +16,7 @@ class ViewModel {
   List<Widget>? overlays;
 
   ///
-  /// The width and height of the view
+  /// The width and height of the view in pixels
   ///
   Dimension? _viewDimension;
 
