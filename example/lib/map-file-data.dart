@@ -11,6 +11,7 @@ class MapFileData {
   final int initialZoomLevel;
   final String? relativePathPrefix;
   final bool isOnlineMap;
+  final bool indoorZoomOverlay;
 
   MapFileData({
     required this.url,
@@ -21,6 +22,7 @@ class MapFileData {
     this.theme = "assets/custom.xml",
     this.relativePathPrefix,
     this.initialZoomLevel = 16,
+    this.indoorZoomOverlay = true,
   }) : isOnlineMap = false;
 
   MapFileData.online({
@@ -28,6 +30,7 @@ class MapFileData {
     required this.initialPositionLat,
     required this.initialPositionLong,
     this.initialZoomLevel = 14,
+    this.indoorZoomOverlay = true,
   })  : url = "online",
         fileName = "online",
         theme = "online",

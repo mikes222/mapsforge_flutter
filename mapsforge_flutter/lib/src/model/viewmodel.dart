@@ -13,6 +13,8 @@ class ViewModel {
   final DisplayModel displayModel;
   ContextMenuBuilder? contextMenuBuilder;
 
+  List<Widget>? overlays;
+
   ///
   /// The width and height of the view
   ///
@@ -30,7 +32,7 @@ class ViewModel {
 
   Stream<GestureEvent> get observeGesture => _injectGesture.stream;
 
-  ViewModel({this.contextMenuBuilder, required this.displayModel, this.noPositionView}) : assert(displayModel != null) {
+  ViewModel({this.contextMenuBuilder, required this.displayModel, this.noPositionView, this.overlays}) {
     if (noPositionView == null) noPositionView = NoPositionView();
   }
 
@@ -125,6 +127,10 @@ class ViewModel {
     }
   }
 
+  int getIndoorLevel() {
+    return _mapViewPosition?.indoorLevel ?? 0;
+  }
+
   ///
   /// sets the new scale relative to the current zoomlevel. A scale of 1 means no action,
   /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
@@ -194,6 +200,11 @@ class ViewModel {
     if (_mapViewPosition != null) _injectPosition.add(_mapViewPosition!);
     return _viewDimension;
   }
+
+  void addOverlay(Widget overlay) {
+    if (overlays == null) overlays = [];
+    overlays!.add(overlay);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -207,11 +218,7 @@ class TapEvent {
 
   final double y;
 
-  TapEvent(this.latitude, this.longitude, this.x, this.y)
-      : assert(latitude != null),
-        assert(longitude != null),
-        assert(x != null),
-        assert(y != null);
+  const TapEvent(this.latitude, this.longitude, this.x, this.y);
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,8 @@ export 'src/view/defaultcontextmenubuilder.dart';
 export 'src/view/contextmenubuilder.dart';
 export 'src/view/indoorlevelbar.dart';
 export 'src/view/nopositionview.dart';
+export 'src/view/indoorlevel_zoom_overlay.dart';
+export 'src/view/zoom_overlay.dart';
 
 export 'src/graphics/graphicfactory.dart';
 

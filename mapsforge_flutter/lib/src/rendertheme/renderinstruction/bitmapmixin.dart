@@ -23,6 +23,15 @@ class BitmapMixin {
 
   MapPaint? bitmapPaint;
 
+  Future<void> setBitmapSrc(GraphicFactory graphicFactory, String? bitmapSrc) async {
+    if (this.bitmap != null) {
+      this.bitmap!.decrementRefCount();
+      bitmap = null;
+    }
+    bitmapInvalid = false;
+    await initBitmap(graphicFactory);
+  }
+
   @mustCallSuper
   void dispose() {
     if (this.bitmap != null) {

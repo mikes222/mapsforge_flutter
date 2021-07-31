@@ -26,12 +26,7 @@ class FlutterMapView extends StatefulWidget {
 
   final GraphicFactory graphicFactory;
 
-  const FlutterMapView(
-      {Key? key,
-      required this.mapModel,
-      required this.viewModel,
-      required this.graphicFactory})
-      : super(key: key);
+  const FlutterMapView({Key? key, required this.mapModel, required this.viewModel, required this.graphicFactory}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -54,10 +49,7 @@ class _FlutterMapState extends State<FlutterMapView> {
   void initState() {
     super.initState();
     _jobQueue = JobQueue(
-        widget.mapModel.displayModel,
-        widget.mapModel.renderer,
-        widget.mapModel.tileBitmapCache,
-        widget.mapModel.tileBitmapCacheFirstLevel);
+        widget.mapModel.displayModel, widget.mapModel.renderer, widget.mapModel.tileBitmapCache, widget.mapModel.tileBitmapCacheFirstLevel);
     _tileLayer = TileLayerImpl(
       displayModel: widget.mapModel.displayModel,
       graphicFactory: widget.graphicFactory,
@@ -75,8 +67,7 @@ class _FlutterMapState extends State<FlutterMapView> {
   Widget build(BuildContext context) {
     return StreamBuilder<MapViewPosition?>(
       stream: widget.viewModel.observePosition,
-      builder:
-          (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.hasPosition()) {
             //_log.info("I have a new position ${snapshot.data.toString()}");
@@ -84,8 +75,7 @@ class _FlutterMapState extends State<FlutterMapView> {
           }
           //return _buildNoPositionView();
         }
-        if (widget.viewModel.mapViewPosition != null &&
-            widget.viewModel.mapViewPosition!.hasPosition()) {
+        if (widget.viewModel.mapViewPosition != null && widget.viewModel.mapViewPosition!.hasPosition()) {
           //_log.info(
           //    "I have an old position ${widget.viewModel.mapViewPosition!.toString()}");
           return _buildMapView(widget.viewModel.mapViewPosition!);
@@ -96,17 +86,14 @@ class _FlutterMapState extends State<FlutterMapView> {
   }
 
   Widget _buildNoPositionView() {
-    return widget.viewModel.noPositionView!
-        .buildNoPositionView(context, widget.mapModel, widget.viewModel);
+    return widget.viewModel.noPositionView!.buildNoPositionView(context, widget.mapModel, widget.viewModel);
   }
 
   Widget? _buildBackgroundView() {
-    if (widget.mapModel.displayModel.backgroundColor !=
-        Colors.transparent.value) {
+    if (widget.mapModel.displayModel.backgroundColor != Colors.transparent.value) {
       // draw the background first
       return CustomPaint(
-        foregroundPainter:
-            BackgroundPainter(displayModel: widget.mapModel.displayModel),
+        foregroundPainter: BackgroundPainter(displayModel: widget.mapModel.displayModel),
         child: Container(),
       );
     }
@@ -148,8 +135,7 @@ class _FlutterMapState extends State<FlutterMapView> {
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        widget.viewModel
-            .setViewDimension(constraints.maxWidth, constraints.maxHeight);
+        widget.viewModel.setViewDimension(constraints.maxWidth, constraints.maxHeight);
         JobSet? jobSet = _submitJobSet(widget.viewModel, position, _jobQueue);
 //        _log.info("JobSet is $jobSet");
         return FlutterGestureDetector(
@@ -162,22 +148,21 @@ class _FlutterMapState extends State<FlutterMapView> {
                 ChangeNotifierProvider<JobSet>.value(
                   value: jobSet,
                   child: Consumer<JobSet>(
-                    builder:
-                        (BuildContext context, JobSet jobSet, Widget? child) {
+                    builder: (BuildContext context, JobSet jobSet, Widget? child) {
                       //_log.info("consume with $jobSet");
                       return CustomPaint(
-                        foregroundPainter: TileLayerPainter(
-                            _tileLayer, position, widget.viewModel, jobSet),
+                        foregroundPainter: TileLayerPainter(_tileLayer, position, widget.viewModel, jobSet),
                         child: Container(),
                       );
                     },
                   ),
                 ),
               for (Widget widget in _widgets) widget,
+              if (widget.viewModel.overlays != null)
+                for (Widget widget in widget.viewModel.overlays!) widget,
               StreamBuilder<TapEvent>(
                 stream: widget.viewModel.observeTap,
-                builder:
-                    (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+                builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
                   if (!snapshot.hasData) return Container();
                   TapEvent event = snapshot.data!;
                   return ContextMenu(
@@ -196,21 +181,18 @@ class _FlutterMapState extends State<FlutterMapView> {
     );
   }
 
-  JobSet? _submitJobSet(
-      ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
+  JobSet? _submitJobSet(ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
     //_log.info("viewModel ${viewModel.viewDimension}");
     if (viewModel.viewDimension == null) return null;
     int time = DateTime.now().millisecondsSinceEpoch;
     List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
     JobSet jobSet = JobSet();
     tiles.forEach((Tile tile) {
-      Job job = Job(tile, false, viewModel.displayModel.getUserScaleFactor(),
-          viewModel.displayModel.tileSize);
+      Job job = Job(tile, false, viewModel.displayModel.getUserScaleFactor(), viewModel.displayModel.tileSize);
       jobSet.add(job);
     });
     int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 50)
-      _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
+    if (diff > 50) _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
     //_log.info("JobSets created: ${jobSet.jobs.length}");
     if (jobSet.jobs.length > 0) {
       jobQueue.processJobset(jobSet);

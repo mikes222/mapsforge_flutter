@@ -15,6 +15,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 48.089415,
     initialPositionLong: 16.311374,
     initialZoomLevel: 12,
+    indoorZoomOverlay: false,
   ),
   new MapFileData(
     url: "https://drive.google.com/uc?export=download&id=1rP5-eKdw-roZJsvCC3dsaCGtKGmprYET",
@@ -24,14 +25,15 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 12.92936,
     initialZoomLevel: 18,
   ),
-  new MapFileData(
-    url: "https://tuc.cloud/index.php/s/nxaSXBm5DqwFcDG/download",
-    fileName: "indoorUB-ext.map",
-    displayedName: "Indoor Chemnitz - Library",
-    initialPositionLat: 50.84160,
-    initialPositionLong: 12.92700,
-    initialZoomLevel: 18,
-  ),
+  // file not available
+  // new MapFileData(
+  //   url: "https://tuc.cloud/index.php/s/nxaSXBm5DqwFcDG/download",
+  //   fileName: "indoorUB-ext.map",
+  //   displayedName: "Indoor Chemnitz - Library",
+  //   initialPositionLat: 50.84160,
+  //   initialPositionLong: 12.92700,
+  //   initialZoomLevel: 18,
+  // ),
   new MapFileData(
     url: "https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS",
     fileName: "Louvre.map",
@@ -54,6 +56,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 50.81287701030895,
     initialPositionLong: 12.94189453125,
     initialZoomLevel: 12,
+    indoorZoomOverlay: false,
   ),
   new MapFileData(
     url: "https://download.mapsforge.org/maps/v5/europe/austria.map",
@@ -63,6 +66,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 48.089415,
     initialPositionLong: 16.311374,
     initialZoomLevel: 12,
+    indoorZoomOverlay: false,
   ),
   new MapFileData(
     url: "https://www.dailyflightbuddy.com/monaco.map",
@@ -72,6 +76,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 43.7399,
     initialPositionLong: 7.4262,
     initialZoomLevel: 15,
+    indoorZoomOverlay: false,
   ),
   new MapFileData(
     url: "https://www.dailyflightbuddy.com/sicilia_oam.zip",
@@ -82,6 +87,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 37.5,
     initialPositionLong: 14.3,
     initialZoomLevel: 15,
+    indoorZoomOverlay: false,
   ),
   new MapFileData(
     url: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/world/world.map",
@@ -91,6 +97,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 43.7399,
     initialPositionLong: 7.4262,
     initialZoomLevel: 5,
+    indoorZoomOverlay: false,
   ),
 ];
 
@@ -162,19 +169,14 @@ class MyStatelessWidget extends StatelessWidget {
       child: Column(
         children: MAP_FILE_DATA_LIST.map((element) {
           return _buildCard(context, element.displayedName, () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context) =>
-                  MapPageView(mapFileData: element)
-              )
-            );
+            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: element)));
           });
         }).toList(),
       ),
     );
   }
 
-  Card _buildCard(BuildContext context, String caption, action,
-      [bool enabled = true]) {
+  Card _buildCard(BuildContext context, String caption, action, [bool enabled = true]) {
     return Card(
       margin: EdgeInsets.only(top: 7, bottom: 7),
       elevation: 4,
@@ -193,8 +195,7 @@ class MyStatelessWidget extends StatelessWidget {
   Future<void> _handleMenuItemSelect(String value) async {
     switch (value) {
       case 'clear_tile_cache':
-        String fileCachePath =
-            (await getTemporaryDirectory()).path + "/mapsforgetiles";
+        String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
         var fileCacheDir = Directory(fileCachePath);
         if (await fileCacheDir.exists()) {
           fileCacheDir.list(recursive: false).forEach((f) async {

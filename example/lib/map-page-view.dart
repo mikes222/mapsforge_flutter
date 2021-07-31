@@ -13,7 +13,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:rxdart/rxdart.dart';
 
 import 'map-file-data.dart';
 
@@ -26,13 +25,8 @@ class MapPageView extends StatefulWidget {
   MapPageViewState createState() => MapPageViewState();
 }
 
-class MapPageViewState extends State<MapPageView> with SingleTickerProviderStateMixin {
-  final BehaviorSubject<int> indoorLevelSubject = new BehaviorSubject<int>.seeded(0);
-  final double toolbarSpacing = 15;
-
+class MapPageViewState extends State<MapPageView> {
   late ViewModel viewModel;
-  late AnimationController fadeAnimationController;
-  CurvedAnimation? fadeAnimation;
   double? downloadProgress;
   MapModel? mapModel;
   GraphicFactory? _graphicFactory;
@@ -40,18 +34,6 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
   @override
   void initState() {
     _prepare();
-
-    fadeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      value: 1,
-      vsync: this,
-      lowerBound: 0,
-      upperBound: 1,
-    );
-    fadeAnimation = CurvedAnimation(
-      parent: fadeAnimationController,
-      curve: Curves.ease,
-    );
 
     super.initState();
   }
@@ -68,17 +50,14 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             CircularProgressIndicator(
-              value: downloadProgress == null || downloadProgress == 1
-                  ? null
-                  : downloadProgress,
+              value: downloadProgress == null || downloadProgress == 1 ? null : downloadProgress,
             ),
             SizedBox(
               height: 20,
             ),
             Center(
-              child: Text(downloadProgress == null || downloadProgress == 1
-                  ? "Loading"
-                  : "Downloading ${(downloadProgress! * 100).round()}%"),
+              child:
+                  Text(downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress! * 100).round()}%"),
             ),
           ],
         ),
@@ -121,74 +100,10 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
   }
 
   Widget _buildBody(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        FlutterMapView(
-          mapModel: mapModel!,
-          viewModel: viewModel,
-          graphicFactory: _graphicFactory!,
-        ),
-        Positioned(
-          bottom: toolbarSpacing,
-          right: toolbarSpacing,
-          top: toolbarSpacing,
-          // this widget has an unbound width
-          // left: toolbarSpacing,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Flexible(
-                child: FadeTransition(
-                  opacity: fadeAnimationController,
-                  child: IndoorLevelBar(
-                    indoorLevelSubject: indoorLevelSubject,
-                    indoorLevels: {
-                      5: null,
-                      4: null,
-                      3: null,
-                      2: "OG2",
-                      1: "OG1",
-                      0: "EG",
-                      -1: "UG1",
-                      -2: null,
-                      -3: null,
-                      -4: null,
-                      -5: null
-                    },
-                    width: 45,
-                    fillColor: Colors.white,
-                    elevation: 2.0,
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                ),
-              ),
-              SizedBox(height: toolbarSpacing),
-              RawMaterialButton(
-                onPressed: () => viewModel.zoomIn(),
-                elevation: 2.0,
-                fillColor: Colors.white,
-                child: Icon(Icons.add),
-                padding: EdgeInsets.all(10.0),
-                shape: CircleBorder(),
-                constraints: BoxConstraints(),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              SizedBox(height: toolbarSpacing),
-              RawMaterialButton(
-                onPressed: () => viewModel.zoomOut(),
-                elevation: 2.0,
-                fillColor: Colors.white,
-                child: Icon(Icons.remove),
-                padding: EdgeInsets.all(10.0),
-                shape: CircleBorder(),
-                constraints: BoxConstraints(),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ],
-          ),
-        ),
-      ],
+    return FlutterMapView(
+      mapModel: mapModel!,
+      viewModel: viewModel,
+      graphicFactory: _graphicFactory!,
     );
   }
 
@@ -210,6 +125,10 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       // set default position
       viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
       viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+      if (widget.mapFileData.indoorZoomOverlay)
+        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel));
+      else
+        viewModel.addOverlay(ZoomOverlay(viewModel));
       // attach indoor level stream to indoor change function
       //indoorLevelSubject.listen(viewModel.setIndoorLevel);
       downloadProgress = 1;
@@ -229,8 +148,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       if (kIsWeb) {
         bitmapCache = MemoryTileBitmapCache();
       } else {
-        bitmapCache =
-            await FileTileBitmapCache.create(jobRenderer.getRenderKey());
+        bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
       }
 
       mapModel = MapModel(
@@ -244,8 +162,10 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       // set default position
       viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
       viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
-      // attach indoor level stream to indoor change function
-      indoorLevelSubject.listen(viewModel.setIndoorLevel);
+      if (widget.mapFileData.indoorZoomOverlay)
+        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel));
+      else
+        viewModel.addOverlay(ZoomOverlay(viewModel));
 
       /*MapModelHelper.onLevelChange.listen((levelMappings) {
       if (!fadeAnimationController.isAnimating) levelMappings == null ? fadeAnimationController.reverse() : fadeAnimationController.forward();
@@ -353,8 +273,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
       throw e;
     }
 
-    final MapFile mapFile =
-        await MapFile.using(Uint8List.fromList(content), null, null);
+    final MapFile mapFile = await MapFile.using(Uint8List.fromList(content), null, null);
     return mapFile;
   }
 
