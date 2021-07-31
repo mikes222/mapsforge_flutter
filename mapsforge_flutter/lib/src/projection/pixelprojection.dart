@@ -22,6 +22,7 @@ class PixelProjection extends MercatorProjection {
     _mapSize = _mapSizeWithScaleFactor();
   }
 
+  /// returns the number of pixel for the whole map at a given scalefactor
   int _mapSizeWithScaleFactor() {
     return (tileSize * scalefactor.scalefactor).round();
   }
@@ -144,6 +145,14 @@ class PixelProjection extends MercatorProjection {
   Rectangle boundaryAbsolute(Tile tile) {
     return Rectangle((tile.tileX * tileSize).toDouble(), (tile.tileY * tileSize).toDouble(), (tile.tileX * tileSize + tileSize).toDouble(),
         (tile.tileY * tileSize + tileSize).toDouble());
+  }
+
+  /// returns the meters per pixel at the current zoomlevel. Returns 0 at +/-90°
+  double meterPerPixel(ILatLong latLong) {
+    if (latLong.latitude == 90 || latLong.latitude == -90) return 0;
+    int pixels = _mapSizeWithScaleFactor();
+    const double pi180 = pi / 180;
+    return Projection.EARTH_CIRCUMFERENCE / pixels * cos(latLong.latitude * pi180);
   }
 
   int get mapsize => _mapSize;

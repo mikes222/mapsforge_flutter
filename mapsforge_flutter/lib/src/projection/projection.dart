@@ -21,7 +21,7 @@ abstract class Projection {
   static final double LATITUDE_MIN = -LATITUDE_MAX;
 
   /// The circumference of the earth at the equator in meters.
-  //static final double EARTH_CIRCUMFERENCE = 40075016.686;
+  static final double EARTH_CIRCUMFERENCE = 40075016.686;
 
   /// Polar radius in meter (WGS84 ellipsoid)
   //static final double POLAR_RADIUS = 6356752.314245;

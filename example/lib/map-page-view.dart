@@ -129,6 +129,7 @@ class MapPageViewState extends State<MapPageView> {
         viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel));
       else
         viewModel.addOverlay(ZoomOverlay(viewModel));
+      viewModel.addOverlay(DistanceOverlay(viewModel));
       // attach indoor level stream to indoor change function
       //indoorLevelSubject.listen(viewModel.setIndoorLevel);
       downloadProgress = 1;
@@ -166,6 +167,7 @@ class MapPageViewState extends State<MapPageView> {
         viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel));
       else
         viewModel.addOverlay(ZoomOverlay(viewModel));
+      viewModel.addOverlay(DistanceOverlay(viewModel));
 
       /*MapModelHelper.onLevelChange.listen((levelMappings) {
       if (!fadeAnimationController.isAnimating) levelMappings == null ? fadeAnimationController.reverse() : fadeAnimationController.forward();

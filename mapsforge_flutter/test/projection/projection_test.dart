@@ -42,16 +42,26 @@ main() {
 
     Tile upperLeft = Tile(4, 3, zoomLevel, 0);
     Tile lowerRight = Tile(6, 5, zoomLevel, 0);
-    BoundingBox boundingBox =
-        projection.boundingBoxOfTiles(upperLeft, lowerRight);
+    BoundingBox boundingBox = projection.boundingBoxOfTiles(upperLeft, lowerRight);
     expect(boundingBox.minLongitude, -90);
     expect(boundingBox.maxLongitude, -22.5);
     expect(boundingBox.minLatitude, 40.97989806962013);
     expect(boundingBox.maxLatitude, 74.01954331150228);
   });
 
+  test("PixelProjection", () {
+    int zoomLevel = 4; // 1, 2, 4, 8, 16 tiles per zoomlevel
+    int tileSize = 256;
+    PixelProjection projection = PixelProjection(zoomLevel, tileSize);
+
+    expect(projection.meterPerPixel(LatLong(0, 0)), 9783.939620605468);
+    expect(projection.meterPerPixel(LatLong(60, 0)), 4891.969810302735);
+    expect(projection.meterPerPixel(LatLong(85, 0)), 852.7265246321101);
+    expect(projection.meterPerPixel(LatLong(90, 0)), 0);
+    expect(projection.meterPerPixel(LatLong(-60, 0)), 4891.969810302735);
+  });
+
   test("Bearingtest", () {
-    expect(Projection.startBearing(LatLong(35, 45), LatLong(35, 135)),
-        60.16243352168624);
+    expect(Projection.startBearing(LatLong(35, 45), LatLong(35, 135)), 60.16243352168624);
   });
 }
