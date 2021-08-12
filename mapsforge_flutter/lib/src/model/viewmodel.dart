@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ViewModel {
-  NoPositionView? noPositionView;
+  Widget? noPositionView;
   MapViewPosition? _mapViewPosition;
   final DisplayModel displayModel;
   ContextMenuBuilder? contextMenuBuilder;
