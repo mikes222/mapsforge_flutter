@@ -25,27 +25,19 @@ class MarkerPainter extends CustomPainter {
   final GraphicFactory graphicFactory;
 
   MarkerPainter(
-      {required this.position,
-      required this.displayModel,
-      required this.dataStore,
-      required this.viewModel,
-      required this.graphicFactory})
+      {required this.position, required this.displayModel, required this.dataStore, required this.viewModel, required this.graphicFactory})
       : super(repaint: dataStore);
 
   @override
   void paint(Canvas canvas, Size size) {
-    List<BasicMarker> markers = dataStore.getMarkers(
-        graphicFactory,
-        position.calculateBoundingBox(viewModel.viewDimension!),
-        position.zoomLevel);
+    List<BasicMarker> markers =
+        dataStore.getMarkers(graphicFactory, position.calculateBoundingBox(viewModel.viewDimension!), position.zoomLevel);
     // _log.info("Drawing ${markers?.length ?? -1} markers");
 
     if (markers.length > 0) {
       FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
-      flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width.round(),
-          viewModel.viewDimension!.height.round());
-      MarkerContext context =
-          MarkerContext(flutterCanvas, graphicFactory, position);
+      flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width.round(), viewModel.viewDimension!.height.round());
+      MarkerContext context = MarkerContext(flutterCanvas, graphicFactory, position);
       markers.forEach((element) {
         element.render(context);
       });
@@ -56,8 +48,8 @@ class MarkerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MarkerPainter oldDelegate) {
-    //if (oldDelegate.position != position) return true;
-    return true; //dataStore.needsRepaint;
+    if (oldDelegate.position != position) return true;
+    return false; //dataStore.needsRepaint;
   }
 
   @override

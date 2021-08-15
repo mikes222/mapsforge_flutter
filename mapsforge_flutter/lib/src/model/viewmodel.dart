@@ -46,6 +46,7 @@ class ViewModel {
 
   void setMapViewPosition(double latitude, double longitude) {
     if (_mapViewPosition != null) {
+      if (_mapViewPosition!.latitude == latitude && _mapViewPosition!.longitude == longitude) return;
       MapViewPosition newPosition =
           MapViewPosition(latitude, longitude, _mapViewPosition!.zoomLevel, _mapViewPosition!.indoorLevel, displayModel.tileSize);
       _mapViewPosition = newPosition;
@@ -86,6 +87,7 @@ class ViewModel {
     if (zoomLevel > displayModel.maxZoomLevel) zoomLevel = displayModel.maxZoomLevel;
     if (zoomLevel < 0) zoomLevel = 0;
     if (_mapViewPosition != null) {
+      if (_mapViewPosition!.zoomLevel == zoomLevel) return _mapViewPosition!;
       MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition!, zoomLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -115,6 +117,7 @@ class ViewModel {
 
   MapViewPosition setIndoorLevel(int indoorLevel) {
     if (_mapViewPosition != null) {
+      if (_mapViewPosition!.indoorLevel == indoorLevel) return _mapViewPosition!;
       MapViewPosition newPosition = MapViewPosition.setIndoorLevel(_mapViewPosition!, indoorLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);

@@ -144,19 +144,23 @@ class _FlutterMapState extends State<FlutterMapView> {
           child: Stack(
             children: [
               _buildBackgroundView() ?? Container(),
-              if (jobSet != null && jobSet.results != null)
-                ChangeNotifierProvider<JobSet>.value(
-                  value: jobSet,
-                  child: Consumer<JobSet>(
-                    builder: (BuildContext context, JobSet jobSet, Widget? child) {
-                      //_log.info("consume with $jobSet");
-                      return CustomPaint(
-                        foregroundPainter: TileLayerPainter(_tileLayer, position, widget.viewModel, jobSet),
-                        child: Container(),
-                      );
-                    },
-                  ),
+              if (jobSet != null)
+                CustomPaint(
+                  foregroundPainter: TileLayerPainter(_tileLayer, position, widget.viewModel, jobSet),
+                  child: Container(),
                 ),
+              // ChangeNotifierProvider<JobSet>.value(
+              //   value: jobSet,
+              //   child: Consumer<JobSet>(
+              //     builder: (BuildContext context, JobSet jobSet, Widget? child) {
+              //       //_log.info("consume with $jobSet");
+              //       return CustomPaint(
+              //         foregroundPainter: TileLayerPainter(_tileLayer, position, widget.viewModel, jobSet),
+              //         child: Container(),
+              //       );
+              //     },
+              //   ),
+              // ),
               for (Widget widget in _widgets) widget,
               if (widget.viewModel.overlays != null)
                 for (Widget widget in widget.viewModel.overlays!) widget,
