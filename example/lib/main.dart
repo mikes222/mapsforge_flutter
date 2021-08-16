@@ -25,15 +25,14 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 12.92936,
     initialZoomLevel: 18,
   ),
-  // file not available
-  // new MapFileData(
-  //   url: "https://tuc.cloud/index.php/s/nxaSXBm5DqwFcDG/download",
-  //   fileName: "indoorUB-ext.map",
-  //   displayedName: "Indoor Chemnitz - Library",
-  //   initialPositionLat: 50.84160,
-  //   initialPositionLong: 12.92700,
-  //   initialZoomLevel: 18,
-  // ),
+  new MapFileData(
+    url: "https://tuc.cloud/index.php/s/3mLSrDfeH3WHKQE/download",
+    fileName: "indoorUB-ext.map",
+    displayedName: "Indoor Chemnitz - Library",
+    initialPositionLat: 50.84160,
+    initialPositionLong: 12.92700,
+    initialZoomLevel: 18,
+  ),
   new MapFileData(
     url: "https://drive.google.com/uc?export=download&id=1_uyBcfs8ZRcAKlJA-tEmkzilF_ngkRfS",
     fileName: "Louvre.map",
@@ -92,7 +91,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   new MapFileData(
     url: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/world/world.map",
     fileName: "world.map",
-    displayedName: "Worldmap",
+    displayedName: "Worldmap (big download size)",
     theme: "assets/defaultrender.xml",
     initialPositionLat: 43.7399,
     initialPositionLong: 7.4262,
