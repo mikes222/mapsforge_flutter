@@ -4,7 +4,7 @@ import '../utils/latlongutils.dart';
 import 'ilatlong.dart';
 
 /// This immutable class represents a geographic coordinate with a latitude and longitude value.
-class LatLong implements Comparable<LatLong>, ILatLong {
+class LatLong implements ILatLong {
   /// Conversion factor from degrees to microdegrees.
   static final double CONVERSION_FACTOR = 1000000.0;
 
@@ -56,19 +56,6 @@ class LatLong implements Comparable<LatLong>, ILatLong {
 //    this.longitude = LatLongUtils.validateLongitude(double.parse(m.group(1)));
 //    this.latitude = LatLongUtils.validateLatitude(double.parse(m.group(2)));
 //  }
-
-  /**
-   * This method is necessary for inserting LatLongs into tree data structures.
-   */
-  @override
-  int compareTo(LatLong latLong) {
-    if (this.latitude > latLong.latitude || this.longitude > latLong.longitude) {
-      return 1;
-    } else if (this.latitude < latLong.latitude || this.longitude < latLong.longitude) {
-      return -1;
-    }
-    return 0;
-  }
 
   /**
    * Returns the destination point from this point having travelled the given distance on the

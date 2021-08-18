@@ -1,10 +1,9 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
-import 'dart:ui' as ui;
 
 class DistanceOverlay extends StatefulWidget {
   final ViewModel viewModel;
