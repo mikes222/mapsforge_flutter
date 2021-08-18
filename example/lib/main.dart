@@ -1,13 +1,13 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_example/map-page-view.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:mapsforge_example/map-list.dart';
 
 import 'map-file-data.dart';
 
+/// The global variable that holds a list of map files.
+///
+/// Data can be files with distinct places as [MapFileData]
+/// or parts of a huge and extensible area as [MapFileData.online].
 // ignore: non_constant_identifier_names
 final List<MapFileData> MAP_FILE_DATA_LIST = [
   new MapFileData.online(
@@ -102,7 +102,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
 
 void main() => runApp(MyApp());
 
-/// This Widget is the main application widget.
+/// This is the entry point, the main application widget.
 class MyApp extends StatelessWidget {
   MyApp() {
     _initLogging();
@@ -112,10 +112,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mapsforge Example App',
-      home: MyStatelessWidget(),
+      home: MapList(MAP_FILE_DATA_LIST),
     );
   }
 
+  /// Sets a [Logger] to log debug messages.
   void _initLogging() {
     // Print output to console.
     Logger.root.onRecord.listen((LogRecord r) {
@@ -125,138 +126,4 @@ class MyApp extends StatelessWidget {
     // Root logger level.
     Logger.root.level = Level.FINEST;
   }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-/// This is the stateless widget that the main application instantiates.
-class MyStatelessWidget extends StatelessWidget {
-  MyStatelessWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildHead(context) as PreferredSizeWidget?,
-      body: _buildBody(context),
-    );
-  }
-
-  Widget _buildHead(BuildContext context) {
-    return AppBar(
-      title: const Text('Rendering Examples'),
-      actions: <Widget>[
-        PopupMenuButton<String>(
-          offset: Offset(0, 50),
-          onSelected: (choice) => _handleMenuItemSelect(choice),
-          itemBuilder: (BuildContext context) => [
-            PopupMenuItem<String>(
-              value: "clear_tile_cache",
-              child: Text("Delete Tile Cache"),
-            ),
-            PopupMenuItem<String>(
-              value: "delete_map_files",
-              child: Text("Delete Map Files"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBody(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: MAP_FILE_DATA_LIST.map((element) {
-          return _buildCard(context, element.displayedName, () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: element)));
-          });
-        }).toList(),
-      ),
-    );
-  }
-
-  Card _buildCard(BuildContext context, String caption, action, [bool enabled = true]) {
-    return Card(
-      margin: EdgeInsets.only(top: 7, bottom: 7),
-      elevation: 4,
-      child: ListTile(
-        title: Text(
-          caption,
-          style: TextStyle(color: enabled ? Colors.black : Colors.grey),
-        ),
-        contentPadding: EdgeInsets.fromLTRB(17, 5, 17, 5),
-        onTap: enabled ? action : null,
-        trailing: Icon(Icons.arrow_forward_rounded),
-      ),
-    );
-  }
-
-  Future<void> _handleMenuItemSelect(String value) async {
-    switch (value) {
-      case 'clear_tile_cache':
-        String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
-        var fileCacheDir = Directory(fileCachePath);
-        if (await fileCacheDir.exists()) {
-          fileCacheDir.list(recursive: false).forEach((f) async {
-            f.delete(recursive: true);
-          });
-        }
-        break;
-      case 'delete_map_files':
-        Directory dir = await getApplicationDocumentsDirectory();
-        dir.list(recursive: false).forEach((f) async {
-          if (await FileSystemEntity.isFile(f.path)) {
-            f.delete();
-          }
-        });
-        break;
-    }
-  }
-
-// RaisedButton(
-// child: Text("Analyze mapfile"),
-// onPressed: () {
-// Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage(activeMapInfo.mapfile)));
-// ),
-
-//     RaisedButton(
-//     child: Text("Purge offline cache"),
-//     onPressed: () {
-//     MapModelHelper.prepareOfflineMapModel().then((mapModel) {
-//     Timer(Duration(milliseconds: 1000), () async {
-//     await mapModel.tileBitmapCache.purgeAll();
-//     print("cache purged");
-// //              Scaffold.of(context).showSnackBar(new SnackBar(
-// //                content: new Text("cache purged"),
-// //              ));
-//     });
-//     });
-//     },
-//     ),
-//     RaisedButton(
-//     child: Text("Purge online cache"),
-//     onPressed: () {
-//     MapModelHelper.prepareOnlineMapModel().then((mapModel) {
-//     Timer(Duration(milliseconds: 1000), () async {
-//     await mapModel.tileBitmapCache.purgeAll();
-//     print("cache purged");
-// //              Scaffold.of(context).showSnackBar(new SnackBar(
-// //                content: new Text("cache purged"),
-// //              ));
-//     });
-//     });
-//     },
-//     ),
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class MapInfo {
-  final String? mapFileSource;
-  final String? mapFile;
-  final double? lat;
-  final double? lon;
-
-  MapInfo({this.mapFileSource, this.mapFile, this.lat, this.lon});
 }
