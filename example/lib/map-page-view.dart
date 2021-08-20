@@ -50,14 +50,18 @@ class MapPageViewState extends State<MapPageView> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             CircularProgressIndicator(
-              value: downloadProgress == null || downloadProgress == 1 ? null : downloadProgress,
+              value: downloadProgress == null || downloadProgress == 1
+                  ? null
+                  : downloadProgress,
             ),
             SizedBox(
               height: 20,
             ),
             Center(
               child:
-                  Text(downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress! * 100).round()}%"),
+                  Text(downloadProgress == null || downloadProgress == 1
+                      ? "Loading"
+                      : "Downloading ${(downloadProgress! * 100).round()}%"),
             ),
           ],
         ),
@@ -65,7 +69,7 @@ class MapPageViewState extends State<MapPageView> {
     }
 
     return Scaffold(
-      appBar: _buildHead(context) as PreferredSizeWidget?,
+      appBar: _buildHead(context) as PreferredSizeWidget,
       body: _buildBody(context),
     );
   }
@@ -204,7 +208,7 @@ class MapPageViewState extends State<MapPageView> {
           ),
         );
       } catch (e) {
-        print("Download Error - ${e}");
+        print("Download Error - $e");
       }
 
       try {
@@ -224,7 +228,7 @@ class MapPageViewState extends State<MapPageView> {
           filePath = filePath.replaceAll(".zip", ".map");
         }
       } catch (e) {
-        print("Unzip Error - ${e}");
+        print("Unzip Error - $e");
       }
     }
     final MapFile mapFile = await MapFile.from(filePath, null, null);
@@ -250,7 +254,7 @@ class MapPageViewState extends State<MapPageView> {
         ),
       );
     } catch (e) {
-      print("Download Error - ${e}");
+      print("Download Error - $e");
       throw e;
     }
 
@@ -271,7 +275,7 @@ class MapPageViewState extends State<MapPageView> {
         filePath = filePath.replaceAll(".zip", ".map");
       }
     } catch (e) {
-      print("Unzip Error - ${e}");
+      print("Unzip Error - $e");
       throw e;
     }
 

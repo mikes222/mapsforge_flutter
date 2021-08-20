@@ -50,22 +50,27 @@ class MapList extends StatelessWidget {
           margin: EdgeInsets.only(top: 7, bottom: 7),
           elevation: 4,
           child: ListTile(
-            title: Text(mapFileData.name),
+            title: Text(mapFileData.displayedName),
             contentPadding: EdgeInsets.fromLTRB(17, 5, 17, 5),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapPageView(mapFileData: mapFileData)));
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) => MapPageView(mapFileData: mapFileData),
+                ),
+              );
             },
-            trailing: Icon(Icons.arrow_forward_rounded)
+            trailing: Icon(Icons.arrow_forward_rounded),
           ),
         );
       },
     );
   }
 
-  Future<void> _handleMenuItemSelect (String value) async {
+  Future<void> _handleMenuItemSelect(String value) async {
     switch (value) {
       case 'clear_tile_cache':
-        String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
+        String fileCachePath =
+            (await getTemporaryDirectory()).path + "/mapsforgetiles";
         var fileCacheDir = Directory(fileCachePath);
         if (await fileCacheDir.exists()) {
           fileCacheDir.list(recursive: false).forEach((f) async {

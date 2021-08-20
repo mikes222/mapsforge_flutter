@@ -62,7 +62,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     if (this.mapModel == null || this.downloadProgress != 1) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(widget.mapFileData.name),
+          title: Text(widget.mapFileData.displayedName),
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +94,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
   Widget _buildHead(BuildContext context) {
     return AppBar(
-      title: Text(widget.mapFileData.name),
+      title: Text(widget.mapFileData.displayedName),
       actions: <Widget>[
         PopupMenuButton<String>(
           onSelected: (choice) => _handleMenuItemSelect(choice, context),
@@ -121,6 +121,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
         FlutterMapView(
           mapModel: mapModel,
           viewModel: viewModel,
+          graphicFactory: FlutterGraphicFactory(),
         ),
         Positioned(
           bottom: toolbarSpacing,
@@ -137,7 +138,7 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
                   child: FadeTransition(
                     opacity: fadeAnimationController,
                     child: IndoorLevelBar(
-                      indoorLevelSubject: indoorLevelSubject,
+                      //indoorLevelSubject: indoorLevelSubject,
                       indoorLevels: levelDetector.levelMappings.value,
                       width: 45,
                       fillColor: Colors.white,
@@ -212,9 +213,9 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
     //mapFile.debug();
     final MapDataStore mapDataStore = mapFile;
     final SymbolCache symbolCache = FileSymbolCache(rootBundle);
-    final GraphicFactory graphicFactory = FlutterGraphicFactory(symbolCache);
+    final GraphicFactory graphicFactory = FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel();
-    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
     final String content = await rootBundle.loadString("assets/custom.xml");
     renderThemeBuilder.parseXml(content);
     final RenderTheme renderTheme = renderThemeBuilder.build();
@@ -223,7 +224,6 @@ class MapPageViewState extends State<MapPageView> with SingleTickerProviderState
 
     mapModel = MapModel(
       displayModel: displayModel,
-      graphicsFactory: graphicFactory,
       renderer: jobRenderer,
       tileBitmapCache: bitmapCache,
     );
