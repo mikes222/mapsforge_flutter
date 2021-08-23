@@ -17,13 +17,9 @@ class MarkerDataStore with ChangeNotifier {
   //bool _needsRepaint = false;
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
-  List<BasicMarker> getMarkers(
-      GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
-    List<BasicMarker> markers = _markers
-        .where((marker) => marker.shouldPaint(boundary, zoomLevel))
-        .toList();
-    List<BasicMarker> markersToInit =
-        markers.where((element) => _markersNeedInit.contains(element)).toList();
+  List<BasicMarker> getMarkers(GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
+    List<BasicMarker> markers = _markers.where((marker) => marker.shouldPaint(boundary, zoomLevel)).toList();
+    List<BasicMarker> markersToInit = markers.where((element) => _markersNeedInit.contains(element)).toList();
     _markersNeedInit.removeAll(markersToInit);
     if (markersToInit.length > 0) {
       _initMarkers(graphicFactory, markersToInit);
@@ -32,8 +28,7 @@ class MarkerDataStore with ChangeNotifier {
     return markers;
   }
 
-  void _initMarkers(
-      GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
+  void _initMarkers(GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
     _log.info("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
       await m.initResources(graphicFactory);
@@ -47,6 +42,8 @@ class MarkerDataStore with ChangeNotifier {
     _markers.forEach((marker) {
       marker.dispose();
     });
+    _markersNeedInit.clear();
+    _markers.clear();
     super.dispose();
   }
 
@@ -69,25 +66,27 @@ class MarkerDataStore with ChangeNotifier {
 
   void removeMarker(BasicMarker marker) {
     _markersNeedInit.remove(marker);
+    marker.dispose();
     _markers.remove(marker);
   }
 
-  void clearMarker() {
+  void clearMarkers() {
     _markersNeedInit.clear();
+    _markers.forEach((marker) {
+      marker.dispose();
+    });
     _markers.clear();
   }
 
-  List<BasicMarker> isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    return _markers
-        .where((element) => element.isTapped(mapViewPosition, tappedX, tappedY))
-        .toList();
+  List<BasicMarker> isTapped(MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+    return _markers.where((element) => element.isTapped(mapViewPosition, tappedX, tappedY)).toList();
   }
 
   void replaceMarkerWithItem(var item, BasicMarker marker) {
     int idx = _markers.indexWhere((marker) => marker.item == item);
     if (idx == -1) return;
     _markersNeedInit.remove(_markers[idx]);
+    _markers[idx].dispose();
     _markers[idx] = marker;
     _markersNeedInit.add(marker);
   }

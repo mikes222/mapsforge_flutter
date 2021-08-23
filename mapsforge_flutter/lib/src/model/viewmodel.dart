@@ -13,6 +13,7 @@ class ViewModel {
   final DisplayModel displayModel;
   ContextMenuBuilder? contextMenuBuilder;
 
+  /// Overlays to the map. Overlays can show things which do not move along with the map. Examples for overlays are zoombuttons.
   List<Widget>? overlays;
 
   ///

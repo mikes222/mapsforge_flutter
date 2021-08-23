@@ -112,7 +112,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   new MapFileData(
     url: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/world/world.map",
     fileName: "world.map",
-    displayedName: "Worldmap (big download size)",
+    displayedName: "Worldmap",
     theme: "assets/defaultrender.xml",
     initialPositionLat: 43.7399,
     initialPositionLong: 7.4262,
