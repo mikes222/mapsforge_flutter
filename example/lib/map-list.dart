@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'map-page-view.dart';
+import 'map-view-page.dart';
 import 'package:flutter/material.dart';
 import 'map-file-data.dart';
 import 'package:path_provider/path_provider.dart';
@@ -52,7 +52,7 @@ class MapList extends StatelessWidget {
           return _buildCard(context, element.displayedName, () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (BuildContext context) => MapPageView(mapFileData: element),
+                builder: (BuildContext context) => MapViewPage(mapFileData: element),
               ),
             );
           });
