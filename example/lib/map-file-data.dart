@@ -12,7 +12,13 @@ class MapFileData {
   final int initialZoomLevel;
   final String? relativePathPrefix;
   final bool isOnlineMap;
+
+  /// Sets the level overlay for indoor maps.
+  /// Requires the [indoorLevels] parameter.
   final bool indoorZoomOverlay;
+  /// Defines the levels and their names of an indoor map.
+  /// Requires the [indoorZoomOverlay] parameter.
+  final Map<int, String>? indoorLevels;
 
   MapFileData({
     required this.url,
@@ -23,7 +29,8 @@ class MapFileData {
     this.theme = "assets/custom.xml",
     this.relativePathPrefix,
     this.initialZoomLevel = 16,
-    this.indoorZoomOverlay = true,
+    this.indoorZoomOverlay = false,
+    this.indoorLevels,
   }) : isOnlineMap = false;
 
   MapFileData.online({
@@ -31,7 +38,8 @@ class MapFileData {
     required this.initialPositionLat,
     required this.initialPositionLong,
     this.initialZoomLevel = 14,
-    this.indoorZoomOverlay = true,
+    this.indoorZoomOverlay = false,
+    this.indoorLevels,
   })  : url = "online",
         fileName = "online",
         theme = "online",
