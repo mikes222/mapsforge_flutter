@@ -52,7 +52,8 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
           ),
           padding: EdgeInsets.only(left: 4, right: 4),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            //mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: buildColumns(context, mapModel, viewModel, event, callback),
           ),
         ),
@@ -63,17 +64,19 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
   List<Widget> buildColumns(BuildContext context, MapModel mapModel, ViewModel viewModel, TapEvent event, ContextMenuCallback callback) {
     return [
       Row(
-        mainAxisSize: MainAxisSize.min,
+        //mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           GestureDetector(
             child: Text(
               "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}",
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 14),
             ),
             onLongPress: () {
               Clipboard.setData(new ClipboardData(text: "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}"));
             },
           ),
+          //Spacer(),
+          // todo move the close icon to the right side
           IconButton(
             padding: EdgeInsets.all(0),
             icon: Icon(Icons.close),

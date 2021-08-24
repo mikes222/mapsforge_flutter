@@ -29,6 +29,7 @@ class BitmapMixin {
       bitmap = null;
     }
     bitmapInvalid = false;
+    this.bitmapSrc = bitmapSrc;
     await initBitmap(graphicFactory);
   }
 
@@ -38,6 +39,7 @@ class BitmapMixin {
       this.bitmap!.decrementRefCount();
       bitmap = null;
     }
+    bitmapPaint = null;
   }
 
   @mustCallSuper
@@ -57,9 +59,17 @@ class BitmapMixin {
     }
     try {
       bitmap = await symbolCache!.getSymbol(bitmapSrc, bitmapWidth.round(), bitmapHeight.round(), bitmapPercent);
+      if (bitmap == null || bitmap!.getWidth() == 0 || bitmap!.getHeight() == 0) {
+        _log.warning("bitmap $bitmapSrc not found or no width/height, ignoring");
+        bitmap = null;
+        bitmapInvalid = true;
+        return;
+      }
       bitmap!.incrementRefCount();
-      bitmapPaint = graphicFactory.createPaint();
-      bitmapPaint!.setColorFromNumber(0xff000000);
+      if (bitmapPaint == null) {
+        bitmapPaint = graphicFactory.createPaint();
+        bitmapPaint!.setColorFromNumber(0xff000000);
+      }
     } catch (e) {
       _log.warning("${e.toString()}, ignore missing bitmap in rendering");
       //print("Exception $e\nStacktrace $stacktrace");
