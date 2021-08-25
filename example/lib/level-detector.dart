@@ -18,7 +18,7 @@ import 'package:rxdart/rxdart.dart';
 ///
 /// Requires a [ViewModel] and [MapDataStore].
 ///
-/// Maximum zoom level of 17 can optionally be overwritten.
+/// Minimum zoom level of 17 can optionally be overwritten to a higher value.
 class LevelDetector {
 
   // sorts keys automatically from low to high
@@ -32,9 +32,16 @@ class LevelDetector {
 
   final ViewModel _viewModel;
   final MapDataStore _mapDataStore;
-  final int maxZoomLevel;
 
-  LevelDetector(this._viewModel, this._mapDataStore, [this.maxZoomLevel = 17])  {
+  /// The lowest value of the [zoomLevel] that triggers the [LevelDetector] to
+  /// operate.
+  ///
+  /// By default indoor elements are not rendered below a [zoomLevel] of 17,
+  /// thus the value should be (and will be set to) 17 or higher.
+  late final int minZoomLevel;
+
+  LevelDetector(this._viewModel, this._mapDataStore, [this.minZoomLevel = 17])  {
+    if (minZoomLevel < 17) minZoomLevel = 17;
     // debounce position change events
     this._viewModel.observePosition.debounceTime(Duration(milliseconds: 150)).listen(_getTileCacheData);
     this._viewModel.observePosition.debounceTime(Duration(milliseconds: 150)).listen(_updateLevelMappings);
@@ -46,8 +53,10 @@ class LevelDetector {
 
   /// Collects information about levels in cached tiles and triggers an
   /// [_updateLevelMapping] on data change.
+  ///
+  /// Operates only if the current [zoomLevel] is high enough.
   void _getTileCacheData (MapViewPosition mapViewPosition) {
-    if (_viewModel.viewDimension == null || mapViewPosition.zoomLevel < maxZoomLevel) return;
+    if (_viewModel.viewDimension == null || mapViewPosition.zoomLevel < minZoomLevel) return;
 
     List<Tile> tiles = LayerUtil.getTiles(_viewModel, mapViewPosition, DateTime.now().millisecondsSinceEpoch);
 
@@ -78,15 +87,14 @@ class LevelDetector {
 
   /// Updates information about level mappings in currently cached tiles.
   void _updateLevelMappings ([MapViewPosition? mapViewPosition]) {
-    if (_viewModel.viewDimension == null) return;
-    if (_viewModel.mapViewPosition == null) return;
+    if (_viewModel.viewDimension == null || _viewModel.mapViewPosition == null) return;
 
     List<Tile> tiles = LayerUtil.getTiles(_viewModel, _viewModel.mapViewPosition!, DateTime.now().millisecondsSinceEpoch);
 
     SplayTreeMap<int, String> combinedLevelMappings = new SplayTreeMap<int, String>();
 
-    // if out of min zoom level skip this and return empty map
-    if (_viewModel.mapViewPosition!.zoomLevel >= maxZoomLevel) {
+    // if below min zoom level skip this and return empty map
+    if (_viewModel.mapViewPosition!.zoomLevel >= minZoomLevel) {
       for (Tile tile in tiles) {
         SimpleTileKey tileKey = SimpleTileKey(tile);
         SplayTreeMap<int, String>? tileLevelMappings = _tileLevelCache.get(tileKey);
