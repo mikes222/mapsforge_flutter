@@ -26,7 +26,7 @@ class MapFileData {
     required this.displayedName,
     required this.initialPositionLat,
     required this.initialPositionLong,
-    this.theme = "assets/custom.xml",
+    this.theme = "assets/render_themes/custom.xml",
     this.relativePathPrefix,
     this.initialZoomLevel = 16,
     this.indoorZoomOverlay = false,
