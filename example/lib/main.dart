@@ -16,6 +16,12 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 16.311374,
     initialZoomLevel: 12,
   ),
+  new MapFileData.onlineSatellite(
+    displayedName: "Online Austria Satellite",
+    initialPositionLat: 48.089415,
+    initialPositionLong: 16.311374,
+    initialZoomLevel: 12,
+  ),
   new MapFileData(
     url: "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Chemnitz Uni.map",
     fileName: "Chemnitz Uni.map",

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:path_provider/path_provider.dart';
 
 /// A container to store map files and handle their information.
@@ -11,11 +12,12 @@ class MapFileData {
   final double initialPositionLong;
   final int initialZoomLevel;
   final String? relativePathPrefix;
-  final bool isOnlineMap;
+  final ONLINEMAPTYPE isOnlineMap;
 
   /// Sets the level overlay for indoor maps.
   /// Requires the [indoorLevels] parameter.
   final bool indoorZoomOverlay;
+
   /// Defines the levels and their names of an indoor map.
   /// Requires the [indoorZoomOverlay] parameter.
   final Map<int, String>? indoorLevels;
@@ -31,7 +33,7 @@ class MapFileData {
     this.initialZoomLevel = 16,
     this.indoorZoomOverlay = false,
     this.indoorLevels,
-  }) : isOnlineMap = false;
+  }) : isOnlineMap = ONLINEMAPTYPE.NO;
 
   MapFileData.online({
     required this.displayedName,
@@ -40,11 +42,24 @@ class MapFileData {
     this.initialZoomLevel = 14,
     this.indoorZoomOverlay = false,
     this.indoorLevels,
-  })  : url = "online",
-        fileName = "online",
+  })  : url = "unused",
+        fileName = "unused",
         theme = "online",
         relativePathPrefix = null,
-        isOnlineMap = true;
+        isOnlineMap = ONLINEMAPTYPE.OSM;
+
+  MapFileData.onlineSatellite({
+    required this.displayedName,
+    required this.initialPositionLat,
+    required this.initialPositionLong,
+    this.initialZoomLevel = 14,
+    this.indoorZoomOverlay = false,
+    this.indoorLevels,
+  })  : url = "unused",
+        fileName = "unused",
+        theme = "unused",
+        relativePathPrefix = null,
+        isOnlineMap = ONLINEMAPTYPE.ARCGIS;
 
   /// Finds the local directory of the stored map file.
   Future<String> getLocalFilePath() async {
@@ -57,4 +72,12 @@ class MapFileData {
     String filePath = await getLocalFilePath();
     return await File(filePath).exists();
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+enum ONLINEMAPTYPE {
+  NO,
+  OSM,
+  ARCGIS,
 }
