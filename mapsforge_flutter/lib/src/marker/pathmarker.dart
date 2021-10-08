@@ -18,6 +18,8 @@ class PathMarker<T> extends BasicMarker<T> {
 
   final int strokeColor;
 
+  MapPath? mapPath;
+
   PathMarker({
     display = Display.ALWAYS,
     minZoomLevel = 0,
@@ -31,7 +33,6 @@ class PathMarker<T> extends BasicMarker<T> {
         assert(maxZoomLevel <= 65535),
         assert(rotation >= 0 && rotation <= 360),
         assert(strokeWidth >= 0),
-        assert(strokeColor != null),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -54,6 +55,7 @@ class PathMarker<T> extends BasicMarker<T> {
 
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
+    mapPath = null;
   }
 
   @override
@@ -64,19 +66,23 @@ class PathMarker<T> extends BasicMarker<T> {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (stroke == null) return;
-    MapPath mapPath = markerCallback.graphicFactory.createPath();
+    if (mapPath == null) {
+      mapPath = markerCallback.graphicFactory.createPath();
 
-    path.forEach((latLong) {
-      double y =
-          markerCallback.mapViewPosition.projection!.latitudeToPixelY(latLong.latitude) - markerCallback.mapViewPosition.leftUpper!.y;
-      double x =
-          markerCallback.mapViewPosition.projection!.longitudeToPixelX(latLong.longitude) - markerCallback.mapViewPosition.leftUpper!.x;
+      path.forEach((latLong) {
+        double y = markerCallback.mapViewPosition.projection!
+                .latitudeToPixelY(latLong.latitude) -
+            markerCallback.mapViewPosition.leftUpper!.y;
+        double x = markerCallback.mapViewPosition.projection!
+                .longitudeToPixelX(latLong.longitude) -
+            markerCallback.mapViewPosition.leftUpper!.x;
 
-      if (mapPath.isEmpty())
-        mapPath.moveTo(x, y);
-      else
-        mapPath.lineTo(x, y);
-    });
-    markerCallback.renderPath(mapPath, stroke!);
+        if (mapPath!.isEmpty())
+          mapPath!.moveTo(x, y);
+        else
+          mapPath!.lineTo(x, y);
+      });
+    }
+    markerCallback.renderPath(mapPath!, stroke!);
   }
 }
