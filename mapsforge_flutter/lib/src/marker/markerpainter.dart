@@ -18,7 +18,7 @@ class MarkerPainter extends CustomPainter {
 
   final DisplayModel displayModel;
 
-  final MarkerDataStore dataStore;
+  final IMarkerDataStore dataStore;
 
   final ViewModel viewModel;
 

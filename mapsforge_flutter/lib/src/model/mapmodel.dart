@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
@@ -11,7 +12,7 @@ import 'displaymodel.dart';
 class MapModel {
   final DisplayModel displayModel;
   final JobRenderer renderer;
-  final List<MarkerDataStore> markerDataStores = [];
+  final List<IMarkerDataStore> markerDataStores = [];
   final TileBitmapCache? tileBitmapCache;
   final TileBitmapCache tileBitmapCacheFirstLevel;
 

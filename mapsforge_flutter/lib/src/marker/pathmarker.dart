@@ -66,23 +66,23 @@ class PathMarker<T> extends BasicMarker<T> {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (stroke == null) return;
-    if (mapPath == null) {
-      mapPath = markerCallback.graphicFactory.createPath();
+    //if (mapPath == null) {
+    mapPath = markerCallback.graphicFactory.createPath();
 
-      path.forEach((latLong) {
-        double y = markerCallback.mapViewPosition.projection!
-                .latitudeToPixelY(latLong.latitude) -
-            markerCallback.mapViewPosition.leftUpper!.y;
-        double x = markerCallback.mapViewPosition.projection!
-                .longitudeToPixelX(latLong.longitude) -
-            markerCallback.mapViewPosition.leftUpper!.x;
+    path.forEach((latLong) {
+      double y = markerCallback.mapViewPosition.projection!
+              .latitudeToPixelY(latLong.latitude) -
+          markerCallback.mapViewPosition.leftUpper!.y;
+      double x = markerCallback.mapViewPosition.projection!
+              .longitudeToPixelX(latLong.longitude) -
+          markerCallback.mapViewPosition.leftUpper!.x;
 
-        if (mapPath!.isEmpty())
-          mapPath!.moveTo(x, y);
-        else
-          mapPath!.lineTo(x, y);
-      });
-    }
+      if (mapPath!.isEmpty())
+        mapPath!.moveTo(x, y);
+      else
+        mapPath!.lineTo(x, y);
+    });
+    // }
     markerCallback.renderPath(mapPath!, stroke!);
   }
 }

@@ -1,17 +1,17 @@
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/marker/imarkerdatastore.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/basicmarker.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 
 ///
-/// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas)
+/// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas). Use this class if you often access the markers by their item.
 ///
-class MarkerDataStore extends IMarkerDataStore {
+class MarkerByItemDataStore extends IMarkerDataStore {
   static final _log = new Logger('MarkerDataStore');
 
-  final List<BasicMarker> _markers = [];
+  final Map<dynamic, BasicMarker> _markers = {};
 
   final Set<BasicMarker> _markersNeedInit = Set();
 
@@ -27,7 +27,7 @@ class MarkerDataStore extends IMarkerDataStore {
       _previousBoundingBox = boundary;
       _previousZoomLevel = zoomLevel;
     }
-    List<BasicMarker> markersToDraw = _markers
+    List<BasicMarker> markersToDraw = _markers.values
         .where((marker) => marker.shouldPaint(boundary, zoomLevel))
         .toList();
     List<BasicMarker> markersToInit = markersToDraw
@@ -70,7 +70,7 @@ class MarkerDataStore extends IMarkerDataStore {
 
   void addMarker(BasicMarker marker) {
     _markersNeedInit.add(marker);
-    _markers.add(marker);
+    _markers[marker.item] = marker;
   }
 
   void removeMarker(BasicMarker marker) {
@@ -81,7 +81,7 @@ class MarkerDataStore extends IMarkerDataStore {
 
   void clearMarkers() {
     _markersNeedInit.clear();
-    _markers.forEach((marker) {
+    _markers.values.forEach((marker) {
       marker.dispose();
     });
     _markers.clear();
@@ -89,8 +89,28 @@ class MarkerDataStore extends IMarkerDataStore {
 
   List<BasicMarker> isTapped(
       MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    return _markers
+    return _markers.values
         .where((element) => element.isTapped(mapViewPosition, tappedX, tappedY))
         .toList();
+  }
+
+  void replaceMarkerWithItem(var item, BasicMarker newMarker) {
+    removeMarkerWithItem(item);
+    _markers[item] = newMarker;
+    _markersNeedInit.add(newMarker);
+  }
+
+  /// remove the marker with the given [item]
+  void removeMarkerWithItem(var item) {
+    BasicMarker? oldMarker = getMarkerWithItem(item);
+    if (oldMarker != null) {
+      _markersNeedInit.remove(oldMarker);
+      _markers.remove(item);
+      oldMarker.dispose();
+    }
+  }
+
+  BasicMarker? getMarkerWithItem(var item) {
+    return _markers[item];
   }
 }
