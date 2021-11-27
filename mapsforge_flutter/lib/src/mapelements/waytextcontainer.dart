@@ -21,18 +21,20 @@ class WayTextContainer extends MapElementContainer {
   final String text;
   final double textHeight;
 
-  WayTextContainer(
-      this.graphicFactory, this.lineString, Display display, int priority, this.text, this.paintFront, this.paintBack, this.textHeight)
+  WayTextContainer(this.graphicFactory, this.lineString, Display display,
+      int priority, this.text, this.paintFront, this.paintBack, this.textHeight)
       : super(lineString.segments.elementAt(0).start, display, priority) {
     this.boundary = null;
     // a way text container should always run left to right, but I leave this in because it might matter
     // if we support right-to-left text.
     // we also need to make the container larger by textHeight as otherwise the end points do
     // not correctly reflect the size of the text on screen
-    this.boundaryAbsolute = lineString.getBounds().enlarge(textHeight / 2, textHeight / 2, textHeight / 2, textHeight / 2);
+    this.boundaryAbsolute = lineString.getBounds().enlarge(
+        textHeight / 2, textHeight / 2, textHeight / 2, textHeight / 2);
   }
 
   @mustCallSuper
+  @override
   dispose() {}
 
   @override
@@ -42,7 +44,9 @@ class WayTextContainer extends MapElementContainer {
     {
       int color = this.paintBack.getColor();
       if (filter != Filter.NONE) {
-        this.paintBack.setColorFromNumber(GraphicUtils.filterColor(color, filter));
+        this
+            .paintBack
+            .setColorFromNumber(GraphicUtils.filterColor(color, filter));
       }
       canvas.drawPathText(this.text, this.lineString, origin, this.paintBack);
       if (filter != Filter.NONE) {
@@ -51,7 +55,9 @@ class WayTextContainer extends MapElementContainer {
     }
     int color = this.paintFront.getColor();
     if (filter != Filter.NONE) {
-      this.paintFront.setColorFromNumber(GraphicUtils.filterColor(color, filter));
+      this
+          .paintFront
+          .setColorFromNumber(GraphicUtils.filterColor(color, filter));
     }
     canvas.drawPathText(this.text, this.lineString, origin, this.paintFront);
     if (filter != Filter.NONE) {

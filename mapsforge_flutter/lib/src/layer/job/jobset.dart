@@ -39,6 +39,7 @@ class JobSet extends ChangeNotifier {
   }
 
   @mustCallSuper
+  @override
   void dispose() {
     _bitmaps!.values.forEach((element) {
       element.bitmap?.decrementRefCount();

@@ -11,7 +11,8 @@ import 'tilebitmapcache.dart';
 /// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.
 ///
 class MemoryTileBitmapCache extends TileBitmapCache {
-  final SimpleStorage<Tile, TileBitmap> storage = SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
+  final SimpleStorage<Tile, TileBitmap> storage =
+      SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
     item.decrementRefCount();
   });
   late Cache<Tile, TileBitmap> _bitmaps;
@@ -38,6 +39,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
     return _bitmaps.get(tile);
   }
 
+  @override
   void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
     tileBitmap.incrementRefCount();
     // TileBitmap bitmap = _bitmaps.get(tile);

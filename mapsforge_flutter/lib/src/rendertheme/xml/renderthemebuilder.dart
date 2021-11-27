@@ -83,29 +83,25 @@ class RenderThemeBuilder {
         case XmlNodeType.ELEMENT:
           {
             XmlElement element = node as XmlElement;
-            if (element.name.toString() != "rendertheme") throw Exception("Invalid root node ${element.name.toString()}");
+            if (element.name.toString() != "rendertheme")
+              throw Exception("Invalid root node ${element.name.toString()}");
             foundRendertheme = true;
             _parseRendertheme(element, initPendings);
             break;
           }
         case XmlNodeType.ATTRIBUTE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.CDATA:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.COMMENT:
           // throw Exception("Invalid node ${node.nodeType.toString()}");
           break;
         case XmlNodeType.DOCUMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DOCUMENT_FRAGMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DECLARATION:
           break;
       }
@@ -114,7 +110,8 @@ class RenderThemeBuilder {
     _log.info("Found ${initPendings.length} items for lazy initialization");
   }
 
-  void _parseRendertheme(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void _parseRendertheme(
+      XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -160,7 +157,8 @@ class RenderThemeBuilder {
             XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, null, initPendings, _level);
+              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache,
+                  displayModel, null, initPendings, _level);
               ruleBuilder.parse(element, initPendings);
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;
@@ -188,8 +186,12 @@ class RenderThemeBuilder {
                 } else if ("zoom-max" == name) {
                   maxZoom = XmlUtils.parseNonNegativeByte("zoom-max", value);
                 } else if ("magnitude" == name) {
-                  magnitude = XmlUtils.parseNonNegativeInteger("magnitude", value).toDouble();
-                  if (magnitude > 255) throw new Exception("Attribute 'magnitude' must not be > 255");
+                  magnitude =
+                      XmlUtils.parseNonNegativeInteger("magnitude", value)
+                          .toDouble();
+                  if (magnitude > 255)
+                    throw new Exception(
+                        "Attribute 'magnitude' must not be > 255");
                 } else if ("always" == name) {
                   always = "true" == (value);
                 } else if ("layer" == name) {
@@ -197,7 +199,8 @@ class RenderThemeBuilder {
                 }
               });
 
-              Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, _level);
+              Hillshading hillshading = new Hillshading(
+                  minZoom, maxZoom, magnitude, layer, always, _level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
               //hillShadings.add(hillshading);
@@ -212,21 +215,16 @@ class RenderThemeBuilder {
           }
         case XmlNodeType.ATTRIBUTE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.CDATA:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.COMMENT:
           break;
         case XmlNodeType.DOCUMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DOCUMENT_FRAGMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DECLARATION:
           break;
       }

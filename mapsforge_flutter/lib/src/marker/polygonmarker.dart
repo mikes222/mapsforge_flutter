@@ -85,7 +85,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    super.initResources(graphicFactory);
+    await super.initResources(graphicFactory);
     if (fill == null && fillColor != null) {
       this.fill = graphicFactory.createPaint();
       this.fill!.setColorFromNumber(fillColor!);

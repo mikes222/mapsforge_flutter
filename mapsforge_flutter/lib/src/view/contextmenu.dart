@@ -22,7 +22,7 @@ class ContextMenu extends StatefulWidget {
   ContextMenu(
       {Key? key, required this.event, required this.mapModel, required this.viewModel, required this.position, this.contextMenuBuilder})
       : super(key: key) {
-    if (contextMenuBuilder == null) contextMenuBuilder = DefaultContextMenuBuilder();
+    contextMenuBuilder ??= DefaultContextMenuBuilder();
   }
 
   @override

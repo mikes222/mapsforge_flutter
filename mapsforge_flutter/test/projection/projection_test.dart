@@ -54,14 +54,14 @@ main() {
     int tileSize = 256;
     PixelProjection projection = PixelProjection(zoomLevel, tileSize);
 
-    expect(projection.meterPerPixel(LatLong(0, 0)), 9783.939620605468);
-    expect(projection.meterPerPixel(LatLong(60, 0)), 4891.969810302735);
-    expect(projection.meterPerPixel(LatLong(85, 0)), 852.7265246321101);
-    expect(projection.meterPerPixel(LatLong(90, 0)), 0);
-    expect(projection.meterPerPixel(LatLong(-60, 0)), 4891.969810302735);
+    expect(projection.meterPerPixel(const LatLong(0, 0)), 9783.939620605468);
+    expect(projection.meterPerPixel(const LatLong(60, 0)), 4891.969810302735);
+    expect(projection.meterPerPixel(const LatLong(85, 0)), 852.7265246321101);
+    expect(projection.meterPerPixel(const LatLong(90, 0)), 0);
+    expect(projection.meterPerPixel(const LatLong(-60, 0)), 4891.969810302735);
   });
 
   test("Bearingtest", () {
-    expect(Projection.startBearing(LatLong(35, 45), LatLong(35, 135)), 60.16243352168624);
+    expect(Projection.startBearing(const LatLong(35, 45), const LatLong(35, 135)), 60.16243352168624);
   });
 }

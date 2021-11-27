@@ -19,6 +19,6 @@ class FlutterColor {
         return Colors.white.value;
     }
 
-    throw new Exception("unknown color: " + color.toString());
+    //throw new Exception("unknown color: " + color.toString());
   }
 }

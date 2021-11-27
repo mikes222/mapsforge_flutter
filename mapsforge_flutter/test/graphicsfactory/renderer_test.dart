@@ -28,7 +28,8 @@ void main() {
     _initLogging();
   });
 
-  testWidgets('Creates a custom datastore and renders it', (WidgetTester tester) async {
+  testWidgets('Creates a custom datastore and renders it',
+      (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
@@ -40,8 +41,9 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    GraphicFactory graphicFactory = const FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder =
+        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -49,17 +51,30 @@ void main() {
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MemoryDatastore datastore = MemoryDatastore();
-      datastore.addPoi(PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'TestPOI')], LatLong(46, 18)));
-      datastore.addPoi(PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'TestSuburb')], LatLong(46, 17.998)));
-      datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')], LatLong(45.999, 17.996)));
-      datastore.addWay(Way(
+      datastore.addPoi(const PointOfInterest(
           0,
-          [Tag('name', 'TestWay'), Tag('tunnel', 'yes'), Tag('railway', 'rail')],
+          [const Tag('natural', 'peak'), Tag('name', 'TestPOI')],
+          LatLong(46, 18)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [const Tag('place', 'suburb'), Tag('name', 'TestSuburb')],
+          LatLong(46, 17.998)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [const Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')],
+          LatLong(45.999, 17.996)));
+      datastore.addWay(const Way(
+          0,
+          [
+            Tag('name', 'TestWay'),
+            Tag('tunnel', 'yes'),
+            Tag('railway', 'rail')
+          ],
           [
             [LatLong(45.95, 17.95), LatLong(46.05, 18.05)]
           ],
           null));
-      datastore.addWay(Way(
+      datastore.addWay(const Way(
           0,
           [
             Tag('highway', 'service'),
@@ -78,10 +93,13 @@ void main() {
       expect(result.ways.length, greaterThan(0));
       expect(result.pointOfInterests.length, greaterThan(0));
       print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+      Job mapGeneratorJob = new Job(tile, false,
+          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.bitmap, isNotNull);
       var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
       return img;
@@ -123,8 +141,9 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    GraphicFactory graphicFactory = const FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder =
+        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -132,11 +151,16 @@ void main() {
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MemoryDatastore datastore = MemoryDatastore();
-      datastore.addWay(Way(
+      datastore.addWay(const Way(
           0,
-          [Tag('name', 'OurForest'), Tag('natural', 'wood')],
+          [Tag('name', 'OurForest'), const Tag('natural', 'wood')],
           [
-            [LatLong(45.95, 17.95), LatLong(46.05, 17.99), LatLong(46.00, 17.990), LatLong(45.95, 17.95)]
+            [
+              LatLong(45.95, 17.95),
+              LatLong(46.05, 17.99),
+              LatLong(46.00, 17.990),
+              LatLong(45.95, 17.95)
+            ]
           ],
           null));
       Tile tile = new Tile(x, y, zoomlevel, l);
@@ -144,10 +168,13 @@ void main() {
       expect(datastore.supportsTile(tile, projection), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, greaterThan(0));
-      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+      Job mapGeneratorJob = new Job(tile, false,
+          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.bitmap, isNotNull);
       var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
       return img;

@@ -5,14 +5,14 @@ import 'package:mapsforge_flutter/src/rendertheme/rule/matchingcachekey.dart';
 
 void main() {
   test('split-test1', () {
-    Tag tag1 = Tag('', '');
+    Tag tag1 = const Tag('', '');
     List<Tag> tagList1 = [tag1];
     MatchingCacheKey m1 = MatchingCacheKey(tagList1, 5, 0, Closed.YES);
     MatchingCacheKey m2 = MatchingCacheKey(tagList1, 5, 0, Closed.YES);
     MatchingCacheKey m3 = MatchingCacheKey([tag1], 5, 0, Closed.YES);
-    MatchingCacheKey m4 = MatchingCacheKey([Tag('', '')], 5, 0, Closed.YES);
-    MatchingCacheKey m5 = MatchingCacheKey([Tag('test', '')], 5, 0, Closed.YES);
-    expect(tag1 == Tag('', ''), true);
+    MatchingCacheKey m4 = const MatchingCacheKey([const Tag('', '')], 5, 0, Closed.YES);
+    MatchingCacheKey m5 = const MatchingCacheKey([const Tag('test', '')], 5, 0, Closed.YES);
+    expect(tag1 == const Tag('', ''), true);
 //    expect(tagList1 == [tag1], true);
 //    expect(m1.hashCode, m1.hashCode);
     expect(m1.hashCode, m2.hashCode);

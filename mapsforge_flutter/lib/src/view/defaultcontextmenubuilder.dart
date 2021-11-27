@@ -13,7 +13,7 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
   double outerRadius = 20;
   double width = 4;
   Color borderColor = Colors.green;
-  Color backgroundColor = Color(0xc3FFFFFF);
+  Color backgroundColor = const Color(0xc3FFFFFF);
 
   @override
   Widget build(BuildContext context, MapModel mapModel, ViewModel viewModel, Dimension? screen, double x, double y, TapEvent event,
@@ -50,7 +50,7 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
             ),
             color: backgroundColor,
           ),
-          padding: EdgeInsets.only(left: 4, right: 4),
+          padding: const EdgeInsets.only(left: 4, right: 4),
           child: Column(
             //mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +69,7 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
           GestureDetector(
             child: Text(
               "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}",
-              style: TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 14),
             ),
             onLongPress: () {
               Clipboard.setData(new ClipboardData(text: "${event.latitude.toStringAsFixed(6)} / ${event.longitude.toStringAsFixed(6)}"));
@@ -78,8 +78,8 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
           //Spacer(),
           // todo move the close icon to the right side
           IconButton(
-            padding: EdgeInsets.all(0),
-            icon: Icon(Icons.close),
+            padding: const EdgeInsets.all(0),
+            icon: const Icon(Icons.close),
             onPressed: () {
               callback.close(event);
             },

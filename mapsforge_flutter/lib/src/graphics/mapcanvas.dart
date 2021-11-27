@@ -1,13 +1,9 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/rectangle.dart';
 
-import '../model/dimension.dart';
 import 'bitmap.dart';
-import 'color.dart';
 import 'mappaint.dart';
 import 'mappath.dart';
 import 'maprect.dart';
@@ -50,7 +46,8 @@ abstract class MapCanvas {
 
   void drawRect(MapRect rect, MapPaint paint);
 
-  void drawPathText(String text, LineString lineString, Mappoint origin, MapPaint paint);
+  void drawPathText(
+      String text, LineString lineString, Mappoint origin, MapPaint paint);
 
   void drawText(String text, int x, int y, MapPaint paint);
 

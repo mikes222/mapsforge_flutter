@@ -21,8 +21,8 @@ class MapHeaderPage extends StatelessWidget {
       future: _loadMapFile(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.data == null)
-          return Center(
-            child: CircularProgressIndicator(),
+          return const Center(
+            child: const CircularProgressIndicator(),
           );
         MapFile mapFile = snapshot.data;
         return ListView(
@@ -31,9 +31,9 @@ class MapHeaderPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
+                  const Text(
                     "Static Properties",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   // Wrap(
                   //   children: <Widget>[
@@ -48,9 +48,9 @@ class MapHeaderPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
+                  const Text(
                     "General Properties",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Wrap(
                     children: <Widget>[
@@ -69,7 +69,7 @@ class MapHeaderPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
+                  const Text(
                     "Map fileheader Properties",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -81,8 +81,8 @@ class MapHeaderPage extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Text("SubfileParams: "),
-                            Icon(Icons.more_horiz),
+                            const Text("SubfileParams: "),
+                            const Icon(Icons.more_horiz),
                           ],
                         ),
                         onTap: () {
@@ -109,9 +109,9 @@ class MapHeaderPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
+                  const Text(
                     "Map Fileinfo Properties",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Wrap(
                     children: <Widget>[

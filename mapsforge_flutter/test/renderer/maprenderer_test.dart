@@ -21,7 +21,7 @@ main() async {
   test("MultimapDatastore without maps", () async {
     _initLogging();
 
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    GraphicFactory graphicFactory = const FlutterGraphicFactory();
     DisplayModel displayModel = DisplayModel();
     MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
 

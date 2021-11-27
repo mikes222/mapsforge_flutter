@@ -5,7 +5,6 @@ import '../../renderer/polylinecontainer.dart';
 import '../../rendertheme/renderinstruction/hillshading.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/rule/rule.dart';
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
@@ -25,7 +24,8 @@ class RenderTheme {
   late Map<MatchingCacheKey, List<RenderInstruction>> wayMatchingCache;
   late Map<MatchingCacheKey, List<RenderInstruction>> poiMatchingCache;
   final List<Rule> rulesList; // NOPMD we need specific interface
-  List<Hillshading> hillShadings = []; // NOPMD specific interface for trimToSize
+  List<Hillshading> hillShadings =
+      []; // NOPMD specific interface for trimToSize
   final List<RenderInstruction> initPendings;
 
   final Map<int, double> strokeScales = new Map();
@@ -90,7 +90,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  List<RenderInstruction> matchClosedWay(final RenderContext renderContext, PolylineContainer way) {
+  List<RenderInstruction> matchClosedWay(
+      final RenderContext renderContext, PolylineContainer way) {
     return _matchWay(renderContext, Closed.YES, way);
   }
 
@@ -101,7 +102,8 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  List<RenderInstruction> matchLinearWay(final RenderContext renderContext, PolylineContainer way) {
+  List<RenderInstruction> matchLinearWay(
+      final RenderContext renderContext, PolylineContainer way) {
     return _matchWay(renderContext, Closed.NO, way);
   }
 
@@ -112,11 +114,16 @@ class RenderTheme {
    * @param renderContext
    * @param poi            the point of interest.
    */
-  List<RenderInstruction> matchNode(final RenderContext renderContext, PointOfInterest poi) {
-    MatchingCacheKey matchingCacheKey =
-        new MatchingCacheKey(poi.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel, Closed.NO);
+  List<RenderInstruction> matchNode(
+      final RenderContext renderContext, PointOfInterest poi) {
+    MatchingCacheKey matchingCacheKey = new MatchingCacheKey(
+        poi.tags,
+        renderContext.job.tile.zoomLevel,
+        renderContext.job.tile.indoorLevel,
+        Closed.NO);
 
-    List<RenderInstruction>? matchingList = this.poiMatchingCache[matchingCacheKey];
+    List<RenderInstruction>? matchingList =
+        this.poiMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
       matchingList = [];
@@ -136,7 +143,8 @@ class RenderTheme {
    * @param zoomLevel   the zoom level to which this is applied.
    */
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
-    if (!strokeScales.containsKey(zoomLevel) || scaleFactor != strokeScales[zoomLevel]) {
+    if (!strokeScales.containsKey(zoomLevel) ||
+        scaleFactor != strokeScales[zoomLevel]) {
       rulesList.forEach((rule) {
         if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth, zoomLevel);
@@ -156,7 +164,8 @@ class RenderTheme {
    * @param zoomLevel   the zoom level to which this is applied.
    */
   void scaleTextSize(double scaleFactor, int zoomLevel) {
-    if (!textScales.containsKey(zoomLevel) || scaleFactor != textScales[zoomLevel]) {
+    if (!textScales.containsKey(zoomLevel) ||
+        scaleFactor != textScales[zoomLevel]) {
       rulesList.forEach((rule) {
         if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.scaleTextSize(scaleFactor * this.baseTextSize, zoomLevel);
@@ -186,11 +195,13 @@ class RenderTheme {
   //   this.levels = levels;
   // }
 
-  List<RenderInstruction> _matchWay(final RenderContext renderContext, Closed closed, PolylineContainer way) {
-    MatchingCacheKey matchingCacheKey =
-        MatchingCacheKey(way.getTags(), way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
+  List<RenderInstruction> _matchWay(
+      final RenderContext renderContext, Closed closed, PolylineContainer way) {
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.getTags(),
+        way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
 
-    List<RenderInstruction>? matchingList = this.wayMatchingCache[matchingCacheKey];
+    List<RenderInstruction>? matchingList =
+        this.wayMatchingCache[matchingCacheKey];
     if (matchingList == null) {
       // build cache
       matchingList = [];

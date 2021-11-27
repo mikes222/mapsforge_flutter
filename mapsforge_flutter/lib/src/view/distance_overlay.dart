@@ -18,7 +18,8 @@ class DistanceOverlay extends StatefulWidget {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProviderStateMixin {
+class _DistanceOverlayState extends State<DistanceOverlay>
+    with SingleTickerProviderStateMixin {
   final double toolbarSpacing = 15;
 
   late AnimationController _fadeAnimationController;
@@ -26,6 +27,7 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
 
   Timer? _timer;
 
+  @override
   DistanceOverlay get widget => super.widget;
 
   @override
@@ -63,11 +65,13 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
         opacity: _fadeAnimationController,
         child: StreamBuilder(
           stream: widget.viewModel.observePosition,
-          builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
+          builder:
+              (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
             if (snapshot.data == null) return Container();
             MapViewPosition position = snapshot.data!;
             // get the meters per pixel, always calculate with meters!
-            double meterPerPixel = position.projection!.meterPerPixel(LatLong(position.latitude!, position.longitude!));
+            double meterPerPixel = position.projection!.meterPerPixel(
+                LatLong(position.latitude!, position.longitude!));
             // default is 100 pixels in ui
             double pixel = 100;
             // how many meters are that?
@@ -102,7 +106,7 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
 
             if (_timer == null) _fadeAnimationController.forward();
             _timer?.cancel();
-            _timer = Timer(Duration(seconds: 10), () {
+            _timer = Timer(const Duration(seconds: 10), () {
               if (mounted) _fadeAnimationController.reverse();
               _timer = null;
             });
@@ -160,6 +164,7 @@ class MeterPainter extends ChangeNotifier implements CustomPainter {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
+  @override
   bool? hitTest(Offset position) => null;
 
   @override

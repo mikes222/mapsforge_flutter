@@ -7,7 +7,7 @@ import 'element.dart';
 import 'elementmatcher.dart';
 
 class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
-  static final AnyMatcher INSTANCE = new AnyMatcher();
+  static final AnyMatcher INSTANCE = const AnyMatcher();
 
   const AnyMatcher();
 

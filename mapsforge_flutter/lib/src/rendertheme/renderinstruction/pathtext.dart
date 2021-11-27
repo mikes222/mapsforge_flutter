@@ -117,17 +117,13 @@ class PathText extends RenderInstruction {
 
   MapPaint getFillPaint(int zoomLevel) {
     MapPaint? paint = fills[zoomLevel];
-    if (paint == null) {
-      paint = this.fill;
-    }
+    paint ??= this.fill;
     return paint;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
     MapPaint? paint = strokes[zoomLevel];
-    if (paint == null) {
-      paint = this.stroke;
-    }
+    paint ??= this.stroke;
     return paint;
   }
 
@@ -148,9 +144,7 @@ class PathText extends RenderInstruction {
     }
 
     double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
-    if (dyScale == null) {
-      dyScale = this.dy;
-    }
+    dyScale ??= this.dy;
 
     renderCallback.renderWayText(
         renderContext,

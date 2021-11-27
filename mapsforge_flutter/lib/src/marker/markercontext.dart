@@ -16,12 +16,15 @@ import 'markercallback.dart';
 class MarkerContext implements MarkerCallback {
   final FlutterCanvas flutterCanvas;
 
+  @override
   final GraphicFactory graphicFactory;
 
+  @override
   final MapViewPosition mapViewPosition;
 
   MarkerContext(this.flutterCanvas, this.graphicFactory, this.mapViewPosition);
 
+  @override
   void renderBitmap(Bitmap bitmap, double latitude, double longitude,
       double offsetX, double offsetY, double rotation, MapPaint paint) {
     double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
@@ -56,6 +59,7 @@ class MarkerContext implements MarkerCallback {
     flutterCanvas.drawPath(path, paint);
   }
 
+  @override
   void renderCircle(
       double latitude, double longitude, double radius, MapPaint paint) {
     double y = mapViewPosition.projection!.latitudeToPixelY(latitude);

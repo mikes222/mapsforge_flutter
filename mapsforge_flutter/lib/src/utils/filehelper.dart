@@ -19,7 +19,7 @@ class FileHelper {
     bool exists = await savedDir.exists();
     if (!exists) {
       _log.info("Creating directory $result");
-      savedDir.create(recursive: true);
+      await savedDir.create(recursive: true);
     }
 
     return result;
@@ -54,14 +54,14 @@ class FileHelper {
     return false;
   }
 
-  static void unzip(String zippedFilename, String filename) async {
+  static Future<void> unzip(String zippedFilename, String filename) async {
     String _localPath = await findLocalPath();
     File zipfile = File(_localPath + "/" + zippedFilename);
     Uint8List content = await zipfile.readAsBytes();
     Uint8List unzipped = gzip.decoder.convert(content) as Uint8List;
     File file = File(_localPath + "/" + filename);
-    file.writeAsBytes(unzipped);
-    zipfile.delete();
+    await file.writeAsBytes(unzipped);
+    await zipfile.delete();
   }
 
   static Future<bool> delete(String filename) async {
@@ -73,7 +73,7 @@ class FileHelper {
       file = File(_localPath + "/" + filename);
     }
     if (await file.exists()) {
-      file.delete();
+      await file.delete();
       return true;
     }
     return false;

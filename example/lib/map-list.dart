@@ -27,16 +27,16 @@ class MapList extends StatelessWidget {
       title: const Text('Rendering Examples'),
       actions: <Widget>[
         PopupMenuButton<String>(
-          offset: Offset(0, 50),
+          offset: const Offset(0, 50),
           onSelected: (choice) => _handleMenuItemSelect(choice),
           itemBuilder: (BuildContext context) => [
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: "clear_tile_cache",
               child: Text("Delete Tile Cache"),
             ),
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: "delete_map_files",
-              child: Text("Delete Map Files"),
+              child: const Text("Delete Map Files"),
             ),
           ],
         ),
@@ -52,7 +52,8 @@ class MapList extends StatelessWidget {
           return _buildCard(context, element.displayedName, () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (BuildContext context) => MapViewPage(mapFileData: element),
+                builder: (BuildContext context) =>
+                    MapViewPage(mapFileData: element),
               ),
             );
           });
@@ -62,18 +63,19 @@ class MapList extends StatelessWidget {
   }
 
   /// Constructs a clickable [Card] element.
-  Card _buildCard(BuildContext context, String caption, action, [bool enabled = true]) {
+  Card _buildCard(BuildContext context, String caption, action,
+      [bool enabled = true]) {
     return Card(
-      margin: EdgeInsets.only(top: 7, bottom: 7),
+      margin: const EdgeInsets.only(top: 7, bottom: 7),
       elevation: 4,
       child: ListTile(
         title: Text(
           caption,
           style: TextStyle(color: enabled ? Colors.black : Colors.grey),
         ),
-        contentPadding: EdgeInsets.fromLTRB(17, 5, 17, 5),
+        contentPadding: const EdgeInsets.fromLTRB(17, 5, 17, 5),
         onTap: enabled ? action : null,
-        trailing: Icon(Icons.arrow_forward_rounded),
+        trailing: const Icon(Icons.arrow_forward_rounded),
       ),
     );
   }
@@ -82,19 +84,20 @@ class MapList extends StatelessWidget {
   Future<void> _handleMenuItemSelect(String value) async {
     switch (value) {
       case 'clear_tile_cache':
-        String fileCachePath = (await getTemporaryDirectory()).path + "/mapsforgetiles";
+        String fileCachePath =
+            (await getTemporaryDirectory()).path + "/mapsforgetiles";
         var fileCacheDir = Directory(fileCachePath);
         if (await fileCacheDir.exists()) {
-          fileCacheDir.list(recursive: false).forEach((f) async {
-            f.delete(recursive: true);
+          await fileCacheDir.list(recursive: false).forEach((f) async {
+            await f.delete(recursive: true);
           });
         }
         break;
       case 'delete_map_files':
         Directory dir = await getApplicationDocumentsDirectory();
-        dir.list(recursive: false).forEach((f) async {
+        await dir.list(recursive: false).forEach((f) async {
           if (await FileSystemEntity.isFile(f.path)) {
-            f.delete();
+            await f.delete();
           }
         });
         break;

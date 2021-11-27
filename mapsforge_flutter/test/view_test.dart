@@ -26,21 +26,24 @@ void main() {
     );
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
+    GraphicFactory graphicFactory = const FlutterGraphicFactory();
 
     MapModel? mapModel = await (tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
 
-      MapFile mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), null, null);
+      MapFile mapDataStore = await MapFile.from(
+          TestAssetBundle().correctFilename("monaco.map"), null, null);
 
       final DisplayModel displayModel = DisplayModel();
 
-      RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+      RenderThemeBuilder renderThemeBuilder =
+          RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
+          mapDataStore, renderTheme, graphicFactory, false);
 
       //MemoryTileBitmapCache bitmapCache = MemoryTileBitmapCache();
 
@@ -79,7 +82,8 @@ void main() {
     await tester.pump();
     print("Wait is over");
     await tester.pump();
-    await expectLater(find.byType(FlutterMapView), matchesGoldenFile('view.png'));
+    await expectLater(
+        find.byType(FlutterMapView), matchesGoldenFile('view.png'));
   });
 }
 

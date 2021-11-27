@@ -15,7 +15,8 @@ class TileLayerPainter extends CustomPainter {
 
   final JobSet jobSet;
 
-  TileLayerPainter(this._tileLayer, this.position, this.viewModel, this.jobSet) : super(repaint: jobSet);
+  TileLayerPainter(this._tileLayer, this.position, this.viewModel, this.jobSet)
+      : super(repaint: jobSet);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -35,6 +36,7 @@ class TileLayerPainter extends CustomPainter {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
+  @override
   bool? hitTest(Offset position) => null;
 
   @override

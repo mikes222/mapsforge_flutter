@@ -1,7 +1,5 @@
 import 'dart:math';
 
-import 'package:mapsforge_flutter/src/projection/projection.dart';
-
 class Scalefactor {
   final double scalefactor;
 

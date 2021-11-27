@@ -21,13 +21,14 @@ class MapOnlineRenderer extends JobRenderer {
   HttpClient _httpClient = new HttpClient();
 
   MapOnlineRenderer() {
-    _httpClient.connectionTimeout = Duration(seconds: 60);
-    _httpClient.idleTimeout = Duration(minutes: 1);
+    _httpClient.connectionTimeout = const Duration(seconds: 60);
+    _httpClient.idleTimeout = const Duration(minutes: 1);
   }
 
   @override
   Future<JobResult> executeJob(Job job) async {
-    Uri uri = Uri.parse("$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png");
+    Uri uri = Uri.parse(
+        "$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png");
     HttpClientRequest request = await _httpClient.getUrl(uri);
     //_log.info("GET >> " + uri.toString());
     HttpClientResponse response = await request.close();

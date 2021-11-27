@@ -18,7 +18,7 @@ class RendererUtils {
       double s = p[k + 1].y - p[k].y;
       double l = sqrt(c * c + s * s);
       if (l == 0) {
-        u.add(Mappoint(0, 0));
+        u.add(const Mappoint(0, 0));
       } else {
         u.add(Mappoint(c / l, s / l));
       }
@@ -30,7 +30,8 @@ class RendererUtils {
     // For 1 to N-1 calculate the intersection of the offset lines
     for (int k = 1; k < n; k++) {
       double l = dy / (1 + u[k].x * u[k - 1].x + u[k].y * u[k - 1].y);
-      h.add(Mappoint(p[k].x - l * (u[k].y + u[k - 1].y), p[k].y + l * (u[k].x + u[k - 1].x)));
+      h.add(Mappoint(p[k].x - l * (u[k].y + u[k - 1].y),
+          p[k].y + l * (u[k].x + u[k - 1].x)));
     }
 
     // For the end point use the normal

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 class BackgroundPainter extends ChangeNotifier implements CustomPainter {
   final DisplayModel displayModel;
@@ -26,6 +25,7 @@ class BackgroundPainter extends ChangeNotifier implements CustomPainter {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
+  @override
   bool? hitTest(Offset position) => null;
 
   @override

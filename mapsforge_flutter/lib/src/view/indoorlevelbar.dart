@@ -93,7 +93,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
           int itemIndex = indoorLevels.indexOf(_level);
           double selectedItemOffset = max(itemIndex * widget.itemHeight - (maxHeight - 3 * widget.itemHeight), 0);
           // create scroll controller if not existing and set item scroll offset
-          if (_scrollController == null) _scrollController = ScrollController(initialScrollOffset: selectedItemOffset);
+          _scrollController ??= ScrollController(initialScrollOffset: selectedItemOffset);
           // else
           //   _scrollController!.jumpTo(selectedItemOffset);
 
@@ -122,13 +122,13 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       style: TextButton.styleFrom(
                         primary: Colors.black,
                         backgroundColor: Colors.transparent,
-                        shape: ContinuousRectangleBorder(),
+                        shape: const ContinuousRectangleBorder(),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         // make buttons same height as items
                         minimumSize: Size.fromHeight(widget.itemHeight),
                       ),
                       onPressed: onTop ? null : scrollLevelUp,
-                      child: Icon(Icons.keyboard_arrow_up_rounded),
+                      child: const Icon(Icons.keyboard_arrow_up_rounded),
                     );
                   },
                 ),
@@ -140,7 +140,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                     controller: _scrollController,
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     itemCount: totalIndoorLevels,
                     itemExtent: widget.itemHeight,
                     itemBuilder: (context, i) {
@@ -149,7 +149,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       // widget
                       return TextButton(
                         style: TextButton.styleFrom(
-                          shape: ContinuousRectangleBorder(),
+                          shape: const ContinuousRectangleBorder(),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           backgroundColor: _level == itemIndoorLevel ? widget.activeColor : Colors.transparent,
                           primary: _level == itemIndoorLevel ? Colors.white : Colors.black,
@@ -184,13 +184,13 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       style: TextButton.styleFrom(
                         primary: Colors.black,
                         backgroundColor: Colors.transparent,
-                        shape: ContinuousRectangleBorder(),
+                        shape: const ContinuousRectangleBorder(),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         // make buttons same height as items
                         minimumSize: Size.fromHeight(widget.itemHeight),
                       ),
                       onPressed: onBottom ? null : scrollLevelDown,
-                      child: Icon(Icons.keyboard_arrow_down_rounded),
+                      child: const Icon(Icons.keyboard_arrow_down_rounded),
                     );
                   },
                 ),
@@ -224,7 +224,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
     double roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
     _scrollController!.animateTo(
       roundToNextItemPosition,
-      duration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
       curve: Curves.fastOutSlowIn,
     );
   }
@@ -237,7 +237,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
     double roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
     _scrollController!.animateTo(
       roundToNextItemPosition,
-      duration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
       curve: Curves.fastOutSlowIn,
     );
   }

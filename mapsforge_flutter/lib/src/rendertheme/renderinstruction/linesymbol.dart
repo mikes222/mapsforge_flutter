@@ -95,9 +95,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
 
     double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
-    if (dyScale == null) {
-      dyScale = this.dy;
-    }
+    dyScale ??= this.dy;
 
     if (bitmap != null) {
       renderCallback.renderWaySymbol(renderContext, this.display, this.priority, this.bitmap!, dyScale, this.alignCenter, this.repeat,

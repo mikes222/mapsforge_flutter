@@ -46,6 +46,7 @@ class FlutterPaint implements MapPaint {
     }
   }
 
+  @override
   void dispose() {
     _shaderBitmap?.decrementRefCount();
   }
@@ -130,8 +131,10 @@ class FlutterPaint implements MapPaint {
     //   ..[5] = devicePixelRatio
     //   ..[10] = 1.0
     //   ..[15] = 2.0;
-    Float64List deviceTransform = Float64List.fromList(mat.Matrix4.identity().storage);
-    paint.shader = ui.ImageShader(img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
+    Float64List deviceTransform =
+        Float64List.fromList(mat.Matrix4.identity().storage);
+    paint.shader = ui.ImageShader(
+        img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
   }
 
   @override
@@ -201,10 +204,14 @@ class FlutterPaint implements MapPaint {
       ui.ParagraphStyle(
         fontSize: _textSize,
         //textAlign: TextAlign.center,
-        fontStyle:
-            getFontStyle() == MapFontStyle.BOLD_ITALIC || getFontStyle() == MapFontStyle.ITALIC ? ui.FontStyle.italic : ui.FontStyle.normal,
-        fontWeight:
-            getFontStyle() == MapFontStyle.BOLD || getFontStyle() == MapFontStyle.BOLD_ITALIC ? ui.FontWeight.bold : ui.FontWeight.normal,
+        fontStyle: getFontStyle() == MapFontStyle.BOLD_ITALIC ||
+                getFontStyle() == MapFontStyle.ITALIC
+            ? ui.FontStyle.italic
+            : ui.FontStyle.normal,
+        fontWeight: getFontStyle() == MapFontStyle.BOLD ||
+                getFontStyle() == MapFontStyle.BOLD_ITALIC
+            ? ui.FontWeight.bold
+            : ui.FontWeight.normal,
         //fontFamily: _fontFamily == MapFontFamily.MONOSPACE ? FontFamily.MONOSPACE : FontFamily.DEFAULT,
       ),
     );

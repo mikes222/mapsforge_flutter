@@ -27,7 +27,8 @@ class Area extends RenderInstruction with BitmapMixin {
   late Map<int, MapPaint> strokes;
   late double strokeWidth;
 
-  Area(GraphicFactory graphicFactory, SymbolCache symbolCache, displayModel, String elementName, this.level)
+  Area(GraphicFactory graphicFactory, SymbolCache symbolCache, displayModel,
+      String elementName, this.level)
       : super(graphicFactory, displayModel) {
     this.symbolCache = symbolCache;
     this.fill = graphicFactory.createPaint();
@@ -54,21 +55,28 @@ class Area extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this
+            .fill
+            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this
+            .stroke
+            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
+        this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) *
+            displayModel.getScaleFactor();
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
         this.bitmapPercent = XmlUtils.parseNonNegativeInteger(name, value);
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) *
+            displayModel.getScaleFactor();
       } else {
         throw Exception(name + "=" + value);
       }
@@ -82,27 +90,29 @@ class Area extends RenderInstruction with BitmapMixin {
 
   MapPaint getStrokePaint(int zoomLevel) {
     MapPaint? paint = strokes[zoomLevel];
-    if (paint == null) {
-      paint = this.stroke;
-    }
+    paint ??= this.stroke;
     return paint;
   }
 
   @override
-  void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(RenderCallback renderCallback,
+      final RenderContext renderContext, PointOfInterest poi) {
     // do nothing
   }
 
   @override
-  void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(RenderCallback renderCallback,
+      final RenderContext renderContext, PolylineContainer way) {
 //    synchronized(this) {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
     MapPaint fillPaint = getFillPaint();
 
-    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
+      return;
 
-    renderCallback.renderArea(renderContext, fillPaint, getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
+    renderCallback.renderArea(renderContext, fillPaint,
+        getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
     ++count;
 //}
   }

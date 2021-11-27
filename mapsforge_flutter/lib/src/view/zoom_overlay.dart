@@ -15,12 +15,14 @@ class ZoomOverlay extends StatefulWidget {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStateMixin {
+class _ZoomOverlayState extends State<ZoomOverlay>
+    with SingleTickerProviderStateMixin {
   final double toolbarSpacing = 15;
 
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
 
+  @override
   ZoomOverlay get widget => super.widget;
 
   @override
@@ -64,10 +66,10 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
               onPressed: () => widget.viewModel.zoomIn(),
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(Icons.add),
-              padding: EdgeInsets.all(10.0),
-              shape: CircleBorder(),
-              constraints: BoxConstraints(),
+              child: const Icon(Icons.add),
+              padding: const EdgeInsets.all(10.0),
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             SizedBox(height: toolbarSpacing),
@@ -75,10 +77,10 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
               onPressed: () => widget.viewModel.zoomOut(),
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(Icons.remove),
-              padding: EdgeInsets.all(10.0),
-              shape: CircleBorder(),
-              constraints: BoxConstraints(),
+              child: const Icon(Icons.remove),
+              padding: const EdgeInsets.all(10.0),
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],

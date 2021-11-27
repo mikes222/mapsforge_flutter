@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:execution_queue/execution_queue.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -59,7 +61,7 @@ class JobQueue {
     _executionQueue.add(() => _startNextJob(jobSet));
   }
 
-  void _startNextJob(JobSet jobSet) async {
+  Future<void> _startNextJob(JobSet jobSet) async {
     //_log.info("ListQueue has ${_listQueue.length} elements");
     if (jobSet.jobs.isEmpty) return;
     Job nextJob = jobSet.jobs.first;
@@ -77,7 +79,7 @@ class JobQueue {
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       jobSet.jobFinished(job, JobResult(tileBitmap, JOBRESULT.NORMAL));
-      _executionQueue.add(() => _startNextJob(jobSet));
+      unawaited(_executionQueue.add(() => _startNextJob(jobSet)));
       return;
     }
     JobResult jobResult = await renderDirect(IsolateParam(job, jobRenderer));
@@ -90,7 +92,7 @@ class JobQueue {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     jobSet.jobFinished(job, jobResult);
-    _executionQueue.add(() => _startNextJob(jobSet));
+    unawaited(_executionQueue.add(() => _startNextJob(jobSet)));
   }
 }
 

@@ -81,7 +81,7 @@ class RuleBuilder {
         return AnyMatcher.INSTANCE;
     }
 
-    throw new Exception("unknown closed value: " + closed.toString());
+    //throw new Exception("unknown closed value: " + closed.toString());
   }
 
   static ElementMatcher getElementMatcher(Element element) {
@@ -94,7 +94,7 @@ class RuleBuilder {
         return AnyMatcher.INSTANCE;
     }
 
-    throw new Exception("unknown element value: " + element.toString());
+    //throw new Exception("unknown element value: " + element.toString());
   }
 
   static AttributeMatcher getKeyMatcher(List<String> keyList) {
@@ -206,21 +206,16 @@ class RuleBuilder {
           }
         case XmlNodeType.ATTRIBUTE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.CDATA:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.COMMENT:
           break;
         case XmlNodeType.DOCUMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DOCUMENT_FRAGMENT:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
-          break;
         case XmlNodeType.DECLARATION:
           break;
       }
@@ -429,7 +424,7 @@ class RuleBuilder {
         return;
     }
 
-    throw new Exception("unknown enum value: " + element.toString());
+    //throw new Exception("unknown enum value: " + element.toString());
   }
 
   void checkState(String elementName, XmlElementType element) {

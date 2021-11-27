@@ -45,13 +45,16 @@ class FileTileBitmapCache extends TileBitmapCache {
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
     _files = (await FileHelper.getFiles(_dir)).toSet();
-    _log.info("Starting cache for renderkey $renderkey with ${_files.length} items in filecache");
+    _log.info(
+        "Starting cache for renderkey $renderkey with ${_files.length} items in filecache");
 //    files.forEach((file) {
 //      _log.info("  file in cache: $file");
 //    });
   }
 
-  void purgeAll() async {
+  @override
+  @override
+  Future<void> purgeAll() async {
     int count = 0;
     for (String file in _files) {
       //_log.info("  purging file from cache: $file");
@@ -86,10 +89,12 @@ class FileTileBitmapCache extends TileBitmapCache {
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       Image img = frame.image;
-      TileBitmap tileBitmap = FlutterTileBitmap(img, "FileTileBitmapCache ${tile.toString()}");
+      TileBitmap tileBitmap =
+          FlutterTileBitmap(img, "FileTileBitmapCache ${tile.toString()}");
       return tileBitmap;
     } catch (e, stacktrace) {
-      _log.warning("Error while reading image from file, deleting file $filename");
+      _log.warning(
+          "Error while reading image from file, deleting file $filename");
       _files.remove(filename);
       try {
         await file.delete();
@@ -107,7 +112,8 @@ class FileTileBitmapCache extends TileBitmapCache {
     ByteData? content = await (img.toByteData(format: ImageByteFormat.png));
     if (content != null) {
       File file = File(filename);
-      file.writeAsBytes(content.buffer.asUint8List(), mode: FileMode.write);
+      await file.writeAsBytes(content.buffer.asUint8List(),
+          mode: FileMode.write);
       _files.add(filename);
     }
   }
@@ -123,7 +129,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   Future<void> purgeByBoundary(BoundingBox boundingBox) async {
     // todo find a method to remove only affected files. For now we clear the whole cache
     int count = 0;
-    for (String file in _files) {
+    for (String file in []..addAll(_files)) {
       //_log.info("  purging file from cache: $file");
       try {
         bool ok = await FileHelper.delete(file);

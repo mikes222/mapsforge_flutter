@@ -2,7 +2,7 @@ import 'element.dart';
 import 'elementmatcher.dart';
 
 class ElementNodeMatcher implements ElementMatcher {
-  static final ElementNodeMatcher INSTANCE = new ElementNodeMatcher();
+  static final ElementNodeMatcher INSTANCE = const ElementNodeMatcher();
 
   const ElementNodeMatcher();
 

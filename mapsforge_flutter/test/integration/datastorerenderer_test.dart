@@ -23,7 +23,8 @@ void main() {
     _initLogging();
   });
 
-  testWidgets('Create one single tile and compare it with golden', (WidgetTester tester) async {
+  testWidgets('Create one single tile and compare it with golden',
+      (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
@@ -31,25 +32,32 @@ void main() {
     int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 16;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
+    int x = MercatorProjection.fromZoomlevel(zoomlevel)
+        .longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y =
+        MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    GraphicFactory graphicFactory = const FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder =
+        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      Datastore mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
+      Datastore mapDataStore = await MapFile.from(
+          TestAssetBundle().correctFilename("monaco.map"), 0, "en");
       Tile tile = new Tile(x, y, zoomlevel, l);
       print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
+      Job mapGeneratorJob = new Job(tile, false,
+          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
+          mapDataStore, renderTheme, graphicFactory, false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
       return img;
     }));
@@ -70,10 +78,13 @@ void main() {
     );
     await tester.pumpAndSettle();
     //await tester.pump();
-    await expectLater(find.byType(RawImage), matchesGoldenFile('datastorerenderer.png'));
+    await expectLater(
+        find.byType(RawImage), matchesGoldenFile('datastorerenderer.png'));
   });
 
-  testWidgets('Create 9 tiles, assemble them to one image and compare it with golden', (WidgetTester tester) async {
+  testWidgets(
+      'Create 9 tiles, assemble them to one image and compare it with golden',
+      (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 15,
     );
@@ -81,10 +92,13 @@ void main() {
     int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 15;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
+    int x = MercatorProjection.fromZoomlevel(zoomlevel)
+        .longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y =
+        MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
-    tester.binding.window.physicalSizeTestValue = Size(tileSize * 9, tileSize * 9);
+    tester.binding.window.physicalSizeTestValue =
+        Size(tileSize * 9, tileSize * 9);
 // resets the screen to its orinal size after the test end
     addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -101,22 +115,27 @@ void main() {
     ];
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    GraphicFactory graphicFactory = const FlutterGraphicFactory();
+    RenderThemeBuilder renderThemeBuilder =
+        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       renderThemeBuilder.parseXml(content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      Datastore mapDataStore = await MapFile.from(TestAssetBundle().correctFilename("monaco.map"), 0, "en");
+      Datastore mapDataStore = await MapFile.from(
+          TestAssetBundle().correctFilename("monaco.map"), 0, "en");
 
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, graphicFactory, false);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
+          mapDataStore, renderTheme, graphicFactory, false);
       List imgs = [];
       for (Tile tile in tilesToLoad) {
         print("Calculating tile ${tile.toString()}");
-        Job mapGeneratorJob = new Job(tile, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-        JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+        Job mapGeneratorJob = new Job(tile, false,
+            displayModel.getUserScaleFactor(), displayModel.tileSize);
+        JobResult jobResult =
+            (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
         expect(jobResult.bitmap, isNotNull);
         var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
         imgs.add(img);
@@ -168,7 +187,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     //await tester.pump();
-    await expectLater(find.byType(SizedBox), matchesGoldenFile('datastorerenderermulti.png'));
+    await expectLater(
+        find.byType(SizedBox), matchesGoldenFile('datastorerenderermulti.png'));
   });
 }
 

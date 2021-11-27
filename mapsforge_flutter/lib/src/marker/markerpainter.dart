@@ -63,6 +63,7 @@ class MarkerPainter extends CustomPainter {
     return false; //super.shouldRebuildSemantics(oldDelegate);
   }
 
+  @override
   bool? hitTest(Offset position) => null;
 
   @override

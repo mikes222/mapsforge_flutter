@@ -2,7 +2,7 @@ import 'element.dart';
 import 'elementmatcher.dart';
 
 class ElementWayMatcher implements ElementMatcher {
-  static final ElementWayMatcher INSTANCE = new ElementWayMatcher();
+  static final ElementWayMatcher INSTANCE = const ElementWayMatcher();
 
   const ElementWayMatcher();
 

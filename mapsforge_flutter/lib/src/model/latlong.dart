@@ -1,5 +1,3 @@
-import 'package:mapsforge_flutter/src/projection/projection.dart';
-
 import '../utils/latlongutils.dart';
 import 'ilatlong.dart';
 
@@ -15,9 +13,11 @@ class LatLong implements ILatLong {
 //      Pattern.compile(".*POINT\\s?\\(([\\d\\.]+)\\s([\\d\\.]+)\\).*");
 
   /// The internal latitude value.
+  @override
   final double latitude;
 
   /// The internal longitude value.
+  @override
   final double longitude;
 
   /// Converts a coordinate from degrees to microdegrees (degrees * 10^6). No validation is performed.
@@ -35,6 +35,7 @@ class LatLong implements ILatLong {
   /// @param longitude the longitude value in degrees.
   /// @throws IllegalArgumentException if the latitude or longitude value is invalid.
   const LatLong(this.latitude, this.longitude);
+
   // {
   //   Projection.checkLatitude(latitude);
   //   Projection.checkLongitude(longitude);
@@ -83,7 +84,10 @@ class LatLong implements ILatLong {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LatLong && runtimeType == other.runtimeType && latitude == other.latitude && longitude == other.longitude;
+      other is LatLong &&
+          runtimeType == other.runtimeType &&
+          latitude == other.latitude &&
+          longitude == other.longitude;
 
   @override
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
@@ -98,7 +102,8 @@ class LatLong implements ILatLong {
    * @throws IllegalArgumentException if the latitudeE6 or longitudeE6 value is invalid.
    */
   static LatLong fromMicroDegrees(int latitudeE6, int longitudeE6) {
-    return new LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6), LatLongUtils.microdegreesToDegrees(longitudeE6));
+    return new LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6),
+        LatLongUtils.microdegreesToDegrees(longitudeE6));
   }
 
   /**
@@ -112,7 +117,8 @@ class LatLong implements ILatLong {
    */
   static LatLong fromString(String latLonString) {
     List<String> split = latLonString.split("[,;:\\s]");
-    if (split.length != 2) throw new Exception("cannot read coordinate, not a valid format");
+    if (split.length != 2)
+      throw new Exception("cannot read coordinate, not a valid format");
     double latitude = double.parse(split[0]);
     double longitude = double.parse(split[1]);
     return new LatLong(latitude, longitude);
@@ -171,15 +177,15 @@ class LatLong implements ILatLong {
     return 'LatLong{latitude: $latitude, longitude: $longitude}';
   }
 
-  /**
-   * Calculate the spherical distance from this LatLong to another.
-   * <p/>
-   * Use "distance" for faster computation with less accuracy.
-   *
-   * @param other The LatLong to calculate the distance to
-   * @return the distance in meters as a double
-   */
-  // double vincentyDistance(LatLong other) {
-  //   return LatLongUtils.vincentyDistance(this, other);
-  // }
+/**
+ * Calculate the spherical distance from this LatLong to another.
+ * <p/>
+ * Use "distance" for faster computation with less accuracy.
+ *
+ * @param other The LatLong to calculate the distance to
+ * @return the distance in meters as a double
+ */
+// double vincentyDistance(LatLong other) {
+//   return LatLongUtils.vincentyDistance(this, other);
+// }
 }

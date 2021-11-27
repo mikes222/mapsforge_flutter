@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/marker/imarkerdatastore.dart';
 import 'package:mapsforge_flutter/src/marker/basicmarker.dart';
+import 'package:mapsforge_flutter/src/marker/imarkerdatastore.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 
 ///
@@ -20,6 +20,7 @@ class MarkerDataStore extends IMarkerDataStore {
   int? _previousZoomLevel;
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
+  @override
   List<BasicMarker> getMarkers(
       GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
     if (boundary != _previousBoundingBox || zoomLevel != _previousZoomLevel) {
@@ -47,7 +48,7 @@ class MarkerDataStore extends IMarkerDataStore {
   void retrieveMarkersFor(
       GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {}
 
-  void _initMarkers(
+  Future<void> _initMarkers(
       GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
     _log.info("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
@@ -87,6 +88,7 @@ class MarkerDataStore extends IMarkerDataStore {
     _markers.clear();
   }
 
+  @override
   List<BasicMarker> isTapped(
       MapViewPosition mapViewPosition, double tappedX, double tappedY) {
     return _markers

@@ -93,9 +93,7 @@ class Line extends RenderInstruction with BitmapMixin {
 
   MapPaint _getStrokePaint(int zoomLevel) {
     MapPaint? paint = strokes[zoomLevel];
-    if (paint == null) {
-      paint = this.stroke;
-    }
+    paint ??= this.stroke;
     return paint;
   }
 
@@ -119,9 +117,7 @@ class Line extends RenderInstruction with BitmapMixin {
     MapPaint strokePaint = _getStrokePaint(renderContext.job.tile.zoomLevel);
 
     double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
-    if (dyScale == null) {
-      dyScale = this.dy;
-    }
+    dyScale ??= this.dy;
 
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
 

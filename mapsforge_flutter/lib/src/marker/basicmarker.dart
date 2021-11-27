@@ -44,6 +44,7 @@ class BasicPointMarker<T> extends BasicMarker<T> {
             markerCaption: markerCaption);
 
   /// returns true if the marker should be painted. The [boundary] represents the currently visible area
+  @override
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     return super.shouldPaint(boundary, zoomLevel) &&
         boundary.contains(latLong.latitude, latLong.longitude);

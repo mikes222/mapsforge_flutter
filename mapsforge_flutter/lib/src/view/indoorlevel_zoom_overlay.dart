@@ -23,6 +23,7 @@ class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with Si
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
 
+  @override
   IndoorlevelZoomOverlay get widget => super.widget;
 
   @override
@@ -72,7 +73,7 @@ class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with Si
                 width: 45,
                 fillColor: Colors.white,
                 elevation: 2.0,
-                borderRadius: BorderRadius.all(Radius.circular(20)),
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
                 initialLevel: widget.viewModel.getIndoorLevel(),
               ),
             ),
@@ -81,10 +82,10 @@ class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with Si
               onPressed: () => widget.viewModel.zoomIn(),
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(Icons.add),
-              padding: EdgeInsets.all(10.0),
-              shape: CircleBorder(),
-              constraints: BoxConstraints(),
+              child: const Icon(Icons.add),
+              padding: const EdgeInsets.all(10.0),
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             SizedBox(height: toolbarSpacing),
@@ -92,10 +93,10 @@ class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with Si
               onPressed: () => widget.viewModel.zoomOut(),
               elevation: 2.0,
               fillColor: Colors.white,
-              child: Icon(Icons.remove),
-              padding: EdgeInsets.all(10.0),
-              shape: CircleBorder(),
-              constraints: BoxConstraints(),
+              child: const Icon(Icons.remove),
+              padding: const EdgeInsets.all(10.0),
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],

@@ -56,14 +56,18 @@ class MapViewPageState extends State<MapViewPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             CircularProgressIndicator(
-              value: downloadProgress == null || downloadProgress == 1 ? null : downloadProgress,
+              value: downloadProgress == null || downloadProgress == 1
+                  ? null
+                  : downloadProgress,
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Center(
               child: Text(
-                downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress! * 100).round()}%",
+                downloadProgress == null || downloadProgress == 1
+                    ? "Loading"
+                    : "Downloading ${(downloadProgress! * 100).round()}%",
               ),
             ),
           ],
@@ -83,14 +87,14 @@ class MapViewPageState extends State<MapViewPage> {
       title: Text(widget.mapFileData.displayedName),
       actions: <Widget>[
         PopupMenuButton<String>(
-          offset: Offset(0, 50),
+          offset: const Offset(0, 50),
           onSelected: (choice) => _handleMenuItemSelect(choice, context),
           itemBuilder: (BuildContext context) => [
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: "start_location",
               child: Text("Back to Start"),
             ),
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: "analyse_mapfile",
               child: Text("Analyse Mapfile"),
             ),
@@ -119,10 +123,13 @@ class MapViewPageState extends State<MapViewPage> {
   /// A helper function for a asynchronous [_initState].
   Future<void> _prepare() async {
     if (widget.mapFileData.isOnlineMap != ONLINEMAPTYPE.NO) {
-      _graphicFactory = FlutterGraphicFactory();
+      _graphicFactory = const FlutterGraphicFactory();
 
       final DisplayModel displayModel = DisplayModel();
-      JobRenderer jobRenderer = widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OSM ? MapOnlineRendererWeb() : ArcGisOnlineRenderer();
+      JobRenderer jobRenderer =
+          widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OSM
+              ? MapOnlineRendererWeb()
+              : ArcGisOnlineRenderer();
       TileBitmapCache bitmapCache = MemoryTileBitmapCache();
       mapModel = MapModel(
         displayModel: displayModel,
@@ -133,10 +140,12 @@ class MapViewPageState extends State<MapViewPage> {
       viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
       // set default position
-      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
+      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+          widget.mapFileData.initialPositionLong);
       viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
       if (widget.mapFileData.indoorZoomOverlay)
-        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel, indoorLevels: widget.mapFileData.indoorLevels));
+        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
+            indoorLevels: widget.mapFileData.indoorLevels));
       else
         viewModel.addOverlay(ZoomOverlay(viewModel));
       viewModel.addOverlay(DistanceOverlay(viewModel));
@@ -145,19 +154,24 @@ class MapViewPageState extends State<MapViewPage> {
       downloadProgress = 1;
     } else {
       final MapDataStore mapDataStore = await _prepareOfflineMap();
-      final SymbolCache symbolCache = FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
-      _graphicFactory = FlutterGraphicFactory();
+      final SymbolCache symbolCache =
+          FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
+      _graphicFactory = const FlutterGraphicFactory();
       final DisplayModel displayModel = DisplayModel();
-      final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
-      final String content = await rootBundle.loadString(widget.mapFileData.theme);
+      final RenderThemeBuilder renderThemeBuilder =
+          RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
+      final String content =
+          await rootBundle.loadString(widget.mapFileData.theme);
       renderThemeBuilder.parseXml(content);
       final RenderTheme renderTheme = renderThemeBuilder.build();
-      final JobRenderer jobRenderer = MapDataStoreRenderer(mapDataStore, renderTheme, _graphicFactory!, true);
+      final JobRenderer jobRenderer = MapDataStoreRenderer(
+          mapDataStore, renderTheme, _graphicFactory!, true);
       final TileBitmapCache bitmapCache;
       if (kIsWeb) {
         bitmapCache = MemoryTileBitmapCache();
       } else {
-        bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
+        bitmapCache =
+            await FileTileBitmapCache.create(jobRenderer.getRenderKey());
       }
 
       mapModel = MapModel(
@@ -169,10 +183,12 @@ class MapViewPageState extends State<MapViewPage> {
       viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
       // set default position
-      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
+      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+          widget.mapFileData.initialPositionLong);
       viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
       if (widget.mapFileData.indoorZoomOverlay)
-        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel, indoorLevels: widget.mapFileData.indoorLevels));
+        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
+            indoorLevels: widget.mapFileData.indoorLevels));
       else
         viewModel.addOverlay(ZoomOverlay(viewModel));
       viewModel.addOverlay(DistanceOverlay(viewModel));
@@ -294,7 +310,8 @@ class MapViewPageState extends State<MapViewPage> {
       throw e;
     }
 
-    final MapFile mapFile = await MapFile.using(Uint8List.fromList(content), null, null);
+    final MapFile mapFile =
+        await MapFile.using(Uint8List.fromList(content), null, null);
     return mapFile;
   }
 
@@ -302,14 +319,16 @@ class MapViewPageState extends State<MapViewPage> {
   void _handleMenuItemSelect(String value, BuildContext context) {
     switch (value) {
       case 'start_location':
-        this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
+        this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+            widget.mapFileData.initialPositionLong);
         this.viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
         break;
 
       case 'analyse_mapfile':
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (BuildContext context) => MapHeaderPage(widget.mapFileData),
+            builder: (BuildContext context) =>
+                MapHeaderPage(widget.mapFileData),
           ),
         );
         break;

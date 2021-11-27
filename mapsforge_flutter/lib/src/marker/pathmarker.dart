@@ -43,7 +43,7 @@ class PathMarker<T> extends BasicMarker<T> {
 
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
-    super.initResources(graphicFactory);
+    await super.initResources(graphicFactory);
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
       this.stroke!.setColorFromNumber(strokeColor);

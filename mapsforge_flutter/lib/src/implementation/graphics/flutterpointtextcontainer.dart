@@ -26,8 +26,16 @@ class FlutterPointTextContainer extends PointTextContainer {
   late ui.Paragraph back;
 
   FlutterPointTextContainer(
-      Mappoint xy, Display display, int priority, String text, MapPaint paintFront, MapPaint paintBack, Position position, int maxTextWidth)
-      : super(xy, display, priority, text, paintFront, paintBack, position, maxTextWidth) {
+      Mappoint xy,
+      Display display,
+      int priority,
+      String text,
+      MapPaint paintFront,
+      MapPaint paintBack,
+      Position position,
+      int maxTextWidth)
+      : super(xy, display, priority, text, paintFront, paintBack, position,
+            maxTextWidth) {
     double boxWidth;
     double boxHeight;
 
@@ -36,21 +44,29 @@ class FlutterPointTextContainer extends PointTextContainer {
     //backTextPaint = new TextPaint(AndroidGraphicFactory.getPaint(this.paintBack));
 
     ui.TextAlign alignment = ui.TextAlign.center;
-    if (Position.LEFT == this.position || Position.BELOW_LEFT == this.position || Position.ABOVE_LEFT == this.position) {
+    if (Position.LEFT == this.position ||
+        Position.BELOW_LEFT == this.position ||
+        Position.ABOVE_LEFT == this.position) {
       //alignment = Layout.Alignment.ALIGN_OPPOSITE;
-    } else if (Position.RIGHT == this.position || Position.BELOW_RIGHT == this.position || Position.ABOVE_RIGHT == this.position) {
+    } else if (Position.RIGHT == this.position ||
+        Position.BELOW_RIGHT == this.position ||
+        Position.ABOVE_RIGHT == this.position) {
       //alignment = Layout.Alignment.ALIGN_NORMAL;
     }
 
     // strange Android behaviour: if alignment is set to center, then
     // text is rendered with right alignment if using StaticLayout
 
-    ui.ParagraphBuilder frontBuilder = (paintFront as FlutterPaint).buildParagraphBuilder(text);
-    front = frontBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
+    ui.ParagraphBuilder frontBuilder =
+        (paintFront as FlutterPaint).buildParagraphBuilder(text);
+    front = frontBuilder.build()
+      ..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
 
     //backTextPaint.setTextAlign(android.graphics.Paint.Align.LEFT);
-    ui.ParagraphBuilder backBuilder = (paintBack as FlutterPaint).buildParagraphBuilder(text);
-    back = backBuilder.build()..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
+    ui.ParagraphBuilder backBuilder =
+        (paintBack as FlutterPaint).buildParagraphBuilder(text);
+    back = backBuilder.build()
+      ..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
 
 //      frontLayout = new StaticLayout(
 //          this.text,
@@ -80,7 +96,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 
     switch (this.position) {
       case Position.CENTER:
-        boundary = new Rectangle(-boxWidth / 2, -boxHeight / 2, boxWidth / 2, boxHeight / 2);
+        boundary = new Rectangle(
+            -boxWidth / 2, -boxHeight / 2, boxWidth / 2, boxHeight / 2);
         break;
       case Position.BELOW:
         boundary = new Rectangle(-boxWidth / 2, 0, boxWidth / 2, boxHeight);
@@ -107,12 +124,14 @@ class FlutterPointTextContainer extends PointTextContainer {
         boundary = new Rectangle(0, -boxHeight / 2, boxWidth, boxHeight / 2);
         break;
       case Position.AUTO:
-        boundary = new Rectangle(-boxWidth / 2, -boxHeight / 2, boxWidth / 2, boxHeight / 2);
+        boundary = new Rectangle(
+            -boxWidth / 2, -boxHeight / 2, boxWidth / 2, boxHeight / 2);
         break;
     }
   }
 
   @mustCallSuper
+  @override
   dispose() {}
 
   @override

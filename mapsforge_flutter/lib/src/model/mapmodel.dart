@@ -1,10 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobrenderer.dart';
-import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 
 import '../cache/tilebitmapcache.dart';
 import 'displaymodel.dart';

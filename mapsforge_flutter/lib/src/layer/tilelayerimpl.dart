@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -13,7 +12,6 @@ import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
-import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
 import 'job/job.dart';
 import 'job/jobqueue.dart';
@@ -37,7 +35,8 @@ class TileLayerImpl extends TileLayer {
         super(displayModel);
 
   @override
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet jobSet) {
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition,
+      MapCanvas canvas, JobSet jobSet) {
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -50,7 +49,8 @@ class TileLayerImpl extends TileLayer {
     // to hook this into the onConfigurationChanged call chain.
     //canvas.resetClip();
 
-    canvas.setClip(0, 0, viewModel.viewDimension!.width.round(), viewModel.viewDimension!.height.round());
+    canvas.setClip(0, 0, viewModel.viewDimension!.width.round(),
+        viewModel.viewDimension!.height.round());
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
       //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
       canvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);

@@ -25,10 +25,13 @@ import 'datastorereadresult.dart';
 class MultiMapDataStore extends MapDataStore {
   static final _log = new Logger('MultiMapDataStore');
 
+  @override
   BoundingBox? boundingBox;
   final DataPolicy dataPolicy;
   final List<MapDataStore> mapDatabases;
+  @override
   LatLong? startPosition;
+  @override
   int? startZoomLevel;
 
   MultiMapDataStore(this.dataPolicy)

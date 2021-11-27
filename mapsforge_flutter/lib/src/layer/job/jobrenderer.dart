@@ -33,7 +33,7 @@ abstract class JobRenderer {
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
     paint.strokeWidth = 1;
-    paint.color = ui.Color(0xffaaaaaa);
+    paint.color = const ui.Color(0xffaaaaaa);
     paint.isAntiAlias = true;
 
     canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(tileSize - _margin, _margin), paint);
@@ -63,7 +63,7 @@ abstract class JobRenderer {
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
     paint.strokeWidth = 1;
-    paint.color = ui.Color(0xffaaaaaa);
+    paint.color = const ui.Color(0xffaaaaaa);
     paint.isAntiAlias = true;
 
     canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(tileSize - _margin, _margin), paint);
@@ -94,7 +94,7 @@ abstract class JobRenderer {
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
     paint.strokeWidth = 1;
-    paint.color = ui.Color(0xffaaaaaa);
+    paint.color = const ui.Color(0xffaaaaaa);
     paint.isAntiAlias = true;
 
     canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(tileSize - _margin, _margin), paint);

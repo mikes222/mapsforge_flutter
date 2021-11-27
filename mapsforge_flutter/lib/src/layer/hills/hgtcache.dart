@@ -28,7 +28,8 @@ class HgtCache {
 //
 //  List<String> problems =  [];
 //
-  HgtCache(this.demFolder, this.interpolatorOverlap, this.graphicsFactory, this.algorithm, this.mainCacheSize, this.neighborCacheSize) {
+  HgtCache(this.demFolder, this.interpolatorOverlap, this.graphicsFactory,
+      this.algorithm, this.mainCacheSize, this.neighborCacheSize) {
 //    mainLru = new Lru(this.mainCacheSize);
 //    secondaryLru = (interpolatorOverlap ? new Lru(neighborCacheSize) : null);
 //
@@ -93,7 +94,8 @@ class HgtCache {
 //    hgtFiles.withRunningThread();
   }
 
-  HillshadingBitmap? getHillshadingBitmap(int northInt, int eastInt, double pxPerLat, double pxPerLng) {
+  HillshadingBitmap? getHillshadingBitmap(
+      int northInt, int eastInt, double pxPerLat, double pxPerLng) {
 //    HgtFileInfo hgtFileInfo = hgtFiles.get().get(
 //        new TileKey(northInt, eastInt));
 //
@@ -154,7 +156,6 @@ class TileKey {
   final int north;
   final int east;
 
-  @override
   bool equals(Object o) {
     if (this == o) return true;
     if (o is! TileKey) return false;
@@ -303,7 +304,8 @@ class HgtFileInfo extends BoundingBox {
 //
 //  final long size;
 //
-  HgtFileInfo(this.file, double minLatitude, double minLongitude, double maxLatitude, double maxLongitude)
+  HgtFileInfo(this.file, double minLatitude, double minLongitude,
+      double maxLatitude, double maxLongitude)
       : super(minLatitude, minLongitude, maxLatitude, maxLongitude);
 //    this.file = file;
 //    size = file.length();

@@ -1,7 +1,7 @@
-import 'package:mapsforge_example/mapfileanalyze/waypage.dart';
-import 'package:mapsforge_example/mapfileanalyze/poipage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mapsforge_example/mapfileanalyze/poipage.dart';
+import 'package:mapsforge_example/mapfileanalyze/waypage.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
@@ -30,7 +30,7 @@ class BlockPage extends StatelessWidget {
           );
         }
         if (snapshot.data == null)
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         DatastoreReadResult mapReadResult = snapshot.data;
@@ -56,7 +56,7 @@ class BlockPage extends StatelessWidget {
                     child: Row(
                       children: <Widget>[
                         Text("Pois ${mapReadResult.pointOfInterests.length}, "),
-                        Icon(Icons.more_horiz),
+                        const Icon(Icons.more_horiz),
                       ],
                     ),
                     onTap: () {
@@ -74,7 +74,7 @@ class BlockPage extends StatelessWidget {
                       children: <Widget>[
                         Text(
                             "Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
-                        Icon(Icons.more_horiz),
+                        const Icon(Icons.more_horiz),
                       ],
                     ),
                     onTap: () {

@@ -30,6 +30,7 @@ class SymbolContainer extends MapElementContainer {
   }
 
   @mustCallSuper
+  @override
   dispose() {
     //symbol.decrementRefCount();
   }

@@ -1,12 +1,9 @@
-import '../model/mappoint.dart';
-
-import 'align.dart';
 import 'bitmap.dart';
 import 'cap.dart';
 import 'color.dart';
+import 'join.dart';
 import 'mapfontfamily.dart';
 import 'mapfontstyle.dart';
-import 'join.dart';
 import 'style.dart';
 
 abstract class MapPaint {

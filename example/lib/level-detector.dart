@@ -43,8 +43,8 @@ class LevelDetector {
   LevelDetector(this._viewModel, this._mapDataStore, [this.minZoomLevel = 17])  {
     if (minZoomLevel < 17) minZoomLevel = 17;
     // debounce position change events
-    this._viewModel.observePosition.debounceTime(Duration(milliseconds: 150)).listen(_getTileCacheData);
-    this._viewModel.observePosition.debounceTime(Duration(milliseconds: 150)).listen(_updateLevelMappings);
+    this._viewModel.observePosition.debounceTime(const Duration(milliseconds: 150)).listen(_getTileCacheData);
+    this._viewModel.observePosition.debounceTime(const Duration(milliseconds: 150)).listen(_updateLevelMappings);
   }
 
   void dispose() {

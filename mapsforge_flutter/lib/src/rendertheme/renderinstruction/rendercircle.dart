@@ -26,7 +26,8 @@ class RenderCircle extends RenderInstruction {
   final Map<int, MapPaint> strokes;
   double strokeWidth = 1;
 
-  RenderCircle(GraphicFactory graphicFactory, DisplayModel displayModel, this.level)
+  RenderCircle(
+      GraphicFactory graphicFactory, DisplayModel displayModel, this.level)
       : strokes = new Map(),
         renderRadiusScaled = new Map(),
         super(graphicFactory, displayModel) {
@@ -48,23 +49,30 @@ class RenderCircle extends RenderInstruction {
       String value = element.value;
 
       if (RenderInstruction.RADIUS == name || RenderInstruction.R == name) {
-        this.radius = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
+        this.radius = XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor();
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this
+            .fill
+            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.SCALE_RADIUS == name) {
         this.scaleRadius = value == "true";
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this
+            .stroke
+            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
+        this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor();
       } else {
         throw Exception("circle probs");
       }
     });
 
-    XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.RADIUS, this.radius);
+    XmlUtils.checkMandatoryAttribute(
+        rootElement.name.toString(), RenderInstruction.RADIUS, this.radius);
 
     if (!this.scaleRadius) {
       this.renderRadius = this.radius;
@@ -80,28 +88,31 @@ class RenderCircle extends RenderInstruction {
 
   double getRenderRadius(int zoomLevel) {
     double? radius = renderRadiusScaled[zoomLevel];
-    if (radius == null) {
-      radius = this.renderRadius;
-    }
+    radius ??= this.renderRadius;
     return radius!;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
     MapPaint? paint = strokes[zoomLevel];
-    if (paint == null) {
-      paint = this.stroke;
-    }
+    paint ??= this.stroke;
     return paint;
   }
 
   @override
-  void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
-    renderCallback.renderPointOfInterestCircle(renderContext, getRenderRadius(renderContext.job.tile.zoomLevel),
-        getFillPaint(renderContext.job.tile.zoomLevel), getStrokePaint(renderContext.job.tile.zoomLevel), this.level, poi);
+  void renderNode(RenderCallback renderCallback,
+      final RenderContext renderContext, PointOfInterest poi) {
+    renderCallback.renderPointOfInterestCircle(
+        renderContext,
+        getRenderRadius(renderContext.job.tile.zoomLevel),
+        getFillPaint(renderContext.job.tile.zoomLevel),
+        getStrokePaint(renderContext.job.tile.zoomLevel),
+        this.level,
+        poi);
   }
 
   @override
-  void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(RenderCallback renderCallback,
+      final RenderContext renderContext, PolylineContainer way) {
     // do nothing
   }
 

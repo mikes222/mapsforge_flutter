@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 
-import '../utils/latlongutils.dart';
 import 'latlong.dart';
 
 /// A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
@@ -43,7 +41,8 @@ class BoundingBox {
    * @param maxLongitude the maximum longitude coordinate in degrees.
    * @throws IllegalArgumentException if a coordinate is invalid.
    */
-  const BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude)
+  const BoundingBox(
+      this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude)
       : assert(minLatitude <= maxLatitude),
         assert(minLongitude <= maxLongitude);
 
@@ -111,15 +110,23 @@ class BoundingBox {
           intersectsArea == other.intersectsArea;
 
   @override
-  int get hashCode => maxLatitude.hashCode ^ maxLongitude.hashCode ^ minLatitude.hashCode ^ minLongitude.hashCode ^ intersectsArea.hashCode;
+  int get hashCode =>
+      maxLatitude.hashCode ^
+      maxLongitude.hashCode ^
+      minLatitude.hashCode ^
+      minLongitude.hashCode ^
+      intersectsArea.hashCode;
 
   /**
    * @param boundingBox the BoundingBox which this BoundingBox should be extended if it is larger
    * @return a BoundingBox that covers this BoundingBox and the given BoundingBox.
    */
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
-    return new BoundingBox(min(this.minLatitude, boundingBox.minLatitude), min(this.minLongitude, boundingBox.minLongitude),
-        max(this.maxLatitude, boundingBox.maxLatitude), max(this.maxLongitude, boundingBox.maxLongitude));
+    return new BoundingBox(
+        min(this.minLatitude, boundingBox.minLatitude),
+        min(this.minLongitude, boundingBox.minLongitude),
+        max(this.maxLatitude, boundingBox.maxLatitude),
+        max(this.maxLongitude, boundingBox.maxLongitude));
   }
 
   /**
@@ -222,12 +229,17 @@ class BoundingBox {
     }
 
     double verticalExpansion = Projection.latitudeDistance(meters);
-    double horizontalExpansion = Projection.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
+    double horizontalExpansion = Projection.longitudeDistance(
+        meters, max(minLatitude.abs(), maxLatitude.abs()));
 
-    double minLat = max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon = max(Projection.LONGITUDE_MIN, this.minLongitude - horizontalExpansion);
-    double maxLat = min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon = min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
+    double minLat =
+        max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+    double minLon =
+        max(Projection.LONGITUDE_MIN, this.minLongitude - horizontalExpansion);
+    double maxLat =
+        min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+    double maxLon =
+        min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
 
     return new BoundingBox(minLat, minLon, maxLat, maxLon);
   }
@@ -238,7 +250,8 @@ class BoundingBox {
   LatLong getCenterPoint() {
     double latitudeOffset = (this.maxLatitude - this.minLatitude) / 2;
     double longitudeOffset = (this.maxLongitude - this.minLongitude) / 2;
-    return new LatLong(this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
+    return new LatLong(
+        this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
   }
 
   /**
@@ -319,7 +332,8 @@ class BoundingBox {
         tmpMaxLon = max(tmpMaxLon, latLong.longitude);
       }
     }
-    return this.intersects(new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
+    return this.intersects(
+        new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
   }
 
   @override

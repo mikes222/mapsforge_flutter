@@ -1,11 +1,9 @@
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 class MemoryDatastore extends Datastore {
@@ -36,15 +34,18 @@ class MemoryDatastore extends Datastore {
   @override
   Future<DatastoreReadResult> readMapDataSingle(Tile tile) {
     Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-    List<PointOfInterest> poiResults =
-        pointOfInterests.where((poi) => projection.boundingBoxOfTile(tile).containsLatLong(poi.position)).toList();
+    List<PointOfInterest> poiResults = pointOfInterests
+        .where((poi) =>
+            projection.boundingBoxOfTile(tile).containsLatLong(poi.position))
+        .toList();
     List<Way> wayResults = [];
     for (Way way in ways) {
       if (projection.boundingBoxOfTile(tile).intersectsArea(way.latLongs)) {
         wayResults.add(way);
       }
     }
-    return Future.value(DatastoreReadResult(pointOfInterests: poiResults, ways: wayResults));
+    return Future.value(
+        DatastoreReadResult(pointOfInterests: poiResults, ways: wayResults));
   }
 
   @override

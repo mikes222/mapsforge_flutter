@@ -2,7 +2,7 @@ import 'closed.dart';
 import 'closedmatcher.dart';
 
 class LinearWayMatcher implements ClosedMatcher {
-  static final LinearWayMatcher INSTANCE = new LinearWayMatcher();
+  static final LinearWayMatcher INSTANCE = const LinearWayMatcher();
 
   const LinearWayMatcher();
 

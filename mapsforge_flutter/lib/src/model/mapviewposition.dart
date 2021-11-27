@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
-import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 import 'boundingbox.dart';
 import 'mappoint.dart';
@@ -34,7 +33,8 @@ class MapViewPosition {
 
   PixelProjection? _projection;
 
-  MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this.indoorLevel, this.tileSize)
+  MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
+      this.indoorLevel, this.tileSize)
       : scale = 1,
         focalPoint = null,
         assert(zoomLevel >= 0),
@@ -52,7 +52,8 @@ class MapViewPosition {
     _projection = PixelProjection(zoomLevel, tileSize);
   }
 
-  MapViewPosition.zoomInAround(MapViewPosition old, double latitude, double longitude)
+  MapViewPosition.zoomInAround(
+      MapViewPosition old, double latitude, double longitude)
       : _latitude = latitude,
         _longitude = longitude,
         zoomLevel = old.zoomLevel + 1,
@@ -139,7 +140,8 @@ class MapViewPosition {
         assert(_latitude == null),
         assert(_longitude == null);
 
-  MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper, Dimension viewDimension)
+  MapViewPosition.setLeftUpper(
+      MapViewPosition old, double left, double upper, Dimension viewDimension)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
@@ -147,21 +149,28 @@ class MapViewPosition {
         focalPoint = old.focalPoint,
         _projection = old._projection {
     //calculateBoundingBox(tileSize, viewSize);
-    _leftUpper = Mappoint(min(max(left, -viewDimension.width / 2), _projection!.mapsize - viewDimension.width / 2),
-        min(max(upper, -viewDimension.height / 2), _projection!.mapsize - viewDimension.height / 2));
+    _leftUpper = Mappoint(
+        min(max(left, -viewDimension.width / 2),
+            _projection!.mapsize - viewDimension.width / 2),
+        min(max(upper, -viewDimension.height / 2),
+            _projection!.mapsize - viewDimension.height / 2));
 
     double rightX = _leftUpper!.x + viewDimension.width;
     double bottomY = _leftUpper!.y + viewDimension.height;
 
     boundingBox = BoundingBox(
-        _projection!.pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
+        _projection!
+            .pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
         _projection!.pixelXToLongitude(max(_leftUpper!.x, 0)),
         _projection!.pixelYToLatitude(max(_leftUpper!.y, 0)),
-        _projection!.pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
+        _projection!
+            .pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
 
-    _latitude = _projection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
+    _latitude =
+        _projection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
 
-    _longitude = _projection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
+    _longitude =
+        _projection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
 
     // Projection.checkLatitude(_latitude!);
     // Projection.checkLongitude(_longitude!);
@@ -186,10 +195,12 @@ class MapViewPosition {
     double topY = centerY - viewDimension.height / 2;
     double bottomY = centerY + viewDimension.height / 2;
     boundingBox = BoundingBox(
-        _projection!.pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
+        _projection!
+            .pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
         _projection!.pixelXToLongitude(max(leftX, 0)),
         _projection!.pixelYToLatitude(max(topY, 0)),
-        _projection!.pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
+        _projection!
+            .pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
     _leftUpper = Mappoint(leftX, topY);
     return boundingBox!;
   }
@@ -220,7 +231,12 @@ class MapViewPosition {
           scale == other.scale;
 
   @override
-  int get hashCode => _latitude.hashCode ^ _longitude.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5 ^ scale.hashCode;
+  int get hashCode =>
+      _latitude.hashCode ^
+      _longitude.hashCode ^
+      zoomLevel.hashCode ^
+      indoorLevel.hashCode << 5 ^
+      scale.hashCode;
 
   @override
   String toString() {

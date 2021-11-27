@@ -54,9 +54,7 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
   ///
   /// @return Rectangle with absolute pixel coordinates.
   Rectangle getBoundaryAbsolute() {
-    if (boundaryAbsolute == null) {
-      boundaryAbsolute = this.boundary!.shift(xy);
-    }
+    boundaryAbsolute ??= this.boundary!.shift(xy);
     return boundaryAbsolute!;
   }
 

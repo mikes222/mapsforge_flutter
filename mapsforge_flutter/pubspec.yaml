@@ -23,6 +23,9 @@ dependencies:
 #      url: https://github.com/mikes222/dcache
     #path: ../../github_dcache/
 
+  # BSD License
+  http: ^0.13.3
+
   # MIT License
   xml: ^5.1.2
 
@@ -43,9 +46,6 @@ dependencies:
 
   # MIT License
   provider: ^6.0.0
-
-  # BSD License
-  http: ^0.13.3
 
 
   collection: ^1.15.0-nullsafety.4

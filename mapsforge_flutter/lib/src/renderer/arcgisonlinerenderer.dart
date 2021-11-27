@@ -26,8 +26,8 @@ class ArcGisOnlineRenderer extends JobRenderer {
   HttpClient _httpClient = new HttpClient();
 
   ArcGisOnlineRenderer() {
-    _httpClient.connectionTimeout = Duration(seconds: 60);
-    _httpClient.idleTimeout = Duration(minutes: 1);
+    _httpClient.connectionTimeout = const Duration(seconds: 60);
+    _httpClient.idleTimeout = const Duration(minutes: 1);
   }
 
   @override

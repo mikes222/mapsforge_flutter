@@ -1,0 +1,15 @@
+analyzer:
+
+linter:
+  rules:
+    - prefer_const_constructors
+    - unawaited_futures
+    - avoid_returning_null_for_future
+    - close_sinks
+    - annotate_overrides
+    - avoid_void_async
+    - await_only_futures
+    - implementation_imports
+    - null_closures
+    - overridden_fields
+    - prefer_conditional_assignment

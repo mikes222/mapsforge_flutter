@@ -20,20 +20,16 @@ import 'package:mapsforge_flutter/src/mapelements/mapelementcontainer.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/mapelements/symbolcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/rectangle.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/shapepaintcirclecontainer.dart';
-import 'package:mapsforge_flutter/src/renderer/shapepaintcontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/shapepaintpolylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
 import 'package:mapsforge_flutter/src/renderer/watercontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/area.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rendertheme.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
@@ -47,7 +43,7 @@ import 'circlecontainer.dart';
 ///
 class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   static final _log = new Logger('MapDataStoreRenderer');
-  static final Tag TAG_NATURAL_WATER = new Tag("natural", "water");
+  static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
   final Datastore datastore;
 
@@ -295,7 +291,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   static List<Mappoint> getTilePixelCoordinates(int tileSize) {
     List<Mappoint> result = [];
-    result.add(Mappoint(0, 0));
+    result.add(const Mappoint(0, 0));
     result.add(Mappoint(tileSize.toDouble(), 0));
     result.add(Mappoint(tileSize.toDouble(), tileSize.toDouble()));
     result.add(Mappoint(0, tileSize.toDouble()));
@@ -593,15 +589,15 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     _isolate = await Isolate.spawn(entryPoint, receivePort.sendPort);
     PublishSubject<SendPort?> subject = PublishSubject<SendPort?>();
     // let the listener run in background
-    _listenToIsolate(receivePort, subject);
+    await _listenToIsolate(receivePort, subject);
     // wait for the _sendPort
     await subject.stream.first;
-    subject.close();
+    await subject.close();
 
     _sendPort!.send(datastore);
   }
 
-  void _listenToIsolate(
+  Future<void> _listenToIsolate(
       ReceivePort receivePort, PublishSubject<SendPort?> subject) async {
     await for (var data in receivePort) {
       //tileCache.addTileBitmap(job.tile, tileBitmap);

@@ -29,14 +29,14 @@ class SubfileParamsPage extends StatelessWidget {
                 child: e == null
                     ? Text(
                         "SubfileParam for ZoomLevel ${subFileParameters.indexOf(e)} and more",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
                             "SubfileParam for ZoomLevel ${subFileParameters.indexOf(e)} and more",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Wrap(
                             children: <Widget>[
@@ -71,8 +71,8 @@ class SubfileParamsPage extends StatelessWidget {
                           InkWell(
                             child: Row(
                               children: <Widget>[
-                                Text("Blocks"),
-                                Icon(Icons.more_horiz),
+                                const Text("Blocks"),
+                                const Icon(Icons.more_horiz),
                               ],
                             ),
                             onTap: () {

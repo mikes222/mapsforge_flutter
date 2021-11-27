@@ -48,7 +48,8 @@ class Caption extends RenderInstruction {
   final SymbolFinder symbolFinder;
   TextKey? textKey;
 
-  Caption(GraphicFactory graphicFactory, DisplayModel displayModel, this.symbolFinder)
+  Caption(GraphicFactory graphicFactory, DisplayModel displayModel,
+      this.symbolFinder)
       : fills = new Map(),
         strokes = new Map(),
         dyScaled = new Map(),
@@ -78,25 +79,35 @@ class Caption extends RenderInstruction {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.DISPLAY == name) {
-        this.display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        this.display = Display.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this.fill.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this
+            .fill
+            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
-        fontFamily = MapFontFamily.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        fontFamily = MapFontFamily.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
-        this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor();
+        this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
-        fontStyle = MapFontStyle.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        fontStyle = MapFontStyle.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.POSITION == name) {
-        this.position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        this.position = Position.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this
+            .stroke
+            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
+        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {
@@ -107,29 +118,27 @@ class Caption extends RenderInstruction {
     this.fill.setTypeface(fontFamily, fontStyle);
     this.stroke.setTypeface(fontFamily, fontStyle);
 
-    XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, this.textKey);
+    XmlUtils.checkMandatoryAttribute(
+        rootElement.name.toString(), RenderInstruction.K, this.textKey);
 
     initPendings.add(this);
   }
 
   MapPaint getFillPaint(int zoomLevel) {
     MapPaint? paint = fills[zoomLevel];
-    if (paint == null) {
-      paint = this.fill;
-    }
+    paint ??= this.fill;
     return paint;
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
     MapPaint? paint = strokes[zoomLevel];
-    if (paint == null) {
-      paint = this.stroke;
-    }
+    paint ??= this.stroke;
     return paint;
   }
 
   @override
-  void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(RenderCallback renderCallback,
+      final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return;
@@ -156,7 +165,8 @@ class Caption extends RenderInstruction {
   }
 
   @override
-  void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(RenderCallback renderCallback,
+      final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
       return;
     }
@@ -166,7 +176,8 @@ class Caption extends RenderInstruction {
       return;
     }
 
-    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
+      return;
 
     renderCallback.renderAreaCaption(
         renderContext,
@@ -217,7 +228,8 @@ class Caption extends RenderInstruction {
     if (this.symbolId != null) {
       renderSymbol = await symbolFinder.find(this.symbolId!);
       if (renderSymbol == null) {
-        _log.warning("Symbol $symbolId referenced in caption in render.xml, but not defined as symbol");
+        _log.warning(
+            "Symbol $symbolId referenced in caption in render.xml, but not defined as symbol");
       }
     }
 
@@ -228,32 +240,47 @@ class Caption extends RenderInstruction {
     switch (this.position) {
       case Position.CENTER:
       case Position.BELOW:
-        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getHeight() != null)
+          _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
         break;
       case Position.ABOVE:
-        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getHeight() != null)
+          _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
         break;
       case Position.BELOW_LEFT:
-        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
-        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getWidth() != null)
+          _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getHeight() != null)
+          _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
         break;
       case Position.ABOVE_LEFT:
-        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
-        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getWidth() != null)
+          _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getHeight() != null)
+          _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
         break;
       case Position.LEFT:
-        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getWidth() != null)
+          _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
         break;
       case Position.BELOW_RIGHT:
-        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset += (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
-        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getWidth() != null)
+          _horizontalOffset +=
+              (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+        if (renderSymbol?.bitmap?.getHeight() != null)
+          _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
         break;
       case Position.ABOVE_RIGHT:
-        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset += (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
-        if (renderSymbol?.bitmap?.getHeight() != null) _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.bitmap?.getWidth() != null)
+          _horizontalOffset +=
+              (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+        if (renderSymbol?.bitmap?.getHeight() != null)
+          _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
         break;
       case Position.RIGHT:
-        if (renderSymbol?.bitmap?.getWidth() != null) _horizontalOffset += (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+        if (renderSymbol?.bitmap?.getWidth() != null)
+          _horizontalOffset +=
+              (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
         break;
       default:
         throw new Exception("Position invalid");
