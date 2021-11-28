@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -26,9 +25,8 @@ class MapOnlineRendererWeb extends JobRenderer {
     Uri uri = Uri.parse(
         "$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png");
 
-    final req = Request('GET', uri);
-    final response = await req.send();
-    //final respStr = await resp.bytesToString();
+    Request req = Request('GET', uri);
+    StreamedResponse response = await req.send();
 
     final _Uint8ListBuilder builder = await response.stream.fold(
       new _Uint8ListBuilder(),

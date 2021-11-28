@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'map-view-page.dart';
+
 import 'package:flutter/material.dart';
-import 'map-file-data.dart';
+import 'package:mapsforge_example/filemgr.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'map-file-data.dart';
+import 'map-view-page.dart';
 
 /// The route page showing up when starting the application.
 ///
@@ -94,12 +97,13 @@ class MapList extends StatelessWidget {
         }
         break;
       case 'delete_map_files':
-        Directory dir = await getApplicationDocumentsDirectory();
-        await dir.list(recursive: false).forEach((f) async {
-          if (await FileSystemEntity.isFile(f.path)) {
-            await f.delete();
+        List<String> paths =
+            await FileMgr().getFiles(await FileMgr().findLocalPath());
+        for (String path in paths) {
+          if (await FileSystemEntity.isFile(path)) {
+            await File(path).delete();
           }
-        });
+        }
         break;
     }
   }

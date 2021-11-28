@@ -22,13 +22,13 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.3
+  cupertino_icons: ^1.0.4
 
   # BSD License, transitive dependency
   #path_provider: 1.1.2
 
  # MIT License
-  dio: ^4.0.0
+  #dio: ^4.0.0
 
   # BSD License
   # This lib is not androidX compliant, so you need to change the flutter\.pub-cache\hosted\pub.dartlang.org\flutter_downloader-1.4.4\android\gradle.properties (add android.useAndroidX=true)
@@ -42,15 +42,15 @@ dependencies:
     path: ../mapsforge_flutter
 
   # BSD License
-  logging: ^1.0.1
+  logging: ^1.0.2
 
   # Apache 2.0 License, transitive dependency
   #rxdart: "0.21.0"
 
-  flutter_archive: ^4.0.1
+  flutter_archive: ^4.1.0
 
   # Apache 2.0 License
-  archive: ^3.1.2
+  archive: ^3.1.6
 
 
 dev_dependencies:

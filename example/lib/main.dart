@@ -17,13 +17,14 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 12,
   ),
   new MapFileData.onlineSatellite(
-    displayedName: "Online Austria Satellite",
+    displayedName: "Online Austria Satellite (Supports web)",
     initialPositionLat: 48.089415,
     initialPositionLong: 16.311374,
     initialZoomLevel: 12,
   ),
   new MapFileData(
-    url: "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Chemnitz Uni.map",
+    url:
+        "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Chemnitz Uni.map",
     fileName: "Chemnitz Uni.map",
     displayedName: "Chemnitz - University (Indoor)",
     initialPositionLat: 50.81348,
@@ -33,7 +34,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {1: 'OG', 0: 'EG', -1: 'UG'},
   ),
   new MapFileData(
-    url: "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/indoorUB-ext.map",
+    url:
+        "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/indoorUB-ext.map",
     fileName: "indoorUB-ext.map",
     displayedName: "Chemnitz - Library (Indoor)",
     initialPositionLat: 50.84160,
@@ -43,7 +45,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {4: 'OG4', 3: 'OG3', 2: 'OG2', 1: 'OG1', 0: 'EG', -1: 'UG1'},
   ),
   new MapFileData(
-    url: "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Louvre.map",
+    url:
+        "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Louvre.map",
     fileName: "Louvre.map",
     displayedName: "Paris - Louvre (Indoor)",
     initialPositionLat: 48.86085,
@@ -52,14 +55,16 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {2: '2', 1: '1', 0: '0', -1: '-1', -2: '-2', -3: '-3'},
   ),
   new MapFileData(
-    url: "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
+    url:
+        "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/france/ile-de-france.map",
     fileName: "ile-de-france.map",
     displayedName: "ile-de-france",
     initialPositionLat: 48.86085,
     initialPositionLong: 2.33665,
   ),
   new MapFileData(
-    url: "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Meadowhall Shopping Center.map",
+    url:
+        "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Meadowhall Shopping Center.map",
     fileName: "Meadowhall Shopping Center.map",
     displayedName: "Meadowhall Shopping Center (Indoor)",
     initialPositionLat: 53.41388,
@@ -68,7 +73,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {1: 'OG', 0: 'EG'},
   ),
   new MapFileData(
-    url: "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Northglenn High School.map",
+    url:
+        "https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/example/map_files/Northglenn High School.map",
     fileName: "Northglenn High School.map",
     displayedName: "Northglenn High School (Indoor)",
     initialPositionLat: 39.88039,
@@ -105,7 +111,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   ),
   new MapFileData(
     url: "https://www.dailyflightbuddy.com/sicilia_oam.zip",
-    fileName: "sicilia_oam.zip",
+    fileName:
+        "sicilia_oam.map", // will automatically unzipped if the extension of the destination is not .zip
     displayedName: "Contour Sizilia",
     theme: "assets/render_themes/sicilia_oam.xml",
     relativePathPrefix: "sicilia_oam/",
@@ -114,7 +121,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 15,
   ),
   new MapFileData(
-    url: "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/world/world.map",
+    url:
+        "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/world/world.map",
     fileName: "world.map",
     displayedName: "Worldmap",
     theme: "assets/render_themes/defaultrender.xml",

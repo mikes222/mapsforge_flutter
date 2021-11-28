@@ -1,18 +1,14 @@
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:async';
 
-import 'package:archive/archive.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_archive/flutter_archive.dart' as fileArchive;
+import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
 
@@ -28,17 +24,19 @@ class MapViewPage extends StatefulWidget {
   MapViewPageState createState() => MapViewPageState();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 /// The [State] of the [MapViewPage] Widget.
 class MapViewPageState extends State<MapViewPage> {
   late ViewModel viewModel;
   double? downloadProgress;
   MapModel? mapModel;
   GraphicFactory? _graphicFactory;
-
-  //LevelDetector levelDetector; // used for a dynamic indoorLevelBar
+  String? error;
 
   @override
   void initState() {
+    // prepare the mapView async
     _prepare();
 
     super.initState();
@@ -51,33 +49,13 @@ class MapViewPageState extends State<MapViewPage> {
         appBar: AppBar(
           title: Text(widget.mapFileData.displayedName),
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            CircularProgressIndicator(
-              value: downloadProgress == null || downloadProgress == 1
-                  ? null
-                  : downloadProgress,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: Text(
-                downloadProgress == null || downloadProgress == 1
-                    ? "Loading"
-                    : "Downloading ${(downloadProgress! * 100).round()}%",
-              ),
-            ),
-          ],
-        ),
+        body: _buildDownloadProgressBody(),
       );
     }
 
     return Scaffold(
       appBar: _buildHead(context) as PreferredSizeWidget,
-      body: _buildBody(context),
+      body: _buildMapViewBody(context),
     );
   }
 
@@ -111,8 +89,48 @@ class MapViewPageState extends State<MapViewPage> {
     );
   }
 
+  Widget _buildDownloadProgressBody() {
+    if (error != null) {
+      return Center(
+        child: Text(error!),
+      );
+    }
+    return StreamBuilder<FileDownloadEvent>(
+        stream: FileMgr().fileDownloadOberve,
+        builder: (context, AsyncSnapshot<FileDownloadEvent> snapshot) {
+          if (snapshot.data != null) {
+            if (snapshot.data!.status == DOWNLOADSTATUS.ERROR) {
+              return const Center(child: Text("Error while downloading file"));
+            } else if (snapshot.data!.status == DOWNLOADSTATUS.FINISH) {
+              // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
+              _prepareOfflineMap();
+            } else
+              downloadProgress = (snapshot.data!.count / snapshot.data!.total);
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(
+                value: downloadProgress == null || downloadProgress == 1
+                    ? null
+                    : downloadProgress,
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  downloadProgress == null || downloadProgress == 1
+                      ? "Loading"
+                      : "Downloading ${(downloadProgress! * 100).round()}%",
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
   /// Constructs the body ([FlutterMapView]) of the [MapViewPage].
-  Widget _buildBody(BuildContext context) {
+  Widget _buildMapViewBody(BuildContext context) {
     return FlutterMapView(
       mapModel: mapModel!,
       viewModel: viewModel,
@@ -122,197 +140,139 @@ class MapViewPageState extends State<MapViewPage> {
 
   /// A helper function for a asynchronous [_initState].
   Future<void> _prepare() async {
+    /// prepare the graphics factory. This class provides drawing functions
+    _graphicFactory = const FlutterGraphicFactory();
+
     if (widget.mapFileData.isOnlineMap != ONLINEMAPTYPE.NO) {
-      _graphicFactory = const FlutterGraphicFactory();
-
-      final DisplayModel displayModel = DisplayModel();
-      JobRenderer jobRenderer =
-          widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OSM
-              ? MapOnlineRendererWeb()
-              : ArcGisOnlineRenderer();
-      TileBitmapCache bitmapCache = MemoryTileBitmapCache();
-      mapModel = MapModel(
-        displayModel: displayModel,
-        renderer: jobRenderer,
-        tileBitmapCache: bitmapCache,
-      );
-
-      viewModel = ViewModel(displayModel: mapModel!.displayModel);
-
-      // set default position
-      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
-          widget.mapFileData.initialPositionLong);
-      viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
-      if (widget.mapFileData.indoorZoomOverlay)
-        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
-            indoorLevels: widget.mapFileData.indoorLevels));
-      else
-        viewModel.addOverlay(ZoomOverlay(viewModel));
-      viewModel.addOverlay(DistanceOverlay(viewModel));
-      // attach indoor level stream to indoor change function
-      //indoorLevelSubject.listen(viewModel.setIndoorLevel);
-      downloadProgress = 1;
+      /// we use an onlinemap - either OSM or ArcGis
+      await _prepareOnlinemap();
     } else {
-      final MapDataStore mapDataStore = await _prepareOfflineMap();
-      final SymbolCache symbolCache =
-          FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
-      _graphicFactory = const FlutterGraphicFactory();
-      final DisplayModel displayModel = DisplayModel();
-      final RenderThemeBuilder renderThemeBuilder =
-          RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
-      final String content =
-          await rootBundle.loadString(widget.mapFileData.theme);
-      renderThemeBuilder.parseXml(content);
-      final RenderTheme renderTheme = renderThemeBuilder.build();
-      final JobRenderer jobRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme, _graphicFactory!, true);
-      final TileBitmapCache bitmapCache;
-      if (kIsWeb) {
-        bitmapCache = MemoryTileBitmapCache();
-      } else {
-        bitmapCache =
-            await FileTileBitmapCache.create(jobRenderer.getRenderKey());
-      }
-
-      mapModel = MapModel(
-        displayModel: displayModel,
-        renderer: jobRenderer,
-        tileBitmapCache: bitmapCache,
-      );
-
-      viewModel = ViewModel(displayModel: mapModel!.displayModel);
-
-      // set default position
-      viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
-          widget.mapFileData.initialPositionLong);
-      viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
-      if (widget.mapFileData.indoorZoomOverlay)
-        viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
-            indoorLevels: widget.mapFileData.indoorLevels));
-      else
-        viewModel.addOverlay(ZoomOverlay(viewModel));
-      viewModel.addOverlay(DistanceOverlay(viewModel));
-
-      /*
-      MapModelHelper.onLevelChange.listen(
-        (levelMappings) {
-          if (!fadeAnimationController.isAnimating) {
-            levelMappings == null
-                ? fadeAnimationController.reverse()
-                : fadeAnimationController.forward();
-          }
-        }
-      );
-      */
+      await _prepareOfflineMap();
     }
-    setState(() {});
     return;
+  }
+
+  /// Prepares the online map. Since this is quite fast we do not update the progress information here
+  Future<void> _prepareOnlinemap() async {
+    /// prepare the display model. This class holds all properties for displaying the map
+    final DisplayModel displayModel = DisplayModel();
+
+    /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
+    JobRenderer jobRenderer =
+        widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OSM
+            ? MapOnlineRendererWeb()
+            : ArcGisOnlineRenderer();
+
+    /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
+    final TileBitmapCache bitmapCache;
+    if (kIsWeb) {
+      bitmapCache = MemoryTileBitmapCache();
+    } else {
+      bitmapCache =
+          await FileTileBitmapCache.create(jobRenderer.getRenderKey());
+    }
+
+    /// Now we can glue together and instantiate the mapModel and the viewModel. The former holds the
+    /// properties for the map and the latter holds the properties for viewing the map
+    mapModel = MapModel(
+      displayModel: displayModel,
+      renderer: jobRenderer,
+      tileBitmapCache: bitmapCache,
+    );
+    viewModel = ViewModel(displayModel: mapModel!.displayModel);
+
+    // set default position
+    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+        widget.mapFileData.initialPositionLong);
+    viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+    if (widget.mapFileData.indoorZoomOverlay)
+      viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
+          indoorLevels: widget.mapFileData.indoorLevels));
+    else
+      viewModel.addOverlay(ZoomOverlay(viewModel));
+    viewModel.addOverlay(DistanceOverlay(viewModel));
+    downloadProgress = 1;
+    // let the UI switch to map mode
+    if (mounted) setState(() {});
   }
 
   /// Downloads and stores a locally non-existing [MapFile], or
   /// loads a locally existing one.
-  Future<MapFile> _prepareOfflineMap() async {
-    if (kIsWeb) return _prepareOfflineMapForWeb();
-    String filePath = await widget.mapFileData.getLocalFilePath();
-    //print("Using $filePath");
+  Future<void> _prepareOfflineMap() async {
+    String filePath = widget.mapFileData.fileName;
 
-    if (await widget.mapFileData.fileExists()) {
-      downloadProgress = 1;
-      if (filePath.endsWith(".zip")) {
-        filePath = filePath.replaceAll(".zip", ".map");
-      }
+    if (await FileMgr().existsRelative(filePath)) {
+      /// yeah, file is already here we can immediately start
+      // if (filePath.endsWith(".zip")) {
+      //   filePath = filePath.replaceAll(".zip", ".map");
+      // }
+      String path = await FileMgr().findLocalPath();
+      final MapFile mapFile = await MapFile.from("$path/$filePath", null, null);
+      await _prepareOfflineMapWithExistingMapfile(mapFile);
     } else {
-      Dio dio = Dio();
-      try {
-        Response response = await dio.download(
-          widget.mapFileData.url,
-          filePath,
-          onReceiveProgress: (int received, int total) {
-            setState(() {
-              downloadProgress = received / total;
-            });
-          },
-          options: Options(
-            responseType: ResponseType.bytes,
-            followRedirects: true,
-          ),
-        );
-      } catch (e) {
-        print("Download Error - $e");
-      }
-
-      try {
-        if (filePath.endsWith(".zip")) {
-          print("Unzipping $filePath");
-          Directory dir = await getApplicationDocumentsDirectory();
-          await fileArchive.ZipFile.extractToDirectory(
-            zipFile: File(filePath),
-            destinationDir: dir,
-            onExtracting: (zipEntry, progress) {
-              setState(() {
-                downloadProgress = progress / 100;
-              });
-              return fileArchive.ZipFileOperation.includeItem;
-            },
-          );
-          filePath = filePath.replaceAll(".zip", ".map");
-        }
-      } catch (e) {
-        print("Unzip Error - $e");
+      // downloadFile returns BEFORE the actual file has been downloaded so do not wait here at all
+      bool ok = await FileMgr()
+          .downloadFileRelative(widget.mapFileData.url, filePath);
+      if (!ok) {
+        error = "Error while putting the downloadrequest in the queue";
+        if (mounted) setState(() {});
       }
     }
-    final MapFile mapFile = await MapFile.from(filePath, null, null);
-    return mapFile;
   }
 
-  /// Downloads and stores a locally non-existing [MapFile].
-  Future<MapFile> _prepareOfflineMapForWeb() async {
-    String filePath = widget.mapFileData.fileName;
-    print("loading $filePath from ${widget.mapFileData.url}");
-    Response<List<int>> response;
-    try {
-      Dio dio = Dio();
-      response = await dio.get<List<int>>(
-        widget.mapFileData.url,
-        onReceiveProgress: (int received, int total) {
-          setState(() {
-            downloadProgress = received / total;
-          });
-        },
-        options: Options(
-          responseType: ResponseType.bytes,
-          followRedirects: true,
-        ),
-      );
-    } catch (e) {
-      print("Download Error - $e");
-      throw e;
+  Future<void> _prepareOfflineMapWithExistingMapfile(
+      MapDataStore mapDataStore) async {
+    /// prepare the display model. This class holds all properties for displaying the map
+    final DisplayModel displayModel = DisplayModel();
+
+    /// For the offline-maps we need a cache for all the tiny symbols in the map
+    final SymbolCache symbolCache =
+        FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
+
+    /// Prepare the Themebuilder. This instructs the renderer how to draw the images
+    final RenderThemeBuilder renderThemeBuilder =
+        RenderThemeBuilder(_graphicFactory!, symbolCache, displayModel);
+    final String content =
+        await rootBundle.loadString(widget.mapFileData.theme);
+    renderThemeBuilder.parseXml(content);
+    final RenderTheme renderTheme = renderThemeBuilder.build();
+
+    /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
+    final JobRenderer jobRenderer =
+        MapDataStoreRenderer(mapDataStore, renderTheme, _graphicFactory!, true);
+
+    /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
+    final TileBitmapCache bitmapCache;
+    if (kIsWeb) {
+      bitmapCache = MemoryTileBitmapCache();
+    } else {
+      bitmapCache =
+          await FileTileBitmapCache.create(jobRenderer.getRenderKey());
     }
 
-    List<int> content = response.data!;
-    assert(content.length > 0);
-    //print("content of $filePath has ${content.length} byte");
+    /// Now we can glue together and instantiate the mapModel and the viewModel. The former holds the
+    /// properties for the map and the latter holds the properties for viewing the map
+    mapModel = MapModel(
+      displayModel: displayModel,
+      renderer: jobRenderer,
+      tileBitmapCache: bitmapCache,
+    );
 
-    try {
-      if (filePath.endsWith(".zip")) {
-        print("Unzipping $filePath");
-        Archive archive = ZipDecoder().decodeBytes(content);
-        for (ArchiveFile file in archive) {
-          print("  Unzipping ${file.name}");
-          content = file.content;
-          assert(content.length > 0);
-          break;
-        }
-        filePath = filePath.replaceAll(".zip", ".map");
-      }
-    } catch (e) {
-      print("Unzip Error - $e");
-      throw e;
-    }
+    viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
-    final MapFile mapFile =
-        await MapFile.using(Uint8List.fromList(content), null, null);
-    return mapFile;
+    // set default position
+    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+        widget.mapFileData.initialPositionLong);
+    viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+    if (widget.mapFileData.indoorZoomOverlay)
+      viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
+          indoorLevels: widget.mapFileData.indoorLevels));
+    else
+      viewModel.addOverlay(ZoomOverlay(viewModel));
+    viewModel.addOverlay(DistanceOverlay(viewModel));
+    downloadProgress = 1;
+    // let the UI switch to map mode
+    if (mounted) setState(() {});
   }
 
   /// Executes the selected action of the popup menu.

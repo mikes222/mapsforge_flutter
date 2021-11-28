@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
@@ -21,23 +21,19 @@ import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 class ArcGisOnlineRenderer extends JobRenderer {
   static final _log = new Logger('ArcGisOnlineRenderer');
 
-  static final String uriPrefix = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile";
+  static final String uriPrefix =
+      "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile";
 
-  HttpClient _httpClient = new HttpClient();
-
-  ArcGisOnlineRenderer() {
-    _httpClient.connectionTimeout = const Duration(seconds: 60);
-    _httpClient.idleTimeout = const Duration(minutes: 1);
-  }
+  ArcGisOnlineRenderer() {}
 
   @override
   Future<JobResult> executeJob(Job job) async {
-    Uri uri = Uri.parse("$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileY}/${job.tile.tileX}.png");
-    HttpClientRequest request = await _httpClient.getUrl(uri);
-    //_log.info("GET >> " + uri.toString());
-    HttpClientResponse response = await request.close();
+    Uri uri = Uri.parse(
+        "$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileY}/${job.tile.tileX}.png");
+    Request req = Request('GET', uri);
+    final response = await req.send();
 
-    final _Uint8ListBuilder builder = await response.fold(
+    final _Uint8ListBuilder builder = await response.stream.fold(
       new _Uint8ListBuilder(),
       (_Uint8ListBuilder buffer, List<int> bytes) => buffer..add(bytes),
     );
@@ -54,7 +50,7 @@ class ArcGisOnlineRenderer extends JobRenderer {
 
   @override
   String getRenderKey() {
-    return "osm";
+    return "arcgis";
   }
 }
 

@@ -1,7 +1,3 @@
-import 'dart:io';
-
-import 'package:path_provider/path_provider.dart';
-
 /// A container to store map files and handle their information.
 class MapFileData {
   final String url;
@@ -60,24 +56,15 @@ class MapFileData {
         theme = "unused",
         relativePathPrefix = null,
         isOnlineMap = ONLINEMAPTYPE.ARCGIS;
-
-  /// Finds the local directory of the stored map file.
-  Future<String> getLocalFilePath() async {
-    Directory dir = await getApplicationDocumentsDirectory();
-    return dir.path + "/" + fileName;
-  }
-
-  /// Checks whether a map file already exists.
-  Future<bool> fileExists() async {
-    String filePath = await getLocalFilePath();
-    return await File(filePath).exists();
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 enum ONLINEMAPTYPE {
+  // No Onlinemap --> We use offline-maps
   NO,
+  // OpenStreetMap
   OSM,
+  // ArcGis Map
   ARCGIS,
 }

@@ -12,7 +12,7 @@ class FileHelper {
 //        ? await getExternalStorageDirectory()
 //        : await getApplicationDocumentsDirectory();
 //    return directory.path;
-    String result = (await getApplicationDocumentsDirectory()).path;
+    String result = (await getApplicationSupportDirectory()).path;
     //result += '/dailyflightbuddy/maps';
 
     var savedDir = Directory(result);
@@ -38,9 +38,11 @@ class FileHelper {
   }
 
   static Future<List<String>> getFiles(String dirpath) async {
-    assert(dirpath != null);
     Directory dir = Directory(dirpath);
-    List<String> result = await dir.list().map((fileSystemEntry) => fileSystemEntry.path).toList();
+    List<String> result = await dir
+        .list()
+        .map((fileSystemEntry) => fileSystemEntry.path)
+        .toList();
     return result;
   }
 
