@@ -101,7 +101,8 @@ class ViewModel {
       zoomLevel = displayModel.maxZoomLevel;
     if (zoomLevel < 0) zoomLevel = 0;
     if (_mapViewPosition != null) {
-      if (_mapViewPosition!.zoomLevel == zoomLevel) return _mapViewPosition!;
+      if (_mapViewPosition!.zoomLevel == zoomLevel &&
+          _mapViewPosition!.scale == 1) return _mapViewPosition!;
       MapViewPosition newPosition =
           MapViewPosition.zoom(_mapViewPosition!, zoomLevel);
       _mapViewPosition = newPosition;
@@ -114,6 +115,18 @@ class ViewModel {
       _injectPosition.add(newPosition);
       return newPosition;
     }
+  }
+
+  MapViewPosition zoomAround(double latitude, double longitude, int zoomLevel) {
+    assert(_mapViewPosition != null);
+    if (zoomLevel > displayModel.maxZoomLevel)
+      zoomLevel = displayModel.maxZoomLevel;
+    if (zoomLevel < 0) zoomLevel = 0;
+    MapViewPosition newPosition = MapViewPosition.zoomAround(
+        _mapViewPosition!, latitude, longitude, zoomLevel);
+    _mapViewPosition = newPosition;
+    _injectPosition.add(newPosition);
+    return newPosition;
   }
 
   void indoorLevelUp() {
@@ -160,7 +173,7 @@ class ViewModel {
   /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
   /// >1 means zoom-in.
   ///
-  MapViewPosition? setScale(Mappoint focalPoint, double scale) {
+  MapViewPosition? setScaleAround(Mappoint focalPoint, double scale) {
     assert(scale > 0);
     // do not scale if the scale is too minor to do anything
     if ((scale - 1).abs() < 0.01) return _mapViewPosition;
@@ -185,7 +198,7 @@ class ViewModel {
         }
       }
       MapViewPosition newPosition =
-          MapViewPosition.scale(_mapViewPosition!, focalPoint, scale);
+          MapViewPosition.scaleAround(_mapViewPosition!, focalPoint, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -196,7 +209,7 @@ class ViewModel {
           displayModel.DEFAULT_ZOOM,
           displayModel.DEFAULT_INDOOR_LEVEL,
           displayModel.tileSize);
-      newPosition = MapViewPosition.scale(newPosition, null, scale);
+      newPosition = MapViewPosition.scaleAround(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -271,4 +284,7 @@ class TapEvent {
 
 /////////////////////////////////////////////////////////////////////////////
 
+///
+/// This event is triggered as soon as a user gesture intervention is detected.
+/// It can be used to disable auto-movement or auto-zoom of the map in order to prevent interfering with the user.
 class GestureEvent {}

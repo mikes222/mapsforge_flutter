@@ -31,6 +31,7 @@ class FlutterCanvas extends MapCanvas {
 
   ui.PictureRecorder? pictureRecorder;
 
+  /// The size of the canvas
   final ui.Size size;
 
   ///
@@ -416,9 +417,11 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void scale(Mappoint focalPoint, double scale) {
-    uiCanvas.save();
-    uiCanvas.translate(focalPoint.x, focalPoint.y);
+    double diffX = size.width / 2 - focalPoint.x;
+    double diffY = size.height / 2 - focalPoint.y;
+    uiCanvas.translate((-size.width / 2 + diffX) * (scale - 1),
+        (-size.height / 2 + diffY) * (scale - 1));
+    // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.
     uiCanvas.scale(scale);
-    uiCanvas.translate(-focalPoint.x, -focalPoint.y);
   }
 }

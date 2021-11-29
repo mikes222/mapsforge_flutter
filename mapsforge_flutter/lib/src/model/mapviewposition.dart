@@ -10,8 +10,10 @@ import 'mappoint.dart';
 class MapViewPosition {
   static final _log = new Logger('MapViewPosition');
 
+  /// The latitude of the center of the widget
   double? _latitude;
 
+  /// The longitude of the center of the widget
   double? _longitude;
 
   final int tileSize;
@@ -86,6 +88,18 @@ class MapViewPosition {
     _projection = PixelProjection(zoomLevel, old.tileSize);
   }
 
+  MapViewPosition.zoomAround(
+      MapViewPosition old, double latitude, double longitude, int zoomLevel)
+      : _latitude = latitude,
+        _longitude = longitude,
+        this.zoomLevel = max(zoomLevel, 0),
+        indoorLevel = old.indoorLevel,
+        tileSize = old.tileSize,
+        scale = 1,
+        focalPoint = null {
+    _projection = PixelProjection(zoomLevel, old.tileSize);
+  }
+
   MapViewPosition.indoorLevelUp(MapViewPosition old)
       : _latitude = old._latitude,
         _longitude = old._longitude,
@@ -94,7 +108,9 @@ class MapViewPosition {
         tileSize = old.tileSize,
         _projection = old._projection,
         scale = 1,
-        focalPoint = null;
+        focalPoint = null,
+        boundingBox = old.boundingBox,
+        _leftUpper = old._leftUpper;
 
   MapViewPosition.indoorLevelDown(MapViewPosition old)
       : _latitude = old._latitude,
@@ -104,7 +120,9 @@ class MapViewPosition {
         tileSize = old.tileSize,
         _projection = old._projection,
         scale = 1,
-        focalPoint = null;
+        focalPoint = null,
+        boundingBox = old.boundingBox,
+        _leftUpper = old._leftUpper;
 
   MapViewPosition.setIndoorLevel(MapViewPosition old, int indoorLevel)
       : _latitude = old._latitude,
@@ -114,14 +132,16 @@ class MapViewPosition {
         tileSize = old.tileSize,
         _projection = old._projection,
         scale = 1,
-        focalPoint = null;
+        focalPoint = null,
+        boundingBox = old.boundingBox,
+        _leftUpper = old._leftUpper;
 
   ///
   /// sets the new scale relative to the current zoomlevel. A scale of 1 means no action,
   /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
   /// >1 means zoom-in.
-  ///
-  MapViewPosition.scale(MapViewPosition old, this.focalPoint, this.scale)
+  /// Scaling is different from zooming. Scaling is used during pinch-to-zoom gesture to scale the current area. Zooming triggers new tile-images. Scaling does not.
+  MapViewPosition.scaleAround(MapViewPosition old, this.focalPoint, this.scale)
       : assert(scale > 0),
         _latitude = old._latitude,
         _longitude = old._longitude,
@@ -176,6 +196,8 @@ class MapViewPosition {
     // Projection.checkLongitude(_longitude!);
   }
 
+  /// called if the size of the view has been changed. The boundingBox needs to be
+  /// destroyed then as well as the _leftUpper variable.
   void sizeChanged() {
     _leftUpper = null;
     boundingBox = null;
@@ -185,6 +207,7 @@ class MapViewPosition {
     return _latitude != null && _longitude != null;
   }
 
+  /// Calculates the bounding box of the given dimensions of the view. Scaling or focalPoint are NOT considered.
   BoundingBox calculateBoundingBox(Dimension viewDimension) {
     if (boundingBox != null) return boundingBox!;
 
@@ -209,14 +232,10 @@ class MapViewPosition {
 
   Mappoint? get leftUpper => _leftUpper;
 
-  // MercatorProjectionImpl get mercatorProjection {
-  //   if (_mercatorProjection != null) return _mercatorProjection;
-  //   _mercatorProjection = MercatorProjectionImpl(_tileSize, zoomLevel);
-  //   return _mercatorProjection;
-  // }
-
+  /// The latitude of the center of the widget
   double? get latitude => _latitude;
 
+  /// The longitude of the center of the widget
   double? get longitude => _longitude;
 
   @override

@@ -51,13 +51,14 @@ class TileLayerImpl extends TileLayer {
 
     canvas.setClip(0, 0, viewModel.viewDimension!.width.round(),
         viewModel.viewDimension!.height.round());
-    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
-      //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
-      canvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
-    }
     mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
     Mappoint? leftUpper = mapViewPosition.leftUpper;
 
+    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
+      //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
+      (canvas as FlutterCanvas).uiCanvas.save();
+      canvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
+    }
     jobSet.results.forEach((Tile tile, JobResult jobResult) {
       Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
       _paint.setAntiAlias(true);
@@ -69,7 +70,7 @@ class TileLayerImpl extends TileLayer {
           paint: _paint,
         );
     });
-    if (mapViewPosition.scale != 1) {
+    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
       (canvas as FlutterCanvas).uiCanvas.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
