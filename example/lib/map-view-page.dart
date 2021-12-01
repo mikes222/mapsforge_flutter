@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -201,6 +202,16 @@ class MapViewPageState extends State<MapViewPage> {
   Future<void> _prepareOfflineMap() async {
     String filePath = widget.mapFileData.fileName;
 
+    if (kIsWeb) {
+      // web mode does not support filesystems so we need to download to memory instead
+      List<int> content =
+          await FileMgr().downloadContent(widget.mapFileData.url);
+      MapFile mapFile =
+          await MapFile.using(Uint8List.fromList(content), null, null);
+      await _prepareOfflineMapWithExistingMapfile(mapFile);
+      return;
+    }
+
     if (await FileMgr().existsRelative(filePath)) {
       /// yeah, file is already here we can immediately start
       // if (filePath.endsWith(".zip")) {
@@ -226,8 +237,13 @@ class MapViewPageState extends State<MapViewPage> {
     final DisplayModel displayModel = DisplayModel();
 
     /// For the offline-maps we need a cache for all the tiny symbols in the map
-    final SymbolCache symbolCache =
-        FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
+    final SymbolCache symbolCache;
+    if (kIsWeb) {
+      symbolCache = MemorySymbolCache();
+    } else {
+      symbolCache =
+          FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
+    }
 
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
     final RenderThemeBuilder renderThemeBuilder =

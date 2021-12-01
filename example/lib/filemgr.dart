@@ -180,6 +180,15 @@ class FileMgr {
     await file.writeAsBytes(content);
   }
 
+  /// Downloads content from internet. This method is meant for smaller files since the
+  /// download takes place in memory only. If [ignoreCertificate] is true an invalid certificate for an
+  /// ssl connection is ignored and the file is downloaded anyway.
+  Future<List<int>> downloadContent(String source,
+      [bool ignoreCertificate = false]) async {
+    List<int> content = await _downloadNowToMemory(source, ignoreCertificate);
+    return content;
+  }
+
   /// Downloads content from internet and caches it locally. If the content is already downloaded
   /// the file is provided from the cache. This method is meant for smaller files since the
   /// download takes place in memory only. If [ignoreCertificate] is true an invalid certificate for an
@@ -202,21 +211,58 @@ class FileMgr {
       [bool ignoreCertificate = false]) async {
     _log.info("file will be downloaded from ${source} into memory");
 
-    HttpClient _httpClient = HttpClient();
-    _httpClient.connectionTimeout = const Duration(seconds: 20);
-    _httpClient.idleTimeout = const Duration(minutes: 1);
-    if (ignoreCertificate)
-      _httpClient.badCertificateCallback =
-          ((X509Certificate cert, String host, int port) => true);
+    http.Request req = http.Request('GET', Uri.parse(source));
+    http.StreamedResponse response = await req.send();
+    int total = response.contentLength ?? 0;
+    int count = 0;
+    List<int> content = [];
+    int lastTime = DateTime.now().millisecondsSinceEpoch;
+    _fileDownloadInject.add(FileDownloadEvent.progress("memory", count, total));
+    Completer<List<int>> completer = Completer<List<int>>();
+    downloadSubscription = response.stream.listen((List<int> value) {
+      int time = DateTime.now().millisecondsSinceEpoch;
+      count += value.length;
+      content.addAll(value);
+      if (lastTime + 2000 < time) {
+        _log.info(
+            "Received $count of $total bytes (${(total == 0) ? "unknown" : (count / total * 100).round()} %) for memory");
+        _fileDownloadInject
+            .add(FileDownloadEvent.progress("memory", count, total));
+        lastTime = time;
+      }
+    })
+      ..onError((error, stacktrace) async {
+        await downloadSubscription?.cancel();
+        downloadSubscription = null;
+        _fileDownloadInject.add(FileDownloadEvent.error("memory"));
+      })
+      ..onDone(() async {
+        try {
+          _fileDownloadInject.add(FileDownloadEvent.finish("memory"));
+        } catch (error) {
+          _log.warning(error);
+          _fileDownloadInject.add(FileDownloadEvent.error("memory"));
+        }
+        await downloadSubscription?.cancel();
+        downloadSubscription = null;
+        completer.complete(content);
+      });
 
-    HttpClientRequest request = await _httpClient.getUrl(Uri.parse(source));
-    HttpClientResponse response = await request.close();
-    final Uint8ListBuilder builder = await response.fold(
-      new Uint8ListBuilder(),
-      (Uint8ListBuilder buffer, List<int> bytes) => buffer..add(bytes),
-    );
-    final Uint8List bytes = builder.data;
-    return bytes;
+    // HttpClient _httpClient = HttpClient();
+    // _httpClient.connectionTimeout = const Duration(seconds: 20);
+    // _httpClient.idleTimeout = const Duration(minutes: 1);
+    // if (ignoreCertificate)
+    //   _httpClient.badCertificateCallback =
+    //       ((X509Certificate cert, String host, int port) => true);
+    //
+    // HttpClientRequest request = await _httpClient.getUrl(Uri.parse(source));
+    // HttpClientResponse response = await request.close();
+    // final Uint8ListBuilder builder = await response.fold(
+    //   new Uint8ListBuilder(),
+    //   (Uint8ListBuilder buffer, List<int> bytes) => buffer..add(bytes),
+    // );
+    // final Uint8List bytes = builder.data;
+    return completer.future;
   }
 
   /// Downloads a file to the filesystem. If the source ends with .zip or .gz and the destination
