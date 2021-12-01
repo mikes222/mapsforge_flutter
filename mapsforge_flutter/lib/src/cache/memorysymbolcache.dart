@@ -11,6 +11,13 @@ import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebit
 import 'dart:ui' as ui;
 
 class MemorySymbolCache extends SymbolCache {
+  static final String PREFIX_JAR = "jar:";
+
+  static final String PREFIX_JAR_V1 =
+      "jar:/org/mapsforge/android/maps/rendertheme";
+
+  final AssetBundle? bundle;
+
   Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
     storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
       item.decrementRefCount();
@@ -18,8 +25,11 @@ class MemorySymbolCache extends SymbolCache {
     capacity: 100,
   );
 
+  MemorySymbolCache({this.bundle});
+
   @override
-  Future<ResourceBitmap?> getSymbol(String? src, int width, int height, int? percent) async {
+  Future<ResourceBitmap?> getSymbol(
+      String? src, int width, int height, int? percent) async {
     if (src == null || src.length == 0) {
 // no image source defined
       return null;
@@ -34,7 +44,8 @@ class MemorySymbolCache extends SymbolCache {
     return bitmap;
   }
 
-  Future<ResourceBitmap> _createSymbol(String src, int width, int height, int? percent) async {
+  Future<ResourceBitmap> _createSymbol(
+      String src, int width, int height, int? percent) async {
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
     if (src.toLowerCase().endsWith(".svg")) {
@@ -51,10 +62,23 @@ class MemorySymbolCache extends SymbolCache {
   ///
   @protected
   Future<ByteData?> fetchResource(String src) async {
+    // compatibility with mapsforge
+    if (src.startsWith(PREFIX_JAR)) {
+      src = src.substring(PREFIX_JAR.length);
+      src = "packages/mapsforge_flutter/assets/" + src;
+    } else if (src.startsWith(PREFIX_JAR_V1)) {
+      src = src.substring(PREFIX_JAR_V1.length);
+      src = "packages/mapsforge_flutter/assets/" + src;
+    }
+    if (bundle != null) {
+      ByteData content = await bundle!.load(src);
+      return content;
+    }
     return null;
   }
 
-  Future<FlutterResourceBitmap> _createPngSymbol(String src, int width, int height, int? percent) async {
+  Future<FlutterResourceBitmap> _createPngSymbol(
+      String src, int width, int height, int? percent) async {
     ByteData? content = await fetchResource(src);
     if (content == null) throw SymbolNotFoundException(src);
     Uint8List bytes = content.buffer.asUint8List();
@@ -67,7 +91,8 @@ class MemorySymbolCache extends SymbolCache {
         width = (width * percent.toDouble() / 100.0).round();
         height = (height * percent.toDouble() / 100.0).round();
       }
-      var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);
+      var codec = await ui.instantiateImageCodec(bytes,
+          targetHeight: height, targetWidth: width);
       // add additional checking for number of frames etc here
       var frame = await codec.getNextFrame();
       ui.Image img = frame.image;
@@ -86,7 +111,8 @@ class MemorySymbolCache extends SymbolCache {
         width = (width * percent.toDouble() / 100.0).round();
         height = (height * percent.toDouble() / 100.0).round();
 
-        var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);
+        var codec = await ui.instantiateImageCodec(bytes,
+            targetHeight: height, targetWidth: width);
         var frame = await codec.getNextFrame();
         img = frame.image;
       }
@@ -99,20 +125,28 @@ class MemorySymbolCache extends SymbolCache {
     //MemoryImage image = MemoryImage(content.buffer.asUint8List());
   }
 
-  Future<FlutterResourceBitmap> _createSvgSymbol(String src, int width, int height, int? percent) async {
+  Future<FlutterResourceBitmap> _createSvgSymbol(
+      String src, int width, int height, int? percent) async {
     ByteData? content = await fetchResource(src);
     if (content == null) throw SymbolNotFoundException(src);
-    DrawableRoot svgRoot = await svg.fromSvgBytes(content.buffer.asUint8List(), src);
+    DrawableRoot svgRoot =
+        await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 
     if (percent != null && percent != 100) {
       if (width != null) width = (width * percent.toDouble() / 100.0).round();
-      if (height != null) height = (height * percent.toDouble() / 100.0).round();
+      if (height != null)
+        height = (height * percent.toDouble() / 100.0).round();
     }
 // If you only want the final Picture output, just use
     final ui.Picture picture = svgRoot.toPicture(
-        size: ui.Size(width != 0 ? width.toDouble() : SymbolCache.DEFAULT_SIZE.toDouble(),
-            height != 0 ? height.toDouble() : SymbolCache.DEFAULT_SIZE.toDouble()));
-    ui.Image image = await picture.toImage(width != 0 ? width : SymbolCache.DEFAULT_SIZE, height != 0 ? height : SymbolCache.DEFAULT_SIZE);
+        size: ui.Size(
+            width != 0 ? width.toDouble() : SymbolCache.DEFAULT_SIZE.toDouble(),
+            height != 0
+                ? height.toDouble()
+                : SymbolCache.DEFAULT_SIZE.toDouble()));
+    ui.Image image = await picture.toImage(
+        width != 0 ? width : SymbolCache.DEFAULT_SIZE,
+        height != 0 ? height : SymbolCache.DEFAULT_SIZE);
     //print("image: " + image.toString());
     FlutterResourceBitmap result = FlutterResourceBitmap(image, src);
     return result;

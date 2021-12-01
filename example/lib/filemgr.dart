@@ -183,10 +183,9 @@ class FileMgr {
   /// Downloads content from internet. This method is meant for smaller files since the
   /// download takes place in memory only. If [ignoreCertificate] is true an invalid certificate for an
   /// ssl connection is ignored and the file is downloaded anyway.
-  Future<List<int>> downloadContent(String source,
+  Future<void> downloadContent(String source,
       [bool ignoreCertificate = false]) async {
-    List<int> content = await _downloadNowToMemory(source, ignoreCertificate);
-    return content;
+    unawaited(_downloadNowToMemory(source, ignoreCertificate));
   }
 
   /// Downloads content from internet and caches it locally. If the content is already downloaded
@@ -202,12 +201,27 @@ class FileMgr {
     //print("checking file $filename");
     File file = File(filename);
     if (await file.exists()) return file.readAsBytes();
-    List<int> content = await _downloadNowToMemory(source, ignoreCertificate);
+
+    HttpClient _httpClient = HttpClient();
+    _httpClient.connectionTimeout = const Duration(seconds: 20);
+    _httpClient.idleTimeout = const Duration(minutes: 1);
+    if (ignoreCertificate)
+      _httpClient.badCertificateCallback =
+          ((X509Certificate cert, String host, int port) => true);
+
+    HttpClientRequest request = await _httpClient.getUrl(Uri.parse(source));
+    HttpClientResponse response = await request.close();
+    final Uint8ListBuilder builder = await response.fold(
+      new Uint8ListBuilder(),
+      (Uint8ListBuilder buffer, List<int> bytes) => buffer..add(bytes),
+    );
+    final Uint8List content = builder.data;
+
     await saveFileAbsolute(filename, content);
     return content;
   }
 
-  Future<List<int>> _downloadNowToMemory(String source,
+  Future<void> _downloadNowToMemory(String source,
       [bool ignoreCertificate = false]) async {
     _log.info("file will be downloaded from ${source} into memory");
 
@@ -218,7 +232,6 @@ class FileMgr {
     List<int> content = [];
     int lastTime = DateTime.now().millisecondsSinceEpoch;
     _fileDownloadInject.add(FileDownloadEvent.progress("memory", count, total));
-    Completer<List<int>> completer = Completer<List<int>>();
     downloadSubscription = response.stream.listen((List<int> value) {
       int time = DateTime.now().millisecondsSinceEpoch;
       count += value.length;
@@ -238,31 +251,14 @@ class FileMgr {
       })
       ..onDone(() async {
         try {
-          _fileDownloadInject.add(FileDownloadEvent.finish("memory"));
+          _fileDownloadInject.add(FileDownloadEvent.finish("memory", content));
         } catch (error) {
           _log.warning(error);
           _fileDownloadInject.add(FileDownloadEvent.error("memory"));
         }
         await downloadSubscription?.cancel();
         downloadSubscription = null;
-        completer.complete(content);
       });
-
-    // HttpClient _httpClient = HttpClient();
-    // _httpClient.connectionTimeout = const Duration(seconds: 20);
-    // _httpClient.idleTimeout = const Duration(minutes: 1);
-    // if (ignoreCertificate)
-    //   _httpClient.badCertificateCallback =
-    //       ((X509Certificate cert, String host, int port) => true);
-    //
-    // HttpClientRequest request = await _httpClient.getUrl(Uri.parse(source));
-    // HttpClientResponse response = await request.close();
-    // final Uint8ListBuilder builder = await response.fold(
-    //   new Uint8ListBuilder(),
-    //   (Uint8ListBuilder buffer, List<int> bytes) => buffer..add(bytes),
-    // );
-    // final Uint8List bytes = builder.data;
-    return completer.future;
   }
 
   /// Downloads a file to the filesystem. If the source ends with .zip or .gz and the destination
@@ -369,7 +365,8 @@ class FileMgr {
                   destination.substring(0, destination.lastIndexOf("/"));
             await unzipAbsolute(info.tempDestination, destination);
           }
-          _fileDownloadInject.add(FileDownloadEvent.finish(info.destination));
+          _fileDownloadInject
+              .add(FileDownloadEvent.finish(info.destination, null));
         } catch (error) {
           _log.warning(error);
           _fileDownloadInject.add(FileDownloadEvent.error(info.destination));
@@ -411,22 +408,26 @@ class FileDownloadEvent {
 
   final int total;
 
+  final List<int>? content;
+
   /// marks the current progress of the download. The file may NOT be available
   /// at the given filename-path yet. If the total bytes are unknown 0 is returned.
   FileDownloadEvent.progress(this.filename, this.count, this.total)
       : status = DOWNLOADSTATUS.PROGRESS,
+        content = null,
         assert(count >= 0),
         assert(total >= 0),
         assert(total == 0 || count <= total);
 
   /// since we may unzip the file the count or total is not set at the finish-event
-  FileDownloadEvent.finish(this.filename)
+  FileDownloadEvent.finish(this.filename, this.content)
       : status = DOWNLOADSTATUS.FINISH,
         count = 0,
         total = 0;
 
   FileDownloadEvent.error(this.filename)
       : status = DOWNLOADSTATUS.ERROR,
+        content = null,
         count = 0,
         total = 0;
 }

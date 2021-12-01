@@ -103,8 +103,13 @@ class MapViewPageState extends State<MapViewPage> {
             if (snapshot.data!.status == DOWNLOADSTATUS.ERROR) {
               return const Center(child: Text("Error while downloading file"));
             } else if (snapshot.data!.status == DOWNLOADSTATUS.FINISH) {
-              // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
-              _prepareOfflineMap();
+              if (snapshot.data!.content != null) {
+                // file downloaded into memory (we are in kIsWeb
+                _startPrepareOfflineMapForWeb(snapshot.data!.content!);
+              } else {
+                // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
+                _prepareOfflineMap();
+              }
             } else
               downloadProgress = (snapshot.data!.count / snapshot.data!.total);
           }
@@ -204,11 +209,7 @@ class MapViewPageState extends State<MapViewPage> {
 
     if (kIsWeb) {
       // web mode does not support filesystems so we need to download to memory instead
-      List<int> content =
-          await FileMgr().downloadContent(widget.mapFileData.url);
-      MapFile mapFile =
-          await MapFile.using(Uint8List.fromList(content), null, null);
-      await _prepareOfflineMapWithExistingMapfile(mapFile);
+      await FileMgr().downloadContent(widget.mapFileData.url);
       return;
     }
 
@@ -231,6 +232,12 @@ class MapViewPageState extends State<MapViewPage> {
     }
   }
 
+  Future<void> _startPrepareOfflineMapForWeb(List<int> content) async {
+    MapFile mapFile =
+        await MapFile.using(Uint8List.fromList(content), null, null);
+    await _prepareOfflineMapWithExistingMapfile(mapFile);
+  }
+
   Future<void> _prepareOfflineMapWithExistingMapfile(
       MapDataStore mapDataStore) async {
     /// prepare the display model. This class holds all properties for displaying the map
@@ -239,7 +246,7 @@ class MapViewPageState extends State<MapViewPage> {
     /// For the offline-maps we need a cache for all the tiny symbols in the map
     final SymbolCache symbolCache;
     if (kIsWeb) {
-      symbolCache = MemorySymbolCache();
+      symbolCache = MemorySymbolCache(bundle: rootBundle);
     } else {
       symbolCache =
           FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
