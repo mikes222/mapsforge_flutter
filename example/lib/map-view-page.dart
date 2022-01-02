@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
+import 'package:mapsforge_example/pathhandler.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -205,26 +205,26 @@ class MapViewPageState extends State<MapViewPage> {
   /// Downloads and stores a locally non-existing [MapFile], or
   /// loads a locally existing one.
   Future<void> _prepareOfflineMap() async {
-    String filePath = widget.mapFileData.fileName;
+    String fileName = widget.mapFileData.fileName;
 
     if (kIsWeb) {
       // web mode does not support filesystems so we need to download to memory instead
-      await FileMgr().downloadContent(widget.mapFileData.url);
+      await FileMgr().downloadNow2(widget.mapFileData.url);
       return;
     }
 
-    if (await FileMgr().existsRelative(filePath)) {
+    PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
+    if (await pathHandler.exists(fileName)) {
       /// yeah, file is already here we can immediately start
       // if (filePath.endsWith(".zip")) {
       //   filePath = filePath.replaceAll(".zip", ".map");
       // }
-      String path = await FileMgr().findLocalPath();
-      final MapFile mapFile = await MapFile.from("$path/$filePath", null, null);
+      final MapFile mapFile = await MapFile.from(pathHandler.getPath(fileName), null, null);
       await _prepareOfflineMapWithExistingMapfile(mapFile);
     } else {
       // downloadFile returns BEFORE the actual file has been downloaded so do not wait here at all
       bool ok = await FileMgr()
-          .downloadFileRelative(widget.mapFileData.url, filePath);
+          .downloadToFile2(widget.mapFileData.url, pathHandler.getPath(fileName));
       if (!ok) {
         error = "Error while putting the downloadrequest in the queue";
         if (mounted) setState(() {});

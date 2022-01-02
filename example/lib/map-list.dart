@@ -98,7 +98,7 @@ class MapList extends StatelessWidget {
         break;
       case 'delete_map_files':
         List<String> paths =
-            await FileMgr().getFiles(await FileMgr().findLocalPath());
+            await (await FileMgr().getLocalPathHandler("")).getFiles();
         for (String path in paths) {
           if (await FileSystemEntity.isFile(path)) {
             await File(path).delete();

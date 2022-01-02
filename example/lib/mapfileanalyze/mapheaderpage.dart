@@ -1,8 +1,9 @@
-import 'package:mapsforge_example/filemgr.dart';
-import 'package:mapsforge_example/mapfileanalyze/subfileparamspage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:mapsforge_example/filemgr.dart';
+import 'package:mapsforge_example/mapfileanalyze/subfileparamspage.dart';
+import 'package:mapsforge_example/pathhandler.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
@@ -159,8 +160,9 @@ class MapHeaderPage extends StatelessWidget {
   }
 
   Future<MapFile> _loadMapFile() async {
-    String _localFilePath = await FileMgr().findLocalPath();
-    MapFile mapFile = await MapFile.from(_localFilePath, null, null);
+    PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
+    MapFile mapFile = await MapFile.from(
+        pathHandler.getPath(mapFileData.fileName), null, null);
     return mapFile;
   }
 
