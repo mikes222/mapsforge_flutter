@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
+/// Shows a ruler in the left-bottom corner of the map to indicate distances of the map. The
+/// color of the ruler and text is derived from ThemeData.textTheme.bodyText2
 class DistanceOverlay extends StatefulWidget {
   final ViewModel viewModel;
 
@@ -116,12 +117,16 @@ class _DistanceOverlayState extends State<DistanceOverlay>
               children: [
                 CustomPaint(
                   size: Size(pixel, 8),
-                  foregroundPainter: MeterPainter(pixel: pixel),
+                  foregroundPainter: MeterPainter(
+                      pixel: pixel,
+                      color: Theme.of(context).textTheme.bodyText2?.color ??
+                          Colors.black),
                 ),
                 Container(
                   height: 2,
                 ),
-                Text("$toDisplay"),
+                Text("$toDisplay",
+                    style: Theme.of(context).textTheme.bodyText2),
               ],
             );
           },
@@ -136,12 +141,14 @@ class _DistanceOverlayState extends State<DistanceOverlay>
 class MeterPainter extends ChangeNotifier implements CustomPainter {
   final double pixel;
 
-  MeterPainter({required this.pixel});
+  final Color color;
+
+  MeterPainter({required this.pixel, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final ui.Paint paint = Paint();
-    paint.color = Colors.black;
+    paint.color = color;
     paint.strokeWidth = 4;
     paint.style = ui.PaintingStyle.stroke;
 
