@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
-import 'package:mapsforge_example/pathhandler.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -19,7 +16,11 @@ import 'map-file-data.dart';
 class MapViewPage extends StatefulWidget {
   final MapFileData mapFileData;
 
-  const MapViewPage({Key? key, required this.mapFileData}) : super(key: key);
+  final MapDataStore? mapFile;
+
+  const MapViewPage(
+      {Key? key, required this.mapFileData, required this.mapFile})
+      : super(key: key);
 
   @override
   MapViewPageState createState() => MapViewPageState();
@@ -29,31 +30,12 @@ class MapViewPage extends StatefulWidget {
 
 /// The [State] of the [MapViewPage] Widget.
 class MapViewPageState extends State<MapViewPage> {
-  late ViewModel viewModel;
-  double? downloadProgress;
+  ViewModel? viewModel;
   MapModel? mapModel;
   GraphicFactory? _graphicFactory;
-  String? error;
-
-  @override
-  void initState() {
-    // prepare the mapView async
-    _prepare();
-
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (this.mapModel == null || this.downloadProgress != 1) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.mapFileData.displayedName),
-        ),
-        body: _buildDownloadProgressBody(),
-      );
-    }
-
     return Scaffold(
       appBar: _buildHead(context) as PreferredSizeWidget,
       body: _buildMapViewBody(context),
@@ -81,7 +63,7 @@ class MapViewPageState extends State<MapViewPage> {
               enabled: false,
               value: "current_zoom_level",
               child: Text(
-                "Zoom level: ${this.viewModel.mapViewPosition!.zoomLevel}",
+                "Zoom level: ${this.viewModel?.mapViewPosition?.zoomLevel}",
               ),
             ),
           ],
@@ -90,76 +72,32 @@ class MapViewPageState extends State<MapViewPage> {
     );
   }
 
-  Widget _buildDownloadProgressBody() {
-    if (error != null) {
-      return Center(
-        child: Text(error!),
-      );
-    }
-    return StreamBuilder<FileDownloadEvent>(
-        stream: FileMgr().fileDownloadOberve,
-        builder: (context, AsyncSnapshot<FileDownloadEvent> snapshot) {
-          if (snapshot.data != null) {
-            if (snapshot.data!.status == DOWNLOADSTATUS.ERROR) {
-              return const Center(child: Text("Error while downloading file"));
-            } else if (snapshot.data!.status == DOWNLOADSTATUS.FINISH) {
-              if (snapshot.data!.content != null) {
-                // file downloaded into memory (we are in kIsWeb
-                _startPrepareOfflineMapForWeb(snapshot.data!.content!);
-              } else {
-                // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
-                _prepareOfflineMap();
-              }
-            } else
-              downloadProgress = (snapshot.data!.count / snapshot.data!.total);
+  /// Constructs the body ([FlutterMapView]) of the [MapViewPage].
+  Widget _buildMapViewBody(BuildContext context) {
+    return FutureBuilder(
+        future: widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OFFLINE
+            ? _prepareOfflineMap(widget.mapFile!)
+            : _prepareOnlinemap(),
+        builder: (context, AsyncSnapshot snapshot) {
+          if (viewModel == null) {
+            // not yet prepared
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              CircularProgressIndicator(
-                value: downloadProgress == null || downloadProgress == 1
-                    ? null
-                    : downloadProgress,
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: Text(
-                  downloadProgress == null || downloadProgress == 1
-                      ? "Loading"
-                      : "Downloading ${(downloadProgress! * 100).round()}%",
-                ),
-              ),
-            ],
+          return FlutterMapView(
+            mapModel: mapModel!,
+            viewModel: viewModel!,
+            graphicFactory: _graphicFactory!,
           );
         });
   }
 
-  /// Constructs the body ([FlutterMapView]) of the [MapViewPage].
-  Widget _buildMapViewBody(BuildContext context) {
-    return FlutterMapView(
-      mapModel: mapModel!,
-      viewModel: viewModel,
-      graphicFactory: _graphicFactory!,
-    );
-  }
-
-  /// A helper function for a asynchronous [_initState].
-  Future<void> _prepare() async {
+  /// Prepares the online map. Since this is quite fast we do not update the progress information here
+  Future<void> _prepareOnlinemap() async {
     /// prepare the graphics factory. This class provides drawing functions
     _graphicFactory = const FlutterGraphicFactory();
 
-    if (widget.mapFileData.isOnlineMap != ONLINEMAPTYPE.NO) {
-      /// we use an onlinemap - either OSM or ArcGis
-      await _prepareOnlinemap();
-    } else {
-      await _prepareOfflineMap();
-    }
-    return;
-  }
-
-  /// Prepares the online map. Since this is quite fast we do not update the progress information here
-  Future<void> _prepareOnlinemap() async {
     /// prepare the display model. This class holds all properties for displaying the map
     final DisplayModel displayModel = DisplayModel();
 
@@ -188,58 +126,21 @@ class MapViewPageState extends State<MapViewPage> {
     viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
     // set default position
-    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+    viewModel!.setMapViewPosition(widget.mapFileData.initialPositionLat,
         widget.mapFileData.initialPositionLong);
-    viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+    viewModel!.setZoomLevel(widget.mapFileData.initialZoomLevel);
     if (widget.mapFileData.indoorZoomOverlay)
-      viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
+      viewModel!.addOverlay(IndoorlevelZoomOverlay(viewModel!,
           indoorLevels: widget.mapFileData.indoorLevels));
     else
-      viewModel.addOverlay(ZoomOverlay(viewModel));
-    viewModel.addOverlay(DistanceOverlay(viewModel));
-    downloadProgress = 1;
-    // let the UI switch to map mode
-    if (mounted) setState(() {});
+      viewModel!.addOverlay(ZoomOverlay(viewModel!));
+    viewModel!.addOverlay(DistanceOverlay(viewModel!));
   }
 
-  /// Downloads and stores a locally non-existing [MapFile], or
-  /// loads a locally existing one.
-  Future<void> _prepareOfflineMap() async {
-    String fileName = widget.mapFileData.fileName;
+  Future<void> _prepareOfflineMap(MapDataStore mapDataStore) async {
+    /// prepare the graphics factory. This class provides drawing functions
+    _graphicFactory = const FlutterGraphicFactory();
 
-    if (kIsWeb) {
-      // web mode does not support filesystems so we need to download to memory instead
-      await FileMgr().downloadNow2(widget.mapFileData.url);
-      return;
-    }
-
-    PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-    if (await pathHandler.exists(fileName)) {
-      /// yeah, file is already here we can immediately start
-      // if (filePath.endsWith(".zip")) {
-      //   filePath = filePath.replaceAll(".zip", ".map");
-      // }
-      final MapFile mapFile = await MapFile.from(pathHandler.getPath(fileName), null, null);
-      await _prepareOfflineMapWithExistingMapfile(mapFile);
-    } else {
-      // downloadFile returns BEFORE the actual file has been downloaded so do not wait here at all
-      bool ok = await FileMgr()
-          .downloadToFile2(widget.mapFileData.url, pathHandler.getPath(fileName));
-      if (!ok) {
-        error = "Error while putting the downloadrequest in the queue";
-        if (mounted) setState(() {});
-      }
-    }
-  }
-
-  Future<void> _startPrepareOfflineMapForWeb(List<int> content) async {
-    MapFile mapFile =
-        await MapFile.using(Uint8List.fromList(content), null, null);
-    await _prepareOfflineMapWithExistingMapfile(mapFile);
-  }
-
-  Future<void> _prepareOfflineMapWithExistingMapfile(
-      MapDataStore mapDataStore) async {
     /// prepare the display model. This class holds all properties for displaying the map
     final DisplayModel displayModel = DisplayModel();
 
@@ -284,27 +185,25 @@ class MapViewPageState extends State<MapViewPage> {
     viewModel = ViewModel(displayModel: mapModel!.displayModel);
 
     // set default position
-    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+    viewModel!.setMapViewPosition(widget.mapFileData.initialPositionLat,
         widget.mapFileData.initialPositionLong);
-    viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+    viewModel!.setZoomLevel(widget.mapFileData.initialZoomLevel);
     if (widget.mapFileData.indoorZoomOverlay)
-      viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
+      viewModel!.addOverlay(IndoorlevelZoomOverlay(viewModel!,
           indoorLevels: widget.mapFileData.indoorLevels));
     else
-      viewModel.addOverlay(ZoomOverlay(viewModel));
-    viewModel.addOverlay(DistanceOverlay(viewModel));
-    downloadProgress = 1;
-    // let the UI switch to map mode
-    if (mounted) setState(() {});
+      viewModel!.addOverlay(ZoomOverlay(viewModel!));
+    viewModel!.addOverlay(DistanceOverlay(viewModel!));
   }
 
   /// Executes the selected action of the popup menu.
   void _handleMenuItemSelect(String value, BuildContext context) {
     switch (value) {
       case 'start_location':
-        this.viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
+        this.viewModel!.setMapViewPosition(
+            widget.mapFileData.initialPositionLat,
             widget.mapFileData.initialPositionLong);
-        this.viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+        this.viewModel!.setZoomLevel(widget.mapFileData.initialZoomLevel);
         break;
 
       case 'analyse_mapfile':

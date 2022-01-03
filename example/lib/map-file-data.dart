@@ -18,7 +18,7 @@ class MapFileData {
   /// Requires the [indoorZoomOverlay] parameter.
   final Map<int, String>? indoorLevels;
 
-  MapFileData({
+  const MapFileData({
     required this.url,
     required this.fileName,
     required this.displayedName,
@@ -29,7 +29,7 @@ class MapFileData {
     this.initialZoomLevel = 16,
     this.indoorZoomOverlay = false,
     this.indoorLevels,
-  }) : isOnlineMap = ONLINEMAPTYPE.NO;
+  }) : isOnlineMap = ONLINEMAPTYPE.OFFLINE;
 
   MapFileData.online({
     required this.displayedName,
@@ -62,7 +62,7 @@ class MapFileData {
 
 enum ONLINEMAPTYPE {
   // No Onlinemap --> We use offline-maps
-  NO,
+  OFFLINE,
   // OpenStreetMap
   OSM,
   // ArcGis Map

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/filemgr.dart';
+import 'package:mapsforge_example/map-download-page.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
@@ -56,7 +57,7 @@ class MapList extends StatelessWidget {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) =>
-                    MapViewPage(mapFileData: element),
+                    MapDownloadPage(mapFileData: element),
               ),
             );
           });
