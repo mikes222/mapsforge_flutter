@@ -22,7 +22,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 16.311374,
     initialZoomLevel: 12,
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/Chemnitz Uni.map",
     fileName: "Chemnitz Uni.map",
     displayedName: "Chemnitz - University (Indoor)",
@@ -32,7 +32,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorZoomOverlay: true,
     indoorLevels: {1: 'OG', 0: 'EG', -1: 'UG'},
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/indoorUB-ext.map",
     fileName: "indoorUB-ext.map",
     displayedName: "Chemnitz - Library (Indoor)",
@@ -42,7 +42,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorZoomOverlay: true,
     indoorLevels: {4: 'OG4', 3: 'OG3', 2: 'OG2', 1: 'OG1', 0: 'EG', -1: 'UG1'},
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/Louvre.map",
     fileName: "Louvre.map",
     displayedName: "Paris - Louvre (Indoor)",
@@ -51,7 +51,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorZoomOverlay: true,
     indoorLevels: {2: '2', 1: '1', 0: '0', -1: '-1', -2: '-2', -3: '-3'},
   ),
-  new MapFileData(
+  const MapFileData(
     url:
         "https://www.dailyflightbuddy.com/mapsforge_examples/ile-de-france.map",
     fileName: "ile-de-france.map",
@@ -59,7 +59,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 48.86085,
     initialPositionLong: 2.33665,
   ),
-  new MapFileData(
+  const MapFileData(
     url:
         "https://www.dailyflightbuddy.com/mapsforge_examples/Meadowhall Shopping Center.map",
     fileName: "Meadowhall Shopping Center.map",
@@ -69,7 +69,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorZoomOverlay: true,
     indoorLevels: {1: 'OG', 0: 'EG'},
   ),
-  new MapFileData(
+  const MapFileData(
     url:
         "https://www.dailyflightbuddy.com/mapsforge_examples/Northglenn High School.map",
     fileName: "Northglenn High School.map",
@@ -79,7 +79,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorZoomOverlay: true,
     indoorLevels: {1: 'OG', 0: 'EG'},
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/sachsen.map",
     fileName: "sachsen.map",
     displayedName: "Offline Saxony",
@@ -88,7 +88,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 12.94189453125,
     initialZoomLevel: 12,
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/austria.map",
     fileName: "austria.map",
     displayedName: "Offline Austria",
@@ -97,7 +97,16 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 16.311374,
     initialZoomLevel: 12,
   ),
-  new MapFileData(
+  const MapFileData(
+    url: "https://www.dailyflightbuddy.com/mapsforge_examples/austria.map",
+    fileName: "austria.map",
+    displayedName: "Offline Austria Dark mode",
+    theme: "assets/render_themes/darkrender.xml",
+    initialPositionLat: 48.089415,
+    initialPositionLong: 16.311374,
+    initialZoomLevel: 12,
+  ),
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/monaco.map",
     fileName: "monaco.map",
     displayedName: "Offline Monaco (Supports web)",
@@ -106,7 +115,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 7.4262,
     initialZoomLevel: 15,
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/sicilia_oam.zip",
     fileName:
         "sicilia_oam.map", // will automatically unzipped if the extension of the destination is not .zip
@@ -117,11 +126,20 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 14.3,
     initialZoomLevel: 15,
   ),
-  new MapFileData(
+  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/world.map",
     fileName: "world.map",
     displayedName: "Worldmap",
     theme: "assets/render_themes/defaultrender.xml",
+    initialPositionLat: 43.7399,
+    initialPositionLong: 7.4262,
+    initialZoomLevel: 5,
+  ),
+  const MapFileData(
+    url: "https://www.dailyflightbuddy.com/mapsforge_examples/world.map",
+    fileName: "world.map",
+    displayedName: "Worldmap Dark mode",
+    theme: "assets/render_themes/darkrender.xml",
     initialPositionLat: 43.7399,
     initialPositionLong: 7.4262,
     initialZoomLevel: 5,

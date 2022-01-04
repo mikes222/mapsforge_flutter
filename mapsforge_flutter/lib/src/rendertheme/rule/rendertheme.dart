@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/datastore/way.dart';
+import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/renderthemebuilder.dart';
 
 import '../../datastore/pointofinterest.dart';
@@ -91,8 +93,8 @@ class RenderTheme {
    * @param way
    */
   List<RenderInstruction> matchClosedWay(
-      final RenderContext renderContext, PolylineContainer way) {
-    return _matchWay(renderContext, Closed.YES, way);
+      final Tile tile, Way way) {
+    return _matchWay(tile, Closed.YES, way);
   }
 
   /**
@@ -103,8 +105,8 @@ class RenderTheme {
    * @param way
    */
   List<RenderInstruction> matchLinearWay(
-      final RenderContext renderContext, PolylineContainer way) {
-    return _matchWay(renderContext, Closed.NO, way);
+      final Tile tile, Way way) {
+    return _matchWay(tile, Closed.NO, way);
   }
 
   /**
@@ -114,13 +116,9 @@ class RenderTheme {
    * @param renderContext
    * @param poi            the point of interest.
    */
-  List<RenderInstruction> matchNode(
-      final RenderContext renderContext, PointOfInterest poi) {
+  List<RenderInstruction> matchNode(final Tile tile, PointOfInterest poi) {
     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(
-        poi.tags,
-        renderContext.job.tile.zoomLevel,
-        renderContext.job.tile.indoorLevel,
-        Closed.NO);
+        poi.tags, tile.zoomLevel, tile.indoorLevel, Closed.NO);
 
     List<RenderInstruction>? matchingList =
         this.poiMatchingCache[matchingCacheKey];
@@ -129,7 +127,7 @@ class RenderTheme {
       matchingList = [];
 
       rulesList.forEach((element) {
-        element.matchNode(renderContext, matchingList!, poi, initPendings);
+        element.matchNode(tile, matchingList!, poi, initPendings);
       });
       this.poiMatchingCache[matchingCacheKey] = matchingList;
     }
@@ -196,9 +194,9 @@ class RenderTheme {
   // }
 
   List<RenderInstruction> _matchWay(
-      final RenderContext renderContext, Closed closed, PolylineContainer way) {
-    MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.getTags(),
-        way.getUpperLeft().zoomLevel, way.getUpperLeft().indoorLevel, closed);
+      Tile tile, Closed closed, Way way) {
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(
+        way.tags, tile.zoomLevel, tile.indoorLevel, closed);
 
     List<RenderInstruction>? matchingList =
         this.wayMatchingCache[matchingCacheKey];
@@ -206,7 +204,7 @@ class RenderTheme {
       // build cache
       matchingList = [];
       this.rulesList.forEach((rule) {
-        rule.matchWay(way, way.getUpperLeft(), closed, matchingList!);
+        rule.matchWay(way, tile, closed, matchingList!);
       });
 
       this.wayMatchingCache[matchingCacheKey] = matchingList;

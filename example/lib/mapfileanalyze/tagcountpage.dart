@@ -14,14 +14,20 @@ import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
+import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 
 class TagsCountPage extends StatelessWidget {
   final MapFile mapFile;
 
   final SubFileParameter subFileParameter;
 
+  final RenderTheme renderTheme;
+
   const TagsCountPage(
-      {Key? key, required this.mapFile, required this.subFileParameter})
+      {Key? key,
+      required this.mapFile,
+      required this.subFileParameter,
+      required this.renderTheme})
       : super(key: key);
 
   @override
@@ -53,16 +59,29 @@ class TagsCountPage extends StatelessWidget {
   }
 
   Widget _showPois(List<_PoiCount> pois) {
+    Tile tile = Tile(0, 0,
+        subFileParameter.baseZoomLevel ?? subFileParameter.zoomLevelMin, 0);
     return pois.isEmpty
         ? const Text("No POIs")
         : ListView.builder(
             itemCount: pois.length,
             itemBuilder: (BuildContext context, int index) {
               _PoiCount _poiCount = pois.elementAt(index);
+              List renderers = renderTheme.matchNode(tile, _poiCount.poi);
               return Card(
                   child: Row(
                 children: [
-                  LabeltextCustom(label: "Count", value: "${_poiCount.count}"),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LabeltextCustom(
+                          label: "Count", value: "${_poiCount.count}"),
+                      renderers.length > 0
+                          ? LabeltextCustom(
+                              label: "Renderers", value: "${renderers.length}")
+                          : const Icon(Icons.warning_amber_outlined),
+                    ],
+                  ),
                   const SizedBox(width: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,16 +98,37 @@ class TagsCountPage extends StatelessWidget {
   }
 
   Widget _showWays(List<_WayCount> ways) {
+    Tile tile = Tile(0, 0,
+        subFileParameter.baseZoomLevel ?? subFileParameter.zoomLevelMin, 0);
+    Tile tileMax = Tile(0, 0,
+        subFileParameter.baseZoomLevel ?? subFileParameter.zoomLevelMax, 0);
     return ways.isEmpty
         ? const Text("No Ways")
         : ListView.builder(
             itemCount: ways.length,
             itemBuilder: (BuildContext context, int index) {
               _WayCount _wayCount = ways.elementAt(index);
+              List renderers = _wayCount.isClosedWay
+                  ? renderTheme.matchClosedWay(tile, _wayCount.way)
+                  : renderTheme.matchLinearWay(tile, _wayCount.way);
+              if (renderers.length == 0)
+                renderers = _wayCount.isClosedWay
+                    ? renderTheme.matchClosedWay(tileMax, _wayCount.way)
+                    : renderTheme.matchLinearWay(tileMax, _wayCount.way);
               return Card(
                   child: Row(
                 children: [
-                  LabeltextCustom(label: "Count", value: "${_wayCount.count}"),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LabeltextCustom(
+                          label: "Count", value: "${_wayCount.count}"),
+                      renderers.length > 0
+                          ? LabeltextCustom(
+                              label: "Renderers", value: "${renderers.length}")
+                          : const Icon(Icons.warning_amber_outlined),
+                    ],
+                  ),
                   const SizedBox(width: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,6 +139,10 @@ class TagsCountPage extends StatelessWidget {
                             ))
                         .toList(),
                   ),
+                  const Spacer(),
+                  _wayCount.isClosedWay
+                      ? Icon(Icons.circle_outlined)
+                      : const SizedBox(),
                 ],
               ));
             });
@@ -159,11 +203,12 @@ class TagsCountPage extends StatelessWidget {
         } else
           tags.add(tag);
       });
-      Way newWay = Way(0, tags, [], null);
-      _WayCount? _wayCount =
-          ways.firstWhereOrNull((_WayCount poi) => poi.compare(newWay));
+      bool isClosedWay = LatLongUtils.isClosedWay(mapWay.latLongs[0]);
+      Way newWay = Way(mapWay.layer, tags, [], null);
+      _WayCount? _wayCount = ways.firstWhereOrNull(
+          (_WayCount poi) => poi.compare(newWay, isClosedWay));
       if (_wayCount == null) {
-        _wayCount = _WayCount(newWay);
+        _wayCount = _WayCount(newWay, isClosedWay);
         ways.add(_wayCount);
       }
       _wayCount.count++;
@@ -249,9 +294,12 @@ class _WayCount {
 
   int count = 0;
 
-  _WayCount(this.way);
+  final bool isClosedWay;
 
-  bool compare(Way other) {
+  _WayCount(this.way, this.isClosedWay);
+
+  bool compare(Way other, bool isClosedWay) {
+    if (isClosedWay != this.isClosedWay) return false;
     return const IterableEquality<Tag>().equals(way.tags, other.tags);
   }
 }

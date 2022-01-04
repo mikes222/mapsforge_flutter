@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
 import '../../datastore/pointofinterest.dart';
@@ -13,15 +14,18 @@ import 'closedmatcher.dart';
 import 'elementmatcher.dart';
 
 abstract class Rule {
-  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY = new Map();
-  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE = new Map<List<String>, AttributeMatcher>();
+  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY =
+      new Map();
+  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE =
+      new Map<List<String>, AttributeMatcher>();
 
   final String? cat;
   final ClosedMatcher? closedMatcher;
   final ElementMatcher? elementMatcher;
   final int zoomMax;
   final int zoomMin;
-  final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
+  final List<RenderInstruction>
+      renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<Rule> subRules; // NOSONAR NOPMD we need specific interface
 
   Rule(RuleBuilder ruleBuilder)
@@ -62,20 +66,22 @@ abstract class Rule {
 
   bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel);
 
-  bool matchesWay(List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
+  bool matchesWay(
+      List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
 
-  void matchNode(final RenderContext renderContext, List<RenderInstruction> matchingList, PointOfInterest pointOfInterest,
-      List<RenderInstruction> initPendings) {
-    if (matchesNode(pointOfInterest.tags, renderContext.job.tile.zoomLevel, renderContext.job.tile.indoorLevel)) {
+  void matchNode(final Tile tile, List<RenderInstruction> matchingList,
+      PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
+    if (matchesNode(pointOfInterest.tags, tile.zoomLevel, tile.indoorLevel)) {
       matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
-        element.matchNode(renderContext, matchingList, pointOfInterest, initPendings);
+        element.matchNode(tile, matchingList, pointOfInterest, initPendings);
       });
     }
   }
 
-  void matchWay(PolylineContainer way, Tile tile, Closed closed, List<RenderInstruction> matchingList) {
-    if (matchesWay(way.getTags(), tile.zoomLevel, tile.indoorLevel, closed)) {
+  void matchWay(
+      Way way, Tile tile, Closed closed, List<RenderInstruction> matchingList) {
+    if (matchesWay(way.tags, tile.zoomLevel, tile.indoorLevel, closed)) {
       matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
         element.matchWay(way, tile, closed, matchingList);
@@ -96,7 +102,10 @@ abstract class Rule {
 
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      this.renderInstructions.elementAt(i).scaleStrokeWidth(scaleFactor, zoomLevel);
+      this
+          .renderInstructions
+          .elementAt(i)
+          .scaleStrokeWidth(scaleFactor, zoomLevel);
     }
     for (int i = 0, n = this.subRules.length; i < n; ++i) {
       this.subRules.elementAt(i).scaleStrokeWidth(scaleFactor, zoomLevel);
@@ -105,7 +114,10 @@ abstract class Rule {
 
   void scaleTextSize(double scaleFactor, int zoomLevel) {
     for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      this.renderInstructions.elementAt(i).scaleTextSize(scaleFactor, zoomLevel);
+      this
+          .renderInstructions
+          .elementAt(i)
+          .scaleTextSize(scaleFactor, zoomLevel);
     }
     for (int i = 0, n = this.subRules.length; i < n; ++i) {
       this.subRules.elementAt(i).scaleTextSize(scaleFactor, zoomLevel);

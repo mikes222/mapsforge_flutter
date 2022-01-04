@@ -16,7 +16,9 @@ import '../map-file-data.dart';
 class MapHeaderPage extends StatelessWidget {
   final MapFileData mapFileData;
 
-  MapHeaderPage(this.mapFileData);
+  final RenderTheme renderTheme;
+
+  MapHeaderPage(this.mapFileData, this.renderTheme);
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +100,7 @@ class MapHeaderPage extends StatelessWidget {
                                     .where((element) => element != null)
                                     .map((e) => e!)
                                     .toList(),
+                                renderTheme: renderTheme,
                               ),
                             ),
                           );

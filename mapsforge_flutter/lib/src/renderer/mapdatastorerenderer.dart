@@ -248,8 +248,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   List<RenderInstruction> _retrieveRenderInstructionsForPoi(
       final RenderContext renderContext, PointOfInterest pointOfInterest) {
     renderContext.setDrawingLayers(pointOfInterest.layer);
-    List<RenderInstruction> renderInstructions =
-        renderContext.renderTheme.matchNode(renderContext, pointOfInterest);
+    List<RenderInstruction> renderInstructions = renderContext.renderTheme
+        .matchNode(renderContext.job.tile, pointOfInterest);
     return renderInstructions;
   }
 
@@ -259,15 +259,15 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       return [];
     renderContext.setDrawingLayers(way.getLayer());
     if (way.isClosedWay) {
-      List<RenderInstruction> renderInstructions =
-          renderContext.renderTheme.matchClosedWay(renderContext, way);
+      List<RenderInstruction> renderInstructions = renderContext.renderTheme
+          .matchClosedWay(renderContext.job.tile, way.way);
       return renderInstructions;
       // renderInstructions.forEach((element) {
       //   element.renderWay(this, renderContext, way);
       // });
     } else {
-      List<RenderInstruction> renderInstructions =
-          renderContext.renderTheme.matchLinearWay(renderContext, way);
+      List<RenderInstruction> renderInstructions = renderContext.renderTheme
+          .matchLinearWay(renderContext.job.tile, way.way);
       return renderInstructions;
       // renderInstructions.forEach((element) {
       //   element.renderWay(this, renderContext, way);

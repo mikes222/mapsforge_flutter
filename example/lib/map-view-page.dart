@@ -33,6 +33,7 @@ class MapViewPageState extends State<MapViewPage> {
   ViewModel? viewModel;
   MapModel? mapModel;
   GraphicFactory? _graphicFactory;
+  RenderTheme? renderTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -159,11 +160,11 @@ class MapViewPageState extends State<MapViewPage> {
     final String content =
         await rootBundle.loadString(widget.mapFileData.theme);
     renderThemeBuilder.parseXml(content);
-    final RenderTheme renderTheme = renderThemeBuilder.build();
+    renderTheme = renderThemeBuilder.build();
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    final JobRenderer jobRenderer =
-        MapDataStoreRenderer(mapDataStore, renderTheme, _graphicFactory!, true);
+    final JobRenderer jobRenderer = MapDataStoreRenderer(
+        mapDataStore, renderTheme!, _graphicFactory!, true);
 
     /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
     final TileBitmapCache bitmapCache;
@@ -210,7 +211,7 @@ class MapViewPageState extends State<MapViewPage> {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) =>
-                MapHeaderPage(widget.mapFileData),
+                MapHeaderPage(widget.mapFileData, renderTheme!),
           ),
         );
         break;

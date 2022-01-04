@@ -10,8 +10,13 @@ class SubfileParamsPage extends StatelessWidget {
 
   final List<SubFileParameter> subFileParameters;
 
+  final RenderTheme renderTheme;
+
   const SubfileParamsPage(
-      {Key? key, required this.mapFile, required this.subFileParameters})
+      {Key? key,
+      required this.mapFile,
+      required this.subFileParameters,
+      required this.renderTheme})
       : super(key: key);
 
   @override
@@ -119,6 +124,7 @@ class SubfileParamsPage extends StatelessWidget {
                             builder: (BuildContext context) => TagsCountPage(
                               mapFile: mapFile,
                               subFileParameter: e,
+                              renderTheme: renderTheme,
                             ),
                           ),
                         );
