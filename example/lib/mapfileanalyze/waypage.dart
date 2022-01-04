@@ -12,6 +12,13 @@ class WayPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     return ListView(
       children: ways!
           .map(
@@ -23,7 +30,9 @@ class WayPage extends StatelessWidget {
                       "Layer ${e.layer}, labelPosition ${e.labelPosition}, ${e.latLongs.length} coordinate with ${e.latLongs[0].length} segments in coordinate 0"),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: e.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList(),
+                    children: e.tags
+                        .map((Tag e) => Text("${e.key} = ${e.value}"))
+                        .toList(),
                   ),
                 ],
               ),

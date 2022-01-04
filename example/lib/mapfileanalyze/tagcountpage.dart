@@ -1,0 +1,265 @@
+import 'dart:math';
+
+import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
+import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/datastore.dart';
+import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
+import 'package:mapsforge_flutter/src/datastore/way.dart';
+import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
+import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
+import 'package:mapsforge_flutter/src/model/tag.dart';
+import 'package:mapsforge_flutter/src/model/tile.dart';
+import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
+
+class TagsCountPage extends StatelessWidget {
+  final MapFile mapFile;
+
+  final SubFileParameter subFileParameter;
+
+  const TagsCountPage(
+      {Key? key, required this.mapFile, required this.subFileParameter})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return FutureBuilder<_PoiWayCount>(
+        future: _readBlock(),
+        builder: (BuildContext context, AsyncSnapshot<_PoiWayCount> snapshot) {
+          if (snapshot.hasError || snapshot.error != null) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+          if (snapshot.data == null)
+            return const Center(child: CircularProgressIndicator());
+          _PoiWayCount _poiWayCount = snapshot.data!;
+
+          return Flex(direction: Axis.horizontal, children: [
+            Expanded(child: _showPois(_poiWayCount.poiCounts)),
+            Expanded(child: _showWays(_poiWayCount.wayCounts)),
+          ]);
+        });
+  }
+
+  Widget _showPois(List<_PoiCount> pois) {
+    return pois.isEmpty
+        ? const Text("No POIs")
+        : ListView.builder(
+            itemCount: pois.length,
+            itemBuilder: (BuildContext context, int index) {
+              _PoiCount _poiCount = pois.elementAt(index);
+              return Card(
+                  child: Row(
+                children: [
+                  LabeltextCustom(label: "Count", value: "${_poiCount.count}"),
+                  const SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _poiCount.poi.tags
+                        .map((e) => LabeltextCustom(
+                              label: e.key ?? "unknown",
+                              value: e.value,
+                            ))
+                        .toList(),
+                  ),
+                ],
+              ));
+            });
+  }
+
+  Widget _showWays(List<_WayCount> ways) {
+    return ways.isEmpty
+        ? const Text("No Ways")
+        : ListView.builder(
+            itemCount: ways.length,
+            itemBuilder: (BuildContext context, int index) {
+              _WayCount _wayCount = ways.elementAt(index);
+              return Card(
+                  child: Row(
+                children: [
+                  LabeltextCustom(label: "Count", value: "${_wayCount.count}"),
+                  const SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _wayCount.way.tags
+                        .map((e) => LabeltextCustom(
+                              label: e.key ?? "unknown",
+                              value: e.value,
+                            ))
+                        .toList(),
+                  ),
+                ],
+              ));
+            });
+  }
+
+  void _reducePois(DatastoreReadResult mapReadResult, List<_PoiCount> pois) {
+    mapReadResult.pointOfInterests.forEach((mapPoi) {
+      List<Tag> tags = [];
+      mapPoi.tags.forEach((tag) {
+        if (tag.key == "name")
+          tags.add(const Tag("name", "xxx"));
+        else if (tag.key == "ele")
+          tags.add(const Tag("ele", "xxx"));
+        else if (tag.key == "addr:housenumber")
+          tags.add(const Tag("addr:housenumber", "xxx"));
+        else
+          tags.add(tag);
+      });
+      PointOfInterest newPoi = PointOfInterest(0, tags, const LatLong(0, 0));
+      _PoiCount? _poiCount =
+          pois.firstWhereOrNull((_PoiCount poi) => poi.compare(newPoi));
+      if (_poiCount == null) {
+        _poiCount = _PoiCount(newPoi);
+        pois.add(_poiCount);
+      }
+      _poiCount.count++;
+    });
+  }
+
+  void _reduceWays(DatastoreReadResult mapReadResult, List<_WayCount> ways) {
+    mapReadResult.ways.forEach((mapWay) {
+      List<Tag> tags = [];
+      mapWay.tags.forEach((tag) {
+        if (tag.key == "name")
+          tags.add(const Tag("name", "xxx"));
+        else if (tag.key == "height")
+          tags.add(const Tag("height", "xxx"));
+        else if (tag.key == "addr:housenumber")
+          tags.add(const Tag("addr:housenumber", "xxx"));
+        else if (tag.key == "building:levels")
+          tags.add(const Tag("building:levels", "xxx"));
+        else if (tag.key == "building:colour")
+          tags.add(const Tag("building:colour", "xxx"));
+        else if (tag.key == "roof:colour")
+          tags.add(const Tag("roof:colour", "xxx"));
+        else if (tag.key == "roof:levels")
+          tags.add(const Tag("roof:levels", "xxx"));
+        else if (tag.key == "roof:height")
+          tags.add(const Tag("roof:height", "xxx"));
+        else if (tag.key == "min_height")
+          tags.add(const Tag("min_height", "xxx"));
+        else if (tag.key == "id")
+          tags.add(const Tag("id", "xxx"));
+        else if (tag.key == "ele")
+          tags.add(const Tag("ele", "xxx"));
+        else if (tag.key == "ref") {
+          // ignore this tag
+        } else
+          tags.add(tag);
+      });
+      Way newWay = Way(0, tags, [], null);
+      _WayCount? _wayCount =
+          ways.firstWhereOrNull((_WayCount poi) => poi.compare(newWay));
+      if (_wayCount == null) {
+        _wayCount = _WayCount(newWay);
+        ways.add(_wayCount);
+      }
+      _wayCount.count++;
+    });
+  }
+
+  Future<_PoiWayCount> _readBlock() async {
+    try {
+      ReadbufferFile readBufferMaster = ReadbufferFile(mapFile.filename!);
+
+      QueryParameters queryParameters = new QueryParameters();
+      queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
+      MercatorProjection mercatorProjection =
+          MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
+      _PoiWayCount _poiWayCount = _PoiWayCount();
+      int step = 20;
+      for (int x = subFileParameter.boundaryTileLeft;
+          x < subFileParameter.boundaryTileRight;
+          x += step) {
+        for (int y = subFileParameter.boundaryTileTop;
+            y < subFileParameter.boundaryTileBottom;
+            y += step) {
+          Tile upperLeft = Tile(x, y, subFileParameter.baseZoomLevel!, 0);
+          Tile lowerRight = Tile(
+              min(x + step - 1, subFileParameter.boundaryTileRight),
+              min(y + step - 1, subFileParameter.boundaryTileBottom),
+              subFileParameter.baseZoomLevel!,
+              0);
+          queryParameters.calculateBaseTiles(
+              upperLeft, lowerRight, subFileParameter);
+          queryParameters.calculateBlocks(subFileParameter);
+          print(
+              "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}");
+
+          BoundingBox boundingBox =
+              mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
+          MapfileSelector selector = MapfileSelector.ALL;
+          DatastoreReadResult? result = await mapFile.processBlocks(
+            readBufferMaster,
+            queryParameters,
+            subFileParameter,
+            boundingBox,
+            selector,
+          );
+          //print("result: $result");
+
+          _reducePois(result, _poiWayCount.poiCounts);
+          _reduceWays(result, _poiWayCount.wayCounts);
+        }
+      }
+      _poiWayCount.poiCounts =
+          _poiWayCount.poiCounts.sorted((a, b) => b.count - a.count);
+      _poiWayCount.wayCounts =
+          _poiWayCount.wayCounts.sorted((a, b) => b.count - a.count);
+
+      return _poiWayCount;
+    } catch (e, stacktrace) {
+      print("${e.toString()}");
+      print("${stacktrace.toString()}");
+      throw e;
+    }
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _PoiCount {
+  final PointOfInterest poi;
+
+  int count = 0;
+
+  _PoiCount(this.poi);
+
+  bool compare(PointOfInterest other) {
+    return const IterableEquality<Tag>().equals(poi.tags, other.tags);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _WayCount {
+  final Way way;
+
+  int count = 0;
+
+  _WayCount(this.way);
+
+  bool compare(Way other) {
+    return const IterableEquality<Tag>().equals(way.tags, other.tags);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _PoiWayCount {
+  List<_PoiCount> poiCounts = [];
+
+  List<_WayCount> wayCounts = [];
+}

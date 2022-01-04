@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/mapfileanalyze/poipage.dart';
 import 'package:mapsforge_example/mapfileanalyze/waypage.dart';
@@ -21,6 +20,13 @@ class BlockPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     return FutureBuilder<DatastoreReadResult?>(
       future: _readBlock(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {

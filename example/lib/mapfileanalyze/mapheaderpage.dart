@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:mapsforge_example/filemgr.dart';
+import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
 import 'package:mapsforge_example/mapfileanalyze/subfileparamspage.dart';
 import 'package:mapsforge_example/pathhandler.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -19,6 +20,13 @@ class MapHeaderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     return FutureBuilder(
       future: _loadMapFile(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
@@ -34,34 +42,22 @@ class MapHeaderPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const Text(
-                    "Static Properties",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  // Wrap(
-                  //   children: <Widget>[
-                  //     Text("WayFilterEnabled: ${MapFile.wayFilterEnabled}, "),
-                  //     Text("WayFilterDistance: ${MapFile.wayFilterDistance}, "),
-                  //   ],
-                  // ),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
                     "General Properties",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Wrap(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text("Filename: ${mapFile.filename}, "),
+                      LabeltextCustom(
+                          label: "Filename", value: mapFile.filename),
                       // _fileSize is private but only used to verify header and to check if read beyond file
-                      Text(
-                          "Zoomlevel ${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}, "),
-                      Text(
-                          "Timestamp ${formatMsToDatetimeMs(mapFile.timestamp)}, "),
+                      LabeltextCustom(
+                          label: "Zoomlevel",
+                          value:
+                              "${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}"),
+                      LabeltextCustom(
+                          label: "Timestamp",
+                          value: formatMsToDatetimeMs(mapFile.timestamp)),
                     ],
                   ),
                 ],
@@ -75,10 +71,13 @@ class MapHeaderPage extends StatelessWidget {
                     "Map fileheader Properties",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Wrap(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                          "Zoomlevel ${mapFile.getMapFileHeader().zoomLevelMinimum} - ${mapFile.getMapFileHeader().zoomLevelMaximum}, "),
+                      LabeltextCustom(
+                          label: "Zoomlevel",
+                          value:
+                              "${mapFile.getMapFileHeader().zoomLevelMinimum} - ${mapFile.getMapFileHeader().zoomLevelMaximum}"),
                       InkWell(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -95,7 +94,10 @@ class MapHeaderPage extends StatelessWidget {
                                 mapFile: mapFile,
                                 subFileParameters: mapFile
                                     .getMapFileHeader()
-                                    .subFileParameters,
+                                    .subFileParameters
+                                    .where((element) => element != null)
+                                    .map((e) => e!)
+                                    .toList(),
                               ),
                             ),
                           );
@@ -115,37 +117,62 @@ class MapHeaderPage extends StatelessWidget {
                     "Map Fileinfo Properties",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Wrap(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text("Comment ${mapFile.getMapFileInfo().comment}, "),
-                      Text("CreatedBy ${mapFile.getMapFileInfo().createdBy}, "),
-                      Text(
-                          "IncludeDebug ${mapFile.getMapFileInfo().debugFile}, "),
-                      Text("FileSize ${mapFile.getMapFileInfo().fileSize}, "),
-                      Text(
-                          "FileVersion ${mapFile.getMapFileInfo().fileVersion}, "),
-                      Text(
-                          "LanguagesPreferences ${mapFile.getMapFileInfo().languagesPreference}, "),
-                      Text(
-                          "MapTimestamp ${formatMsToDatetimeMs(mapFile.getMapFileInfo().mapDate)}, "),
-                      Text(
-                          "ProjectionName ${mapFile.getMapFileInfo().projectionName}, "),
-                      Text(
-                          "StartZoomLevel ${mapFile.getMapFileInfo().startZoomLevel}, "),
-                      Text(
-                          "StartPosition ${formatLatLong(mapFile.getMapFileInfo().startPosition)}, "),
-                      Text(
-                          "TilePixelSize ${mapFile.getMapFileInfo().tilePixelSize}, "),
-                      Text(
-                          "Zoomlevel ${mapFile.getMapFileInfo().zoomLevelMin} - ${mapFile.getMapFileInfo().zoomLevelMax}, "),
-                      Text(
-                          "Boundingbox ${formatBoundingbox(mapFile.getMapFileInfo().boundingBox)}, "),
-                      Text(
-                          "PoiTags ${mapFile.getMapFileInfo().poiTags.length}, "),
-                      Text(
-                          "WayTags ${mapFile.getMapFileInfo().wayTags.length}, "),
-                      Text(
-                          "numberOfSubFiles ${mapFile.getMapFileInfo().numberOfSubFiles}, "),
+                      LabeltextCustom(
+                          label: "Comment",
+                          value: mapFile.getMapFileInfo().comment),
+                      LabeltextCustom(
+                          label: "CreatedBy",
+                          value: mapFile.getMapFileInfo().createdBy),
+                      LabeltextCustom(
+                          label: "IncludeDebug",
+                          value: "${mapFile.getMapFileInfo().debugFile}"),
+                      LabeltextCustom(
+                          label: "FileSize",
+                          value: "${mapFile.getMapFileInfo().fileSize}"),
+                      LabeltextCustom(
+                          label: "FileVersion",
+                          value: "${mapFile.getMapFileInfo().fileVersion}"),
+                      LabeltextCustom(
+                          label: "LanguagesPreferences",
+                          value: mapFile.getMapFileInfo().languagesPreference),
+                      LabeltextCustom(
+                          label: "MapTimestamp",
+                          value: formatMsToDatetimeMs(
+                              mapFile.getMapFileInfo().mapDate)),
+                      LabeltextCustom(
+                          label: "ProjectionName",
+                          value: mapFile.getMapFileInfo().projectionName),
+                      LabeltextCustom(
+                          label: "StartZoomLevel",
+                          value: "${mapFile.getMapFileInfo().startZoomLevel}"),
+                      LabeltextCustom(
+                          label: "StartPosition",
+                          value:
+                              "${formatLatLong(mapFile.getMapFileInfo().startPosition)}"),
+                      LabeltextCustom(
+                          label: "TilePixelSize",
+                          value: "${mapFile.getMapFileInfo().tilePixelSize}"),
+                      LabeltextCustom(
+                          label: "Zoomlevel",
+                          value:
+                              "${mapFile.getMapFileInfo().zoomLevelMin} - ${mapFile.getMapFileInfo().zoomLevelMax}"),
+                      LabeltextCustom(
+                          label: "Boundingbox",
+                          value:
+                              "${formatBoundingbox(mapFile.getMapFileInfo().boundingBox)}"),
+                      LabeltextCustom(
+                          label: "PoiTags",
+                          value: "${mapFile.getMapFileInfo().poiTags.length}"),
+                      LabeltextCustom(
+                          label: "WayTags",
+                          value: "${mapFile.getMapFileInfo().wayTags.length}"),
+                      LabeltextCustom(
+                          label: "numberOfSubFiles",
+                          value:
+                              "${mapFile.getMapFileInfo().numberOfSubFiles}"),
                       // poiTags
                       // wayTags
                     ],
