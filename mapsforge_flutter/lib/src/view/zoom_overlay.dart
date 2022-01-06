@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
+/// Shows zoom-in and zoom-out buttons
 class ZoomOverlay extends StatefulWidget {
   final ViewModel viewModel;
 

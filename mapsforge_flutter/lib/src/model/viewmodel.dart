@@ -40,6 +40,10 @@ class ViewModel {
   }
 
   void dispose() {
+    overlays?.forEach((element) {
+      //element.dispose();
+    });
+    overlays?.clear();
     _injectPosition.close();
     _injectTap.close();
     _injectGesture.close();
@@ -72,7 +76,7 @@ class ViewModel {
   }
 
   void zoomIn() {
-    assert(_mapViewPosition != null);
+    if (_mapViewPosition == null) return;
     if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
     MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition!);
     _mapViewPosition = newPosition;
@@ -80,7 +84,7 @@ class ViewModel {
   }
 
   void zoomInAround(double latitude, double longitude) {
-    assert(_mapViewPosition != null);
+    if (_mapViewPosition == null) return;
     if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
     MapViewPosition newPosition =
         MapViewPosition.zoomInAround(_mapViewPosition!, latitude, longitude);
@@ -89,7 +93,7 @@ class ViewModel {
   }
 
   void zoomOut() {
-    assert(_mapViewPosition != null);
+    if (_mapViewPosition == null) return;
     if (_mapViewPosition!.zoomLevel <= 0) return;
     MapViewPosition newPosition = MapViewPosition.zoomOut(_mapViewPosition!);
     _mapViewPosition = newPosition;
@@ -130,7 +134,7 @@ class ViewModel {
   }
 
   void indoorLevelUp() {
-    assert(_mapViewPosition != null);
+    if (_mapViewPosition == null) return;
     if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
     MapViewPosition newPosition =
         MapViewPosition.indoorLevelUp(_mapViewPosition!);
@@ -139,7 +143,7 @@ class ViewModel {
   }
 
   void indoorLevelDown() {
-    assert(_mapViewPosition != null);
+    if (_mapViewPosition == null) return;
     MapViewPosition newPosition =
         MapViewPosition.indoorLevelDown(_mapViewPosition!);
     _mapViewPosition = newPosition;
@@ -234,6 +238,8 @@ class ViewModel {
     }
   }
 
+  /// The user has tapped at the map. The event has been detected by the [FlutterGestureDetector].
+  /// left/upper 0/0 indicates the left-upper corner of the map (NOT of the screen)
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
     _mapViewPosition!.calculateBoundingBox(_viewDimension!);
@@ -247,6 +253,8 @@ class ViewModel {
     _injectTap.add(event);
   }
 
+  /// An event sent by the [FlutterGestureDetector] to indicate a user-driven gesture-event. This can be used to
+  /// switch off automatic movement of the map.
   void gestureEvent() {
     _injectGesture.add(GestureEvent());
   }

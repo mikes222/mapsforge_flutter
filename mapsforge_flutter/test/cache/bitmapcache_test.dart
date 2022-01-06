@@ -16,12 +16,14 @@ void main() {
     AssetBundle bundle = TestAssetBundle();
     SymbolCache symbolCache = FileSymbolCache(bundle);
 
-    MemoryTileBitmapCache cache = MemoryTileBitmapCache();
+    MemoryTileBitmapCache cache = MemoryTileBitmapCache.create();
 
     await tester.runAsync(() async {
-      ResourceBitmap? resourceBitmap = await (symbolCache.getSymbol("arrow.png", 0, 0, 0));
+      ResourceBitmap? resourceBitmap =
+          await (symbolCache.getSymbol("arrow.png", 0, 0, 0));
       expect(resourceBitmap, isNotNull);
-      TileBitmap bitmap = FlutterTileBitmap((resourceBitmap as FlutterResourceBitmap).bitmap);
+      TileBitmap bitmap =
+          FlutterTileBitmap((resourceBitmap as FlutterResourceBitmap).bitmap);
       Tile tile = Tile(0, 0, 0, 0);
       cache.addTileBitmap(tile, bitmap);
 

@@ -9,7 +9,7 @@ export 'src/rendertheme/xml/renderthemebuilder.dart';
 
 export 'src/renderer/mapdatastorerenderer.dart';
 export 'src/renderer/dummyrenderer.dart';
-export 'src/layer/job/jobrenderer.dart';
+export 'src/renderer/jobrenderer.dart';
 export 'src/renderer/maponlinerenderer.dart';
 export 'src/renderer/maponlinerendererweb.dart';
 export 'src/renderer/arcgisonlinerenderer.dart';

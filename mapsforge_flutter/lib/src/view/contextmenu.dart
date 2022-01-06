@@ -20,7 +20,12 @@ class ContextMenu extends StatefulWidget {
   ContextMenuBuilder? contextMenuBuilder;
 
   ContextMenu(
-      {Key? key, required this.event, required this.mapModel, required this.viewModel, required this.position, this.contextMenuBuilder})
+      {Key? key,
+      required this.event,
+      required this.mapModel,
+      required this.viewModel,
+      required this.position,
+      this.contextMenuBuilder})
       : super(key: key) {
     contextMenuBuilder ??= DefaultContextMenuBuilder();
   }
@@ -33,15 +38,20 @@ class ContextMenu extends StatefulWidget {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class ContextMenuState extends State<ContextMenu> implements ContextMenuCallback {
+class ContextMenuState extends State<ContextMenu>
+    implements ContextMenuCallback {
   TapEvent? _lastTapEvent;
 
   @override
   Widget build(BuildContext context) {
-    if (widget.event == _lastTapEvent) return Container();
+    if (widget.event == _lastTapEvent) return const SizedBox();
     widget.position.calculateBoundingBox(widget.viewModel.viewDimension!);
-    double x = widget.position.projection!.longitudeToPixelX(widget.event.longitude) - widget.position.leftUpper!.x;
-    double y = widget.position.projection!.latitudeToPixelY(widget.event.latitude) - widget.position.leftUpper!.y;
+    double x =
+        widget.position.projection!.longitudeToPixelX(widget.event.longitude) -
+            widget.position.leftUpper!.x;
+    double y =
+        widget.position.projection!.latitudeToPixelY(widget.event.latitude) -
+            widget.position.leftUpper!.y;
     //x = x + widget.viewOffset.dx;
     //y = y + widget.viewOffset.dy;
     Dimension? screen = widget.viewModel.viewDimension;
@@ -49,9 +59,10 @@ class ContextMenuState extends State<ContextMenu> implements ContextMenuCallback
       // out of screen, hide the box
       print("out of screen");
       _lastTapEvent = widget.event;
-      return Container();
+      return const SizedBox();
     }
-    return widget.contextMenuBuilder!.build(context, widget.mapModel, widget.viewModel, screen, x, y, widget.event, this);
+    return widget.contextMenuBuilder!.build(context, widget.mapModel,
+        widget.viewModel, screen, x, y, widget.event, this);
   }
 
   @override

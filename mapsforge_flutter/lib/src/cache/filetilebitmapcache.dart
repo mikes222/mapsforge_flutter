@@ -40,6 +40,24 @@ class FileTileBitmapCache extends TileBitmapCache {
     return result;
   }
 
+  /// Purges all cached files from all caches regardless if the cache is used or not
+  static Future<void> purgeAllCaches() async {
+    for (FileTileBitmapCache cache in _instances.values) {
+      await cache.purgeAll();
+    }
+    // now purge every cache not yet active
+    String rootDir = await FileHelper.getTempDirectory("mapsforgetiles");
+    List<String> caches = (await FileHelper.getFiles(rootDir));
+    for (String cache in caches) {
+      List<String> files = (await FileHelper.getFiles(cache));
+      for (String file in files) {
+        await FileHelper.delete(file);
+      }
+      if (files.length > 0)
+        _log.info("Deleted ${files.length} files from cache $cache");
+    }
+  }
+
   FileTileBitmapCache._(this.renderkey) : assert(!renderkey.contains("/"));
 
   Future _init() async {
@@ -56,10 +74,14 @@ class FileTileBitmapCache extends TileBitmapCache {
   @override
   Future<void> purgeAll() async {
     int count = 0;
-    for (String file in _files) {
+    for (String file in []..addAll(_files)) {
       //_log.info("  purging file from cache: $file");
-      bool ok = await FileHelper.delete(file);
-      if (ok) ++count;
+      try {
+        bool ok = await FileHelper.delete(file);
+        if (ok) ++count;
+      } catch (error) {
+        // do nothing
+      }
     }
     _log.info("purged $count files from FileTileBitmapCache $renderkey");
     _files.clear();

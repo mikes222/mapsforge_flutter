@@ -36,6 +36,15 @@ class MapViewPageState extends State<MapViewPage> {
   RenderTheme? renderTheme;
 
   @override
+  void dispose() {
+    viewModel?.dispose();
+    mapModel?.dispose();
+    _graphicFactory?.dispose();
+    renderTheme?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildHead(context) as PreferredSizeWidget,

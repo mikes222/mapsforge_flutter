@@ -6,11 +6,9 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 
-import '../../cache/tilebitmapcache.dart';
 import '../../graphics/tilebitmap.dart';
-import '../../model/displaymodel.dart';
 import 'job.dart';
-import 'jobrenderer.dart';
+import '../../renderer/jobrenderer.dart';
 
 ///
 /// The jobqueue receives jobs and starts the renderer for missing bitmaps.
@@ -32,7 +30,10 @@ class JobQueue {
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
       this.tileBitmapCache1stLevel);
 
-  void dispose() {}
+  void dispose() {
+    _currentJobSet?.dispose();
+    _currentJobSet = null;
+  }
 
   ///
   /// Called whenever a new bitmap is created

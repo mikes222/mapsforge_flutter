@@ -11,6 +11,7 @@ export 'src/model/boundingbox.dart';
 export 'src/implementation/graphics/fluttergraphicsfactory.dart';
 
 export 'src/view/mapview.dart';
+export 'src/view/mapview_widget.dart';
 export 'src/view/defaultcontextmenubuilder.dart';
 export 'src/view/contextmenubuilder.dart';
 export 'src/view/indoorlevelbar.dart';

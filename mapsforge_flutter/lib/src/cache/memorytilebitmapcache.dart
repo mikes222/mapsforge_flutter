@@ -2,22 +2,40 @@ import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-
-import 'tilebitmapcache.dart';
 
 ///
 /// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.
+/// We use a factory and remember all active instances. This way we can easily purge caches if needed.
 ///
 class MemoryTileBitmapCache extends TileBitmapCache {
+  static final List<MemoryTileBitmapCache> _instances = [];
+
   final SimpleStorage<Tile, TileBitmap> storage =
       SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
     item.decrementRefCount();
   });
   late Cache<Tile, TileBitmap> _bitmaps;
 
-  MemoryTileBitmapCache() {
+  factory MemoryTileBitmapCache.create() {
+    MemoryTileBitmapCache result = MemoryTileBitmapCache._();
+    _instances.add(result);
+    return result;
+  }
+
+  static void purgeAllCaches() {
+    for (MemoryTileBitmapCache cache in _instances) {
+      cache.purgeAll();
+    }
+  }
+
+  static void purgeCachesByBoundary(BoundingBox boundingBox) {
+    for (MemoryTileBitmapCache cache in _instances) {
+      cache.purgeByBoundary(boundingBox);
+    }
+  }
+
+  MemoryTileBitmapCache._() {
     _bitmaps = new LruCache<Tile, TileBitmap>(
       storage: storage,
       capacity: 100,
@@ -27,6 +45,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   @override
   void dispose() {
     _bitmaps.clear();
+    _instances.remove(this);
   }
 
   @override

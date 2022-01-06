@@ -3,7 +3,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/marker/basicmarker.dart';
 import 'package:mapsforge_flutter/src/marker/imarkerdatastore.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 
 ///
 /// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas)
@@ -18,6 +17,9 @@ class MarkerDataStore extends IMarkerDataStore {
   BoundingBox? _previousBoundingBox;
 
   int? _previousZoomLevel;
+
+  @protected
+  bool disposed = false;
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
@@ -48,19 +50,21 @@ class MarkerDataStore extends IMarkerDataStore {
   void retrieveMarkersFor(
       GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {}
 
+  /// Initializes the markers which are currently not initialized and are needed now
   Future<void> _initMarkers(
       GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
-    _log.info("Initializing ${markersToInit.length} markers now");
+    //_log.info("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
       await m.initResources(graphicFactory);
     }
-    setRepaint();
+    if (!disposed) setRepaint();
   }
 
   @override
   @mustCallSuper
   void dispose() {
     clearMarkers();
+    disposed = true;
     super.dispose();
   }
 

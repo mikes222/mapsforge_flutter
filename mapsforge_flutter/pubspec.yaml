@@ -36,16 +36,16 @@ dependencies:
   synchronized: ^3.0.0
 
   # BSD License
-  flutter_svg: ^0.23.0+1
+  flutter_svg: ^1.0.0
 
   # BSD License
   #image: 2.1.13
 
   # BSD License, currently no WEB support
-  path_provider: ^2.0.7
+  path_provider: ^2.0.8
 
   # MIT License
-  provider: ^6.0.1
+  provider: ^6.0.2
 
 
   collection: ^1.15.0

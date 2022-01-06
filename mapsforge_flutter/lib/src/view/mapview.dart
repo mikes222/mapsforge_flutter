@@ -78,6 +78,8 @@ class _FlutterMapState extends State<FlutterMapView> {
       stream: widget.viewModel.observePosition,
       builder:
           (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return _buildNoPositionView();
         if (snapshot.hasData) {
           if (snapshot.data!.hasPosition()) {
             //_log.info("I have a new position ${snapshot.data.toString()}");
@@ -114,10 +116,10 @@ class _FlutterMapState extends State<FlutterMapView> {
   }
 
   Widget _buildMapView(MapViewPosition position) {
-    List<Widget> _widgets = [];
+    List<Widget> markerWidgets = [];
 
     // now draw all markers
-    _widgets.addAll(widget.mapModel.markerDataStores
+    markerWidgets.addAll(widget.mapModel.markerDataStores
         .map((IMarkerDataStore markerDataStore) => CustomPaint(
               foregroundPainter: MarkerPainter(
                   position: position,
@@ -128,23 +130,6 @@ class _FlutterMapState extends State<FlutterMapView> {
               child: Container(),
             ))
         .toList());
-
-    //   ChangeNotifierProvider<MarkerDataStore>.value(
-    // child: Consumer<MarkerDataStore>(
-    //   builder: (BuildContext context, MarkerDataStore markerDataStore,
-    //       Widget? child) {
-    //     return CustomPaint(
-    //       foregroundPainter: MarkerPainter(
-    //           position: position,
-    //           displayModel: widget.mapModel.displayModel,
-    //           dataStore: markerDataStore,
-    //           viewModel: widget.viewModel,
-    //           graphicFactory: widget.graphicFactory),
-    //       child: Container(),
-    //     );
-    //   },
-    // ),
-    // value: markerDataStore,
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -157,33 +142,23 @@ class _FlutterMapState extends State<FlutterMapView> {
           viewModel: widget.viewModel,
           child: Stack(
             children: [
-              _buildBackgroundView() ?? Container(),
+              _buildBackgroundView() ?? const SizedBox(),
               if (jobSet != null)
                 CustomPaint(
                   foregroundPainter: TileLayerPainter(
                       _tileLayer, position, widget.viewModel, jobSet),
                   child: Container(),
                 ),
-              // ChangeNotifierProvider<JobSet>.value(
-              //   value: jobSet,
-              //   child: Consumer<JobSet>(
-              //     builder: (BuildContext context, JobSet jobSet, Widget? child) {
-              //       //_log.info("consume with $jobSet");
-              //       return CustomPaint(
-              //         foregroundPainter: TileLayerPainter(_tileLayer, position, widget.viewModel, jobSet),
-              //         child: Container(),
-              //       );
-              //     },
-              //   ),
-              // ),
-              for (Widget widget in _widgets) widget,
+              for (Widget widget in markerWidgets) widget,
               if (widget.viewModel.overlays != null)
                 for (Widget widget in widget.viewModel.overlays!) widget,
               StreamBuilder<TapEvent>(
                 stream: widget.viewModel.observeTap,
                 builder:
                     (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
-                  if (!snapshot.hasData) return Container();
+                  if (snapshot.connectionState == ConnectionState.waiting)
+                    return const SizedBox();
+                  if (!snapshot.hasData) return const SizedBox();
                   TapEvent event = snapshot.data!;
                   return ContextMenu(
                     mapModel: widget.mapModel,

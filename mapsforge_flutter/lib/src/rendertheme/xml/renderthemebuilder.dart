@@ -107,7 +107,7 @@ class RenderThemeBuilder {
       }
     }
     assert(foundRendertheme);
-    _log.info("Found ${initPendings.length} items for lazy initialization");
+    //_log.info("Found ${initPendings.length} items for lazy initialization");
   }
 
   void _parseRendertheme(

@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 /// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas). Use this class if you often access the markers by their item.
 ///
 class MarkerByItemDataStore extends IMarkerDataStore {
-  static final _log = new Logger('MarkerDataStore');
+  static final _log = new Logger('MarkerByItemDataStore');
 
   final Map<dynamic, BasicMarker> _markers = {};
 
@@ -50,7 +50,7 @@ class MarkerByItemDataStore extends IMarkerDataStore {
 
   Future<void> _initMarkers(
       GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
-    _log.info("Initializing ${markersToInit.length} markers now");
+    //_log.info("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
       await m.initResources(graphicFactory);
     }

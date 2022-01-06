@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import '../../core.dart';
 
@@ -96,7 +95,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         // _log.info("onTapUp $details");
         widget.viewModel
             .tapEvent(details.localPosition.dx, details.localPosition.dy);
-        widget.viewModel.gestureEvent();
+        //widget.viewModel.gestureEvent();
       },
       onDoubleTapDown: (TapDownDetails details) {
         // _log.info(
@@ -108,20 +107,25 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         //     "onDoubleTap with _doubleTapLocalPosition ${_doubleTapLocalPosition}");
         // it should always non-null but just for safety do a null-check
         if (_doubleTapLocalPosition == null) return;
-        // lat/lon of the position where we double-clicked
-        double latitude = widget.viewModel.mapViewPosition!.projection!
-            .pixelYToLatitude(widget.viewModel.mapViewPosition!.leftUpper!.y +
-                _doubleTapLocalPosition!.dy);
-        double longitude = widget.viewModel.mapViewPosition!.projection!
-            .pixelXToLongitude(widget.viewModel.mapViewPosition!.leftUpper!.x +
-                _doubleTapLocalPosition!.dx);
-        // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
-        widget.viewModel.zoomInAround(
-            (latitude - widget.viewModel.mapViewPosition!.latitude!) / 2 +
-                widget.viewModel.mapViewPosition!.latitude!,
-            (longitude - widget.viewModel.mapViewPosition!.longitude!) / 2 +
-                widget.viewModel.mapViewPosition!.longitude!);
-        widget.viewModel.gestureEvent();
+        if (widget.viewModel.mapViewPosition?.leftUpper != null) {
+          // lat/lon of the position where we double-clicked
+          double latitude = widget.viewModel.mapViewPosition!.projection!
+              .pixelYToLatitude(widget.viewModel.mapViewPosition!.leftUpper!.y +
+                  _doubleTapLocalPosition!.dy);
+          double longitude = widget.viewModel.mapViewPosition!.projection!
+              .pixelXToLongitude(
+                  widget.viewModel.mapViewPosition!.leftUpper!.x +
+                      _doubleTapLocalPosition!.dx);
+          // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
+          widget.viewModel.zoomInAround(
+              (latitude - widget.viewModel.mapViewPosition!.latitude!) / 2 +
+                  widget.viewModel.mapViewPosition!.latitude!,
+              (longitude - widget.viewModel.mapViewPosition!.longitude!) / 2 +
+                  widget.viewModel.mapViewPosition!.longitude!);
+          // widget.viewModel
+          //     .doubleTapEvent(latitude, longitude);
+          //widget.viewModel.gestureEvent();
+        }
         _swipeTimer?.cancel();
         _swipeTimer = null;
         _swipeOffset = null;
