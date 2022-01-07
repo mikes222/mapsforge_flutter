@@ -19,7 +19,8 @@ class ViewModel {
   ///
   Dimension? _viewDimension;
 
-  Subject<MapViewPosition> _injectPosition = PublishSubject();
+  /// The last position should be reported to a new subscriber
+  Subject<MapViewPosition> _injectPosition = BehaviorSubject();
 
   Stream<MapViewPosition> get observePosition => _injectPosition.stream;
 

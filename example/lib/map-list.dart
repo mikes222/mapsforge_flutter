@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/map-download-page.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
@@ -88,14 +89,8 @@ class MapList extends StatelessWidget {
   Future<void> _handleMenuItemSelect(String value) async {
     switch (value) {
       case 'clear_tile_cache':
-        String fileCachePath =
-            (await getTemporaryDirectory()).path + "/mapsforgetiles";
-        var fileCacheDir = Directory(fileCachePath);
-        if (await fileCacheDir.exists()) {
-          await fileCacheDir.list(recursive: false).forEach((f) async {
-            await f.delete(recursive: true);
-          });
-        }
+        await FileTileBitmapCache.purgeAllCaches();
+        MemoryTileBitmapCache.purgeAllCaches();
         break;
       case 'delete_map_files':
         List<String> paths =

@@ -74,10 +74,10 @@ class _FlutterMapState extends State<FlutterMapView> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<MapViewPosition?>(
+    return StreamBuilder<MapViewPosition>(
       stream: widget.viewModel.observePosition,
-      builder:
-          (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
+        //print("position ${snapshot.connectionState} with ${snapshot.data}");
         if (snapshot.connectionState == ConnectionState.waiting)
           return _buildNoPositionView();
         if (snapshot.hasData) {

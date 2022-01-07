@@ -65,10 +65,12 @@ class MapViewPageState extends State<MapViewPage> {
               value: "start_location",
               child: Text("Back to Start"),
             ),
-            const PopupMenuItem<String>(
-              value: "analyse_mapfile",
-              child: Text("Analyse Mapfile"),
-            ),
+            // only offline maps have a datastore to analyze
+            if (widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OFFLINE)
+              const PopupMenuItem<String>(
+                value: "analyse_mapfile",
+                child: Text("Analyse Mapfile"),
+              ),
             PopupMenuItem<String>(
               enabled: false,
               value: "current_zoom_level",
@@ -89,11 +91,11 @@ class MapViewPageState extends State<MapViewPage> {
             ? _prepareOfflineMap(widget.mapFile!)
             : _prepareOnlinemap(),
         builder: (context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return const Center(child: CircularProgressIndicator());
           if (viewModel == null) {
             // not yet prepared
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           return FlutterMapView(
             mapModel: mapModel!,
@@ -120,7 +122,7 @@ class MapViewPageState extends State<MapViewPage> {
     /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
     final TileBitmapCache bitmapCache;
     if (kIsWeb) {
-      bitmapCache = MemoryTileBitmapCache();
+      bitmapCache = MemoryTileBitmapCache.create();
     } else {
       bitmapCache =
           await FileTileBitmapCache.create(jobRenderer.getRenderKey());
@@ -178,7 +180,7 @@ class MapViewPageState extends State<MapViewPage> {
     /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
     final TileBitmapCache bitmapCache;
     if (kIsWeb) {
-      bitmapCache = MemoryTileBitmapCache();
+      bitmapCache = MemoryTileBitmapCache.create();
     } else {
       bitmapCache =
           await FileTileBitmapCache.create(jobRenderer.getRenderKey());
@@ -210,6 +212,7 @@ class MapViewPageState extends State<MapViewPage> {
   void _handleMenuItemSelect(String value, BuildContext context) {
     switch (value) {
       case 'start_location':
+        print("start now at ${widget.mapFileData.initialPositionLat}");
         this.viewModel!.setMapViewPosition(
             widget.mapFileData.initialPositionLat,
             widget.mapFileData.initialPositionLong);
