@@ -7,12 +7,12 @@ import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
+import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
 import '../../core.dart';
 import 'backgroundpainter.dart';
-import 'contextmenu.dart';
 import 'tilelayerpainter.dart';
 
 typedef Future<MapModel> CreateMapModel(GraphicFactory graphicFactory);
@@ -223,26 +223,28 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             for (Widget widget in _createMarkerWidgets(position)) widget,
             if (_viewModel!.overlays != null)
               for (Widget widget in _viewModel!.overlays!) widget,
-            StreamBuilder<TapEvent>(
-              stream: _viewModel!.observeTap,
-              builder:
-                  (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
-                // _log.info(
-                //     "observeTap ${snapshot.connectionState.toString()} ${snapshot.data}");
-                if (snapshot.connectionState == ConnectionState.waiting)
-                  return const SizedBox();
-                if (!snapshot.hasData) return const SizedBox();
-                TapEvent event = snapshot.data!;
-                // with every position-update this context menu is called after the first tap-event
-                return ContextMenu(
-                  mapModel: _mapModel!,
-                  viewModel: _viewModel!,
-                  position: position,
-                  event: event,
-                  contextMenuBuilder: _viewModel!.contextMenuBuilder,
-                );
-              },
-            ),
+            if (_viewModel!.contextMenuBuilder != null)
+              StreamBuilder<TapEvent>(
+                stream: _viewModel!.observeTap,
+                builder:
+                    (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+                  // _log.info(
+                  //     "observeTap ${snapshot.connectionState.toString()} ${snapshot.data}");
+                  if (snapshot.connectionState == ConnectionState.waiting)
+                    return const SizedBox();
+                  if (!snapshot.hasData) return const SizedBox();
+                  TapEvent event = snapshot.data!;
+                  if (event.isCleared()) return const SizedBox();
+                  // with every position-update this context menu is called after the first tap-event
+                  return _viewModel!.contextMenuBuilder!.buildContextMenu(
+                      context,
+                      _mapModel!,
+                      _viewModel!,
+                      position,
+                      _viewModel!.viewDimension!,
+                      event);
+                },
+              ),
           ],
         );
       },

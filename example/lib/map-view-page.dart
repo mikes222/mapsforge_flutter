@@ -194,7 +194,10 @@ class MapViewPageState extends State<MapViewPage> {
       tileBitmapCache: bitmapCache,
     );
 
-    viewModel = ViewModel(displayModel: mapModel!.displayModel);
+    /// For demonstration purposes add the contextMenuBuilder to offline maps
+    viewModel = ViewModel(
+        displayModel: mapModel!.displayModel,
+        contextMenuBuilder: DefaultContextMenuBuilder());
 
     // set default position
     viewModel!.setMapViewPosition(widget.mapFileData.initialPositionLat,

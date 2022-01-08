@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
@@ -7,17 +6,13 @@ import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
-import 'package:mapsforge_flutter/src/marker/markerdatastore.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
-import 'package:mapsforge_flutter/src/model/mapmodel.dart';
+import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
-import 'package:provider/provider.dart';
 
 import '../../core.dart';
 import 'backgroundpainter.dart';
-import 'contextmenu.dart';
 import 'tilelayerpainter.dart';
 
 class FlutterMapView extends StatefulWidget {
@@ -152,23 +147,26 @@ class _FlutterMapState extends State<FlutterMapView> {
               for (Widget widget in markerWidgets) widget,
               if (widget.viewModel.overlays != null)
                 for (Widget widget in widget.viewModel.overlays!) widget,
-              StreamBuilder<TapEvent>(
-                stream: widget.viewModel.observeTap,
-                builder:
-                    (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting)
-                    return const SizedBox();
-                  if (!snapshot.hasData) return const SizedBox();
-                  TapEvent event = snapshot.data!;
-                  return ContextMenu(
-                    mapModel: widget.mapModel,
-                    viewModel: widget.viewModel,
-                    position: position,
-                    event: event,
-                    contextMenuBuilder: widget.viewModel.contextMenuBuilder,
-                  );
-                },
-              ),
+              if (widget.viewModel.contextMenuBuilder != null)
+                StreamBuilder<TapEvent>(
+                  stream: widget.viewModel.observeTap,
+                  builder:
+                      (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting)
+                      return const SizedBox();
+                    if (!snapshot.hasData) return const SizedBox();
+                    TapEvent event = snapshot.data!;
+                    if (event.isCleared()) return const SizedBox();
+                    return widget.viewModel.contextMenuBuilder!
+                        .buildContextMenu(
+                            context,
+                            widget.mapModel,
+                            widget.viewModel,
+                            position,
+                            widget.viewModel.viewDimension!,
+                            event);
+                  },
+                ),
             ],
           ),
         );

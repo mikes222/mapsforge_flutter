@@ -254,6 +254,10 @@ class ViewModel {
     _injectTap.add(event);
   }
 
+  void clearTapEvent() {
+    _injectTap.add(const TapEvent(0, 0, -1, -1));
+  }
+
   /// An event sent by the [FlutterGestureDetector] to indicate a user-driven gesture-event. This can be used to
   /// switch off automatic movement of the map.
   void gestureEvent() {
@@ -287,6 +291,10 @@ class TapEvent {
   final double x;
 
   final double y;
+
+  bool isCleared() {
+    return x == -1 && y == -1;
+  }
 
   const TapEvent(this.latitude, this.longitude, this.x, this.y);
 }
