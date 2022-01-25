@@ -12,7 +12,8 @@ class XmlRenderThemeStyleLayer {
   final bool visible;
   final bool enabled;
 
-  XmlRenderThemeStyleLayer(this.id, this.visible, this.enabled, this.defaultLanguage)
+  XmlRenderThemeStyleLayer(
+      this.id, this.visible, this.enabled, this.defaultLanguage)
       : titles = new Map<String, String>(),
         categories = new Set(),
         overlays = [] {}

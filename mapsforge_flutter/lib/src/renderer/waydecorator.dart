@@ -72,8 +72,9 @@ class WayDecorator {
 
         Mappoint point = new Mappoint(previousX, previousY);
 
-        currentItems
-            .add(new SymbolContainer(point, display, priority, symbolBitmap, theta: theta, alignCenter: alignCenter, paint: symbolPaint!));
+        currentItems.add(new SymbolContainer(
+            point, display, priority, symbolBitmap,
+            theta: theta, alignCenter: alignCenter, paint: symbolPaint!));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {
@@ -157,12 +158,16 @@ class WayDecorator {
 
     double pathLength = path.length();
 
-    for (double pos = repeatStart; pos + textWidth < pathLength; pos += repeatGap + textWidth) {
+    for (double pos = repeatStart;
+        pos + textWidth < pathLength;
+        pos += repeatGap + textWidth) {
       LineString linePart = path.extractPart(pos, pos + textWidth);
 
       bool tooSharp = false;
       for (int i = 1; i < linePart.segments.length; i++) {
-        double cornerAngle = linePart.segments.elementAt(i - 1).angleTo(linePart.segments.elementAt(i));
+        double cornerAngle = linePart.segments
+            .elementAt(i - 1)
+            .angleTo(linePart.segments.elementAt(i));
         if ((cornerAngle).abs() > MAX_LABEL_CORNER_ANGLE) {
           tooSharp = true;
           break;
@@ -170,7 +175,8 @@ class WayDecorator {
       }
       if (tooSharp) continue;
 
-      currentLabels.add(new WayTextContainer(graphicFactory, linePart, display, priority, text, fill, stroke, textHeight.toDouble()));
+      currentLabels.add(new WayTextContainer(graphicFactory, linePart, display,
+          priority, text, fill, stroke, textHeight.toDouble()));
     }
   }
 }

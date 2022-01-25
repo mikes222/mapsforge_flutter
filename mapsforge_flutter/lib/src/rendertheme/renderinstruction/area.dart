@@ -1,10 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/style.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -17,39 +14,26 @@ import 'renderinstruction.dart';
 /**
  * Represents a closed polygon on the map.
  */
-class Area extends RenderInstruction with BitmapMixin {
-  static int count = 0;
-
-  late MapPaint fill;
+class Area extends RenderInstruction with BitmapMixin, PaintMixin {
   final int level;
   Scale scale = Scale.STROKE;
-  late MapPaint stroke;
-  late Map<int, MapPaint> strokes;
-  late double strokeWidth;
 
   Area(GraphicFactory graphicFactory, SymbolCache symbolCache, displayModel,
       String elementName, this.level)
       : super(graphicFactory, displayModel) {
     this.symbolCache = symbolCache;
-    this.fill = graphicFactory.createPaint();
+
+    initPaintMixin(graphicFactory);
     this.fill.setColor(Color.TRANSPARENT);
-    this.fill.setStyle(Style.FILL);
-    this.fill.setStrokeCap(Cap.ROUND);
-
-    this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.TRANSPARENT);
-    this.stroke.setStyle(Style.STROKE);
-    this.stroke.setStrokeCap(Cap.ROUND);
-
-    this.strokes = new Map();
-    strokeWidth = 1;
   }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+    this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
+
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
-      //_log.info("checking $name=$value");
       if (RenderInstruction.SRC == name) {
         this.bitmapSrc = value;
       } else if (RenderInstruction.CAT == name) {
@@ -65,33 +49,25 @@ class Area extends RenderInstruction with BitmapMixin {
             .stroke
             .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getScaleFactor();
+        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) *
-            displayModel.getScaleFactor();
+        this.bitmapHeight =
+            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.bitmapPercent = XmlUtils.parseNonNegativeInteger(name, value);
+        this.bitmapPercent = (XmlUtils.parseNonNegativeInteger(name, value) *
+                displayModel.getFontScaleFactor())
+            .round();
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) *
-            displayModel.getScaleFactor();
+        this.bitmapWidth =
+            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
       } else {
         throw Exception(name + "=" + value);
       }
     });
     if (bitmapSrc != null) initPendings.add(this);
-  }
-
-  MapPaint getFillPaint() {
-    return this.fill;
-  }
-
-  MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint? paint = strokes[zoomLevel];
-    paint ??= this.stroke;
-    return paint;
   }
 
   @override
@@ -106,14 +82,12 @@ class Area extends RenderInstruction with BitmapMixin {
 //    synchronized(this) {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
-    MapPaint fillPaint = getFillPaint();
 
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    renderCallback.renderArea(renderContext, fillPaint,
+    renderCallback.renderArea(renderContext, fill,
         getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
-    ++count;
 //}
   }
 
@@ -122,10 +96,7 @@ class Area extends RenderInstruction with BitmapMixin {
     if (this.scale == Scale.NONE) {
       return;
     }
-    if (this.strokes[zoomLevel] != null) return;
-    MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
-    paint.setStrokeWidth(this.strokeWidth * scaleFactor);
-    this.strokes[zoomLevel] = paint;
+    scaleMixinStrokeWidth(graphicFactory, scaleFactor, zoomLevel);
   }
 
   @override
@@ -150,15 +121,12 @@ class Area extends RenderInstruction with BitmapMixin {
 
   @override
   void dispose() {
-    fill.dispose();
-    strokes.values.forEach((element) {
-      element.dispose();
-    });
+    mixinDispose();
     super.dispose();
   }
 
   @override
   String toString() {
-    return 'Area{fill: $fill, level: $level, scale: $scale, stroke: $stroke, strokes: $strokes, strokeWidth: $strokeWidth}';
+    return 'Area{fill: $fill, level: $level, scale: $scale, stroke: $stroke, strokes: $strokes}';
   }
 }

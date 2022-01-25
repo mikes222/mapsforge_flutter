@@ -17,7 +17,8 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   static int count = 0;
 
-  ShapePaintPolylineContainer(GraphicFactory graphicFactory, ShapeContainer shapeContainer, MapPaint paint, double dy)
+  ShapePaintPolylineContainer(GraphicFactory graphicFactory,
+      ShapeContainer shapeContainer, MapPaint paint, double dy)
       : super(shapeContainer, paint, dy) {
     path = graphicFactory.createPath();
   }
@@ -28,7 +29,8 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
     PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
     this.path.clear();
 
-    for (List<Mappoint> outerList in polylineContainer.getCoordinatesRelativeToOrigin(projection)) {
+    for (List<Mappoint> outerList
+        in polylineContainer.getCoordinatesRelativeToOrigin(projection)) {
       List<Mappoint> points;
       if (dy != 0) {
         points = RendererUtils.parallelPath(outerList, dy);
@@ -52,7 +54,8 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
         //   print(minMaxMappoint);
         continue;
       }
-      if (minMaxMappoint.maxX - minMaxMappoint.minX < 3 && minMaxMappoint.maxY - minMaxMappoint.minY < 3) {
+      if (minMaxMappoint.maxX - minMaxMappoint.minX < 3 &&
+          minMaxMappoint.maxY - minMaxMappoint.minY < 3) {
         //   print(minMaxMappoint);
         continue;
       }

@@ -28,11 +28,13 @@ void main() {
     int l = 0;
     int zoomlevel = 21;
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel)
+        .longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     GraphicFactory graphicFactory = const FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    RenderThemeBuilder renderThemeBuilder =
+        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -41,14 +43,32 @@ void main() {
 
       MemoryDatastore datastore = MemoryDatastore();
       // to check if the position of the symbol is correct. One cirlce above, one below, one to the right
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle')], LatLong(45.99998, 18.00005)));
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle')], LatLong(46.00006, 18.00005)));
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle')], LatLong(46.00002, 18.00009)));
-      datastore
-          .addPoi(const PointOfInterest(0, [const Tag('natural', 'peak'), Tag('name', 'atLeftTile'), Tag('ele', '5645')], LatLong(46.00002, 18.00005)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [const Tag('highway', 'turning_circle')],
+          LatLong(45.99998, 18.00005)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [const Tag('highway', 'turning_circle')],
+          LatLong(46.00006, 18.00005)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [const Tag('highway', 'turning_circle')],
+          LatLong(46.00002, 18.00009)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [
+            const Tag('natural', 'peak'),
+            Tag('name', 'atLeftTile'),
+            Tag('ele', '5645')
+          ],
+          LatLong(46.00002, 18.00005)));
 
       //datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00000, 18.00007)));
-      datastore.addPoi(const PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
+      datastore.addPoi(const PointOfInterest(
+          0,
+          [Tag('place', 'suburb'), Tag('name', 'atRightTile')],
+          LatLong(45.99997, 18.00007)));
 
       Tile tile0 = new Tile(x, y, zoomlevel, l);
       Projection projection = MercatorProjection.fromZoomlevel(tile0.zoomLevel);
@@ -57,10 +77,13 @@ void main() {
       print(result);
       expect(result.pointOfInterests.length, greaterThan(0));
       print("Calculating tile0 ${tile0.toString()}");
-      Job mapGeneratorJob0 = new Job(tile0, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+      Job mapGeneratorJob0 = new Job(tile0, false,
+          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
 
-      JobResult jobResult0 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      JobResult jobResult0 =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img0 = (jobResult0.bitmap as FlutterTileBitmap).bitmap;
 
       _dataStoreRenderer.labelStore.debug();
@@ -68,8 +91,10 @@ void main() {
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
 
       Tile tile1 = new Tile(x + 1, y, zoomlevel, l);
-      Job mapGeneratorJob1 = new Job(tile1, false, displayModel.getUserScaleFactor(), displayModel.tileSize);
-      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
+      Job mapGeneratorJob1 = new Job(tile1, false,
+          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      JobResult jobResult1 =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
       var img1 = (jobResult1.bitmap as FlutterTileBitmap).bitmap;
 
       _dataStoreRenderer.labelStore.debug();
@@ -87,7 +112,8 @@ void main() {
         home: Scaffold(
           body: Center(
             child: Container(
-              decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.blue)),
+              decoration: BoxDecoration(
+                  border: Border.all(width: 2, color: Colors.blue)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

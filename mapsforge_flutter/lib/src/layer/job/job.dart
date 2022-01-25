@@ -9,7 +9,8 @@ class Job {
   final Tile tile;
   final int tileSize;
 
-  const Job._(this.tile, this.hasAlpha, this.textScale, this.tileSize) : assert(tileSize > 0);
+  const Job._(this.tile, this.hasAlpha, this.textScale, this.tileSize)
+      : assert(tileSize > 0);
 
   factory Job(Tile tile, bool alpha, double scaleFactor, int tileSize) {
     Job job = Job._(tile, alpha, scaleFactor, tileSize);
@@ -18,7 +19,11 @@ class Job {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is Job && runtimeType == other.runtimeType && hasAlpha == other.hasAlpha && tile == other.tile;
+      identical(this, other) ||
+      other is Job &&
+          runtimeType == other.runtimeType &&
+          hasAlpha == other.hasAlpha &&
+          tile == other.tile;
 
   @override
   int get hashCode => hasAlpha.hashCode ^ tile.hashCode;

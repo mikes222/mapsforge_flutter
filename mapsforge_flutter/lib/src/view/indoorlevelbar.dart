@@ -1,7 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:math';
-import 'package:rxdart/rxdart.dart';
 
 typedef void OnChange(int level);
 
@@ -80,7 +80,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
         List<int> indoorLevels = widget.indoorLevels.keys.toList();
         indoorLevels.sort((b, a) => a.compareTo(b));
 
-        double maxHeight = min(constraints.maxHeight, widget.maxVisibleItems * widget.itemHeight);
+        double maxHeight = min(
+            constraints.maxHeight, widget.maxVisibleItems * widget.itemHeight);
         // calculate nearest multiple item height
         maxHeight = (maxHeight / widget.itemHeight).floor() * widget.itemHeight;
         // check if level bar will be scrollable
@@ -91,15 +92,21 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
           // calculate the scroll position so the selected element is visible at the bottom if possible
           // -3 because we need to shift the index by 1 and by 2 because of scroll buttons taking each the space of one item
           int itemIndex = indoorLevels.indexOf(_level);
-          double selectedItemOffset = max(itemIndex * widget.itemHeight - (maxHeight - 3 * widget.itemHeight), 0);
+          double selectedItemOffset = max(
+              itemIndex * widget.itemHeight -
+                  (maxHeight - 3 * widget.itemHeight),
+              0);
           // create scroll controller if not existing and set item scroll offset
-          _scrollController ??= ScrollController(initialScrollOffset: selectedItemOffset);
+          _scrollController ??=
+              ScrollController(initialScrollOffset: selectedItemOffset);
           // else
           //   _scrollController!.jumpTo(selectedItemOffset);
 
           // disable/enable scroll buttons accordingly
           _onTop.value = selectedItemOffset == 0;
-          _onBottom.value = selectedItemOffset == totalIndoorLevels * widget.itemHeight - (maxHeight - 2 * widget.itemHeight);
+          _onBottom.value = selectedItemOffset ==
+              totalIndoorLevels * widget.itemHeight -
+                  (maxHeight - 2 * widget.itemHeight);
         }
 
         return ConstrainedBox(
@@ -151,8 +158,12 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                         style: TextButton.styleFrom(
                           shape: const ContinuousRectangleBorder(),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: _level == itemIndoorLevel ? widget.activeColor : Colors.transparent,
-                          primary: _level == itemIndoorLevel ? Colors.white : Colors.black,
+                          backgroundColor: _level == itemIndoorLevel
+                              ? widget.activeColor
+                              : Colors.transparent,
+                          primary: _level == itemIndoorLevel
+                              ? Colors.white
+                              : Colors.black,
                         ),
                         onPressed: () {
                           // do nothing if already selected
@@ -166,7 +177,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                         },
                         child: Text(
                           // show level code if available
-                          widget.indoorLevels[itemIndoorLevel] ?? itemIndoorLevel.toString(),
+                          widget.indoorLevels[itemIndoorLevel] ??
+                              itemIndoorLevel.toString(),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -179,7 +191,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                 visible: isScrollable,
                 child: ValueListenableBuilder(
                   valueListenable: _onBottom,
-                  builder: (BuildContext context, bool onBottom, Widget? child) {
+                  builder:
+                      (BuildContext context, bool onBottom, Widget? child) {
                     return TextButton(
                       style: TextButton.styleFrom(
                         primary: Colors.black,
@@ -221,7 +234,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
 
     double itemHeight = widget.itemHeight;
     double nextPosition = _scrollController!.offset - itemHeight;
-    double roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
+    double roundToNextItemPosition =
+        (nextPosition / itemHeight).round() * itemHeight;
     _scrollController!.animateTo(
       roundToNextItemPosition,
       duration: const Duration(milliseconds: 200),
@@ -234,7 +248,8 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
 
     double itemHeight = widget.itemHeight;
     double nextPosition = _scrollController!.offset + itemHeight;
-    double roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
+    double roundToNextItemPosition =
+        (nextPosition / itemHeight).round() * itemHeight;
     _scrollController!.animateTo(
       roundToNextItemPosition,
       duration: const Duration(milliseconds: 200),

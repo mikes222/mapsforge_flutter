@@ -19,6 +19,13 @@ abstract class JobRenderer {
   ///
   Future<JobResult> executeJob(Job job);
 
+  /// Returns a key for the caches. In order to use different caches for different renderings the
+  /// renderer can provide a unique key. The key should be the same if the rendering should provide the
+  /// exact same image again. The key should be different if the renderer provides different images. This
+  /// can be used for light/dark themes.
+  /// Note that different DisplayModels also may lead to different renderings (e.g. scaleFactors) but this
+  /// is currently not implemented in the default renderers. We assume that the displaymodel stays the same
+  /// at one single device or the cache will be deleted if the user changes the scalieFactors.
   String getRenderKey();
 
   static final double _margin = 5;
@@ -36,17 +43,24 @@ abstract class JobRenderer {
     paint.color = const ui.Color(0xffaaaaaa);
     paint.isAntiAlias = true;
 
-    canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(tileSize - _margin, _margin), paint);
-    canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(_margin, tileSize - _margin), paint);
-    canvas.drawLine(ui.Offset(tileSize - _margin, _margin), ui.Offset(tileSize - _margin, tileSize - _margin), paint);
-    canvas.drawLine(ui.Offset(_margin, tileSize - _margin), ui.Offset(tileSize - _margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, _margin),
+        ui.Offset(tileSize - _margin, _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, _margin),
+        ui.Offset(_margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(tileSize - _margin, _margin),
+        ui.Offset(tileSize - _margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, tileSize - _margin),
+        ui.Offset(tileSize - _margin, tileSize - _margin), paint);
 
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(fontSize: 10.0, textAlign: TextAlign.center),
     )
       ..pushStyle(ui.TextStyle(color: paint.color))
       ..addText("Waiting for rendering...");
-    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize.toDouble())), Offset(0, tileSize / 2));
+    canvas.drawParagraph(
+        builder.build()
+          ..layout(ui.ParagraphConstraints(width: tileSize.toDouble())),
+        Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
     ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
@@ -66,17 +80,24 @@ abstract class JobRenderer {
     paint.color = const ui.Color(0xffaaaaaa);
     paint.isAntiAlias = true;
 
-    canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(tileSize - _margin, _margin), paint);
-    canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(_margin, tileSize - _margin), paint);
-    canvas.drawLine(ui.Offset(tileSize - _margin, _margin), ui.Offset(tileSize - _margin, tileSize - _margin), paint);
-    canvas.drawLine(ui.Offset(_margin, tileSize - _margin), ui.Offset(tileSize - _margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, _margin),
+        ui.Offset(tileSize - _margin, _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, _margin),
+        ui.Offset(_margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(tileSize - _margin, _margin),
+        ui.Offset(tileSize - _margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, tileSize - _margin),
+        ui.Offset(tileSize - _margin, tileSize - _margin), paint);
 
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(fontSize: 14.0, textAlign: TextAlign.center),
     )
       ..pushStyle(ui.TextStyle(color: Colors.red))
       ..addText("No data available");
-    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize.toDouble())), Offset(0, tileSize / 2));
+    canvas.drawParagraph(
+        builder.build()
+          ..layout(ui.ParagraphConstraints(width: tileSize.toDouble())),
+        Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
     ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
@@ -97,17 +118,24 @@ abstract class JobRenderer {
     paint.color = const ui.Color(0xffaaaaaa);
     paint.isAntiAlias = true;
 
-    canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(tileSize - _margin, _margin), paint);
-    canvas.drawLine(ui.Offset(_margin, _margin), ui.Offset(_margin, tileSize - _margin), paint);
-    canvas.drawLine(ui.Offset(tileSize - _margin, _margin), ui.Offset(tileSize - _margin, tileSize - _margin), paint);
-    canvas.drawLine(ui.Offset(_margin, tileSize - _margin), ui.Offset(tileSize - _margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, _margin),
+        ui.Offset(tileSize - _margin, _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, _margin),
+        ui.Offset(_margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(tileSize - _margin, _margin),
+        ui.Offset(tileSize - _margin, tileSize - _margin), paint);
+    canvas.drawLine(ui.Offset(_margin, tileSize - _margin),
+        ui.Offset(tileSize - _margin, tileSize - _margin), paint);
 
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(fontSize: 10.0, textAlign: TextAlign.center),
     )
       ..pushStyle(ui.TextStyle(color: Colors.black87))
       ..addText("${error?.toString() ?? "Error"}");
-    canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize - _margin * 2)), Offset(_margin, _margin));
+    canvas.drawParagraph(
+        builder.build()
+          ..layout(ui.ParagraphConstraints(width: tileSize - _margin * 2)),
+        Offset(_margin, _margin));
 
     var pic = pictureRecorder.endRecording();
     ui.Image img = await pic.toImage(tileSize, tileSize);

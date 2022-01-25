@@ -42,7 +42,8 @@ main() {
 
     Tile upperLeft = Tile(4, 3, zoomLevel, 0);
     Tile lowerRight = Tile(6, 5, zoomLevel, 0);
-    BoundingBox boundingBox = projection.boundingBoxOfTiles(upperLeft, lowerRight);
+    BoundingBox boundingBox =
+        projection.boundingBoxOfTiles(upperLeft, lowerRight);
     expect(boundingBox.minLongitude, -90);
     expect(boundingBox.maxLongitude, -22.5);
     expect(boundingBox.minLatitude, 40.97989806962013);
@@ -62,6 +63,8 @@ main() {
   });
 
   test("Bearingtest", () {
-    expect(Projection.startBearing(const LatLong(35, 45), const LatLong(35, 135)), 60.16243352168624);
+    expect(
+        Projection.startBearing(const LatLong(35, 45), const LatLong(35, 135)),
+        60.16243352168624);
   });
 }

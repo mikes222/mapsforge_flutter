@@ -32,7 +32,8 @@ class LatLongUtils {
   static bool contains(List<ILatLong> latLongs, ILatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
-      if ((latLongs[i].latitude > latLong.latitude) != (latLongs[j].latitude > latLong.latitude) &&
+      if ((latLongs[i].latitude > latLong.latitude) !=
+              (latLongs[j].latitude > latLong.latitude) &&
           (latLong.longitude <
               (latLongs[j].longitude - latLongs[i].longitude) *
                       (latLong.latitude - latLongs[i].latitude) /
@@ -49,8 +50,10 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static double distanceSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
-    Point nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
+  static double distanceSegmentPoint(double startX, double startY, double endX,
+      double endY, double pointX, double pointY) {
+    Point nearest =
+        nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
     return sqrt(pow(nearest.x - pointX, 2) + pow(nearest.y - pointY, 2));
   }
 
@@ -74,7 +77,8 @@ class LatLongUtils {
   /// @param latLong2 second LatLong
   /// @return distance in degrees as a double
   static double euclideanDistance(ILatLong latLong1, ILatLong latLong2) {
-    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) + pow(latLong1.latitude - latLong2.latitude, 2));
+    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) +
+        pow(latLong1.latitude - latLong2.latitude, 2));
   }
 
   /**
@@ -83,7 +87,9 @@ class LatLongUtils {
    * @return true if this way is closed, false otherwise.
    */
   static bool isClosedWay(List<ILatLong?> latLongs) {
-    return euclideanDistance(latLongs[0] as LatLong, latLongs[latLongs.length - 1] as LatLong) < 0.000000001;
+    return euclideanDistance(
+            latLongs[0] as LatLong, latLongs[latLongs.length - 1] as LatLong) <
+        0.000000001;
   }
 
   /**
@@ -101,15 +107,19 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static Point nearestSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
+  static Point nearestSegmentPoint(double startX, double startY, double endX,
+      double endY, double pointX, double pointY) {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
     double length2 = xDiff * xDiff + yDiff * yDiff;
     if (length2 == 0) return new Point(startX, startY);
-    double t = ((pointX - startX) * (endX - startX) + (pointY - startY) * (endY - startY)) / length2;
+    double t = ((pointX - startX) * (endX - startX) +
+            (pointY - startY) * (endY - startY)) /
+        length2;
     if (t < 0) return new Point(startX, startY);
     if (t > 1) return new Point(endX, endY);
-    return new Point(startX + t * (endX - startX), startY + t * (endY - startY));
+    return new Point(
+        startX + t * (endX - startX), startY + t * (endY - startY));
   }
 
   /**

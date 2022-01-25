@@ -43,7 +43,6 @@ Speed:
 
 Others:
  - Testing for IOS
- - tile size others than 256 pixels may break the code
 
 ## Getting Started
 

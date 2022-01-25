@@ -13,10 +13,12 @@ class XmlRenderThemeStyleMenu {
   final String defaultValue;
   final String id;
 
-  XmlRenderThemeStyleMenu(this.id, this.defaultLanguage, this.defaultValue) : layers = new Map<String, XmlRenderThemeStyleLayer>();
+  XmlRenderThemeStyleMenu(this.id, this.defaultLanguage, this.defaultValue)
+      : layers = new Map<String, XmlRenderThemeStyleLayer>();
 
   XmlRenderThemeStyleLayer createLayer(String id, bool visible, bool enabled) {
-    XmlRenderThemeStyleLayer style = new XmlRenderThemeStyleLayer(id, visible, enabled, this.defaultLanguage);
+    XmlRenderThemeStyleLayer style = new XmlRenderThemeStyleLayer(
+        id, visible, enabled, this.defaultLanguage);
     this.layers[id] = style;
     return style;
   }

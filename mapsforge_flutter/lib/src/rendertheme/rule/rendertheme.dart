@@ -92,8 +92,7 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  List<RenderInstruction> matchClosedWay(
-      final Tile tile, Way way) {
+  List<RenderInstruction> matchClosedWay(final Tile tile, Way way) {
     return _matchWay(tile, Closed.YES, way);
   }
 
@@ -104,8 +103,7 @@ class RenderTheme {
    * @param renderContext
    * @param way
    */
-  List<RenderInstruction> matchLinearWay(
-      final Tile tile, Way way) {
+  List<RenderInstruction> matchLinearWay(final Tile tile, Way way) {
     return _matchWay(tile, Closed.NO, way);
   }
 
@@ -193,10 +191,9 @@ class RenderTheme {
   //   this.levels = levels;
   // }
 
-  List<RenderInstruction> _matchWay(
-      Tile tile, Closed closed, Way way) {
-    MatchingCacheKey matchingCacheKey = MatchingCacheKey(
-        way.tags, tile.zoomLevel, tile.indoorLevel, closed);
+  List<RenderInstruction> _matchWay(Tile tile, Closed closed, Way way) {
+    MatchingCacheKey matchingCacheKey =
+        MatchingCacheKey(way.tags, tile.zoomLevel, tile.indoorLevel, closed);
 
     List<RenderInstruction>? matchingList =
         this.wayMatchingCache[matchingCacheKey];

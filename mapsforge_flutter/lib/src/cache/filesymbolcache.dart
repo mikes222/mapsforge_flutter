@@ -57,6 +57,7 @@ class FileSymbolCache extends SymbolCache {
 // no image source defined
       return null;
     }
+    assert(percent == null || percent > 0);
     String key = "$src-$width-$height-$percent";
     ResourceBitmap? bitmap = _cache.get(key);
     if (bitmap != null) return bitmap;
@@ -120,7 +121,7 @@ class FileSymbolCache extends SymbolCache {
 //        image = imag.copyResize(image, width: width, height: height);
 
 //        var codec = await ui.instantiateImageCodec(imag.encodePng(image));
-      if (percent != null && percent != 100) {
+      if (percent != null) {
         width = (width * percent.toDouble() / 100.0).round();
         height = (height * percent.toDouble() / 100.0).round();
       }
@@ -138,7 +139,7 @@ class FileSymbolCache extends SymbolCache {
       var frame = await codec.getNextFrame();
       ui.Image img = frame.image;
 
-      if (percent != null && percent != 100) {
+      if (percent != null) {
         width = img.width;
         height = img.height;
         width = (width * percent.toDouble() / 100.0).round();
@@ -165,27 +166,25 @@ class FileSymbolCache extends SymbolCache {
     DrawableRoot svgRoot =
         await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 
-    if (percent != null && percent != 100) {
-      if (width != null) width = (width * percent.toDouble() / 100.0).round();
-      if (height != null)
-        height = (height * percent.toDouble() / 100.0).round();
+    if (percent != null) {
+      width = ((width == 0 ? SymbolCache.DEFAULT_SIZE.toDouble() : width) *
+              percent.toDouble() /
+              100.0)
+          .round();
+      height = ((height == 0 ? SymbolCache.DEFAULT_SIZE.toDouble() : height) *
+              percent.toDouble() /
+              100.0)
+          .round();
+    } else {
+      if (width == 0) width = SymbolCache.DEFAULT_SIZE;
+      if (height == 0) height = SymbolCache.DEFAULT_SIZE;
     }
 // If you only want the final Picture output, just use
-    final ui.Picture picture = svgRoot.toPicture(
-        size: ui.Size(
-            width != 0 ? width.toDouble() : SymbolCache.DEFAULT_SIZE.toDouble(),
-            height != 0
-                ? height.toDouble()
-                : SymbolCache.DEFAULT_SIZE.toDouble()));
-    ui.Image image = await picture.toImage(
-        width != 0 ? width : SymbolCache.DEFAULT_SIZE,
-        height != 0 ? height : SymbolCache.DEFAULT_SIZE);
+    final ui.Picture picture =
+        svgRoot.toPicture(size: ui.Size(width.toDouble(), height.toDouble()));
+    ui.Image image = await picture.toImage(width, height);
     //print("image: " + image.toString());
     FlutterResourceBitmap result = FlutterResourceBitmap(image, src);
     return result;
-
-    //final Widget svg = new SvgPicture.asset(assetName, semanticsLabel: 'Acme Logo');
-
-    //return graphicFactory.renderSvg(inputStream, displayModel.getScaleFactor(), width, height, percent);
   }
 }

@@ -47,7 +47,11 @@ class Tag implements Comparable<Tag> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is Tag && runtimeType == other.runtimeType && key == other.key && value == other.value;
+      identical(this, other) ||
+      other is Tag &&
+          runtimeType == other.runtimeType &&
+          key == other.key &&
+          value == other.value;
 
   @override
   int get hashCode => key.hashCode ^ value.hashCode;

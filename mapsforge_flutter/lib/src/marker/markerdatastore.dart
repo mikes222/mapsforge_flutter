@@ -63,8 +63,8 @@ class MarkerDataStore extends IMarkerDataStore {
   @override
   @mustCallSuper
   void dispose() {
-    clearMarkers();
     disposed = true;
+    clearMarkers();
     super.dispose();
   }
 

@@ -83,7 +83,8 @@ class RenderContext {
    */
   void setScaleStrokeWidth(int zoomLevel) {
     int zoomLevelDiff = max(zoomLevel - STROKE_MIN_ZOOM_LEVEL, 0);
-    this.renderTheme.scaleStrokeWidth(pow(STROKE_INCREASE, zoomLevelDiff) as double, this.job.tile.zoomLevel);
+    this.renderTheme.scaleStrokeWidth(
+        pow(STROKE_INCREASE, zoomLevelDiff) as double, this.job.tile.zoomLevel);
   }
 }
 

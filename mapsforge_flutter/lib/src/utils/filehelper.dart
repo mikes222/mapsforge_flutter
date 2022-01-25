@@ -46,26 +46,6 @@ class FileHelper {
     return result;
   }
 
-  static Future<bool> exists(String filename) async {
-    String _localPath = await findLocalPath();
-
-    File file = File(_localPath + "/" + filename);
-    if (await file.exists()) {
-      return true;
-    }
-    return false;
-  }
-
-  static Future<void> unzip(String zippedFilename, String filename) async {
-    String _localPath = await findLocalPath();
-    File zipfile = File(_localPath + "/" + zippedFilename);
-    Uint8List content = await zipfile.readAsBytes();
-    Uint8List unzipped = gzip.decoder.convert(content) as Uint8List;
-    File file = File(_localPath + "/" + filename);
-    await file.writeAsBytes(unzipped);
-    await zipfile.delete();
-  }
-
   static Future<bool> delete(String filename) async {
     File file;
     if (filename.startsWith("/"))

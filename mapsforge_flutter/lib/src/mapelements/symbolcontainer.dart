@@ -15,14 +15,17 @@ class SymbolContainer extends MapElementContainer {
   final double? theta;
   final MapPaint paint;
 
-  SymbolContainer(point, display, priority, this.symbol, {this.theta, this.alignCenter = true, required this.paint})
+  SymbolContainer(point, display, priority, this.symbol,
+      {this.theta, this.alignCenter = true, required this.paint})
       : super(point, display, priority) {
     if (alignCenter) {
       double halfWidth = this.symbol.getWidth() / 2;
       double halfHeight = this.symbol.getHeight() / 2;
-      this.boundary = new Rectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
+      this.boundary =
+          new Rectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
     } else {
-      this.boundary = new Rectangle(0, 0, this.symbol.getWidth().toDouble(), this.symbol.getHeight().toDouble());
+      this.boundary = new Rectangle(0, 0, this.symbol.getWidth().toDouble(),
+          this.symbol.getHeight().toDouble());
     }
 
     // we get the image from the [RenderSymbol] class which lives as long as we have the rendertheme. So no need to keep track of the short-living image here

@@ -30,7 +30,8 @@ class GeometryUtils {
       }
     }
 
-    return new Mappoint((pointXMin + pointXMax) / 2, (pointYMax + pointYMin) / 2);
+    return new Mappoint(
+        (pointXMin + pointXMax) / 2, (pointYMax + pointYMin) / 2);
   }
 
   static ILatLong calculateCenter(List<ILatLong> coordinates) {
@@ -53,6 +54,7 @@ class GeometryUtils {
       }
     }
 
-    return new LatLong((pointYMin! + pointYMax!) / 2, (pointXMax! + pointXMin!) / 2);
+    return new LatLong(
+        (pointYMin! + pointYMax!) / 2, (pointXMax! + pointXMin!) / 2);
   }
 }

@@ -16,18 +16,23 @@ import '../testassetbundle.dart';
 main() async {
   Future<void> runOnce(int dx, int dy) async {
     MapFile mapFile = await MapFile.from(
-        TestAssetBundle().correctFilename("austria.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
+        TestAssetBundle().correctFilename("austria.map"),
+        null,
+        null); //Map that contains part of the Canpus Reichehainer Straße
 
     int zoomlevel = 8;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(14.545150); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(48.469632);
+    int x = MercatorProjection.fromZoomlevel(zoomlevel)
+        .longitudeToTileX(14.545150); // lat/lon: 43.7399/7.4262;
+    int y =
+        MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(48.469632);
     int indoorLevel = 0;
 
     //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
     Tile upperLeft = new Tile(x + dx, y + dy, zoomlevel, indoorLevel);
     Tile lowerRight = new Tile(x + dx + 1, y + dy + 1, zoomlevel, indoorLevel);
 
-    DatastoreReadResult mapReadResult = await mapFile.readMapData(upperLeft, lowerRight);
+    DatastoreReadResult mapReadResult =
+        await mapFile.readMapData(upperLeft, lowerRight);
     //expect(mapReadResult.ways.length, equals(152721));
     //expect(mapReadResult.pointOfInterests.length, equals(3));
     print(mapFile.toString());
@@ -36,17 +41,22 @@ main() async {
 
   Future<void> runOnceSingle(int dx, int dy) async {
     MapFile mapFile = await MapFile.from(
-        TestAssetBundle().correctFilename("austria.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
+        TestAssetBundle().correctFilename("austria.map"),
+        null,
+        null); //Map that contains part of the Canpus Reichehainer Straße
 
     int zoomlevel = 8;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(14.545150); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(48.469632);
+    int x = MercatorProjection.fromZoomlevel(zoomlevel)
+        .longitudeToTileX(14.545150); // lat/lon: 43.7399/7.4262;
+    int y =
+        MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(48.469632);
     int indoorLevel = 0;
 
     //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
     Tile upperLeft = new Tile(x + dx, y + dy, zoomlevel, indoorLevel);
 
-    DatastoreReadResult mapReadResult = await mapFile.readMapDataSingle(upperLeft);
+    DatastoreReadResult mapReadResult =
+        await mapFile.readMapDataSingle(upperLeft);
     expect(mapReadResult.ways.length, equals(44956));
     expect(mapReadResult.pointOfInterests.length, equals(1));
     print(mapFile.toString());

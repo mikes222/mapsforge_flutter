@@ -57,7 +57,8 @@ class PixelProjection extends MercatorProjection {
     const double pi4 = 4 * pi;
     double sinLatitude = sin(latitude * pi180);
 // FIXME improve this formula so that it works correctly without the clipping
-    double pixelY = (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / pi4) * _mapSize;
+    double pixelY =
+        (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / pi4) * _mapSize;
     return min(max(0, pixelY), _mapSize.toDouble());
   }
 
@@ -108,7 +109,8 @@ class PixelProjection extends MercatorProjection {
   /// @param mapSize precomputed size of map.
   /// @return the absolute pixel coordinates (for world)
   Mappoint latLonToPixel(ILatLong latLong) {
-    return Mappoint(longitudeToPixelX(latLong.longitude), latitudeToPixelY(latLong.latitude));
+    return Mappoint(longitudeToPixelX(latLong.longitude),
+        latitudeToPixelY(latLong.latitude));
   }
 
   /// Calculates the absolute pixel position for a tile and tile size relative to origin
@@ -139,11 +141,15 @@ class PixelProjection extends MercatorProjection {
    */
   //@override
   Mappoint getLeftUpper(Tile tile) {
-    return Mappoint((tile.tileX * tileSize).toDouble(), (tile.tileY * tileSize).toDouble());
+    return Mappoint(
+        (tile.tileX * tileSize).toDouble(), (tile.tileY * tileSize).toDouble());
   }
 
   Rectangle boundaryAbsolute(Tile tile) {
-    return Rectangle((tile.tileX * tileSize).toDouble(), (tile.tileY * tileSize).toDouble(), (tile.tileX * tileSize + tileSize).toDouble(),
+    return Rectangle(
+        (tile.tileX * tileSize).toDouble(),
+        (tile.tileY * tileSize).toDouble(),
+        (tile.tileX * tileSize + tileSize).toDouble(),
         (tile.tileY * tileSize + tileSize).toDouble());
   }
 
@@ -152,7 +158,9 @@ class PixelProjection extends MercatorProjection {
     if (latLong.latitude == 90 || latLong.latitude == -90) return 0;
     int pixels = _mapSizeWithScaleFactor();
     const double pi180 = pi / 180;
-    return Projection.EARTH_CIRCUMFERENCE / pixels * cos(latLong.latitude * pi180);
+    return Projection.EARTH_CIRCUMFERENCE /
+        pixels *
+        cos(latLong.latitude * pi180);
   }
 
   int get mapsize => _mapSize;

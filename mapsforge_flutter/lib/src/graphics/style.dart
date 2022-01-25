@@ -1,3 +1,1 @@
-enum Style {
-  FILL, STROKE
-}
+enum Style { FILL, STROKE }

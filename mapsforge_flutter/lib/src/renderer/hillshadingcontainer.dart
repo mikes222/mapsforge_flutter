@@ -8,7 +8,8 @@ class HillshadingContainer implements ShapeContainer {
   final Rectangle? hillsRect;
   final Rectangle? tileRect;
 
-  HillshadingContainer(this.bitmap, this.magnitude, this.hillsRect, this.tileRect);
+  HillshadingContainer(
+      this.bitmap, this.magnitude, this.hillsRect, this.tileRect);
 
   @override
   String toString() {

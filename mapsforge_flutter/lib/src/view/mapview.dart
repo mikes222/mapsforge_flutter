@@ -7,7 +7,6 @@ import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
-import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 

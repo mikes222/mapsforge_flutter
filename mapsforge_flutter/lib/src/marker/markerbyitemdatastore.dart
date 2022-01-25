@@ -19,6 +19,9 @@ class MarkerByItemDataStore extends IMarkerDataStore {
 
   int? _previousZoomLevel;
 
+  @protected
+  bool disposed = false;
+
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
   List<BasicMarker> getMarkers(
@@ -54,13 +57,14 @@ class MarkerByItemDataStore extends IMarkerDataStore {
     for (BasicMarker m in markersToInit) {
       await m.initResources(graphicFactory);
     }
-    setRepaint();
+    if (!disposed) setRepaint();
   }
 
   @override
   @mustCallSuper
   void dispose() {
     clearMarkers();
+    disposed = true;
     super.dispose();
   }
 

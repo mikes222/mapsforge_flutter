@@ -43,8 +43,15 @@ abstract class GraphicFactory {
 
   MapRect createRect(double left, double top, double right, double bottom);
 
-  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
-      MapPaint paintBack, Position position, int maxTextWidth);
+  PointTextContainer createPointTextContainer(
+      Mappoint xy,
+      Display display,
+      int priority,
+      String text,
+      MapPaint paintFront,
+      MapPaint paintBack,
+      Position position,
+      int maxTextWidth);
 
 //  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 

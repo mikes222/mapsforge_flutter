@@ -13,7 +13,8 @@ class DatastoreReadResult {
   /// The read ways.
   late List<Way> ways;
 
-  DatastoreReadResult({List<PointOfInterest>? pointOfInterests, List<Way>? ways}) {
+  DatastoreReadResult(
+      {List<PointOfInterest>? pointOfInterests, List<Way>? ways}) {
     if (pointOfInterests == null) {
       this.pointOfInterests = [];
     } else {

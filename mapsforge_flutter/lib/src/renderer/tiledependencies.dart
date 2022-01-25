@@ -29,7 +29,8 @@ class TileDependencies {
   /// @param from    origin tile
   /// @param to      tile the label clashesWith to
   /// @param element the MapElementContainer in question
-  void addOverlappingElement(Tile currentTile, Tile neighbour, MapElementContainer element) {
+  void addOverlappingElement(
+      Tile currentTile, Tile neighbour, MapElementContainer element) {
     if (!overlapData.containsKey(currentTile)) {
       overlapData[currentTile] = Map<Tile, Set<MapElementContainer>>();
     }
@@ -44,7 +45,8 @@ class TileDependencies {
   /// @param tileToDraw the tile which we want to draw now
   /// @param neighbour the tile the label clashesWith from. This is the originating tile where the label was not fully fit into
   /// @return a List of the elements
-  Set<MapElementContainer>? getOverlappingElements(Tile tileToDraw, Tile neighbour) {
+  Set<MapElementContainer>? getOverlappingElements(
+      Tile tileToDraw, Tile neighbour) {
     Map<Tile, Set<MapElementContainer>>? map = overlapData[neighbour];
     if (map == null) return null;
     if (map[tileToDraw] == null) return null;

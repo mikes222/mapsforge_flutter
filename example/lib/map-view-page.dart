@@ -154,7 +154,8 @@ class MapViewPageState extends State<MapViewPage> {
     _graphicFactory = const FlutterGraphicFactory();
 
     /// prepare the display model. This class holds all properties for displaying the map
-    final DisplayModel displayModel = DisplayModel();
+    final DisplayModel displayModel =
+        DisplayModel(userScaleFactor: 1, fontScaleFactor: 1);
 
     /// For the offline-maps we need a cache for all the tiny symbols in the map
     final SymbolCache symbolCache;

@@ -1,6 +1,6 @@
 name: mapsforge_flutter
-description: A port of mapsforge for pure flutter
-version: 2.0.1
+description: A port of mapsforge for pure flutter. Show maps while the device is offline.
+version: 2.0.2
 # author: devemux86, mikes222
 homepage: https://github.com/mikes222/mapsforge_flutter
 

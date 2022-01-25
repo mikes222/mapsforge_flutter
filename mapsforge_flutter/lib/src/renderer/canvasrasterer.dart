@@ -18,7 +18,8 @@ class CanvasRasterer {
   final MapCanvas canvas;
   final Matrix symbolMatrix;
 
-  CanvasRasterer(GraphicFactory graphicFactory, double width, double height, [String? src])
+  CanvasRasterer(GraphicFactory graphicFactory, double width, double height,
+      [String? src])
       : canvas = graphicFactory.createCanvas(width, height, src),
         symbolMatrix = graphicFactory.createMatrix();
 
@@ -40,7 +41,8 @@ class CanvasRasterer {
     }
   }
 
-  void drawMapElements(Set<MapElementContainer> elements, PixelProjection projection, Tile tile) {
+  void drawMapElements(Set<MapElementContainer> elements,
+      PixelProjection projection, Tile tile) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -51,7 +53,8 @@ class CanvasRasterer {
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
-      element.draw(canvas, projection.getLeftUpper(tile), this.symbolMatrix, Filter.NONE);
+      element.draw(canvas, projection.getLeftUpper(tile), this.symbolMatrix,
+          Filter.NONE);
     }
   }
 

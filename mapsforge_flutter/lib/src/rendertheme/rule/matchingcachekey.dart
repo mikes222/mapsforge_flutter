@@ -7,7 +7,8 @@ class MatchingCacheKey {
   final int _zoomLevel;
   final int _indoorLevel;
 
-  const MatchingCacheKey(this._tags, this._zoomLevel, this._indoorLevel, this._closed);
+  const MatchingCacheKey(
+      this._tags, this._zoomLevel, this._indoorLevel, this._closed);
 
   @override
   String toString() {
@@ -20,14 +21,24 @@ class MatchingCacheKey {
       other is MatchingCacheKey &&
           runtimeType == other.runtimeType &&
           _closed == other._closed &&
-          _tags.fold(15, (dynamic previousValue, element) => previousValue ^ element.hashCode) ==
-              other._tags.fold(15, (dynamic previousValue, element) => previousValue ^ element.hashCode) &&
+          _tags.fold(
+                  15,
+                  (dynamic previousValue, element) =>
+                      previousValue ^ element.hashCode) ==
+              other._tags.fold(
+                  15,
+                  (dynamic previousValue, element) =>
+                      previousValue ^ element.hashCode) &&
           _zoomLevel == other._zoomLevel &&
           _indoorLevel == other._indoorLevel;
 
   @override
   int get hashCode {
-    int tagHash = _tags.fold<int>(15, ((previousValue, element) => previousValue ^ element.hashCode));
-    return _closed.hashCode ^ tagHash ^ _zoomLevel.hashCode ^ _indoorLevel.hashCode << 5;
+    int tagHash = _tags.fold<int>(
+        15, ((previousValue, element) => previousValue ^ element.hashCode));
+    return _closed.hashCode ^
+        tagHash ^
+        _zoomLevel.hashCode ^
+        _indoorLevel.hashCode << 5;
   }
 }

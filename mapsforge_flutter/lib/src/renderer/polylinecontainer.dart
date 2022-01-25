@@ -38,7 +38,8 @@ class PolylineContainer implements ShapeContainer {
       this.center = projection.latLonToPixel(this.way.labelPosition!);
     }
     if (this.center == null) {
-      this.center = GeometryUtils.calculateCenterOfBoundingBox(getCoordinatesAbsolute(projection)[0]);
+      this.center = GeometryUtils.calculateCenterOfBoundingBox(
+          getCoordinatesAbsolute(projection)[0]);
     }
     return this.center!;
   }
@@ -49,23 +50,30 @@ class PolylineContainer implements ShapeContainer {
     if (coordinatesAbsolute == null) {
       coordinatesAbsolute = [];
       way.latLongs.forEach((outer) {
-        List<Mappoint> mp1 = outer.map((position) => projection.latLonToPixel(position)).toList();
+        List<Mappoint> mp1 = outer
+            .map((position) => projection.latLonToPixel(position))
+            .toList();
         // check if the area to draw is too small. This saves 100ms for complex structures
         MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);
-        if (minMaxMappoint.maxX - minMaxMappoint.minX > 3 || minMaxMappoint.maxY - minMaxMappoint.minY > 3) coordinatesAbsolute!.add(mp1);
+        if (minMaxMappoint.maxX - minMaxMappoint.minX > 3 ||
+            minMaxMappoint.maxY - minMaxMappoint.minY > 3)
+          coordinatesAbsolute!.add(mp1);
       });
     }
     return coordinatesAbsolute!;
   }
 
-  List<List<Mappoint>> getCoordinatesRelativeToOrigin(PixelProjection projection) {
+  List<List<Mappoint>> getCoordinatesRelativeToOrigin(
+      PixelProjection projection) {
     if (coordinatesRelativeToTile == null) {
       Mappoint tileOrigin = projection.getLeftUpper(upperLeft);
       getCoordinatesAbsolute(projection);
       coordinatesRelativeToTile = [];
 
       coordinatesAbsolute!.forEach((outer) {
-        List<Mappoint> mp1 = outer.map((inner) => inner.offset(-tileOrigin.x, -tileOrigin.y)).toList();
+        List<Mappoint> mp1 = outer
+            .map((inner) => inner.offset(-tileOrigin.x, -tileOrigin.y))
+            .toList();
         coordinatesRelativeToTile!.add(mp1);
 
         // MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);

@@ -17,7 +17,8 @@ class IndoorlevelZoomOverlay extends StatefulWidget {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with SingleTickerProviderStateMixin {
+class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay>
+    with SingleTickerProviderStateMixin {
   final double toolbarSpacing = 15;
 
   late AnimationController _fadeAnimationController;
@@ -69,7 +70,19 @@ class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with Si
                   widget.viewModel.setIndoorLevel(level);
                 },
                 indoorLevels: widget.indoorLevels ??
-                    {5: null, 4: null, 3: null, 2: "OG2", 1: "OG1", 0: "EG", -1: "UG1", -2: null, -3: null, -4: null, -5: null},
+                    {
+                      5: null,
+                      4: null,
+                      3: null,
+                      2: "OG2",
+                      1: "OG1",
+                      0: "EG",
+                      -1: "UG1",
+                      -2: null,
+                      -3: null,
+                      -4: null,
+                      -5: null
+                    },
                 width: 45,
                 fillColor: Colors.white,
                 elevation: 2.0,

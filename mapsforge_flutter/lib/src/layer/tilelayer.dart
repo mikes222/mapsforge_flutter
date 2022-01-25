@@ -21,7 +21,8 @@ abstract class TileLayer {
   /// @param zoomLevel    the zoom level at which this {@code Layer} should draw itself.
   /// @param canvas       the canvas on which this {@code Layer} should draw itself.
   /// @param topLeftPoint the top-left pixel position of the canvas relative to the top-left map position.
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition, MapCanvas canvas, JobSet jobSet);
+  void draw(ViewModel viewModel, MapViewPosition mapViewPosition,
+      MapCanvas canvas, JobSet jobSet);
 
   /**
    * Gets the geographic position of this layer element, if it exists.

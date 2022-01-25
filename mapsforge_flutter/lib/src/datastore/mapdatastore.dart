@@ -98,14 +98,17 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) async {
-    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
+  Future<DatastoreReadResult?> readLabels(
+      Tile upperLeft, Tile lowerRight) async {
+    if (upperLeft.tileX > lowerRight.tileX ||
+        upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
     DatastoreReadResult result = new DatastoreReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
+        Tile current =
+            new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
         DatastoreReadResult? r2 = await readLabelsSingle(current);
         if (r2 != null) result.addDeduplicate(r2, false);
       }
@@ -129,14 +132,17 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readMapData(Tile upperLeft, Tile lowerRight) async {
-    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
+  Future<DatastoreReadResult?> readMapData(
+      Tile upperLeft, Tile lowerRight) async {
+    if (upperLeft.tileX > lowerRight.tileX ||
+        upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
     DatastoreReadResult result = new DatastoreReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
+        Tile current =
+            new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
         DatastoreReadResult? r2 = await readMapDataSingle(current);
         if (r2 != null) result.addDeduplicate(r2, false);
       }
@@ -162,14 +168,17 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) async {
-    if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
+  Future<DatastoreReadResult?> readPoiData(
+      Tile upperLeft, Tile lowerRight) async {
+    if (upperLeft.tileX > lowerRight.tileX ||
+        upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
     DatastoreReadResult result = new DatastoreReadResult();
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
+        Tile current =
+            new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
         DatastoreReadResult? r2 = await readPoiDataSingle(current);
         if (r2 != null) result.addDeduplicate(r2, false);
       }

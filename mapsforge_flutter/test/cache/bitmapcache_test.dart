@@ -20,7 +20,7 @@ void main() {
 
     await tester.runAsync(() async {
       ResourceBitmap? resourceBitmap =
-          await (symbolCache.getSymbol("arrow.png", 0, 0, 0));
+          await (symbolCache.getSymbol("arrow.png", 0, 0, 100));
       expect(resourceBitmap, isNotNull);
       TileBitmap bitmap =
           FlutterTileBitmap((resourceBitmap as FlutterResourceBitmap).bitmap);

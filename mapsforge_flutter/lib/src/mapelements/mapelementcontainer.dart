@@ -101,7 +101,12 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
           xy == other.xy;
 
   @override
-  int get hashCode => (boundary?.hashCode ?? 15) ^ boundaryAbsolute.hashCode ^ display.hashCode ^ priority.hashCode ^ xy.hashCode;
+  int get hashCode =>
+      (boundary?.hashCode ?? 15) ^
+      boundaryAbsolute.hashCode ^
+      display.hashCode ^
+      priority.hashCode ^
+      xy.hashCode;
 
   @override
   String toString() {

@@ -9,14 +9,19 @@ import '../testassetbundle.dart';
 main() async {
   //create a mapfile from .map
   MapFile mapFile = await MapFile.from(
-      TestAssetBundle().correctFilename("campus_level.map"), null, null); //Map that contains part of the Canpus Reichehainer Straße
+      TestAssetBundle().correctFilename("campus_level.map"),
+      null,
+      null); //Map that contains part of the Canpus Reichehainer Straße
 
   ////Maps that contain single rooms in the NHG
-  MapFile N115 = await MapFile.from(TestAssetBundle().correctFilename("N115.map"), null, null);
+  MapFile N115 = await MapFile.from(
+      TestAssetBundle().correctFilename("N115.map"), null, null);
 
-  MapFile N112 = await MapFile.from(TestAssetBundle().correctFilename("N112.map"), null, null);
+  MapFile N112 = await MapFile.from(
+      TestAssetBundle().correctFilename("N112.map"), null, null);
 
-  MapFile NHG_WC = await MapFile.from(TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
+  MapFile NHG_WC = await MapFile.from(
+      TestAssetBundle().correctFilename("NHG_WC.map"), null, null);
 
   //x- and y-Coordinates from upperLeft- and lowerRight-Tile that define the map-area,
   //here we are using the coordinates of 4 Tiles around the NHG in Reichenhainer Straße 70, 09126
@@ -35,12 +40,16 @@ main() async {
 
   //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
   //Campus
-  DatastoreReadResult mapReadResult = await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult =
+      await mapFile.readMapData(upperLeft, lowerRight);
 
   //Single rooms on Campus
-  DatastoreReadResult mapReadResult_N115 = await mapFile.readMapData(upperLeft, lowerRight);
-  DatastoreReadResult mapReadResult_N112 = await mapFile.readMapData(upperLeft, lowerRight);
-  DatastoreReadResult mapReadResult_NHG_WC = await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult_N115 =
+      await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult_N112 =
+      await mapFile.readMapData(upperLeft, lowerRight);
+  DatastoreReadResult mapReadResult_NHG_WC =
+      await mapFile.readMapData(upperLeft, lowerRight);
 
   // int j = 0; //Iterator for ways
   // //print each way with its key and value in the area defined by upperLeft and lowerRight
@@ -104,7 +113,8 @@ main() async {
     //POI's
     mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {
-        if (tag.key == tagname || tag.value == tagname) objectDetector = true; //stop search, if tag was found
+        if (tag.key == tagname || tag.value == tagname)
+          objectDetector = true; //stop search, if tag was found
         //return objectDetector;
       });
     });

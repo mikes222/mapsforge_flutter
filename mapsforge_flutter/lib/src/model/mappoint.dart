@@ -19,7 +19,11 @@ class Mappoint {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is Mappoint && runtimeType == other.runtimeType && x == other.x && y == other.y;
+      identical(this, other) ||
+      other is Mappoint &&
+          runtimeType == other.runtimeType &&
+          x == other.x &&
+          y == other.y;
 
   @override
   int get hashCode => x.hashCode ^ y.hashCode;

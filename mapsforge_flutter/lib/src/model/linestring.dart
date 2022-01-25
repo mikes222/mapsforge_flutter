@@ -20,7 +20,9 @@ class LineString {
 
     for (int i = 0;
         i < this.segments.length;
-        startDistance -= this.segments.elementAt(i).length(), endDistance -= this.segments.elementAt(i).length(), i++) {
+        startDistance -= this.segments.elementAt(i).length(),
+        endDistance -= this.segments.elementAt(i).length(),
+        i++) {
       LineSegment segment = this.segments.elementAt(i);
 
       // Skip first segments that we don't need
@@ -108,7 +110,10 @@ class LineString {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is LineString && runtimeType == other.runtimeType && segments == other.segments;
+      identical(this, other) ||
+      other is LineString &&
+          runtimeType == other.runtimeType &&
+          segments == other.segments;
 
   @override
   int get hashCode => segments.hashCode;

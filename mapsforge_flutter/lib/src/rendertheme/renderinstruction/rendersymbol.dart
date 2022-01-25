@@ -14,18 +14,22 @@ import '../rendercontext.dart';
 
 ///
 /// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
-/// The [RenderSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementation.
+/// The [RenderSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementations.
 ///
 class RenderSymbol extends RenderInstruction with BitmapMixin {
   Display display = Display.IFSPACE;
   String? id;
   int priority = 0;
 
-  RenderSymbol(GraphicFactory graphicFactory, SymbolCache symbolCache, DisplayModel displayModel) : super(graphicFactory, displayModel) {
+  RenderSymbol(GraphicFactory graphicFactory, SymbolCache symbolCache,
+      DisplayModel displayModel)
+      : super(graphicFactory, displayModel) {
     this.symbolCache = symbolCache;
   }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+    this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
+
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -35,19 +39,24 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.DISPLAY == name) {
-        this.display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        this.display = Display.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.ID == name) {
         this.id = value;
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.bitmapHeight = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapHeight =
+            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.bitmapPercent = XmlUtils.parseNonNegativeInteger(name, value);
+        this.bitmapPercent = (XmlUtils.parseNonNegativeInteger(name, value) *
+                displayModel.getFontScaleFactor())
+            .round();
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.bitmapWidth = XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getScaleFactor();
+        this.bitmapWidth =
+            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
       } else {
         throw Exception("Symbol probs");
       }
@@ -60,28 +69,33 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(RenderCallback renderCallback,
+      final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return;
     }
 
     if (bitmap != null) {
-      renderCallback.renderPointOfInterestSymbol(renderContext, this.display, priority, bitmap!, poi, bitmapPaint);
+      renderCallback.renderPointOfInterestSymbol(
+          renderContext, this.display, priority, bitmap!, poi, bitmapPaint);
     }
   }
 
   @override
-  void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(RenderCallback renderCallback,
+      final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return;
     }
 
-    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0) return;
+    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
+      return;
 
     if (bitmap != null) {
-      renderCallback.renderAreaSymbol(renderContext, this.display, priority, bitmap!, way, bitmapPaint);
+      renderCallback.renderAreaSymbol(
+          renderContext, this.display, priority, bitmap!, way, bitmapPaint);
     }
   }
 
@@ -110,5 +124,10 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
     }
     await initBitmap(graphicFactory);
     return this;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

@@ -1,15 +1,13 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/textkey.dart';
@@ -26,44 +24,30 @@ import '../rendercontext.dart';
  * If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
  * center of which is at the point of the POI. The bitmap itself is never rendered.
  */
-class Caption extends RenderInstruction {
+class Caption extends RenderInstruction with TextMixin {
   static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
   Display display = Display.IFSPACE;
   double dy = 0;
-  final Map<int, double> dyScaled;
+  final Map<int, double> dyScaled = {};
   double _horizontalOffset = 0;
   double _verticalOffset = 0;
-  late MapPaint fill;
-  final Map<int, MapPaint> fills;
-  double fontSize = 10;
   late double gap;
   final int maxTextWidth;
   Position position = Position.CENTER;
   int priority = 0;
-  late MapPaint stroke;
-  final Map<int, MapPaint> strokes;
   String? symbolId;
   final SymbolFinder symbolFinder;
   TextKey? textKey;
 
   Caption(GraphicFactory graphicFactory, DisplayModel displayModel,
       this.symbolFinder)
-      : fills = new Map(),
-        strokes = new Map(),
-        dyScaled = new Map(),
-        maxTextWidth = displayModel.getMaxTextWidth(),
+      : maxTextWidth = displayModel.getMaxTextWidth(),
         super(graphicFactory, displayModel) {
-    this.fill = graphicFactory.createPaint();
-    this.fill.setColor(Color.BLACK);
-    this.fill.setStyle(Style.FILL);
+    this.gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
 
-    this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.BLACK);
-    this.stroke.setStyle(Style.STROKE);
-
-    this.gap = DEFAULT_GAP * displayModel.getScaleFactor();
+    initTextMixin(graphicFactory);
   }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
@@ -92,7 +76,7 @@ class Caption extends RenderInstruction {
             .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getScaleFactor();
+            displayModel.getFontScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
         fontStyle = MapFontStyle.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value));
@@ -107,7 +91,7 @@ class Caption extends RenderInstruction {
             .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getScaleFactor());
+            displayModel.fontScaleFactor);
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {
@@ -115,25 +99,12 @@ class Caption extends RenderInstruction {
       }
     });
 
-    this.fill.setTypeface(fontFamily, fontStyle);
-    this.stroke.setTypeface(fontFamily, fontStyle);
-
     XmlUtils.checkMandatoryAttribute(
         rootElement.name.toString(), RenderInstruction.K, this.textKey);
 
+    initMixinAfterParse(fontFamily, fontStyle);
+
     initPendings.add(this);
-  }
-
-  MapPaint getFillPaint(int zoomLevel) {
-    MapPaint? paint = fills[zoomLevel];
-    paint ??= this.fill;
-    return paint;
-  }
-
-  MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint? paint = strokes[zoomLevel];
-    paint ??= this.stroke;
-    return paint;
   }
 
   @override
@@ -200,25 +171,15 @@ class Caption extends RenderInstruction {
 
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
-    MapPaint f = graphicFactory.createPaintFrom(this.fill);
-    if (zoomLevel >= 20)
-      f.setTextSize(this.fontSize * scaleFactor * (zoomLevel - 18));
-    else
-      f.setTextSize(this.fontSize * scaleFactor);
-    this.fills[zoomLevel] = f;
-
-    MapPaint s = graphicFactory.createPaintFrom(this.stroke);
-    if (zoomLevel >= 20)
-      s.setTextSize(this.fontSize * scaleFactor * (zoomLevel - 18));
-    else
-      s.setTextSize(this.fontSize * scaleFactor);
-    this.strokes[zoomLevel] = s;
+    scaleMixinTextSize(graphicFactory, scaleFactor, zoomLevel);
 
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    mixinDispose();
+  }
 
   @override
   Future<Caption> initResources(GraphicFactory graphicFactory) async {

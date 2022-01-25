@@ -7,68 +7,63 @@ import '../graphics/filter.dart';
 /// cater for user needs or application development (maybe a small map and large map, or to prevent upscaling for
 /// downloaded tiles that do not scale well).
 class DisplayModel {
-  static final int DEFAULT_BACKGROUND_COLOR = 0xffeeeeee; // format AARRGGBB
   /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 4 tiles to fit on it and so on.
-  static final int DEFAULT_TILE_SIZE = 256;
-  static final double DEFAULT_MAX_TEXT_WIDTH_FACTOR = 0.7;
-  static final int DEFAULT_MAX_TEXT_WIDTH = (DEFAULT_TILE_SIZE * DEFAULT_MAX_TEXT_WIDTH_FACTOR).ceil();
-  final int DEFAULT_ZOOM = 10;
-  final int DEFAULT_INDOOR_LEVEL = 0;
+  static const int DEFAULT_TILE_SIZE = 256;
 
-  static double defaultUserScaleFactor = 1;
-  static double deviceScaleFactor = 1;
+  int DEFAULT_ZOOM = 10;
 
-  /**
-   * Get the default scale factor for all newly created DisplayModels.
-   *
-   * @return the default scale factor to be applied to all new DisplayModels.
-   */
-  static double getDefaultUserScaleFactor() {
-    return defaultUserScaleFactor;
-  }
+  int DEFAULT_INDOOR_LEVEL = 0;
+
+  /// device scale factor. The bigger that value the larger the size of the tiles.
+  /// That also means that the map shows more details at a certain zoomLevel. Think of it
+  /// the following way: At zoom level 0 the whole world is shown in one tile. That tile is x
+  /// times larger depenending on the deviceScaleFactor and userScaleFactor. Therefore a small
+  /// widget may not be able to show the whole tile anymore so we see more details at larger
+  /// scales.
+  final double deviceScaleFactor;
+
+  /// scale factor requested by the user. The bigger that value the larger the size of the tiles.
+  /// That also means that the map shows more details at a certain zoomLevel.
+  final double userScaleFactor;
+
+  /// sets the scale factor for fonts and symbols. The size of a font or symbol is dependent on the renderertheme,
+  /// the deviceScaleFactor, the userScaleFactor AND this property.
+  final double fontScaleFactor;
+
+  final double maxTextWidthFactor;
+
+  int backgroundColor = 0xffeeeeee;
+
+  Filter filter = Filter.NONE;
+
+  late int maxTextWidth;
+
+  late int tileSize;
+
+  /// maximum zoomlevel
+  int maxZoomLevel;
 
   /**
    * Returns the device scale factor.
    *
    * @return the device scale factor.
    */
-  static double getDeviceScaleFactor() {
+  double getDeviceScaleFactor() {
     return deviceScaleFactor;
   }
 
-  /**
-   * Set the default scale factor for all newly created DisplayModels, so can be used to apply user settings from a
-   * device.
-   *
-   * @param scaleFactor the default scale factor to be applied to all new DisplayModels.
-   */
-  static void setDefaultUserScaleFactor(double scaleFactor) {
-    defaultUserScaleFactor = scaleFactor;
-  }
-
-  /**
-   * Set the device scale factor.
-   *
-   * @param scaleFactor the device scale factor.
-   */
-  static void setDeviceScaleFactor(double scaleFactor) {
-    deviceScaleFactor = scaleFactor;
-  }
-
-  int backgroundColor = DEFAULT_BACKGROUND_COLOR;
-  Filter filter = Filter.NONE;
-  int maxTextWidth = DEFAULT_MAX_TEXT_WIDTH;
-  double maxTextWidthFactor = DEFAULT_MAX_TEXT_WIDTH_FACTOR;
-  int tileSize = DEFAULT_TILE_SIZE;
-  double userScaleFactor = defaultUserScaleFactor;
-
-  /// maximum zoomlevel
-  int maxZoomLevel;
-
   DisplayModel({
     this.maxZoomLevel = 25,
-  }) : assert(maxZoomLevel <= 30 && maxZoomLevel > 0) {
+    //this.tileSize = DEFAULT_TILE_SIZE,
+    this.deviceScaleFactor = 1.0,
+    this.userScaleFactor = 1.0,
+    this.maxTextWidthFactor = 0.7,
+    this.fontScaleFactor = 1.0,
+  }) : assert(maxZoomLevel <= 30 && maxZoomLevel > 0)
+  //assert(tileSize >= 256)
+  {
     this._setTileSize();
+    _setMaxTextWidth();
   }
 
   /**
@@ -88,7 +83,8 @@ class DisplayModel {
   }
 
   /**
-   * Returns the maximum width of text beyond which the text is broken into lines.
+   * Returns the maximum width of text beyond which the text is broken into lines. This should be
+   * used in the graphicsFactory but is currently not used at all
    *
    * @return the maximum text width
    */
@@ -97,12 +93,17 @@ class DisplayModel {
   }
 
   /**
-   * Returns the overall scale factor.
+   * Returns the overall scale factor for non-font related items.
    *
    * @return the combined device/user scale factor.
    */
   double getScaleFactor() {
     return deviceScaleFactor * this.userScaleFactor;
+  }
+
+  /// Returns the scale factor for font-related items
+  double getFontScaleFactor() {
+    return deviceScaleFactor * fontScaleFactor;
   }
 
   /**
@@ -137,27 +138,7 @@ class DisplayModel {
     this.filter = filter;
   }
 
-  /**
-   * Sets the factor to compute the maxTextWidth
-   *
-   * @param maxTextWidthFactor to compute maxTextWidth
-   */
-  void setMaxTextWidthFactor(double maxTextWidthFactor) {
-    this.maxTextWidthFactor = maxTextWidthFactor;
-    this.setMaxTextWidth();
-  }
-
-  /**
-   * Set the user scale factor.
-   *
-   * @param scaleFactor the user scale factor to use.
-   */
-  void setUserScaleFactor(double scaleFactor) {
-    userScaleFactor = scaleFactor;
-    _setTileSize();
-  }
-
-  void setMaxTextWidth() {
+  void _setMaxTextWidth() {
     this.maxTextWidth = (this.tileSize * maxTextWidthFactor).ceil();
   }
 

@@ -64,10 +64,12 @@ class RuleBuilder {
   Element? element;
   List<String>? keyList;
   String? keys;
-  final List<RenderInstruction> renderInstructions; // NOSONAR NOPMD we need specific interface
+  final List<RenderInstruction>
+      renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<RuleBuilder> ruleBuilderStack;
   final SymbolFinder symbolFinder;
-  List<Hillshading> hillShadings = []; // NOPMD specific interface for trimToSize
+  List<Hillshading> hillShadings =
+      []; // NOPMD specific interface for trimToSize
   List<String>? valueList;
   String? values;
 
@@ -123,14 +125,20 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(this.graphicFactory, this.symbolCache, this.displayModel, SymbolFinder? parentSymbolFinder,
-      List<RenderInstruction> initPendings, this.level)
+  RuleBuilder(
+      this.graphicFactory,
+      this.symbolCache,
+      this.displayModel,
+      SymbolFinder? parentSymbolFinder,
+      List<RenderInstruction> initPendings,
+      this.level)
       : ruleBuilderStack = [],
         renderInstructions = [],
         this.zoomMin = 0,
         this.zoomMax = 65536,
         maxLevel = level,
-        this.symbolFinder = SymbolFinder(parentSymbolFinder, initPendings, graphicFactory) {
+        this.symbolFinder =
+            SymbolFinder(parentSymbolFinder, initPendings, graphicFactory) {
     this.closed = Closed.ANY;
   }
 
@@ -139,7 +147,8 @@ class RuleBuilder {
    */
   Rule build() {
     if (this.valueList!.remove(STRING_NEGATION)) {
-      AttributeMatcher attributeMatcher = new NegativeMatcher(this.keyList!, this.valueList!);
+      AttributeMatcher attributeMatcher =
+          new NegativeMatcher(this.keyList!, this.valueList!);
       return new NegativeRule(this, attributeMatcher);
     }
 
@@ -158,7 +167,8 @@ class RuleBuilder {
       String value = attribute.value;
       //_log.info("checking $name=$value");
       if (E == name) {
-        this.element = Element.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
+        this.element = Element.values
+            .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (K == name) {
         this.keys = value;
       } else if (V == name) {
@@ -166,7 +176,8 @@ class RuleBuilder {
       } else if (CAT == name) {
         this.cat = value;
       } else if (CLOSED == name) {
-        this.closed = Closed.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
+        this.closed = Closed.values
+            .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (ZOOM_MIN == name) {
         this.zoomMin = XmlUtils.parseNonNegativeByte(name, value);
       } else if (ZOOM_MAX == name) {
@@ -187,9 +198,11 @@ class RuleBuilder {
 
     this.closedMatcher = getClosedMatcher(this.closed!);
 
-    this.elementMatcher = RuleOptimizer.optimizeElementMatcher(this.elementMatcher!, this.ruleBuilderStack);
+    this.elementMatcher = RuleOptimizer.optimizeElementMatcher(
+        this.elementMatcher!, this.ruleBuilderStack);
 
-    this.closedMatcher = RuleOptimizer.optimizeClosedMatcher(this.closedMatcher!, this.ruleBuilderStack);
+    this.closedMatcher = RuleOptimizer.optimizeClosedMatcher(
+        this.closedMatcher!, this.ruleBuilderStack);
 
     for (XmlNode node in rootElement.children) {
       //rootElement.children.forEach((node) async {
@@ -230,16 +243,19 @@ class RuleBuilder {
     XmlUtils.checkMandatoryAttribute(elementName, V, this.values);
 
     if (this.zoomMin > this.zoomMax) {
-      throw new Exception('\'' + ZOOM_MIN + "' > '" + ZOOM_MAX + "': $zoomMin $zoomMax");
+      throw new Exception(
+          '\'' + ZOOM_MIN + "' > '" + ZOOM_MAX + "': $zoomMin $zoomMax");
     }
   }
 
-  void _parseSubElement(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void _parseSubElement(
+      XmlElement rootElement, List<RenderInstruction> initPendings) {
     String qName = rootElement.name.toString();
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache, displayModel, symbolFinder, initPendings, ++level);
+      RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache,
+          displayModel, symbolFinder, initPendings, ++level);
       ruleBuilder.parse(rootElement, initPendings);
       ruleBuilderStack.add(ruleBuilder);
       maxLevel = max(level, ruleBuilder.maxLevel);
@@ -251,7 +267,8 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(graphicFactory, symbolCache, displayModel, qName, level);
+      Area area =
+          new Area(graphicFactory, symbolCache, displayModel, qName, level);
       area.parse(rootElement, initPendings);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
@@ -259,7 +276,8 @@ class RuleBuilder {
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Caption caption = new Caption(this.graphicFactory, this.displayModel, symbolFinder);
+      Caption caption =
+          new Caption(this.graphicFactory, this.displayModel, symbolFinder);
       caption.parse(rootElement, initPendings);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
@@ -269,7 +287,8 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderCircle circle = new RenderCircle(this.graphicFactory, this.displayModel, level);
+      RenderCircle circle =
+          new RenderCircle(this.graphicFactory, this.displayModel, level);
       circle.parse(rootElement, initPendings);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
@@ -303,7 +322,8 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line = new Line(this.graphicFactory, symbolCache, this.displayModel, qName, level, null);
+      Line line = new Line(this.graphicFactory, symbolCache, this.displayModel,
+          qName, level, null);
       line.parse(rootElement, initPendings);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
@@ -311,7 +331,8 @@ class RuleBuilder {
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      LineSymbol lineSymbol = new LineSymbol(this.graphicFactory, this.symbolCache, this.displayModel, null);
+      LineSymbol lineSymbol = new LineSymbol(
+          this.graphicFactory, this.symbolCache, this.displayModel, null);
       lineSymbol.parse(rootElement, initPendings);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
@@ -349,7 +370,8 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol = new RenderSymbol(this.graphicFactory, this.symbolCache, this.displayModel);
+      RenderSymbol symbol = new RenderSymbol(
+          this.graphicFactory, this.symbolCache, this.displayModel);
       symbol.parse(rootElement, initPendings);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);
@@ -378,8 +400,10 @@ class RuleBuilder {
         } else if ("zoom-max" == name) {
           maxZoom = XmlUtils.parseNonNegativeByte("zoom-max", value);
         } else if ("magnitude" == name) {
-          magnitude = XmlUtils.parseNonNegativeInteger("magnitude", value).toDouble();
-          if (magnitude > 255) throw new Exception("Attribute 'magnitude' must not be > 255");
+          magnitude =
+              XmlUtils.parseNonNegativeInteger("magnitude", value).toDouble();
+          if (magnitude > 255)
+            throw new Exception("Attribute 'magnitude' must not be > 255");
         } else if ("always" == name) {
           always = "true" == (value);
         } else if ("layer" == name) {
@@ -387,14 +411,16 @@ class RuleBuilder {
         }
       });
 
-      Hillshading hillshading = new Hillshading(minZoom, maxZoom, magnitude, layer, always, this.level);
+      Hillshading hillshading = new Hillshading(
+          minZoom, maxZoom, magnitude, layer, always, this.level);
       maxLevel = max(maxLevel, level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
       hillShadings.add(hillshading);
 //      }
     } else {
-      throw new Exception("unknown element: " + qName + ", " + rootElement.toString());
+      throw new Exception(
+          "unknown element: " + qName + ", " + rootElement.toString());
     }
   }
 

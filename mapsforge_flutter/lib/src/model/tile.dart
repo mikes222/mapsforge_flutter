@@ -64,9 +64,11 @@ class Tile {
         assert(zoomLevel >= 0) {
     int maxTileNumber = getMaxTileNumber(zoomLevel);
     if (tileX > maxTileNumber) {
-      throw new Exception("invalid tileX number on zoom level $zoomLevel: $tileX");
+      throw new Exception(
+          "invalid tileX number on zoom level $zoomLevel: $tileX");
     } else if (tileY > maxTileNumber) {
-      throw new Exception("invalid tileY number on zoom level $zoomLevel: $tileY (max is $maxTileNumber)");
+      throw new Exception(
+          "invalid tileY number on zoom level $zoomLevel: $tileY (max is $maxTileNumber)");
     }
   }
 
@@ -83,7 +85,11 @@ class Tile {
           indoorLevel == other.indoorLevel;
 
   @override
-  int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
+  int get hashCode =>
+      tileX.hashCode ^
+      tileY.hashCode ^
+      zoomLevel.hashCode ^
+      indoorLevel.hashCode << 5;
 
   /// Returns a set of the eight neighbours of this tile.
   ///
@@ -228,7 +234,8 @@ class Tile {
       return null;
     }
 
-    return Tile((this.tileX / 2).round(), (this.tileY / 2).round(), (this.zoomLevel - 1), this.indoorLevel);
+    return Tile((this.tileX / 2).round(), (this.tileY / 2).round(),
+        (this.zoomLevel - 1), this.indoorLevel);
   }
 
   int getShiftX(Tile otherTile) {

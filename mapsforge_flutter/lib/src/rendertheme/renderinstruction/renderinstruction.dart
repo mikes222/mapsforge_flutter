@@ -61,12 +61,14 @@ abstract class RenderInstruction {
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param poi
-  void renderNode(RenderCallback renderCallback, final RenderContext renderContext, PointOfInterest poi);
+  void renderNode(RenderCallback renderCallback,
+      final RenderContext renderContext, PointOfInterest poi);
 
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param way
-  void renderWay(RenderCallback renderCallback, final RenderContext renderContext, PolylineContainer way);
+  void renderWay(RenderCallback renderCallback,
+      final RenderContext renderContext, PolylineContainer way);
 
   Scale scaleFromValue(String value) {
     if (value == (ALL)) {

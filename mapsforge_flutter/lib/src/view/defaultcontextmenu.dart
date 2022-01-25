@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/dimension.dart';
 
 class DefaultContextMenu extends StatefulWidget {
   /// The dimensions of the map

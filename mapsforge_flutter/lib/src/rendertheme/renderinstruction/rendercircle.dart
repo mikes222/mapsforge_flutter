@@ -1,9 +1,8 @@
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -15,33 +14,25 @@ import 'renderinstruction.dart';
 /**
  * Represents a round area on the map.
  */
-class RenderCircle extends RenderInstruction {
-  late MapPaint fill;
+class RenderCircle extends RenderInstruction with PaintMixin {
   final int level;
   double? radius;
-  double? renderRadius;
   final Map<int, double> renderRadiusScaled;
   bool scaleRadius = false;
-  late MapPaint stroke;
-  final Map<int, MapPaint> strokes;
-  double strokeWidth = 1;
 
   RenderCircle(
       GraphicFactory graphicFactory, DisplayModel displayModel, this.level)
-      : strokes = new Map(),
-        renderRadiusScaled = new Map(),
+      : renderRadiusScaled = new Map(),
         super(graphicFactory, displayModel) {
-    this.fill = graphicFactory.createPaint();
+    initPaintMixin(graphicFactory);
     this.fill.setColor(Color.TRANSPARENT);
-    this.fill.setStyle(Style.FILL);
-
-    this.stroke = graphicFactory.createPaint();
     this.stroke.setColor(Color.TRANSPARENT);
-    this.stroke.setStyle(Style.STROKE);
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    mixinDispose();
+  }
 
   void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
@@ -64,8 +55,8 @@ class RenderCircle extends RenderInstruction {
             .stroke
             .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.strokeWidth = XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getScaleFactor();
+        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getScaleFactor());
       } else {
         throw Exception("circle probs");
       }
@@ -73,29 +64,12 @@ class RenderCircle extends RenderInstruction {
 
     XmlUtils.checkMandatoryAttribute(
         rootElement.name.toString(), RenderInstruction.RADIUS, this.radius);
-
-    if (!this.scaleRadius) {
-      this.renderRadius = this.radius;
-      this.stroke.setStrokeWidth(this.strokeWidth);
-    } else {
-      this.renderRadius = this.radius;
-    }
-  }
-
-  MapPaint? getFillPaint(int zoomLevel) {
-    return fill;
   }
 
   double getRenderRadius(int zoomLevel) {
     double? radius = renderRadiusScaled[zoomLevel];
-    radius ??= this.renderRadius;
+    radius ??= this.radius;
     return radius!;
-  }
-
-  MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint? paint = strokes[zoomLevel];
-    paint ??= this.stroke;
-    return paint;
   }
 
   @override
@@ -120,11 +94,7 @@ class RenderCircle extends RenderInstruction {
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (this.scaleRadius) {
       this.renderRadiusScaled[zoomLevel] = this.radius! * scaleFactor;
-      if (this.stroke != null) {
-        MapPaint paint = graphicFactory.createPaintFrom(stroke);
-        paint.setStrokeWidth(this.strokeWidth * scaleFactor);
-        strokes[zoomLevel] = paint;
-      }
+      scaleMixinStrokeWidth(graphicFactory, scaleFactor, zoomLevel);
     }
   }
 

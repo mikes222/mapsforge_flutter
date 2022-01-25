@@ -11,7 +11,8 @@ import 'labelstore.dart';
 /// A LabelStore where the data is stored per tile.
 class TileBasedLabelStore implements LabelStore {
   static final _log = new Logger('TileBasedLabelStore');
-  final SimpleStorage<Tile, List<MapElementContainer>> storage = SimpleStorage<Tile, List<MapElementContainer>>();
+  final SimpleStorage<Tile, List<MapElementContainer>> storage =
+      SimpleStorage<Tile, List<MapElementContainer>>();
   late Cache<Tile, List<MapElementContainer>> _items;
 
   late Set<Tile> lastVisibleTileSet;
@@ -62,7 +63,8 @@ class TileBasedLabelStore implements LabelStore {
 
   @override
   List<MapElementContainer> getVisibleItems(Tile upperLeft, Tile lowerRight) {
-    return getVisibleItemsInternal(LayerUtil.getTilesByTile(upperLeft, lowerRight));
+    return getVisibleItemsInternal(
+        LayerUtil.getTilesByTile(upperLeft, lowerRight));
   }
 
   List<MapElementContainer> getVisibleItemsInternal(Set<Tile> tiles) {

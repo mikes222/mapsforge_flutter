@@ -57,9 +57,17 @@ class FlutterGraphicFactory extends GraphicFactory {
   // }
 
   @override
-  PointTextContainer createPointTextContainer(Mappoint xy, Display display, int priority, String text, MapPaint paintFront,
-      MapPaint paintBack, Position position, int maxTextWidth) {
-    return FlutterPointTextContainer(xy, display, priority, text, paintFront, paintBack, position, maxTextWidth);
+  PointTextContainer createPointTextContainer(
+      Mappoint xy,
+      Display display,
+      int priority,
+      String text,
+      MapPaint paintFront,
+      MapPaint paintBack,
+      Position position,
+      int maxTextWidth) {
+    return FlutterPointTextContainer(xy, display, priority, text, paintFront,
+        paintBack, position, maxTextWidth);
   }
 
   // @override

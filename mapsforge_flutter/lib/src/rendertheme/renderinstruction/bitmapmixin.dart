@@ -23,7 +23,8 @@ class BitmapMixin {
 
   MapPaint? bitmapPaint;
 
-  Future<void> setBitmapSrc(GraphicFactory graphicFactory, String? bitmapSrc) async {
+  Future<void> setBitmapSrc(
+      GraphicFactory graphicFactory, String? bitmapSrc) async {
     if (this.bitmap != null) {
       this.bitmap!.decrementRefCount();
       bitmap = null;
@@ -58,9 +59,14 @@ class BitmapMixin {
       return;
     }
     try {
-      bitmap = await symbolCache!.getSymbol(bitmapSrc, bitmapWidth.round(), bitmapHeight.round(), bitmapPercent);
-      if (bitmap == null || bitmap!.getWidth() == 0 || bitmap!.getHeight() == 0) {
-        _log.warning("bitmap $bitmapSrc not found or no width/height, ignoring");
+      //_log.info("$bitmapWidth - $bitmapHeight --> $bitmapPercent");
+      bitmap = await symbolCache!.getSymbol(
+          bitmapSrc, bitmapWidth.round(), bitmapHeight.round(), bitmapPercent);
+      if (bitmap == null ||
+          bitmap!.getWidth() == 0 ||
+          bitmap!.getHeight() == 0) {
+        _log.warning(
+            "bitmap $bitmapSrc not found or no width/height, ignoring");
         bitmap = null;
         bitmapInvalid = true;
         return;
