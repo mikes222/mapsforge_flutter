@@ -288,8 +288,10 @@ class TapEvent {
 
   final double longitude;
 
+  /// The x coordinate in pixels where the user tapped at the map. The left/upper point is 0/0
   final double x;
 
+  /// The y coordinate in pixels where the user tapped at the map. The left/upper point is 0/0
   final double y;
 
   bool isCleared() {

@@ -11,11 +11,11 @@ mapfiles directly on the user's device without internet connection.
 
 ## Screenshots
 
-![Austria offline](doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
-![Austria Satellite](doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
-![Indoor navigation](doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
-![Contour](doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
-![City](doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
+![Austria offline](https://github.com/mikes222/mapsforge_flutter/blob/master/mapsforge_flutter/doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
+![Austria Satellite](https://github.com/mikes222/mapsforge_flutter/blob/master/mapsforge_flutter/doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
+![Indoor navigation](https://github.com/mikes222/mapsforge_flutter/blob/master/mapsforge_flutter/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
+![Contour](https://github.com/mikes222/mapsforge_flutter/blob/master/mapsforge_flutter/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
+![City](https://github.com/mikes222/mapsforge_flutter/blob/master/mapsforge_flutter/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
 ## Examples
 

@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/dimension.dart';
 
 /// A builder for contextmenus. These will be activated if a user single-taps
 /// at the map. The position of the tap will be given by [event].
