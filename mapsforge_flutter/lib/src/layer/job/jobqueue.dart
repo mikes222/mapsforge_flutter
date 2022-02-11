@@ -7,8 +7,8 @@ import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 
 import '../../graphics/tilebitmap.dart';
-import 'job.dart';
 import '../../renderer/jobrenderer.dart';
+import 'job.dart';
 
 ///
 /// The jobqueue receives jobs and starts the renderer for missing bitmaps.
@@ -59,7 +59,9 @@ class JobQueue {
     //_log.info("Starting jobSet $jobSet");
     _currentJobSet?.removeJobs();
     _currentJobSet = jobSet;
-    _executionQueue.add(() => _startNextJob(jobSet));
+    _executionQueue.add(() async {
+      await _startNextJob(jobSet);
+    });
   }
 
   Future<void> _startNextJob(JobSet jobSet) async {
@@ -80,7 +82,9 @@ class JobQueue {
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       jobSet.jobFinished(job, JobResult(tileBitmap, JOBRESULT.NORMAL));
-      unawaited(_executionQueue.add(() => _startNextJob(jobSet)));
+      unawaited(_executionQueue.add(() async {
+        await _startNextJob(jobSet);
+      }));
       return;
     }
     JobResult jobResult = await renderDirect(IsolateParam(job, jobRenderer));
@@ -93,7 +97,9 @@ class JobQueue {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     jobSet.jobFinished(job, jobResult);
-    unawaited(_executionQueue.add(() => _startNextJob(jobSet)));
+    unawaited(_executionQueue.add(() async {
+      await _startNextJob(jobSet);
+    }));
   }
 }
 

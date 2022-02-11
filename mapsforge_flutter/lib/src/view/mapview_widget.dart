@@ -17,6 +17,8 @@ import 'tilelayerpainter.dart';
 typedef Future<MapModel> CreateMapModel(GraphicFactory graphicFactory);
 typedef Future<ViewModel> CreateViewModel();
 
+/// A Widget which provides the map. The widget asks for MapModel and ViewModel when
+/// needed and also destroys the models when not needed anymore.
 class MapviewWidget extends StatefulWidget {
   final DisplayModel displayModel;
 
