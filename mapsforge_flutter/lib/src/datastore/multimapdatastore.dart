@@ -4,8 +4,6 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import '../model/boundingbox.dart';
-import '../model/latlong.dart';
 import '../model/tile.dart';
 
 import 'mapdatastore.dart';
