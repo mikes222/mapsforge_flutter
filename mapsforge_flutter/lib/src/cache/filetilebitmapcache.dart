@@ -51,7 +51,11 @@ class FileTileBitmapCache extends TileBitmapCache {
     for (String cache in caches) {
       List<String> files = (await FileHelper.getFiles(cache));
       for (String file in files) {
-        await FileHelper.delete(file);
+        try {
+          await FileHelper.delete(file);
+        } catch (error, stacktrace) {
+          // ignore this error
+        }
       }
       if (files.length > 0)
         _log.info("Deleted ${files.length} files from cache $cache");

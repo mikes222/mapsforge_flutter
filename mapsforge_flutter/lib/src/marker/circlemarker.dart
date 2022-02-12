@@ -104,6 +104,6 @@ class CircleMarker<T> extends BasicMarker<T> {
         tappedY + mapViewPosition.leftUpper!.y);
     Mappoint p2 = mapViewPosition.projection!.latLonToPixel(center);
 
-    return p2.distance(p1) >= radius;
+    return p2.distance(p1) <= radius;
   }
 }

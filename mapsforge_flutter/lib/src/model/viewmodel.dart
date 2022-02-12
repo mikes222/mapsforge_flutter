@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/dimension.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
