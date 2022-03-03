@@ -155,9 +155,7 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void setClip(double left, double top, double width, double height) {
-    uiCanvas.clipRect(
-        ui.Rect.fromLTWH(left, top, width,
-            height),
+    uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height),
         doAntiAlias: true);
   }
 
@@ -262,72 +260,33 @@ class FlutterCanvas extends MapCanvas {
 
     ui.Paragraph paragraph = builder.build();
 
-    LineSegment firstSegment = lineString.segments.elementAt(0);
-    // So text isn't upside down
-    bool doInvert = firstSegment.end.x <= firstSegment.start.x;
-
     double textlen = calculateTextWidth(text, fontSize, paint);
 
-    //uiCanvas.transform(new Matrix4.identity().rotatestorage);
-
-    if (!doInvert) {
-      double len = 0;
-//      Mappoint start = firstSegment.start.offset(-origin.x, -origin.y);
-//      //uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(start.x - textlen / 2, start.y));
-//      _drawTextRotated(paragraph, textlen, fontSize, firstSegment, start);
-//      len -= sqrt((firstSegment.end.x - firstSegment.start.x) * (firstSegment.end.x - firstSegment.start.x) +
-//          (firstSegment.end.y - firstSegment.start.y) * (firstSegment.end.y - firstSegment.start.y));
-      for (int i = 0; i < lineString.segments.length; i++) {
-        LineSegment segment = lineString.segments.elementAt(i);
-        double segmentLength = sqrt((segment.end.x - segment.start.x) *
-                (segment.end.x - segment.start.x) +
-            (segment.end.y - segment.start.y) *
-                (segment.end.y - segment.start.y));
-        if (segmentLength < textlen * 2 / 3) {
-          // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
-          // direction significantly
-          len -= segmentLength;
-          continue;
-        }
-        if (len > 0) {
-          len -= segmentLength;
-          continue;
-        }
-        len = textlen + fontSize * 2;
-        Mappoint start = segment.start.offset(-origin.x, -origin.y);
-        _drawTextRotated(
-            paragraph, textlen, fontSize, segment, start, doInvert);
+    double len = 0;
+    lineString.segments.forEach((segment) {
+      double segmentLength = sqrt((segment.end.x - segment.start.x) *
+              (segment.end.x - segment.start.x) +
+          (segment.end.y - segment.start.y) *
+              (segment.end.y - segment.start.y));
+      if (segmentLength < textlen) {
+        // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
+        // direction significantly
         len -= segmentLength;
+        return;
       }
-    } else {
-      double len = 0;
-//      Mappoint end = lineString.segments.elementAt(lineString.segments.length - 1).end.offset(-origin.x, -origin.y);
-//      //uiCanvas.drawParagraph(paragraph..layout(ui.ParagraphConstraints(width: textlen)), Offset(end.x - textlen / 2, end.y));
-//      _drawTextRotated(paragraph, textlen, fontSize, firstSegment, end);
-//      len -= sqrt((firstSegment.end.x - firstSegment.start.x) * (firstSegment.end.x - firstSegment.start.x) +
-//          (firstSegment.end.y - firstSegment.start.y) * (firstSegment.end.y - firstSegment.start.y));
-      for (int i = lineString.segments.length - 1; i >= 0; i--) {
-        LineSegment segment = lineString.segments.elementAt(i);
-        double segmentLength = sqrt((segment.end.x - segment.start.x) *
-                (segment.end.x - segment.start.x) +
-            (segment.end.y - segment.start.y) *
-                (segment.end.y - segment.start.y));
-        if (segmentLength < textlen * 2 / 3) {
-          // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
-          // direction significantly
-          len -= segmentLength;
-          continue;
-        }
-        if (len > 0) {
-          len -= segmentLength;
-          continue;
-        }
-        len = textlen + fontSize * 2;
-        Mappoint end = segment.end.offset(-origin.x, -origin.y);
-        _drawTextRotated(paragraph, textlen, fontSize, segment, end, doInvert);
-        len -= segmentLength;
-      }
-    }
+      // if (len > 0) {
+      //   len -= segmentLength;
+      //   return;
+      // }
+      len = textlen + fontSize * 2;
+      // So text isn't upside down
+      bool doInvert = segment.end.x <= segment.start.x;
+      Mappoint start = doInvert
+          ? segment.end.offset(-origin.x, -origin.y)
+          : segment.start.offset(-origin.x, -origin.y);
+      _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
+      len -= segmentLength;
+    });
   }
 
   static double calculateTextWidth(
@@ -371,8 +330,6 @@ class FlutterCanvas extends MapCanvas {
         ? atan((segment.end.y - segment.start.y) /
             (segment.end.x - segment.start.x))
         : pi;
-    Paint paint = ui.Paint();
-    paint.color = (Colors.cyanAccent);
 
     // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
     double angle = theta; // 30 * pi / 180
@@ -387,8 +344,6 @@ class FlutterCanvas extends MapCanvas {
     uiCanvas.translate(/*translateX +*/ end.x, /*translateY +*/ end.y);
     uiCanvas.rotate(angle);
     uiCanvas.translate(0, -fontSize / 2);
-    //uiCanvas.drawRect(ui.Rect.fromLTWH(0, 0, textlen, fontSize), paint);
-    //uiCanvas.drawCircle(Offset.zero, 10, paint);
     uiCanvas.drawParagraph(
         paragraph..layout(ui.ParagraphConstraints(width: textlen)),
         const Offset(0, 0));

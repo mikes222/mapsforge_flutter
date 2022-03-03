@@ -8,6 +8,7 @@ import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttermatrix.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
@@ -52,6 +53,12 @@ class MarkerContext implements MarkerCallback {
 //        "rendering caption $caption at latLong ${latLong.toString()}, ${mappoint.toString()} and leftUpper ${mapViewPosition.leftUpper.toString()}");
     flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(),
         (mappoint.y + offsetY).toInt(), stroke);
+  }
+
+  @override
+  void renderPathText(
+      String caption, LineString lineString, Mappoint origin, MapPaint stroke) {
+    flutterCanvas.drawPathText(caption, lineString, origin, stroke);
   }
 
   @override

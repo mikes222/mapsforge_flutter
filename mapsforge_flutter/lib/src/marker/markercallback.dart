@@ -4,6 +4,8 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/model/linestring.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 abstract class MarkerCallback {
@@ -14,6 +16,9 @@ abstract class MarkerCallback {
       double offsetY, MapPaint stroke);
 
   void renderPath(MapPath path, MapPaint paint);
+
+  void renderPathText(
+      String caption, LineString lineString, Mappoint origin, MapPaint stroke);
 
   void renderRect(MapRect rect, MapPaint paint);
 
