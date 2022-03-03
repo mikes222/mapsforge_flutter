@@ -23,6 +23,7 @@ class BitmapMixin {
 
   MapPaint? bitmapPaint;
 
+  /// Sets a new bitmap and destroys the old one if available
   Future<void> setBitmapSrc(
       GraphicFactory graphicFactory, String? bitmapSrc) async {
     if (this.bitmap != null) {

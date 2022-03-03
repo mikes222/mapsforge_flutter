@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/special.dart';
 // ignore: implementation_imports
 import 'package:mapsforge_flutter/src/graphics/display.dart';
@@ -47,7 +47,6 @@ class CircleMarker<T> extends BasicMarker<T> {
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          rotation: 0,
           item: item,
           markerCaption: markerCaption,
         );
@@ -86,7 +85,7 @@ class CircleMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
     if (fill != null) {
       markerCallback.renderCircle(
           center.latitude, center.longitude, radius, fill!);

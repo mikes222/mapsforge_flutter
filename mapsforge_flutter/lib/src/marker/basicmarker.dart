@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 
 import 'markercallback.dart';
 
@@ -15,31 +14,20 @@ class BasicPointMarker<T> extends BasicMarker<T> {
   ///
   ILatLong latLong;
 
-//  double imageOffsetX = 0;
-
-//  double imageOffsetY = 0;
-
-//  MapPaint imagePaint;
-
-//  int imageColor;
-
   BasicPointMarker({
     display = Display.ALWAYS,
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     required this.latLong,
-    double rotation = 0,
     T? item,
     MarkerCaption? markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
-        assert(rotation >= 0 && rotation <= 360),
         super(
             display: display,
             minZoomLevel: minZoomLevel,
             maxZoomLevel: maxZoomLevel,
-            rotation: rotation,
             item: item,
             markerCaption: markerCaption);
 
@@ -60,8 +48,6 @@ class BasicMarker<T> {
 
   int maxZoomLevel;
 
-  double rotation;
-
   /// the item this marker represents.
   ///
   /// This property is NOT used by mapsforge.
@@ -74,13 +60,11 @@ class BasicMarker<T> {
     this.display = Display.ALWAYS,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
-    this.rotation = 0,
     this.item,
     this.markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(minZoomLevel <= maxZoomLevel),
-        assert((rotation >= 0 && rotation <= 360));
+        assert(minZoomLevel <= maxZoomLevel);
 
   @mustCallSuper
   Future<void> initResources(GraphicFactory graphicFactory) async {
@@ -94,9 +78,10 @@ class BasicMarker<T> {
   ///
   /// Renders this object. Called by markerPointer -> markerRenderer
   ///
-  void render(MarkerCallback markerCallback) {
-    renderBitmap(markerCallback);
-    if (markerCaption != null) markerCaption!.renderCaption(markerCallback);
+  void render(MarkerCallback markerCallback, int zoomLevel) {
+    renderBitmap(markerCallback, zoomLevel);
+    if (markerCaption != null)
+      markerCaption!.renderCaption(markerCallback, zoomLevel);
   }
 
   /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
@@ -108,7 +93,7 @@ class BasicMarker<T> {
   }
 
   /// renders the bitmap portion of this marker. This method is called by [render()] which also call the render method for the caption
-  void renderBitmap(MarkerCallback markerCallback) {}
+  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {}
 
   String? get title {
     if (markerCaption?.text != null && markerCaption!.text.length > 0)
@@ -126,7 +111,7 @@ class BasicMarker<T> {
 /////////////////////////////////////////////////////////////////////////////
 
 /// The caption of a marker
-class MarkerCaption {
+class MarkerCaption with TextMixin {
   /// The text to show.
   ///
   final String text;
@@ -140,48 +125,56 @@ class MarkerCaption {
 
   double captionOffsetY;
 
-  MapPaint? stroke;
-
   final double strokeWidth;
 
   final int strokeColor;
 
+  final int fillColor;
+
   final double fontSize;
 
-  final int minZoom;
+  final int minZoomLevel;
+
+  int maxZoomLevel;
 
   MarkerCaption({
     required this.text,
     this.latLong,
     this.captionOffsetX = 0,
     this.captionOffsetY = 0,
-    this.stroke,
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
+    this.fillColor = 0xffffffff,
     this.fontSize = 10.0,
-    this.minZoom = 0,
+    this.minZoomLevel = 0,
+    this.maxZoomLevel = 65535,
   })  : assert(strokeWidth >= 0),
-        assert(minZoom >= 0),
+        assert(minZoomLevel >= 0),
+        assert(minZoomLevel <= maxZoomLevel),
         assert(text.length > 0);
 
   Future<void> initResources(GraphicFactory graphicFactory) {
-    if (stroke == null && strokeWidth > 0) {
-      this.stroke = graphicFactory.createPaint();
-      this.stroke!.setColorFromNumber(strokeColor);
-      this.stroke!.setStyle(Style.STROKE);
-      this.stroke!.setStrokeWidth(strokeWidth);
-      this.stroke!.setTextSize(fontSize);
-    }
+    initTextMixin(graphicFactory);
+    stroke.setStrokeWidth(strokeWidth);
+    stroke.setColorFromNumber(strokeColor);
+    stroke.setTextSize(fontSize);
+    fill.setTextSize(fontSize);
+    fill.setColorFromNumber(fillColor);
     return Future.value(null);
   }
 
-  void dispose() {}
+  void dispose() {
+    mixinDispose();
+  }
 
-  void renderCaption(MarkerCallback markerCallback) {
-    if (markerCallback.mapViewPosition.zoomLevel < minZoom) return;
-    if (stroke != null && latLong != null) {
-      markerCallback.renderText(
-          text, latLong!, captionOffsetX, captionOffsetY, stroke!);
+  void renderCaption(MarkerCallback markerCallback, int zoomLevel) {
+    if (zoomLevel < minZoomLevel) return;
+    if (zoomLevel > maxZoomLevel) return;
+    if (latLong != null) {
+      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+          getFillPaint(zoomLevel));
+      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+          getStrokePaint(zoomLevel));
     }
   }
 }

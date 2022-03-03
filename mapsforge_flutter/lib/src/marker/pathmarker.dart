@@ -24,20 +24,17 @@ class PathMarker<T> extends BasicMarker<T> {
     display = Display.ALWAYS,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    double rotation = 0,
     item,
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(rotation >= 0 && rotation <= 360),
         assert(strokeWidth >= 0),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          rotation: rotation,
           item: item,
         );
 
@@ -64,7 +61,7 @@ class PathMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
     if (stroke == null) return;
     //if (mapPath == null) {
     mapPath = markerCallback.graphicFactory.createPath();

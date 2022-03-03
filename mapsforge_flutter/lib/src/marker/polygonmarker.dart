@@ -1,21 +1,17 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
-import 'package:mapsforge_flutter/src/model/ilatlong.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
-class PolygonMarker<T> extends BasicMarker<T> {
+class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   static final _log = new Logger('PolygonMarker');
 
   List<ILatLong> path = [];
@@ -30,54 +26,46 @@ class PolygonMarker<T> extends BasicMarker<T> {
 
   final double strokeWidth;
 
+  final List<double>? strokeDasharray;
+
   final int strokeColor;
 
-  Bitmap? _bitmap;
-
-  bool _bitmapInvalid = false;
-
-  String? src;
-
-  SymbolCache? symbolCache;
-
-  final int width;
-
-  final int height;
-
-  final int? percent;
-
   PolygonMarker({
-    this.symbolCache,
+    SymbolCache? symbolCache,
     display = Display.ALWAYS,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
-    double rotation = 0,
     item,
     markerCaption,
-    this.width = 20,
-    this.height = 20,
-    this.percent,
+    double bitmapWidth = 20,
+    double bitmapHeight = 20,
+    int bitmapPercent = 100,
+    String? bitmapSrc,
     this.fillWidth = 1.0,
     this.fillColor,
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
-    this.src,
+    this.strokeDasharray,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(rotation >= 0 && rotation <= 360),
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
-        assert(strokeColor != null),
-        assert(src == null || (symbolCache != null)),
+        assert(bitmapSrc == null || (symbolCache != null)),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          rotation: rotation,
           item: item,
           markerCaption: markerCaption,
-        );
+        ) {
+    this.symbolCache = symbolCache;
+    this.bitmapWidth = bitmapWidth;
+    this.bitmapHeight = bitmapHeight;
+    this.bitmapPercent = bitmapPercent;
+    this.bitmapSrc = bitmapSrc;
+    //if (bitmapSrc != null) fillColor = 0xff000000;
+  }
 
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
@@ -86,58 +74,33 @@ class PolygonMarker<T> extends BasicMarker<T> {
   @override
   Future<void> initResources(GraphicFactory graphicFactory) async {
     await super.initResources(graphicFactory);
+    await initBitmap(graphicFactory);
     if (fill == null && fillColor != null) {
       this.fill = graphicFactory.createPaint();
       this.fill!.setColorFromNumber(fillColor!);
       this.fill!.setStyle(Style.FILL);
       this.fill!.setStrokeWidth(fillWidth);
-      //this.stroke.setTextSize(fontSize);
+      if (bitmap != null) {
+        // make sure the color is not transparent
+        if (fill!.isTransparent()) fill!.setColorFromNumber(0xff000000);
+        fill!.setBitmapShader(bitmap!);
+      }
     }
     if (stroke == null && strokeWidth > 0) {
       this.stroke = graphicFactory.createPaint();
       this.stroke!.setColorFromNumber(strokeColor);
       this.stroke!.setStyle(Style.STROKE);
       this.stroke!.setStrokeWidth(strokeWidth);
-      //this.stroke.setTextSize(fontSize);
-    }
-    if (_bitmapInvalid == null &&
-        src != null &&
-        !src!.isEmpty &&
-        fill != null) {
-      try {
-        this._bitmap =
-            await symbolCache!.getSymbol(src, width, height, percent);
-        if (_bitmap != null) {
-          _bitmapInvalid = false;
-          // make sure the color is not transparent
-          if (fill!.isTransparent()) fill!.setColorFromNumber(0xff000000);
-          fill!.setBitmapShader(_bitmap!);
-          _bitmap!.incrementRefCount();
-        }
-      } catch (ioException, stacktrace) {
-        _log.warning(ioException.toString());
-        //print(stacktrace);
-        _bitmapInvalid = true;
+      this.stroke!.setStrokeDasharray(strokeDasharray);
+      if (bitmap != null) {
+        // make sure the color is not transparent
+        if (stroke!.isTransparent()) stroke!.setColorFromNumber(0xff000000);
+        stroke!.setBitmapShader(bitmap!);
       }
     }
     if (markerCaption != null && markerCaption!.latLong == null) {
       markerCaption!.latLong = GeometryUtils.calculateCenter(path);
-//      List<Mappoint> points = path
-//          .map((latLong) => markerCallback.mapViewPosition.mercatorProjection
-//                  .getPixelRelativeToLeftUpper(latLong, markerCallback.mapViewPosition.leftUpper)
-////          Mappoint(markerCallback.mapViewPosition.mercatorProjection.longitudeToPixelX(latLong.longitude),
-////              markerCallback.mapViewPosition.mercatorProjection.latitudeToPixelY(latLong.latitude))
-//              )
-//          .toList();
-//      Mappoint center = GeometryUtils.calculateCenterOfBoundingBox(points);
     }
-  }
-
-  @override
-  void dispose() {
-    _bitmap?.decrementRefCount();
-    _bitmap = null;
-    super.dispose();
   }
 
   @override
@@ -146,7 +109,7 @@ class PolygonMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
     MapPath mapPath = markerCallback.graphicFactory.createPath();
 
     path.forEach((latLong) {

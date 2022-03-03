@@ -49,8 +49,8 @@ class TileLayerImpl extends TileLayer {
     // to hook this into the onConfigurationChanged call chain.
     //canvas.resetClip();
 
-    canvas.setClip(0, 0, viewModel.viewDimension!.width.round(),
-        viewModel.viewDimension!.height.round());
+    canvas.setClip(
+        0, 0, viewModel.viewDimension!.width, viewModel.viewDimension!.height);
     mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
     Mappoint? leftUpper = mapViewPosition.leftUpper;
 

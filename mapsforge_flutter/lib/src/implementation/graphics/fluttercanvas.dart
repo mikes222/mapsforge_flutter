@@ -154,10 +154,10 @@ class FlutterCanvas extends MapCanvas {
   // }
 
   @override
-  void setClip(int left, int top, int width, int height) {
+  void setClip(double left, double top, double width, double height) {
     uiCanvas.clipRect(
-        ui.Rect.fromLTWH(left.toDouble(), top.toDouble(), width.toDouble(),
-            height.toDouble()),
+        ui.Rect.fromLTWH(left, top, width,
+            height),
         doAntiAlias: true);
   }
 

@@ -65,7 +65,7 @@ abstract class MapCanvas {
   //
   // void setAntiAlias(bool aa);
   //
-  void setClip(int left, int top, int width, int height);
+  void setClip(double left, double top, double width, double height);
 
   // void setClipDifference(int left, int top, int width, int height);
   //

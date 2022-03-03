@@ -30,7 +30,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     display = Display.ALWAYS,
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
-    double rotation = 0,
     T? item,
     String? bitmapSrc,
     SymbolCache? symbolCache,
@@ -45,7 +44,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(rotation >= 0 && rotation <= 360),
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
         assert(strokeDasharray == null || strokeDasharray.length == 2),
@@ -53,7 +51,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          rotation: rotation,
           item: item,
           markerCaption: markerCaption,
         ) {
@@ -107,7 +104,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
     MapRect mapRect = markerCallback.graphicFactory.createRect(
         markerCallback.mapViewPosition.projection!
                 .longitudeToPixelX(minLatLon.longitude) -

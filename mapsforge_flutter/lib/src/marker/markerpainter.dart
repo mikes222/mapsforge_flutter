@@ -42,12 +42,12 @@ class MarkerPainter extends CustomPainter {
 
     if (markers.length > 0) {
       FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
-      flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width.round(),
-          viewModel.viewDimension!.height.round());
+      flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width,
+          viewModel.viewDimension!.height);
       MarkerContext context =
           MarkerContext(flutterCanvas, graphicFactory, position);
       markers.forEach((element) {
-        element.render(context);
+        element.render(context, position.zoomLevel);
       });
     }
   }

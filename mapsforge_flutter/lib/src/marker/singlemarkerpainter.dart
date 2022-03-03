@@ -30,11 +30,11 @@ class SingleMarkerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
-    flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width.round(),
-        viewModel.viewDimension!.height.round());
+    flutterCanvas.setClip(
+        0, 0, viewModel.viewDimension!.width, viewModel.viewDimension!.height);
     MarkerContext context =
         MarkerContext(flutterCanvas, graphicFactory, position);
-    marker.render(context);
+    marker.render(context, position.zoomLevel);
   }
 
   @override

@@ -11,6 +11,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
 
   double imageOffsetY = 0;
 
+  double rotation;
+
   PoiMarker({
     display = Display.ALWAYS,
     String? src,
@@ -21,7 +23,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
     minZoomLevel = 0,
     maxZoomLevel = 65535,
     imageColor = 0xff000000,
-    double rotation = 0,
+    this.rotation = 0,
     item,
     markerCaption,
   })  : assert(markerCaption != null || src != null),
@@ -35,7 +37,6 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
-          rotation: rotation,
           item: item,
           latLong: latLong,
         ) {
@@ -65,7 +66,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
     if (bitmap != null && bitmapPaint != null) {
       markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
           imageOffsetX, imageOffsetY, rotation, bitmapPaint!);
@@ -84,5 +85,10 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
         tappedX <= x + bitmap!.getWidth() &&
         tappedY >= y &&
         tappedY <= y + bitmap!.getHeight();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
