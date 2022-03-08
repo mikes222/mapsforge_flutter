@@ -5,11 +5,11 @@ import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 
 class TextMixin {
-  late MapPaint stroke;
+  MapPaint? stroke;
 
   final Map<int, MapPaint> strokes = {};
 
-  late MapPaint fill;
+  MapPaint? fill;
 
   final Map<int, MapPaint> fills = {};
 
@@ -17,31 +17,33 @@ class TextMixin {
 
   void initTextMixin(GraphicFactory graphicFactory) {
     this.stroke = graphicFactory.createPaint();
-    this.stroke.setColor(Color.BLACK);
-    this.stroke.setStyle(Style.STROKE);
-    this.stroke.setStrokeWidth(1);
-    this.stroke.setTextSize(10);
+    this.stroke!.setColor(Color.BLACK);
+    this.stroke!.setStyle(Style.STROKE);
+    this.stroke!.setStrokeWidth(1);
+    this.stroke!.setTextSize(10);
 
     this.fill = graphicFactory.createPaint();
-    this.fill.setColor(Color.BLACK);
-    this.fill.setStyle(Style.FILL);
+    this.fill!.setColor(Color.BLACK);
+    this.fill!.setStyle(Style.FILL);
   }
 
   void initMixinAfterParse(MapFontFamily fontFamily, MapFontStyle fontStyle) {
-    this.fill.setTypeface(fontFamily, fontStyle);
-    this.stroke.setTypeface(fontFamily, fontStyle);
+    this.fill?.setTypeface(fontFamily, fontStyle);
+    this.stroke?.setTypeface(fontFamily, fontStyle);
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
     MapPaint? paint = strokes[zoomLevel];
     paint ??= this.stroke;
-    return paint;
+    // if this property is null you forgot to call initTextMixin() first
+    return paint!;
   }
 
   MapPaint getFillPaint(int zoomLevel) {
     MapPaint? paint = fills[zoomLevel];
     paint ??= this.fill;
-    return paint;
+    // if this property is null you forgot to call initTextMixin() first
+    return paint!;
   }
 
   void scaleMixinStrokeWidth(
@@ -65,22 +67,22 @@ class TextMixin {
     final int zoom = 19;
     if (this.strokes[zoomLevel] != null) return;
     if (zoomLevel >= zoom) {
-      MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
+      MapPaint paint = graphicFactory.createPaintFrom(this.stroke!);
       paint.setStrokeWidth(paint.getStrokeWidth() * (zoomLevel - zoom + 2));
       paint.setTextSize(this._fontSize * (zoomLevel - zoom + 2));
       this.strokes[zoomLevel] = paint;
     } else {
-      MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
+      MapPaint paint = graphicFactory.createPaintFrom(this.stroke!);
       paint.setTextSize(this._fontSize);
       this.strokes[zoomLevel] = paint;
     }
 
     if (zoomLevel >= zoom) {
-      MapPaint f = graphicFactory.createPaintFrom(this.fill);
+      MapPaint f = graphicFactory.createPaintFrom(this.fill!);
       f.setTextSize(this._fontSize * (zoomLevel - zoom + 2));
       this.fills[zoomLevel] = f;
     } else {
-      MapPaint f = graphicFactory.createPaintFrom(this.fill);
+      MapPaint f = graphicFactory.createPaintFrom(this.fill!);
       f.setTextSize(this._fontSize);
       this.fills[zoomLevel] = f;
     }
@@ -88,18 +90,18 @@ class TextMixin {
 
   void set fontSize(double value) {
     _fontSize = value;
-    stroke.setTextSize(value);
-    fill.setTextSize(value);
+    stroke!.setTextSize(value);
+    fill!.setTextSize(value);
   }
 
   void mixinDispose() {
     strokes.values.forEach((element) {
       element.dispose();
     });
-    stroke.dispose();
+    stroke?.dispose();
     fills.values.forEach((element) {
       element.dispose();
     });
-    fill.dispose();
+    fill?.dispose();
   }
 }

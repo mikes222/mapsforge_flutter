@@ -69,7 +69,7 @@ class Caption extends RenderInstruction with TextMixin {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
         this
-            .fill
+            .fill!
             .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values
@@ -87,11 +87,12 @@ class Caption extends RenderInstruction with TextMixin {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
         this
-            .stroke
+            .stroke!
             .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.fontScaleFactor);
+        this.stroke!.setStrokeWidth(
+            XmlUtils.parseNonNegativeFloat(name, value) *
+                displayModel.fontScaleFactor);
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {

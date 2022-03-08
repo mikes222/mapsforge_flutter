@@ -155,11 +155,11 @@ class MarkerCaption with TextMixin {
 
   Future<void> initResources(GraphicFactory graphicFactory) {
     initTextMixin(graphicFactory);
-    stroke.setStrokeWidth(strokeWidth);
-    stroke.setColorFromNumber(strokeColor);
-    stroke.setTextSize(fontSize);
-    fill.setTextSize(fontSize);
-    fill.setColorFromNumber(fillColor);
+    stroke!.setStrokeWidth(strokeWidth);
+    stroke!.setColorFromNumber(strokeColor);
+    stroke!.setTextSize(fontSize);
+    fill!.setTextSize(fontSize);
+    fill!.setColorFromNumber(fillColor);
     return Future.value(null);
   }
 

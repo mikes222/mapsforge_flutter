@@ -64,9 +64,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
     await super.initResources(graphicFactory);
     initTextMixin(graphicFactory);
     fontSize = this.fontSize;
-    stroke.setColorFromNumber(this.strokeColor);
-    if (fillColor != null) fill.setColorFromNumber(this.fillColor!);
-    stroke.setStrokeWidth(this.strokeWidth);
+    stroke!.setColorFromNumber(this.strokeColor);
+    if (fillColor != null) fill!.setColorFromNumber(this.fillColor!);
+    stroke!.setStrokeWidth(this.strokeWidth);
   }
 
   @override
@@ -99,8 +99,8 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
     Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
         markerCallback.mapViewPosition.leftUpper!.y);
-    markerCallback.renderPathText(caption, lineString, origin, stroke);
-    markerCallback.renderPathText(caption, lineString, origin, fill);
+    markerCallback.renderPathText(caption, lineString, origin, stroke!);
+    markerCallback.renderPathText(caption, lineString, origin, fill!);
   }
 
   @override
