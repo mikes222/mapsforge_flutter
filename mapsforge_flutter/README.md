@@ -40,6 +40,7 @@ Also to the university of chemnitz which implements indoor map support
 
 Speed:
  - support for more than one concurrent job in the jobqueue
+ - check why the IndexCache is read 512 times with only 13 entries containing
 
 Others:
  - Testing for IOS
@@ -51,7 +52,7 @@ Others:
 include the library in your pubspec.yaml:
 
 ```yaml
-  mapsforge_flutter: ^2.0.1
+  mapsforge_flutter: ^2.0.2
     # path: ../mapsforge_flutter
     # git:
     #  url: https://github.com/mikes222/mapsforge_flutter
@@ -78,9 +79,16 @@ information about an area in condensed form. Please visit the original project f
 
 
 ```dart
-MapFile mapFile = MapFile(_localPath + "/" + mapfile, null, null);
-await mapFile.init();
+MapFile mapFile = MapFile.from(filename, null, null);
 ```
+
+or
+
+```dart
+MapFile mapFile = MapFile.using(content, null, null);
+```
+
+Note: Destroy the mapfile by calling dispose() if not needed anymore
 
 Create the cache for assets 
 
@@ -88,14 +96,7 @@ Create the cache for assets
 
 
 ```dart
-SymbolCache symbolCache = SymbolCache(rootBundle);
-```
-
-Create the graphicFactory wich implements the drawing capabilities for flutter. The original implementation have different graphicFactories for android as well for java AWT. This project does have just one (for now) but we want to keep the structure of the original implementation. 
-
-
-```dart
-GraphicFactory graphicFactory = FlutterGraphicFactory();
+SymbolCache symbolCache = MemorySymbolCache(bundle: rootBundle);
 ```
 
 Create the displayModel which defines and holds the view/display settings like maximum zoomLevel.
@@ -111,9 +112,9 @@ Create the render theme which specifies how to render the informations from the 
 
 
 ```dart
-RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, displayModel);
+RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 String content = await rootBundle.loadString("assets/defaultrender.xml");
-await renderThemeBuilder.parseXml(content);
+await renderThemeBuilder.parseXml(displayModel, content);
 RenderTheme renderTheme = renderThemeBuilder.build();
 ```
 
@@ -124,7 +125,7 @@ mapfile together with the design guides from the rendertheme into bitmap tiles. 
 
 
 ```dart
-MapDataStoreRenderer jobRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true);
+JobRenderer jobRenderer = MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 ```
 
 Alternatively use the onlineRenderer instead to provide the tiles from openstreetmap &reg;
@@ -133,14 +134,14 @@ Alternatively use the onlineRenderer instead to provide the tiles from openstree
 
 
 ```dart
-jobRenderer = MapOnlineRenderer();
+JobRenderer jobRenderer = MapOnlineRenderer();
 ```
 
 Optionally you can create a cache for the bitmap tiles. The tiles will survive a restart but may fill the disk space.
 
 
 ```dart
-FileTileBitmapCache bitmapCache = FileTileBitmapCache(jobRenderer.getRenderKey());
+TileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 ```
 
 Glue everything together into two models. 
@@ -152,7 +153,6 @@ informations related to how to display the map for the current widget
 ```dart
 MapModel mapModel = MapModel(
   displayModel: displayModel,
-  graphicsFactory: graphicFactory,
   renderer: jobRenderer,
   symbolCache: symbolCache,
   tileBitmapCache: bitmapCache,  
@@ -189,7 +189,6 @@ markerDataStore.markers.add(BasicMarker(
   symbolCache: symbolCache,
   width: 20,
   height: 20,
-  graphicFactory: graphicFactory,
   caption: "TestMarker",
   latitude: 48.089355,
   longitude: 16.311509,
@@ -218,4 +217,4 @@ Help is appreciated...
 
 - support map rotating (do not rotate the text and icons then)
 - some flaws with text spawning multiple tiles
-- Unit tests!
+- Unit tests

@@ -18,10 +18,10 @@ class CanvasRasterer {
   final MapCanvas canvas;
   final Matrix symbolMatrix;
 
-  CanvasRasterer(GraphicFactory graphicFactory, double width, double height,
+  CanvasRasterer( double width, double height,
       [String? src])
-      : canvas = graphicFactory.createCanvas(width, height, src),
-        symbolMatrix = graphicFactory.createMatrix();
+      : canvas = GraphicFactory().createCanvas(width, height, src),
+        symbolMatrix = GraphicFactory().createMatrix();
 
   void destroy() {
     this.canvas.destroy();

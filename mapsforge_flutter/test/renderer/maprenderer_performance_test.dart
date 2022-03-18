@@ -31,20 +31,17 @@ main() async {
         TestAssetBundle().correctFilename("austria.map"),
         null,
         null); //Map that contains part of the Canpus Reichehainer Straße
-    graphicFactory = const FlutterGraphicFactory();
 
     displayModel = DisplayModel();
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     String content = await TestAssetBundle().loadString("rendertheme.xml");
-    renderThemeBuilder.parseXml(content);
+    renderThemeBuilder.parseXml(displayModel, content);
     renderTheme = renderThemeBuilder.build();
   }
 
   Future<void> runOnce(int dx, int dy) async {
-    renderer ??=
-        MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true);
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    renderer ??= MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
     int zoomlevel = 8;
     int x =

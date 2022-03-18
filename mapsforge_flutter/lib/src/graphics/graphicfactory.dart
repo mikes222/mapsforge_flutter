@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
+import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/fluttergraphicfactory.dart';
 
 import '../graphics/position.dart';
 import '../mapelements/pointtextcontainer.dart';
-import '../mapelements/symbolcontainer.dart';
 import '../model/mappoint.dart';
 import 'color.dart';
 import 'display.dart';
@@ -13,10 +14,15 @@ import 'maprect.dart';
 import 'matrix.dart';
 
 abstract class GraphicFactory {
-  const GraphicFactory();
+  static GraphicFactory? _instance;
 
-  @mustCallSuper
-  void dispose() {}
+  factory GraphicFactory() {
+    if (_instance != null) return _instance!;
+    _instance = const FlutterGraphicFactory();
+    return _instance!;
+  }
+
+  const GraphicFactory._();
 
   //Bitmap createBitmap(int width, int height, bool isTransparent);
 

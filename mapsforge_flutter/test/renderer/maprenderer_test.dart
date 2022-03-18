@@ -21,19 +21,17 @@ main() async {
   test("MultimapDatastore without maps", () async {
     _initLogging();
 
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
     DisplayModel displayModel = DisplayModel();
     MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     String content = await TestAssetBundle().loadString("rendertheme.xml");
-    renderThemeBuilder.parseXml(content);
+    renderThemeBuilder.parseXml(displayModel, content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 
     MapDataStoreRenderer renderer =
-        MapDataStoreRenderer(dataStore, renderTheme, graphicFactory, true);
+        MapDataStoreRenderer(dataStore, renderTheme, symbolCache, true);
 
     int zoomlevel = 18; //zoomlevel
     int indoorLevel = 0; // indoor level

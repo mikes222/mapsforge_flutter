@@ -10,7 +10,6 @@ import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
-import 'package:mapsforge_flutter/src/mapelements/symbolcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import 'fluttercanvas.dart';
@@ -21,7 +20,7 @@ import 'flutterpath.dart';
 import 'flutterpointtextcontainer.dart';
 import 'flutterrect.dart';
 
-class FlutterGraphicFactory extends GraphicFactory {
+class FlutterGraphicFactory implements GraphicFactory {
   const FlutterGraphicFactory();
 
   // @override

@@ -149,7 +149,9 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    _files.clear();
+  }
 
   @override
   Future<void> purgeByBoundary(BoundingBox boundingBox) async {

@@ -19,13 +19,8 @@ class FlutterMapView extends StatefulWidget {
 
   final ViewModel viewModel;
 
-  final GraphicFactory graphicFactory;
-
   const FlutterMapView(
-      {Key? key,
-      required this.mapModel,
-      required this.viewModel,
-      required this.graphicFactory})
+      {Key? key, required this.mapModel, required this.viewModel})
       : super(key: key);
 
   @override
@@ -55,7 +50,6 @@ class _FlutterMapState extends State<FlutterMapView> {
         widget.mapModel.tileBitmapCacheFirstLevel);
     _tileLayer = TileLayerImpl(
       displayModel: widget.mapModel.displayModel,
-      graphicFactory: widget.graphicFactory,
       jobQueue: _jobQueue,
     );
   }
@@ -120,7 +114,7 @@ class _FlutterMapState extends State<FlutterMapView> {
                   displayModel: widget.mapModel.displayModel,
                   dataStore: markerDataStore,
                   viewModel: widget.viewModel,
-                  graphicFactory: widget.graphicFactory),
+                  symbolCache: widget.mapModel.symbolCache),
               child: Container(),
             ))
         .toList());

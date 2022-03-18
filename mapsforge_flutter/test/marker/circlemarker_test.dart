@@ -5,6 +5,8 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/singlemarkerpainter.dart';
 
+import '../testassetbundle.dart';
+
 ///
 /// flutter test --update-goldens
 ///
@@ -19,7 +21,6 @@ void main() {
   testWidgets('Renders a circlemarker', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
 
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
@@ -28,15 +29,15 @@ void main() {
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
     viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
 
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     CircleMarker circleMarker = CircleMarker(center: latLong);
-    await circleMarker.initResources(graphicFactory);
+    await circleMarker.initResources( symbolCache);
 
     SingleMarkerPainter painter = SingleMarkerPainter(
         position: viewModel.mapViewPosition!,
         displayModel: displayModel,
         marker: circleMarker,
-        viewModel: viewModel,
-        graphicFactory: graphicFactory);
+        viewModel: viewModel);
 
     Key key = GlobalKey();
 
@@ -67,7 +68,6 @@ void main() {
   testWidgets('Renders a filled circlemarker', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
 
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
@@ -76,16 +76,16 @@ void main() {
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
     viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
 
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     CircleMarker circleMarker = CircleMarker(
         center: latLong, fillColor: 0xff00ff00, radius: 20, strokeWidth: 4);
-    await circleMarker.initResources(graphicFactory);
+    await circleMarker.initResources( symbolCache);
 
     SingleMarkerPainter painter = SingleMarkerPainter(
         position: viewModel.mapViewPosition!,
         displayModel: displayModel,
         marker: circleMarker,
-        viewModel: viewModel,
-        graphicFactory: graphicFactory);
+        viewModel: viewModel,);
 
     Key key = GlobalKey();
 

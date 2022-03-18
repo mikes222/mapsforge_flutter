@@ -133,7 +133,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       onScaleStart: (ScaleStartDetails details) {
         // _log.info("onScaleStart $details");
         _startLocalFocalPoint = details.localFocalPoint;
-        _startLeftUpper = widget.viewModel.mapViewPosition!.leftUpper;
+        _startLeftUpper = widget.viewModel.mapViewPosition?.leftUpper;
         _lastScale = null;
         widget.viewModel.gestureEvent();
       },

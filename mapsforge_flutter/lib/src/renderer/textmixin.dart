@@ -15,14 +15,14 @@ class TextMixin {
 
   double _fontSize = 10;
 
-  void initTextMixin(GraphicFactory graphicFactory) {
-    this.stroke = graphicFactory.createPaint();
+  void initTextMixin() {
+    this.stroke = GraphicFactory().createPaint();
     this.stroke!.setColor(Color.BLACK);
     this.stroke!.setStyle(Style.STROKE);
     this.stroke!.setStrokeWidth(1);
     this.stroke!.setTextSize(10);
 
-    this.fill = graphicFactory.createPaint();
+    this.fill = GraphicFactory().createPaint();
     this.fill!.setColor(Color.BLACK);
     this.fill!.setStyle(Style.FILL);
   }
@@ -46,11 +46,10 @@ class TextMixin {
     return paint!;
   }
 
-  void scaleMixinStrokeWidth(
-      GraphicFactory graphicFactory, double scaleFactor, int zoomLevel) {
+  void scaleMixinStrokeWidth(double scaleFactor, int zoomLevel) {
     //if (this.strokes[zoomLevel] != null) return;
     // we setup the stroke-params for the desired zoomlevel together with the fontsize for this zoomlevel
-    scaleMixinTextSize(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinTextSize(scaleFactor, zoomLevel);
     // MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
     // paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
     // if (strokeDasharray != null) {
@@ -62,27 +61,26 @@ class TextMixin {
     // this.strokes[zoomLevel] = paint;
   }
 
-  void scaleMixinTextSize(
-      GraphicFactory graphicFactory, double scaleFactor, int zoomLevel) {
+  void scaleMixinTextSize(double scaleFactor, int zoomLevel) {
     final int zoom = 19;
     if (this.strokes[zoomLevel] != null) return;
     if (zoomLevel >= zoom) {
-      MapPaint paint = graphicFactory.createPaintFrom(this.stroke!);
+      MapPaint paint = GraphicFactory().createPaintFrom(this.stroke!);
       paint.setStrokeWidth(paint.getStrokeWidth() * (zoomLevel - zoom + 2));
       paint.setTextSize(this._fontSize * (zoomLevel - zoom + 2));
       this.strokes[zoomLevel] = paint;
     } else {
-      MapPaint paint = graphicFactory.createPaintFrom(this.stroke!);
+      MapPaint paint = GraphicFactory().createPaintFrom(this.stroke!);
       paint.setTextSize(this._fontSize);
       this.strokes[zoomLevel] = paint;
     }
 
     if (zoomLevel >= zoom) {
-      MapPaint f = graphicFactory.createPaintFrom(this.fill!);
+      MapPaint f = GraphicFactory().createPaintFrom(this.fill!);
       f.setTextSize(this._fontSize * (zoomLevel - zoom + 2));
       this.fills[zoomLevel] = f;
     } else {
-      MapPaint f = graphicFactory.createPaintFrom(this.fill!);
+      MapPaint f = GraphicFactory().createPaintFrom(this.fill!);
       f.setTextSize(this._fontSize);
       this.fills[zoomLevel] = f;
     }

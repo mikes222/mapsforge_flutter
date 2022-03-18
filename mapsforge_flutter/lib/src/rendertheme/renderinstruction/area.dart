@@ -18,17 +18,16 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
   final int level;
   Scale scale = Scale.STROKE;
 
-  Area(GraphicFactory graphicFactory, SymbolCache symbolCache, displayModel,
+  Area(
       String elementName, this.level)
-      : super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
+      : super() {
 
-    initPaintMixin(graphicFactory);
+    initPaintMixin();
     this.fill.setColor(Color.TRANSPARENT);
     this.stroke.setColor(Color.TRANSPARENT);
   }
 
-  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
     this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
 
     rootElement.attributes.forEach((element) {
@@ -41,13 +40,13 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
       } else if (RenderInstruction.FILL == name) {
         this
             .fill
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+            .setColorFromNumber(XmlUtils.getColor( value, this));
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
         this
             .stroke
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+            .setColorFromNumber(XmlUtils.getColor( value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getScaleFactor());
@@ -96,7 +95,7 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
     if (this.scale == Scale.NONE) {
       return;
     }
-    scaleMixinStrokeWidth(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinStrokeWidth( scaleFactor, zoomLevel);
   }
 
   @override
@@ -105,8 +104,8 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
   }
 
   @override
-  Future<Area> initResources(GraphicFactory graphicFactory) async {
-    await initBitmap(graphicFactory);
+  Future<Area> initResources(SymbolCache? symbolCache) async {
+    await initBitmap( symbolCache);
 
     if (bitmap != null) {
       // make sure the color is not transparent

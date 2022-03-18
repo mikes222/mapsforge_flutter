@@ -32,7 +32,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     int maxZoomLevel = 65535,
     T? item,
     String? bitmapSrc,
-    SymbolCache? symbolCache,
     MarkerCaption? markerCaption,
     this.fillWidth = 1.0,
     this.fillColor,
@@ -55,15 +54,14 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
           markerCaption: markerCaption,
         ) {
     this.bitmapSrc = bitmapSrc;
-    this.symbolCache = symbolCache;
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await super.initResources(graphicFactory);
-    await initBitmap(graphicFactory);
+  Future<void> initResources( SymbolCache? symbolCache) async {
+    await super.initResources( symbolCache);
+    await initBitmap( symbolCache);
     if (fill == null && (fillColor != null || bitmap != null)) {
-      this.fill = graphicFactory.createPaint();
+      this.fill = GraphicFactory().createPaint();
       if (fillColor != null) this.fill!.setColorFromNumber(fillColor!);
       this.fill!.setStyle(Style.FILL);
       this.fill!.setStrokeWidth(fillWidth);
@@ -75,7 +73,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
       //this.stroke.setTextSize(fontSize);
     }
     if (stroke == null && strokeWidth > 0) {
-      this.stroke = graphicFactory.createPaint();
+      this.stroke = GraphicFactory().createPaint();
       this.stroke!.setColorFromNumber(strokeColor);
       this.stroke!.setStyle(Style.STROKE);
       this.stroke!.setStrokeWidth(strokeWidth);
@@ -105,7 +103,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   @override
   void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
-    MapRect mapRect = markerCallback.graphicFactory.createRect(
+    MapRect mapRect = GraphicFactory().createRect(
         markerCallback.mapViewPosition.projection!
                 .longitudeToPixelX(minLatLon.longitude) -
             markerCallback.mapViewPosition.leftUpper!.x,

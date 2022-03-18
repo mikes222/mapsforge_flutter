@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
@@ -8,7 +9,6 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
@@ -46,7 +46,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   final RenderTheme renderTheme;
 
-  final GraphicFactory graphicFactory;
+  final SymbolCache symbolCache;
 
   final bool renderLabels;
 
@@ -64,7 +64,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   MapDataStoreRenderer(
     this.datastore,
     this.renderTheme,
-    this.graphicFactory,
+    this.symbolCache,
     this.renderLabels,
   ) : labelStore = TileBasedLabelStore(100) {
     if (renderLabels) {
@@ -94,7 +94,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext =
-        RenderContext(job, renderTheme, graphicFactory);
+        RenderContext(job, renderTheme, symbolCache);
     if (!this.datastore.supportsTile(job.tile, renderContext.projection)) {
       // return if we do not have data for the requested tile in the datastore
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
@@ -143,8 +143,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       // });
     }
     CanvasRasterer canvasRasterer = CanvasRasterer(
-        graphicFactory,
-        job.tileSize.toDouble(),
+                job.tileSize.toDouble(),
         job.tileSize.toDouble(),
         "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
@@ -207,7 +206,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
           _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
       for (RenderInstruction element in renderInstructions) {
         if (renderContext.renderTheme.initPendings.contains(element)) {
-          await element.initResources(renderContext.graphicFactory);
+          await element.initResources(
+              renderContext.symbolCache);
           renderContext.renderTheme.initPendings.remove(element);
         }
       }
@@ -227,7 +227,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
         for (RenderInstruction renderInstruction in renderInstructions) {
           if (renderContext.renderTheme.initPendings
               .contains(renderInstruction)) {
-            await renderInstruction.initResources(renderContext.graphicFactory);
+            await renderInstruction.initResources(
+                renderContext.symbolCache);
             renderContext.renderTheme.initPendings.remove(renderInstruction);
           }
           //print("render way $renderInstruction for $way");
@@ -301,11 +302,11 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       int level, PolylineContainer way) {
     if (!stroke.isTransparent()) {
       renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer(graphicFactory, way, stroke, 0));
+          level, ShapePaintPolylineContainer(way, stroke, 0));
     }
     if (!fill.isTransparent()) {
       renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer(graphicFactory, way, fill, 0));
+          level, ShapePaintPolylineContainer(way, fill, 0));
     }
   }
 
@@ -327,7 +328,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
           .getCenterAbsolute(renderContext.projection)
           .offset(horizontalOffset, verticalOffset);
       //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
-      PointTextContainer label = this.graphicFactory.createPointTextContainer(
+      PointTextContainer label = GraphicFactory().createPointTextContainer(
           centerPoint,
           display,
           priority,
@@ -373,7 +374,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       Mappoint poiPosition =
           renderContext.projection.latLonToPixel(poi.position);
       //_log.info("poiCaption $caption at $poiPosition, postion $position, offset: $horizontalOffset, $verticalOffset ");
-      renderContext.labels.add(this.graphicFactory.createPointTextContainer(
+      renderContext.labels.add(GraphicFactory().createPointTextContainer(
           poiPosition.offset(horizontalOffset, verticalOffset),
           display,
           priority,
@@ -422,7 +423,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       int level, PolylineContainer way) {
     if (!stroke.isTransparent()) {
       renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer(graphicFactory, way, stroke, dy));
+          level, ShapePaintPolylineContainer( way, stroke, dy));
     }
   }
 
@@ -473,7 +474,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       PolylineContainer way) {
     if (renderLabels) {
       WayDecorator.renderText(
-          graphicFactory,
+
           way.getUpperLeft(),
           text,
           display,

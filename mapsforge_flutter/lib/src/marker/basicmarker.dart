@@ -67,8 +67,8 @@ class BasicMarker<T> {
         assert(minZoomLevel <= maxZoomLevel);
 
   @mustCallSuper
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await markerCaption?.initResources(graphicFactory);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await markerCaption?.initResources();
   }
 
   void dispose() {
@@ -153,8 +153,8 @@ class MarkerCaption with TextMixin {
         assert(minZoomLevel <= maxZoomLevel),
         assert(text.length > 0);
 
-  Future<void> initResources(GraphicFactory graphicFactory) {
-    initTextMixin(graphicFactory);
+  Future<void> initResources() {
+    initTextMixin();
     stroke!.setStrokeWidth(strokeWidth);
     stroke!.setColorFromNumber(strokeColor);
     stroke!.setTextSize(fontSize);

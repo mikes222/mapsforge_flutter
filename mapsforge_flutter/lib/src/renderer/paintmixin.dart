@@ -15,8 +15,8 @@ class PaintMixin {
 
   List<double>? strokeDasharray;
 
-  void initPaintMixin(GraphicFactory graphicFactory) {
-    this.stroke = graphicFactory.createPaint();
+  void initPaintMixin() {
+    this.stroke = GraphicFactory().createPaint();
     this.stroke.setColor(Color.BLACK);
     this.stroke.setStyle(Style.STROKE);
     this.stroke.setStrokeWidth(1);
@@ -24,7 +24,7 @@ class PaintMixin {
     this.stroke.setStrokeCap(Cap.ROUND);
     this.stroke.setStrokeJoin(Join.ROUND);
 
-    this.fill = graphicFactory.createPaint();
+    this.fill = GraphicFactory().createPaint();
     this.fill.setColor(Color.BLACK);
     this.fill.setStyle(Style.FILL);
     this.fill.setStrokeCap(Cap.ROUND);
@@ -42,11 +42,10 @@ class PaintMixin {
     return paint;
   }
 
-  void scaleMixinStrokeWidth(
-      GraphicFactory graphicFactory, double scaleFactor, int zoomLevel) {
+  void scaleMixinStrokeWidth(double scaleFactor, int zoomLevel) {
     //if (this.strokes[zoomLevel] != null) return;
     // we setup the stroke-params for the desired zoomlevel together with the fontsize for this zoomlevel
-    scaleMixinTextSize(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinTextSize(scaleFactor, zoomLevel);
     // MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
     // paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
     // if (strokeDasharray != null) {
@@ -58,10 +57,9 @@ class PaintMixin {
     // this.strokes[zoomLevel] = paint;
   }
 
-  void scaleMixinTextSize(
-      GraphicFactory graphicFactory, double scaleFactor, int zoomLevel) {
+  void scaleMixinTextSize(double scaleFactor, int zoomLevel) {
     if (this.strokes[zoomLevel] != null) return;
-    MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
+    MapPaint paint = GraphicFactory().createPaintFrom(this.stroke);
     paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
     if (strokeDasharray != null) {
       // List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
@@ -71,7 +69,7 @@ class PaintMixin {
     }
     this.strokes[zoomLevel] = paint;
 
-    MapPaint f = graphicFactory.createPaintFrom(this.fill);
+    MapPaint f = GraphicFactory().createPaintFrom(this.fill);
     this.fills[zoomLevel] = f;
   }
 

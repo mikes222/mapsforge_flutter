@@ -30,9 +30,6 @@ class RenderThemeBuilder {
   static final String XMLNS_XSI = "xmlns:xsi";
   static final String XSI_SCHEMALOCATION = "xsi:schemaLocation";
 
-  final GraphicFactory graphicFactory;
-  final SymbolCache symbolCache;
-  final DisplayModel displayModel;
   late double baseStrokeWidth;
   late double baseTextSize;
   bool? hasBackgroundOutside;
@@ -44,7 +41,7 @@ class RenderThemeBuilder {
   int maxLevel = 0;
   List<RenderInstruction> initPendings = [];
 
-  RenderThemeBuilder(this.graphicFactory, this.symbolCache, this.displayModel) {
+  RenderThemeBuilder() {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
@@ -68,7 +65,7 @@ class RenderThemeBuilder {
   /// On the one hand to parse the xml and create the tree structure and on the other hand to render ways and pois
   /// appropriately and draw the respective content.
   ///
-  void parseXml(String content) {
+  void parseXml(DisplayModel displayModel, String content) {
     assert(content.length > 10);
     int time = DateTime.now().millisecondsSinceEpoch;
     XmlDocument document = XmlDocument.parse(content);
@@ -86,7 +83,7 @@ class RenderThemeBuilder {
             if (element.name.toString() != "rendertheme")
               throw Exception("Invalid root node ${element.name.toString()}");
             foundRendertheme = true;
-            _parseRendertheme(element, initPendings);
+            _parseRendertheme(displayModel, element, initPendings);
             break;
           }
         case XmlNodeType.ATTRIBUTE:
@@ -110,8 +107,8 @@ class RenderThemeBuilder {
     //_log.info("Found ${initPendings.length} items for lazy initialization");
   }
 
-  void _parseRendertheme(
-      XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void _parseRendertheme(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -157,9 +154,8 @@ class RenderThemeBuilder {
             XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(graphicFactory, symbolCache,
-                  displayModel, null, initPendings, _level);
-              ruleBuilder.parse(element, initPendings);
+              RuleBuilder ruleBuilder = RuleBuilder(null, initPendings, _level);
+              ruleBuilder.parse(displayModel, element, initPendings);
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;
               ++_level;

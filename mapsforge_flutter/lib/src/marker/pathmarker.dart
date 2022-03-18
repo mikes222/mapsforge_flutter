@@ -3,8 +3,6 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
-import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
@@ -39,10 +37,10 @@ class PathMarker<T> extends BasicMarker<T> {
         );
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await super.initResources(graphicFactory);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await super.initResources(symbolCache);
     if (stroke == null && strokeWidth > 0) {
-      this.stroke = graphicFactory.createPaint();
+      this.stroke = GraphicFactory().createPaint();
       this.stroke!.setColorFromNumber(strokeColor);
       this.stroke!.setStyle(Style.STROKE);
       this.stroke!.setStrokeWidth(strokeWidth);
@@ -64,7 +62,7 @@ class PathMarker<T> extends BasicMarker<T> {
   void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
     if (stroke == null) return;
     //if (mapPath == null) {
-    mapPath = markerCallback.graphicFactory.createPath();
+    mapPath = GraphicFactory().createPath();
 
     path.forEach((latLong) {
       double y = markerCallback.mapViewPosition.projection!

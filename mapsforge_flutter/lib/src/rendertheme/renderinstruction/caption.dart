@@ -1,11 +1,10 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
@@ -34,23 +33,22 @@ class Caption extends RenderInstruction with TextMixin {
   double _horizontalOffset = 0;
   double _verticalOffset = 0;
   late double gap;
-  final int maxTextWidth;
+  late int maxTextWidth;
   Position position = Position.CENTER;
   int priority = 0;
   String? symbolId;
   final SymbolFinder symbolFinder;
   TextKey? textKey;
 
-  Caption(GraphicFactory graphicFactory, DisplayModel displayModel,
-      this.symbolFinder)
-      : maxTextWidth = displayModel.getMaxTextWidth(),
-        super(graphicFactory, displayModel) {
-    this.gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
-
-    initTextMixin(graphicFactory);
+  Caption(this.symbolFinder)
+      : super() {
   }
 
-  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
+    maxTextWidth = displayModel.getMaxTextWidth();
+    gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
+    initTextMixin();
+
     MapFontFamily fontFamily = MapFontFamily.DEFAULT;
     MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
@@ -68,9 +66,7 @@ class Caption extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this
-            .fill!
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.fill!.setColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value));
@@ -86,9 +82,7 @@ class Caption extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
-        this
-            .stroke!
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke!.setColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.stroke!.setStrokeWidth(
             XmlUtils.parseNonNegativeFloat(name, value) *
@@ -172,7 +166,7 @@ class Caption extends RenderInstruction with TextMixin {
 
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
-    scaleMixinTextSize(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinTextSize(scaleFactor, zoomLevel);
 
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
@@ -183,12 +177,12 @@ class Caption extends RenderInstruction with TextMixin {
   }
 
   @override
-  Future<Caption> initResources(GraphicFactory graphicFactory) async {
+  Future<Caption> initResources(SymbolCache? symbolCache) async {
     _verticalOffset = 0;
 
     RenderSymbol? renderSymbol;
     if (this.symbolId != null) {
-      renderSymbol = await symbolFinder.find(this.symbolId!);
+      renderSymbol = await symbolFinder.find(this.symbolId!, symbolCache);
       if (renderSymbol == null) {
         _log.warning(
             "Symbol $symbolId referenced in caption in render.xml, but not defined as symbol");

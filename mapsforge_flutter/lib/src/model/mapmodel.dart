@@ -3,20 +3,19 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
 
-import '../cache/tilebitmapcache.dart';
-import 'displaymodel.dart';
-
 class MapModel {
   final DisplayModel displayModel;
   final JobRenderer renderer;
   final List<IMarkerDataStore> markerDataStores = [];
   final TileBitmapCache? tileBitmapCache;
   final TileBitmapCache tileBitmapCacheFirstLevel;
+  final SymbolCache? symbolCache;
 
   MapModel({
     required this.displayModel,
     required this.renderer,
     this.tileBitmapCache,
+    this.symbolCache,
     TileBitmapCache? tileBitmapCacheFirstLevel,
   }) : tileBitmapCacheFirstLevel =
             tileBitmapCacheFirstLevel ?? MemoryTileBitmapCache.create();
@@ -28,6 +27,7 @@ class MapModel {
     markerDataStores.clear();
     tileBitmapCache?.dispose();
     tileBitmapCacheFirstLevel.dispose();
+    symbolCache?.dispose();
   }
 
   /// Purges all caches assigned to this MapModel. Use this if you changed the datastore which is backed by the renderer.

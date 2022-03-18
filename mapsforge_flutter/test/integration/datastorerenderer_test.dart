@@ -38,13 +38,12 @@ void main() {
         MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
     RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+        RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
-      renderThemeBuilder.parseXml(content);
+      renderThemeBuilder.parseXml(displayModel, content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       Datastore mapDataStore = await MapFile.from(
@@ -54,7 +53,7 @@ void main() {
       Job mapGeneratorJob = new Job(tile, false,
           displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme, graphicFactory, false);
+          mapDataStore, renderTheme, symbolCache, false);
 
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
@@ -115,20 +114,19 @@ void main() {
     ];
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
     RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+        RenderThemeBuilder();
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
-      renderThemeBuilder.parseXml(content);
+      renderThemeBuilder.parseXml(displayModel, content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       Datastore mapDataStore = await MapFile.from(
           TestAssetBundle().correctFilename("monaco.map"), 0, "en");
 
       MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme, graphicFactory, false);
+          mapDataStore, renderTheme,  symbolCache, false);
       List imgs = [];
       for (Tile tile in tilesToLoad) {
         print("Calculating tile ${tile.toString()}");

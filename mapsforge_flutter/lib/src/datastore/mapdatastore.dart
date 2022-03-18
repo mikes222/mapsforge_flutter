@@ -62,10 +62,6 @@ abstract class MapDataStore extends Datastore {
   /// @return bounding box of area.
   BoundingBox? get boundingBox;
 
-  ///
-  /// Closes the map database.
-  void close();
-
   /// Extracts substring of preferred language from multilingual string using
   /// the preferredLanguage setting.
   String? extractLocalized(String s) {

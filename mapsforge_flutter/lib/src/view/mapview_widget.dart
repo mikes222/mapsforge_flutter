@@ -14,7 +14,7 @@ import '../../core.dart';
 import 'backgroundpainter.dart';
 import 'tilelayerpainter.dart';
 
-typedef Future<MapModel> CreateMapModel(GraphicFactory graphicFactory);
+typedef Future<MapModel> CreateMapModel();
 typedef Future<ViewModel> CreateViewModel();
 
 /// A Widget which provides the map. The widget asks for MapModel and ViewModel when
@@ -58,8 +58,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
   JobQueue? _jobQueue;
 
-  late GraphicFactory _graphicFactory;
-
   MapModel? _mapModel;
 
   ViewModel? _viewModel;
@@ -67,7 +65,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   @override
   void initState() {
     super.initState();
-    _graphicFactory = const FlutterGraphicFactory();
   }
 
   @override
@@ -76,7 +73,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     //_tileLayer.dis
     _jobQueue?.dispose();
     _mapModel?.dispose();
-    _graphicFactory.dispose();
 
     super.dispose();
   }
@@ -94,7 +90,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     }
 
     return FutureBuilder<MapModel>(
-        future: widget.createMapModel(_graphicFactory),
+        future: widget.createMapModel(),
         builder: (BuildContext context, AsyncSnapshot<MapModel> snapshot) {
           if (snapshot.hasError) {
             return Text(
@@ -113,7 +109,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
           );
           _tileLayer = TileLayerImpl(
             displayModel: widget.displayModel,
-            graphicFactory: _graphicFactory,
             jobQueue: _jobQueue!,
           );
           _log.info(
@@ -207,8 +202,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
                   position: position,
                   displayModel: _mapModel!.displayModel,
                   dataStore: markerDataStore,
-                  viewModel: _viewModel!,
-                  graphicFactory: _graphicFactory),
+                  viewModel: _viewModel!),
               child: Container(),
             ))
         .toList());

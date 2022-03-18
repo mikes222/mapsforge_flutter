@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfilehelper.dart';
@@ -26,11 +27,7 @@ import 'indexcache.dart';
 import 'mapfileheader.dart';
 
 /// A class for reading binary map files.
-/// <p/>
-/// The readMapData method is now thread safe, but care should be taken that not too much data is
-/// read at the same time (keep simultaneous requests to minimum)
-///
-/// @see <a href="https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md">Specification</a>
+/// The mapFile should be disposed if not needed anymore
 class MapFile extends MapDataStore {
   static final _log = new Logger('MapFile');
 
@@ -138,26 +135,15 @@ class MapFile extends MapDataStore {
     return 'MapFile{_databaseIndexCache: $_databaseIndexCache, _fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, filename: $filename, _helper: $_helper}';
   }
 
+  @mustCallSuper
   void dispose() {
-    _databaseIndexCache.dispose();
-    close();
+    this._databaseIndexCache.dispose();
     readBufferMaster?.close();
   }
 
   @override
   BoundingBox get boundingBox {
     return getMapFileInfo().boundingBox;
-  }
-
-  @override
-  void close() {
-    closeFileChannel();
-  }
-
-  /// Closes the map file channel and destroys all internal caches.
-  /// Has no effect if no map file channel is currently opened.
-  void closeFileChannel() {
-    this._databaseIndexCache.dispose();
   }
 
   /**

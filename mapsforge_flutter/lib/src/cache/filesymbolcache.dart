@@ -29,11 +29,12 @@ class FileSymbolCache extends SymbolCache {
 
   final String? relativePathPrefix;
 
-  Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
-    storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
+  LruCache<String, ResourceBitmap> _cache =
+      new LruCache<String, ResourceBitmap>(
+    storage: StatisticsStorage<String, ResourceBitmap>(onEvict: (key, item) {
       item.decrementRefCount();
     }),
-    capacity: 100,
+    capacity: 500,
   );
 
   ///
@@ -47,6 +48,7 @@ class FileSymbolCache extends SymbolCache {
 
   @override
   void dispose() {
+    print("Statistics for FileSymbolCache: ${_cache.storage.toString()}");
     _cache.clear();
   }
 

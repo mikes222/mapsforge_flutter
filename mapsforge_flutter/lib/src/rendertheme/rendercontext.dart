@@ -19,7 +19,7 @@ class RenderContext {
   final Job job;
   final RenderTheme renderTheme;
 
-  final GraphicFactory graphicFactory;
+  final SymbolCache symbolCache;
 
   // Data generated for the rendering process
   late LayerPaintContainer drawingLayers;
@@ -28,7 +28,7 @@ class RenderContext {
 
   final PixelProjection projection;
 
-  RenderContext(this.job, this.renderTheme, this.graphicFactory)
+  RenderContext(this.job, this.renderTheme, this.symbolCache)
       : labels = [],
         projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
     this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);

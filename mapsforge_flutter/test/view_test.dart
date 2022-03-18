@@ -26,7 +26,6 @@ void main() {
     );
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
 
     MapModel? mapModel = await (tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();
@@ -36,14 +35,13 @@ void main() {
 
       final DisplayModel displayModel = DisplayModel();
 
-      RenderThemeBuilder renderThemeBuilder =
-          RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+      RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
       String content = await TestAssetBundle().loadString("rendertheme.xml");
-      renderThemeBuilder.parseXml(content);
+      renderThemeBuilder.parseXml(displayModel, content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme, graphicFactory, false);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(mapDataStore, renderTheme, symbolCache, false);
 
       //MemoryTileBitmapCache bitmapCache = MemoryTileBitmapCache();
 
@@ -68,7 +66,6 @@ void main() {
             child: FlutterMapView(
               mapModel: mapModel,
               viewModel: viewModel,
-              graphicFactory: graphicFactory,
             ),
           ),
         ),

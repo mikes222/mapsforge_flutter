@@ -24,9 +24,9 @@ class MarkerDataStore extends IMarkerDataStore {
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
   List<BasicMarker> getMarkers(
-      GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {
+      SymbolCache? symbolCache, BoundingBox boundary, int zoomLevel) {
     if (boundary != _previousBoundingBox || zoomLevel != _previousZoomLevel) {
-      retrieveMarkersFor(graphicFactory, boundary, zoomLevel);
+      retrieveMarkersFor(boundary, zoomLevel);
       _previousBoundingBox = boundary;
       _previousZoomLevel = zoomLevel;
     }
@@ -38,7 +38,7 @@ class MarkerDataStore extends IMarkerDataStore {
         .toList();
     if (markersToInit.length > 0) {
       _markersNeedInit.removeAll(markersToInit);
-      _initMarkers(graphicFactory, markersToInit);
+      _initMarkers(symbolCache, markersToInit);
       markersToDraw.removeWhere((element) => markersToInit.contains(element));
       return markersToDraw;
     }
@@ -47,15 +47,14 @@ class MarkerDataStore extends IMarkerDataStore {
 
   /// This method will be called if boundary or zoomlevel changes to give the implementation the chance to replace/retrieve markers for the new boundary/zoomlevel.
   /// If this method changes something asynchronously it must call [setRepaint] afterwards.
-  void retrieveMarkersFor(
-      GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel) {}
+  void retrieveMarkersFor(BoundingBox boundary, int zoomLevel) {}
 
   /// Initializes the markers which are currently not initialized and are needed now
   Future<void> _initMarkers(
-      GraphicFactory graphicFactory, List<BasicMarker> markersToInit) async {
+      SymbolCache? symbolCache, List<BasicMarker> markersToInit) async {
     //_log.info("Initializing ${markersToInit.length} markers now");
     for (BasicMarker m in markersToInit) {
-      await m.initResources(graphicFactory);
+      await m.initResources(symbolCache);
     }
     if (!disposed) setRepaint();
   }

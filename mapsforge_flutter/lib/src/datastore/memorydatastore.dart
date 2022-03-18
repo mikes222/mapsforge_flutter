@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 class MemoryDatastore extends Datastore {
   /// The read POIs.

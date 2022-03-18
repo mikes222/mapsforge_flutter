@@ -4,11 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/map-download-page.dart';
+import 'package:mapsforge_example/map-view-page2.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'map-file-data.dart';
-import 'map-view-page.dart';
 
 /// The route page showing up when starting the application.
 ///
@@ -55,12 +54,21 @@ class MapList extends StatelessWidget {
       child: Column(
         children: mapFileDataList.map((element) {
           return _buildCard(context, element.displayedName, () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (BuildContext context) =>
-                    MapDownloadPage(mapFileData: element),
-              ),
-            );
+            if (element.mapType != MAPTYPE.OFFLINE) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      MapViewPage2(mapFileData: element, mapFile: null),
+                ),
+              );
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      MapDownloadPage(mapFileData: element),
+                ),
+              );
+            }
           });
         }).toList(),
       ),

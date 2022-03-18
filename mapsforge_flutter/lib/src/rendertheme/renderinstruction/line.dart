@@ -23,26 +23,15 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
   final String? relativePathPrefix;
   Scale scale = Scale.STROKE;
 
-  Line(
-      GraphicFactory graphicFactory,
-      SymbolCache symbolCache,
-      DisplayModel displayModel,
-      String elementName,
-      this.level,
-      this.relativePathPrefix)
-      : super(
-          graphicFactory,
-          displayModel,
-        ) {
-    this.symbolCache = symbolCache;
-
-    initPaintMixin(graphicFactory);
+  Line(String elementName, this.level, this.relativePathPrefix) : super() {
+    initPaintMixin();
 
     dyScaled = new Map();
     dy = 0;
   }
 
-  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
 
     rootElement.attributes.forEach((element) {
@@ -58,9 +47,7 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this
-            .stroke
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+        this.stroke.setColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_DASHARRAY == name) {
         this.strokeDasharray = parseFloatArray(name, value);
         for (int f = 0; f < this.strokeDasharray!.length; ++f) {
@@ -135,7 +122,7 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
     if (this.scale == Scale.NONE) {
       return;
     }
-    scaleMixinStrokeWidth(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinStrokeWidth(scaleFactor, zoomLevel);
 
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
@@ -146,8 +133,8 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
   }
 
   @override
-  Future<Line> initResources(GraphicFactory graphicFactory) async {
-    await initBitmap(graphicFactory);
+  Future<Line> initResources(SymbolCache? symbolCache) async {
+    await initBitmap(symbolCache);
     if (bitmap != null) {
       // make sure the color is not transparent
       if (stroke.isTransparent()) stroke.setColorFromNumber(0xff000000);

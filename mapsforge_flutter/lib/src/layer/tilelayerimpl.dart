@@ -27,11 +27,10 @@ class TileLayerImpl extends TileLayer {
   final MapPaint _paint;
 
   TileLayerImpl({
-    required GraphicFactory graphicFactory,
     required this.jobQueue,
     required displayModel,
   })  : assert(displayModel != null),
-        _paint = graphicFactory.createPaint(),
+        _paint = GraphicFactory().createPaint(),
         super(displayModel);
 
   @override

@@ -1,6 +1,6 @@
+import 'package:mapsforge_flutter/core.dart';
+
 import '../../datastore/pointofinterest.dart';
-import '../../graphics/graphicfactory.dart';
-import '../../model/displaymodel.dart';
 import '../../renderer/polylinecontainer.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
@@ -42,17 +42,16 @@ abstract class RenderInstruction {
   static final String SYMBOL_WIDTH = "symbol-width";
 
   String? category;
-  final DisplayModel displayModel;
-  final GraphicFactory graphicFactory;
 
-  RenderInstruction(this.graphicFactory, this.displayModel);
+  RenderInstruction();
 
   ///
   /// disposes all resources. The class is not usable afterwards.
   ///
   void dispose();
 
-  Future<RenderInstruction> initResources(GraphicFactory graphicFactory);
+  Future<RenderInstruction> initResources(
+      SymbolCache? symbolCache);
 
   String? getCategory() {
     return this.category;

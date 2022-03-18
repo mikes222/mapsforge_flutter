@@ -17,10 +17,10 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   static int count = 0;
 
-  ShapePaintPolylineContainer(GraphicFactory graphicFactory,
+  ShapePaintPolylineContainer(
       ShapeContainer shapeContainer, MapPaint paint, double dy)
       : super(shapeContainer, paint, dy) {
-    path = graphicFactory.createPath();
+    path = GraphicFactory().createPath();
   }
 
   @override

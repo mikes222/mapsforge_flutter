@@ -18,7 +18,6 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
     String? src,
     double width = 20,
     double height = 20,
-    SymbolCache? symbolCache,
     required latLong,
     minZoomLevel = 0,
     maxZoomLevel = 65535,
@@ -43,13 +42,12 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
     this.bitmapSrc = src;
     this.bitmapWidth = width;
     this.bitmapHeight = height;
-    this.symbolCache = symbolCache;
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await super.initResources(graphicFactory);
-    await initBitmap(graphicFactory);
+  Future<void> initResources( SymbolCache? symbolCache) async {
+    await super.initResources( symbolCache);
+    await initBitmap( symbolCache);
     if (markerCaption != null && markerCaption!.latLong == null) {
       markerCaption!.latLong = latLong;
     }

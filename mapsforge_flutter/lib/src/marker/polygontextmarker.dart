@@ -27,7 +27,6 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   final double fontSize;
 
   PolygonTextMarker({
-    SymbolCache? symbolCache,
     required this.caption,
     display = Display.ALWAYS,
     int minZoomLevel = 0,
@@ -60,9 +59,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await super.initResources(graphicFactory);
-    initTextMixin(graphicFactory);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await super.initResources(symbolCache);
+    initTextMixin();
     fontSize = this.fontSize;
     stroke!.setColorFromNumber(this.strokeColor);
     if (fillColor != null) fill!.setColorFromNumber(this.fillColor!);

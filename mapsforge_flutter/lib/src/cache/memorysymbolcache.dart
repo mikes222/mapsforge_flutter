@@ -18,14 +18,22 @@ class MemorySymbolCache extends SymbolCache {
 
   final AssetBundle? bundle;
 
-  Cache<String, ResourceBitmap> _cache = new LruCache<String, ResourceBitmap>(
-    storage: SimpleStorage<String, ResourceBitmap>(onEvict: (key, item) {
+  LruCache<String, ResourceBitmap> _cache =
+      new LruCache<String, ResourceBitmap>(
+    storage: StatisticsStorage<String, ResourceBitmap>(onEvict: (key, item) {
       item.decrementRefCount();
     }),
-    capacity: 100,
+    capacity: 500,
   );
 
   MemorySymbolCache({this.bundle});
+
+  @override
+  void dispose() {
+    print("Statistics for MemorySymbolCache: ${_cache.storage.toString()}");
+    _cache.clear();
+    super.dispose();
+  }
 
   @override
   Future<ResourceBitmap?> getSymbol(

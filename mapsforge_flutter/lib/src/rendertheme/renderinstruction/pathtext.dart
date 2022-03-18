@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -32,10 +33,10 @@ class PathText extends RenderInstruction with TextMixin {
   bool? rotate;
   TextKey? textKey;
 
-  PathText(GraphicFactory graphicFactory, DisplayModel displayModel)
+  PathText()
       : dyScaled = new Map(),
-        super(graphicFactory, displayModel) {
-    initTextMixin(graphicFactory);
+        super( ) {
+    initTextMixin();
     this.rotate = true;
     this.repeat = true;
   }
@@ -45,7 +46,7 @@ class PathText extends RenderInstruction with TextMixin {
     mixinDispose();
   }
 
-  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
 
@@ -68,7 +69,7 @@ class PathText extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.FILL == name) {
         this
             .fill!
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+            .setColorFromNumber(XmlUtils.getColor( value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         fontFamily = MapFontFamily.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value));
@@ -93,7 +94,7 @@ class PathText extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.STROKE == name) {
         this
             .stroke!
-            .setColorFromNumber(XmlUtils.getColor(graphicFactory, value, this));
+            .setColorFromNumber(XmlUtils.getColor( value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.stroke!.setStrokeWidth(
             XmlUtils.parseNonNegativeFloat(name, value) *
@@ -151,18 +152,19 @@ class PathText extends RenderInstruction with TextMixin {
       return;
     }
 
-    scaleMixinStrokeWidth(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinStrokeWidth(scaleFactor, zoomLevel);
 
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
   }
 
   @override
   void scaleTextSize(double scaleFactor, int zoomLevel) {
-    scaleMixinTextSize(graphicFactory, scaleFactor, zoomLevel);
+    scaleMixinTextSize(scaleFactor, zoomLevel);
   }
 
   @override
-  Future<RenderInstruction> initResources(GraphicFactory graphicFactory) {
+  Future<RenderInstruction> initResources(
+      SymbolCache? symbolCache) {
     return Future.value(this);
   }
 }

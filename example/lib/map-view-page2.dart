@@ -51,10 +51,10 @@ class MapViewPageState2 extends State<MapViewPage2> {
   Widget _buildMapViewBody(BuildContext context) {
     return MapviewWidget(
         displayModel: displayModel,
-        createMapModel: (GraphicFactory graphicFactory) async {
+        createMapModel: () async {
           /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-          return widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OFFLINE
-              ? await _createOfflineMapModel(graphicFactory)
+          return widget.mapFileData.mapType == MAPTYPE.OFFLINE
+              ? await _createOfflineMapModel()
               : await _createOnlineMapModel();
         },
         createViewModel: () async {
@@ -78,7 +78,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     return viewModel;
   }
 
-  Future<MapModel> _createOfflineMapModel(GraphicFactory graphicFactory) async {
+  Future<MapModel> _createOfflineMapModel() async {
     /// For the offline-maps we need a cache for all the tiny symbols in the map
     final SymbolCache symbolCache;
     if (kIsWeb) {
@@ -89,16 +89,15 @@ class MapViewPageState2 extends State<MapViewPage2> {
     }
 
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
-    final RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     final String content =
         await rootBundle.loadString(widget.mapFileData.theme);
-    renderThemeBuilder.parseXml(content);
+    renderThemeBuilder.parseXml(displayModel, content);
     RenderTheme renderTheme = renderThemeBuilder.build();
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    final JobRenderer jobRenderer = MapDataStoreRenderer(
-        widget.mapFile!, renderTheme, graphicFactory, true);
+    final JobRenderer jobRenderer =
+        MapDataStoreRenderer(widget.mapFile!, renderTheme, symbolCache, true);
 
     /// and now it is similar to online rendering.
 
@@ -117,6 +116,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
       displayModel: displayModel,
       renderer: jobRenderer,
       tileBitmapCache: bitmapCache,
+      symbolCache: symbolCache,
     );
 
     return mapModel;
@@ -124,10 +124,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
 
   Future<MapModel> _createOnlineMapModel() async {
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    JobRenderer jobRenderer =
-        widget.mapFileData.isOnlineMap == ONLINEMAPTYPE.OSM
-            ? MapOnlineRendererWeb()
-            : ArcGisOnlineRenderer();
+    JobRenderer jobRenderer = widget.mapFileData.mapType == MAPTYPE.OSM
+        ? MapOnlineRendererWeb()
+        : ArcGisOnlineRenderer();
 
     /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
     final TileBitmapCache bitmapCache;

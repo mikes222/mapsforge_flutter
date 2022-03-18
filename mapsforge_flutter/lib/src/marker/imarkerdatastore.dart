@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/marker.dart';
 
 abstract class IMarkerDataStore with ChangeNotifier {
   List<BasicMarker> getMarkers(
-      GraphicFactory graphicFactory, BoundingBox boundary, int zoomLevel);
+      SymbolCache? symbolCache, BoundingBox boundary, int zoomLevel);
 
   List<BasicMarker> isTapped(
       MapViewPosition mapViewPosition, double tappedX, double tappedY);

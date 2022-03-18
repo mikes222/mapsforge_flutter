@@ -11,11 +11,11 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 class MemoryTileBitmapCache extends TileBitmapCache {
   static final List<MemoryTileBitmapCache> _instances = [];
 
-  final SimpleStorage<Tile, TileBitmap> storage =
-      SimpleStorage<Tile, TileBitmap>(onEvict: (key, item) {
+  final Storage<Tile, TileBitmap> storage =
+      StatisticsStorage<Tile, TileBitmap>(onEvict: (key, item) {
     item.decrementRefCount();
   });
-  late Cache<Tile, TileBitmap> _bitmaps;
+  late LruCache<Tile, TileBitmap> _cache;
 
   factory MemoryTileBitmapCache.create() {
     MemoryTileBitmapCache result = MemoryTileBitmapCache._();
@@ -36,7 +36,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   }
 
   MemoryTileBitmapCache._() {
-    _bitmaps = new LruCache<Tile, TileBitmap>(
+    _cache = new LruCache<Tile, TileBitmap>(
       storage: storage,
       capacity: 100,
     );
@@ -44,18 +44,19 @@ class MemoryTileBitmapCache extends TileBitmapCache {
 
   @override
   void dispose() {
-    _bitmaps.clear();
+    _cache.clear();
+    print("Statistics for MemoryTileBitmapCache: ${_cache.storage.toString()}");
     _instances.remove(this);
   }
 
   @override
   TileBitmap? getTileBitmapSync(Tile tile) {
-    return _bitmaps.get(tile);
+    return _cache.get(tile);
   }
 
   @override
   Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
-    return _bitmaps.get(tile);
+    return _cache.get(tile);
   }
 
   @override
@@ -65,12 +66,12 @@ class MemoryTileBitmapCache extends TileBitmapCache {
     // if (bitmap != null) {
     //   bitmap.decrementRefCount();
     // }
-    _bitmaps[tile] = tileBitmap;
+    _cache[tile] = tileBitmap;
   }
 
   @override
   void purgeAll() {
-    _bitmaps.clear();
+    _cache.clear();
   }
 
   @override
@@ -82,7 +83,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
       }
       return false;
     }).forEach((tile) {
-      _bitmaps.remove(tile);
+      _cache.remove(tile);
     });
   }
 }

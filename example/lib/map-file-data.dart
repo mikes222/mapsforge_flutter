@@ -8,7 +8,7 @@ class MapFileData {
   final double initialPositionLong;
   final int initialZoomLevel;
   final String? relativePathPrefix;
-  final ONLINEMAPTYPE isOnlineMap;
+  final MAPTYPE mapType;
 
   /// Sets the level overlay for indoor maps.
   /// Requires the [indoorLevels] parameter.
@@ -29,7 +29,7 @@ class MapFileData {
     this.initialZoomLevel = 16,
     this.indoorZoomOverlay = false,
     this.indoorLevels,
-  }) : isOnlineMap = ONLINEMAPTYPE.OFFLINE;
+  }) : mapType = MAPTYPE.OFFLINE;
 
   MapFileData.online({
     required this.displayedName,
@@ -42,7 +42,7 @@ class MapFileData {
         fileName = "unused",
         theme = "online",
         relativePathPrefix = null,
-        isOnlineMap = ONLINEMAPTYPE.OSM;
+        mapType = MAPTYPE.OSM;
 
   MapFileData.onlineSatellite({
     required this.displayedName,
@@ -55,12 +55,12 @@ class MapFileData {
         fileName = "unused",
         theme = "unused",
         relativePathPrefix = null,
-        isOnlineMap = ONLINEMAPTYPE.ARCGIS;
+        mapType = MAPTYPE.ARCGIS;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-enum ONLINEMAPTYPE {
+enum MAPTYPE {
   // No Onlinemap --> We use offline-maps
   OFFLINE,
   // OpenStreetMap

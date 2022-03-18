@@ -31,7 +31,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   final int strokeColor;
 
   PolygonMarker({
-    SymbolCache? symbolCache,
     display = Display.ALWAYS,
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
@@ -52,7 +51,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
         assert(minZoomLevel <= maxZoomLevel),
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
-        assert(bitmapSrc == null || (symbolCache != null)),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -60,7 +58,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
           item: item,
           markerCaption: markerCaption,
         ) {
-    this.symbolCache = symbolCache;
     this.bitmapWidth = bitmapWidth;
     this.bitmapHeight = bitmapHeight;
     this.bitmapPercent = bitmapPercent;
@@ -73,11 +70,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await super.initResources(graphicFactory);
-    await initBitmap(graphicFactory);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await super.initResources(symbolCache);
+    await initBitmap(symbolCache);
     if (fill == null && fillColor != null) {
-      this.fill = graphicFactory.createPaint();
+      this.fill = GraphicFactory().createPaint();
       this.fill!.setColorFromNumber(fillColor!);
       this.fill!.setStyle(Style.FILL);
       this.fill!.setStrokeWidth(fillWidth);
@@ -88,7 +85,7 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
       }
     }
     if (stroke == null && strokeWidth > 0) {
-      this.stroke = graphicFactory.createPaint();
+      this.stroke = GraphicFactory().createPaint();
       this.stroke!.setColorFromNumber(strokeColor);
       this.stroke!.setStyle(Style.STROKE);
       this.stroke!.setStrokeWidth(strokeWidth);
@@ -111,7 +108,7 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   @override
   void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
-    MapPath mapPath = markerCallback.graphicFactory.createPath();
+    MapPath mapPath = GraphicFactory().createPath();
 
     path.forEach((latLong) {
       double y = markerCallback.mapViewPosition.projection!

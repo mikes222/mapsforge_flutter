@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
@@ -24,8 +23,6 @@ abstract class MarkerCallback {
 
   void renderCircle(
       double latitude, double longitude, double radius, MapPaint paint);
-
-  GraphicFactory get graphicFactory;
 
   MapViewPosition get mapViewPosition;
 }

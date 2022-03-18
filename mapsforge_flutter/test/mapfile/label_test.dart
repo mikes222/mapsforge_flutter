@@ -32,13 +32,11 @@ void main() {
         .longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
-      renderThemeBuilder.parseXml(content);
+      renderThemeBuilder.parseXml(displayModel, content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MemoryDatastore datastore = MemoryDatastore();
@@ -80,7 +78,7 @@ void main() {
       Job mapGeneratorJob0 = new Job(tile0, false,
           displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
       JobResult jobResult0 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));

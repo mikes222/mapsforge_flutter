@@ -118,7 +118,6 @@ class WayDecorator {
    * @param currentLabels the list of labels to which a new WayTextContainer will be added
    */
   static void renderText(
-      GraphicFactory graphicFactory,
       Tile upperLeft,
       String text,
       Display display,
@@ -175,7 +174,7 @@ class WayDecorator {
       }
       if (tooSharp) continue;
 
-      currentLabels.add(new WayTextContainer(graphicFactory, linePart, display,
+      currentLabels.add(new WayTextContainer(linePart, display,
           priority, text, fill, stroke, textHeight.toDouble()));
     }
   }

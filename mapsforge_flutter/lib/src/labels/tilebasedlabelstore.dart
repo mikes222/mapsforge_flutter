@@ -11,15 +11,15 @@ import 'labelstore.dart';
 /// A LabelStore where the data is stored per tile.
 class TileBasedLabelStore implements LabelStore {
   static final _log = new Logger('TileBasedLabelStore');
-  final SimpleStorage<Tile, List<MapElementContainer>> storage =
-      SimpleStorage<Tile, List<MapElementContainer>>();
-  late Cache<Tile, List<MapElementContainer>> _items;
+  final Storage<Tile, List<MapElementContainer>> storage =
+      StatisticsStorage<Tile, List<MapElementContainer>>();
+  late LruCache<Tile, List<MapElementContainer>> _cache;
 
   late Set<Tile> lastVisibleTileSet;
   int version = 0;
 
   void debug() {
-    _log.info("version: $version, items in Cache: ${_items.length}");
+    _log.info("version: $version, items in Cache: ${_cache.length}");
     lastVisibleTileSet.forEach((element) {
       _log.info("LastVisibleTile: $element");
     });
@@ -29,7 +29,7 @@ class TileBasedLabelStore implements LabelStore {
   }
 
   TileBasedLabelStore(int capacity) {
-    _items = new LruCache<Tile, List<MapElementContainer>>(
+    _cache = new LruCache<Tile, List<MapElementContainer>>(
       storage: storage,
       capacity: capacity,
     );
@@ -37,12 +37,14 @@ class TileBasedLabelStore implements LabelStore {
   }
 
   void destroy() {
-    _items.clear();
+    print("Statistics for TileBasedLabelStore: ${_cache.storage.toString()}");
+    _cache.clear();
   }
 
   @override
   void clear() {
-    _items.clear();
+    print("Statistics for TileBasedLabelStore: ${_cache.storage.toString()}");
+    _cache.clear();
   }
 
   /**
@@ -52,7 +54,7 @@ class TileBasedLabelStore implements LabelStore {
    * @param mapItems the map elements.
    */
   void storeMapItems(Tile tile, List<MapElementContainer> mapItems) {
-    _items.set(tile, LayerUtil.collisionFreeOrdered(mapItems));
+    _cache.set(tile, LayerUtil.collisionFreeOrdered(mapItems));
     ++this.version;
   }
 
@@ -72,8 +74,8 @@ class TileBasedLabelStore implements LabelStore {
 
     List<MapElementContainer> visibleItems = [];
     for (Tile tile in lastVisibleTileSet) {
-      if (_items.containsKey(tile)) {
-        visibleItems.addAll(_items.get(tile)!);
+      if (_cache.containsKey(tile)) {
+        visibleItems.addAll(_cache.get(tile)!);
       }
     }
     return visibleItems;
@@ -86,6 +88,6 @@ class TileBasedLabelStore implements LabelStore {
    * @return true if the tile is in the current tile set, but no data is stored for it.
    */
   bool requiresTile(Tile tile) {
-    return this.lastVisibleTileSet.contains(tile) && !_items.containsKey(tile);
+    return this.lastVisibleTileSet.contains(tile) && !_cache.containsKey(tile);
   }
 }

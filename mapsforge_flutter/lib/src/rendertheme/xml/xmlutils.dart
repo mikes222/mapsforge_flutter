@@ -38,14 +38,13 @@ class XmlUtils {
   /**
    * Supported formats are {@code #RRGGBB} and {@code #AARRGGBB}.
    */
-  static int getColor(GraphicFactory graphicFactory, String colorString,
-      RenderInstruction origin) {
+  static int getColor(String colorString, RenderInstruction origin) {
     if (colorString.isEmpty || !colorString.startsWith("#")) {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     } else if (colorString.length == 7) {
-      return getColorAlpha(graphicFactory, colorString, 255, 1, origin);
+      return getColorAlpha(GraphicFactory(), colorString, 255, 1, origin);
     } else if (colorString.length == 9) {
-      return getColorAlpha(graphicFactory, colorString,
+      return getColorAlpha(GraphicFactory(), colorString,
           int.parse(colorString.substring(1, 3), radix: 16), 3, origin);
     } else {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);

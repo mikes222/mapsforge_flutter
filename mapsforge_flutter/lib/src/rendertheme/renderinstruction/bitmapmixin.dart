@@ -7,8 +7,6 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 class BitmapMixin {
   static final _log = new Logger('BitmapMixin');
 
-  SymbolCache? symbolCache;
-
   String? bitmapSrc;
 
   Bitmap? bitmap;
@@ -24,15 +22,15 @@ class BitmapMixin {
   MapPaint? bitmapPaint;
 
   /// Sets a new bitmap and destroys the old one if available
-  Future<void> setBitmapSrc(
-      GraphicFactory graphicFactory, String? bitmapSrc) async {
+  Future<void> setBitmapSrc(String? bitmapSrc,
+      SymbolCache? symbolCache) async {
     if (this.bitmap != null) {
       this.bitmap!.decrementRefCount();
       bitmap = null;
     }
     bitmapInvalid = false;
     this.bitmapSrc = bitmapSrc;
-    await initBitmap(graphicFactory);
+    await initBitmap( symbolCache);
   }
 
   @mustCallSuper
@@ -45,7 +43,7 @@ class BitmapMixin {
   }
 
   @mustCallSuper
-  Future<void> initBitmap(GraphicFactory graphicFactory) async {
+  Future<void> initBitmap( SymbolCache? symbolCache) async {
     //print("initResources called for $src");
     if (bitmapInvalid) return;
 
@@ -61,7 +59,7 @@ class BitmapMixin {
     }
     try {
       //_log.info("$bitmapWidth - $bitmapHeight --> $bitmapPercent");
-      bitmap = await symbolCache!.getSymbol(
+      bitmap = await symbolCache.getSymbol(
           bitmapSrc, bitmapWidth.round(), bitmapHeight.round(), bitmapPercent);
       if (bitmap == null ||
           bitmap!.getWidth() == 0 ||
@@ -74,7 +72,7 @@ class BitmapMixin {
       }
       bitmap!.incrementRefCount();
       if (bitmapPaint == null) {
-        bitmapPaint = graphicFactory.createPaint();
+        bitmapPaint = GraphicFactory().createPaint();
         bitmapPaint!.setColorFromNumber(0xff000000);
       }
     } catch (e) {

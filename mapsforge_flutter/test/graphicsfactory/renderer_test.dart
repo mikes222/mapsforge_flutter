@@ -38,13 +38,11 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
-      renderThemeBuilder.parseXml(content);
+      renderThemeBuilder.parseXml(displayModel, content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MemoryDatastore datastore = MemoryDatastore();
@@ -93,7 +91,7 @@ void main() {
       Job mapGeneratorJob = new Job(tile, false,
           displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
@@ -138,13 +136,11 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    GraphicFactory graphicFactory = const FlutterGraphicFactory();
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
-      renderThemeBuilder.parseXml(content);
+      renderThemeBuilder.parseXml(displayModel, content);
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MemoryDatastore datastore = MemoryDatastore();
@@ -168,7 +164,7 @@ void main() {
       Job mapGeneratorJob = new Job(tile, false,
           displayModel.getUserScaleFactor(), displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, graphicFactory, true);
+          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));

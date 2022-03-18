@@ -1,8 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -29,15 +27,14 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   bool? rotate;
   Scale scale = Scale.STROKE;
 
-  LineSymbol(GraphicFactory graphicFactory, SymbolCache symbolCache,
-      DisplayModel displayModel, this.relativePathPrefix)
+  LineSymbol(this.relativePathPrefix)
       : dyScaled = new Map(),
-        super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
+        super() {
     this.rotate = true;
   }
 
-  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
     this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
@@ -138,8 +135,8 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   }
 
   @override
-  Future<LineSymbol> initResources(GraphicFactory graphicFactory) async {
-    await initBitmap(graphicFactory);
+  Future<LineSymbol> initResources(SymbolCache? symbolCache) async {
+    await initBitmap(symbolCache);
     return this;
   }
 }

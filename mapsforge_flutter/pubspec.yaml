@@ -18,10 +18,10 @@ dependencies:
   convert: ^3.0.1
 
   # MIT License
-  ecache: ^2.0.1
+  ecache: ^2.0.2
 #    git:
 #      url: https://github.com/mikes222/dcache
-    #path: ../../github_dcache/
+#    path: ../../github_ecache/
 
   # BSD License
   http: ^0.13.4
@@ -36,13 +36,13 @@ dependencies:
   synchronized: ^3.0.0
 
   # BSD License
-  flutter_svg: ^1.0.0
+  flutter_svg: ^1.0.3
 
   # BSD License
   #image: 2.1.13
 
   # BSD License, currently no WEB support
-  path_provider: ^2.0.8
+  path_provider: ^2.0.9
 
   # MIT License
   provider: ^6.0.2
@@ -51,6 +51,7 @@ dependencies:
   collection: ^1.15.0
 
   execution_queue: ^1.2.0
+    #path: ../../execution_queue.dart
 
 dev_dependencies:
   flutter_test:

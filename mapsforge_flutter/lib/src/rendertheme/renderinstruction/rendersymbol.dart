@@ -1,8 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
-import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
@@ -21,13 +19,10 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   String? id;
   int priority = 0;
 
-  RenderSymbol(GraphicFactory graphicFactory, SymbolCache symbolCache,
-      DisplayModel displayModel)
-      : super(graphicFactory, displayModel) {
-    this.symbolCache = symbolCache;
-  }
+  RenderSymbol()
+      : super( );
 
-  void parse(XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
     this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
 
     rootElement.attributes.forEach((element) {
@@ -117,12 +112,13 @@ class RenderSymbol extends RenderInstruction with BitmapMixin {
   // }
 
   @override
-  Future<RenderSymbol> initResources(GraphicFactory graphicFactory) async {
+  Future<RenderSymbol> initResources(
+      SymbolCache? symbolCache) async {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return this;
     }
-    await initBitmap(graphicFactory);
+    await initBitmap( symbolCache);
     return this;
   }
 

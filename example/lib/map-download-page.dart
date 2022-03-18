@@ -4,9 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/filemgr.dart';
-import 'package:mapsforge_example/map-view-page.dart';
+import 'package:mapsforge_example/map-view-page2.dart';
 import 'package:mapsforge_example/pathhandler.dart';
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
 import 'map-file-data.dart';
@@ -28,9 +27,8 @@ class MapDownloadPage extends StatefulWidget {
 
 /// The [State] of the [MapViewPage] Widget.
 class MapDownloadPageState extends State<MapDownloadPage> {
-  late ViewModel viewModel;
   double? downloadProgress;
-  MapModel? mapModel;
+
   String? error;
 
   @override
@@ -57,22 +55,17 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     return StreamBuilder<FileDownloadEvent>(
         stream: FileMgr().fileDownloadOberve,
         builder: (context, AsyncSnapshot<FileDownloadEvent> snapshot) {
-          if (snapshot.data != null) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // let's start the download process
+            _startDownload();
+          } else {
             if (snapshot.data!.status == DOWNLOADSTATUS.ERROR) {
               return const Center(child: Text("Error while downloading file"));
             } else if (snapshot.data!.status == DOWNLOADSTATUS.FINISH) {
-              if (snapshot.data!.content != null) {
-                // file downloaded into memory (we are in kIsWeb
-                _startMapWithContent(snapshot.data!.content!);
-              } else {
-                // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
-                _startMapWithFile();
-              }
+              downloadProgress = 1;
+              _switchToMap(snapshot.data?.content);
             } else
               downloadProgress = (snapshot.data!.count / snapshot.data!.total);
-          } else {
-            // let's start the download process
-            _startDownload();
           }
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -88,7 +81,7 @@ class MapDownloadPageState extends State<MapDownloadPage> {
                 child: Text(
                   downloadProgress == null || downloadProgress == 1
                       ? "Loading"
-                      : "Downloading ${(downloadProgress! * 100).round()}%",
+                      : "Downloading ${(downloadProgress! * 100).round()} %",
                 ),
               ),
             ],
@@ -97,19 +90,6 @@ class MapDownloadPageState extends State<MapDownloadPage> {
   }
 
   Future<void> _startDownload() async {
-    if (widget.mapFileData.isOnlineMap != ONLINEMAPTYPE.OFFLINE) {
-      // we want to show an online map. Nothing to download.
-      Future.delayed(const Duration(seconds: 1), () {
-        unawaited(Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (BuildContext context) =>
-                MapViewPage(mapFileData: widget.mapFileData, mapFile: null),
-          ),
-        ));
-      });
-      return;
-    }
-
     if (kIsWeb) {
       // web mode does not support filesystems so we need to download to memory instead
       await FileMgr().downloadNow2(widget.mapFileData.url);
@@ -120,7 +100,9 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
     if (await pathHandler.exists(fileName)) {
       // file already exists locally, start now
-      await _startMapWithFile();
+      final MapFile mapFile =
+          await MapFile.from(pathHandler.getPath(fileName), null, null);
+      await _startMap(mapFile);
     } else {
       bool ok = await FileMgr().downloadToFile2(
           widget.mapFileData.url, pathHandler.getPath(fileName));
@@ -131,28 +113,30 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     }
   }
 
-  Future<void> _startMapWithContent(List<int> content) async {
-    MapFile mapFile =
-        await MapFile.using(Uint8List.fromList(content), null, null);
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (BuildContext context) =>
-            MapViewPage(mapFileData: widget.mapFileData, mapFile: mapFile),
-      ),
-    );
+  Future<void> _switchToMap(List<int>? content) async {
+    if (content != null) {
+      // file downloaded into memory
+      MapFile mapFile =
+          await MapFile.using(Uint8List.fromList(content), null, null);
+      await _startMap(mapFile);
+    } else {
+      // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
+      String fileName = widget.mapFileData.fileName;
+
+      PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
+      final MapFile mapFile =
+          await MapFile.from(pathHandler.getPath(fileName), null, null);
+      await _startMap(mapFile);
+    }
   }
 
-  Future<void> _startMapWithFile() async {
-    String fileName = widget.mapFileData.fileName;
-
-    PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-    final MapFile mapFile =
-        await MapFile.from(pathHandler.getPath(fileName), null, null);
+  Future<void> _startMap(MapFile mapFile) async {
     await Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (BuildContext context) =>
-            MapViewPage(mapFileData: widget.mapFileData, mapFile: mapFile),
+            MapViewPage2(mapFileData: widget.mapFileData, mapFile: mapFile),
       ),
     );
+    mapFile.dispose();
   }
 }

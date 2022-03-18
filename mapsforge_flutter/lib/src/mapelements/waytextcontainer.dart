@@ -14,14 +14,13 @@ import '../model/mappoint.dart';
 import 'mapelementcontainer.dart';
 
 class WayTextContainer extends MapElementContainer {
-  final GraphicFactory graphicFactory;
   final LineString lineString;
   final MapPaint paintFront;
   final MapPaint paintBack;
   final String text;
   final double textHeight;
 
-  WayTextContainer(this.graphicFactory, this.lineString, Display display,
+  WayTextContainer(this.lineString, Display display,
       int priority, this.text, this.paintFront, this.paintBack, this.textHeight)
       : super(lineString.segments.elementAt(0).start, display, priority) {
     this.boundary = null;
@@ -67,6 +66,6 @@ class WayTextContainer extends MapElementContainer {
 
   @override
   String toString() {
-    return 'WayTextContainer{graphicFactory: $graphicFactory, lineString: $lineString, paintFront: $paintFront, paintBack: $paintBack, text: $text}';
+    return 'WayTextContainer{lineString: $lineString, paintFront: $paintFront, paintBack: $paintBack, text: $text}';
   }
 }

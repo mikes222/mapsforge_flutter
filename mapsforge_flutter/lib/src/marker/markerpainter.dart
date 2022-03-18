@@ -5,8 +5,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/marker/markercontext.dart';
-import 'package:mapsforge_flutter/src/model/displaymodel.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
 ///
 /// The flutter-derived class to paint all markers in the visible canvas area
@@ -22,20 +20,20 @@ class MarkerPainter extends CustomPainter {
 
   final ViewModel viewModel;
 
-  final GraphicFactory graphicFactory;
+  final SymbolCache? symbolCache;
 
   MarkerPainter(
       {required this.position,
       required this.displayModel,
       required this.dataStore,
       required this.viewModel,
-      required this.graphicFactory})
+      this.symbolCache})
       : super(repaint: dataStore);
 
   @override
   void paint(Canvas canvas, Size size) {
     List<BasicMarker> markers = dataStore.getMarkers(
-        graphicFactory,
+        symbolCache,
         position.calculateBoundingBox(viewModel.viewDimension!),
         position.zoomLevel);
     // _log.info("Drawing ${markers?.length ?? -1} markers");
@@ -44,8 +42,7 @@ class MarkerPainter extends CustomPainter {
       FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
       flutterCanvas.setClip(0, 0, viewModel.viewDimension!.width,
           viewModel.viewDimension!.height);
-      MarkerContext context =
-          MarkerContext(flutterCanvas, graphicFactory, position);
+      MarkerContext context = MarkerContext(flutterCanvas, position);
       markers.forEach((element) {
         element.render(context, position.zoomLevel);
       });

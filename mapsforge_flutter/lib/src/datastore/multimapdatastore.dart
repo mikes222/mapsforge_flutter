@@ -85,17 +85,9 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   void removeAllDatastores() {
-    close();
-  }
-
-  @override
-  void close() {
     this.boundingBox = null;
     startPosition = null;
     startZoomLevel = null;
-    for (MapDataStore mdb in mapDatabases) {
-      mdb.close();
-    }
     this.mapDatabases.clear();
   }
 

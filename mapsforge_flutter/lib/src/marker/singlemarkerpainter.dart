@@ -17,14 +17,11 @@ class SingleMarkerPainter extends CustomPainter {
 
   final ViewModel viewModel;
 
-  final GraphicFactory graphicFactory;
-
   SingleMarkerPainter(
       {required this.position,
       required this.displayModel,
       required this.marker,
-      required this.viewModel,
-      required this.graphicFactory})
+      required this.viewModel,})
       : super();
 
   @override
@@ -33,7 +30,7 @@ class SingleMarkerPainter extends CustomPainter {
     flutterCanvas.setClip(
         0, 0, viewModel.viewDimension!.width, viewModel.viewDimension!.height);
     MarkerContext context =
-        MarkerContext(flutterCanvas, graphicFactory, position);
+        MarkerContext(flutterCanvas, position);
     marker.render(context, position.zoomLevel);
   }
 

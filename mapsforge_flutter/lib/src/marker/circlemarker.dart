@@ -1,9 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/special.dart';
-// ignore: implementation_imports
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-// ignore: implementation_imports
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 class CircleMarker<T> extends BasicMarker<T> {
@@ -52,17 +50,17 @@ class CircleMarker<T> extends BasicMarker<T> {
         );
 
   @override
-  Future<void> initResources(GraphicFactory graphicFactory) async {
-    await super.initResources(graphicFactory);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await super.initResources(symbolCache);
     if (fill == null && fillColor != null) {
-      fill = graphicFactory.createPaint();
+      fill = GraphicFactory().createPaint();
       fill!.setColorFromNumber(fillColor!);
       fill!.setStyle(Style.FILL);
       fill!.setStrokeWidth(fillWidth);
       //this.stroke.setTextSize(fontSize);
     }
     if (stroke == null && strokeWidth > 0) {
-      stroke = graphicFactory.createPaint();
+      stroke = GraphicFactory().createPaint();
       stroke!.setColorFromNumber(strokeColor);
       stroke!.setStyle(Style.STROKE);
       stroke!.setStrokeWidth(strokeWidth);

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
@@ -18,12 +17,9 @@ class MarkerContext implements MarkerCallback {
   final FlutterCanvas flutterCanvas;
 
   @override
-  final GraphicFactory graphicFactory;
-
-  @override
   final MapViewPosition mapViewPosition;
 
-  MarkerContext(this.flutterCanvas, this.graphicFactory, this.mapViewPosition);
+  MarkerContext(this.flutterCanvas, this.mapViewPosition);
 
   @override
   void renderBitmap(Bitmap bitmap, double latitude, double longitude,

@@ -5,9 +5,8 @@ import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 
 import '../datastore/deserializer.dart';
-import 'subfileparameter.dart';
 import 'indexcacheentrykey.dart';
-import 'readbuffer.dart';
+import 'subfileparameter.dart';
 import 'subfileparameterbuilder.dart';
 
 ///
@@ -21,7 +20,7 @@ class IndexCache {
   static final int SIZE_OF_INDEX_BLOCK =
       INDEX_ENTRIES_PER_BLOCK * SubFileParameterBuilder.BYTES_PER_INDEX_ENTRY;
 
-  final LruCache<IndexCacheEntryKey, Uint8List> _map;
+  final LruCache<IndexCacheEntryKey, Uint8List> _cache;
 
   int _successes = 0;
 
@@ -31,12 +30,13 @@ class IndexCache {
   /// @param capacity     the maximum number of entries in the cache.
   /// @throws IllegalArgumentException if the capacity is negative.
   IndexCache(int capacity)
-      : _map = LruCache<IndexCacheEntryKey, Uint8List>(
-            storage: SimpleStorage(), capacity: capacity);
+      : _cache = LruCache<IndexCacheEntryKey, Uint8List>(
+            storage: StatisticsStorage(), capacity: capacity);
 
   /// Destroy the cache at the end of its lifetime.
   void dispose() {
-    this._map.clear();
+    print("Statistics for IndexCache: ${_cache.storage.toString()}");
+    this._cache.clear();
   }
 
   /**
@@ -61,7 +61,7 @@ class IndexCache {
         new IndexCacheEntryKey(subFileParameter, indexBlockNumber);
 
     // check for cached index block
-    Uint8List? indexBlock = this._map[indexCacheEntryKey];
+    Uint8List? indexBlock = this._cache[indexCacheEntryKey];
     if (indexBlock == null) {
       // cache miss, seek to the correct index block in the file and read it
       int indexBlockPosition = subFileParameter.indexStartAddress! +
@@ -77,7 +77,7 @@ class IndexCache {
       //_readBufferMaster.close();
 
       // put the index block in the map
-      this._map[indexCacheEntryKey] = indexBlock;
+      this._cache[indexCacheEntryKey] = indexBlock;
       ++_misses;
     } else {
       ++_successes;
@@ -94,6 +94,6 @@ class IndexCache {
 
   @override
   String toString() {
-    return 'IndexCache{map: $_map, successes: $_successes, misses: $_misses}';
+    return 'IndexCache{map: $_cache, successes: $_successes, misses: $_misses}';
   }
 }
