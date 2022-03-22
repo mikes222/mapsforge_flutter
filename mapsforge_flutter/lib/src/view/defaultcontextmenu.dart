@@ -6,13 +6,14 @@ class DefaultContextMenu extends StatefulWidget {
   /// The dimensions of the map
   final Dimension screen;
 
-  /// The event where the contextMenu should be drawn to
+  /// The event when the context menu have been requested.
   final TapEvent event;
 
   final ViewModel viewModel;
 
   /// The current position of the map. Note that the map could move even if the contextmenu is shown.
-  /// This means the x/y coordinates of the [event] may not be accurate anymore.
+  /// This means the x/y coordinates of the [event] may not be accurate anymore. The lat/lon
+  /// position also represents the CURRENT position and not the position when the tap event occured.
   final MapViewPosition position;
 
   DefaultContextMenu(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
@@ -137,31 +136,39 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   }
 
   Widget _buildView() {
-    return FlutterGestureDetector(
-        key: _keyView,
-        viewModel: _viewModel!,
-        child: StreamBuilder<MapViewPosition?>(
-          stream: _viewModel!.observePosition,
-          builder:
-              (BuildContext context, AsyncSnapshot<MapViewPosition?> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
-              return _buildNoPositionView();
-            if (snapshot.hasData) {
-              if (snapshot.data!.hasPosition()) {
-                //_log.info("I have a new position ${snapshot.data.toString()}");
-                return _buildMapView(snapshot.data!);
+    return LayoutBuilder(builder: (context, BoxConstraints boxConstraints) {
+      _viewModel!
+          .setViewDimension(boxConstraints.maxWidth, boxConstraints.maxHeight);
+      return Stack(
+        children: [
+          _buildBackgroundView() ?? const SizedBox(),
+          StreamBuilder<MapViewPosition?>(
+            stream: _viewModel!.observePosition,
+            builder: (BuildContext context,
+                AsyncSnapshot<MapViewPosition?> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting)
+                return _buildNoPositionView();
+              if (snapshot.hasData) {
+                if (snapshot.data!.hasPosition()) {
+                  //_log.info("I have a new position ${snapshot.data.toString()}");
+                  return _buildMapView(snapshot.data!);
+                }
+                //return _buildNoPositionView();
               }
-              //return _buildNoPositionView();
-            }
-            if (_viewModel!.mapViewPosition != null &&
-                _viewModel!.mapViewPosition!.hasPosition()) {
-              //_log.info(
-              //    "I have an old position ${widget.viewModel.mapViewPosition!.toString()}");
-              return _buildMapView(_viewModel!.mapViewPosition!);
-            }
-            return _buildNoPositionView();
-          },
-        ));
+              if (_viewModel!.mapViewPosition != null &&
+                  _viewModel!.mapViewPosition!.hasPosition()) {
+                //_log.info(
+                //    "I have an old position ${widget.viewModel.mapViewPosition!.toString()}");
+                return _buildMapView(_viewModel!.mapViewPosition!);
+              }
+              return _buildNoPositionView();
+            },
+          ),
+          if (_viewModel!.overlays != null)
+            for (Widget widget in _viewModel!.overlays!) widget,
+        ],
+      );
+    });
   }
 
   @protected
@@ -186,72 +193,66 @@ class _MapviewWidgetState extends State<MapviewWidget> {
       // draw the background first
       return CustomPaint(
         foregroundPainter: BackgroundPainter(displayModel: widget.displayModel),
-        child: Container(),
+        child: const SizedBox.expand(),
       );
     }
     return null;
   }
 
   List<Widget> _createMarkerWidgets(MapViewPosition position) {
-    List<Widget> markerWidgets = [];
-
     // now draw all markers
-    markerWidgets.addAll(_mapModel!.markerDataStores
-        .map((IMarkerDataStore markerDataStore) => CustomPaint(
+    return _mapModel!.markerDataStores
+        .map((datastore) => CustomPaint(
               foregroundPainter: MarkerPainter(
-                  position: position,
-                  displayModel: _mapModel!.displayModel,
-                  dataStore: markerDataStore,
-                  viewModel: _viewModel!),
-              child: Container(),
+                position: position,
+                dataStore: datastore,
+                viewModel: _viewModel!,
+              ),
+              child: const SizedBox.expand(),
             ))
-        .toList());
-    return markerWidgets;
+        .toList();
   }
 
   Widget _buildMapView(MapViewPosition position) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        _viewModel!
-            .setViewDimension(constraints.maxWidth, constraints.maxHeight);
-        JobSet? jobSet = _submitJobSet(_viewModel!, position, _jobQueue!);
-//        _log.info("JobSet is $jobSet");
-        return Stack(
-          children: [
-            _buildBackgroundView() ?? const SizedBox(),
-            if (jobSet != null)
-              CustomPaint(
-                foregroundPainter: TileLayerPainter(
-                    _tileLayer!, position, _viewModel!, jobSet),
-                child: Container(),
-              ),
-            for (Widget widget in _createMarkerWidgets(position)) widget,
-            if (_viewModel!.overlays != null)
-              for (Widget widget in _viewModel!.overlays!) widget,
-            if (_viewModel!.contextMenuBuilder != null)
-              StreamBuilder<TapEvent>(
-                stream: _viewModel!.observeTap,
-                builder:
-                    (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
-                  // _log.info(
-                  //     "observeTap ${snapshot.connectionState.toString()} ${snapshot.data}");
-                  if (snapshot.connectionState == ConnectionState.waiting)
-                    return const SizedBox();
-                  if (!snapshot.hasData) return const SizedBox();
-                  TapEvent event = snapshot.data!;
-                  if (event.isCleared()) return const SizedBox();
-                  // with every position-update this context menu is called after the first tap-event
-                  return _viewModel!.contextMenuBuilder!.buildContextMenu(
-                      context,
-                      _mapModel!,
-                      _viewModel!,
-                      position,
-                      _viewModel!.viewDimension!,
-                      event);
-                },
-              ),
-          ],
-        );
+    JobSet? jobSet = _submitJobSet(_viewModel!, position, _jobQueue!);
+
+    return Stack(
+      children: [
+        if (jobSet != null)
+          FlutterGestureDetector(
+            key: _keyView,
+            viewModel: _viewModel!,
+            child: CustomPaint(
+              foregroundPainter:
+                  TileLayerPainter(_tileLayer!, position, _viewModel!, jobSet),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        for (Widget widget in _createMarkerWidgets(position)) widget,
+        if (_viewModel!.contextMenuBuilder != null) _buildContextMenu(position),
+      ],
+    );
+  }
+
+  StreamBuilder<TapEvent> _buildContextMenu(MapViewPosition position) {
+    return StreamBuilder<TapEvent>(
+      stream: _viewModel!.observeTap,
+      builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+        // _log.info(
+        //     "observeTap ${snapshot.connectionState.toString()} ${snapshot.data}");
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const SizedBox();
+        if (!snapshot.hasData) return const SizedBox();
+        TapEvent event = snapshot.data!;
+        if (event.isCleared()) return const SizedBox();
+        // with every position-update this context menu is called after the first tap-event
+        return _viewModel!.contextMenuBuilder!.buildContextMenu(
+            context,
+            _mapModel!,
+            _viewModel!,
+            position,
+            _viewModel!.viewDimension!,
+            event);
       },
     );
   }

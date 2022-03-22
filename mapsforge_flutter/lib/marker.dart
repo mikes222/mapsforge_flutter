@@ -11,3 +11,4 @@ export 'src/marker/markercallback.dart';
 export 'src/marker/markerbyitemdatastore.dart';
 export 'src/marker/imarkerdatastore.dart';
 export 'src/marker/circlemarker.dart';
+export 'src/marker/marker.dart';

@@ -56,9 +56,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     this.bitmapSrc = bitmapSrc;
   }
 
-  @override
   Future<void> initResources( SymbolCache? symbolCache) async {
-    await super.initResources( symbolCache);
     await initBitmap( symbolCache);
     if (fill == null && (fillColor != null || bitmap != null)) {
       this.fill = GraphicFactory().createPaint();
@@ -102,7 +100,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
+  void renderBitmap(MarkerCallback markerCallback) {
     MapRect mapRect = GraphicFactory().createRect(
         markerCallback.mapViewPosition.projection!
                 .longitudeToPixelX(minLatLon.longitude) -

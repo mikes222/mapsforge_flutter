@@ -1,46 +1,38 @@
-import 'package:flutter/widgets.dart';
-import 'package:logging/logging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
+import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 
 ///
 /// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas). Use this class if you often access the markers by their item.
 ///
 class MarkerByItemDataStore extends IMarkerDataStore {
-  static final _log = new Logger('MarkerByItemDataStore');
-
-  final Map<dynamic, BasicMarker> _markers = {};
-
-  final Set<BasicMarker> _markersNeedInit = Set();
+  final Map<dynamic, Marker> _markers = {};
 
   BoundingBox? _previousBoundingBox;
 
   int? _previousZoomLevel;
 
-  @protected
-  bool disposed = false;
+  List<Marker> _previousMarkers = [];
+
+  MarkerByItemDataStore();
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
-  List<BasicMarker> getMarkers(
-      SymbolCache? symbolCache, BoundingBox boundary, int zoomLevel) {
-    if (boundary != _previousBoundingBox || zoomLevel != _previousZoomLevel) {
-      retrieveMarkersFor( boundary, zoomLevel);
-      _previousBoundingBox = boundary;
-      _previousZoomLevel = zoomLevel;
+  List<Marker> getMarkersToPaint(BoundingBox boundary, int zoomLevel) {
+    BoundingBox extended = boundary.extendMeters(1000);
+    if (_previousBoundingBox != null &&
+        _previousBoundingBox!.containsBoundingBox(boundary) &&
+        zoomLevel == _previousZoomLevel) {
+      return _previousMarkers;
     }
-    List<BasicMarker> markersToDraw = _markers.values
-        .where((marker) => marker.shouldPaint(boundary, zoomLevel))
+    retrieveMarkersFor(extended, zoomLevel);
+    _previousBoundingBox = extended;
+    _previousZoomLevel = zoomLevel;
+    List<Marker> markersToDraw = _markers.values
+        .where((marker) => marker.shouldPaint(extended, zoomLevel))
         .toList();
-    List<BasicMarker> markersToInit = markersToDraw
-        .where((element) => _markersNeedInit.contains(element))
-        .toList();
-    if (markersToInit.length > 0) {
-      _markersNeedInit.removeAll(markersToInit);
-      _initMarkers(symbolCache, markersToInit);
-      markersToDraw.removeWhere((element) => markersToInit.contains(element));
-      return markersToDraw;
-    }
+    _previousMarkers = markersToDraw;
     return markersToDraw;
   }
 
@@ -48,71 +40,62 @@ class MarkerByItemDataStore extends IMarkerDataStore {
   /// If this method changes something asynchronously it must call [setRepaint] afterwards.
   void retrieveMarkersFor(BoundingBox boundary, int zoomLevel) {}
 
-  Future<void> _initMarkers(      SymbolCache? symbolCache, List<BasicMarker> markersToInit) async {
-    //_log.info("Initializing ${markersToInit.length} markers now");
-    for (BasicMarker m in markersToInit) {
-      await m.initResources( symbolCache);
-    }
-    if (!disposed) setRepaint();
-  }
-
   @override
   @mustCallSuper
   void dispose() {
-    clearMarkers();
-    disposed = true;
     super.dispose();
+    clearMarkers();
   }
 
-  @protected
-  void setRepaint() {
-    notifyListeners();
-  }
-
-  void addMarker(BasicMarker marker) {
-    _markersNeedInit.add(marker);
+  void addMarker(Marker marker) {
     _markers[marker.item] = marker;
+    _previousZoomLevel = -1;
   }
 
-  void removeMarker(BasicMarker marker) {
-    _markersNeedInit.remove(marker);
+  void removeMarker(Marker marker) {
     _markers.remove(marker);
     marker.dispose();
+    _previousMarkers.remove(marker);
   }
 
   void clearMarkers() {
-    _markersNeedInit.clear();
     _markers.values.forEach((marker) {
       marker.dispose();
     });
     _markers.clear();
+    _previousMarkers.clear();
   }
 
   @override
-  List<BasicMarker> isTapped(
+  List<Marker> isTapped(
       MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    return _markers.values
+    return _previousMarkers
         .where((element) => element.isTapped(mapViewPosition, tappedX, tappedY))
         .toList();
   }
 
-  void replaceMarkerWithItem(var item, BasicMarker newMarker) {
-    removeMarkerWithItem(item);
+  /// Finds the old marker with the given item and replaces it with the new marker
+  void replaceMarker(var item, BasicMarker newMarker) {
+    Marker? oldMarker = getMarkerWithItem(item);
+    if (oldMarker != null) {
+      _markers.remove(item);
+      oldMarker.dispose();
+    }
     _markers[item] = newMarker;
-    _markersNeedInit.add(newMarker);
+    _previousZoomLevel = -1;
   }
 
   /// remove the marker with the given [item]
   void removeMarkerWithItem(var item) {
-    BasicMarker? oldMarker = getMarkerWithItem(item);
+    Marker? oldMarker = getMarkerWithItem(item);
     if (oldMarker != null) {
-      _markersNeedInit.remove(oldMarker);
       _markers.remove(item);
       oldMarker.dispose();
+      _previousMarkers.remove(oldMarker);
     }
   }
 
-  BasicMarker? getMarkerWithItem(var item) {
+  Marker? getMarkerWithItem(var item) {
     return _markers[item];
   }
 }

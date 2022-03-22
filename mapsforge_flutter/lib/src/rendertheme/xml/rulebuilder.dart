@@ -57,7 +57,7 @@ class RuleBuilder {
   int zoomMin;
   Closed? closed;
   Element? element;
-  List<String>? keyList;
+  final List<String> keyList = [];
   String? keys;
   final List<RenderInstruction>
       renderInstructions; // NOSONAR NOPMD we need specific interface
@@ -65,7 +65,7 @@ class RuleBuilder {
   final SymbolFinder symbolFinder;
   List<Hillshading> hillShadings =
       []; // NOPMD specific interface for trimToSize
-  List<String>? valueList;
+  final List<String> valueList = [];
   String? values;
 
   static ClosedMatcher getClosedMatcher(Closed closed) {
@@ -120,32 +120,57 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(
-      SymbolFinder? parentSymbolFinder,
-      List<RenderInstruction> initPendings,
-      this.level)
+  RuleBuilder(SymbolFinder? parentSymbolFinder,
+      List<RenderInstruction> initPendings, this.level)
       : ruleBuilderStack = [],
         renderInstructions = [],
         this.zoomMin = 0,
         this.zoomMax = 65536,
         maxLevel = level,
-        this.symbolFinder =
-            SymbolFinder(parentSymbolFinder, initPendings) {
+        this.symbolFinder = SymbolFinder(parentSymbolFinder, initPendings) {
     this.closed = Closed.ANY;
+  }
+
+  void validateTree() {
+    for (RuleBuilder ruleBuilder in ruleBuilderStack) {
+      if (element == Element.NODE && ruleBuilder.element == Element.WAY) {
+        _log.warning(
+            "Impossible SubRule which has element way whereas the parent has element node");
+      }
+      if (element == Element.WAY && ruleBuilder.element == Element.NODE) {
+        _log.warning(
+            "Impossible SubRule which has element way whereas the parent has element node");
+      }
+      if (zoomMax < ruleBuilder.zoomMin) {
+        _log.warning(
+            "Impossible SubZoomMin ${ruleBuilder.zoomMin} whereas the parent has zoomMax $zoomMax");
+      }
+      if (zoomMin > ruleBuilder.zoomMax) {
+        _log.warning(
+            "Impossible SubZoomMax ${ruleBuilder.zoomMax} whereas the parent has zoomMin $zoomMin");
+      }
+      // List additional = ruleBuilder.keyList
+      //     .where((element) => !keyList.contains(element))
+      //     .toList();
+      // if (additional.length > 0) {
+      //   _log.warning(
+      //       "Unexpected SubKeys $additional whereas parent has $keyList");
+      // }
+    }
   }
 
   /**
    * @return a new {@code Rule} instance.
    */
   Rule build() {
-    if (this.valueList!.remove(STRING_NEGATION)) {
+    if (this.valueList.remove(STRING_NEGATION)) {
       AttributeMatcher attributeMatcher =
-          new NegativeMatcher(this.keyList!, this.valueList!);
+          new NegativeMatcher(this.keyList, this.valueList);
       return new NegativeRule(this, attributeMatcher);
     }
 
-    AttributeMatcher keyMatcher = getKeyMatcher(this.keyList!);
-    AttributeMatcher valueMatcher = getValueMatcher(this.valueList!);
+    AttributeMatcher keyMatcher = getKeyMatcher(this.keyList);
+    AttributeMatcher valueMatcher = getValueMatcher(this.valueList);
 
     keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleBuilderStack);
     valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleBuilderStack);
@@ -153,7 +178,8 @@ class RuleBuilder {
     return PositiveRule(this, keyMatcher, valueMatcher);
   }
 
-  void parse(DisplayModel displayModel, XmlNode rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlNode rootElement,
+      List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((XmlAttribute attribute) {
       String name = attribute.name.toString();
       String value = attribute.value;
@@ -181,10 +207,10 @@ class RuleBuilder {
 
     validate(rootElement.toString());
 
-    this.keyList = this.keys!.split(SPLIT_PATTERN);
+    this.keyList.addAll(this.keys!.split(SPLIT_PATTERN));
 //        new List<String>(Arrays.asList(SPLIT_PATTERN.split(this.keys)));
 //
-    this.valueList = this.values!.split(SPLIT_PATTERN);
+    this.valueList.addAll(this.values!.split(SPLIT_PATTERN));
 
     this.elementMatcher = getElementMatcher(this.element!);
 
@@ -240,14 +266,14 @@ class RuleBuilder {
     }
   }
 
-  void _parseSubElement(DisplayModel displayModel,
-      XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void _parseSubElement(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     String qName = rootElement.name.toString();
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(
-            symbolFinder, initPendings, ++level);
+      RuleBuilder ruleBuilder =
+          RuleBuilder(symbolFinder, initPendings, ++level);
       ruleBuilder.parse(displayModel, rootElement, initPendings);
       ruleBuilderStack.add(ruleBuilder);
       maxLevel = max(level, ruleBuilder.maxLevel);
@@ -259,7 +285,7 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(  qName, level);
+      Area area = new Area(qName, level);
       area.parse(displayModel, rootElement, initPendings);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
@@ -267,8 +293,7 @@ class RuleBuilder {
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Caption caption =
-          new Caption( symbolFinder);
+      Caption caption = new Caption(symbolFinder);
       caption.parse(displayModel, rootElement, initPendings);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
@@ -278,8 +303,7 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderCircle circle =
-          new RenderCircle( level);
+      RenderCircle circle = new RenderCircle(level);
       circle.parse(displayModel, rootElement, initPendings);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
@@ -313,8 +337,7 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line =
-          new Line( qName, level, null);
+      Line line = new Line(qName, level, null);
       line.parse(displayModel, rootElement, initPendings);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
@@ -322,8 +345,7 @@ class RuleBuilder {
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      LineSymbol lineSymbol =
-          new LineSymbol( null);
+      LineSymbol lineSymbol = new LineSymbol(null);
       lineSymbol.parse(displayModel, rootElement, initPendings);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
@@ -361,8 +383,7 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol =
-          new RenderSymbol();
+      RenderSymbol symbol = new RenderSymbol();
       symbol.parse(displayModel, rootElement, initPendings);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);
@@ -495,7 +516,7 @@ class SymbolFinder {
     RenderSymbol? result = _symbols[symbolId];
     if (result != null) {
       if (initPendings.contains(result)) {
-        await result.initResources( symbolCache);
+        await result.initResources(symbolCache);
         initPendings.remove(result);
       }
       return result;

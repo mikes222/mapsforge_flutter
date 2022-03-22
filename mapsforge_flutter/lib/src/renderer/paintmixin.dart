@@ -62,10 +62,10 @@ class PaintMixin {
     MapPaint paint = GraphicFactory().createPaintFrom(this.stroke);
     paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
     if (strokeDasharray != null) {
-      // List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
-      //   return dash * scaleFactor;
-      // }).toList();
-      paint.setStrokeDasharray(strokeDasharray);
+      List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
+        return dash * scaleFactor;
+      }).toList();
+      paint.setStrokeDasharray(strokeDasharrayScaled);
     }
     this.strokes[zoomLevel] = paint;
 

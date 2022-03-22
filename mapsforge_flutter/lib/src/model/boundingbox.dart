@@ -98,6 +98,11 @@ class BoundingBox {
     return contains(latLong.latitude, latLong.longitude);
   }
 
+  bool containsBoundingBox(BoundingBox box) {
+    return contains(box.minLatitude, box.minLongitude) &&
+        contains(box.maxLatitude, box.maxLongitude);
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

@@ -28,13 +28,24 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   late String _dir;
 
+  final int tileSize;
+
+  /// true if the images should be stored in PNG format, false for raw format which is faster but consumes more space.
+  /// PNG: 470ms for 16 files, RAW: 400ms for the same 16 files
+  final bool png;
+
   static final Map<String, FileTileBitmapCache> _instances = Map();
 
-  static Future<FileTileBitmapCache> create(String renderkey) async {
+  static Future<FileTileBitmapCache> create(String renderkey,
+      [png = true, tileSize = 256]) async {
     FileTileBitmapCache? result = _instances[renderkey];
-    if (result != null) return result;
+    if (result != null) {
+      _log.info(
+          "Reusing cache for renderkey $renderkey with ${result._files.length} items in filecache");
+      return result;
+    }
 
-    result = FileTileBitmapCache._(renderkey);
+    result = FileTileBitmapCache._(renderkey, png, tileSize);
     _instances[renderkey] = result;
     await result._init();
     return result;
@@ -45,6 +56,7 @@ class FileTileBitmapCache extends TileBitmapCache {
     for (FileTileBitmapCache cache in _instances.values) {
       await cache.purgeAll();
     }
+    _instances.clear();
     // now purge every cache not yet active
     String rootDir = await FileHelper.getTempDirectory("mapsforgetiles");
     List<String> caches = (await FileHelper.getFiles(rootDir));
@@ -62,16 +74,21 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
   }
 
-  FileTileBitmapCache._(this.renderkey) : assert(!renderkey.contains("/"));
+  FileTileBitmapCache._(this.renderkey, this.png, this.tileSize)
+      : assert(!renderkey.contains("/"));
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
     _files = (await FileHelper.getFiles(_dir)).toSet();
     _log.info(
         "Starting cache for renderkey $renderkey with ${_files.length} items in filecache");
-//    files.forEach((file) {
-//      _log.info("  file in cache: $file");
-//    });
+    // int timestamp = DateTime.now().millisecondsSinceEpoch;
+    // for (String filename in _files) {
+    //   _log.info("  file in cache: $filename");
+    //   await _readImageFromFile(filename);
+    // }
+    // _log.info(
+    //     "Reading ${_files.length} from filesystem took ${DateTime.now().millisecondsSinceEpoch - timestamp} ms");
   }
 
   @override
@@ -101,6 +118,27 @@ class FileTileBitmapCache extends TileBitmapCache {
     return null;
   }
 
+  Future<Image> _readImageFromFile(String filename) async {
+    File file = File(filename);
+    Uint8List content = await file.readAsBytes();
+    Codec codec;
+    if (png) {
+      codec = await instantiateImageCodec(content.buffer.asUint8List());
+    } else {
+      final ImmutableBuffer buffer =
+          await ImmutableBuffer.fromUint8List(content);
+      ImageDescriptor descriptor = ImageDescriptor.raw(buffer,
+          width: tileSize, height: tileSize, pixelFormat: PixelFormat.rgba8888);
+      buffer.dispose();
+      codec = await descriptor.instantiateCodec();
+    }
+
+    // add additional checking for number of frames etc here
+    FrameInfo frame = await codec.getNextFrame();
+    Image img = frame.image;
+    return img;
+  }
+
   @override
   Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
     String filename = _calculateFilename(tile);
@@ -110,11 +148,7 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
     File file = File(filename);
     try {
-      Uint8List content = await file.readAsBytes();
-      var codec = await instantiateImageCodec(content.buffer.asUint8List());
-      // add additional checking for number of frames etc here
-      var frame = await codec.getNextFrame();
-      Image img = frame.image;
+      Image img = await _readImageFromFile(filename);
       TileBitmap tileBitmap =
           FlutterTileBitmap(img, "FileTileBitmapCache ${tile.toString()}");
       return tileBitmap;
@@ -135,7 +169,8 @@ class FileTileBitmapCache extends TileBitmapCache {
     String filename = _calculateFilename(tile);
     if (_files.contains(filename)) return;
     Image img = (tileBitmap as FlutterTileBitmap).bitmap;
-    ByteData? content = await (img.toByteData(format: ImageByteFormat.png));
+    ByteData? content = await (img.toByteData(
+        format: png ? ImageByteFormat.png : ImageByteFormat.rawRgba));
     if (content != null) {
       File file = File(filename);
       await file.writeAsBytes(content.buffer.asUint8List(),
@@ -145,12 +180,13 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   String _calculateFilename(Tile tile) {
-    return "$_dir/${tile.zoomLevel}_${tile.indoorLevel}_${tile.tileX}_${tile.tileY}.png";
+    return "$_dir/${tile.zoomLevel}_${tile.indoorLevel}_${tile.tileX}_${tile.tileY}.${png ? "png" : "raw"}";
   }
 
   @override
   void dispose() {
-    _files.clear();
+    // the instance is still available and may be used by another map.
+    //_files.clear();
   }
 
   @override

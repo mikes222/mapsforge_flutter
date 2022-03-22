@@ -49,9 +49,7 @@ class CircleMarker<T> extends BasicMarker<T> {
           markerCaption: markerCaption,
         );
 
-  @override
   Future<void> initResources(SymbolCache? symbolCache) async {
-    await super.initResources(symbolCache);
     if (fill == null && fillColor != null) {
       fill = GraphicFactory().createPaint();
       fill!.setColorFromNumber(fillColor!);
@@ -83,7 +81,7 @@ class CircleMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
+  void renderBitmap(MarkerCallback markerCallback) {
     if (fill != null) {
       markerCallback.renderCircle(
           center.latitude, center.longitude, radius, fill!);

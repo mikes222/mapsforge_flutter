@@ -35,16 +35,13 @@ class JobQueue {
     _currentJobSet = null;
   }
 
-  ///
-  /// Called whenever a new bitmap is created
-  ///
-  //Stream<JobSet> get observeJobResult => _injectJobResult.stream;
-
-  ///
-  /// Let the queue process this jobset
+  /// Let the queue process this jobset. A Jobset is a collection of jobs needed to render a whole view. It often consists of several tiles.
   void processJobset(JobSet jobSet) {
-    // now add all new jobs to queue
-    Map<Job, TileBitmap> toRemove = Map();
+    // stop processing the former jobSet
+    _currentJobSet?.removeJobs();
+
+    // remove all jobs which can be fulfilled via the 1st level cache
+    Map<Job, TileBitmap> toRemove = {};
     jobSet.jobs.forEach((job) {
       TileBitmap? tileBitmap =
           tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
@@ -52,12 +49,11 @@ class JobQueue {
         toRemove[job] = tileBitmap;
       }
     });
-
     toRemove.forEach((key, value) {
+      // we have this already in our 1st level cache
       jobSet.jobFinished(key, JobResult(value, JOBRESULT.NORMAL));
     });
-    //_log.info("Starting jobSet $jobSet");
-    _currentJobSet?.removeJobs();
+
     _currentJobSet = jobSet;
     _executionQueue.add(() async {
       await _startNextJob(jobSet);
@@ -92,7 +88,7 @@ class JobQueue {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
       tileBitmapCache?.addTileBitmap(job.tile, jobResult.bitmap!);
     }
-    if (jobResult.result == JOBRESULT.ERROR ||
+    if (/*jobResult.result == JOBRESULT.ERROR ||*/
         jobResult.result == JOBRESULT.UNSUPPORTED) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }

@@ -17,6 +17,7 @@ class JobSet extends ChangeNotifier {
   Map<Tile, JobResult>? _bitmaps = Map();
 
   void add(Job job) {
+    assert(!jobs.contains(job));
     jobs.add(job);
   }
 
@@ -41,11 +42,11 @@ class JobSet extends ChangeNotifier {
   @mustCallSuper
   @override
   void dispose() {
+    jobs.clear();
     _bitmaps!.values.forEach((element) {
       element.bitmap?.decrementRefCount();
     });
     _bitmaps = null;
-    jobs.clear();
     super.dispose();
   }
 

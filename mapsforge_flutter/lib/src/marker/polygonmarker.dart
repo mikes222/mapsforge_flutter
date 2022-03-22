@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
@@ -29,6 +30,10 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   final List<double>? strokeDasharray;
 
   final int strokeColor;
+
+  List<Mappoint> _points = [];
+
+  int _zoom = -1;
 
   PolygonMarker({
     display = Display.ALWAYS,
@@ -69,9 +74,7 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
     path.add(latLong);
   }
 
-  @override
   Future<void> initResources(SymbolCache? symbolCache) async {
-    await super.initResources(symbolCache);
     await initBitmap(symbolCache);
     if (fill == null && fillColor != null) {
       this.fill = GraphicFactory().createPaint();
@@ -107,22 +110,38 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
+  void renderBitmap(MarkerCallback markerCallback) {
     MapPath mapPath = GraphicFactory().createPath();
 
-    path.forEach((latLong) {
-      double y = markerCallback.mapViewPosition.projection!
-              .latitudeToPixelY(latLong.latitude) -
-          markerCallback.mapViewPosition.leftUpper!.y;
-      double x = markerCallback.mapViewPosition.projection!
-              .longitudeToPixelX(latLong.longitude) -
-          markerCallback.mapViewPosition.leftUpper!.x;
+    if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
+      _points.forEach((mappoint) {
+        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
+        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+        if (mapPath.isEmpty())
+          mapPath.moveTo(x, y);
+        else
+          mapPath.lineTo(x, y);
+      });
+    } else {
+      _points.clear();
+      _zoom = markerCallback.mapViewPosition.zoomLevel;
+      path.forEach((latLong) {
+        Mappoint mappoint = Mappoint(
+            markerCallback.mapViewPosition.projection!
+                .longitudeToPixelX(latLong.longitude),
+            markerCallback.mapViewPosition.projection!
+                .latitudeToPixelY(latLong.latitude));
+        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
+        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
 
-      if (mapPath.isEmpty())
-        mapPath.moveTo(x, y);
-      else
-        mapPath.lineTo(x, y);
-    });
+        _points.add(mappoint);
+
+        if (mapPath.isEmpty())
+          mapPath.moveTo(x, y);
+        else
+          mapPath.lineTo(x, y);
+      });
+    }
     mapPath.close();
     if (fill != null) markerCallback.renderPath(mapPath, fill!);
     if (stroke != null) markerCallback.renderPath(mapPath, stroke!);

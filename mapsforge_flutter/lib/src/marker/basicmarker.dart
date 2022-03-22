@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/model/boundingbox.dart';
-import 'package:mapsforge_flutter/src/model/ilatlong.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
+import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 
 import 'markercallback.dart';
@@ -41,36 +39,28 @@ class BasicPointMarker<T> extends BasicMarker<T> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class BasicMarker<T> {
-  final Display display;
-
-  int minZoomLevel;
-
-  int maxZoomLevel;
-
-  /// the item this marker represents.
-  ///
-  /// This property is NOT used by mapsforge.
-  T? item;
-
+class BasicMarker<T> extends Marker<T> {
   /// The caption of the marker or [null]
-  MarkerCaption? markerCaption;
+  final MarkerCaption? markerCaption;
 
   BasicMarker({
-    this.display = Display.ALWAYS,
-    this.minZoomLevel = 0,
-    this.maxZoomLevel = 65535,
-    this.item,
+    Display display = Display.ALWAYS,
+    int minZoomLevel = 0,
+    int maxZoomLevel = 65535,
+    T? item,
     this.markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
-        assert(minZoomLevel <= maxZoomLevel);
-
-  @mustCallSuper
-  Future<void> initResources(SymbolCache? symbolCache) async {
-    await markerCaption?.initResources();
+        assert(minZoomLevel <= maxZoomLevel),
+        super(
+            display: display,
+            minZoomLevel: minZoomLevel,
+            maxZoomLevel: maxZoomLevel,
+            item: item) {
+    markerCaption?.initResources();
   }
 
+  @override
   void dispose() {
     markerCaption?.dispose();
   }
@@ -78,34 +68,14 @@ class BasicMarker<T> {
   ///
   /// Renders this object. Called by markerPointer -> markerRenderer
   ///
-  void render(MarkerCallback markerCallback, int zoomLevel) {
-    renderBitmap(markerCallback, zoomLevel);
-    if (markerCaption != null)
-      markerCaption!.renderCaption(markerCallback, zoomLevel);
-  }
-
-  /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
-  /// only if shouldPoint() returns true, do not test for available resources here.
-  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return display != Display.NEVER &&
-        minZoomLevel <= zoomLevel &&
-        maxZoomLevel >= zoomLevel;
+  @override
+  void render(MarkerCallback markerCallback) {
+    renderBitmap(markerCallback);
+    if (markerCaption != null) markerCaption!.renderCaption(markerCallback);
   }
 
   /// renders the bitmap portion of this marker. This method is called by [render()] which also call the render method for the caption
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {}
-
-  String? get title {
-    if (markerCaption?.text != null && markerCaption!.text.length > 0)
-      return markerCaption!.text;
-    return null;
-  }
-
-  /// returns true if the position specified by [tappedX], [tappedY] relative to the [mapViewPosition] is in the area of this marker.
-  bool isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    return false;
-  }
+  void renderBitmap(MarkerCallback markerCallback) {}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -114,7 +84,7 @@ class BasicMarker<T> {
 class MarkerCaption with TextMixin {
   /// The text to show.
   ///
-  final String text;
+  String text;
 
   /// The position of the text or [null] if the position should be calculated based on the position of the marker
   ///
@@ -153,28 +123,27 @@ class MarkerCaption with TextMixin {
         assert(minZoomLevel <= maxZoomLevel),
         assert(text.length > 0);
 
-  Future<void> initResources() {
+  void initResources() {
     initTextMixin();
     stroke!.setStrokeWidth(strokeWidth);
     stroke!.setColorFromNumber(strokeColor);
     stroke!.setTextSize(fontSize);
     fill!.setTextSize(fontSize);
     fill!.setColorFromNumber(fillColor);
-    return Future.value(null);
   }
 
   void dispose() {
     mixinDispose();
   }
 
-  void renderCaption(MarkerCallback markerCallback, int zoomLevel) {
-    if (zoomLevel < minZoomLevel) return;
-    if (zoomLevel > maxZoomLevel) return;
+  void renderCaption(MarkerCallback markerCallback) {
+    if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
+    if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
     if (latLong != null) {
       markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
-          getFillPaint(zoomLevel));
+          getFillPaint(markerCallback.mapViewPosition.zoomLevel));
       markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
-          getStrokePaint(zoomLevel));
+          getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
     }
   }
 }

@@ -104,6 +104,9 @@ class RenderThemeBuilder {
       }
     }
     assert(foundRendertheme);
+    for (RuleBuilder ruleBuilder in ruleBuilderStack) {
+      ruleBuilder.validateTree();
+    }
     //_log.info("Found ${initPendings.length} items for lazy initialization");
   }
 

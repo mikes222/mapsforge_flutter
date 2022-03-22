@@ -1,6 +1,5 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 
 import 'basicmarker.dart';
@@ -44,10 +43,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
     this.bitmapHeight = height;
   }
 
-  @override
-  Future<void> initResources( SymbolCache? symbolCache) async {
-    await super.initResources( symbolCache);
-    await initBitmap( symbolCache);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await initBitmap(symbolCache);
     if (markerCaption != null && markerCaption!.latLong == null) {
       markerCaption!.latLong = latLong;
     }
@@ -64,7 +61,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
+  void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null && bitmapPaint != null) {
       markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
           imageOffsetX, imageOffsetY, rotation, bitmapPaint!);
@@ -83,10 +80,5 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
         tappedX <= x + bitmap!.getWidth() &&
         tappedY >= y &&
         tappedY <= y + bitmap!.getHeight();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

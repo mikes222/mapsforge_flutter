@@ -44,8 +44,8 @@ class MemoryTileBitmapCache extends TileBitmapCache {
 
   @override
   void dispose() {
-    _cache.clear();
     print("Statistics for MemoryTileBitmapCache: ${_cache.storage.toString()}");
+    _cache.clear();
     _instances.remove(this);
   }
 

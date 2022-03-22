@@ -1,13 +1,12 @@
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
-import 'basicmarker.dart';
-import 'markercallback.dart';
-
-class PathMarker<T> extends BasicMarker<T> {
+class PathMarker<T> extends Marker<T> {
   List<ILatLong> path = [];
 
   MapPaint? stroke;
@@ -17,6 +16,10 @@ class PathMarker<T> extends BasicMarker<T> {
   final int strokeColor;
 
   MapPath? mapPath;
+
+  List<Mappoint> _points = [];
+
+  int _zoom = -1;
 
   PathMarker({
     display = Display.ALWAYS,
@@ -36,21 +39,20 @@ class PathMarker<T> extends BasicMarker<T> {
           item: item,
         );
 
-  @override
-  Future<void> initResources(SymbolCache? symbolCache) async {
-    await super.initResources(symbolCache);
+  Future<void> initResources() async {
     if (stroke == null && strokeWidth > 0) {
       this.stroke = GraphicFactory().createPaint();
       this.stroke!.setColorFromNumber(strokeColor);
       this.stroke!.setStyle(Style.STROKE);
       this.stroke!.setStrokeWidth(strokeWidth);
       //this.stroke.setTextSize(fontSize);
+      mapPath = GraphicFactory().createPath();
     }
   }
 
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
-    mapPath = null;
+    mapPath?.clear();
   }
 
   @override
@@ -59,25 +61,40 @@ class PathMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
+  void render(MarkerCallback markerCallback) {
     if (stroke == null) return;
-    //if (mapPath == null) {
-    mapPath = GraphicFactory().createPath();
 
-    path.forEach((latLong) {
-      double y = markerCallback.mapViewPosition.projection!
-              .latitudeToPixelY(latLong.latitude) -
-          markerCallback.mapViewPosition.leftUpper!.y;
-      double x = markerCallback.mapViewPosition.projection!
-              .longitudeToPixelX(latLong.longitude) -
-          markerCallback.mapViewPosition.leftUpper!.x;
+    mapPath?.clear();
 
-      if (mapPath!.isEmpty())
-        mapPath!.moveTo(x, y);
-      else
-        mapPath!.lineTo(x, y);
-    });
-    // }
+    if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
+      _points.forEach((mappoint) {
+        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
+        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+        if (mapPath!.isEmpty())
+          mapPath!.moveTo(x, y);
+        else
+          mapPath!.lineTo(x, y);
+      });
+    } else {
+      _points.clear();
+      _zoom = markerCallback.mapViewPosition.zoomLevel;
+      path.forEach((latLong) {
+        Mappoint mappoint = Mappoint(
+            markerCallback.mapViewPosition.projection!
+                .longitudeToPixelX(latLong.longitude),
+            markerCallback.mapViewPosition.projection!
+                .latitudeToPixelY(latLong.latitude));
+        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
+        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+
+        _points.add(mappoint);
+
+        if (mapPath!.isEmpty())
+          mapPath!.moveTo(x, y);
+        else
+          mapPath!.lineTo(x, y);
+      });
+    }
     markerCallback.renderPath(mapPath!, stroke!);
   }
 }

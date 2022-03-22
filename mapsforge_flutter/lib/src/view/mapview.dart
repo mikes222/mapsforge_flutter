@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
@@ -103,22 +102,21 @@ class _FlutterMapState extends State<FlutterMapView> {
     return null;
   }
 
-  Widget _buildMapView(MapViewPosition position) {
-    List<Widget> markerWidgets = [];
-
+  List<Widget> _createMarkerWidgets(MapViewPosition position) {
     // now draw all markers
-    markerWidgets.addAll(widget.mapModel.markerDataStores
-        .map((IMarkerDataStore markerDataStore) => CustomPaint(
+    return widget.mapModel.markerDataStores
+        .map((datastore) => CustomPaint(
               foregroundPainter: MarkerPainter(
-                  position: position,
-                  displayModel: widget.mapModel.displayModel,
-                  dataStore: markerDataStore,
-                  viewModel: widget.viewModel,
-                  symbolCache: widget.mapModel.symbolCache),
-              child: Container(),
+                position: position,
+                dataStore: datastore,
+                viewModel: widget.viewModel,
+              ),
+              child: const SizedBox.expand(),
             ))
-        .toList());
+        .toList();
+  }
 
+  Widget _buildMapView(MapViewPosition position) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         widget.viewModel
@@ -137,7 +135,7 @@ class _FlutterMapState extends State<FlutterMapView> {
                       _tileLayer, position, widget.viewModel, jobSet),
                   child: Container(),
                 ),
-              for (Widget widget in markerWidgets) widget,
+              for (Widget widget in _createMarkerWidgets(position)) widget,
               if (widget.viewModel.overlays != null)
                 for (Widget widget in widget.viewModel.overlays!) widget,
               if (widget.viewModel.contextMenuBuilder != null)

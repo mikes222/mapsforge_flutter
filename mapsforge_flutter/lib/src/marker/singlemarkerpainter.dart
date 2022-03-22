@@ -31,7 +31,7 @@ class SingleMarkerPainter extends CustomPainter {
         0, 0, viewModel.viewDimension!.width, viewModel.viewDimension!.height);
     MarkerContext context =
         MarkerContext(flutterCanvas, position);
-    marker.render(context, position.zoomLevel);
+    marker.render(context);
   }
 
   @override

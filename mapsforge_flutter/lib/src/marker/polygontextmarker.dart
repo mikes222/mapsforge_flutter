@@ -58,9 +58,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
     path.add(latLong);
   }
 
-  @override
-  Future<void> initResources(SymbolCache? symbolCache) async {
-    await super.initResources(symbolCache);
+  Future<void> initResources() async {
     initTextMixin();
     fontSize = this.fontSize;
     stroke!.setColorFromNumber(this.strokeColor);
@@ -74,7 +72,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback, int zoomLevel) {
+  void renderBitmap(MarkerCallback markerCallback) {
     LineString lineString = LineString();
     double? prevX = null;
     double? prevY = null;

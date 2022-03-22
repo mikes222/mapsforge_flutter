@@ -225,7 +225,7 @@ class MultiMapDataStore extends MapDataStore {
     DatastoreReadResult mapReadResult = new DatastoreReadResult();
     bool found = false;
     Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-    for (MapDataStore mdb in mapDatabases) {
+    for (MapDataStore mdb in List.of(mapDatabases)) {
       if (mdb.supportsTile(tile, projection)) {
         //_log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
         try {
