@@ -63,7 +63,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
   }
 
   ViewModel _createViewModel() {
-    ViewModel viewModel = ViewModel(displayModel: displayModel);
+    ViewModel viewModel = ViewModel(
+      displayModel: displayModel,
+    );
     if (widget.mapFileData.indoorZoomOverlay)
       viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
           indoorLevels: widget.mapFileData.indoorLevels));

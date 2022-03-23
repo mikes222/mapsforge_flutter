@@ -8,8 +8,7 @@ abstract class IMarkerDataStore extends ChangeNotifier {
 
   List<Marker> getMarkersToPaint(BoundingBox boundary, int zoomLevel);
 
-  List<Marker> isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY);
+  List<Marker> isTapped(TapEvent tapEvent);
 
   bool get disposed => _disposed;
 

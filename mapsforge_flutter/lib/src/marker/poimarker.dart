@@ -69,16 +69,15 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapMixin {
   }
 
   @override
-  bool isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+  bool isTapped(TapEvent tapEvent) {
     if (bitmap == null) return false;
-    double y = mapViewPosition.projection!.latitudeToPixelY(latLong.latitude);
-    double x = mapViewPosition.projection!.longitudeToPixelX(latLong.longitude);
-    x = x + imageOffsetX - mapViewPosition.leftUpper!.x;
-    y = y + imageOffsetY - mapViewPosition.leftUpper!.y;
-    return tappedX >= x &&
-        tappedX <= x + bitmap!.getWidth() &&
-        tappedY >= y &&
-        tappedY <= y + bitmap!.getHeight();
+    double y = tapEvent.projection.latitudeToPixelY(latLong.latitude);
+    double x = tapEvent.projection.longitudeToPixelX(latLong.longitude);
+    x = x + imageOffsetX - tapEvent.leftUpperX;
+    y = y + imageOffsetY - tapEvent.leftUpperY;
+    return tapEvent.x >= x &&
+        tapEvent.x <= x + bitmap!.getWidth() &&
+        tapEvent.y >= y &&
+        tapEvent.y <= y + bitmap!.getHeight();
   }
 }

@@ -56,8 +56,8 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
     this.bitmapSrc = bitmapSrc;
   }
 
-  Future<void> initResources( SymbolCache? symbolCache) async {
-    await initBitmap( symbolCache);
+  Future<void> initResources(SymbolCache? symbolCache) async {
+    await initBitmap(symbolCache);
     if (fill == null && (fillColor != null || bitmap != null)) {
       this.fill = GraphicFactory().createPaint();
       if (fillColor != null) this.fill!.setColorFromNumber(fillColor!);
@@ -122,11 +122,9 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  bool isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    ILatLong latLong = mapViewPosition.projection!.pixelToLatLong(
-        tappedX + mapViewPosition.leftUpper!.x,
-        tappedY + mapViewPosition.leftUpper!.y);
+  bool isTapped(TapEvent tapEvent) {
+    ILatLong latLong = tapEvent.projection.pixelToLatLong(
+        tapEvent.x + tapEvent.leftUpperX, tapEvent.y + tapEvent.leftUpperY);
     //print("Testing ${latLong.toString()} against ${title}");
     return latLong.latitude > minLatLon.latitude &&
         latLong.latitude < maxLatLon.latitude &&

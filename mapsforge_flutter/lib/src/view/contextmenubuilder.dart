@@ -13,4 +13,6 @@ abstract class ContextMenuBuilder {
       MapViewPosition position,
       Dimension screen,
       TapEvent event);
+
+  const ContextMenuBuilder();
 }

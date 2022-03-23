@@ -23,4 +23,6 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
       position: position,
     );
   }
+
+  const DefaultContextMenuBuilder();
 }

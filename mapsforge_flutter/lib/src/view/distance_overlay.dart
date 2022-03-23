@@ -131,6 +131,7 @@ class _DistanceOverlayState extends State<DistanceOverlay>
 
   void _recalc(MapViewPosition position) {
     // get the meters per pixel, always calculate with meters!
+    if (position.latitude == null || position.longitude == null) return;
     double meterPerPixel = position.projection!
         .meterPerPixel(LatLong(position.latitude!, position.longitude!));
     // default is 100 pixels in ui

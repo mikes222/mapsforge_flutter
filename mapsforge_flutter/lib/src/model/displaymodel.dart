@@ -32,7 +32,7 @@ class DisplayModel {
 
   final double maxTextWidthFactor;
 
-  int backgroundColor = 0xffeeeeee;
+  int backgroundColor;
 
   Filter filter = Filter.NONE;
 
@@ -59,6 +59,7 @@ class DisplayModel {
     this.userScaleFactor = 1.0,
     this.maxTextWidthFactor = 0.7,
     this.fontScaleFactor = 1.0,
+    this.backgroundColor = 0xffeeeeee,
   }) : assert(maxZoomLevel <= 30 && maxZoomLevel > 0)
   //assert(tileSize >= 256)
   {

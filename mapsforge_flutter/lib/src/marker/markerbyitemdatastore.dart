@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
-import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 
 ///
 /// Holds a collection of markers. Marker could mark a POI (e.g. restaurants) or ways (e.g. special interest areas). Use this class if you often access the markers by their item.
@@ -67,10 +66,9 @@ class MarkerByItemDataStore extends IMarkerDataStore {
   }
 
   @override
-  List<Marker> isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+  List<Marker> isTapped(TapEvent tapEvent) {
     return _previousMarkers
-        .where((element) => element.isTapped(mapViewPosition, tappedX, tappedY))
+        .where((element) => element.isTapped(tapEvent))
         .toList();
   }
 

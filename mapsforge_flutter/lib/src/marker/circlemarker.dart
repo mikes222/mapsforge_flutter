@@ -93,11 +93,10 @@ class CircleMarker<T> extends BasicMarker<T> {
   }
 
   @override
-  bool isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
-    Mappoint p1 = Mappoint(tappedX + mapViewPosition.leftUpper!.x,
-        tappedY + mapViewPosition.leftUpper!.y);
-    Mappoint p2 = mapViewPosition.projection!.latLonToPixel(center);
+  bool isTapped(TapEvent tapEvent) {
+    Mappoint p1 = Mappoint(
+        tapEvent.x + tapEvent.leftUpperX, tapEvent.y + tapEvent.leftUpperY);
+    Mappoint p2 = tapEvent.projection.latLonToPixel(center);
 
     return p2.distance(p1) <= radius;
   }

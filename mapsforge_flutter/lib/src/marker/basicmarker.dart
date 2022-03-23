@@ -112,9 +112,9 @@ class MarkerCaption with TextMixin {
     this.latLong,
     this.captionOffsetX = 0,
     this.captionOffsetY = 0,
-    this.strokeWidth = 1.0,
-    this.strokeColor = 0xff000000,
-    this.fillColor = 0xffffffff,
+    this.strokeWidth = 2.0,
+    this.strokeColor = 0xffffffff,
+    this.fillColor = 0xff000000,
     this.fontSize = 10.0,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
@@ -141,9 +141,9 @@ class MarkerCaption with TextMixin {
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
     if (latLong != null) {
       markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
-          getFillPaint(markerCallback.mapViewPosition.zoomLevel));
-      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+          getFillPaint(markerCallback.mapViewPosition.zoomLevel));
     }
   }
 }

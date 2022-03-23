@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
@@ -32,7 +33,7 @@ class ViewModel {
   Stream<GestureEvent> get observeGesture => _injectGesture.stream;
 
   ViewModel(
-      {this.contextMenuBuilder,
+      {this.contextMenuBuilder = const DefaultContextMenuBuilder(),
       required this.displayModel,
       this.noPositionView,
       this.overlays}) {
@@ -243,18 +244,22 @@ class ViewModel {
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
     _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    if (_mapViewPosition?.leftUpper == null) return;
     TapEvent event = TapEvent(
         _mapViewPosition!.projection!
             .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
         _mapViewPosition!.projection!
             .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
         left,
-        upper);
+        upper,
+        _mapViewPosition!.leftUpper!.x,
+        _mapViewPosition!.leftUpper!.y,
+        _mapViewPosition!.projection!);
     _injectTap.add(event);
   }
 
   void clearTapEvent() {
-    _injectTap.add(const TapEvent(0, 0, -1, -1));
+    _injectTap.add(const TapEvent.clear());
   }
 
   /// An event sent by the [FlutterGestureDetector] to indicate a user-driven gesture-event. This can be used to
@@ -287,17 +292,38 @@ class TapEvent {
 
   final double longitude;
 
-  /// The x coordinate in pixels where the user tapped at the map. The left/upper point is 0/0
+  final PixelProjection? _projection;
+
+  /// The x coordinate in pixels where the user tapped at the map. The left/upper point is considered 0/0
   final double x;
 
-  /// The y coordinate in pixels where the user tapped at the map. The left/upper point is 0/0
+  /// The y coordinate in pixels where the user tapped at the map. The left/upper point is considered 0/0
   final double y;
 
+  /// the left-upper point of the map in pixels
+  final double leftUpperX;
+
+  /// the left-upper point of the map in pixels
+  final double leftUpperY;
+
   bool isCleared() {
-    return x == -1 && y == -1;
+    return _projection == null;
   }
 
-  const TapEvent(this.latitude, this.longitude, this.x, this.y);
+  PixelProjection get projection => _projection!;
+
+  const TapEvent(this.latitude, this.longitude, this.x, this.y, this.leftUpperX,
+      this.leftUpperY, PixelProjection projection)
+      : _projection = projection;
+
+  const TapEvent.clear()
+      : latitude = 0,
+        longitude = 0,
+        x = -1,
+        y = -1,
+        leftUpperX = -1,
+        leftUpperY = -1,
+        _projection = null;
 }
 
 /////////////////////////////////////////////////////////////////////////////

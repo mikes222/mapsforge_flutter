@@ -10,7 +10,7 @@ class MarkerDataStore extends IMarkerDataStore {
 
   BoundingBox? _previousBoundingBox;
 
-  int? _previousZoomLevel;
+  int _previousZoomLevel = -1;
 
   List<Marker> _previousMarkers = [];
 
@@ -47,7 +47,7 @@ class MarkerDataStore extends IMarkerDataStore {
 
   void addMarker(Marker marker) {
     _markers.add(marker);
-    _previousMarkers.add(marker);
+    _previousZoomLevel = -1;
   }
 
   void removeMarker(Marker marker) {
@@ -65,10 +65,9 @@ class MarkerDataStore extends IMarkerDataStore {
   }
 
   @override
-  List<Marker> isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+  List<Marker> isTapped(TapEvent tapEvent) {
     return _previousMarkers
-        .where((element) => element.isTapped(mapViewPosition, tappedX, tappedY))
+        .where((element) => element.isTapped(tapEvent))
         .toList();
   }
 }

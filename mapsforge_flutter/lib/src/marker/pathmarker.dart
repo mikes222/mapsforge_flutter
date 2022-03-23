@@ -53,6 +53,7 @@ class PathMarker<T> extends Marker<T> {
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
     mapPath?.clear();
+    _zoom = -1;
   }
 
   @override

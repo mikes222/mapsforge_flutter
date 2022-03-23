@@ -33,9 +33,10 @@ class Marker<T> {
         maxZoomLevel >= zoomLevel;
   }
 
-  /// returns true if the position specified by [tappedX], [tappedY] relative to the [mapViewPosition] is in the area of this marker.
-  bool isTapped(
-      MapViewPosition mapViewPosition, double tappedX, double tappedY) {
+  /// returns true if the position specified by [tapEvent] is in the area of
+  /// this marker. Note that tapEvent represents the position at the time the
+  /// tap has been executed.
+  bool isTapped(TapEvent tapEvent) {
     return false;
   }
 
