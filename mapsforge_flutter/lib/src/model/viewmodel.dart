@@ -287,9 +287,11 @@ class ViewModel {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class TapEvent {
+class TapEvent implements ILatLong {
+  @override
   final double latitude;
 
+  @override
   final double longitude;
 
   final PixelProjection? _projection;

@@ -1,18 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
+import 'package:mapsforge_example/markerdemo-datastore.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
 import 'map-file-data.dart';
 
-/// The [StatefulWidget] displaying the interactive map page.
+/// The [StatefulWidget] displaying the interactive map page. This is a demo
+/// implementation for using mapsforge's [MapviewWidget].
 ///
-/// Routing to this page requires a [MapFileData] object that shall be rendered.
-/// This version is easier because the underlying MapViewWidget keeps care of creating and destroying the
-/// mapModel and viewModel. Intended drawback is that you cannot directly access the viewmodel and mapmodel. It could
-/// be done by attaching an Overlay to the viewModel. See [ZoomOverlay] for an example.
 class MapViewPage2 extends StatefulWidget {
   final MapFileData mapFileData;
 
@@ -63,8 +62,12 @@ class MapViewPageState2 extends State<MapViewPage2> {
   }
 
   ViewModel _createViewModel() {
+    // in this demo we use the markers only for offline databases.
     ViewModel viewModel = ViewModel(
       displayModel: displayModel,
+      contextMenuBuilder: widget.mapFileData.mapType == MAPTYPE.OFFLINE
+          ? MarkerdemoContextMenuBuilder()
+          : const DefaultContextMenuBuilder(),
     );
     if (widget.mapFileData.indoorZoomOverlay)
       viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
@@ -72,6 +75,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     else
       viewModel.addOverlay(ZoomOverlay(viewModel));
     viewModel.addOverlay(DistanceOverlay(viewModel));
+    //viewModel.addOverlay(DemoOverlay(viewModel: viewModel));
 
     // set default position
     viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
@@ -91,11 +95,8 @@ class MapViewPageState2 extends State<MapViewPage2> {
     }
 
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
-    final RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
-    final String content =
-        await rootBundle.loadString(widget.mapFileData.theme);
-    renderThemeBuilder.parseXml(displayModel, content);
-    RenderTheme renderTheme = renderThemeBuilder.build();
+    RenderTheme renderTheme =
+        await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
     final JobRenderer jobRenderer =
@@ -120,6 +121,8 @@ class MapViewPageState2 extends State<MapViewPage2> {
       tileBitmapCache: bitmapCache,
       symbolCache: symbolCache,
     );
+    mapModel.markerDataStores
+        .add(MarkerdemoDatastore(symbolCache: symbolCache));
 
     return mapModel;
   }

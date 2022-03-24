@@ -8,6 +8,8 @@ abstract class IMarkerDataStore extends ChangeNotifier {
 
   List<Marker> getMarkersToPaint(BoundingBox boundary, int zoomLevel);
 
+  /// called if the user taps at the screen. The method will return a list of
+  /// markers which are considered as "tapped by the user"
   List<Marker> isTapped(TapEvent tapEvent);
 
   bool get disposed => _disposed;

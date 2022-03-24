@@ -13,6 +13,7 @@ import '../../core.dart';
 import 'backgroundpainter.dart';
 import 'tilelayerpainter.dart';
 
+/// Use [MapviewWidget] instead
 class FlutterMapView extends StatefulWidget {
   final MapModel mapModel;
 

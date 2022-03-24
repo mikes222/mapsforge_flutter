@@ -1,12 +1,12 @@
+import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/cache/symbolcache.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -45,6 +45,19 @@ class RenderThemeBuilder {
     this.baseStrokeWidth = 1;
     this.baseTextSize = 1;
 //    this.mapBackground = graphicFactory.createColor(Color.WHITE);
+  }
+
+  /// Builds and returns a rendertheme by loading a rendertheme-file. This
+  /// is a convienience-function. If desired we can also implement some caching
+  /// so that we do not need to parse the same file over and over again.
+  static Future<RenderTheme> create(
+      DisplayModel displayModel, String filename) async {
+    ByteData bytes = await rootBundle.load(filename);
+    String content = const Utf8Decoder().convert(bytes.buffer.asUint8List());
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
+    renderThemeBuilder.parseXml(displayModel, content);
+    RenderTheme renderTheme = renderThemeBuilder.build();
+    return renderTheme;
   }
 
   /**

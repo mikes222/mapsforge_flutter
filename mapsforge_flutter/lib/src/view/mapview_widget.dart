@@ -17,7 +17,11 @@ typedef Future<MapModel> CreateMapModel();
 typedef Future<ViewModel> CreateViewModel();
 
 /// A Widget which provides the map. The widget asks for MapModel and ViewModel when
-/// needed and also destroys the models when not needed anymore.
+/// needed and also destroys the models when not needed anymore. You cannot
+/// directly access the viewmodel and mapmodel to avoid access-problems after
+/// the lifecycle of the objects is due. Suggested method to access the objects
+/// is by attaching
+/// an Overlay to the viewModel. See [ZoomOverlay] for an example.
 class MapviewWidget extends StatefulWidget {
   final DisplayModel displayModel;
 
