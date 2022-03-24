@@ -27,8 +27,8 @@ Everything is called in the same thread, isolates are flutter's way of threads b
 All graphical functions are native functions. 
  - So currently the whole rendering is done in the ui thread which leads to blocked ui while rendering (only a couple of milliseconds) 
  See https://github.com/flutter/flutter/issues/13937
-
-Reading from MapFiles are now done in isolates so at least a portion of the rendering process does not block the UI anymore
+   
+Markers are currently not scaled while pinch'n'zoom
 
 ## Credits
 
@@ -44,6 +44,7 @@ Speed:
 
 Others:
  - Testing for IOS
+ - support rotating map
 
 ## Getting Started
 

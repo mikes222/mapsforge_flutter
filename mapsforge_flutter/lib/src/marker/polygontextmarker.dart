@@ -26,6 +26,14 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
   final double fontSize;
 
+  int _zoom = -1;
+
+  double _leftUpperX = -1;
+
+  double _leftUpperY = -1;
+
+  LineString? _lineString;
+
   PolygonTextMarker({
     required this.caption,
     display = Display.ALWAYS,
@@ -73,31 +81,40 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    LineString lineString = LineString();
-    double? prevX = null;
-    double? prevY = null;
-    path.forEach((latLong) {
-      double y = markerCallback.mapViewPosition.projection!
-          .latitudeToPixelY(latLong.latitude);
-      double x = markerCallback.mapViewPosition.projection!
-          .longitudeToPixelX(latLong.longitude);
+    if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
+      Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
+          markerCallback.mapViewPosition.leftUpper!.y);
+      markerCallback.renderPathText(caption, _lineString!, origin, stroke!);
+      markerCallback.renderPathText(caption, _lineString!, origin, fill!);
+    } else {
+      _lineString = LineString();
+      double? prevX = null;
+      double? prevY = null;
+      path.forEach((latLong) {
+        double y = markerCallback.mapViewPosition.projection!
+            .latitudeToPixelY(latLong.latitude);
+        double x = markerCallback.mapViewPosition.projection!
+            .longitudeToPixelX(latLong.longitude);
 
-      if (prevX != null && prevY != null) {
-        LineSegment segment =
-            new LineSegment(Mappoint(prevX!, prevY!), Mappoint(x, y));
-        lineString.segments.add(segment);
-      }
-      prevX = x;
-      prevY = y;
-    });
-    LineSegment segment = new LineSegment(
-        lineString.segments.last.end, lineString.segments.first.start);
-    lineString.segments.add(segment);
+        if (prevX != null && prevY != null) {
+          LineSegment segment =
+              new LineSegment(Mappoint(prevX!, prevY!), Mappoint(x, y));
+          _lineString!.segments.add(segment);
+        }
+        prevX = x;
+        prevY = y;
+      });
+      LineSegment segment = new LineSegment(
+          _lineString!.segments.last.end, _lineString!.segments.first.start);
+      _lineString!.segments.add(segment);
 
-    Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.leftUpper!.y);
-    markerCallback.renderPathText(caption, lineString, origin, stroke!);
-    markerCallback.renderPathText(caption, lineString, origin, fill!);
+      Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
+          markerCallback.mapViewPosition.leftUpper!.y);
+      markerCallback.renderPathText(caption, _lineString!, origin, stroke!);
+      markerCallback.renderPathText(caption, _lineString!, origin, fill!);
+
+      _zoom = markerCallback.mapViewPosition.zoomLevel;
+    }
   }
 
   @override

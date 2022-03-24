@@ -14,12 +14,19 @@ class MarkerDataStore extends IMarkerDataStore {
 
   List<Marker> _previousMarkers = [];
 
-  MarkerDataStore();
+  /// how large to extend a bounding area. When retrieving markers we extend
+  /// the bounding area a bit. By doing so we retrieve a bit more markers than
+  /// actually needed right now but we do not need to retrieve markers again
+  /// as long as the view does not extend the extended bounding area by
+  /// moving the map outside. This saves cpu. Measurements in meters.
+  final int extendMeters;
+
+  MarkerDataStore({this.extendMeters = 1000});
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
   List<Marker> getMarkersToPaint(BoundingBox boundary, int zoomLevel) {
-    BoundingBox extended = boundary.extendMeters(1000);
+    BoundingBox extended = boundary.extendMeters(extendMeters);
     if (_previousBoundingBox != null &&
         _previousBoundingBox!.containsBoundingBox(boundary) &&
         zoomLevel == _previousZoomLevel) {
@@ -45,6 +52,9 @@ class MarkerDataStore extends IMarkerDataStore {
     clearMarkers();
   }
 
+  /// Adds a new marker. Note that you may need to call setRepaint() afterwards.
+  /// It is not called automatically because often we want to modify many
+  /// markers at once without repainting after every modification.
   void addMarker(Marker marker) {
     _markers.add(marker);
     _previousZoomLevel = -1;

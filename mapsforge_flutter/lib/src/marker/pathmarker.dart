@@ -6,6 +6,8 @@ import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
+/// Draws an normally open path as marker. Note that isTapped() returns
+/// always false.
 class PathMarker<T> extends Marker<T> {
   List<ILatLong> path = [];
 
@@ -20,6 +22,10 @@ class PathMarker<T> extends Marker<T> {
   List<Mappoint> _points = [];
 
   int _zoom = -1;
+
+  double _leftUpperX = -1;
+
+  double _leftUpperY = -1;
 
   PathMarker({
     display = Display.ALWAYS,
@@ -65,18 +71,24 @@ class PathMarker<T> extends Marker<T> {
   void render(MarkerCallback markerCallback) {
     if (stroke == null) return;
 
-    mapPath?.clear();
-
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
-      _points.forEach((mappoint) {
-        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
-        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
-        if (mapPath!.isEmpty())
-          mapPath!.moveTo(x, y);
-        else
-          mapPath!.lineTo(x, y);
-      });
+      markerCallback.flutterCanvas.uiCanvas.save();
+      markerCallback.flutterCanvas.uiCanvas.translate(
+          _leftUpperX - markerCallback.mapViewPosition.leftUpper!.x,
+          _leftUpperY - markerCallback.mapViewPosition.leftUpper!.y);
+      //if (fill != null) markerCallback.renderPath(mapPath!, fill!);
+      if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);
+      markerCallback.flutterCanvas.uiCanvas.restore();
+      // _points.forEach((mappoint) {
+      //   double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
+      //   double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+      //   if (mapPath!.isEmpty())
+      //     mapPath!.moveTo(x, y);
+      //   else
+      //     mapPath!.lineTo(x, y);
+      // });
     } else {
+      mapPath?.clear();
       _points.clear();
       _zoom = markerCallback.mapViewPosition.zoomLevel;
       path.forEach((latLong) {
@@ -95,7 +107,9 @@ class PathMarker<T> extends Marker<T> {
         else
           mapPath!.lineTo(x, y);
       });
+      _leftUpperX = markerCallback.mapViewPosition.leftUpper!.x;
+      _leftUpperY = markerCallback.mapViewPosition.leftUpper!.y;
+      markerCallback.renderPath(mapPath!, stroke!);
     }
-    markerCallback.renderPath(mapPath!, stroke!);
   }
 }

@@ -2,6 +2,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
@@ -25,4 +26,6 @@ abstract class MarkerCallback {
       double latitude, double longitude, double radius, MapPaint paint);
 
   MapViewPosition get mapViewPosition;
+
+  FlutterCanvas get flutterCanvas;
 }

@@ -12,6 +12,8 @@ import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
+/// Draws a closed polygon. The optional text will be drawn in the middle
+/// of the polygon.
 class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   static final _log = new Logger('PolygonMarker');
 
@@ -34,6 +36,12 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   List<Mappoint> _points = [];
 
   int _zoom = -1;
+
+  MapPath? mapPath;
+
+  double _leftUpperX = -1;
+
+  double _leftUpperY = -1;
 
   PolygonMarker({
     display = Display.ALWAYS,
@@ -111,18 +119,27 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    MapPath mapPath = GraphicFactory().createPath();
+    mapPath ??= GraphicFactory().createPath();
 
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
-      _points.forEach((mappoint) {
-        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
-        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
-        if (mapPath.isEmpty())
-          mapPath.moveTo(x, y);
-        else
-          mapPath.lineTo(x, y);
-      });
+      markerCallback.flutterCanvas.uiCanvas.save();
+      markerCallback.flutterCanvas.uiCanvas.translate(
+          _leftUpperX - markerCallback.mapViewPosition.leftUpper!.x,
+          _leftUpperY - markerCallback.mapViewPosition.leftUpper!.y);
+      if (fill != null) markerCallback.renderPath(mapPath!, fill!);
+      if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);
+      markerCallback.flutterCanvas.uiCanvas.restore();
+      return;
+      // _points.forEach((mappoint) {
+      //   double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
+      //   double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+      //   if (mapPath!.isEmpty())
+      //     mapPath!.moveTo(x, y);
+      //   else
+      //     mapPath!.lineTo(x, y);
+      // });
     } else {
+      mapPath!.clear();
       _points.clear();
       _zoom = markerCallback.mapViewPosition.zoomLevel;
       path.forEach((latLong) {
@@ -136,15 +153,17 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
         _points.add(mappoint);
 
-        if (mapPath.isEmpty())
-          mapPath.moveTo(x, y);
+        if (mapPath!.isEmpty())
+          mapPath!.moveTo(x, y);
         else
-          mapPath.lineTo(x, y);
+          mapPath!.lineTo(x, y);
       });
+      mapPath!.close();
+      _leftUpperX = markerCallback.mapViewPosition.leftUpper!.x;
+      _leftUpperY = markerCallback.mapViewPosition.leftUpper!.y;
     }
-    mapPath.close();
-    if (fill != null) markerCallback.renderPath(mapPath, fill!);
-    if (stroke != null) markerCallback.renderPath(mapPath, stroke!);
+    if (fill != null) markerCallback.renderPath(mapPath!, fill!);
+    if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);
   }
 
   @override
