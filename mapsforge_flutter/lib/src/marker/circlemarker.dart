@@ -5,9 +5,7 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 /// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
-class CircleMarker<T> extends BasicMarker<T> {
-  final ILatLong center;
-
+class CircleMarker<T> extends BasicPointMarker<T> {
   MapPaint? fill;
 
   double fillWidth;
@@ -30,7 +28,7 @@ class CircleMarker<T> extends BasicMarker<T> {
     maxZoomLevel = 65535,
     item,
     markerCaption,
-    required this.center,
+    required ILatLong center,
     this.radius = 3,
     this.percent,
     this.fillWidth = 1.0,
@@ -48,6 +46,7 @@ class CircleMarker<T> extends BasicMarker<T> {
           maxZoomLevel: maxZoomLevel,
           item: item,
           markerCaption: markerCaption,
+          latLong: center,
         );
 
   Future<void> initResources(SymbolCache? symbolCache) async {
@@ -67,7 +66,7 @@ class CircleMarker<T> extends BasicMarker<T> {
     }
 
     if (markerCaption != null && markerCaption!.latLong == null) {
-      markerCaption!.latLong = center;
+      markerCaption!.latLong = latLong;
     }
   }
 
@@ -85,11 +84,11 @@ class CircleMarker<T> extends BasicMarker<T> {
   void renderBitmap(MarkerCallback markerCallback) {
     if (fill != null) {
       markerCallback.renderCircle(
-          center.latitude, center.longitude, radius, fill!);
+          latLong.latitude, latLong.longitude, radius, fill!);
     }
     if (stroke != null) {
       markerCallback.renderCircle(
-          center.latitude, center.longitude, radius, stroke!);
+          latLong.latitude, latLong.longitude, radius, stroke!);
     }
   }
 
@@ -97,7 +96,7 @@ class CircleMarker<T> extends BasicMarker<T> {
   bool isTapped(TapEvent tapEvent) {
     Mappoint p1 = Mappoint(
         tapEvent.x + tapEvent.leftUpperX, tapEvent.y + tapEvent.leftUpperY);
-    Mappoint p2 = tapEvent.projection.latLonToPixel(center);
+    Mappoint p2 = tapEvent.projection.latLonToPixel(latLong);
 
     return p2.distance(p1) <= radius;
   }
