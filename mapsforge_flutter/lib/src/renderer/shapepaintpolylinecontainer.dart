@@ -9,7 +9,6 @@ import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
 import 'package:mapsforge_flutter/src/renderer/shapepaintcontainer.dart';
 
-import '../graphics/mappaint.dart';
 import '../renderer/shapecontainer.dart';
 
 class ShapePaintPolylineContainer extends ShapePaintContainer {

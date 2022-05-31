@@ -1,12 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 
 import 'markercallback.dart';
 
-class BasicPointMarker<T> extends BasicMarker<T> {
+/// Abstract Marker class for further extensions. This class holds the position of a marker as [ILatLong] and implements the shouldPaint() method.
+abstract class BasicPointMarker<T> extends BasicMarker<T> {
   ///
   /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
   ///
@@ -39,7 +40,8 @@ class BasicPointMarker<T> extends BasicMarker<T> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class BasicMarker<T> extends Marker<T> {
+/// Abstract Marker class for further extensions. This class handles the caption of a marker.
+abstract class BasicMarker<T> extends Marker<T> {
   /// The caption of the marker or [null]
   final MarkerCaption? markerCaption;
 
@@ -75,7 +77,7 @@ class BasicMarker<T> extends Marker<T> {
   }
 
   /// renders the bitmap portion of this marker. This method is called by [render()] which also call the render method for the caption
-  void renderBitmap(MarkerCallback markerCallback) {}
+  void renderBitmap(MarkerCallback markerCallback);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,10 +142,24 @@ class MarkerCaption with TextMixin {
     if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
     if (latLong != null) {
-      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+      Mappoint mappoint = markerCallback.mapViewPosition.projection!
+          .pixelRelativeToLeftUpper(
+              latLong!, markerCallback.mapViewPosition.leftUpper!);
+      markerCallback.flutterCanvas.drawText(
+          text,
+          (mappoint.x + captionOffsetX),
+          (mappoint.y + captionOffsetY),
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
-      markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+      markerCallback.flutterCanvas.drawText(
+          text,
+          (mappoint.x + captionOffsetX),
+          (mappoint.y + captionOffsetY),
           getFillPaint(markerCallback.mapViewPosition.zoomLevel));
+
+      // markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+      //     getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+      // markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
+      //     getFillPaint(markerCallback.mapViewPosition.zoomLevel));
     }
   }
 }

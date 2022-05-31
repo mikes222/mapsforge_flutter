@@ -18,8 +18,8 @@ class ShapePaintCircleContainer extends ShapePaintContainer {
   void draw(MapCanvas canvas, PixelProjection projection) {
     CircleContainer circleContainer = shapeContainer as CircleContainer;
     Mappoint point = circleContainer.point;
-    canvas.drawCircle(point.x.toInt(), point.y.toInt(),
-        circleContainer.radius.toInt(), paint);
+    canvas.drawCircle(point.x, point.y,
+        circleContainer.radius, paint);
     ++count;
   }
 }

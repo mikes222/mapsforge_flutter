@@ -289,12 +289,12 @@ class BoundingBox {
 
   /// @param boundingBox the BoundingBox which should be checked for intersection with this BoundingBox.
   /// @return true if this BoundingBox intersects with the given BoundingBox, false otherwise.
-  bool intersects(BoundingBox? boundingBox) {
+  bool intersects(BoundingBox boundingBox) {
     if (this == boundingBox) {
       return true;
     }
 
-    return this.maxLatitude >= boundingBox!.minLatitude &&
+    return this.maxLatitude >= boundingBox.minLatitude &&
         this.maxLongitude >= boundingBox.minLongitude &&
         this.minLatitude <= boundingBox.maxLatitude &&
         this.minLongitude <= boundingBox.maxLongitude;

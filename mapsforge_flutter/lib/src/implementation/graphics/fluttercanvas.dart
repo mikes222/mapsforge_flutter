@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:ecache/ecache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
@@ -25,7 +26,7 @@ import 'flutterrect.dart';
 import 'fluttertilebitmap.dart';
 
 class FlutterCanvas extends MapCanvas {
-  static final _log = new Logger('FlutterCanvas');
+  //static final _log = new Logger('FlutterCanvas');
 
   late ui.Canvas uiCanvas;
 
@@ -38,6 +39,11 @@ class FlutterCanvas extends MapCanvas {
   /// optinal string to denote the type of resource. This is used to debug memory issues
   ///
   final String? src;
+
+  static LruCache<String, double> _cache = new LruCache<String, double>(
+    storage: SimpleStorage<String, double>(),
+    capacity: 2000,
+  );
 
   FlutterCanvas(this.uiCanvas, this.size, [this.src]) : pictureRecorder = null;
 
@@ -187,18 +193,17 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawCircle(int x, int y, int radius, MapPaint paint) {
+  void drawCircle(double x, double y, double radius, MapPaint paint) {
     //_log.info("draw circle at $x $y $radius $paint at ${ui.Offset(x.toDouble(), y.toDouble())}");
-    uiCanvas.drawCircle(ui.Offset(x.toDouble(), y.toDouble()),
-        radius.toDouble(), (paint as FlutterPaint).paint);
+    uiCanvas.drawCircle(ui.Offset(x, y), radius, (paint as FlutterPaint).paint);
   }
 
   @override
-  void drawLine(int x1, int y1, int x2, int y2, MapPaint paint) {
+  void drawLine(double x1, double y1, double x2, double y2, MapPaint paint) {
     //_log.info("draw line at $x1 $y1 $x2 $y2 $paint}");
     Path path = new Path()
-      ..moveTo(x1.toDouble(), y1.toDouble())
-      ..lineTo(x2.toDouble(), y2.toDouble());
+      ..moveTo(x1, y1)
+      ..lineTo(x2, y2);
 
     drawPath(new FlutterPath(path), paint);
   }
@@ -291,6 +296,10 @@ class FlutterCanvas extends MapCanvas {
 
   static double calculateTextWidth(
       String text, double fontSize, MapPaint paint) {
+    String key = "$text-$fontSize-${paint.getFontStyle().name}";
+    double? result = _cache.get(key);
+    if (result != null) return result;
+
     // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
     // self-defined constraint
     final constraints = const BoxConstraints(
@@ -321,6 +330,7 @@ class FlutterCanvas extends MapCanvas {
     double textlen =
         renderParagraph.getMinIntrinsicWidth(fontSize).ceilToDouble();
 //    _log.info("Textlen: $textlen for $text");
+    _cache.set(key, textlen);
     return textlen;
   }
 
@@ -351,13 +361,13 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawText(String text, int x, int y, MapPaint paint) {
+  void drawText(String text, double x, double y, MapPaint paint) {
     double textwidth = calculateTextWidth(text, paint.getTextSize(), paint);
     ui.ParagraphBuilder builder =
         (paint as FlutterPaint).buildParagraphBuilder(text);
     uiCanvas.drawParagraph(
         builder.build()..layout(ui.ParagraphConstraints(width: textwidth)),
-        Offset(x.toDouble() - textwidth / 2, y.toDouble()));
+        Offset(x - textwidth / 2, y));
   }
 
   // @override

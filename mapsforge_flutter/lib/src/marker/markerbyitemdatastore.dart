@@ -113,4 +113,8 @@ class MarkerByItemDataStore extends IMarkerDataStore {
   Marker? getMarkerWithItem(var item) {
     return _markers[item];
   }
+
+  Iterable getAllItems() {
+    return _markers.keys;
+  }
 }

@@ -12,9 +12,6 @@ abstract class MarkerCallback {
   void renderBitmap(Bitmap bitmap, double latitude, double longitude,
       double offsetX, double offsetY, double rotation, MapPaint paint);
 
-  void renderText(String caption, ILatLong latLong, double offsetX,
-      double offsetY, MapPaint stroke);
-
   void renderPath(MapPath path, MapPaint paint);
 
   void renderPathText(

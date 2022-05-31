@@ -14,12 +14,13 @@ import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'markercallback.dart';
 
 class MarkerContext implements MarkerCallback {
+  @override
   final FlutterCanvas flutterCanvas;
 
   @override
   final MapViewPosition mapViewPosition;
 
-  MarkerContext(this.flutterCanvas, this.mapViewPosition);
+  const MarkerContext(this.flutterCanvas, this.mapViewPosition);
 
   @override
   void renderBitmap(Bitmap bitmap, double latitude, double longitude,
@@ -41,17 +42,6 @@ class MarkerContext implements MarkerCallback {
   }
 
   @override
-  void renderText(String caption, ILatLong latLong, double offsetX,
-      double offsetY, MapPaint stroke) {
-    Mappoint mappoint = mapViewPosition.projection!
-        .pixelRelativeToLeftUpper(latLong, mapViewPosition.leftUpper!);
-//    print(
-//        "rendering caption $caption at latLong ${latLong.toString()}, ${mappoint.toString()} and leftUpper ${mapViewPosition.leftUpper.toString()}");
-    flutterCanvas.drawText(caption, (mappoint.x + offsetX).toInt(),
-        (mappoint.y + offsetY).toInt(), stroke);
-  }
-
-  @override
   void renderPathText(
       String caption, LineString lineString, Mappoint origin, MapPaint stroke) {
     flutterCanvas.drawPathText(caption, lineString, origin, stroke);
@@ -67,8 +57,8 @@ class MarkerContext implements MarkerCallback {
       double latitude, double longitude, double radius, MapPaint paint) {
     double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
     double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
-    flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x).toInt(),
-        (y - mapViewPosition.leftUpper!.y).toInt(), radius.toInt(), paint);
+    flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x),
+        (y - mapViewPosition.leftUpper!.y), radius, paint);
   }
 
   @override

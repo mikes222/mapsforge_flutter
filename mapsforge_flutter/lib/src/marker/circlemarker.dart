@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/special.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
+/// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
 class CircleMarker<T> extends BasicMarker<T> {
   final ILatLong center;
 

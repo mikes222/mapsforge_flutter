@@ -11,6 +11,8 @@ import 'maprect.dart';
 ///
 /// The abstract representation of a canvas. In flutter the canvas is shown in the widget
 abstract class MapCanvas {
+  const MapCanvas();
+
   void destroy();
 
   // Dimension getDimension();
@@ -38,9 +40,9 @@ abstract class MapCanvas {
       Filter? filter});
 
   /// Draws a circle whereas the center of the circle is denoted by [x] and [y]
-  void drawCircle(int x, int y, int radius, MapPaint paint);
+  void drawCircle(double x, double y, double radius, MapPaint paint);
 
-  void drawLine(int x1, int y1, int x2, int y2, MapPaint paint);
+  void drawLine(double x1, double y1, double x2, double y2, MapPaint paint);
 
   void drawPath(MapPath path, MapPaint paint);
 
@@ -49,7 +51,7 @@ abstract class MapCanvas {
   void drawPathText(
       String text, LineString lineString, Mappoint origin, MapPaint paint);
 
-  void drawText(String text, int x, int y, MapPaint paint);
+  void drawText(String text, double x, double y, MapPaint paint);
 
   // void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint);
   //

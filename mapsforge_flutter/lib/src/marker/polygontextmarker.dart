@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
-/// Draws Text along a polygon
+/// Draws Text along a polygon. Does NOT draw the polygon. Use [PolygonMarker] in conjunction with this marker.
 class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   static final _log = new Logger('PolygonMarker');
 

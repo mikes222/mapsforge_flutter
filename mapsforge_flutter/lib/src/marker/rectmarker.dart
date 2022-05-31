@@ -8,9 +8,12 @@ import '../../core.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
+/// A Marker which draws a rectangle specified by the min/max lat/lon attributes.
 class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
-  ILatLong minLatLon;
-  ILatLong maxLatLon;
+  final ILatLong minLatLon;
+  final ILatLong maxLatLon;
+
+  final BoundingBox boundingBox;
 
   MapPaint? fill;
 
@@ -46,6 +49,8 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
         assert(strokeWidth >= 0),
         assert(fillWidth >= 0),
         assert(strokeDasharray == null || strokeDasharray.length == 2),
+        boundingBox = BoundingBox(minLatLon.latitude, minLatLon.longitude,
+            maxLatLon.latitude, maxLatLon.longitude),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -91,12 +96,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapMixin {
   bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
-        boundary!.intersects(BoundingBox(
-          minLatLon.latitude,
-          minLatLon.longitude,
-          maxLatLon.latitude,
-          maxLatLon.longitude,
-        ));
+        boundary!.intersects(boundingBox);
   }
 
   @override

@@ -107,6 +107,9 @@ class _DistanceOverlayState extends State<DistanceOverlay>
               });
             }
 
+            // we do not have any info, display nothing
+            if (_pixel <= 10) return const SizedBox();
+            // display the ruler and the corresponding text
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -117,9 +120,7 @@ class _DistanceOverlayState extends State<DistanceOverlay>
                       color: Theme.of(context).textTheme.bodyText2?.color ??
                           Colors.black),
                 ),
-                Container(
-                  height: 2,
-                ),
+                const SizedBox(height: 2),
                 Text(_toDisplay, style: Theme.of(context).textTheme.bodyText2),
               ],
             );
