@@ -19,6 +19,8 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   List<ILatLong> path = [];
 
+  BoundingBox? _boundingBox;
+
   MapPaint? fill;
 
   double fillWidth;
@@ -80,6 +82,7 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
+    _boundingBox = BoundingBox.fromLatLongs(path);
   }
 
   Future<void> initResources(SymbolCache? symbolCache) async {
@@ -113,8 +116,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    if (_boundingBox == null) return false;
+    return minZoomLevel <= zoomLevel &&
+        maxZoomLevel >= zoomLevel &&
+        _boundingBox!.intersects(boundary);
   }
 
   @override

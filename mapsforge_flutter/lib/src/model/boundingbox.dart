@@ -56,12 +56,12 @@ class BoundingBox {
   /**
    * @param latLongs the coordinates list.
    */
-  static BoundingBox fromLatLongs(List<LatLong> latLongs) {
+  static BoundingBox fromLatLongs(List<ILatLong> latLongs) {
     double minLatitude = double.infinity;
     double minLongitude = double.infinity;
     double maxLatitude = double.negativeInfinity;
     double maxLongitude = double.negativeInfinity;
-    for (LatLong latLong in latLongs) {
+    for (ILatLong latLong in latLongs) {
       double latitude = latLong.latitude;
       double longitude = latLong.longitude;
 

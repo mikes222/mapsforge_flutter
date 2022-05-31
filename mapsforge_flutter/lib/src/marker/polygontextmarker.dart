@@ -16,6 +16,8 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
   List<ILatLong> path = [];
 
+  BoundingBox? _boundingBox;
+
   int? fillColor;
 
   final double strokeWidth;
@@ -64,6 +66,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
+    _boundingBox = BoundingBox.fromLatLongs(path);
   }
 
   Future<void> initResources() async {
@@ -75,8 +78,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   }
 
   @override
-  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    if (_boundingBox == null) return false;
+    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && _boundingBox!.intersects(boundary);
   }
 
   @override
