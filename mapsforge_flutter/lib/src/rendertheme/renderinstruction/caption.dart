@@ -40,17 +40,13 @@ class Caption extends RenderInstruction with TextMixin {
   final SymbolFinder symbolFinder;
   TextKey? textKey;
 
-  Caption(this.symbolFinder)
-      : super() {
-  }
+  Caption(this.symbolFinder) : super() {}
 
-  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     maxTextWidth = displayModel.getMaxTextWidth();
     gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
     initTextMixin();
-
-    MapFontFamily fontFamily = MapFontFamily.DEFAULT;
-    MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -66,27 +62,26 @@ class Caption extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this.fill!.setColorFromNumber(XmlUtils.getColor(value, this));
+        this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
-        fontFamily = MapFontFamily.values
-            .firstWhere((e) => e.toString().toLowerCase().contains(value));
+        setFontFamily(MapFontFamily.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getFontScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
-        fontStyle = MapFontStyle.values
-            .firstWhere((e) => e.toString().toLowerCase().contains(value));
+        setFontStyle(MapFontStyle.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.POSITION == name) {
         this.position = Position.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke!.setColorFromNumber(XmlUtils.getColor(value, this));
+        this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke!.setStrokeWidth(
-            XmlUtils.parseNonNegativeFloat(name, value) *
-                displayModel.fontScaleFactor);
+        this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.fontScaleFactor);
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {
@@ -96,8 +91,6 @@ class Caption extends RenderInstruction with TextMixin {
 
     XmlUtils.checkMandatoryAttribute(
         rootElement.name.toString(), RenderInstruction.K, this.textKey);
-
-    initMixinAfterParse(fontFamily, fontStyle);
 
     initPendings.add(this);
   }
@@ -125,6 +118,7 @@ class Caption extends RenderInstruction with TextMixin {
         _verticalOffset + dyScaled[renderContext.job.tile.zoomLevel]!,
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
+        getTextPaint(renderContext.job.tile.zoomLevel),
         position,
         this.maxTextWidth,
         poi);
@@ -154,6 +148,7 @@ class Caption extends RenderInstruction with TextMixin {
         _verticalOffset + dyScaled[renderContext.job.tile.zoomLevel]!,
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
+        getTextPaint(renderContext.job.tile.zoomLevel),
         this.position,
         this.maxTextWidth,
         way);

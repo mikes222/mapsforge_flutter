@@ -1,44 +1,44 @@
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
+import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
 
 class PaintMixin {
-  late MapPaint stroke;
+  late MapPaint _stroke;
 
-  final Map<int, MapPaint> strokes = {};
+  final Map<int, MapPaint> _strokes = {};
 
-  late MapPaint fill;
+  late MapPaint _fill;
 
-  final Map<int, MapPaint> fills = {};
+  final Map<int, MapPaint> _fills = {};
 
-  List<double>? strokeDasharray;
+  List<double>? _strokeDasharray;
 
   void initPaintMixin() {
-    this.stroke = GraphicFactory().createPaint();
-    this.stroke.setColor(Color.BLACK);
-    this.stroke.setStyle(Style.STROKE);
-    this.stroke.setStrokeWidth(1);
-    this.stroke.setTextSize(10);
-    this.stroke.setStrokeCap(Cap.ROUND);
-    this.stroke.setStrokeJoin(Join.ROUND);
+    this._stroke = GraphicFactory().createPaint();
+    this._stroke.setColor(Colors.black);
+    this._stroke.setStyle(Style.STROKE);
+    this._stroke.setStrokeWidth(1);
+    this._stroke.setStrokeCap(Cap.ROUND);
+    this._stroke.setStrokeJoin(Join.ROUND);
 
-    this.fill = GraphicFactory().createPaint();
-    this.fill.setColor(Color.BLACK);
-    this.fill.setStyle(Style.FILL);
-    this.fill.setStrokeCap(Cap.ROUND);
+    this._fill = GraphicFactory().createPaint();
+    this._fill.setColor(Colors.black);
+    this._fill.setStyle(Style.FILL);
+    this._fill.setStrokeCap(Cap.ROUND);
   }
 
   MapPaint getStrokePaint(int zoomLevel) {
-    MapPaint? paint = strokes[zoomLevel];
-    paint ??= this.stroke;
+    MapPaint? paint = _strokes[zoomLevel];
+    paint ??= this._stroke;
     return paint;
   }
 
   MapPaint getFillPaint(int zoomLevel) {
-    MapPaint? paint = fills[zoomLevel];
-    paint ??= this.fill;
+    MapPaint? paint = _fills[zoomLevel];
+    paint ??= this._fill;
     return paint;
   }
 
@@ -58,29 +58,123 @@ class PaintMixin {
   }
 
   void scaleMixinTextSize(double scaleFactor, int zoomLevel) {
-    if (this.strokes[zoomLevel] != null) return;
-    MapPaint paint = GraphicFactory().createPaintFrom(this.stroke);
+    if (this._strokes[zoomLevel] != null) return;
+    MapPaint paint = GraphicFactory().createPaintFrom(this._stroke);
     paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
-    if (strokeDasharray != null) {
-      List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
+    if (_strokeDasharray != null) {
+      List<double> strokeDasharrayScaled = this._strokeDasharray!.map((dash) {
         return dash * scaleFactor;
       }).toList();
       paint.setStrokeDasharray(strokeDasharrayScaled);
     }
-    this.strokes[zoomLevel] = paint;
+    this._strokes[zoomLevel] = paint;
 
-    MapPaint f = GraphicFactory().createPaintFrom(this.fill);
-    this.fills[zoomLevel] = f;
+    MapPaint f = GraphicFactory().createPaintFrom(this._fill);
+    this._fills[zoomLevel] = f;
   }
 
   void mixinDispose() {
-    strokes.values.forEach((element) {
+    _strokes.values.forEach((element) {
       element.dispose();
     });
-    stroke.dispose();
-    fills.values.forEach((element) {
+    _stroke.dispose();
+    _fills.values.forEach((element) {
       element.dispose();
     });
-    fill.dispose();
+    _fill.dispose();
+  }
+
+  void setFillColor(Color color) {
+    _fill.setColor(color);
+    _fills.forEach((key, value) {
+      value.setColor(color);
+    });
+  }
+
+  void setStrokeColor(Color color) {
+    _stroke.setColor(color);
+    _strokes.forEach((key, value) {
+      value.setColor(color);
+    });
+  }
+
+  void setFillColorFromNumber(int color) {
+    _fill.setColorFromNumber(color);
+    _fills.forEach((key, value) {
+      value.setColorFromNumber(color);
+    });
+  }
+
+  void setStrokeColorFromNumber(int color) {
+    _stroke.setColorFromNumber(color);
+    _strokes.forEach((key, value) {
+      value.setColorFromNumber(color);
+    });
+  }
+
+  bool isFillTransparent() {
+    return _fill.isTransparent();
+  }
+
+  bool isStrokeTransparent() {
+    return _stroke.isTransparent();
+  }
+
+  void setStrokeWidth(double strokeWidth) {
+    _stroke.setStrokeWidth(strokeWidth);
+    _strokes.forEach((key, value) {
+      value.setStrokeWidth(strokeWidth);
+    });
+  }
+
+  void setFillBitmapShader(Bitmap bitmap) {
+    // make sure the color is not transparent
+    if (isFillTransparent()) setFillColor(Colors.black);
+    _fill.setBitmapShader(bitmap);
+    _fills.forEach((key, value) {
+      // make sure the color is not transparent
+      if (value.isTransparent()) value.setColor(Colors.black);
+      value.setBitmapShader(bitmap);
+    });
+  }
+
+  void setStrokeBitmapShader(Bitmap bitmap) {
+    // make sure the color is not transparent
+    if (isStrokeTransparent()) setStrokeColor(Colors.black);
+    _stroke.setBitmapShader(bitmap);
+    _strokes.forEach((key, value) {
+      // make sure the color is not transparent
+      if (value.isTransparent()) value.setColor(Colors.black);
+      value.setBitmapShader(bitmap);
+    });
+    //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
+    //bitmap.incrementRefCount();
+  }
+
+  void setStrokeJoin(Join join) {
+    _stroke.setStrokeJoin(join);
+    _strokes.forEach((key, value) {
+      value.setStrokeJoin(join);
+    });
+  }
+
+  void setStrokeCap(Cap cap) {
+    _stroke.setStrokeCap(cap);
+    _strokes.forEach((key, value) {
+      value.setStrokeCap(cap);
+    });
+  }
+
+  void setStrokeDashArray(List<double> dashArray) {
+    _strokeDasharray = dashArray;
+    // expanding by scaleFactor looks too large. Shortening strokes
+    List<double> strokeDasharrayScaled = this._strokeDasharray!.map((dash) {
+      return dash / 4;
+    }).toList();
+    _strokeDasharray = strokeDasharrayScaled;
+    _stroke.setStrokeDasharray(dashArray);
+    _strokes.forEach((key, value) {
+      value.setStrokeDasharray(dashArray);
+    });
   }
 }

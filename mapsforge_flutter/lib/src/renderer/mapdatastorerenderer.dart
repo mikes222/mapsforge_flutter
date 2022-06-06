@@ -10,6 +10,7 @@ import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
@@ -87,14 +88,13 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    bool showTiming = false;
+    bool showTiming = true;
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     bool useIsolate = false;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
-    RenderContext renderContext =
-        RenderContext(job, renderTheme, symbolCache);
+    RenderContext renderContext = RenderContext(job, renderTheme, symbolCache);
     if (!this.datastore.supportsTile(job.tile, renderContext.projection)) {
       // return if we do not have data for the requested tile in the datastore
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
@@ -142,10 +142,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       //   });
       // });
     }
-    CanvasRasterer canvasRasterer = CanvasRasterer(
-                job.tileSize.toDouble(),
-        job.tileSize.toDouble(),
-        "MapDatastoreRenderer ${job.tile.toString()}");
+    CanvasRasterer canvasRasterer = CanvasRasterer(job.tileSize.toDouble(),
+        job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
@@ -206,8 +204,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
           _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
       for (RenderInstruction element in renderInstructions) {
         if (renderContext.renderTheme.initPendings.contains(element)) {
-          await element.initResources(
-              renderContext.symbolCache);
+          await element.initResources(renderContext.symbolCache);
           renderContext.renderTheme.initPendings.remove(element);
         }
       }
@@ -227,8 +224,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
         for (RenderInstruction renderInstruction in renderInstructions) {
           if (renderContext.renderTheme.initPendings
               .contains(renderInstruction)) {
-            await renderInstruction.initResources(
-                renderContext.symbolCache);
+            await renderInstruction.initResources(renderContext.symbolCache);
             renderContext.renderTheme.initPendings.remove(renderInstruction);
           }
           //print("render way $renderInstruction for $way");
@@ -274,16 +270,16 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   void _renderWaterBackground(final RenderContext renderContext) {
-    renderContext.setDrawingLayers(0);
-    List<Mappoint> coordinates =
-        getTilePixelCoordinates(renderContext.job.tileSize);
-    Mappoint tileOrigin =
-        renderContext.projection.getLeftUpper(renderContext.job.tile);
-    for (int i = 0; i < coordinates.length; i++) {
-      coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
-    }
-    Watercontainer way = Watercontainer(
-        coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
+    // renderContext.setDrawingLayers(0);
+    // List<Mappoint> coordinates =
+    //     getTilePixelCoordinates(renderContext.job.tileSize);
+    // Mappoint tileOrigin =
+    //     renderContext.projection.getLeftUpper(renderContext.job.tile);
+    // for (int i = 0; i < coordinates.length; i++) {
+    //   coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
+    // }
+    // Watercontainer way = Watercontainer(
+    //     coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
     //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
   }
 
@@ -320,6 +316,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double verticalOffset,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint mapTextPaint,
       Position position,
       int maxTextWidth,
       PolylineContainer way) {
@@ -336,7 +333,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
           fill,
           stroke,
           position,
-          maxTextWidth);
+          maxTextWidth,
+          mapTextPaint);
       renderContext.labels.add(label);
     }
   }
@@ -367,6 +365,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double verticalOffset,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint mapTextPaint,
       Position position,
       int maxTextWidth,
       PointOfInterest poi) {
@@ -382,7 +381,8 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
           fill,
           stroke,
           position,
-          maxTextWidth));
+          maxTextWidth,
+          mapTextPaint));
     }
   }
 
@@ -423,7 +423,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       int level, PolylineContainer way) {
     if (!stroke.isTransparent()) {
       renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer( way, stroke, dy));
+          level, ShapePaintPolylineContainer(way, stroke, dy));
     }
   }
 
@@ -467,6 +467,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       double dy,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint textPaint,
       bool? repeat,
       double? repeatGap,
       double? repeatStart,
@@ -474,7 +475,6 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       PolylineContainer way) {
     if (renderLabels) {
       WayDecorator.renderText(
-
           way.getUpperLeft(),
           text,
           display,
@@ -482,6 +482,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
           dy,
           fill,
           stroke,
+          textPaint,
           repeat,
           repeatGap!,
           repeatStart!,

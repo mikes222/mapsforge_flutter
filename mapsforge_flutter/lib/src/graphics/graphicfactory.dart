@@ -1,11 +1,10 @@
 import 'package:flutter/widgets.dart';
-import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttergraphicfactory.dart';
 
 import '../graphics/position.dart';
 import '../mapelements/pointtextcontainer.dart';
 import '../model/mappoint.dart';
-import 'color.dart';
 import 'display.dart';
 import 'mapcanvas.dart';
 import 'mappaint.dart';
@@ -28,8 +27,6 @@ abstract class GraphicFactory {
 
   MapCanvas createCanvas(double width, double height, [String? src]);
 
-  int createColor(Color color);
-
   int createColorSeparate(int alpha, int red, int green, int blue);
 
   Matrix createMatrix();
@@ -42,6 +39,8 @@ abstract class GraphicFactory {
   //Paint createPaint();
 
   MapPaint createPaint();
+
+  MapTextPaint createTextPaint();
 
   MapPaint createPaintFrom(MapPaint from);
 
@@ -57,7 +56,8 @@ abstract class GraphicFactory {
       MapPaint paintFront,
       MapPaint paintBack,
       Position position,
-      int maxTextWidth);
+      int maxTextWidth,
+      MapTextPaint mapTextPaint);
 
 //  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 

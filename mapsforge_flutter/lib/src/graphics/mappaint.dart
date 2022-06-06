@@ -1,9 +1,8 @@
+import 'dart:ui';
+
 import 'bitmap.dart';
 import 'cap.dart';
-import 'color.dart';
 import 'join.dart';
-import 'mapfontfamily.dart';
-import 'mapfontstyle.dart';
 import 'style.dart';
 
 abstract class MapPaint {
@@ -12,13 +11,9 @@ abstract class MapPaint {
   ///
   void dispose();
 
-  int getColor();
+  int getColorAsNumber();
 
   double getStrokeWidth();
-
-  int getTextHeight(String text);
-
-  int getTextWidth(String text);
 
   bool isTransparent();
 
@@ -39,6 +34,8 @@ abstract class MapPaint {
   /// The default value is {@link Color#BLACK}. The [color] is a 32 bit ARGB format, eg. 0xff003300 (opaquicity, red, green, blue)
   void setColorFromNumber(int color);
 
+  Color getColor();
+
   /**
    * The default value is {@link Cap#ROUND}.
    */
@@ -54,14 +51,6 @@ abstract class MapPaint {
   void setStyle(Style style);
 
   //void setTextAlign(Align align);
-
-  void setTextSize(double textSize);
-
-  double getTextSize();
-
-  void setTypeface(MapFontFamily fontFamily, MapFontStyle fontStyle);
-
-  MapFontStyle getFontStyle();
 
   void setStrokeDasharray(List<double>? strokeDasharray);
 

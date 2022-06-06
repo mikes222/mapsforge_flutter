@@ -1,8 +1,9 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
+
 import '../graphics/bitmap.dart';
 import '../graphics/display.dart';
-import '../graphics/graphicfactory.dart';
 import '../graphics/mappaint.dart';
 import '../mapelements/mapelementcontainer.dart';
 import '../mapelements/symbolcontainer.dart';
@@ -125,6 +126,7 @@ class WayDecorator {
       double dy,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint textPaint,
       bool? repeat,
       double repeatGap,
       double repeatStart,
@@ -152,8 +154,8 @@ class WayDecorator {
       path.segments.add(segment);
     }
 
-    int textWidth = stroke.getTextWidth(text);
-    int textHeight = stroke.getTextHeight(text);
+    double textWidth = textPaint.getTextWidth(text);
+    double textHeight = textPaint.getTextHeight(text);
 
     double pathLength = path.length();
 
@@ -174,8 +176,8 @@ class WayDecorator {
       }
       if (tooSharp) continue;
 
-      currentLabels.add(new WayTextContainer(linePart, display,
-          priority, text, fill, stroke, textHeight.toDouble()));
+      currentLabels.add(new WayTextContainer(linePart, display, priority, text,
+          fill, stroke, textHeight, textPaint));
     }
   }
 }

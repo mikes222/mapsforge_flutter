@@ -1,23 +1,23 @@
 import 'dart:ui' as ui;
 
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/fluttertextpaint.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import 'fluttercanvas.dart';
-import 'fluttercolor.dart';
 import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
-import 'flutterpointtextcontainer.dart';
+import '../../mapelements/flutterpointtextcontainer.dart';
 import 'flutterrect.dart';
 
 class FlutterGraphicFactory implements GraphicFactory {
@@ -32,11 +32,6 @@ class FlutterGraphicFactory implements GraphicFactory {
   @override
   MapCanvas createCanvas(double width, double height, [String? src]) {
     return FlutterCanvas.forRecorder(width, height, src);
-  }
-
-  @override
-  int createColor(Color color) {
-    return FlutterColor.getColor(color);
   }
 
   @override
@@ -64,9 +59,10 @@ class FlutterGraphicFactory implements GraphicFactory {
       MapPaint paintFront,
       MapPaint paintBack,
       Position position,
-      int maxTextWidth) {
+      int maxTextWidth,
+      MapTextPaint mapTextPaint) {
     return FlutterPointTextContainer(xy, display, priority, text, paintFront,
-        paintBack, position, maxTextWidth);
+        paintBack, position, maxTextWidth, mapTextPaint);
   }
 
   // @override
@@ -96,6 +92,10 @@ class FlutterGraphicFactory implements GraphicFactory {
   @override
   MapPaint createPaint() {
     return FlutterPaint(ui.Paint());
+  }
+
+  MapTextPaint createTextPaint() {
+    return FlutterTextPaint();
   }
 
   @override

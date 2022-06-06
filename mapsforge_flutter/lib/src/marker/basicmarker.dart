@@ -127,11 +127,10 @@ class MarkerCaption with TextMixin {
 
   void initResources() {
     initTextMixin();
-    stroke!.setStrokeWidth(strokeWidth);
-    stroke!.setColorFromNumber(strokeColor);
-    stroke!.setTextSize(fontSize);
-    fill!.setTextSize(fontSize);
-    fill!.setColorFromNumber(fillColor);
+    setStrokeWidth(strokeWidth);
+    setStrokeColorFromNumber(strokeColor);
+    fontSize = (fontSize);
+    setFillColorFromNumber(fillColor);
   }
 
   void dispose() {
@@ -149,12 +148,14 @@ class MarkerCaption with TextMixin {
           text,
           (mappoint.x + captionOffsetX),
           (mappoint.y + captionOffsetY),
-          getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+          getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
       markerCallback.flutterCanvas.drawText(
           text,
           (mappoint.x + captionOffsetX),
           (mappoint.y + captionOffsetY),
-          getFillPaint(markerCallback.mapViewPosition.zoomLevel));
+          getFillPaint(markerCallback.mapViewPosition.zoomLevel),
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
 
       // markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
       //     getStrokePaint(markerCallback.mapViewPosition.zoomLevel));

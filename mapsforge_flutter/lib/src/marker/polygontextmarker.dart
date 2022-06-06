@@ -72,15 +72,17 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   Future<void> initResources() async {
     initTextMixin();
     fontSize = this.fontSize;
-    stroke!.setColorFromNumber(this.strokeColor);
-    if (fillColor != null) fill!.setColorFromNumber(this.fillColor!);
-    stroke!.setStrokeWidth(this.strokeWidth);
+    setStrokeColorFromNumber(this.strokeColor);
+    if (fillColor != null) setFillColorFromNumber(this.fillColor!);
+    setStrokeWidth(this.strokeWidth);
   }
 
   @override
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     if (_boundingBox == null) return false;
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && _boundingBox!.intersects(boundary);
+    return minZoomLevel <= zoomLevel &&
+        maxZoomLevel >= zoomLevel &&
+        _boundingBox!.intersects(boundary);
   }
 
   @override
@@ -88,8 +90,18 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
       Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
           markerCallback.mapViewPosition.leftUpper!.y);
-      markerCallback.renderPathText(caption, _lineString!, origin, stroke!);
-      markerCallback.renderPathText(caption, _lineString!, origin, fill!);
+      markerCallback.renderPathText(
+          caption,
+          _lineString!,
+          origin,
+          getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+      markerCallback.renderPathText(
+          caption,
+          _lineString!,
+          origin,
+          getFillPaint(markerCallback.mapViewPosition.zoomLevel),
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
     } else {
       _lineString = LineString();
       double? prevX = null;
@@ -114,8 +126,18 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
       Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
           markerCallback.mapViewPosition.leftUpper!.y);
-      markerCallback.renderPathText(caption, _lineString!, origin, stroke!);
-      markerCallback.renderPathText(caption, _lineString!, origin, fill!);
+      markerCallback.renderPathText(
+          caption,
+          _lineString!,
+          origin,
+          getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+      markerCallback.renderPathText(
+          caption,
+          _lineString!,
+          origin,
+          getFillPaint(markerCallback.mapViewPosition.zoomLevel),
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
 
       _zoom = markerCallback.mapViewPosition.zoomLevel;
     }

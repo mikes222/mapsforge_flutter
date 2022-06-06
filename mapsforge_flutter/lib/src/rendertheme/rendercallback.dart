@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
+
 import '../datastore/pointofinterest.dart';
 import '../graphics/bitmap.dart';
 import '../graphics/position.dart';
@@ -46,6 +48,7 @@ abstract class RenderCallback {
       double verticalOffset,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint mapTextPaint,
       Position position,
       int maxTextWidth,
       PolylineContainer way);
@@ -84,6 +87,7 @@ abstract class RenderCallback {
       double verticalOffset,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint mapTextPaint,
       Position position,
       int maxTextWidth,
       PointOfInterest poi);
@@ -172,6 +176,7 @@ abstract class RenderCallback {
       double dy,
       MapPaint fill,
       MapPaint stroke,
+      MapTextPaint textPaint,
       bool? repeat,
       double? repeatGap,
       double? repeatStart,

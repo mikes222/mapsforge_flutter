@@ -139,7 +139,7 @@ class RuleBuilder {
       }
       if (element == Element.WAY && ruleBuilder.element == Element.NODE) {
         _log.warning(
-            "Impossible SubRule which has element way whereas the parent has element node");
+            "Impossible SubRule which has element node whereas the parent has element way");
       }
       if (zoomMax < ruleBuilder.zoomMin) {
         _log.warning(

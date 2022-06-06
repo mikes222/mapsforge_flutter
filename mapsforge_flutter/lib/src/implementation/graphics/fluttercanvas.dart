@@ -13,6 +13,7 @@ import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
@@ -116,76 +117,16 @@ class FlutterCanvas extends MapCanvas {
         .drawRect(ui.Rect.fromLTWH(0, 0, size.width, size.height), paint);
   }
 
-  // @override
-  // Dimension getDimension() {
-  //   // TODO: implement getDimension
-  //   return null;
-  // }
-  //
-  // @override
-  // int getHeight() {
-  //   // TODO: implement getHeight
-  //   return null;
-  // }
-  //
-  // @override
-  // int getWidth() {
-  //   // TODO: implement getWidth
-  //   return null;
-  // }
-
-  // @override
-  // bool isAntiAlias() {
-  //   // TODO: implement isAntiAlias
-  //   return null;
-  // }
-  //
-  // @override
-  // bool isFilterBitmap() {
-  //   // TODO: implement isFilterBitmap
-  //   return null;
-  // }
-  //
-  // @override
-  // void resetClip() {}
-  //
-  // @override
-  // void setAntiAlias(bool aa) {
-  //   // TODO: implement setAntiAlias
-  // }
-  //
-  // @override
-  // void setBitmap(Bitmap bitmap) {
-  //   // TODO: implement setBitmap
-  // }
-
   @override
   void setClip(double left, double top, double width, double height) {
     uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height),
         doAntiAlias: true);
   }
 
-  // @override
-  // void setClipDifference(int left, int top, int width, int height) {
-  //   // TODO: implement setClipDifference
-  // }
-  //
-  // @override
-  // void setFilterBitmap(bool filter) {
-  //   // TODO: implement setFilterBitmap
-  // }
-  //
-  // @override
-  // void shadeBitmap(Bitmap bitmap, Rectangle shadeRect, Rectangle tileRect, double magnitude) {
-  //   // TODO: implement shadeBitmap
-  // }
-
   @override
   Future<Bitmap> finalizeBitmap() async {
     ui.Picture pic = pictureRecorder!.endRecording();
     ui.Image img = await pic.toImage(size.width.toInt(), size.height.toInt());
-    //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-//    var buffer = byteData.buffer.asUint8List();
     pictureRecorder = null;
     pic.dispose();
 
@@ -251,21 +192,21 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawPathText(
-      String text, LineString lineString, Mappoint origin, MapPaint paint) {
+  void drawPathText(String text, LineString lineString, Mappoint origin,
+      MapPaint paint, MapTextPaint mapTextPaint) {
     if (text.trim().isEmpty) {
       return;
     }
     if (paint.isTransparent()) {
       return;
     }
-    double fontSize = paint.getTextSize();
+    double fontSize = mapTextPaint.getTextSize();
     ui.ParagraphBuilder builder =
-        (paint as FlutterPaint).buildParagraphBuilder(text);
+        buildParagraphBuilder(text, paint, mapTextPaint);
 
     ui.Paragraph paragraph = builder.build();
 
-    double textlen = calculateTextWidth(text, fontSize, paint);
+    double textlen = calculateTextWidth(text, mapTextPaint);
 
     double len = 0;
     lineString.segments.forEach((segment) {
@@ -292,46 +233,6 @@ class FlutterCanvas extends MapCanvas {
       _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
       len -= segmentLength;
     });
-  }
-
-  static double calculateTextWidth(
-      String text, double fontSize, MapPaint paint) {
-    String key = "$text-$fontSize-${paint.getFontStyle().name}";
-    double? result = _cache.get(key);
-    if (result != null) return result;
-
-    // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
-    // self-defined constraint
-    final constraints = const BoxConstraints(
-      maxWidth: 800.0, // maxwidth calculated
-      minHeight: 0.0,
-      minWidth: 0.0,
-    );
-
-    RenderParagraph renderParagraph = RenderParagraph(
-      TextSpan(
-        text: text,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontStyle: paint.getFontStyle() == MapFontStyle.BOLD_ITALIC ||
-                  paint.getFontStyle() == MapFontStyle.ITALIC
-              ? FontStyle.italic
-              : FontStyle.normal,
-          fontWeight: paint.getFontStyle() == MapFontStyle.BOLD ||
-                  paint.getFontStyle() == MapFontStyle.BOLD_ITALIC
-              ? FontWeight.bold
-              : FontWeight.normal,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    );
-    renderParagraph.layout(constraints);
-    double textlen =
-        renderParagraph.getMinIntrinsicWidth(fontSize).ceilToDouble();
-//    _log.info("Textlen: $textlen for $text");
-    _cache.set(key, textlen);
-    return textlen;
   }
 
   void _drawTextRotated(ui.Paragraph paragraph, double textlen, double fontSize,
@@ -361,24 +262,98 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawText(String text, double x, double y, MapPaint paint) {
-    double textwidth = calculateTextWidth(text, paint.getTextSize(), paint);
+  void drawText(String text, double x, double y, MapPaint paint,
+      MapTextPaint mapTextPaint) {
+    double textwidth = calculateTextWidth(text, mapTextPaint);
     ui.ParagraphBuilder builder =
-        (paint as FlutterPaint).buildParagraphBuilder(text);
+        buildParagraphBuilder(text, paint, mapTextPaint);
     uiCanvas.drawParagraph(
         builder.build()..layout(ui.ParagraphConstraints(width: textwidth)),
         Offset(x - textwidth / 2, y));
   }
 
-  // @override
-  // void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint) {
-  //   // TODO: implement drawTextRotated
-  // }
-  //
-  // @override
-  // void fillColor(Color color) {
-  //   // TODO: implement fillColor
-  // }
+  static double calculateTextWidth(String text, MapTextPaint mapTextPaint) {
+    String key =
+        "$text-${mapTextPaint.getTextSize()}-${mapTextPaint.getFontStyle().name}";
+    double? result = _cache.get(key);
+    if (result != null) return result;
+
+    // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
+    // self-defined constraint
+    final constraints = const BoxConstraints(
+      maxWidth: 800.0, // maxwidth calculated
+      minHeight: 0.0,
+      minWidth: 0.0,
+    );
+
+    RenderParagraph renderParagraph = RenderParagraph(
+      TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: mapTextPaint.getTextSize(),
+          fontStyle: mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC ||
+                  mapTextPaint.getFontStyle() == MapFontStyle.ITALIC
+              ? FontStyle.italic
+              : FontStyle.normal,
+          fontWeight: mapTextPaint.getFontStyle() == MapFontStyle.BOLD ||
+                  mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC
+              ? FontWeight.bold
+              : FontWeight.normal,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    renderParagraph.layout(constraints);
+    double textlen = renderParagraph
+        .getMinIntrinsicWidth(mapTextPaint.getTextSize())
+        .ceilToDouble();
+//    _log.info("Textlen: $textlen for $text");
+    _cache.set(key, textlen);
+    return textlen;
+  }
+
+  static ui.ParagraphBuilder buildParagraphBuilder(
+      String text, MapPaint paint, MapTextPaint mapTextPaint) {
+    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
+      ui.ParagraphStyle(
+        fontSize: mapTextPaint.getTextSize(),
+        //textAlign: TextAlign.center,
+        fontStyle: mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC ||
+                mapTextPaint.getFontStyle() == MapFontStyle.ITALIC
+            ? ui.FontStyle.italic
+            : ui.FontStyle.normal,
+        fontWeight: mapTextPaint.getFontStyle() == MapFontStyle.BOLD ||
+                mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC
+            ? ui.FontWeight.bold
+            : ui.FontWeight.normal,
+        //fontFamily: _fontFamily == MapFontFamily.MONOSPACE ? FontFamily.MONOSPACE : FontFamily.DEFAULT,
+      ),
+    );
+
+    if (paint.getStrokeWidth() == 0)
+      builder.pushStyle(ui.TextStyle(
+        color: paint.getColor(),
+        fontFamily: mapTextPaint
+            .getFontFamily()
+            .toString()
+            .replaceAll("MapFontFamily.", ""),
+      ));
+    else
+      builder.pushStyle(ui.TextStyle(
+        foreground: Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = paint.getStrokeWidth()
+          ..color = paint.getColor(),
+        fontFamily: mapTextPaint
+            .getFontFamily()
+            .toString()
+            .replaceAll("MapFontFamily.", ""),
+      ));
+
+    builder.addText(text);
+    return builder;
+  }
 
   @override
   void scale(Mappoint focalPoint, double scale) {

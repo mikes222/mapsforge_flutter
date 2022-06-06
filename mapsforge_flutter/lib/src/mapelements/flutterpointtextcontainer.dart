@@ -6,14 +6,15 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
 
-import 'fluttercanvas.dart';
-import 'flutterpaint.dart';
+import '../implementation/graphics/fluttercanvas.dart';
+import '../implementation/graphics/flutterpaint.dart';
 
 class FlutterPointTextContainer extends PointTextContainer {
   static final _log = new Logger('FlutterPointTextContainer');
@@ -33,9 +34,10 @@ class FlutterPointTextContainer extends PointTextContainer {
       MapPaint paintFront,
       MapPaint paintBack,
       Position position,
-      int maxTextWidth)
+      int maxTextWidth,
+      MapTextPaint mapTextPaint)
       : super(xy, display, priority, text, paintFront, paintBack, position,
-            maxTextWidth) {
+            maxTextWidth, mapTextPaint) {
     double boxWidth;
     double boxHeight;
 
@@ -58,13 +60,13 @@ class FlutterPointTextContainer extends PointTextContainer {
     // text is rendered with right alignment if using StaticLayout
 
     ui.ParagraphBuilder frontBuilder =
-        (paintFront as FlutterPaint).buildParagraphBuilder(text);
+        FlutterCanvas.buildParagraphBuilder(text, paintFront, mapTextPaint);
     front = frontBuilder.build()
       ..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
 
     //backTextPaint.setTextAlign(android.graphics.Paint.Align.LEFT);
     ui.ParagraphBuilder backBuilder =
-        (paintBack as FlutterPaint).buildParagraphBuilder(text);
+        FlutterCanvas.buildParagraphBuilder(text, paintBack, mapTextPaint);
     back = backBuilder.build()
       ..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
 

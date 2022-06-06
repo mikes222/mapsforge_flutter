@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttermatrix.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
@@ -42,9 +43,9 @@ class MarkerContext implements MarkerCallback {
   }
 
   @override
-  void renderPathText(
-      String caption, LineString lineString, Mappoint origin, MapPaint stroke) {
-    flutterCanvas.drawPathText(caption, lineString, origin, stroke);
+  void renderPathText(String caption, LineString lineString, Mappoint origin,
+      MapPaint stroke, MapTextPaint textPaint) {
+    flutterCanvas.drawPathText(caption, lineString, origin, stroke, textPaint);
   }
 
   @override

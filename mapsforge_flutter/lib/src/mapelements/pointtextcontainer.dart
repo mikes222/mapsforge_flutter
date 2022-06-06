@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
+
 import '../graphics/display.dart';
 import '../graphics/mappaint.dart';
 import '../graphics/position.dart';
@@ -8,18 +10,27 @@ abstract class PointTextContainer extends MapElementContainer {
   final int maxTextWidth;
   final MapPaint paintBack;
   final MapPaint paintFront;
+  final MapTextPaint mapTextPaint;
   final Position position;
   final String text;
-  late int textHeight;
-  late int textWidth;
+  late double textHeight;
+  late double textWidth;
 
   /// Create a new point container, that holds the x-y coordinates of a point, a text variable, two paint objects, and
   /// a reference on a symbolContainer, if the text is connected with a POI.
-  PointTextContainer(Mappoint point, Display display, int priority, this.text,
-      this.paintFront, this.paintBack, this.position, this.maxTextWidth)
+  PointTextContainer(
+      Mappoint point,
+      Display display,
+      int priority,
+      this.text,
+      this.paintFront,
+      this.paintBack,
+      this.position,
+      this.maxTextWidth,
+      this.mapTextPaint)
       : super(point, display, priority) {
-    this.textWidth = paintBack.getTextWidth(text);
-    this.textHeight = paintBack.getTextHeight(text);
+    this.textWidth = mapTextPaint.getTextWidth(text);
+    this.textHeight = mapTextPaint.getTextHeight(text);
   }
 
   @override

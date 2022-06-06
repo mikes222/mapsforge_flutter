@@ -1,10 +1,8 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -35,7 +33,7 @@ class PathText extends RenderInstruction with TextMixin {
 
   PathText()
       : dyScaled = new Map(),
-        super( ) {
+        super() {
     initTextMixin();
     this.rotate = true;
     this.repeat = true;
@@ -46,12 +44,10 @@ class PathText extends RenderInstruction with TextMixin {
     mixinDispose();
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
-
-    MapFontFamily fontFamily = MapFontFamily.DEFAULT;
-    MapFontStyle fontStyle = MapFontStyle.NORMAL;
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -67,18 +63,16 @@ class PathText extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.FILL == name) {
-        this
-            .fill!
-            .setColorFromNumber(XmlUtils.getColor( value, this));
+        this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
-        fontFamily = MapFontFamily.values
-            .firstWhere((v) => v.toString().toLowerCase().contains(value));
+        setFontFamily(MapFontFamily.values
+            .firstWhere((v) => v.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getFontScaleFactor();
       } else if (RenderInstruction.FONT_STYLE == name) {
-        fontStyle = MapFontStyle.values
-            .firstWhere((v) => v.toString().toLowerCase().contains(value));
+        setFontStyle(MapFontStyle.values
+            .firstWhere((v) => v.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.REPEAT == name) {
         this.repeat = value == "true";
       } else if (RenderInstruction.REPEAT_GAP == name) {
@@ -92,13 +86,10 @@ class PathText extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this
-            .stroke!
-            .setColorFromNumber(XmlUtils.getColor( value, this));
+        this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke!.setStrokeWidth(
-            XmlUtils.parseNonNegativeFloat(name, value) *
-                displayModel.fontScaleFactor);
+        this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.fontScaleFactor);
       } else {
         throw Exception("PathText probs");
       }
@@ -106,8 +97,6 @@ class PathText extends RenderInstruction with TextMixin {
 
     XmlUtils.checkMandatoryAttribute(
         rootElement.name.toString(), RenderInstruction.K, this.textKey);
-
-    initMixinAfterParse(fontFamily, fontStyle);
   }
 
   @override
@@ -139,6 +128,7 @@ class PathText extends RenderInstruction with TextMixin {
         dyScale,
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
+        getTextPaint(renderContext.job.tile.zoomLevel),
         this.repeat,
         this.repeatGap,
         this.repeatStart,
@@ -163,8 +153,7 @@ class PathText extends RenderInstruction with TextMixin {
   }
 
   @override
-  Future<RenderInstruction> initResources(
-      SymbolCache? symbolCache) {
+  Future<RenderInstruction> initResources(SymbolCache? symbolCache) {
     return Future.value(this);
   }
 }

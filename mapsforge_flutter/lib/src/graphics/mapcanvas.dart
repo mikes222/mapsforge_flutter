@@ -1,4 +1,5 @@
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
@@ -48,10 +49,11 @@ abstract class MapCanvas {
 
   void drawRect(MapRect rect, MapPaint paint);
 
-  void drawPathText(
-      String text, LineString lineString, Mappoint origin, MapPaint paint);
+  void drawPathText(String text, LineString lineString, Mappoint origin,
+      MapPaint paint, MapTextPaint mapTextPaint);
 
-  void drawText(String text, double x, double y, MapPaint paint);
+  void drawText(String text, double x, double y, MapPaint paint,
+      MapTextPaint mapTextPaint);
 
   // void drawTextRotated(String text, int x1, int y1, int x2, int y2, MapPaint paint);
   //

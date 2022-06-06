@@ -124,7 +124,7 @@ void main() {
     await expectLater(find.byType(RawImage), matchesGoldenFile('renderer.png'));
   });
 
-  testWidgets('Test areas with images', (WidgetTester tester) async {
+  testWidgets('Test areas with images (forest)', (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );

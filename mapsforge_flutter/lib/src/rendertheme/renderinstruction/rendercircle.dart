@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -19,13 +19,12 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   final Map<int, double> renderRadiusScaled;
   bool scaleRadius = false;
 
-  RenderCircle(
-      this.level)
+  RenderCircle(this.level)
       : renderRadiusScaled = new Map(),
         super() {
     initPaintMixin();
-    this.fill.setColor(Color.TRANSPARENT);
-    this.stroke.setColor(Color.TRANSPARENT);
+    this.setFillColor(Colors.transparent);
+    this.setStrokeColor(Colors.transparent);
   }
 
   @override
@@ -33,7 +32,8 @@ class RenderCircle extends RenderInstruction with PaintMixin {
     mixinDispose();
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -44,17 +44,13 @@ class RenderCircle extends RenderInstruction with PaintMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this
-            .fill
-            .setColorFromNumber(XmlUtils.getColor( value, this));
+        this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.SCALE_RADIUS == name) {
         this.scaleRadius = value == "true";
       } else if (RenderInstruction.STROKE == name) {
-        this
-            .stroke
-            .setColorFromNumber(XmlUtils.getColor( value, this));
+        this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+        this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getScaleFactor());
       } else {
         throw Exception("circle probs");
@@ -93,7 +89,7 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
     if (this.scaleRadius) {
       this.renderRadiusScaled[zoomLevel] = this.radius! * scaleFactor;
-      scaleMixinStrokeWidth( scaleFactor, zoomLevel);
+      scaleMixinStrokeWidth(scaleFactor, zoomLevel);
     }
   }
 
@@ -103,8 +99,7 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   }
 
   @override
-  Future<RenderCircle> initResources(
-      SymbolCache? symbolCache) {
+  Future<RenderCircle> initResources(SymbolCache? symbolCache) {
     return Future.value(this);
   }
 }

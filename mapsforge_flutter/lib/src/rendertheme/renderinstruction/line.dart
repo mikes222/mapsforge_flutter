@@ -47,22 +47,22 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this.stroke.setColorFromNumber(XmlUtils.getColor(value, this));
+        this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_DASHARRAY == name) {
-        this.strokeDasharray = parseFloatArray(name, value);
-        for (int f = 0; f < this.strokeDasharray!.length; ++f) {
-          this.strokeDasharray![f] =
-              this.strokeDasharray![f] * displayModel.getScaleFactor();
-        }
-        this.stroke.setStrokeDasharray(this.strokeDasharray);
+        List<double> dashArray = parseFloatArray(name, value);
+        if (displayModel.getScaleFactor() != 1)
+          for (int f = 0; f < dashArray.length; ++f) {
+            dashArray[f] = dashArray[f] * displayModel.getScaleFactor();
+          }
+        this.setStrokeDashArray(dashArray);
       } else if (RenderInstruction.STROKE_LINECAP == name) {
-        this.stroke.setStrokeCap(Cap.values
+        this.setStrokeCap(Cap.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_LINEJOIN == name) {
-        this.stroke.setStrokeJoin(Join.values
+        this.setStrokeJoin(Join.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+        this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
         this.bitmapHeight =
@@ -136,16 +136,7 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
   Future<Line> initResources(SymbolCache? symbolCache) async {
     await initBitmap(symbolCache);
     if (bitmap != null) {
-      // make sure the color is not transparent
-      if (stroke.isTransparent()) stroke.setColorFromNumber(0xff000000);
-      stroke.setBitmapShader(bitmap!);
-      strokes.forEach((key, value) {
-        // make sure the color is not transparent
-        if (value.isTransparent()) value.setColorFromNumber(0xff000000);
-        value.setBitmapShader(bitmap!);
-      });
-      //strokePaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
-      //bitmap.incrementRefCount();
+      setStrokeBitmapShader(bitmap!);
     }
     return this;
   }
@@ -154,10 +145,5 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
   void dispose() {
     mixinDispose();
     super.dispose();
-  }
-
-  @override
-  String toString() {
-    return 'Line{dy: $dy, dyScaled: $dyScaled, level: $level, scale: $scale, stroke: $stroke, strokeDasharray: $strokeDasharray}';
   }
 }

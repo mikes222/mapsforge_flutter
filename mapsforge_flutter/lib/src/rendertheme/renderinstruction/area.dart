@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
@@ -18,16 +18,14 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
   final int level;
   Scale scale = Scale.STROKE;
 
-  Area(
-      String elementName, this.level)
-      : super() {
-
+  Area(String elementName, this.level) : super() {
     initPaintMixin();
-    this.fill.setColor(Color.TRANSPARENT);
-    this.stroke.setColor(Color.TRANSPARENT);
+    setFillColor(Colors.transparent);
+    setStrokeColor(Colors.transparent);
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement, List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement,
+      List<RenderInstruction> initPendings) {
     this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
 
     rootElement.attributes.forEach((element) {
@@ -38,17 +36,13 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.FILL == name) {
-        this
-            .fill
-            .setColorFromNumber(XmlUtils.getColor( value, this));
+        this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        this
-            .stroke
-            .setColorFromNumber(XmlUtils.getColor( value, this));
+        this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        this.stroke.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
+        this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
         this.bitmapHeight =
@@ -85,8 +79,12 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    renderCallback.renderArea(renderContext, fill,
-        getStrokePaint(renderContext.job.tile.zoomLevel), this.level, way);
+    renderCallback.renderArea(
+        renderContext,
+        getFillPaint(renderContext.job.tile.zoomLevel),
+        getStrokePaint(renderContext.job.tile.zoomLevel),
+        this.level,
+        way);
 //}
   }
 
@@ -95,7 +93,7 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
     if (this.scale == Scale.NONE) {
       return;
     }
-    scaleMixinStrokeWidth( scaleFactor, zoomLevel);
+    scaleMixinStrokeWidth(scaleFactor, zoomLevel);
   }
 
   @override
@@ -105,12 +103,12 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
 
   @override
   Future<Area> initResources(SymbolCache? symbolCache) async {
-    await initBitmap( symbolCache);
+    await initBitmap(symbolCache);
 
     if (bitmap != null) {
       // make sure the color is not transparent
-      if (fill.isTransparent()) fill.setColorFromNumber(0xff000000);
-      fill.setBitmapShader(bitmap!);
+      if (isFillTransparent()) setFillColor(Colors.black);
+      setFillBitmapShader(bitmap!);
       //bitmap.incrementRefCount();
     }
 
@@ -122,10 +120,5 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
   void dispose() {
     mixinDispose();
     super.dispose();
-  }
-
-  @override
-  String toString() {
-    return 'Area{fill: $fill, level: $level, scale: $scale, stroke: $stroke, strokes: $strokes}';
   }
 }

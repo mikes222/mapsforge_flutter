@@ -1,31 +1,19 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'dart:ui';
 
 import 'package:flutter/material.dart' as mat;
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
-import 'package:mapsforge_flutter/src/graphics/color.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 
 import 'flutterbitmap.dart';
-import 'fluttercanvas.dart';
-import 'fluttercolor.dart';
 
 class FlutterPaint implements MapPaint {
   final ui.Paint paint;
 
   FlutterBitmap? _shaderBitmap;
-
-  double _textSize = 10;
-
-  MapFontStyle _fontStyle = MapFontStyle.NORMAL;
-
-  MapFontFamily _fontFamily = MapFontFamily.DEFAULT;
 
   List<double>? _strokeDasharray;
 
@@ -37,9 +25,6 @@ class FlutterPaint implements MapPaint {
     paint.style = other.paint.style;
     paint.strokeJoin = other.paint.strokeJoin;
     paint.strokeCap = other.paint.strokeCap;
-    _textSize = other._textSize;
-    _fontStyle = other._fontStyle;
-    _fontFamily = other._fontFamily;
     _strokeDasharray = other._strokeDasharray;
     if (other._shaderBitmap != null) {
       setBitmapShader(other._shaderBitmap!);
@@ -52,9 +37,12 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  int getColor() {
+  int getColorAsNumber() {
     return paint.color.value;
   }
+
+  @override
+  ui.Color getColor() => paint.color;
 
   @override
   double getStrokeWidth() {
@@ -62,8 +50,8 @@ class FlutterPaint implements MapPaint {
   }
 
   @override
-  void setColor(Color color) {
-    paint.color = ui.Color(FlutterColor.getColor(color));
+  void setColor(ui.Color color) {
+    paint.color = color;
   }
 
   @override
@@ -169,72 +157,6 @@ class FlutterPaint implements MapPaint {
   // }
 
   @override
-  void setTextSize(double textSize) {
-    _textSize = textSize;
-  }
-
-  @override
-  double getTextSize() {
-    return _textSize;
-  }
-
-  @override
-  void setTypeface(MapFontFamily fontFamily, MapFontStyle fontStyle) {
-    _fontStyle = fontStyle;
-    _fontFamily = fontFamily;
-  }
-
-  @override
-  MapFontStyle getFontStyle() {
-    return _fontStyle;
-  }
-
-  @override
-  int getTextHeight(String text) {
-    return _textSize.ceil();
-  }
-
-  @override
-  int getTextWidth(String text) {
-    return FlutterCanvas.calculateTextWidth(text, _textSize, this).ceil();
-  }
-
-  ui.ParagraphBuilder buildParagraphBuilder(String text) {
-    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: _textSize,
-        //textAlign: TextAlign.center,
-        fontStyle: getFontStyle() == MapFontStyle.BOLD_ITALIC ||
-                getFontStyle() == MapFontStyle.ITALIC
-            ? ui.FontStyle.italic
-            : ui.FontStyle.normal,
-        fontWeight: getFontStyle() == MapFontStyle.BOLD ||
-                getFontStyle() == MapFontStyle.BOLD_ITALIC
-            ? ui.FontWeight.bold
-            : ui.FontWeight.normal,
-        //fontFamily: _fontFamily == MapFontFamily.MONOSPACE ? FontFamily.MONOSPACE : FontFamily.DEFAULT,
-      ),
-    );
-
-    if (getStrokeWidth() == 0)
-      builder.pushStyle(ui.TextStyle(
-        color: paint.color,
-        fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
-      ));
-    else
-      builder.pushStyle(ui.TextStyle(
-        foreground: Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = paint.strokeWidth
-          ..color = paint.color,
-        fontFamily: _fontFamily.toString().replaceAll("MapFontFamily.", ""),
-      ));
-
-    builder.addText(text);
-    return builder;
-  }
-
-  @override
   void setStrokeDasharray(List<double>? strokeDasharray) {
     this._strokeDasharray = strokeDasharray;
   }
@@ -246,6 +168,6 @@ class FlutterPaint implements MapPaint {
 
   @override
   String toString() {
-    return 'FlutterPaint{paint: $paint, color: ${paint.color}, _shaderBitmap: $_shaderBitmap, _textSize: $_textSize, _fontStyle: $_fontStyle, _fontFamily: $_fontFamily, _strokeDasharray: $_strokeDasharray}';
+    return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _strokeDasharray: $_strokeDasharray}';
   }
 }
