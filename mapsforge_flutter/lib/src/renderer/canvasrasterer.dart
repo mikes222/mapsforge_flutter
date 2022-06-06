@@ -18,8 +18,7 @@ class CanvasRasterer {
   final MapCanvas canvas;
   final Matrix symbolMatrix;
 
-  CanvasRasterer( double width, double height,
-      [String? src])
+  CanvasRasterer(double width, double height, [String? src])
       : canvas = GraphicFactory().createCanvas(width, height, src),
         symbolMatrix = GraphicFactory().createMatrix();
 
@@ -27,7 +26,8 @@ class CanvasRasterer {
     this.canvas.destroy();
   }
 
-  void drawWays(RenderContext renderContext) {
+  int drawWays(RenderContext renderContext) {
+    int count = 0;
     //print("drawing now ${renderContext.layerWays.length} layers");
     for (LayerPaintContainer layerPaintContainer in renderContext.layerWays) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");
@@ -36,9 +36,11 @@ class CanvasRasterer {
         wayList.forEach((ShapePaintContainer element) {
           //print("         drawing now ${element}");
           element.draw(this.canvas, renderContext.projection);
+          ++count;
         });
       }
     }
+    return count;
   }
 
   void drawMapElements(Set<MapElementContainer> elements,
@@ -49,13 +51,12 @@ class CanvasRasterer {
     // draw elements in order of priority: lower priority first, so more important
     // elements will be drawn on top (in case of display=true) items.
     List<MapElementContainer> elementsAsList = elements.toList()..sort();
-
-    for (MapElementContainer element in elementsAsList) {
+    elementsAsList.forEach((element) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
       element.draw(canvas, projection.getLeftUpper(tile), this.symbolMatrix,
           Filter.NONE);
-    }
+    });
   }
 
   void fill(int color) {

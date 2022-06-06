@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
+import 'package:mapsforge_flutter/src/utils/reducehelper.dart';
 
 import '../datastore/way.dart';
 import '../model/mappoint.dart';
@@ -27,6 +28,8 @@ class PolylineContainer implements ShapeContainer {
   final Tile upperLeft;
   final bool isClosedWay;
   final Way way;
+
+  final double maxGap = 3;
 
   PolylineContainer(this.way, this.upperLeft)
       : tags = way.tags,
@@ -53,11 +56,13 @@ class PolylineContainer implements ShapeContainer {
         List<Mappoint> mp1 = outer
             .map((position) => projection.latLonToPixel(position))
             .toList();
+        mp1 = ReduceHelper.reduce(mp1, maxGap);
         // check if the area to draw is too small. This saves 100ms for complex structures
         MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);
-        if (minMaxMappoint.maxX - minMaxMappoint.minX > 3 ||
-            minMaxMappoint.maxY - minMaxMappoint.minY > 3)
+        if (minMaxMappoint.maxX - minMaxMappoint.minX > maxGap ||
+            minMaxMappoint.maxY - minMaxMappoint.minY > maxGap) {
           coordinatesAbsolute!.add(mp1);
+        }
       });
     }
     return coordinatesAbsolute!;

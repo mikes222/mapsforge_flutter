@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
+import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
 import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 
 import 'basicmarker.dart';
@@ -114,7 +115,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
         if (prevX != null && prevY != null) {
           LineSegment segment =
-              new LineSegment(Mappoint(prevX!, prevY!), Mappoint(x, y));
+              LineSegment(Mappoint(prevX!, prevY!), Mappoint(x, y));
           _lineString!.segments.add(segment);
         }
         prevX = x;
@@ -123,6 +124,10 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
       LineSegment segment = new LineSegment(
           _lineString!.segments.last.end, _lineString!.segments.first.start);
       _lineString!.segments.add(segment);
+
+      double textWidth = getTextPaint(markerCallback.mapViewPosition.zoomLevel)
+          .getTextWidth(caption);
+      _lineString = WayDecorator.reducePathForText(_lineString!, textWidth);
 
       Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
           markerCallback.mapViewPosition.leftUpper!.y);

@@ -10,16 +10,22 @@ import '../renderer/shapecontainer.dart';
 class ShapePaintCircleContainer extends ShapePaintContainer {
   static int count = 0;
 
+  final MapPaint? fill;
+
+  final MapPaint? stroke;
+
   const ShapePaintCircleContainer(
-      ShapeContainer shapeContainer, MapPaint paint, double dy)
-      : super(shapeContainer, paint, dy);
+      ShapeContainer shapeContainer, this.fill, this.stroke, double dy)
+      : super(shapeContainer, dy);
 
   @override
   void draw(MapCanvas canvas, PixelProjection projection) {
     CircleContainer circleContainer = shapeContainer as CircleContainer;
     Mappoint point = circleContainer.point;
-    canvas.drawCircle(point.x, point.y,
-        circleContainer.radius, paint);
+    if (fill != null)
+      canvas.drawCircle(point.x, point.y, circleContainer.radius, fill!);
+    if (stroke != null)
+      canvas.drawCircle(point.x, point.y, circleContainer.radius, stroke!);
     ++count;
   }
 }

@@ -10,8 +10,6 @@ class LineString {
 
   Rectangle? _bounds;
 
-  double? _length;
-
   /**
    * Creates a new LineString that consists of only the part between startDistance and endDistance.
    */
@@ -99,13 +97,11 @@ class LineString {
   }
 
   double length() {
-    if (_length != null) return _length!;
     double result = 0;
     for (LineSegment segment in this.segments) {
       result += segment.length();
     }
-    _length = result;
-    return _length!;
+    return result;
   }
 
   @override

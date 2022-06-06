@@ -16,9 +16,13 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   static int count = 0;
 
+  final MapPaint? fill;
+
+  final MapPaint? stroke;
+
   ShapePaintPolylineContainer(
-      ShapeContainer shapeContainer, MapPaint paint, double dy)
-      : super(shapeContainer, paint, dy) {
+      ShapeContainer shapeContainer, this.fill, this.stroke, double dy)
+      : super(shapeContainer, dy) {
     path = GraphicFactory().createPath();
   }
 
@@ -36,38 +40,19 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
       } else {
         points = outerList;
       }
-      MinMaxMappoint minMaxMappoint = MinMaxMappoint(points);
-      if (minMaxMappoint.maxX < -3) {
-        //print(minMaxMappoint);
-        continue;
-      }
-      if (minMaxMappoint.maxY < -3) {
-        //print(minMaxMappoint);
-        continue;
-      }
-      if (minMaxMappoint.minX > (canvas as FlutterCanvas).size.width + 3) {
-        //  print(minMaxMappoint);
-        continue;
-      }
-      if (minMaxMappoint.minY > (canvas).size.height + 3) {
-        //   print(minMaxMappoint);
-        continue;
-      }
-      if (minMaxMappoint.maxX - minMaxMappoint.minX < 3 &&
-          minMaxMappoint.maxY - minMaxMappoint.minY < 3) {
-        //   print(minMaxMappoint);
-        continue;
-      }
       //print("Drawing ShapePaintPolyline $minMaxMappoint with $paint");
       Mappoint point = points[0];
       this.path.moveTo(point.x, point.y);
+      //print("path moveTo $point");
       for (int i = 1; i < points.length; i++) {
         point = points[i];
         this.path.lineTo(point.x, point.y);
+        //print("path lineTo $point");
       }
     }
 
-    canvas.drawPath(this.path, paint);
+    if (fill != null) canvas.drawPath(this.path, fill!);
+    if (stroke != null) canvas.drawPath(this.path, stroke!);
   }
 
   @override

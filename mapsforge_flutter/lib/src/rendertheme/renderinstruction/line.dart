@@ -18,7 +18,7 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
   late double dy;
-  late Map<int, double> dyScaled;
+  final Map<int, double> dyScaled = {};
   final int level;
   final String? relativePathPrefix;
   Scale scale = Scale.STROKE;
@@ -26,7 +26,6 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
   Line(String elementName, this.level, this.relativePathPrefix) : super() {
     initPaintMixin();
 
-    dyScaled = new Map();
     dy = 0;
   }
 

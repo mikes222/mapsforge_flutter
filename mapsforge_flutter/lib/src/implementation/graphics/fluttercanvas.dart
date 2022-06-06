@@ -3,9 +3,7 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:ecache/ecache.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
@@ -40,6 +38,8 @@ class FlutterCanvas extends MapCanvas {
   /// optinal string to denote the type of resource. This is used to debug memory issues
   ///
   final String? src;
+
+  int actions = 0;
 
   static LruCache<String, double> _cache = new LruCache<String, double>(
     storage: SimpleStorage<String, double>(),
@@ -100,6 +100,7 @@ class FlutterCanvas extends MapCanvas {
         uiCanvas.rotate(angle);
         uiCanvas.drawImage(bmp, ui.Offset.zero, (paint as FlutterPaint).paint);
         uiCanvas.restore();
+        ++actions;
         return;
       }
     }
@@ -107,6 +108,7 @@ class FlutterCanvas extends MapCanvas {
     //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
     uiCanvas.drawImage(
         bmp, ui.Offset(left, top), (paint as FlutterPaint).paint);
+    ++actions;
   }
 
   @override
@@ -115,12 +117,14 @@ class FlutterCanvas extends MapCanvas {
     this
         .uiCanvas
         .drawRect(ui.Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    ++actions;
   }
 
   @override
   void setClip(double left, double top, double width, double height) {
     uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height),
         doAntiAlias: true);
+    ++actions;
   }
 
   @override
@@ -137,6 +141,7 @@ class FlutterCanvas extends MapCanvas {
   void drawCircle(double x, double y, double radius, MapPaint paint) {
     //_log.info("draw circle at $x $y $radius $paint at ${ui.Offset(x.toDouble(), y.toDouble())}");
     uiCanvas.drawCircle(ui.Offset(x, y), radius, (paint as FlutterPaint).paint);
+    ++actions;
   }
 
   @override
@@ -172,10 +177,12 @@ class FlutterCanvas extends MapCanvas {
         }
       }
       uiCanvas.drawPath(dashPath, (paint as FlutterPaint).paint);
+      ++actions;
     } else {
       //_log.info("draw path at ${(path as FlutterPath).path.getBounds()}  $paint}");
       uiCanvas.drawPath(
           (path as FlutterPath).path, (paint as FlutterPaint).paint);
+      ++actions;
     }
   }
 
@@ -187,8 +194,10 @@ class FlutterCanvas extends MapCanvas {
         paint.getStrokeDasharray()!.length >= 2) {
       Path rectPath = Path()..addRect(rt);
       drawPath(new FlutterPath(rectPath), paint);
-    } else
+    } else {
       uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
+      ++actions;
+    }
   }
 
   @override
@@ -208,30 +217,23 @@ class FlutterCanvas extends MapCanvas {
 
     double textlen = calculateTextWidth(text, mapTextPaint);
 
-    double len = 0;
+//    double len = 0;
     lineString.segments.forEach((segment) {
-      double segmentLength = sqrt((segment.end.x - segment.start.x) *
-              (segment.end.x - segment.start.x) +
-          (segment.end.y - segment.start.y) *
-              (segment.end.y - segment.start.y));
-      if (segmentLength < textlen) {
-        // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
-        // direction significantly
-        len -= segmentLength;
-        return;
-      }
-      // if (len > 0) {
+      // double segmentLength = segment.length();
+      // if (segmentLength < textlen) {
+      //   // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
+      //   // direction significantly
       //   len -= segmentLength;
       //   return;
       // }
-      len = textlen + fontSize * 2;
+//      len = textlen + fontSize * 2;
       // So text isn't upside down
       bool doInvert = segment.end.x <= segment.start.x;
       Mappoint start = doInvert
           ? segment.end.offset(-origin.x, -origin.y)
           : segment.start.offset(-origin.x, -origin.y);
       _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
-      len -= segmentLength;
+//      len -= segmentLength;
     });
   }
 
@@ -259,6 +261,7 @@ class FlutterCanvas extends MapCanvas {
         paragraph..layout(ui.ParagraphConstraints(width: textlen)),
         const Offset(0, 0));
     uiCanvas.restore();
+    ++actions;
   }
 
   @override
@@ -270,6 +273,7 @@ class FlutterCanvas extends MapCanvas {
     uiCanvas.drawParagraph(
         builder.build()..layout(ui.ParagraphConstraints(width: textwidth)),
         Offset(x - textwidth / 2, y));
+    ++actions;
   }
 
   static double calculateTextWidth(String text, MapTextPaint mapTextPaint) {
@@ -363,5 +367,6 @@ class FlutterCanvas extends MapCanvas {
         (-size.height / 2 + diffY) * (scale - 1));
     // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.
     uiCanvas.scale(scale);
+    ++actions;
   }
 }

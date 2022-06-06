@@ -15,6 +15,10 @@ class LineSegment {
   final Mappoint start;
   final Mappoint end;
 
+  double? _angle;
+
+  double? _length;
+
   /**
    * Ctor with given start and end point
    *
@@ -33,6 +37,12 @@ class LineSegment {
   LineSegment.direction(this.start, Mappoint direction, double distance)
       : end = new LineSegment(start, direction).pointAlongLineSegment(distance);
 
+  double getAngle() {
+    if (_angle != null) return _angle!;
+    _angle = atan2(this.start.y - this.end.y, this.start.x - this.end.x);
+    return _angle!;
+  }
+
   /**
    * Computes the angle between this LineSegment and another one.
    *
@@ -40,9 +50,8 @@ class LineSegment {
    * @return angle in degrees
    */
   double angleTo(LineSegment other) {
-    double angle1 = atan2(this.start.y - this.end.y, this.start.x - this.end.x);
-    double angle2 =
-        atan2(other.start.y - other.end.y, other.start.x - other.end.x);
+    double angle1 = getAngle();
+    double angle2 = other.getAngle();
     double angle = toDegrees(angle1 - angle2);
     if (angle <= -180) {
       angle += 360;
@@ -146,7 +155,9 @@ class LineSegment {
    * @return the length of the segment.
    */
   double length() {
-    return start.distance(end);
+    if (_length != null) return _length!;
+    _length = start.distance(end);
+    return _length!;
   }
 
   /**

@@ -13,6 +13,7 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/mapelements/mapelementcontainer.dart';
@@ -88,7 +89,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    bool showTiming = true;
+    bool showTiming = false;
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     bool useIsolate = false;
@@ -147,15 +148,17 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     canvasRasterer.startCanvasBitmap();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
-    canvasRasterer.drawWays(renderContext);
+    int waycount = canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
-          "drawWays took $diff ms for ${renderContext.layerWays.length} items");
+          "drawWays took $diff ms for ${renderContext.layerWays.length} way-layers");
 
+    int labels = 0;
     if (this.renderLabels) {
       Set<MapElementContainer> labelsToDraw =
           await _processLabels(renderContext);
+      labels = labelsToDraw.length;
       //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
       canvasRasterer.drawMapElements(
@@ -188,10 +191,12 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
     renderContext.dispose();
     TileBitmap? bitmap =
         (await canvasRasterer.finalizeCanvasBitmap() as TileBitmap?);
+    int actions = (canvasRasterer.canvas as FlutterCanvas).actions;
     canvasRasterer.destroy();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
-      _log.info("finalizeCanvasBitmap took $diff ms");
+      _log.info(
+          "finalizeCanvasBitmap took $diff ms for $waycount ways, $labels elements and labels, $actions actions in canvas");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL);
@@ -294,16 +299,12 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   }
 
   @override
-  void renderArea(RenderContext renderContext, MapPaint fill, MapPaint stroke,
+  void renderArea(RenderContext renderContext, MapPaint? fill, MapPaint? stroke,
       int level, PolylineContainer way) {
-    if (!stroke.isTransparent()) {
-      renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer(way, stroke, 0));
-    }
-    if (!fill.isTransparent()) {
-      renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer(way, fill, 0));
-    }
+    if ((fill == null || fill.isTransparent()) &&
+        (stroke == null || stroke.isTransparent())) return;
+    renderContext.addToCurrentDrawingLayer(
+        level, ShapePaintPolylineContainer(way, fill, stroke, 0));
   }
 
   @override
@@ -388,22 +389,18 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   @override
   void renderPointOfInterestCircle(RenderContext renderContext, double radius,
-      MapPaint? fill, MapPaint stroke, int level, PointOfInterest poi) {
+      MapPaint? fill, MapPaint? stroke, int level, PointOfInterest poi) {
     // ShapePaintContainers does not shift the position relative to the tile by themself. In case of ways this is done in the [PolylineContainer], but
     // in case of cirles this is not done at all so do it here for now
+    if ((fill == null || fill.isTransparent()) &&
+        (stroke == null || stroke.isTransparent())) return;
     Mappoint poiPosition = renderContext.projection
         .pixelRelativeToTile(poi.position, renderContext.job.tile);
     //_log.info("Adding circle $poiPosition with $radius");
-    if (fill != null && !fill.isTransparent())
-      renderContext.addToCurrentDrawingLayer(
-          level,
-          ShapePaintCircleContainer(
-              new CircleContainer(poiPosition, radius), fill, 0));
-    if (!stroke.isTransparent())
-      renderContext.addToCurrentDrawingLayer(
-          level,
-          ShapePaintCircleContainer(
-              new CircleContainer(poiPosition, radius), stroke, 0));
+    renderContext.addToCurrentDrawingLayer(
+        level,
+        ShapePaintCircleContainer(
+            new CircleContainer(poiPosition, radius), fill, stroke, 0));
   }
 
   @override
@@ -423,7 +420,7 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       int level, PolylineContainer way) {
     if (!stroke.isTransparent()) {
       renderContext.addToCurrentDrawingLayer(
-          level, ShapePaintPolylineContainer(way, stroke, dy));
+          level, ShapePaintPolylineContainer(way, null, stroke, dy));
     }
   }
 

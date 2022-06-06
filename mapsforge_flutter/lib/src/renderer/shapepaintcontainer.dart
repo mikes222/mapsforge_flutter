@@ -6,10 +6,9 @@ import '../renderer/shapecontainer.dart';
 
 abstract class ShapePaintContainer {
   final double dy;
-  final MapPaint paint;
   final ShapeContainer shapeContainer;
 
-  const ShapePaintContainer(this.shapeContainer, this.paint, this.dy);
+  const ShapePaintContainer(this.shapeContainer, this.dy);
 
   void draw(MapCanvas canvas, PixelProjection projection);
 }

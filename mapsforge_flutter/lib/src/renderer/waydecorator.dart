@@ -15,7 +15,7 @@ import '../model/tile.dart';
 import '../renderer/rendererutils.dart';
 
 class WayDecorator {
-  static final double MAX_LABEL_CORNER_ANGLE = 45;
+  static final double MAX_LABEL_CORNER_ANGLE = 10;
 
   static void renderSymbol(
       Bitmap symbolBitmap,
@@ -148,36 +148,46 @@ class WayDecorator {
       return;
     }
 
-    LineString path = new LineString();
+    LineString fullPath = new LineString();
     for (int i = 1; i < c.length; i++) {
       LineSegment segment = new LineSegment(c[i - 1], c[i]);
-      path.segments.add(segment);
+      fullPath.segments.add(segment);
     }
 
     double textWidth = textPaint.getTextWidth(text);
     double textHeight = textPaint.getTextHeight(text);
 
-    double pathLength = path.length();
+    fullPath = reducePathForText(fullPath, textWidth);
+    if (fullPath.segments.isNotEmpty)
+      currentLabels.add(new WayTextContainer(fullPath, display, priority, text,
+          fill, stroke, textHeight, textPaint));
+  }
 
-    for (double pos = repeatStart;
-        pos + textWidth < pathLength;
-        pos += repeatGap + textWidth) {
-      LineString linePart = path.extractPart(pos, pos + textWidth);
-
-      bool tooSharp = false;
-      for (int i = 1; i < linePart.segments.length; i++) {
-        double cornerAngle = linePart.segments
-            .elementAt(i - 1)
-            .angleTo(linePart.segments.elementAt(i));
+  static LineString reducePathForText(LineString fullPath, double textWidth) {
+    LineString result = LineString();
+    LineString path = LineString();
+    for (LineSegment segment in fullPath.segments) {
+      if (segment.length() > textWidth) {
+        // we found a segment which is long enough so use this instead of all the small segments before
+        result.segments.add(segment);
+        path = LineString();
+        // todo split very long segments to several small segments and draw the text in each
+        continue;
+      }
+      if (path.segments.isNotEmpty) {
+        double cornerAngle = path.segments.last.angleTo(segment);
         if ((cornerAngle).abs() > MAX_LABEL_CORNER_ANGLE) {
-          tooSharp = true;
-          break;
+          path = LineString();
+          continue;
         }
       }
-      if (tooSharp) continue;
-
-      currentLabels.add(new WayTextContainer(linePart, display, priority, text,
-          fill, stroke, textHeight, textPaint));
+      path.segments.add(segment);
+      if (path.length() > textWidth) {
+        result.segments.add(
+            LineSegment(path.segments.first.start, path.segments.last.end));
+        path = LineString();
+      }
     }
+    return result;
   }
 }

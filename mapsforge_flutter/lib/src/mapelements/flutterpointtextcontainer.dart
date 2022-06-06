@@ -62,13 +62,13 @@ class FlutterPointTextContainer extends PointTextContainer {
     ui.ParagraphBuilder frontBuilder =
         FlutterCanvas.buildParagraphBuilder(text, paintFront, mapTextPaint);
     front = frontBuilder.build()
-      ..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
+      ..layout(ui.ParagraphConstraints(width: textWidth));
 
     //backTextPaint.setTextAlign(android.graphics.Paint.Align.LEFT);
     ui.ParagraphBuilder backBuilder =
         FlutterCanvas.buildParagraphBuilder(text, paintBack, mapTextPaint);
     back = backBuilder.build()
-      ..layout(ui.ParagraphConstraints(width: textWidth.toDouble()));
+      ..layout(ui.ParagraphConstraints(width: textWidth));
 
 //      frontLayout = new StaticLayout(
 //          this.text,
@@ -93,8 +93,8 @@ class FlutterPointTextContainer extends PointTextContainer {
 //      boxWidth = frontLayout.getWidth();
 //      boxHeight = frontLayout.getHeight();
 
-    boxWidth = textWidth.toDouble();
-    boxHeight = textHeight.toDouble();
+    boxWidth = textWidth;
+    boxHeight = textHeight;
 
     switch (this.position) {
       case Position.CENTER:
