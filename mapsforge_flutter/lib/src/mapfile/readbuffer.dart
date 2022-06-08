@@ -26,6 +26,11 @@ class Readbuffer {
   ///
   Readbuffer(this._bufferData, this._offset) : bufferPosition = 0;
 
+  Readbuffer.from(Readbuffer other)
+      : _bufferData = other._bufferData,
+        _offset = other._offset,
+        bufferPosition = 0;
+
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
     assert(position + length < _bufferData.length);

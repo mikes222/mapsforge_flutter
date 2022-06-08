@@ -17,6 +17,8 @@ class LineSegment {
 
   double? _angle;
 
+  double? _theta;
+
   double? _length;
 
   /**
@@ -41,6 +43,13 @@ class LineSegment {
     if (_angle != null) return _angle!;
     _angle = atan2(this.start.y - this.end.y, this.start.x - this.end.x);
     return _angle!;
+  }
+
+  double getTheta() {
+    if (_theta != null) return _theta!;
+    _theta =
+        end.x != start.x ? atan((end.y - start.y) / (end.x - start.x)) : pi;
+    return _theta!;
   }
 
   /**

@@ -100,7 +100,8 @@ abstract class MapDataStore extends Datastore {
         upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    DatastoreReadResult result = new DatastoreReadResult();
+    DatastoreReadResult result =
+        new DatastoreReadResult(pointOfInterests: [], ways: []);
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current =
@@ -134,7 +135,8 @@ abstract class MapDataStore extends Datastore {
         upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    DatastoreReadResult result = new DatastoreReadResult();
+    DatastoreReadResult result =
+        new DatastoreReadResult(pointOfInterests: [], ways: []);
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current =
@@ -170,7 +172,8 @@ abstract class MapDataStore extends Datastore {
         upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    DatastoreReadResult result = new DatastoreReadResult();
+    DatastoreReadResult result =
+        new DatastoreReadResult(pointOfInterests: [], ways: []);
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current =

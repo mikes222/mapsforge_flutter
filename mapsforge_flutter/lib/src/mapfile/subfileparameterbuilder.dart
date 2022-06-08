@@ -10,7 +10,8 @@ class SubFileParameterBuilder {
    */
   static final int BYTES_PER_INDEX_ENTRY = 5;
 
-  int? baseZoomLevel;
+  static int id = 0;
+  int baseZoomLevel;
   BoundingBox? boundingBox;
   int? indexStartAddress;
   int? startAddress;
@@ -18,11 +19,15 @@ class SubFileParameterBuilder {
   int? zoomLevelMax;
   int? zoomLevelMin;
 
+  SubFileParameterBuilder(this.baseZoomLevel) {
+    ++id;
+  }
+
   SubFileParameter build() {
     assert(boundingBox!.minLatitude <= boundingBox!.maxLatitude);
     assert(boundingBox!.minLongitude <= boundingBox!.maxLongitude);
     // calculate the XY numbers of the boundary tiles in this sub-file
-    Projection projection = MercatorProjection.fromZoomlevel(baseZoomLevel!);
+    Projection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
     int boundaryTileBottom =
         projection.latitudeToTileY(boundingBox!.minLatitude);
     int boundaryTileLeft =
@@ -42,6 +47,7 @@ class SubFileParameterBuilder {
     int numberOfBlocks = blocksWidth * blocksHeight;
 
     return new SubFileParameter(
+      id,
       baseZoomLevel,
       boundaryTileBottom - boundaryTileTop + 1,
       boundaryTileRight - boundaryTileLeft + 1,

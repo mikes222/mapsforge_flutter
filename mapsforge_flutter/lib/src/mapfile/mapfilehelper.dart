@@ -109,7 +109,7 @@ class MapfileHelper {
     List<Tag> wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
 
     BoundingBox wayFilterBbox = boundingBox.extendMeters(
-        queryParameters.queryZoomLevel! > 20
+        queryParameters.queryZoomLevel > 20
             ? wayFilterDistance ~/ 4
             : wayFilterDistance);
 
@@ -141,7 +141,7 @@ class MapfileHelper {
       }
       int pos = readBuffer.bufferPosition;
       try {
-        if (queryParameters.useTileBitmask!) {
+        if (queryParameters.useTileBitmask) {
           // get the way tile bitmask (2 bytes)
           int tileBitmask = readBuffer.readShort();
           // check if the way is inside the requested tile

@@ -29,7 +29,7 @@ class PolylineContainer implements ShapeContainer {
   final bool isClosedWay;
   final Way way;
 
-  final double maxGap = 3;
+  final double maxGap = 5;
 
   PolylineContainer(this.way, this.upperLeft)
       : tags = way.tags,

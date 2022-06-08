@@ -6,32 +6,30 @@ import '../model/tile.dart';
 import 'querycalculations.dart';
 
 class QueryParameters {
-  int? fromBaseTileX;
-  int? fromBaseTileY;
-  int? fromBlockX;
-  int? fromBlockY;
+  int fromBaseTileX = 0;
+  int fromBaseTileY = 0;
+  int fromBlockX = 0;
+  int fromBlockY = 0;
   int? queryTileBitmask;
-  int? queryZoomLevel;
-  int? toBaseTileX;
-  int? toBaseTileY;
-  int? toBlockX;
-  int? toBlockY;
-  bool? useTileBitmask;
+  int queryZoomLevel = 65536;
+  int toBaseTileX = 0;
+  int toBaseTileY = 0;
+  int toBlockX = 0;
+  int toBlockY = 0;
+  bool useTileBitmask = false;
 
   void calculateBaseTilesSingle(Tile tile, SubFileParameter subFileParameter) {
-    if (tile.zoomLevel < subFileParameter.baseZoomLevel!) {
+    if (tile.zoomLevel < subFileParameter.baseZoomLevel) {
       // calculate the XY numbers of the upper left and lower right sub-tiles
-      int zoomLevelDifference =
-          subFileParameter.baseZoomLevel! - tile.zoomLevel;
+      int zoomLevelDifference = subFileParameter.baseZoomLevel - tile.zoomLevel;
       this.fromBaseTileX = tile.tileX << zoomLevelDifference;
       this.fromBaseTileY = tile.tileY << zoomLevelDifference;
-      this.toBaseTileX = this.fromBaseTileX! + (1 << zoomLevelDifference) - 1;
-      this.toBaseTileY = this.fromBaseTileY! + (1 << zoomLevelDifference) - 1;
+      this.toBaseTileX = this.fromBaseTileX + (1 << zoomLevelDifference) - 1;
+      this.toBaseTileY = this.fromBaseTileY + (1 << zoomLevelDifference) - 1;
       this.useTileBitmask = false;
-    } else if (tile.zoomLevel > subFileParameter.baseZoomLevel!) {
+    } else if (tile.zoomLevel > subFileParameter.baseZoomLevel) {
       // calculate the XY numbers of the parent base tile
-      int zoomLevelDifference =
-          tile.zoomLevel - subFileParameter.baseZoomLevel!;
+      int zoomLevelDifference = tile.zoomLevel - subFileParameter.baseZoomLevel;
       this.fromBaseTileX = tile.tileX >> zoomLevelDifference;
       this.fromBaseTileY = tile.tileY >> zoomLevelDifference;
       this.toBaseTileX = this.fromBaseTileX;
@@ -51,10 +49,10 @@ class QueryParameters {
 
   void calculateBaseTiles(
       Tile upperLeft, Tile lowerRight, SubFileParameter subFileParameter) {
-    if (upperLeft.zoomLevel < subFileParameter.baseZoomLevel!) {
+    if (upperLeft.zoomLevel < subFileParameter.baseZoomLevel) {
       // here we need to combine multiple base tiles
       int zoomLevelDifference =
-          subFileParameter.baseZoomLevel! - upperLeft.zoomLevel;
+          subFileParameter.baseZoomLevel - upperLeft.zoomLevel;
       this.fromBaseTileX = upperLeft.tileX << zoomLevelDifference;
       this.fromBaseTileY = upperLeft.tileY << zoomLevelDifference;
       this.toBaseTileX = (lowerRight.tileX << zoomLevelDifference) +
@@ -64,10 +62,10 @@ class QueryParameters {
           (1 << zoomLevelDifference) -
           1;
       this.useTileBitmask = false;
-    } else if (upperLeft.zoomLevel > subFileParameter.baseZoomLevel!) {
+    } else if (upperLeft.zoomLevel > subFileParameter.baseZoomLevel) {
       // we might have more than just one base tile as we might span boundaries
       int zoomLevelDifference =
-          upperLeft.zoomLevel - subFileParameter.baseZoomLevel!;
+          upperLeft.zoomLevel - subFileParameter.baseZoomLevel;
       this.fromBaseTileX = upperLeft.tileX >> zoomLevelDifference;
       this.fromBaseTileY = upperLeft.tileY >> zoomLevelDifference;
       this.toBaseTileX = lowerRight.tileX >> zoomLevelDifference;
@@ -91,12 +89,12 @@ class QueryParameters {
   void calculateBlocks(SubFileParameter subFileParameter) {
     // calculate the blocks in the file which need to be read
     this.fromBlockX =
-        max(this.fromBaseTileX! - subFileParameter.boundaryTileLeft, 0);
+        max(this.fromBaseTileX - subFileParameter.boundaryTileLeft, 0);
     this.fromBlockY =
-        max(this.fromBaseTileY! - subFileParameter.boundaryTileTop, 0);
-    this.toBlockX = min(this.toBaseTileX! - subFileParameter.boundaryTileLeft,
+        max(this.fromBaseTileY - subFileParameter.boundaryTileTop, 0);
+    this.toBlockX = min(this.toBaseTileX - subFileParameter.boundaryTileLeft,
         subFileParameter.blocksWidth - 1);
-    this.toBlockY = min(this.toBaseTileY! - subFileParameter.boundaryTileTop,
+    this.toBlockY = min(this.toBaseTileY - subFileParameter.boundaryTileTop,
         subFileParameter.blocksHeight - 1);
   }
 

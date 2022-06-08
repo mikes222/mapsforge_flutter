@@ -104,8 +104,11 @@ class FlutterCanvas extends MapCanvas {
         return;
       }
     }
-    //paint.color = Colors.red;
     //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
+    if (left + bmp.width < 0 ||
+        top + bmp.height < 0 ||
+        left - bmp.width > size.width ||
+        top - bmp.height > size.height) return;
     uiCanvas.drawImage(
         bmp, ui.Offset(left, top), (paint as FlutterPaint).paint);
     ++actions;
@@ -130,7 +133,7 @@ class FlutterCanvas extends MapCanvas {
   @override
   Future<Bitmap> finalizeBitmap() async {
     ui.Picture pic = pictureRecorder!.endRecording();
-    ui.Image img = await pic.toImage(size.width.toInt(), size.height.toInt());
+    ui.Image img = await pic.toImage(size.width.ceil(), size.height.ceil());
     pictureRecorder = null;
     pic.dispose();
 
@@ -188,6 +191,10 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawRect(MapRect rect, MapPaint paint) {
+    if (rect.getBottom() < 0 ||
+        rect.getRight() < 0 ||
+        rect.getLeft() > size.width ||
+        rect.getTop() > size.height) return;
     Rect rt = (rect as FlutterRect).rect;
     //FlutterPaint pt = (paint as FlutterPaint).paint;
     if (paint.getStrokeDasharray() != null &&
@@ -237,12 +244,14 @@ class FlutterCanvas extends MapCanvas {
     });
   }
 
-  void _drawTextRotated(ui.Paragraph paragraph, double textlen, double fontSize,
-      LineSegment segment, Mappoint end, bool doInvert) {
-    double theta = segment.end.x != segment.start.x
-        ? atan((segment.end.y - segment.start.y) /
-            (segment.end.x - segment.start.x))
-        : pi;
+  void _drawTextRotated(ui.Paragraph paragraph, double textwidth,
+      double fontSize, LineSegment segment, Mappoint start, bool doInvert) {
+    // since the text is rotated, use the textwidth as margin in all directions
+    if (start.x + textwidth < 0 ||
+        start.y + textwidth < 0 ||
+        start.x - textwidth > size.width ||
+        start.y - textwidth > size.height) return;
+    double theta = segment.getTheta();
 
     // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
     double angle = theta; // 30 * pi / 180
@@ -254,11 +263,11 @@ class FlutterCanvas extends MapCanvas {
 //    final translateX = textlen - shiftX;
 //    final translateY = fontSize - shiftY;
     uiCanvas.save();
-    uiCanvas.translate(/*translateX +*/ end.x, /*translateY +*/ end.y);
+    uiCanvas.translate(/*translateX +*/ start.x, /*translateY +*/ start.y);
     uiCanvas.rotate(angle);
     uiCanvas.translate(0, -fontSize / 2);
     uiCanvas.drawParagraph(
-        paragraph..layout(ui.ParagraphConstraints(width: textlen)),
+        paragraph..layout(ui.ParagraphConstraints(width: textwidth)),
         const Offset(0, 0));
     uiCanvas.restore();
     ++actions;
@@ -268,6 +277,10 @@ class FlutterCanvas extends MapCanvas {
   void drawText(String text, double x, double y, MapPaint paint,
       MapTextPaint mapTextPaint) {
     double textwidth = calculateTextWidth(text, mapTextPaint);
+    if (x + textwidth / 2 < 0 ||
+        y + mapTextPaint.getTextSize() < 0 ||
+        x - textwidth / 2 > size.width ||
+        y - mapTextPaint.getTextSize() > size.height) return;
     ui.ParagraphBuilder builder =
         buildParagraphBuilder(text, paint, mapTextPaint);
     uiCanvas.drawParagraph(

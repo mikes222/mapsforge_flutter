@@ -27,20 +27,20 @@ class WayDecorator {
       int repeatGap,
       int repeatStart,
       bool? rotate,
-      List<List<Mappoint>?>? coordinates,
+      List<List<Mappoint>> coordinates,
       List<MapElementContainer> currentItems,
       MapPaint? symbolPaint) {
     int skipPixels = repeatStart;
 
     List<Mappoint?>? c;
     if (dy == 0) {
-      c = coordinates![0];
+      c = coordinates[0];
     } else {
-      c = RendererUtils.parallelPath(coordinates![0]!, dy);
+      c = RendererUtils.parallelPath(coordinates[0], dy);
     }
 
     // get the first way point coordinates
-    double previousX = c![0]!.x;
+    double previousX = c[0]!.x;
     double previousY = c[0]!.y;
 
     // draw the symbolContainer on each way segment
@@ -187,6 +187,11 @@ class WayDecorator {
             LineSegment(path.segments.first.start, path.segments.last.end));
         path = LineString();
       }
+    }
+    if (result.segments.isEmpty && fullPath.length() > textWidth * 2 / 3) {
+      // we do not have a sufficient length for the text but the whole path is 2/3 of what we need so use it
+      result.segments.add(LineSegment(
+          fullPath.segments.first.start, fullPath.segments.last.end));
     }
     return result;
   }

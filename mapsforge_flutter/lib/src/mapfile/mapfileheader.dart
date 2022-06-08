@@ -36,11 +36,11 @@ class MapFileHeader {
 
   MapFileInfo? mapFileInfo;
 
-  late List<SubFileParameter?> subFileParameters;
+  final Map<int, SubFileParameter> subFileParameters = {};
 
-  int? zoomLevelMaximum;
+  int zoomLevelMinimum = 65536;
 
-  int? zoomLevelMinimum;
+  int zoomLevelMaximum = -65536;
 
   /**
    * @return a MapFileInfo containing the header data.
@@ -54,10 +54,10 @@ class MapFileHeader {
   /// @param zoomLevel the originally requested zoom level.
   /// @return the closest possible zoom level which is covered by a sub-file.
   int getQueryZoomLevel(int zoomLevel) {
-    if (zoomLevel > this.zoomLevelMaximum!) {
-      return this.zoomLevelMaximum!;
-    } else if (zoomLevel < this.zoomLevelMinimum!) {
-      return this.zoomLevelMinimum!;
+    if (zoomLevel > this.zoomLevelMaximum) {
+      return this.zoomLevelMaximum;
+    } else if (zoomLevel < this.zoomLevelMinimum) {
+      return this.zoomLevelMinimum;
     }
     return zoomLevel;
   }
@@ -140,15 +140,13 @@ class MapFileHeader {
     for (int currentSubFile = 0;
         currentSubFile < numberOfSubFiles;
         ++currentSubFile) {
-      SubFileParameterBuilder subFileParameterBuilder =
-          new SubFileParameterBuilder();
-
       // get and check the base zoom level (1 byte)
       int baseZoomLevel = readBuffer.readByte();
       if (baseZoomLevel < 0 || baseZoomLevel > BASE_ZOOM_LEVEL_MAX) {
         throw new MapFileException("invalid base zoom level: $baseZoomLevel");
       }
-      subFileParameterBuilder.baseZoomLevel = baseZoomLevel;
+      SubFileParameterBuilder subFileParameterBuilder =
+          new SubFileParameterBuilder(baseZoomLevel);
 
       // get and check the minimum zoom level (1 byte)
       int zoomLevelMin = readBuffer.readByte();
@@ -198,19 +196,17 @@ class MapFileHeader {
       tempSubFileParameters.add(subFileParameter);
 
       // update the global minimum and maximum zoom level information
-      if (this.zoomLevelMinimum! > subFileParameter.zoomLevelMin) {
+      if (this.zoomLevelMinimum > subFileParameter.zoomLevelMin) {
         this.zoomLevelMinimum = subFileParameter.zoomLevelMin;
         mapFileInfoBuilder.zoomLevelMin = this.zoomLevelMinimum;
       }
-      if (this.zoomLevelMaximum! < subFileParameter.zoomLevelMax) {
+      if (this.zoomLevelMaximum < subFileParameter.zoomLevelMax) {
         this.zoomLevelMaximum = subFileParameter.zoomLevelMax;
         mapFileInfoBuilder.zoomLevelMax = this.zoomLevelMaximum;
       }
     }
 
     // create and fill the lookup table for the sub-files
-    this.subFileParameters =
-        new List<SubFileParameter?>.filled(this.zoomLevelMaximum! + 1, null);
     for (int currentMapFile = 0;
         currentMapFile < numberOfSubFiles;
         ++currentMapFile) {

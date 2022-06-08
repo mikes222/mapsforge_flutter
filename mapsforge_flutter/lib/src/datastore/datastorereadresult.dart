@@ -8,24 +8,12 @@ class DatastoreReadResult {
   bool isWater = false;
 
   /// The read POIs.
-  late List<PointOfInterest> pointOfInterests;
+  final List<PointOfInterest> pointOfInterests;
 
   /// The read ways.
-  late List<Way> ways;
+  final List<Way> ways;
 
-  DatastoreReadResult(
-      {List<PointOfInterest>? pointOfInterests, List<Way>? ways}) {
-    if (pointOfInterests == null) {
-      this.pointOfInterests = [];
-    } else {
-      this.pointOfInterests = pointOfInterests;
-    }
-    if (ways == null) {
-      this.ways = [];
-    } else {
-      this.ways = ways;
-    }
-  }
+  DatastoreReadResult({required this.pointOfInterests, required this.ways});
 
   void add(PoiWayBundle poiWayBundle) {
     this.pointOfInterests.addAll(poiWayBundle.pois);

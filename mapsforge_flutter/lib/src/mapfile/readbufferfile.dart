@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/exceptions/filenotfoundexception.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
@@ -20,7 +21,14 @@ class ReadbufferFile implements ReadbufferSource {
 
   int? _length;
 
-  ReadbufferFile(this.filename);
+  final StatisticsStorage<String, Readbuffer> _storage =
+      StatisticsStorage<String, Readbuffer>();
+
+  late LruCache<String, Readbuffer> _cache;
+
+  ReadbufferFile(this.filename) {
+    _cache = LruCache(storage: _storage, capacity: 1000);
+  }
 
   @override
   Future<Uint8List> readDirect(
@@ -48,6 +56,13 @@ class ReadbufferFile implements ReadbufferSource {
       throw Exception("invalid read length: $length");
     }
 
+    String cacheKey = "$offset-$length";
+    Readbuffer? result = _cache.get(cacheKey);
+    if (result != null) {
+      // return a new copy so that the new buffer can work independently from the old one
+      return Readbuffer.from(result);
+    }
+
     //int time = DateTime.now().millisecondsSinceEpoch;
     await _openRaf();
     RandomAccessFile? _newRaf = _raf;
@@ -58,7 +73,9 @@ class ReadbufferFile implements ReadbufferSource {
     Uint8List _bufferData = await _newRaf!.read(length);
     assert(_bufferData.length == length);
     //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    return Readbuffer(_bufferData, offset);
+    result = Readbuffer(_bufferData, offset);
+    _cache[cacheKey] = result;
+    return result;
   }
 
   @override
