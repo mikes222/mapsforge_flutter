@@ -1,4 +1,5 @@
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// A simple "database" for demonstration purposes for markers. In our demo
@@ -14,21 +15,37 @@ import 'package:rxdart/rxdart.dart';
 class MarkerdemoDatabase {
   static final List<TapEvent> events = [];
 
-  static Subject<DatabaseEvent> _inject = BehaviorSubject<DatabaseEvent>();
+  static Subject<MarkerDatabaseEvent> _inject = BehaviorSubject<MarkerDatabaseEvent>();
 
-  static Stream<DatabaseEvent> get observe => _inject.stream;
+  static Stream<MarkerDatabaseEvent> get observe => _inject.stream;
 
   static void addToDatabase(TapEvent tapEvent) {
     events.add(tapEvent);
     // now inform listeners about changes in the database
-    _inject.add(DatabaseEvent(tapEvent));
+    _inject.add(AddMarkerEvent(tapEvent: tapEvent));
+  }
+
+  static void removeFromDatabase(TapEvent tapEvent, Marker markerToRemove) {
+    events.remove(markerToRemove.item);
+
+    _inject.add(RemoveMarkerEvent(markerToRemove: markerToRemove));
   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-class DatabaseEvent {
+class AddMarkerEvent extends MarkerDatabaseEvent {
   final TapEvent tapEvent;
 
-  const DatabaseEvent(this.tapEvent);
+  AddMarkerEvent({required this.tapEvent});
 }
+
+class RemoveMarkerEvent extends MarkerDatabaseEvent {
+  final Marker markerToRemove;
+
+  RemoveMarkerEvent({
+    required this.markerToRemove,
+  });
+}
+
+abstract class MarkerDatabaseEvent {}

@@ -18,10 +18,17 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
 
   MarkerdemoDatastore({required this.symbolCache}) {
     _subscription = MarkerdemoDatabase.observe.listen((event) async {
-      // there are changes in the database, add a new marker and trigger repaint()
-      Marker marker = await _createMarker(event.tapEvent);
-      addMarker(marker);
-      setRepaint();
+      // there are changes in the database
+      // do the necessary operation and trigger repaint()
+
+      if (event is AddMarkerEvent) {
+        Marker marker = await _createMarker(event.tapEvent);
+        addMarker(marker);
+        setRepaint();
+      } else if (event is RemoveMarkerEvent) {
+        removeMarker(event.markerToRemove);
+        setRepaint();
+      }
     });
   }
 

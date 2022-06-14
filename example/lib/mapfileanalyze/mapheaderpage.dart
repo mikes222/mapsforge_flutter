@@ -50,13 +50,11 @@ class MapHeaderPage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      LabeltextCustom(
-                          label: "Filename", value: mapFile.filename),
+                      LabeltextCustom(label: "Filename", value: mapFile.filename),
                       // _fileSize is private but only used to verify header and to check if read beyond file
                       LabeltextCustom(
                           label: "Zoomlevel",
-                          value:
-                              "${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}"),
+                          value: "${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}"),
                       LabeltextCustom(
                           label: "Timestamp",
                           value: formatMsToDatetimeMs(mapFile.timestamp)),
@@ -91,14 +89,12 @@ class MapHeaderPage extends StatelessWidget {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  SubfileParamsPage(
+                              builder: (BuildContext context) => SubfileParamsPage(
                                 mapFile: mapFile,
                                 subFileParameters: mapFile
                                     .getMapFileHeader()
                                     .subFileParameters
-                                    .where((element) => element != null)
-                                    .map((e) => e!)
+                                    .values
                                     .toList(),
                                 renderTheme: renderTheme,
                               ),
@@ -124,11 +120,9 @@ class MapHeaderPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       LabeltextCustom(
-                          label: "Comment",
-                          value: mapFile.getMapFileInfo().comment),
+                          label: "Comment", value: mapFile.getMapFileInfo().comment),
                       LabeltextCustom(
-                          label: "CreatedBy",
-                          value: mapFile.getMapFileInfo().createdBy),
+                          label: "CreatedBy", value: mapFile.getMapFileInfo().createdBy),
                       LabeltextCustom(
                           label: "IncludeDebug",
                           value: "${mapFile.getMapFileInfo().debugFile}"),
@@ -143,8 +137,7 @@ class MapHeaderPage extends StatelessWidget {
                           value: mapFile.getMapFileInfo().languagesPreference),
                       LabeltextCustom(
                           label: "MapTimestamp",
-                          value: formatMsToDatetimeMs(
-                              mapFile.getMapFileInfo().mapDate)),
+                          value: formatMsToDatetimeMs(mapFile.getMapFileInfo().mapDate)),
                       LabeltextCustom(
                           label: "ProjectionName",
                           value: mapFile.getMapFileInfo().projectionName),
@@ -174,8 +167,7 @@ class MapHeaderPage extends StatelessWidget {
                           value: "${mapFile.getMapFileInfo().wayTags.length}"),
                       LabeltextCustom(
                           label: "numberOfSubFiles",
-                          value:
-                              "${mapFile.getMapFileInfo().numberOfSubFiles}"),
+                          value: "${mapFile.getMapFileInfo().numberOfSubFiles}"),
                       // poiTags
                       // wayTags
                     ],
@@ -191,8 +183,8 @@ class MapHeaderPage extends StatelessWidget {
 
   Future<MapFile> _loadMapFile() async {
     PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-    MapFile mapFile = await MapFile.from(
-        pathHandler.getPath(mapFileData.fileName), null, null);
+    MapFile mapFile =
+        await MapFile.from(pathHandler.getPath(mapFileData.fileName), null, null);
     return mapFile;
   }
 
