@@ -69,7 +69,7 @@ class MarkerByItemDataStore extends IMarkerDataStore {
   }
 
   void removeMarker(Marker marker) {
-    _markers.remove(marker);
+    _markers.removeWhere((key, value) => value == marker);
     marker.dispose();
     _previousMarkers.remove(marker);
   }
@@ -84,9 +84,7 @@ class MarkerByItemDataStore extends IMarkerDataStore {
 
   @override
   List<Marker> isTapped(TapEvent tapEvent) {
-    return _previousMarkers
-        .where((element) => element.isTapped(tapEvent))
-        .toList();
+    return _previousMarkers.where((element) => element.isTapped(tapEvent)).toList();
   }
 
   /// Finds the old marker with the given item and replaces it with the new marker

@@ -5,13 +5,8 @@ import 'package:mapsforge_flutter/core.dart';
 
 class MarkerdemoContextMenuBuilder extends ContextMenuBuilder {
   @override
-  Widget buildContextMenu(
-      BuildContext context,
-      MapModel mapModel,
-      ViewModel viewModel,
-      MapViewPosition position,
-      Dimension screen,
-      TapEvent event) {
+  Widget buildContextMenu(BuildContext context, MapModel mapModel, ViewModel viewModel,
+      MapViewPosition position, Dimension screen, TapEvent event) {
     return MarkerdemoContextMenu(
       screen: screen,
       event: event,
@@ -33,11 +28,7 @@ class MarkerdemoContextMenu extends DefaultContextMenu {
       required this.mapModel,
       required ViewModel viewModel,
       required MapViewPosition position})
-      : super(
-            screen: screen,
-            event: event,
-            viewModel: viewModel,
-            position: position);
+      : super(screen: screen, event: event, viewModel: viewModel, position: position);
 
   @override
   State<StatefulWidget> createState() {
@@ -66,7 +57,16 @@ class _MarkerdemoContextMenuState extends DefaultContextMenuState {
     ));
     widget.mapModel.markerDataStores.forEach((markerDataStore) {
       markerDataStore.isTapped(widget.event).forEach((marker) {
-        result.add(const Text("Marker at this position"));
+        result.add(TextButton(
+            onPressed: () {
+              MarkerdemoDatabase.removeFromDatabase(widget.event, marker);
+
+              widget.viewModel.clearTapEvent();
+            },
+            child: const Text(
+              'Remove marker',
+              style: TextStyle(color: Colors.red),
+            )));
       });
     });
     return result;
