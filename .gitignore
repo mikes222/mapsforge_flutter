@@ -3,6 +3,8 @@ mapsforge_flutter/.metadata
 .idea/
 example/.metadata
 example/pubspec.lock
+simplified_example/.metadata
+simplified_example/pubspec.lock
 .flutter-plugins-dependencies
 flutter_export_environment.sh
 mapsforge_flutter/test/failures/
