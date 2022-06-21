@@ -222,7 +222,7 @@ class FlutterCanvas extends MapCanvas {
 
     ui.Paragraph paragraph = builder.build();
 
-    double textlen = calculateTextWidth(text, mapTextPaint);
+    double textwidth = calculateTextWidth(text, mapTextPaint);
 
 //    double len = 0;
     lineString.segments.forEach((segment) {
@@ -239,7 +239,8 @@ class FlutterCanvas extends MapCanvas {
       Mappoint start = doInvert
           ? segment.end.offset(-origin.x, -origin.y)
           : segment.start.offset(-origin.x, -origin.y);
-      _drawTextRotated(paragraph, textlen, fontSize, segment, start, doInvert);
+      _drawTextRotated(
+          paragraph, textwidth, fontSize, segment, start, doInvert);
 //      len -= segmentLength;
     });
   }
@@ -262,6 +263,7 @@ class FlutterCanvas extends MapCanvas {
 //    final shiftX = r * cos(beta);
 //    final translateX = textlen - shiftX;
 //    final translateY = fontSize - shiftY;
+    //print("drawing $segment for $textwidth $doInvert ${paragraph} $angle");
     uiCanvas.save();
     uiCanvas.translate(/*translateX +*/ start.x, /*translateY +*/ start.y);
     uiCanvas.rotate(angle);

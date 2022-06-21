@@ -47,8 +47,9 @@ class LineSegment {
 
   double getTheta() {
     if (_theta != null) return _theta!;
-    _theta =
-        end.x != start.x ? atan((end.y - start.y) / (end.x - start.x)) : pi;
+    _theta = end.x != start.x
+        ? atan((end.y - start.y) / (end.x - start.x))
+        : 0; // pi;
     return _theta!;
   }
 

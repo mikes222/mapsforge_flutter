@@ -121,13 +121,14 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
         prevX = x;
         prevY = y;
       });
-      LineSegment segment = new LineSegment(
-          _lineString!.segments.last.end, _lineString!.segments.first.start);
-      _lineString!.segments.add(segment);
 
       double textWidth = getTextPaint(markerCallback.mapViewPosition.zoomLevel)
           .getTextWidth(caption);
       _lineString = WayDecorator.reducePathForText(_lineString!, textWidth);
+      // _lineString!.segments.forEach((element) {
+      //   print(
+      //       "Segment ${element.end.x - element.start.x} / ${element.end.y - element.start.y} for textWidth $textWidth - $element $caption");
+      // });
 
       Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
           markerCallback.mapViewPosition.leftUpper!.y);
