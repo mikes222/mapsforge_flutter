@@ -3,10 +3,11 @@
 Pure offline maps for flutter. This is a port of mapsforge for
 java/android [https://github.com/mapsforge/mapsforge]
 
-> If your users are online while viewing the maps do not use that library. While it is possible to show online-maps there are much simpler libs available out there to perform this task.
-
 The main feature of this library is to read *mapfiles* stored locally at the user's device and
 render the mapfiles directly on the user's device without internet connection.
+
+> If your users are online while viewing the maps do not use that library. 
+> While it is possible to show online-maps there are much simpler libs available out there to perform this task.
 
 ## Screenshots
 
@@ -46,7 +47,6 @@ Speed:
 
 Others:
 
-- Testing for IOS
 - support rotating map
 
 ## Getting Started
@@ -81,15 +81,13 @@ Load the mapfile which holds the openstreetmap &reg; data
 > Mapfiles are files specifically designed for mobile use and provide the information about an area in condensed form. Please visit the original project for more information about how to download/generate them.
 
 ```dart
-
-MapFile mapFile = MapFile.from(filename, null, null);
+MapFile mapFile = await MapFile.from(filename, null, null);
 ```
 
 or
 
 ```dart
-
-MapFile mapFile = MapFile.using(content, null, null);
+MapFile mapFile = await MapFile.using(content, null, null);
 ```
 
 Note: Destroy the mapfile by calling dispose() if not needed anymore
@@ -117,10 +115,7 @@ Create the render theme which specifies how to render the informations from the 
 ```dart
 
 RenderTheme renderTheme = await
-RenderThemeBuilder.create(displayModel, "
-assets/defaultrender.xml
-"
-);
+RenderThemeBuilder.create(displayModel, "assets/defaultrender.xml");
 ```
 
 Create the Renderer.
@@ -167,7 +162,7 @@ MapModel mapModel = MapModel(
 ViewModel viewModel = ViewModel(displayModel: displayModel);
 ```
 
-In your ``build()`` method of the widget include the mapView:
+Include the mapView in the ``build()`` method of your APP:
 
 ```dart
 FlutterMapView
@@ -175,6 +170,8 @@ FlutterMapView
 mapModel: mapModel, viewModel: viewModel, )
 ,
 ```
+
+Voilá you are done. 
 
 In order to change the position in the map programmatically call the viewModel with the new position
 
@@ -219,12 +216,34 @@ init
 ));
 ```
 
-and include the new datastore in the mapModel. You can add many markers to a datastore and you can
+and include the new datastore in the mapModel. 
+
+```dart
+mapModel.markerDataStores.add(markerDataStore);
+```
+
+You can add many markers to a datastore and you can
 add many datastores to the model.
 
 ### ContextMenu
 
-todo
+ContextMenus are created with the contextMenuBuilder. Add one to the viewModel:
+
+````dart
+ViewModel viewModel = ViewModel(
+      displayModel: displayModel,
+      contextMenuBuilder: const DefaultContextMenuBuilder(),
+    );
+````
+
+### Overlays
+
+Overlays are drawn on top of the map and refresh of the overlay is triggered whenever the position or zoom
+changes. Overlays are simple Widgets. Add them to the viewModel:
+
+````dart
+viewModel.addOverlay(DistanceOverlay(viewModel));
+````
 
 ----
 
