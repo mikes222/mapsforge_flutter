@@ -62,7 +62,7 @@ include the library in your pubspec.yaml:
   #  url: https://github.com/mikes222/mapsforge_flutter
 ```
 
-include a list of all used assets in your pubspec.yaml (see pubspec file from example project)
+include a list of all used assets in your ``pubspec.yaml`` (see pubspec file from example project)
 
 ```yaml
     flutter:
@@ -80,107 +80,72 @@ Load the mapfile which holds the openstreetmap &reg; data
 
 > Mapfiles are files specifically designed for mobile use and provide the information about an area in condensed form. Please visit the original project for more information about how to download/generate them.
 
-```dart
-MapFile mapFile = await MapFile.from(filename, null, null);
-```
+    MapFile mapFile = await MapFile.from(filename, null, null);```
 
 or
 
-```dart
-MapFile mapFile = await MapFile.using(content, null, null);
-```
+    MapFile mapFile = await MapFile.using(content, null, null);
 
-Note: Destroy the mapfile by calling dispose() if not needed anymore
+Note: Destroy the mapfile by calling ``dispose()`` if not needed anymore
 
 Create the cache for assets
 
 > assets are mostly small images to display in the map, for example parking signs, bus stop signs and so on
 
-```dart
-
-SymbolCache symbolCache = MemorySymbolCache(bundle: rootBundle);
-```
+    SymbolCache symbolCache = MemorySymbolCache(bundle: rootBundle);
 
 Create the displayModel which defines and holds the view/display settings like maximum zoomLevel.
 
-```dart
-
-DisplayModel displayModel = DisplayModel();
-```
+    DisplayModel displayModel = DisplayModel();
 
 Create the render theme which specifies how to render the informations from the mapfile.
 
 > You can think of it like a css-file for mapsforge
 
-```dart
-
-RenderTheme renderTheme = await
-RenderThemeBuilder.create(displayModel, "assets/defaultrender.xml");
-```
+    RenderTheme renderTheme = await
+    RenderThemeBuilder.create(displayModel, "assets/defaultrender.xml");
 
 Create the Renderer.
 
 > The renderer is the rendering engine for the mapfiles. This code does the main work to render the contents of a mapfile together with the design guides from the rendertheme into bitmap tiles. bitmap tiles are png files with a fixed width/height. Multiple tiles together form the mapview.
 
-```dart
-
-JobRenderer jobRenderer = MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
-```
+    JobRenderer jobRenderer = MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
 Alternatively use the onlineRenderer instead to provide the tiles from openstreetmap &reg;
 
 > By using the online-renderer you will not need the rendertheme nor the mapfiles.
 
-```dart
-
-JobRenderer jobRenderer = MapOnlineRenderer();
-```
+    JobRenderer jobRenderer = MapOnlineRenderer();
 
 Optionally you can create a cache for the bitmap tiles. The tiles will survive a restart but may
 fill the disk space.
 
-```dart
-
-TileBitmapCache bitmapCache = await
-FileTileBitmapCache.create(jobRenderer.getRenderKey()
-);
-```
+    TileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 
 Glue everything together into two models.
 
 > The mapModel holds all map-relevant informations whereas the viewModel holds all informations related to how to display the map for the current widget
 
-```dart
-
-MapModel mapModel = MapModel(
-  displayModel: displayModel,
-  renderer: jobRenderer,
-  symbolCache: symbolCache,
-  tileBitmapCache: bitmapCache,
-);
-
-ViewModel viewModel = ViewModel(displayModel: displayModel);
-```
+    MapModel mapModel = MapModel(
+      displayModel: displayModel,
+      renderer: jobRenderer,
+      symbolCache: symbolCache,
+      tileBitmapCache: bitmapCache,
+    );
+    
+    ViewModel viewModel = ViewModel(displayModel: displayModel);
 
 Include the mapView in the ``build()`` method of your APP:
 
-```dart
-FlutterMapView
-(
-mapModel: mapModel, viewModel: viewModel, )
-,
-```
+    FlutterMapView(mapModel: mapModel, viewModel: viewModel );
 
-Voilá you are done. 
+Voilà you are done. 
+
+---
 
 In order to change the position in the map programmatically call the viewModel with the new position
 
-```dart
-viewModel.setMapViewPosition(48.0901926
-,
-16.308939
-);
-```
+    viewModel.setMapViewPosition(48.0901926 , 16.308939);
 
 Similar methods exists for zooming.
 
@@ -188,39 +153,17 @@ Similar methods exists for zooming.
 
 If you want your own marker datastore add one or more of the following to the MapModel:
 
-```dart
+    MarkerDataStore markerDataStore = MarkerDataStore();
+    markerDataStore.markers.add(BasicMarker(src: "jar:symbols/windsock.svg", 
+    symbolCache: symbolCache,width: 20, height: 20, caption: "TestMarker",
+    latitude: 48.089355, longitude: 16.311509,)
+    ..
+    init());
 
-MarkerDataStore markerDataStore = MarkerDataStore();
-markerDataStore.markers.add(BasicMarker
-(
-src: "
-jar:symbols/windsock.svg
-"
-,
-symbolCache: symbolCache,width: 20
-,
-height: 20
-,
-caption: "
-TestMarker
-"
-,
-latitude: 48.089355
-,
-longitude: 16.311509
-,
-)
-..
-init
-(
-));
-```
 
 and include the new datastore in the mapModel. 
 
-```dart
-mapModel.markerDataStores.add(markerDataStore);
-```
+    mapModel.markerDataStores.add(markerDataStore);
 
 You can add many markers to a datastore and you can
 add many datastores to the model.
@@ -229,21 +172,17 @@ add many datastores to the model.
 
 ContextMenus are created with the contextMenuBuilder. Add one to the viewModel:
 
-````dart
-ViewModel viewModel = ViewModel(
-      displayModel: displayModel,
-      contextMenuBuilder: const DefaultContextMenuBuilder(),
-    );
-````
+    ViewModel viewModel = ViewModel(
+          displayModel: displayModel,
+          contextMenuBuilder: const DefaultContextMenuBuilder(),
+        );
 
 ### Overlays
 
 Overlays are drawn on top of the map and refresh of the overlay is triggered whenever the position or zoom
 changes. Overlays are simple Widgets. Add them to the viewModel:
 
-````dart
-viewModel.addOverlay(DistanceOverlay(viewModel));
-````
+    viewModel.addOverlay(DistanceOverlay(viewModel));
 
 ----
 
