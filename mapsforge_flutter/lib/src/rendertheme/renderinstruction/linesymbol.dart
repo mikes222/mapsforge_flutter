@@ -1,6 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -26,6 +27,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   double? repeatStart;
   bool? rotate;
   Scale scale = Scale.STROKE;
+  Position position = Position.CENTER;
 
   LineSymbol(this.relativePathPrefix)
       : dyScaled = new Map(),
@@ -54,6 +56,9 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
             .firstWhere((v) => v.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.DY == name) {
         this.dy = double.parse(value) * displayModel.getScaleFactor();
+      } else if (RenderInstruction.POSITION == name) {
+        this.position = Position.values
+            .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.PRIORITY == name) {
         this.priority = int.parse(value);
       } else if (RenderInstruction.REPEAT == name) {
@@ -79,7 +84,7 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
         this.bitmapWidth =
             XmlUtils.parseNonNegativeInteger(name, value).toDouble();
       } else {
-        throw Exception("LineSymbol probs");
+        throw Exception("LineSymbol probs: unknown '$name'");
       }
     });
     if (bitmapSrc != null) initPendings.add(this);

@@ -33,10 +33,10 @@ dependencies:
   # BSD License
   logging: ^1.0.2
 
-  flutter_archive: ^4.2.0
+  flutter_archive: ^5.0.0
 
   # Apache 2.0 License
-  archive: ^3.2.2
+  archive: ^3.3.0
 
   rxdart: ^0.27.3
 

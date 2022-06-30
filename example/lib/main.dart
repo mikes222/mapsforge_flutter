@@ -144,6 +144,16 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 7.4262,
     initialZoomLevel: 5,
   ),
+  const MapFileData(
+    url:
+        "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/germany/berlin.map",
+    fileName: "berlin.map",
+    displayedName: "Berlin with original mapsforge theme",
+    theme: "assets/render_themes/mapsforge_osmarender.xml",
+    initialPositionLat: 52.52278,
+    initialPositionLong: 13.38982,
+    initialZoomLevel: 16,
+  ),
 ];
 
 void main() => runApp(MyApp());
