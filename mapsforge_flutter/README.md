@@ -103,7 +103,7 @@ Create the render theme which specifies how to render the informations from the 
 > You can think of it like a css-file for mapsforge
 
     RenderTheme renderTheme = await
-    RenderThemeBuilder.create(displayModel, "assets/defaultrender.xml");
+    RenderThemeBuilder.create(displayModel, "assets/render_themes/defaultrender.xml");
 
 Create the Renderer.
 
