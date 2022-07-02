@@ -1,7 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
@@ -65,8 +64,7 @@ class PathText extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.FILL == name) {
         this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
-        setFontFamily(MapFontFamily.values
-            .firstWhere((v) => v.toString().toLowerCase().contains(value)));
+        setFontFamily(value);
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getFontScaleFactor();

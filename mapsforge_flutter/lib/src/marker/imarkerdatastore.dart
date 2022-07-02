@@ -21,6 +21,7 @@ abstract class IMarkerDataStore extends ChangeNotifier {
     super.dispose();
   }
 
+  /// Triggers a repaint of the markers for this datastore
   void setRepaint() {
     try {
       if (!_disposed) notifyListeners();

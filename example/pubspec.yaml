@@ -219,3 +219,15 @@ flutter:
    - packages/mapsforge_flutter/assets/symbols/water/weir.svg
    - packages/mapsforge_flutter/assets/symbols/windsock.svg
    - packages/mapsforge_flutter/assets/symbols/viewpoint.svg
+
+  fonts:
+   - family: serif
+     fonts:
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerif.otf
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerifBold.otf
+         weight: 700
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerifBoldItalic.otf
+         style: italic
+         weight: 700
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerifItalic.otf
+         style: italic

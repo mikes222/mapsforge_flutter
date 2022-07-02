@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
+import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
@@ -305,6 +306,11 @@ class FlutterCanvas extends MapCanvas {
       minWidth: 0.0,
     );
 
+    String fontFamily = mapTextPaint
+        .getFontFamily()
+        .toString()
+        .replaceAll("MapFontFamily.", "")
+        .toLowerCase();
     RenderParagraph renderParagraph = RenderParagraph(
       TextSpan(
         text: text,
@@ -318,6 +324,7 @@ class FlutterCanvas extends MapCanvas {
                   mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC
               ? FontWeight.bold
               : FontWeight.normal,
+          fontFamily: fontFamily,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -334,6 +341,12 @@ class FlutterCanvas extends MapCanvas {
 
   static ui.ParagraphBuilder buildParagraphBuilder(
       String text, MapPaint paint, MapTextPaint mapTextPaint) {
+    String fontFamily = mapTextPaint
+        .getFontFamily()
+        .toString()
+        .replaceAll("MapFontFamily.", "")
+        .toLowerCase();
+
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
         fontSize: mapTextPaint.getTextSize(),
@@ -346,17 +359,14 @@ class FlutterCanvas extends MapCanvas {
                 mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC
             ? ui.FontWeight.bold
             : ui.FontWeight.normal,
-        //fontFamily: _fontFamily == MapFontFamily.MONOSPACE ? FontFamily.MONOSPACE : FontFamily.DEFAULT,
+        fontFamily: fontFamily,
       ),
     );
 
     if (paint.getStrokeWidth() == 0)
       builder.pushStyle(ui.TextStyle(
         color: paint.getColor(),
-        fontFamily: mapTextPaint
-            .getFontFamily()
-            .toString()
-            .replaceAll("MapFontFamily.", ""),
+        fontFamily: fontFamily,
       ));
     else
       builder.pushStyle(ui.TextStyle(
@@ -364,10 +374,7 @@ class FlutterCanvas extends MapCanvas {
           ..style = PaintingStyle.stroke
           ..strokeWidth = paint.getStrokeWidth()
           ..color = paint.getColor(),
-        fontFamily: mapTextPaint
-            .getFontFamily()
-            .toString()
-            .replaceAll("MapFontFamily.", ""),
+        fontFamily: fontFamily,
       ));
 
     builder.addText(text);

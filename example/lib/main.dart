@@ -149,10 +149,10 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
         "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/germany/berlin.map",
     fileName: "berlin.map",
     displayedName: "Berlin with original mapsforge theme",
-    theme: "assets/render_themes/mapsforge_osmarender.xml",
+    theme: "assets/render_themes/mapsforge_default.xml",
     initialPositionLat: 52.52278,
     initialPositionLong: 13.38982,
-    initialZoomLevel: 16,
+    initialZoomLevel: 17,
   ),
 ];
 

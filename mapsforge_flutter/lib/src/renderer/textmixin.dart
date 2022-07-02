@@ -33,8 +33,15 @@ class TextMixin {
     this._fill.setStyle(Style.FILL);
   }
 
-  void setFontFamily(MapFontFamily fontFamily) {
-    _textPaint.setFontFamily(fontFamily);
+  void setFontFamily(String fontFamily) {
+    switch (fontFamily.toLowerCase()) {
+      case "serif":
+        _textPaint.setFontFamily(MapFontFamily.SERIF);
+        break;
+      default:
+        _textPaint.setFontFamily(MapFontFamily.DEFAULT);
+        break;
+    }
   }
 
   void setFontStyle(MapFontStyle fontStyle) {

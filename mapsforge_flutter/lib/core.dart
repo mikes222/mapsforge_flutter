@@ -16,6 +16,8 @@ export 'src/model/latlong.dart';
 export 'src/model/mapmodel.dart';
 export 'src/model/mapviewposition.dart';
 export 'src/model/viewmodel.dart';
+export 'src/model/tile.dart';
+export 'src/utils/latlongutils.dart';
 export 'src/view/contextmenubuilder.dart';
 export 'src/view/defaultcontextmenu.dart';
 export 'src/view/defaultcontextmenubuilder.dart';

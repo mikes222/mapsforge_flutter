@@ -64,8 +64,7 @@ class Caption extends RenderInstruction with TextMixin {
       } else if (RenderInstruction.FILL == name) {
         this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
-        setFontFamily(MapFontFamily.values
-            .firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        setFontFamily(value);
       } else if (RenderInstruction.FONT_SIZE == name) {
         this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getFontScaleFactor();
