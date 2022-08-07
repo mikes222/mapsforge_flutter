@@ -1,25 +1,18 @@
-import 'dart:math';
-
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
+import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 
 import '../layer/job/job.dart';
-import '../mapelements/mapelementcontainer.dart';
-import '../renderer/shapepaintcontainer.dart';
-import '../rendertheme/rule/rendertheme.dart';
 
 /// A RenderContext contains all the information and data to render a map area, it is passed between
 /// calls in order to avoid local data stored in the DatabaseRenderer.
 class RenderContext {
   static final int LAYERS = 11;
 
-  static final double STROKE_INCREASE = 1.5;
-  static final int STROKE_MIN_ZOOM_LEVEL = 12;
   final Job job;
   final RenderTheme renderTheme;
 
-  final SymbolCache symbolCache;
+  //final SymbolCache symbolCache;
 
   // Data generated for the rendering process
   late LayerPaintContainer drawingLayers;
@@ -28,12 +21,11 @@ class RenderContext {
 
   final PixelProjection projection;
 
-  RenderContext(this.job, this.renderTheme, this.symbolCache)
+  RenderContext(this.job, this.renderTheme)
       : labels = [],
         projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
-    this.renderTheme.scaleTextSize(job.textScale, job.tile.zoomLevel);
     this.layerWays = _createWayLists();
-    setScaleStrokeWidth(this.job.tile.zoomLevel);
+    setScale(this.job.tile.zoomLevel);
     drawingLayers = layerWays[0];
   }
 
@@ -81,10 +73,8 @@ class RenderContext {
    *
    * @param zoomLevel the zoom level for which the scale stroke factor should be set.
    */
-  void setScaleStrokeWidth(int zoomLevel) {
-    int zoomLevelDiff = max(zoomLevel - STROKE_MIN_ZOOM_LEVEL, 0);
-    this.renderTheme.scaleStrokeWidth(
-        pow(STROKE_INCREASE, zoomLevelDiff) as double, this.job.tile.zoomLevel);
+  void setScale(int zoomLevel) {
+    this.renderTheme.prepareScale(this.job.tile.zoomLevel);
   }
 }
 

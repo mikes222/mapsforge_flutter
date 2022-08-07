@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/renderthemebuilder.dart';
 
 import '../../datastore/pointofinterest.dart';
-import '../../renderer/polylinecontainer.dart';
+import '../../paintelements/shape/polylinecontainer.dart';
 import '../../rendertheme/renderinstruction/hillshading.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/rule/rule.dart';
@@ -15,8 +15,12 @@ import 'matchingcachekey.dart';
 class RenderTheme {
   static final int MATCHING_CACHE_SIZE = 1024;
 
-  final double baseStrokeWidth;
-  final double baseTextSize;
+  /// The rendertheme can set the base stroke with factor
+  double baseStrokeWidth = 1;
+
+  /// The rendertheme can set the base text size factor
+  double baseTextSize = 1;
+
   final bool? hasBackgroundOutside;
 
   /// the maximum number of levels in the rendertheme
@@ -28,12 +32,10 @@ class RenderTheme {
   final List<Rule> rulesList; // NOPMD we need specific interface
   List<Hillshading> hillShadings =
       []; // NOPMD specific interface for trimToSize
-  final List<RenderInstruction> initPendings;
 
-  final Map<int, double> strokeScales = new Map();
-  final Map<int, double> textScales = new Map();
+  final Set<int> _strokes = {};
 
-  RenderTheme(RenderThemeBuilder renderThemeBuilder, this.initPendings)
+  RenderTheme(RenderThemeBuilder renderThemeBuilder)
       : //assert(renderThemeBuilder.maxLevel > 0),
         baseStrokeWidth = renderThemeBuilder.baseStrokeWidth,
         baseTextSize = renderThemeBuilder.baseTextSize,
@@ -125,7 +127,7 @@ class RenderTheme {
       matchingList = [];
 
       rulesList.forEach((element) {
-        element.matchNode(tile, matchingList!, poi, initPendings);
+        element.matchNode(tile, matchingList!, poi);
       });
       this.poiMatchingCache[matchingCacheKey] = matchingList;
     }
@@ -138,36 +140,14 @@ class RenderTheme {
    * @param scaleFactor the factor by which the stroke width should be scaled.
    * @param zoomLevel   the zoom level to which this is applied.
    */
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
-    if (!strokeScales.containsKey(zoomLevel) ||
-        scaleFactor != strokeScales[zoomLevel]) {
+  void prepareScale(int zoomLevel) {
+    if (!_strokes.contains(zoomLevel)) {
       rulesList.forEach((rule) {
         if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
-          rule.scaleStrokeWidth(scaleFactor * this.baseStrokeWidth, zoomLevel);
+          rule.prepareScale(zoomLevel);
         }
       });
-      // for (int i = 0, n = this.rulesList.length; i < n; ++i) {
-      //   Rule rule = this.rulesList.elementAt(i);
-      // }
-      strokeScales[zoomLevel] = scaleFactor;
-    }
-  }
-
-  /**
-   * Scales the text size of this RenderTheme by the given factor for a given zoom level.
-   *
-   * @param scaleFactor the factor by which the text size should be scaled. This comes from [DisplayModel].userScaleFactor
-   * @param zoomLevel   the zoom level to which this is applied.
-   */
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    if (!textScales.containsKey(zoomLevel) ||
-        scaleFactor != textScales[zoomLevel]) {
-      rulesList.forEach((rule) {
-        if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
-          rule.scaleTextSize(scaleFactor * this.baseTextSize, zoomLevel);
-        }
-      });
-      textScales[zoomLevel] = scaleFactor;
+      _strokes.add(zoomLevel);
     }
   }
 
@@ -221,7 +201,7 @@ class RenderTheme {
 
   @override
   String toString() {
-    return 'RenderTheme{baseStrokeWidth: $baseStrokeWidth, baseTextSize: $baseTextSize, hasBackgroundOutside: $hasBackgroundOutside, levels: $levels, mapBackground: $mapBackground, mapBackgroundOutside: $mapBackgroundOutside, wayMatchingCache: $wayMatchingCache, poiMatchingCache: $poiMatchingCache, rulesList: $rulesList, hillShadings: $hillShadings, strokeScales: $strokeScales, textScales: $textScales}';
+    return 'RenderTheme{baseStrokeWidth: $baseStrokeWidth, baseTextSize: $baseTextSize, hasBackgroundOutside: $hasBackgroundOutside, levels: $levels, mapBackground: $mapBackground, mapBackgroundOutside: $mapBackgroundOutside, wayMatchingCache: $wayMatchingCache, poiMatchingCache: $poiMatchingCache, rulesList: $rulesList, hillShadings: $hillShadings}';
   }
 
   @override

@@ -2,8 +2,9 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -12,7 +13,7 @@ import '../rendercontext.dart';
 import 'renderinstruction.dart';
 
 /// Represents an icon along a polyline on the map.
-class LineSymbol extends RenderInstruction with BitmapMixin {
+class LineSymbol extends RenderInstruction with BitmapSrcMixin {
   static final double REPEAT_GAP_DEFAULT = 200;
   static final double REPEAT_START_DEFAULT = 30;
 
@@ -23,6 +24,8 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
   int priority = 0;
   final String? relativePathPrefix;
   bool repeat = true;
+
+  /// todo increase repeatGap with zoomLevel
   double? repeatGap;
   double? repeatStart;
   bool? rotate;
@@ -35,11 +38,11 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
     this.rotate = true;
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement) {
+    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
-    this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
+    this.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -72,22 +75,18 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.bitmapHeight =
-            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
+        this.setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.bitmapPercent = (XmlUtils.parseNonNegativeInteger(name, value) *
-                displayModel.getFontScaleFactor())
-            .round();
+        this.setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) *
+            displayModel.getFontScaleFactor().round());
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.bitmapWidth =
-            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
+        this.setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw Exception("LineSymbol probs: unknown '$name'");
       }
     });
-    if (bitmapSrc != null) initPendings.add(this);
   }
 
   @override
@@ -109,12 +108,14 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
     double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     dyScale ??= this.dy;
 
-    if (bitmap != null) {
+    if (bitmapSrc != null) {
       renderCallback.renderWaySymbol(
           renderContext,
           this.display,
           this.priority,
-          this.bitmap!,
+          this.bitmapSrc!,
+          getBitmapWidth(renderContext.job.tile.zoomLevel),
+          getBitmapHeight(renderContext.job.tile.zoomLevel),
           dyScale,
           this.alignCenter,
           this.repeat,
@@ -122,26 +123,15 @@ class LineSymbol extends RenderInstruction with BitmapMixin {
           this.repeatStart,
           this.rotate,
           way,
-          bitmapPaint);
+          getBitmapPaint());
     }
   }
 
   @override
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
-    if (this.scale == Scale.NONE) {
-      scaleFactor = 1;
-    }
+  void prepareScale(int zoomLevel) {
+    if (this.scale == Scale.NONE) {}
+    double scaleFactor = 1;
     this.dyScaled[zoomLevel] = this.dy * scaleFactor;
-  }
-
-  @override
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    // do nothing
-  }
-
-  @override
-  Future<LineSymbol> initResources(SymbolCache? symbolCache) async {
-    await initBitmap(symbolCache);
-    return this;
+    prepareScaleBitmapSrcMixin(zoomLevel);
   }
 }

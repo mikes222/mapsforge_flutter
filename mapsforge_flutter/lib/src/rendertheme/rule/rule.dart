@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 import '../../datastore/pointofinterest.dart';
 import '../../model/tag.dart';
 import '../../model/tile.dart';
-import '../../renderer/polylinecontainer.dart';
+import '../../paintelements/shape/polylinecontainer.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
@@ -56,9 +56,6 @@ abstract class Rule {
   }
 
   void dispose() {
-    for (RenderInstruction ri in this.renderInstructions) {
-      ri.dispose();
-    }
     for (Rule sr in this.subRules) {
       sr.dispose();
     }
@@ -70,11 +67,11 @@ abstract class Rule {
       List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
 
   void matchNode(final Tile tile, List<RenderInstruction> matchingList,
-      PointOfInterest pointOfInterest, List<RenderInstruction> initPendings) {
+      PointOfInterest pointOfInterest) {
     if (matchesNode(pointOfInterest.tags, tile.zoomLevel, tile.indoorLevel)) {
       matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
-        element.matchNode(tile, matchingList, pointOfInterest, initPendings);
+        element.matchNode(tile, matchingList, pointOfInterest);
       });
     }
   }
@@ -100,27 +97,12 @@ abstract class Rule {
     }
   }
 
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
+  void prepareScale(int zoomLevel) {
     for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      this
-          .renderInstructions
-          .elementAt(i)
-          .scaleStrokeWidth(scaleFactor, zoomLevel);
+      this.renderInstructions.elementAt(i).prepareScale(zoomLevel);
     }
     for (int i = 0, n = this.subRules.length; i < n; ++i) {
-      this.subRules.elementAt(i).scaleStrokeWidth(scaleFactor, zoomLevel);
-    }
-  }
-
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      this
-          .renderInstructions
-          .elementAt(i)
-          .scaleTextSize(scaleFactor, zoomLevel);
-    }
-    for (int i = 0, n = this.subRules.length; i < n; ++i) {
-      this.subRules.elementAt(i).scaleTextSize(scaleFactor, zoomLevel);
+      this.subRules.elementAt(i).prepareScale(zoomLevel);
     }
   }
 

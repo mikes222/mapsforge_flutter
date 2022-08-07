@@ -1,21 +1,20 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../graphics/bitmap.dart';
 import '../graphics/filter.dart';
-import '../graphics/graphicfactory.dart';
 import '../graphics/graphicutils.dart';
 import '../graphics/mapcanvas.dart';
 import '../graphics/matrix.dart';
-import '../mapelements/mapelementcontainer.dart';
-import '../model/tile.dart';
-import '../renderer/shapepaintcontainer.dart';
 import '../rendertheme/rendercontext.dart';
 
 class CanvasRasterer {
-  static final _log = new Logger('CanvasRasterer');
   final MapCanvas canvas;
+
   final Matrix symbolMatrix;
 
   CanvasRasterer(double width, double height, [String? src])
@@ -26,37 +25,39 @@ class CanvasRasterer {
     this.canvas.destroy();
   }
 
-  int drawWays(RenderContext renderContext) {
+  Future<int> drawWays(
+      RenderContext renderContext, SymbolCache symbolCache) async {
     int count = 0;
     //print("drawing now ${renderContext.layerWays.length} layers");
     for (LayerPaintContainer layerPaintContainer in renderContext.layerWays) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");
       for (List<ShapePaintContainer> wayList in layerPaintContainer.ways) {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
-        wayList.forEach((ShapePaintContainer element) {
+        for (ShapePaintContainer element in wayList) {
           //print("         drawing now ${element}");
-          element.draw(this.canvas, renderContext.projection);
+          await element.draw(
+              this.canvas, renderContext.projection, symbolCache);
           ++count;
-        });
+        }
       }
     }
     return count;
   }
 
-  void drawMapElements(Set<MapElementContainer> elements,
-      PixelProjection projection, Tile tile) {
+  Future<void> drawMapElements(Set<MapElementContainer> elements,
+      PixelProjection projection, Tile tile, SymbolCache symbolCache) async {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
     // draw elements in order of priority: lower priority first, so more important
     // elements will be drawn on top (in case of display=true) items.
     List<MapElementContainer> elementsAsList = elements.toList()..sort();
-    elementsAsList.forEach((element) {
+    for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
-      element.draw(canvas, projection.getLeftUpper(tile), this.symbolMatrix,
-          Filter.NONE);
-    });
+      await element.draw(canvas, projection.getLeftUpper(tile),
+          this.symbolMatrix, Filter.NONE, symbolCache);
+    }
   }
 
   void fill(int color) {

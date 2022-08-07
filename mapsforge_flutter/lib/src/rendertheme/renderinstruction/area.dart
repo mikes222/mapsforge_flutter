@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -14,19 +14,20 @@ import 'renderinstruction.dart';
 /**
  * Represents a closed polygon on the map.
  */
-class Area extends RenderInstruction with BitmapMixin, PaintMixin {
+class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
   final int level;
   Scale scale = Scale.STROKE;
 
   Area(String elementName, this.level) : super() {
-    initPaintMixin();
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
+    // do not scale bitmaps in areas. They look ugly
+    initBitmapSrcMixin(65535);
     setFillColor(Colors.transparent);
     setStrokeColor(Colors.transparent);
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
-    this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
+  void parse(DisplayModel displayModel, XmlElement rootElement) {
+    this.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -44,23 +45,21 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getScaleFactor());
+      } else if (RenderInstruction.SYMBOL_WIDTH == name) {
+        this.setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.bitmapHeight =
-            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
+        this.setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.bitmapPercent = (XmlUtils.parseNonNegativeInteger(name, value) *
-                displayModel.getFontScaleFactor())
-            .round();
+        this.setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) *
+            displayModel.getFontScaleFactor().round());
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.bitmapWidth =
-            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
+        this.setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw Exception(name + "=" + value);
       }
     });
-    if (bitmapSrc != null) initPendings.add(this);
   }
 
   @override
@@ -84,41 +83,23 @@ class Area extends RenderInstruction with BitmapMixin, PaintMixin {
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         this.level,
+        bitmapSrc,
+        getBitmapWidth(renderContext.job.tile.zoomLevel),
+        getBitmapHeight(renderContext.job.tile.zoomLevel),
         way);
+
+    // if (isFillTransparent()) setFillColor(Colors.black);
+    // setFillBitmapShader(bitmap!);
+
 //}
   }
 
   @override
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
+  void prepareScale(int zoomLevel) {
     if (this.scale == Scale.NONE) {
       return;
     }
-    scaleMixinStrokeWidth(scaleFactor, zoomLevel);
-  }
-
-  @override
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    // do nothing
-  }
-
-  @override
-  Future<Area> initResources(SymbolCache? symbolCache) async {
-    await initBitmap(symbolCache);
-
-    if (bitmap != null) {
-      // make sure the color is not transparent
-      if (isFillTransparent()) setFillColor(Colors.black);
-      setFillBitmapShader(bitmap!);
-      //bitmap.incrementRefCount();
-    }
-
-    //fillPaint.setBitmapShaderShift(way.getUpperLeft().getOrigin());
-    return this;
-  }
-
-  @override
-  void dispose() {
-    mixinDispose();
-    super.dispose();
+    prepareScalePaintMixin(zoomLevel);
+    prepareScaleBitmapSrcMixin(zoomLevel);
   }
 }

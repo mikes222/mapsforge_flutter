@@ -22,28 +22,27 @@ class BitmapMixin {
   MapPaint? bitmapPaint;
 
   /// Sets a new bitmap and destroys the old one if available
-  Future<void> setBitmapSrc(String? bitmapSrc,
-      SymbolCache? symbolCache) async {
+  Future<void> setBitmapSrc(String? bitmapSrc, SymbolCache? symbolCache) async {
     if (this.bitmap != null) {
-      this.bitmap!.decrementRefCount();
+      //this.bitmap!.decrementRefCount();
       bitmap = null;
     }
     bitmapInvalid = false;
     this.bitmapSrc = bitmapSrc;
-    await initBitmap( symbolCache);
+    await initBitmap(symbolCache);
   }
 
   @mustCallSuper
   void dispose() {
     if (this.bitmap != null) {
-      this.bitmap!.decrementRefCount();
+      //this.bitmap!.decrementRefCount();
       bitmap = null;
     }
     bitmapPaint = null;
   }
 
   @mustCallSuper
-  Future<void> initBitmap( SymbolCache? symbolCache) async {
+  Future<void> initBitmap(SymbolCache? symbolCache) async {
     //print("initResources called for $src");
     if (bitmapInvalid) return;
 
@@ -60,7 +59,7 @@ class BitmapMixin {
     try {
       //_log.info("$bitmapWidth - $bitmapHeight --> $bitmapPercent");
       bitmap = await symbolCache.getSymbol(
-          bitmapSrc, bitmapWidth.round(), bitmapHeight.round(), bitmapPercent);
+          bitmapSrc, bitmapWidth.round(), bitmapHeight.round());
       if (bitmap == null ||
           bitmap!.getWidth() == 0 ||
           bitmap!.getHeight() == 0) {
@@ -70,7 +69,7 @@ class BitmapMixin {
         bitmapInvalid = true;
         return;
       }
-      bitmap!.incrementRefCount();
+      //bitmap!.incrementRefCount();
       if (bitmapPaint == null) {
         bitmapPaint = GraphicFactory().createPaint();
         bitmapPaint!.setColorFromNumber(0xff000000);

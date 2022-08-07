@@ -10,14 +10,12 @@ import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertextpaint.dart';
-import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import 'fluttercanvas.dart';
 import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
-import '../../mapelements/flutterpointtextcontainer.dart';
 import 'flutterrect.dart';
 
 class FlutterGraphicFactory implements GraphicFactory {
@@ -49,21 +47,6 @@ class FlutterGraphicFactory implements GraphicFactory {
   //   // TODO: implement createMonoBitmap
   //   return null;
   // }
-
-  @override
-  PointTextContainer createPointTextContainer(
-      Mappoint xy,
-      Display display,
-      int priority,
-      String text,
-      MapPaint paintFront,
-      MapPaint paintBack,
-      Position position,
-      int maxTextWidth,
-      MapTextPaint mapTextPaint) {
-    return FlutterPointTextContainer(xy, display, priority, text, paintFront,
-        paintBack, position, maxTextWidth, mapTextPaint);
-  }
 
   // @override
   // ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent) {

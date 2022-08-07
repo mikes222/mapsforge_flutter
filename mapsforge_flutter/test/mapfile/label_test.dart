@@ -2,16 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
 
@@ -23,6 +22,8 @@ void main() {
   });
 
   testWidgets("Split label between two tiles", (WidgetTester tester) async {
+    await loadAppFonts();
+
     final DisplayModel displayModel = DisplayModel();
 
     int l = 0;
@@ -75,8 +76,7 @@ void main() {
       print(result);
       expect(result.pointOfInterests.length, greaterThan(0));
       print("Calculating tile0 ${tile0.toString()}");
-      Job mapGeneratorJob0 = new Job(tile0, false,
-          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      Job mapGeneratorJob0 = new Job(tile0, false, displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
@@ -89,8 +89,7 @@ void main() {
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
 
       Tile tile1 = new Tile(x + 1, y, zoomlevel, l);
-      Job mapGeneratorJob1 = new Job(tile1, false,
-          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      Job mapGeneratorJob1 = new Job(tile1, false, displayModel.tileSize);
       JobResult jobResult1 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
       var img1 = (jobResult1.bitmap as FlutterTileBitmap).bitmap;

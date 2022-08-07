@@ -4,15 +4,15 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
-import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
-import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
 /// Draws Text along a polygon. Does NOT draw the polygon. Use [PolygonMarker] in conjunction with this marker.
-class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
+class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
   static final _log = new Logger('PolygonMarker');
 
   List<ILatLong> path = [];
@@ -27,7 +27,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
   final String caption;
 
-  final double fontSize;
+  double fontSize;
 
   int _zoom = -1;
 
@@ -61,7 +61,8 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
 
   @override
   void dispose() {
-    mixinDispose();
+    disposeTextMixin();
+    disposePaintMixin();
     super.dispose();
   }
 
@@ -71,7 +72,8 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin {
   }
 
   Future<void> initResources() async {
-    initTextMixin();
+    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     fontSize = this.fontSize;
     setStrokeColorFromNumber(this.strokeColor);
     if (fillColor != null) setFillColorFromNumber(this.fillColor!);

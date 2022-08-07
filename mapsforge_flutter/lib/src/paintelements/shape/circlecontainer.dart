@@ -1,5 +1,6 @@
-import '../model/mappoint.dart';
-import '../renderer/shapecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/shapecontainer.dart';
+
+import '../../model/mappoint.dart';
 
 class CircleContainer implements ShapeContainer {
   /// the absolute point of the center of the cirlce in pixels

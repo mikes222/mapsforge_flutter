@@ -269,8 +269,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
     JobSet jobSet = JobSet();
     tiles.forEach((Tile tile) {
-      Job job = Job(tile, false, viewModel.displayModel.getUserScaleFactor(),
-          viewModel.displayModel.tileSize);
+      Job job = Job(tile, false, viewModel.displayModel.tileSize);
       jobSet.add(job);
     });
     int diff = DateTime.now().millisecondsSinceEpoch - time;

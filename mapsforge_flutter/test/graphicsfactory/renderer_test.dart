@@ -4,13 +4,10 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
-import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
 
@@ -48,10 +45,6 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       datastore.addPoi(const PointOfInterest(
           0,
-          [const Tag('natural', 'peak'), Tag('name', 'TestPOI')],
-          LatLong(46, 18)));
-      datastore.addPoi(const PointOfInterest(
-          0,
           [const Tag('place', 'suburb'), Tag('name', 'TestSuburb')],
           LatLong(46, 17.998)));
       datastore.addPoi(const PointOfInterest(
@@ -69,17 +62,6 @@ void main() {
             [LatLong(45.95, 17.95), LatLong(46.05, 18.05)]
           ],
           null));
-      datastore.addWay(const Way(
-          0,
-          [
-            Tag('highway', 'service'),
-            Tag('access', 'private'),
-            //Tag('name', 'highwayService'),
-          ],
-          [
-            [LatLong(45.998, 17.95), LatLong(45.998, 18.05)]
-          ],
-          null));
       Tile tile = new Tile(x, y, zoomlevel, l);
       Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
       expect(datastore.supportsTile(tile, projection), true);
@@ -88,8 +70,7 @@ void main() {
       expect(result.ways.length, greaterThan(0));
       expect(result.pointOfInterests.length, greaterThan(0));
       print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false,
-          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
@@ -124,14 +105,14 @@ void main() {
     await expectLater(find.byType(RawImage), matchesGoldenFile('renderer.png'));
   });
 
-  testWidgets('Test areas with images (forest)', (WidgetTester tester) async {
+  testWidgets('Symbol with caption', (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
     );
 
     int tileSize = displayModel.tileSize;
     int l = 0;
-    int zoomlevel = 13;
+    int zoomlevel = 16;
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
@@ -144,25 +125,19 @@ void main() {
       RenderTheme renderTheme = renderThemeBuilder.build();
 
       MemoryDatastore datastore = MemoryDatastore();
-      datastore.addWay(const Way(
+      datastore.addPoi(const PointOfInterest(
           0,
-          [Tag('name', 'OurForest'), const Tag('natural', 'wood')],
-          [
-            [
-              LatLong(45.95, 17.95),
-              LatLong(46.05, 17.99),
-              LatLong(46.00, 17.990),
-              LatLong(45.95, 17.95)
-            ]
-          ],
-          null));
+          [const Tag('natural', 'peak'), Tag('name', 'TestPOI')],
+          LatLong(46, 18)));
       Tile tile = new Tile(x, y, zoomlevel, l);
       Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
       expect(datastore.supportsTile(tile, projection), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
-      expect(result.ways.length, greaterThan(0));
-      Job mapGeneratorJob = new Job(tile, false,
-          displayModel.getUserScaleFactor(), displayModel.tileSize);
+      print(result);
+      expect(result.ways.length, equals(0));
+      expect(result.pointOfInterests.length, greaterThan(0));
+      print("Calculating tile ${tile.toString()}");
+      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
@@ -194,7 +169,159 @@ void main() {
     );
     await tester.pumpAndSettle();
     //await tester.pump();
-    await expectLater(find.byType(RawImage), matchesGoldenFile('forest.png'));
+    await expectLater(
+        find.byType(RawImage), matchesGoldenFile('symbol_caption.png'));
+  });
+
+  testWidgets('Line with pattern', (WidgetTester tester) async {
+    final DisplayModel displayModel = DisplayModel(
+      maxZoomLevel: 14,
+    );
+
+    int tileSize = displayModel.tileSize;
+    int l = 0;
+    int zoomlevel = 16;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
+
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
+
+    var img = await (tester.runAsync(() async {
+      String content = await TestAssetBundle().loadString("rendertheme.xml");
+      renderThemeBuilder.parseXml(displayModel, content);
+      RenderTheme renderTheme = renderThemeBuilder.build();
+
+      MemoryDatastore datastore = MemoryDatastore();
+      datastore.addWay(const Way(
+          0,
+          [
+            Tag('highway', 'service'),
+            Tag('access', 'private'),
+            //Tag('name', 'highwayService'),
+          ],
+          [
+            [LatLong(45.998, 17.95), LatLong(45.998, 18.05)]
+          ],
+          null));
+      Tile tile = new Tile(x, y, zoomlevel, l);
+      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+      expect(datastore.supportsTile(tile, projection), true);
+      DatastoreReadResult result = await datastore.readMapDataSingle(tile);
+      print(result);
+      expect(result.ways.length, greaterThan(0));
+      print("Calculating tile ${tile.toString()}");
+      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+
+      JobResult jobResult =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      expect(jobResult.bitmap, isNotNull);
+      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
+      return img;
+    }));
+
+    expect(img, isNotNull);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(),
+        home: Scaffold(
+          body: Center(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue, width: 1),
+              ),
+              child: RawImage(
+                image: img,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    //await tester.pump();
+    await expectLater(
+        find.byType(RawImage), matchesGoldenFile('line_pattern.png'));
+  });
+
+  testWidgets('Test areas with symbols (forest)', (WidgetTester tester) async {
+    final DisplayModel displayModel = DisplayModel(
+      maxZoomLevel: 14,
+    );
+
+    int tileSize = displayModel.tileSize;
+    int l = 0;
+    int zoomlevel = 13;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
+
+    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
+
+    var img = await (tester.runAsync(() async {
+      String content = await TestAssetBundle().loadString("rendertheme.xml");
+      renderThemeBuilder.parseXml(displayModel, content);
+      RenderTheme renderTheme = renderThemeBuilder.build();
+
+      MemoryDatastore datastore = MemoryDatastore();
+      datastore.addWay(const Way(
+          0,
+          [
+            Tag('name', 'OurForest'),
+            const Tag('natural', 'wood'),
+            //const Tag('wood', 'deciduous')
+          ],
+          [
+            [
+              LatLong(45.95, 17.95),
+              LatLong(46.05, 17.99),
+              LatLong(46.00, 17.990),
+              LatLong(45.95, 17.95)
+            ]
+          ],
+          null));
+      Tile tile = new Tile(x, y, zoomlevel, l);
+      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
+      expect(datastore.supportsTile(tile, projection), true);
+      DatastoreReadResult result = await datastore.readMapDataSingle(tile);
+      expect(result.ways.length, greaterThan(0));
+      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+
+      JobResult jobResult =
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      expect(jobResult.bitmap, isNotNull);
+      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
+      return img;
+    }));
+
+    expect(img, isNotNull);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(),
+        home: Scaffold(
+          body: Center(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue, width: 1),
+              ),
+              child: RawImage(
+                image: img,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    //await tester.pump();
+    await expectLater(
+        find.byType(RawImage), matchesGoldenFile('area_symbols.png'));
   });
 }
 

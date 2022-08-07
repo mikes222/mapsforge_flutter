@@ -2,12 +2,11 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 
-import '../graphics/bitmap.dart';
 import '../graphics/display.dart';
 import '../graphics/mappaint.dart';
-import '../mapelements/mapelementcontainer.dart';
-import '../mapelements/symbolcontainer.dart';
-import '../mapelements/waytextcontainer.dart';
+import 'mapelementcontainer.dart';
+import 'symbolcontainer.dart';
+import 'waytextcontainer.dart';
 import '../model/linesegment.dart';
 import '../model/linestring.dart';
 import '../model/mappoint.dart';
@@ -18,7 +17,9 @@ class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 10;
 
   static void renderSymbol(
-      Bitmap symbolBitmap,
+      String bitmapSrc,
+      int bitmapWidth,
+      int bitmapHeight,
       Display display,
       int priority,
       double dy,
@@ -74,8 +75,15 @@ class WayDecorator {
         Mappoint point = new Mappoint(previousX, previousY);
 
         currentItems.add(new SymbolContainer(
-            point, display, priority, symbolBitmap,
-            theta: theta, alignCenter: alignCenter, paint: symbolPaint!));
+            point: point,
+            display: display,
+            priority: priority,
+            bitmapSrc: bitmapSrc,
+            bitmapWidth: bitmapWidth,
+            bitmapHeight: bitmapHeight,
+            theta: theta,
+            alignCenter: alignCenter,
+            paint: symbolPaint!));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {

@@ -443,18 +443,20 @@
         <rule e="way" k="aeroway" v="terminal">
             <area fill="#F3D6B6" stroke="#6A5A8E" stroke-width="0.2" />
         </rule>
-        <rule e="node" k="aeroway" v="gate">
-            <caption fill="#FFD900" font-size="12" font-style="bold" k="name" stroke="#000000"
-                stroke-width="2" />
-            <caption fill="#FFD900" font-size="12" font-style="bold" k="ref" stroke="#000000"
-                stroke-width="2" />
-        </rule>
         <!-- runways casings -->
         <rule closed="no" e="way" k="aeroway" v="runway">
             <line stroke="#000000" stroke-linecap="butt" stroke-width="4" />
         </rule>
         <rule e="way" k="aeroway" v="taxiway">
             <line stroke="#000000" stroke-linecap="butt" stroke-width="2" />
+        </rule>
+    </rule>
+    <rule e="node" k="aeroway" v="*">
+        <rule e="node" k="aeroway" v="gate">
+            <caption fill="#FFD900" font-size="12" font-style="bold" k="name" stroke="#000000"
+                stroke-width="2" />
+            <caption fill="#FFD900" font-size="12" font-style="bold" k="ref" stroke="#000000"
+                stroke-width="2" />
         </rule>
     </rule>
 

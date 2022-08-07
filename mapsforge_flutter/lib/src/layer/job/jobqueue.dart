@@ -122,7 +122,7 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
   try {
     JobResult jobResult = await isolateParam.jobRenderer.executeJob(job);
     if (jobResult.bitmap != null) {
-      jobResult.bitmap!.incrementRefCount();
+      //jobResult.bitmap!.incrementRefCount();
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff >= 250)
@@ -133,7 +133,7 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
     if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
     TileBitmap bmp =
         await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
-    bmp.incrementRefCount();
+    //bmp.incrementRefCount();
     return JobResult(bmp, JOBRESULT.ERROR);
   }
 }

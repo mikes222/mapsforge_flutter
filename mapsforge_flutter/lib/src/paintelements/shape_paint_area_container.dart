@@ -1,17 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
+import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
-import 'package:mapsforge_flutter/src/renderer/shapepaintcontainer.dart';
 
-import '../renderer/shapecontainer.dart';
+import 'shape/shapecontainer.dart';
 
-class ShapePaintPolylineContainer extends ShapePaintContainer {
+class ShapePaintAreaContainer extends ShapePaintContainer {
   late MapPath path;
 
   static int count = 0;
@@ -20,14 +21,21 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   final MapPaint? stroke;
 
-  ShapePaintPolylineContainer(
-      ShapeContainer shapeContainer, this.fill, this.stroke, double dy)
+  String? bitmapSrc;
+
+  int bitmapWidth;
+
+  int bitmapHeight;
+
+  ShapePaintAreaContainer(ShapeContainer shapeContainer, this.fill, this.stroke,
+      this.bitmapSrc, this.bitmapWidth, this.bitmapHeight, double dy)
       : super(shapeContainer, dy) {
     path = GraphicFactory().createPath();
   }
 
   @override
-  void draw(MapCanvas canvas, PixelProjection projection) {
+  Future<void> draw(MapCanvas canvas, PixelProjection projection,
+      SymbolCache symbolCache) async {
     ++count;
     PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
     this.path.clear();
@@ -51,12 +59,23 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
       }
     }
 
+    if (fill != null && bitmapSrc != null) {
+      // print(
+      //     "fill not null and bitmapSrc is $bitmapSrc + $bitmapWidth + $bitmapHeight");
+      ResourceBitmap? bitmap =
+          await symbolCache.getSymbol(bitmapSrc, bitmapWidth, bitmapHeight);
+      if (bitmap != null) {
+        if (fill!.isTransparent()) fill!.setColor(Colors.black);
+        fill!.setBitmapShader(bitmap);
+      }
+    }
+
     if (fill != null) canvas.drawPath(this.path, fill!);
     if (stroke != null) canvas.drawPath(this.path, stroke!);
   }
 
   @override
   String toString() {
-    return 'ShapePaintPolylineContainer{path: $path}';
+    return 'ShapePaintAreaContainer{path: $path}';
   }
 }

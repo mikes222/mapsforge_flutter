@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 
 import '../graphics/display.dart';
@@ -36,7 +37,8 @@ class WayTextContainer extends MapElementContainer {
   dispose() {}
 
   @override
-  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
+  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
+      Filter filter, SymbolCache symbolCache) async {
     //MapPath path = _generatePath(origin);
 
     {
@@ -46,7 +48,8 @@ class WayTextContainer extends MapElementContainer {
             .paintBack
             .setColorFromNumber(GraphicUtils.filterColor(color, filter));
       }
-      canvas.drawPathText(this.text, this.lineString, origin, this.paintBack, mapTextPaint);
+      canvas.drawPathText(
+          this.text, this.lineString, origin, this.paintBack, mapTextPaint);
       if (filter != Filter.NONE) {
         this.paintBack.setColorFromNumber(color);
       }
@@ -57,7 +60,8 @@ class WayTextContainer extends MapElementContainer {
           .paintFront
           .setColorFromNumber(GraphicUtils.filterColor(color, filter));
     }
-    canvas.drawPathText(this.text, this.lineString, origin, this.paintFront, mapTextPaint);
+    canvas.drawPathText(
+        this.text, this.lineString, origin, this.paintFront, mapTextPaint);
     if (filter != Filter.NONE) {
       this.paintFront.setColorFromNumber(color);
     }

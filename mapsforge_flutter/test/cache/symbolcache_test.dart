@@ -14,7 +14,7 @@ void main() {
 
     await tester.runAsync(() async {
       ResourceBitmap resourceBitmap =
-          (await (symbolCache.getSymbol("arrow.png", 0, 0, 100)))!;
+          (await (symbolCache.getSymbol("arrow.png", 0, 0)))!;
       assert(resourceBitmap != null);
     });
   });

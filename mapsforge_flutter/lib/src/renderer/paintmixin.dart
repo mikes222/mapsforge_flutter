@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
@@ -16,7 +18,17 @@ class PaintMixin {
 
   List<double>? _strokeDasharray;
 
-  void initPaintMixin() {
+  late double _dy = 0;
+
+  final Map<int, double> _dyScaled = {};
+
+  static final double STROKE_INCREASE = 1.5;
+
+  /// stroke will be drawn thicker at or above this zoomlevel
+  late int strokeMinZoomLevel;
+
+  void initPaintMixin(int strokeMinZoomLevel) {
+    this.strokeMinZoomLevel = strokeMinZoomLevel;
     this._stroke = GraphicFactory().createPaint();
     this._stroke.setColor(Colors.black);
     this._stroke.setStyle(Style.STROKE);
@@ -42,38 +54,34 @@ class PaintMixin {
     return paint;
   }
 
-  void scaleMixinStrokeWidth(double scaleFactor, int zoomLevel) {
-    //if (this.strokes[zoomLevel] != null) return;
-    // we setup the stroke-params for the desired zoomlevel together with the fontsize for this zoomlevel
-    scaleMixinTextSize(scaleFactor, zoomLevel);
-    // MapPaint paint = graphicFactory.createPaintFrom(this.stroke);
-    // paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
-    // if (strokeDasharray != null) {
-    //   // List<double> strokeDasharrayScaled = this.strokeDasharray!.map((dash) {
-    //   //   return dash * scaleFactor;
-    //   // }).toList();
-    //   paint.setStrokeDasharray(strokeDasharray);
-    // }
-    // this.strokes[zoomLevel] = paint;
-  }
-
-  void scaleMixinTextSize(double scaleFactor, int zoomLevel) {
+  void prepareScalePaintMixin(int zoomLevel) {
     if (this._strokes[zoomLevel] != null) return;
-    MapPaint paint = GraphicFactory().createPaintFrom(this._stroke);
-    paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
-    if (_strokeDasharray != null) {
-      List<double> strokeDasharrayScaled = this._strokeDasharray!.map((dash) {
-        return dash * scaleFactor;
-      }).toList();
-      paint.setStrokeDasharray(strokeDasharrayScaled);
-    }
-    this._strokes[zoomLevel] = paint;
+    if (zoomLevel >= strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - strokeMinZoomLevel + 1;
+      double scaleFactor = pow(STROKE_INCREASE, zoomLevelDiff) as double;
+      MapPaint paint = GraphicFactory().createPaintFrom(this._stroke);
+      paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
+      if (_strokeDasharray != null) {
+        List<double> strokeDasharrayScaled = this._strokeDasharray!.map((dash) {
+          return dash * scaleFactor;
+        }).toList();
+        paint.setStrokeDasharray(strokeDasharrayScaled);
+      }
+      this._strokes[zoomLevel] = paint;
 
-    MapPaint f = GraphicFactory().createPaintFrom(this._fill);
-    this._fills[zoomLevel] = f;
+      //MapPaint f = GraphicFactory().createPaintFrom(this._fill);
+      this._fills[zoomLevel] = _fill;
+
+      double dy = _dy * scaleFactor;
+      _dyScaled[zoomLevel] = dy;
+    } else {
+      this._strokes[zoomLevel] = _stroke;
+      _fills[zoomLevel] = _fill;
+      _dyScaled[zoomLevel] = _dy;
+    }
   }
 
-  void mixinDispose() {
+  void disposePaintMixin() {
     _strokes.values.forEach((element) {
       element.dispose();
     });
@@ -176,5 +184,21 @@ class PaintMixin {
     _strokes.forEach((key, value) {
       value.setStrokeDasharray(dashArray);
     });
+  }
+
+  void setDy(double dy) {
+    _dy = dy;
+    _dyScaled.clear();
+  }
+
+  double getDy(int zoomLevel) {
+    if (_dyScaled[zoomLevel] != null) return _dyScaled[zoomLevel]!;
+    return _dy;
+  }
+
+  void clearPaintMixin() {
+    _dyScaled.clear();
+    _strokes.clear();
+    _fills.clear();
   }
 }

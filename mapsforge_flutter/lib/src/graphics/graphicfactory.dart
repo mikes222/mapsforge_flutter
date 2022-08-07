@@ -3,7 +3,6 @@ import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttergraphicfactory.dart';
 
 import '../graphics/position.dart';
-import '../mapelements/pointtextcontainer.dart';
 import '../model/mappoint.dart';
 import 'display.dart';
 import 'mapcanvas.dart';
@@ -47,23 +46,4 @@ abstract class GraphicFactory {
   MapPath createPath();
 
   MapRect createRect(double left, double top, double right, double bottom);
-
-  PointTextContainer createPointTextContainer(
-      Mappoint xy,
-      Display display,
-      int priority,
-      String text,
-      MapPaint paintFront,
-      MapPaint paintBack,
-      Position position,
-      int maxTextWidth,
-      MapTextPaint mapTextPaint);
-
-//  ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent);
-
-// TileBitmap createTileBitmap(double tileSize, bool isTransparent, {InputStream inputStream});
-//
-// InputStream platformSpecificSources(String relativePathPrefix, String src);
-//
-// ResourceBitmap renderSvg(InputStream inputStream, double scaleFactor, int width, int height, int percent);
 }

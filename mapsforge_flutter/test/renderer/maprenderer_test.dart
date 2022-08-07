@@ -39,7 +39,7 @@ main() async {
     Tile tile = new Tile(140486, 87975, zoomlevel, indoorLevel);
 
     Job job =
-        Job(tile, false, displayModel.getScaleFactor(), displayModel.tileSize);
+        Job(tile, false, displayModel.tileSize);
     JobResult result = await renderer.executeJob(job);
     expect(result.result, JOBRESULT.UNSUPPORTED);
     expect(result.bitmap, isNotNull);

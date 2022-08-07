@@ -24,10 +24,10 @@ class JobSet extends ChangeNotifier {
   void jobFinished(Job job, JobResult jobResult) {
     if (_bitmaps == null) return;
     jobs.remove(job);
-    jobResult.bitmap?.incrementRefCount();
+    //jobResult.bitmap?.incrementRefCount();
     TileBitmap? old = _bitmaps![job.tile]?.bitmap;
     if (old != null) {
-      old.decrementRefCount();
+      //old.decrementRefCount();
     }
     _bitmaps![job.tile] = jobResult;
     //print("jobSet job finished ${_bitmaps!.length}");
@@ -44,7 +44,7 @@ class JobSet extends ChangeNotifier {
   void dispose() {
     jobs.clear();
     _bitmaps!.values.forEach((element) {
-      element.bitmap?.decrementRefCount();
+      //element.bitmap?.decrementRefCount();
     });
     _bitmaps = null;
     super.dispose();
@@ -55,7 +55,7 @@ class JobSet extends ChangeNotifier {
   void removeJobs() {
     jobs.clear();
     _bitmaps!.values.forEach((element) {
-      element.bitmap?.decrementRefCount();
+      //element.bitmap?.decrementRefCount();
     });
     _bitmaps!.clear();
   }

@@ -1,6 +1,6 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
 
-import '../mapelements/mapelementcontainer.dart';
 import '../model/tile.dart';
 
 /// The TileDependecies class tracks the dependencies between tiles for labels.

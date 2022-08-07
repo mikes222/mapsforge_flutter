@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/renderer/shapecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/shapecontainer.dart';
 
 class Watercontainer implements ShapeContainer {
   Mappoint? center;

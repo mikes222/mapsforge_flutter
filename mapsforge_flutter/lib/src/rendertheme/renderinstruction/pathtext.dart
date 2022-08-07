@@ -2,7 +2,8 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -15,13 +16,11 @@ import 'textkey.dart';
 /**
  * Represents a text along a polyline on the map.
  */
-class PathText extends RenderInstruction with TextMixin {
+class PathText extends RenderInstruction with TextMixin, PaintMixin {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
 
   Display display = Display.IFSPACE;
-  double dy = 0;
-  final Map<int, double> dyScaled;
   int priority = 0;
   Scale scale = Scale.STROKE;
   bool? repeat;
@@ -30,21 +29,20 @@ class PathText extends RenderInstruction with TextMixin {
   bool? rotate;
   TextKey? textKey;
 
-  PathText()
-      : dyScaled = new Map(),
-        super() {
-    initTextMixin();
+  PathText() {
+    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     this.rotate = true;
     this.repeat = true;
   }
 
   @override
   void dispose() {
-    mixinDispose();
+    disposePaintMixin();
+    disposeTextMixin();
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement) {
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
 
@@ -60,14 +58,14 @@ class PathText extends RenderInstruction with TextMixin {
         this.display = Display.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.DY == name) {
-        this.dy = double.parse(value) * displayModel.getScaleFactor();
+        this.setDy(double.parse(value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.FILL == name) {
         this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         setFontFamily(value);
       } else if (RenderInstruction.FONT_SIZE == name) {
-        this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getFontScaleFactor();
+        this.setFontSize(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getFontScaleFactor());
       } else if (RenderInstruction.FONT_STYLE == name) {
         setFontStyle(MapFontStyle.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value)));
@@ -115,8 +113,7 @@ class PathText extends RenderInstruction with TextMixin {
       return;
     }
 
-    double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
-    dyScale ??= this.dy;
+    double dyScale = getDy(renderContext.job.tile.zoomLevel);
 
     renderCallback.renderWayText(
         renderContext,
@@ -135,23 +132,12 @@ class PathText extends RenderInstruction with TextMixin {
   }
 
   @override
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
+  void prepareScale(int zoomLevel) {
     if (this.scale == Scale.NONE) {
       return;
     }
 
-    scaleMixinStrokeWidth(scaleFactor, zoomLevel);
-
-    this.dyScaled[zoomLevel] = this.dy * scaleFactor;
-  }
-
-  @override
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    scaleMixinTextSize(scaleFactor, zoomLevel);
-  }
-
-  @override
-  Future<RenderInstruction> initResources(SymbolCache? symbolCache) {
-    return Future.value(this);
+    prepareScalePaintMixin(zoomLevel);
+    prepareScaleTextMixin(zoomLevel);
   }
 }

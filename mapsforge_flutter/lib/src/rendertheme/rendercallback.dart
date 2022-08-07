@@ -6,7 +6,7 @@ import '../graphics/position.dart';
 
 import '../graphics/mappaint.dart';
 import '../rendertheme/rendercontext.dart';
-import '../renderer/polylinecontainer.dart';
+import '../paintelements/shape/polylinecontainer.dart';
 import '../graphics/display.dart';
 
 /**
@@ -21,8 +21,15 @@ abstract class RenderCallback {
  * @param stroke        an optional paint for the area casing (may be null).
  * @param level
  */
-  void renderArea(final RenderContext renderContext, MapPaint fill,
-      MapPaint stroke, int level, PolylineContainer way);
+  void renderArea(
+      final RenderContext renderContext,
+      MapPaint fill,
+      MapPaint stroke,
+      int level,
+      String? bitmapSrc,
+      int bitmapWidth,
+      int bitmapHeight,
+      PolylineContainer way);
 
 /**
  * Renders an area caption with the given text.
@@ -63,9 +70,11 @@ abstract class RenderCallback {
       final RenderContext renderContext,
       Display display,
       int priority,
-      Bitmap symbol,
+      String bitmapSrc,
+      int bitmapWidth,
+      int bitmapHeight,
       PolylineContainer way,
-      MapPaint? symbolPaint);
+      MapPaint symbolPaint);
 
 /**
  * Renders a point of interest caption with the given text.
@@ -119,9 +128,11 @@ abstract class RenderCallback {
       final RenderContext renderContext,
       Display display,
       int priority,
-      Bitmap symbol,
+      String bitmapSrc,
+      int bitmapWidth,
+      int bitmapHeight,
       PointOfInterest poi,
-      MapPaint? symbolPaint);
+      MapPaint symbolPaint);
 
 /**
  * Renders a way with the given parameters.
@@ -131,8 +142,15 @@ abstract class RenderCallback {
  * @param dy            the offset of the way.
  * @param level
  */
-  void renderWay(final RenderContext renderContext, MapPaint stroke, double dy,
-      int level, PolylineContainer way);
+  void renderWay(
+      final RenderContext renderContext,
+      MapPaint stroke,
+      double dy,
+      int level,
+      String? bitmapSrc,
+      int bitmapWidth,
+      int bitmapHeight,
+      PolylineContainer way);
 
 /**
  * Renders a way with the given symbol along the way path.
@@ -149,7 +167,9 @@ abstract class RenderCallback {
       final RenderContext renderContext,
       Display display,
       int priority,
-      Bitmap symbol,
+      String bitmapSrc,
+      int bitmapWidth,
+      int bitmapHeight,
       double dy,
       bool alignCenter,
       bool repeat,

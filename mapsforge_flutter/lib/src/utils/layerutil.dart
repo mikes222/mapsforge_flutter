@@ -3,12 +3,7 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
-import 'package:mapsforge_flutter/src/model/viewmodel.dart';
-
-import '../mapelements/mapelementcontainer.dart';
-import '../model/boundingbox.dart';
-import '../model/tile.dart';
+import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
 
 class LayerUtil {
   static final _log = new Logger('LayerUtil');

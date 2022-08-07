@@ -10,6 +10,12 @@ class DisplayModel {
   /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 4 tiles to fit on it and so on.
   static const int DEFAULT_TILE_SIZE = 256;
 
+  /// start to thicken the strokes at this zoomlevel
+  static const int STROKE_MIN_ZOOMLEVEL = 12;
+
+  /// start to thicken the strokes of texts at this zoomlevel
+  static const int STROKE_MIN_ZOOMLEVEL_TEXT = 17;
+
   int DEFAULT_ZOOM = 10;
 
   int DEFAULT_INDOOR_LEVEL = 0;
@@ -27,7 +33,7 @@ class DisplayModel {
   final double userScaleFactor;
 
   /// sets the scale factor for fonts and symbols. The size of a font or symbol is dependent on the renderertheme,
-  /// the deviceScaleFactor, the userScaleFactor AND this property.
+  /// and this property.
   final double fontScaleFactor;
 
   final double maxTextWidthFactor;
@@ -144,6 +150,6 @@ class DisplayModel {
   }
 
   void _setTileSize() {
-    tileSize = (DEFAULT_TILE_SIZE * deviceScaleFactor * userScaleFactor).ceil();
+    tileSize = (DEFAULT_TILE_SIZE * getScaleFactor()).ceil();
   }
 }

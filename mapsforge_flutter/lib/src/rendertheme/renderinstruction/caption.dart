@@ -5,7 +5,8 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
@@ -23,13 +24,11 @@ import '../rendercontext.dart';
  * If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
  * center of which is at the point of the POI. The bitmap itself is never rendered.
  */
-class Caption extends RenderInstruction with TextMixin {
+class Caption extends RenderInstruction with TextMixin, PaintMixin {
   static final _log = new Logger('Caption');
   static final double DEFAULT_GAP = 5;
 
   Display display = Display.IFSPACE;
-  double dy = 0;
-  final Map<int, double> dyScaled = {};
   double _horizontalOffset = 0;
   double _verticalOffset = 0;
   late double gap;
@@ -40,13 +39,13 @@ class Caption extends RenderInstruction with TextMixin {
   final SymbolFinder symbolFinder;
   TextKey? textKey;
 
-  Caption(this.symbolFinder) : super() {}
+  Caption(this.symbolFinder);
 
-  void parse(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement) {
     maxTextWidth = displayModel.getMaxTextWidth();
     gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
-    initTextMixin();
+    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -60,14 +59,14 @@ class Caption extends RenderInstruction with TextMixin {
         this.display = Display.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.DY == name) {
-        this.dy = double.parse(value) * displayModel.getScaleFactor();
+        this.setDy(double.parse(value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.FILL == name) {
         this.setFillColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         setFontFamily(value);
       } else if (RenderInstruction.FONT_SIZE == name) {
-        this.fontSize = XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getFontScaleFactor();
+        this.setFontSize(XmlUtils.parseNonNegativeFloat(name, value) *
+            displayModel.getFontScaleFactor());
       } else if (RenderInstruction.FONT_STYLE == name) {
         setFontStyle(MapFontStyle.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value)));
@@ -90,8 +89,6 @@ class Caption extends RenderInstruction with TextMixin {
 
     XmlUtils.checkMandatoryAttribute(
         rootElement.name.toString(), RenderInstruction.K, this.textKey);
-
-    initPendings.add(this);
   }
 
   @override
@@ -108,13 +105,14 @@ class Caption extends RenderInstruction with TextMixin {
       return;
     }
 
+    _init(renderContext.job.tile.zoomLevel);
     renderCallback.renderPointOfInterestCaption(
         renderContext,
         this.display,
         this.priority,
         caption,
         _horizontalOffset,
-        _verticalOffset + dyScaled[renderContext.job.tile.zoomLevel]!,
+        _verticalOffset + getDy(renderContext.job.tile.zoomLevel),
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         getTextPaint(renderContext.job.tile.zoomLevel),
@@ -138,13 +136,14 @@ class Caption extends RenderInstruction with TextMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
+    _init(renderContext.job.tile.zoomLevel);
     renderCallback.renderAreaCaption(
         renderContext,
         this.display,
         this.priority,
         caption,
         _horizontalOffset,
-        _verticalOffset + dyScaled[renderContext.job.tile.zoomLevel]!,
+        _verticalOffset + getDy(renderContext.job.tile.zoomLevel),
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         getTextPaint(renderContext.job.tile.zoomLevel),
@@ -154,88 +153,83 @@ class Caption extends RenderInstruction with TextMixin {
   }
 
   @override
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
-    // do nothing
+  void prepareScale(int zoomLevel) {
+    prepareScalePaintMixin(zoomLevel);
+    prepareScaleTextMixin(zoomLevel);
   }
 
-  @override
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    scaleMixinTextSize(scaleFactor, zoomLevel);
-
-    this.dyScaled[zoomLevel] = this.dy * scaleFactor;
-  }
-
-  @override
-  void dispose() {
-    mixinDispose();
-  }
-
-  @override
-  Future<Caption> initResources(SymbolCache? symbolCache) async {
+  void _init(int zoomLevel) {
     _verticalOffset = 0;
 
     RenderSymbol? renderSymbol;
     if (this.symbolId != null) {
-      renderSymbol = await symbolFinder.find(this.symbolId!, symbolCache);
+      renderSymbol = symbolFinder.find(this.symbolId!);
       if (renderSymbol == null) {
         _log.warning(
             "Symbol $symbolId referenced in caption in render.xml, but not defined as symbol");
       }
     }
 
-    if (this.position == Position.CENTER && renderSymbol?.bitmap != null) {
+    if (this.position == Position.CENTER && renderSymbol?.bitmapSrc != null) {
       // sensible defaults: below if symbolContainer is present, center if not
       this.position = Position.BELOW;
     }
     switch (this.position) {
       case Position.CENTER:
       case Position.BELOW:
-        if (renderSymbol?.bitmap?.getHeight() != null)
-          _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.getBitmapHeight(zoomLevel) != null)
+          _verticalOffset +=
+              renderSymbol!.getBitmapHeight(zoomLevel) / 2 + this.gap;
         break;
       case Position.ABOVE:
-        if (renderSymbol?.bitmap?.getHeight() != null)
-          _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.getBitmapHeight(zoomLevel) != null)
+          _verticalOffset -=
+              renderSymbol!.getBitmapHeight(zoomLevel) / 2 + this.gap;
         break;
       case Position.BELOW_LEFT:
-        if (renderSymbol?.bitmap?.getWidth() != null)
-          _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
-        if (renderSymbol?.bitmap?.getHeight() != null)
-          _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.getBitmapWidth(zoomLevel) != null)
+          _horizontalOffset -=
+              renderSymbol!.getBitmapWidth(zoomLevel) / 2 + this.gap;
+        if (renderSymbol?.getBitmapHeight(zoomLevel) != null)
+          _verticalOffset +=
+              renderSymbol!.getBitmapHeight(zoomLevel) / 2 + this.gap;
         break;
       case Position.ABOVE_LEFT:
-        if (renderSymbol?.bitmap?.getWidth() != null)
-          _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
-        if (renderSymbol?.bitmap?.getHeight() != null)
-          _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+        if (renderSymbol?.getBitmapWidth(zoomLevel) != null)
+          _horizontalOffset -=
+              renderSymbol!.getBitmapWidth(zoomLevel) / 2 + this.gap;
+        if (renderSymbol?.getBitmapHeight(zoomLevel) != null)
+          _verticalOffset -=
+              renderSymbol!.getBitmapHeight(zoomLevel) / 2 + this.gap;
         break;
       case Position.LEFT:
-        if (renderSymbol?.bitmap?.getWidth() != null)
-          _horizontalOffset -= renderSymbol!.bitmap!.getWidth() / 2 + this.gap;
+        if (renderSymbol?.getBitmapWidth(zoomLevel) != null)
+          _horizontalOffset -=
+              renderSymbol!.getBitmapWidth(zoomLevel) / 2 + this.gap;
         break;
       case Position.BELOW_RIGHT:
-        if (renderSymbol?.bitmap?.getWidth() != null)
+        if (renderSymbol?.getBitmapWidth(zoomLevel) != null)
           _horizontalOffset +=
-              (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
-        if (renderSymbol?.bitmap?.getHeight() != null)
-          _verticalOffset += renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+              (renderSymbol!.getBitmapWidth(zoomLevel) / 2 + this.gap);
+        if (renderSymbol?.getBitmapHeight(zoomLevel) != null)
+          _verticalOffset +=
+              renderSymbol!.getBitmapHeight(zoomLevel) / 2 + this.gap;
         break;
       case Position.ABOVE_RIGHT:
-        if (renderSymbol?.bitmap?.getWidth() != null)
+        if (renderSymbol?.getBitmapWidth(zoomLevel) != null)
           _horizontalOffset +=
-              (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
-        if (renderSymbol?.bitmap?.getHeight() != null)
-          _verticalOffset -= renderSymbol!.bitmap!.getHeight() / 2 + this.gap;
+              (renderSymbol!.getBitmapWidth(zoomLevel) / 2 + this.gap);
+        if (renderSymbol?.getBitmapHeight(zoomLevel) != null)
+          _verticalOffset -=
+              renderSymbol!.getBitmapHeight(zoomLevel) / 2 + this.gap;
         break;
       case Position.RIGHT:
-        if (renderSymbol?.bitmap?.getWidth() != null)
+        if (renderSymbol?.getBitmapWidth(zoomLevel) != null)
           _horizontalOffset +=
-              (renderSymbol!.bitmap!.getWidth() / 2 + this.gap);
+              (renderSymbol!.getBitmapWidth(zoomLevel) / 2 + this.gap);
         break;
       default:
         throw new Exception("Position invalid");
     }
-
-    return this;
   }
 }

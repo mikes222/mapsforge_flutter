@@ -5,15 +5,13 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 ///
 class Job {
   final bool hasAlpha;
-  final double textScale;
   final Tile tile;
   final int tileSize;
 
-  const Job._(this.tile, this.hasAlpha, this.textScale, this.tileSize)
-      : assert(tileSize > 0);
+  const Job._(this.tile, this.hasAlpha, this.tileSize) : assert(tileSize > 0);
 
-  factory Job(Tile tile, bool alpha, double scaleFactor, int tileSize) {
-    Job job = Job._(tile, alpha, scaleFactor, tileSize);
+  factory Job(Tile tile, bool alpha, int tileSize) {
+    Job job = Job._(tile, alpha, tileSize);
     return job;
   }
 

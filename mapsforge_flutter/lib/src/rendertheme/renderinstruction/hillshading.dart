@@ -2,14 +2,14 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/shapecontainer.dart';
 
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/hillsrenderconfig.dart';
 import '../../model/mappoint.dart';
 import '../../model/rectangle.dart';
 import '../../model/tile.dart';
-import '../../renderer/hillshadingcontainer.dart';
-import '../../renderer/shapecontainer.dart';
+import '../../paintelements/shape/hillshadingcontainer.dart';
 import '../rendercontext.dart';
 
 /**

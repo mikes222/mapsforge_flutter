@@ -1,6 +1,7 @@
-import '../graphics/bitmap.dart';
-import '../model/rectangle.dart';
-import 'shapecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/shapecontainer.dart';
+
+import '../../graphics/bitmap.dart';
+import '../../model/rectangle.dart';
 
 class HillshadingContainer implements ShapeContainer {
   final double magnitude;

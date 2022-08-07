@@ -120,14 +120,13 @@ class RuleBuilder {
     return attributeMatcher;
   }
 
-  RuleBuilder(SymbolFinder? parentSymbolFinder,
-      List<RenderInstruction> initPendings, this.level)
+  RuleBuilder(SymbolFinder? parentSymbolFinder, this.level)
       : ruleBuilderStack = [],
         renderInstructions = [],
         this.zoomMin = 0,
         this.zoomMax = 65536,
         maxLevel = level,
-        this.symbolFinder = SymbolFinder(parentSymbolFinder, initPendings) {
+        this.symbolFinder = SymbolFinder(parentSymbolFinder) {
     this.closed = Closed.ANY;
   }
 
@@ -135,11 +134,11 @@ class RuleBuilder {
     for (RuleBuilder ruleBuilder in ruleBuilderStack) {
       if (element == Element.NODE && ruleBuilder.element == Element.WAY) {
         _log.warning(
-            "Impossible SubRule which has element way whereas the parent has element node");
+            "Impossible SubRule which has element way (${ruleBuilder.element}) whereas the parent has element node ($element)");
       }
       if (element == Element.WAY && ruleBuilder.element == Element.NODE) {
         _log.warning(
-            "Impossible SubRule which has element node whereas the parent has element way");
+            "Impossible SubRule which has element node (${ruleBuilder}) whereas the parent has element way ($this)");
       }
       if (zoomMax < ruleBuilder.zoomMin) {
         _log.warning(
@@ -178,8 +177,7 @@ class RuleBuilder {
     return PositiveRule(this, keyMatcher, valueMatcher);
   }
 
-  void parse(DisplayModel displayModel, XmlNode rootElement,
-      List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlNode rootElement) {
     rootElement.attributes.forEach((XmlAttribute attribute) {
       String name = attribute.name.toString();
       String value = attribute.value;
@@ -232,7 +230,7 @@ class RuleBuilder {
         case XmlNodeType.ELEMENT:
           {
             XmlElement element = node as XmlElement;
-            _parseSubElement(displayModel, element, initPendings);
+            _parseSubElement(displayModel, element);
             break;
           }
         case XmlNodeType.ATTRIBUTE:
@@ -266,15 +264,13 @@ class RuleBuilder {
     }
   }
 
-  void _parseSubElement(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
+  void _parseSubElement(DisplayModel displayModel, XmlElement rootElement) {
     String qName = rootElement.name.toString();
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder =
-          RuleBuilder(symbolFinder, initPendings, ++level);
-      ruleBuilder.parse(displayModel, rootElement, initPendings);
+      RuleBuilder ruleBuilder = RuleBuilder(symbolFinder, ++level);
+      ruleBuilder.parse(displayModel, rootElement);
       ruleBuilderStack.add(ruleBuilder);
       maxLevel = max(level, ruleBuilder.maxLevel);
 //      Rule rule = new RuleBuilder(qName, pullParser, this.ruleStack).build();
@@ -286,7 +282,7 @@ class RuleBuilder {
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       Area area = new Area(qName, level);
-      area.parse(displayModel, rootElement, initPendings);
+      area.parse(displayModel, rootElement);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
         maxLevel = max(maxLevel, level);
@@ -294,7 +290,7 @@ class RuleBuilder {
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       Caption caption = new Caption(symbolFinder);
-      caption.parse(displayModel, rootElement, initPendings);
+      caption.parse(displayModel, rootElement);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
       }
@@ -304,7 +300,7 @@ class RuleBuilder {
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderCircle circle = new RenderCircle(level);
-      circle.parse(displayModel, rootElement, initPendings);
+      circle.parse(displayModel, rootElement);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
         maxLevel = max(maxLevel, level);
@@ -338,7 +334,7 @@ class RuleBuilder {
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       Line line = new Line(qName, level, null);
-      line.parse(displayModel, rootElement, initPendings);
+      line.parse(displayModel, rootElement);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
         maxLevel = max(maxLevel, level);
@@ -346,7 +342,7 @@ class RuleBuilder {
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       LineSymbol lineSymbol = new LineSymbol(null);
-      lineSymbol.parse(displayModel, rootElement, initPendings);
+      lineSymbol.parse(displayModel, rootElement);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
       }
@@ -370,7 +366,7 @@ class RuleBuilder {
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       PathText pathText = new PathText();
-      pathText.parse(displayModel, rootElement, initPendings);
+      pathText.parse(displayModel, rootElement);
       if (isVisible(pathText)) {
         this.addRenderingInstruction(pathText);
       }
@@ -384,7 +380,7 @@ class RuleBuilder {
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderSymbol symbol = new RenderSymbol();
-      symbol.parse(displayModel, rootElement, initPendings);
+      symbol.parse(displayModel, rootElement);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);
       }
@@ -485,6 +481,11 @@ class RuleBuilder {
   void addRenderingInstruction(RenderInstruction renderInstruction) {
     this.renderInstructions.add(renderInstruction);
   }
+
+  @override
+  String toString() {
+    return 'RuleBuilder{zoomMax: $zoomMax, zoomMin: $zoomMin, element: $element, keys: $keys, renderInstructions: $renderInstructions, values: $values}';
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -503,25 +504,19 @@ class SymbolFinder {
 
   final Map<String, RenderSymbol> _symbols = Map();
 
-  final List<RenderInstruction> initPendings;
-
-  SymbolFinder(this.parentSymbolFinder, this.initPendings);
+  SymbolFinder(this.parentSymbolFinder);
 
   void add(String symbolId, RenderSymbol renderSymbol) {
     assert(!_symbols.containsKey(symbolId));
     _symbols[symbolId] = renderSymbol;
   }
 
-  Future<RenderSymbol?> find(String symbolId, SymbolCache? symbolCache) async {
+  RenderSymbol? find(String symbolId) {
     RenderSymbol? result = _symbols[symbolId];
     if (result != null) {
-      if (initPendings.contains(result)) {
-        await result.initResources(symbolCache);
-        initPendings.remove(result);
-      }
       return result;
     }
     if (parentSymbolFinder == null) return null;
-    return parentSymbolFinder!.find(symbolId, symbolCache);
+    return parentSymbolFinder!.find(symbolId);
   }
 }

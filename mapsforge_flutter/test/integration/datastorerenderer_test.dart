@@ -4,11 +4,9 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
 
@@ -38,8 +36,7 @@ void main() {
         MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -50,10 +47,9 @@ void main() {
           TestAssetBundle().correctFilename("monaco.map"), 0, "en");
       Tile tile = new Tile(x, y, zoomlevel, l);
       print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false,
-          displayModel.getUserScaleFactor(), displayModel.tileSize);
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme, symbolCache, false);
+      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(mapDataStore, renderTheme, symbolCache, false);
 
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
@@ -114,8 +110,7 @@ void main() {
     ];
 
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
-    RenderThemeBuilder renderThemeBuilder =
-        RenderThemeBuilder();
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
       String content = await TestAssetBundle().loadString("rendertheme.xml");
@@ -125,13 +120,12 @@ void main() {
       Datastore mapDataStore = await MapFile.from(
           TestAssetBundle().correctFilename("monaco.map"), 0, "en");
 
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(
-          mapDataStore, renderTheme,  symbolCache, false);
+      MapDataStoreRenderer _dataStoreRenderer =
+          MapDataStoreRenderer(mapDataStore, renderTheme, symbolCache, false);
       List imgs = [];
       for (Tile tile in tilesToLoad) {
         print("Calculating tile ${tile.toString()}");
-        Job mapGeneratorJob = new Job(tile, false,
-            displayModel.getUserScaleFactor(), displayModel.tileSize);
+        Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
         JobResult jobResult =
             (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
         expect(jobResult.bitmap, isNotNull);

@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/core.dart';
+
 import '../graphics/mapcanvas.dart';
 import '../graphics/display.dart';
 import '../graphics/matrix.dart';
@@ -17,10 +19,14 @@ import '../graphics/filter.dart';
 /// priority. If there is not enough space on the map, elements with lower priority should then not be
 /// drawn.
 abstract class MapElementContainer implements Comparable<MapElementContainer> {
+  /// The space the item requires around the central point [xy]
   Rectangle? boundary;
   Rectangle? boundaryAbsolute;
   final Display display;
   final int priority;
+
+  /// The central pivot point which is the geographic point for the entity translated
+  /// into absolute map pixels
   final Mappoint xy;
 
   MapElementContainer(this.xy, this.display, this.priority);
@@ -48,7 +54,8 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
    * Drawing method: element will draw itself on canvas shifted by origin point of canvas and
    * using the matrix if rotation is required. Additionally a color filter can be applied.
    */
-  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter);
+  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
+      Filter filter, SymbolCache symbolCache);
 
   /// Gets the pixel absolute boundary for this element.
   ///

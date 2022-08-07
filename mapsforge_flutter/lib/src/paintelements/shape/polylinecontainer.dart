@@ -1,17 +1,17 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/shapecontainer.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
 import 'package:mapsforge_flutter/src/utils/reducehelper.dart';
 
-import '../datastore/way.dart';
-import '../model/mappoint.dart';
-import '../model/tag.dart';
-import '../model/tile.dart';
-import '../renderer/shapecontainer.dart';
-import '../utils/latlongutils.dart';
-import 'geometryutils.dart';
+import '../../datastore/way.dart';
+import '../../model/mappoint.dart';
+import '../../model/tag.dart';
+import '../../model/tile.dart';
+import '../../utils/latlongutils.dart';
+import '../../renderer/geometryutils.dart';
 
 /// A PolylineContainer encapsulates the way data retrieved from a map file.
 /// <p/>

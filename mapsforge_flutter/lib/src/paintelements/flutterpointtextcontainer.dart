@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
@@ -9,12 +10,11 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/mapelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
+import 'package:mapsforge_flutter/src/paintelements/pointtextcontainer.dart';
 
 import '../implementation/graphics/fluttercanvas.dart';
-import '../implementation/graphics/flutterpaint.dart';
 
 class FlutterPointTextContainer extends PointTextContainer {
   static final _log = new Logger('FlutterPointTextContainer');
@@ -137,7 +137,8 @@ class FlutterPointTextContainer extends PointTextContainer {
   dispose() {}
 
   @override
-  void draw(MapCanvas canvas, Mappoint origin, Matrix matrix, Filter filter) {
+  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
+      Filter filter, SymbolCache symbolCache) async {
     ui.Canvas? flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
 
     // the origin of the text is the base line, so we need to make adjustments

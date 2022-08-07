@@ -2,6 +2,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 
 import 'markercallback.dart';
@@ -83,7 +84,7 @@ abstract class BasicMarker<T> extends Marker<T> {
 /////////////////////////////////////////////////////////////////////////////
 
 /// The caption of a marker
-class MarkerCaption with TextMixin {
+class MarkerCaption with TextMixin, PaintMixin {
   /// The text to show.
   ///
   String text;
@@ -103,7 +104,7 @@ class MarkerCaption with TextMixin {
 
   int fillColor;
 
-  final double fontSize;
+  double fontSize;
 
   final int minZoomLevel;
 
@@ -126,7 +127,8 @@ class MarkerCaption with TextMixin {
         assert(text.length > 0);
 
   void initResources() {
-    initTextMixin();
+    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     setStrokeWidth(strokeWidth);
     setStrokeColorFromNumber(strokeColor);
     fontSize = (fontSize);
@@ -134,7 +136,8 @@ class MarkerCaption with TextMixin {
   }
 
   void dispose() {
-    mixinDispose();
+    disposeTextMixin();
+    disposePaintMixin();
   }
 
   void renderCaption(MarkerCallback markerCallback) {

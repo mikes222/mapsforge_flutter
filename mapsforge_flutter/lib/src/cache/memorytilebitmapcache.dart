@@ -13,7 +13,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
 
   final Storage<Tile, TileBitmap> storage =
       StatisticsStorage<Tile, TileBitmap>(onEvict: (key, item) {
-    item.decrementRefCount();
+    //item.decrementRefCount();
   });
   late LruCache<Tile, TileBitmap> _cache;
 
@@ -61,7 +61,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
 
   @override
   void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
-    tileBitmap.incrementRefCount();
+    //tileBitmap.incrementRefCount();
     // TileBitmap bitmap = _bitmaps.get(tile);
     // if (bitmap != null) {
     //   bitmap.decrementRefCount();

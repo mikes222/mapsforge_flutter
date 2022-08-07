@@ -23,8 +23,10 @@ dependencies:
 #      url: https://github.com/mikes222/dcache
 #    path: ../../github_ecache/
 
+  golden_toolkit: ^0.13.0
+
   # BSD License
-  http: ^0.13.4
+  http: ^0.13.5
 
   #image: ^3.2.0
 
@@ -52,7 +54,7 @@ dependencies:
 
   collection: ^1.16.0
 
-  execution_queue: ^1.2.0
+  execution_queue:  ^1.2.0
   #  path: ../../execution_queue.dart
 
 dev_dependencies:

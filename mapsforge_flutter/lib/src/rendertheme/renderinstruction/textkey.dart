@@ -3,6 +3,8 @@ import 'package:mapsforge_flutter/src/model/tag.dart';
 class TextKey {
   static final Map<String, TextKey> TEXT_KEYS = new Map();
 
+  final String key;
+
   static TextKey getInstance(String key) {
     assert(key.length > 0);
     TextKey? textKey = TEXT_KEYS[key];
@@ -12,8 +14,6 @@ class TextKey {
     }
     return textKey;
   }
-
-  final String key;
 
   const TextKey(this.key) : assert(key.length > 0);
 

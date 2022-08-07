@@ -4,8 +4,9 @@ import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -14,24 +15,19 @@ import '../rendercallback.dart';
 import '../rendercontext.dart';
 
 /// Represents a polyline on the map.
-class Line extends RenderInstruction with BitmapMixin, PaintMixin {
+class Line extends RenderInstruction with BitmapSrcMixin, PaintMixin {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
-  late double dy;
-  final Map<int, double> dyScaled = {};
   final int level;
   final String? relativePathPrefix;
   Scale scale = Scale.STROKE;
 
-  Line(String elementName, this.level, this.relativePathPrefix) : super() {
-    initPaintMixin();
+  Line(String elementName, this.level, this.relativePathPrefix);
 
-    dy = 0;
-  }
-
-  void parse(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
-    this.bitmapPercent = (100 * displayModel.getFontScaleFactor()).round();
+  void parse(DisplayModel displayModel, XmlElement rootElement) {
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
+    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
+    this.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -42,7 +38,7 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
       } else if (RenderInstruction.CAT == name) {
         this.category = value;
       } else if (RenderInstruction.DY == name) {
-        this.dy = double.parse(value) * displayModel.getScaleFactor();
+        this.setDy(double.parse(value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SCALE == name) {
         this.scale = scaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
@@ -64,23 +60,18 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
         this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
-        this.bitmapHeight =
-            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
+        this.setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        this.bitmapPercent = (XmlUtils.parseNonNegativeInteger(name, value) *
-                displayModel.getFontScaleFactor())
-            .round();
+        this.setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) *
+            displayModel.getFontScaleFactor().round());
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
-        this.bitmapWidth =
-            XmlUtils.parseNonNegativeInteger(name, value).toDouble();
+        this.setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw new Exception("element hinich");
       }
     });
-
-    if (bitmapSrc != null) initPendings.add(this);
   }
 
   static List<double> parseFloatArray(String name, String dashString) {
@@ -106,43 +97,30 @@ class Line extends RenderInstruction with BitmapMixin, PaintMixin {
       final RenderContext renderContext, PolylineContainer way) {
     MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
 
-    double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
-    dyScale ??= this.dy;
+    double dyScale = getDy(renderContext.job.tile.zoomLevel);
 
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
     renderCallback.renderWay(
-        renderContext, strokePaint, dyScale, this.level, way);
+        renderContext,
+        strokePaint,
+        dyScale,
+        this.level,
+        bitmapSrc,
+        getBitmapWidth(renderContext.job.tile.zoomLevel),
+        getBitmapHeight(renderContext.job.tile.zoomLevel),
+        way);
+
+    //       setStrokeBitmapShader(bitmap!);
   }
 
   @override
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
+  void prepareScale(int zoomLevel) {
     if (this.scale == Scale.NONE) {
       return;
     }
-    scaleMixinStrokeWidth(scaleFactor, zoomLevel);
-
-    this.dyScaled[zoomLevel] = this.dy * scaleFactor;
-  }
-
-  @override
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    // do nothing
-  }
-
-  @override
-  Future<Line> initResources(SymbolCache? symbolCache) async {
-    await initBitmap(symbolCache);
-    if (bitmap != null) {
-      setStrokeBitmapShader(bitmap!);
-    }
-    return this;
-  }
-
-  @override
-  void dispose() {
-    mixinDispose();
-    super.dispose();
+    prepareScalePaintMixin(zoomLevel);
+    prepareScaleBitmapSrcMixin(zoomLevel);
   }
 }

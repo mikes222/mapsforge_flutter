@@ -6,7 +6,6 @@ import 'package:ecache/ecache.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/exceptions/symbolnotfoundexception.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
@@ -18,8 +17,6 @@ import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 /// extension starting from the assets-path. eg. "patterns/arrow.png"
 ///
 class FileSymbolCache extends SymbolCache {
-  static final _log = new Logger('FileSymbolCache');
-
   static final String PREFIX_JAR = "jar:";
 
   static final String PREFIX_JAR_V1 =
@@ -32,7 +29,7 @@ class FileSymbolCache extends SymbolCache {
   LruCache<String, ResourceBitmap> _cache =
       new LruCache<String, ResourceBitmap>(
     storage: StatisticsStorage<String, ResourceBitmap>(onEvict: (key, item) {
-      item.decrementRefCount();
+      item.dispose();
     }),
     capacity: 500,
   );
@@ -53,31 +50,29 @@ class FileSymbolCache extends SymbolCache {
   }
 
   @override
-  Future<ResourceBitmap?> getSymbol(
-      String? src, int width, int height, int? percent) async {
+  Future<ResourceBitmap?> getSymbol(String? src, int width, int height) async {
     if (src == null || src.length == 0) {
 // no image source defined
       return null;
     }
-    assert(percent == null || percent > 0);
-    String key = "$src-$width-$height-$percent";
+    String key = "$src-$width-$height";
     ResourceBitmap? bitmap = _cache.get(key);
     if (bitmap != null) return bitmap;
 
-    bitmap = await _createSymbol(src, width, height, percent);
-    bitmap.incrementRefCount();
+    bitmap = await _createSymbol(src, width, height);
+    //bitmap.incrementRefCount();
     _cache.set(key, bitmap);
     return bitmap;
   }
 
   Future<ResourceBitmap> _createSymbol(
-      String src, int width, int height, int? percent) async {
+      String src, int width, int height) async {
 // we need to hash with the width/height included as the same symbol could be required
 // in a different size and must be cached with a size-specific hash
     if (src.toLowerCase().endsWith(".svg")) {
-      return _createSvgSymbol(src, width, height, percent);
+      return _createSvgSymbol(src, width, height);
     } else if (src.toLowerCase().endsWith(".png")) {
-      return _createPngSymbol(src, width, height, percent);
+      return _createPngSymbol(src, width, height);
     } else {
       throw Exception("Unknown resource fileformat $src");
     }
@@ -114,19 +109,11 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<FlutterResourceBitmap> _createPngSymbol(
-      String src, int width, int height, int? percent) async {
+      String src, int width, int height) async {
     ByteData? content = await fetchResource(src);
     if (content == null) throw SymbolNotFoundException(src);
     Uint8List bytes = content.buffer.asUint8List();
     if (width != 0 && height != 0) {
-//        imag.Image image = imag.decodeImage(content.buffer.asUint8List());
-//        image = imag.copyResize(image, width: width, height: height);
-
-//        var codec = await ui.instantiateImageCodec(imag.encodePng(image));
-      if (percent != null) {
-        width = (width * percent.toDouble() / 100.0).round();
-        height = (height * percent.toDouble() / 100.0).round();
-      }
       var codec = await ui.instantiateImageCodec(bytes,
           targetHeight: height, targetWidth: width);
       // add additional checking for number of frames etc here
@@ -141,18 +128,6 @@ class FileSymbolCache extends SymbolCache {
       var frame = await codec.getNextFrame();
       ui.Image img = frame.image;
 
-      if (percent != null) {
-        width = img.width;
-        height = img.height;
-        width = (width * percent.toDouble() / 100.0).round();
-        height = (height * percent.toDouble() / 100.0).round();
-
-        var codec = await ui.instantiateImageCodec(bytes,
-            targetHeight: height, targetWidth: width);
-        var frame = await codec.getNextFrame();
-        img = frame.image;
-      }
-
       FlutterResourceBitmap result = FlutterResourceBitmap(img, src);
       return result;
     }
@@ -162,25 +137,12 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<FlutterResourceBitmap> _createSvgSymbol(
-      String src, int width, int height, int? percent) async {
+      String src, int width, int height) async {
     ByteData? content = await fetchResource(src);
     if (content == null) throw SymbolNotFoundException(src);
     DrawableRoot svgRoot =
         await svg.fromSvgBytes(content.buffer.asUint8List(), src);
 
-    if (percent != null) {
-      width = ((width == 0 ? SymbolCache.DEFAULT_SIZE.toDouble() : width) *
-              percent.toDouble() /
-              100.0)
-          .round();
-      height = ((height == 0 ? SymbolCache.DEFAULT_SIZE.toDouble() : height) *
-              percent.toDouble() /
-              100.0)
-          .round();
-    } else {
-      if (width == 0) width = SymbolCache.DEFAULT_SIZE;
-      if (height == 0) height = SymbolCache.DEFAULT_SIZE;
-    }
 // If you only want the final Picture output, just use
     final ui.Picture picture =
         svgRoot.toPicture(size: ui.Size(width.toDouble(), height.toDouble()));

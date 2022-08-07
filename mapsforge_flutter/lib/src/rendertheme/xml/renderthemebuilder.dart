@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -30,8 +28,12 @@ class RenderThemeBuilder {
   static final String XMLNS_XSI = "xmlns:xsi";
   static final String XSI_SCHEMALOCATION = "xsi:schemaLocation";
 
-  late double baseStrokeWidth;
-  late double baseTextSize;
+  /// The rendertheme can set the base stroke with factor
+  double baseStrokeWidth = 1;
+
+  /// The rendertheme can set the base text size factor
+  double baseTextSize = 1;
+
   bool? hasBackgroundOutside;
   int? mapBackground;
   int? mapBackgroundOutside;
@@ -39,13 +41,8 @@ class RenderThemeBuilder {
   final List<RuleBuilder> ruleBuilderStack = [];
   int _level = 0;
   int maxLevel = 0;
-  List<RenderInstruction> initPendings = [];
 
-  RenderThemeBuilder() {
-    this.baseStrokeWidth = 1;
-    this.baseTextSize = 1;
-//    this.mapBackground = graphicFactory.createColor(Color.WHITE);
-  }
+  RenderThemeBuilder();
 
   /// Builds and returns a rendertheme by loading a rendertheme-file. This
   /// is a convienience-function. If desired we can also implement some caching
@@ -65,7 +62,7 @@ class RenderThemeBuilder {
    */
   RenderTheme build() {
     assert(ruleBuilderStack.length > 0);
-    RenderTheme renderTheme = RenderTheme(this, initPendings);
+    RenderTheme renderTheme = RenderTheme(this);
     ruleBuilderStack.forEach((ruleBuilder) {
       Rule rule = ruleBuilder.build();
       renderTheme.addRule(rule);
@@ -96,7 +93,7 @@ class RenderThemeBuilder {
             if (element.name.toString() != "rendertheme")
               throw Exception("Invalid root node ${element.name.toString()}");
             foundRendertheme = true;
-            _parseRendertheme(displayModel, element, initPendings);
+            _parseRendertheme(displayModel, element);
             break;
           }
         case XmlNodeType.ATTRIBUTE:
@@ -123,8 +120,7 @@ class RenderThemeBuilder {
     //_log.info("Found ${initPendings.length} items for lazy initialization");
   }
 
-  void _parseRendertheme(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
+  void _parseRendertheme(DisplayModel displayModel, XmlElement rootElement) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -170,8 +166,8 @@ class RenderThemeBuilder {
             XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(null, initPendings, _level);
-              ruleBuilder.parse(displayModel, element, initPendings);
+              RuleBuilder ruleBuilder = RuleBuilder(null, _level);
+              ruleBuilder.parse(displayModel, element);
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;
               ++_level;

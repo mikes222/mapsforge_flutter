@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
-import 'package:mapsforge_flutter/src/renderer/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -22,18 +22,17 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   RenderCircle(this.level)
       : renderRadiusScaled = new Map(),
         super() {
-    initPaintMixin();
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
     this.setFillColor(Colors.transparent);
     this.setStrokeColor(Colors.transparent);
   }
 
   @override
   void dispose() {
-    mixinDispose();
+    disposePaintMixin();
   }
 
-  void parse(DisplayModel displayModel, XmlElement rootElement,
-      List<RenderInstruction> initPendings) {
+  void parse(DisplayModel displayModel, XmlElement rootElement) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
@@ -86,20 +85,11 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   }
 
   @override
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel) {
+  void prepareScale(int zoomLevel) {
     if (this.scaleRadius) {
+      double scaleFactor = 1;
       this.renderRadiusScaled[zoomLevel] = this.radius! * scaleFactor;
-      scaleMixinStrokeWidth(scaleFactor, zoomLevel);
+      prepareScalePaintMixin(zoomLevel);
     }
-  }
-
-  @override
-  void scaleTextSize(double scaleFactor, int zoomLevel) {
-    // do nothing
-  }
-
-  @override
-  Future<RenderCircle> initResources(SymbolCache? symbolCache) {
-    return Future.value(this);
   }
 }

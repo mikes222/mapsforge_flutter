@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 
 import '../../datastore/pointofinterest.dart';
-import '../../renderer/polylinecontainer.dart';
+import '../../paintelements/shape/polylinecontainer.dart';
 import '../rendercallback.dart';
 import '../rendercontext.dart';
 
@@ -45,14 +45,6 @@ abstract class RenderInstruction {
 
   RenderInstruction();
 
-  ///
-  /// disposes all resources. The class is not usable afterwards.
-  ///
-  void dispose();
-
-  Future<RenderInstruction> initResources(
-      SymbolCache? symbolCache);
-
   String? getCategory() {
     return this.category;
   }
@@ -78,29 +70,8 @@ abstract class RenderInstruction {
     return Scale.STROKE;
   }
 
-  /**
-   * Scales the stroke width of this RenderInstruction by the given factor.
-   *
-   * @param scaleFactor the factor by which the stroke width should be scaled.
-   */
-  void scaleStrokeWidth(double scaleFactor, int zoomLevel);
-
-  /// Scales the text size of this RenderInstruction by the given factor.
-  ///
-  /// @param scaleFactor the factor by which the text size should be scaled. This property comes from [DisplayModel].userScaleFactor
-  void scaleTextSize(double scaleFactor, int zoomLevel);
-
-//  int getMaxLevel() {
-//    int result = level;
-//    ruleBuilderStack.forEach((ruleBuilder) {
-//      if (result < ruleBuilder.getMaxLevel()) result = ruleBuilder.getMaxLevel();
-//    });
-//    renderInstructions.forEach((renderInstruction) {
-//      if (result < renderInstruction.getMaxLevel()) result = renderInstruction.getMaxLevel();
-//    });
-//    return result;
-//  }
-
+  /// Scales the stroke width of this RenderInstruction by the given factor.
+  void prepareScale(int zoomLevel);
 }
 
 /////////////////////////////////////////////////////////////////////////////
