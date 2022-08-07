@@ -99,9 +99,9 @@ class MarkerCaption with TextMixin {
 
   final double strokeWidth;
 
-  final int strokeColor;
+  int strokeColor;
 
-  final int fillColor;
+  int fillColor;
 
   final double fontSize;
 

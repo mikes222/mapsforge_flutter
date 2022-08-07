@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mapsforge_example/debug/debug-contextmenubuilder.dart';
-import 'package:mapsforge_example/debug/debug-datastore.dart';
 import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
 import 'package:mapsforge_example/markerdemo-datastore.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -103,8 +101,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
         await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    final JobRenderer jobRenderer =
-        MapDataStoreRenderer(widget.mapFile!, renderTheme, symbolCache, true);
+    final JobRenderer jobRenderer = MapDataStoreRenderer(
+        widget.mapFile!, renderTheme, symbolCache, true,
+        useIsolate: false);
 
     /// and now it is similar to online rendering.
 

@@ -31,6 +31,7 @@ import 'package:mapsforge_flutter/src/renderer/waydecorator.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
+import 'package:mapsforge_flutter/src/utils/isolatemixin.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -40,7 +41,9 @@ import 'circlecontainer.dart';
 ///
 /// This renderer renders the bitmap for the tiles by using the given [Datastore].
 ///
-class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
+class MapDataStoreRenderer extends JobRenderer
+    with IsolateMixin<IsolateMapInitParam>
+    implements RenderCallback {
   static final _log = new Logger('MapDataStoreRenderer');
   static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
@@ -56,30 +59,16 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
 
   final TileBasedLabelStore labelStore;
 
-  SendPort? _sendPort;
-
-  Isolate? _isolate;
-
-  PublishSubject<DatastoreReadResult?> _subject =
-      PublishSubject<DatastoreReadResult?>();
+  final bool useIsolate;
 
   MapDataStoreRenderer(
-    this.datastore,
-    this.renderTheme,
-    this.symbolCache,
-    this.renderLabels,
-  ) : labelStore = TileBasedLabelStore(100) {
+      this.datastore, this.renderTheme, this.symbolCache, this.renderLabels,
+      {this.useIsolate = false})
+      : labelStore = TileBasedLabelStore(100) {
     if (renderLabels) {
       this.tileDependencies = TileDependencies();
     } else {
       this.tileDependencies = null;
-    }
-  }
-
-  void dispose() {
-    if (_isolate != null) {
-      _isolate!.kill(priority: Isolate.immediate);
-      _isolate = null;
     }
   }
 
@@ -89,10 +78,9 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    bool showTiming = false;
+    bool showTiming = true;
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    bool useIsolate = false;
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext = RenderContext(job, renderTheme, symbolCache);
@@ -106,14 +94,16 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
       if (showTiming)
         _log.info("Before starting the isolate to read map data from file");
       // read the mapdata in an isolate which is flutter's way to create multithreaded processes
-      await _startIsolateJob();
-      _sendPort!.send(IsolateParam(job.tile));
-      mapReadResult = await _subject.stream.first;
+      await startIsolateJob(IsolateMapInitParam(datastore), entryPoint);
+      IsolateMapReplyParams params =
+          await sendToIsolate(IsolateMapRequestParam(job.tile));
+      mapReadResult = params.result;
     } else {
       //if (showTiming) _log.info("Before reading map data from file");
       // read the mapdata directly in this thread
       mapDataStore = this.datastore;
-      mapReadResult = await readMapDataInIsolate(IsolateParam(job.tile));
+      mapReadResult =
+          await readMapDataInIsolate(IsolateMapRequestParam(job.tile));
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
@@ -575,70 +565,42 @@ class MapDataStoreRenderer extends JobRenderer implements RenderCallback {
   String getRenderKey() {
     return "${renderTheme.hashCode}";
   }
-
-  ///
-  /// Isolates currently not suitable for our purpose. Most UI canvas calls are not accessible from isolates
-  /// so we cannot produce the bitmap.
-  Future<void> _startIsolateJob() async {
-    if (_sendPort != null) return;
-    ReceivePort receivePort = new ReceivePort();
-    _isolate = await Isolate.spawn(entryPoint, receivePort.sendPort);
-    PublishSubject<SendPort?> subject = PublishSubject<SendPort?>();
-    // let the listener run in background
-    await _listenToIsolate(receivePort, subject);
-    // wait for the _sendPort
-    await subject.stream.first;
-    await subject.close();
-
-    _sendPort!.send(datastore);
-  }
-
-  Future<void> _listenToIsolate(
-      ReceivePort receivePort, PublishSubject<SendPort?> subject) async {
-    await for (var data in receivePort) {
-      //tileCache.addTileBitmap(job.tile, tileBitmap);
-      //print("received from isolate: ${data.toString()}");
-      if (data is SendPort) {
-        // Receive the SendPort from the Isolate
-        _sendPort = data;
-        // inform waiting method that we have a stable connection now
-        subject.add(_sendPort);
-      } else if (data is DatastoreReadResult) {
-        DatastoreReadResult result = data;
-        _subject.add(result);
-      } else if (data == null) {
-        _subject.add(null);
-      }
-    }
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 Datastore? mapDataStore;
 
-/////////////////////////////////////////////////////////////////////////////
-
 /// see https://github.com/flutter/flutter/issues/13937
 // Entry point for your Isolate
-entryPoint(SendPort sendPort) async {
+Future<void> entryPoint(IsolateMapInitParam isolateInitParams) async {
   // Open the ReceivePort to listen for incoming messages
   var receivePort = new ReceivePort();
 
+  mapDataStore = isolateInitParams.datastore;
+  //_init(isolateInitParams);
+
   // Send message to other Isolate and inform it about this receiver
-  sendPort.send(receivePort.sendPort);
+  isolateInitParams.sendPort!.send(receivePort.sendPort);
 
   // Listen for messages
-  await for (var data in receivePort) {
-    //print("hello, we received $isolateParam in the isolate");
-    if (data is Datastore) {
-      mapDataStore = data;
-      print("Stored datastore in isolate");
-    } else if (data is IsolateParam) {
+  await for (IsolateMapRequestParam data in receivePort) {
+    try {
       DatastoreReadResult? result = await readMapDataInIsolate(data);
-      sendPort.send(result);
+      isolateInitParams.sendPort!.send(IsolateMapReplyParams(result: result));
+    } catch (error, stacktrace) {
+      isolateInitParams.sendPort!
+          .send(IsolateMapReplyParams(error: error, stacktrace: stacktrace));
     }
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class IsolateMapInitParam extends IsolateInitParams {
+  final Datastore datastore;
+
+  IsolateMapInitParam(this.datastore);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -646,10 +608,19 @@ entryPoint(SendPort sendPort) async {
 ///
 /// The parameters needed to execute the reading of the mapdata.
 ///
-class IsolateParam {
+class IsolateMapRequestParam extends IsolateRequestParams {
   final Tile tile;
 
-  const IsolateParam(this.tile);
+  const IsolateMapRequestParam(this.tile);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class IsolateMapReplyParams extends IsolateReplyParams {
+  final DatastoreReadResult? result;
+
+  const IsolateMapReplyParams({this.result, error, stacktrace})
+      : super(error: error, stacktrace: stacktrace);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -659,7 +630,7 @@ class IsolateParam {
 /// via [entryPoint] the execution is done in an isolate.
 ///
 Future<DatastoreReadResult?> readMapDataInIsolate(
-    IsolateParam isolateParam) async {
+    IsolateMapRequestParam isolateParam) async {
   DatastoreReadResult? mapReadResult =
       await mapDataStore!.readMapDataSingle(isolateParam.tile);
   return mapReadResult;

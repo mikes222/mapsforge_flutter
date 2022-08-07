@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -7,42 +8,35 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
+import 'package:mapsforge_flutter/src/utils/isolatemixin.dart';
+//import 'package:image/image.dart' as IMG;
 
 ///
 /// A file cache for the bitmaps of a [Tile]. The implementation can distinguish different sets of [Tile]s depending on the [renderkey].
 /// This can be used to cache for example tiles used by day as well as tiles used by night.
 ///
-class FileTileBitmapCache extends TileBitmapCache {
-  static final _log = new Logger('FileTileBitmapCache');
-
-  ///
-  /// a unique key for the rendered bitmaps. The key should be dependent of the renderingTheme. In other words if the bitmaps should be
-  /// rendered differently (day/night for example or different mapfiles) there should be different rendering keys
-  ///
-  String renderkey;
+/// Note: Currently not working since dart.ui package is not available in
+/// secondary isolates.
+class IsolateFileTileBitmapCache extends FileTileBitmapCache
+    with IsolateMixin<IsolateInitParams> {
+  static final _log = new Logger('IsolateFileTileBitmapCache');
 
   late Set<String> _files;
 
   late String _dir;
 
-  final int tileSize;
+  static final Map<String, IsolateFileTileBitmapCache> _instances = Map();
 
-  /// true if the images should be stored in PNG format, false for raw format which is faster but consumes more space.
-  /// PNG: 470ms for 16 files, RAW: 400ms for the same 16 files
-  final bool png;
-
-  static final Map<String, FileTileBitmapCache> _instances = Map();
-
-  static Future<FileTileBitmapCache> create(String renderkey,
+  static Future<IsolateFileTileBitmapCache> create(String renderkey,
       [png = true, tileSize = 256]) async {
-    FileTileBitmapCache? result = _instances[renderkey];
+    IsolateFileTileBitmapCache? result = _instances[renderkey];
     if (result != null) {
       _log.info(
           "Reusing cache for renderkey $renderkey with ${result._files.length} items in filecache");
       return result;
     }
 
-    result = FileTileBitmapCache(renderkey, png, tileSize);
+    result = IsolateFileTileBitmapCache(renderkey, png, tileSize);
     _instances[renderkey] = result;
     await result._init();
     return result;
@@ -50,7 +44,7 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   /// Purges all cached files from all caches regardless if the cache is used or not
   static Future<void> purgeAllCaches() async {
-    for (FileTileBitmapCache cache in _instances.values) {
+    for (IsolateFileTileBitmapCache cache in _instances.values) {
       await cache.purgeAll();
     }
     _instances.clear();
@@ -71,8 +65,9 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
   }
 
-  FileTileBitmapCache(this.renderkey, this.png, this.tileSize)
-      : assert(!renderkey.contains("/"));
+  IsolateFileTileBitmapCache(String renderkey, bool png, int tileSize)
+      : assert(!renderkey.contains("/")),
+        super(renderkey, png, tileSize);
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
@@ -117,26 +112,12 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   Future<Image> _readImageFromFile(String filename) async {
     int timestamp = DateTime.now().millisecondsSinceEpoch;
-    File file = File(filename);
-    Uint8List content = await file.readAsBytes();
-    Codec codec;
-    if (png) {
-      codec = await instantiateImageCodec(content.buffer.asUint8List());
-    } else {
-      final ImmutableBuffer buffer =
-          await ImmutableBuffer.fromUint8List(content);
-      ImageDescriptor descriptor = ImageDescriptor.raw(buffer,
-          width: tileSize, height: tileSize, pixelFormat: PixelFormat.rgba8888);
-      buffer.dispose();
-      codec = await descriptor.instantiateCodec();
-    }
-
-    // add additional checking for number of frames etc here
-    FrameInfo frame = await codec.getNextFrame();
-    Image image = frame.image;
+    await startIsolateJob(IsolateInitParams(), entryPoint);
+    IsolateFileReplyParams result =
+        await sendToIsolate(IsolateFileRequestParams(filename, png, tileSize));
     int diff = DateTime.now().millisecondsSinceEpoch - timestamp;
-    if (diff > 100) _log.info("Read image from file took $diff ms");
-    return image;
+    _log.info("Read image from file took $diff ms");
+    return result.image!;
   }
 
   @override
@@ -154,7 +135,8 @@ class FileTileBitmapCache extends TileBitmapCache {
       return tileBitmap;
     } catch (e, stacktrace) {
       _log.warning(
-          "Error while reading image from file, deleting file $filename");
+          "Error while reading image from file, deleting file $filename, $e",
+          stacktrace);
       _files.remove(filename);
       try {
         await file.delete();
@@ -184,12 +166,6 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  void dispose() {
-    // the instance is still available and may be used by another map.
-    //_files.clear();
-  }
-
-  @override
   Future<void> purgeByBoundary(BoundingBox boundingBox) async {
     // todo find a method to remove only affected files. For now we clear the whole cache
     int count = 0;
@@ -205,4 +181,69 @@ class FileTileBitmapCache extends TileBitmapCache {
     _log.info("purged $count files from cache $renderkey");
     _files.clear();
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+Future<void> entryPoint(IsolateInitParams isolateInitParams) async {
+  // Open the ReceivePort to listen for incoming messages
+  var receivePort = new ReceivePort();
+
+  //_init(isolateInitParams);
+
+  // Send message to other Isolate and inform it about this receiver
+  isolateInitParams.sendPort!.send(receivePort.sendPort);
+
+  // Listen for messages
+  await for (IsolateFileRequestParams data in receivePort) {
+    try {
+      Image image = await perform(data.filename, data.png, data.tileSize);
+      isolateInitParams.sendPort!.send(IsolateFileReplyParams(image: image));
+    } catch (error, stacktrace) {
+      isolateInitParams.sendPort!
+          .send(IsolateFileReplyParams(error: error, stacktrace: stacktrace));
+    }
+  }
+}
+
+Future<Image> perform(String filename, bool png, int tileSize) async {
+  File file = File(filename);
+  Uint8List content = await file.readAsBytes();
+  Codec codec;
+  if (png) {
+    //IMG.Image? image = IMG.decodeImage(content);
+    codec = await instantiateImageCodec(content.buffer.asUint8List());
+  } else {
+    final ImmutableBuffer buffer = await ImmutableBuffer.fromUint8List(content);
+    ImageDescriptor descriptor = ImageDescriptor.raw(buffer,
+        width: tileSize, height: tileSize, pixelFormat: PixelFormat.rgba8888);
+    buffer.dispose();
+    codec = await descriptor.instantiateCodec();
+  }
+
+  // add additional checking for number of frames etc here
+  FrameInfo frame = await codec.getNextFrame();
+  Image image = frame.image;
+  return image;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class IsolateFileRequestParams extends IsolateRequestParams {
+  final String filename;
+
+  final bool png;
+
+  final int tileSize;
+
+  const IsolateFileRequestParams(this.filename, this.png, this.tileSize);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class IsolateFileReplyParams extends IsolateReplyParams {
+  final Image? image;
+
+  const IsolateFileReplyParams({this.image, error, stacktrace})
+      : super(error: error, stacktrace: stacktrace);
 }

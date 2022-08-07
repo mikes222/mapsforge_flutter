@@ -22,7 +22,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.4
+  cupertino_icons: ^1.0.5
 
  # BSD License
   intl: ^0.17.0
@@ -36,9 +36,9 @@ dependencies:
   flutter_archive: ^5.0.0
 
   # Apache 2.0 License
-  archive: ^3.3.0
+  archive: ^3.3.1
 
-  rxdart: ^0.27.3
+  rxdart: ^0.27.5
 
 dev_dependencies:
   flutter_test:
