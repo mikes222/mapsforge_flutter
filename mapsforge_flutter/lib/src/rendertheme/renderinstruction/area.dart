@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_area_container.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'renderinstruction.dart';
 
@@ -63,14 +63,12 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
     // do nothing
   }
 
   @override
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(final RenderContext renderContext, PolylineContainer way) {
 //    synchronized(this) {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
@@ -78,20 +76,16 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    renderCallback.renderArea(
-        renderContext,
-        getFillPaint(renderContext.job.tile.zoomLevel),
-        getStrokePaint(renderContext.job.tile.zoomLevel),
-        this.level,
-        bitmapSrc,
-        getBitmapWidth(renderContext.job.tile.zoomLevel),
-        getBitmapHeight(renderContext.job.tile.zoomLevel),
-        way);
-
-    // if (isFillTransparent()) setFillColor(Colors.black);
-    // setFillBitmapShader(bitmap!);
-
-//}
+    renderContext.addToCurrentDrawingLayer(
+        level,
+        ShapePaintAreaContainer(
+            way,
+            getFillPaint(renderContext.job.tile.zoomLevel),
+            getStrokePaint(renderContext.job.tile.zoomLevel),
+            bitmapSrc,
+            getBitmapWidth(renderContext.job.tile.zoomLevel),
+            getBitmapHeight(renderContext.job.tile.zoomLevel),
+            getDy(renderContext.job.tile.zoomLevel)));
   }
 
   @override

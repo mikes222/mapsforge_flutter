@@ -25,10 +25,10 @@ class PaintMixin {
   static final double STROKE_INCREASE = 1.5;
 
   /// stroke will be drawn thicker at or above this zoomlevel
-  late int strokeMinZoomLevel;
+  late int _strokeMinZoomLevel;
 
   void initPaintMixin(int strokeMinZoomLevel) {
-    this.strokeMinZoomLevel = strokeMinZoomLevel;
+    this._strokeMinZoomLevel = strokeMinZoomLevel;
     this._stroke = GraphicFactory().createPaint();
     this._stroke.setColor(Colors.black);
     this._stroke.setStyle(Style.STROKE);
@@ -56,11 +56,13 @@ class PaintMixin {
 
   void prepareScalePaintMixin(int zoomLevel) {
     if (this._strokes[zoomLevel] != null) return;
-    if (zoomLevel >= strokeMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - strokeMinZoomLevel + 1;
+    if (zoomLevel >= _strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
       double scaleFactor = pow(STROKE_INCREASE, zoomLevelDiff) as double;
       MapPaint paint = GraphicFactory().createPaintFrom(this._stroke);
       paint.setStrokeWidth(paint.getStrokeWidth() * scaleFactor);
+      // print(
+      //     "setScrokeWitha for ${paint.getStrokeWidth()} $scaleFactor $zoomLevelDiff $zoomLevel ${_stroke.getStrokeWidth()}");
       if (_strokeDasharray != null) {
         List<double> strokeDasharrayScaled = this._strokeDasharray!.map((dash) {
           return dash * scaleFactor;
@@ -130,9 +132,10 @@ class PaintMixin {
 
   void setStrokeWidth(double strokeWidth) {
     _stroke.setStrokeWidth(strokeWidth);
-    _strokes.forEach((key, value) {
-      value.setStrokeWidth(strokeWidth);
-    });
+    _strokes.clear();
+    // _strokes.forEach((key, value) {
+    //   value.setStrokeWidth(strokeWidth);
+    // });
   }
 
   void setFillBitmapShader(Bitmap bitmap) {

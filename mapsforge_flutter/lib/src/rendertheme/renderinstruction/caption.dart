@@ -2,11 +2,13 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/paintelements/flutterpointtextcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
@@ -15,7 +17,6 @@ import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 
 /**
@@ -92,8 +93,7 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return;
@@ -106,24 +106,23 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
     }
 
     _init(renderContext.job.tile.zoomLevel);
-    renderCallback.renderPointOfInterestCaption(
-        renderContext,
-        this.display,
-        this.priority,
+    Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
+    //_log.info("poiCaption $caption at $poiPosition, postion $position, offset: $horizontalOffset, $verticalOffset ");
+    renderContext.labels.add(FlutterPointTextContainer(
+        poiPosition.offset(_horizontalOffset,
+            _verticalOffset + getDy(renderContext.job.tile.zoomLevel)),
+        display,
+        priority,
         caption,
-        _horizontalOffset,
-        _verticalOffset + getDy(renderContext.job.tile.zoomLevel),
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
-        getTextPaint(renderContext.job.tile.zoomLevel),
         position,
-        this.maxTextWidth,
-        poi);
+        maxTextWidth,
+        getTextPaint(renderContext.job.tile.zoomLevel)));
   }
 
   @override
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
       return;
     }
@@ -137,19 +136,23 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
       return;
 
     _init(renderContext.job.tile.zoomLevel);
-    renderCallback.renderAreaCaption(
-        renderContext,
-        this.display,
-        this.priority,
+
+    Mappoint centerPoint = way
+        .getCenterAbsolute(renderContext.projection)
+        .offset(_horizontalOffset,
+            _verticalOffset + getDy(renderContext.job.tile.zoomLevel));
+    //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
+    PointTextContainer label = FlutterPointTextContainer(
+        centerPoint,
+        display,
+        priority,
         caption,
-        _horizontalOffset,
-        _verticalOffset + getDy(renderContext.job.tile.zoomLevel),
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
-        getTextPaint(renderContext.job.tile.zoomLevel),
-        this.position,
-        this.maxTextWidth,
-        way);
+        position,
+        maxTextWidth,
+        getTextPaint(renderContext.job.tile.zoomLevel));
+    renderContext.labels.add(label);
   }
 
   @override

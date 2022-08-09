@@ -12,8 +12,6 @@ class RenderContext {
   final Job job;
   final RenderTheme renderTheme;
 
-  //final SymbolCache symbolCache;
-
   // Data generated for the rendering process
   late LayerPaintContainer drawingLayers;
   final List<MapElementContainer> labels;

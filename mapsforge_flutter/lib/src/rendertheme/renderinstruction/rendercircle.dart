@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/circlecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_circle_container.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'renderinstruction.dart';
 
@@ -67,20 +69,24 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi) {
-    renderCallback.renderPointOfInterestCircle(
-        renderContext,
-        getRenderRadius(renderContext.job.tile.zoomLevel),
-        getFillPaint(renderContext.job.tile.zoomLevel),
-        getStrokePaint(renderContext.job.tile.zoomLevel),
-        this.level,
-        poi);
+  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+    // if ((fill == null || fill.isTransparent()) &&
+    //     (stroke == null || stroke.isTransparent())) return;
+    Mappoint poiPosition = renderContext.projection
+        .pixelRelativeToTile(poi.position, renderContext.job.tile);
+    //_log.info("Adding circle $poiPosition with $radius");
+    renderContext.addToCurrentDrawingLayer(
+        level,
+        ShapePaintCircleContainer(
+            new CircleContainer(
+                poiPosition, getRenderRadius(renderContext.job.tile.zoomLevel)),
+            getFillPaint(renderContext.job.tile.zoomLevel),
+            getStrokePaint(renderContext.job.tile.zoomLevel),
+            getDy(renderContext.job.tile.zoomLevel)));
   }
 
   @override
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(final RenderContext renderContext, PolylineContainer way) {
     // do nothing
   }
 

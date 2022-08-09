@@ -2,13 +2,13 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'renderinstruction.dart';
 import 'textkey.dart';
@@ -96,14 +96,12 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
     // do nothing
   }
 
   @override
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
       return;
     }
@@ -113,22 +111,21 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
       return;
     }
 
-    double dyScale = getDy(renderContext.job.tile.zoomLevel);
-
-    renderCallback.renderWayText(
-        renderContext,
-        this.display,
-        this.priority,
+    WayDecorator.renderText(
+        way.getUpperLeft(),
         caption,
-        dyScale,
+        display,
+        priority,
+        getDy(renderContext.job.tile.zoomLevel),
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         getTextPaint(renderContext.job.tile.zoomLevel),
-        this.repeat,
-        this.repeatGap,
-        this.repeatStart,
-        this.rotate,
-        way);
+        repeat,
+        repeatGap!,
+        repeatStart!,
+        rotate,
+        way.getCoordinatesAbsolute(renderContext.projection),
+        renderContext.labels);
   }
 
   @override

@@ -7,41 +7,27 @@ import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
-import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
-import 'package:mapsforge_flutter/src/paintelements/flutterpointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
-import 'package:mapsforge_flutter/src/paintelements/pointtextcontainer.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape_paint_area_container.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape_paint_circle_container.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape_paint_polyline_container.dart';
-import 'package:mapsforge_flutter/src/paintelements/symbolcontainer.dart';
-import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
-import 'package:mapsforge_flutter/src/rendertheme/rendercallback.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/utils/isolatemixin.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
 import 'canvasrasterer.dart';
-import '../paintelements/shape/circlecontainer.dart';
 
 ///
 /// This renderer renders the bitmap for the tiles by using the given [Datastore].
 ///
 class MapDataStoreRenderer extends JobRenderer
-    with IsolateMixin<IsolateMapInitParam>
-    implements RenderCallback {
+    with IsolateMixin<IsolateMapInitParam> {
   static final _log = new Logger('MapDataStoreRenderer');
   static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
@@ -196,7 +182,7 @@ class MapDataStoreRenderer extends JobRenderer
       List<RenderInstruction> renderInstructions =
           _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
       renderInstructions.forEach((element) {
-        element.renderNode(this, renderContext, pointOfInterest);
+        element.renderNode(renderContext, pointOfInterest);
       });
     }
 
@@ -208,7 +194,7 @@ class MapDataStoreRenderer extends JobRenderer
       List<RenderInstruction> renderInstructions =
           _retrieveRenderInstructionsForWay(renderContext, container);
       renderInstructions.forEach((element) {
-        element.renderWay(this, renderContext, container);
+        element.renderWay(renderContext, container);
       });
     }
     if (mapReadResult.isWater) {
@@ -262,239 +248,6 @@ class MapDataStoreRenderer extends JobRenderer
     result.add(Mappoint(0, tileSize.toDouble()));
     result.add(result[0]);
     return result;
-  }
-
-  @override
-  void renderArea(
-      RenderContext renderContext,
-      MapPaint? fill,
-      MapPaint? stroke,
-      int level,
-      String? bitmapSrc,
-      int bitmapWidth,
-      int bitmapHeight,
-      PolylineContainer way) {
-    // if ((fill == null || fill.isTransparent()) &&
-    //     (stroke == null || stroke.isTransparent())) return;
-    renderContext.addToCurrentDrawingLayer(
-        level,
-        ShapePaintAreaContainer(
-            way, fill, stroke, bitmapSrc, bitmapWidth, bitmapHeight, 0));
-  }
-
-  @override
-  void renderAreaCaption(
-      RenderContext renderContext,
-      Display display,
-      int priority,
-      String caption,
-      double horizontalOffset,
-      double verticalOffset,
-      MapPaint fill,
-      MapPaint stroke,
-      MapTextPaint mapTextPaint,
-      Position position,
-      int maxTextWidth,
-      PolylineContainer way) {
-    if (renderLabels) {
-      Mappoint centerPoint = way
-          .getCenterAbsolute(renderContext.projection)
-          .offset(horizontalOffset, verticalOffset);
-      //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
-      PointTextContainer label = FlutterPointTextContainer(
-          centerPoint,
-          display,
-          priority,
-          caption,
-          fill,
-          stroke,
-          position,
-          maxTextWidth,
-          mapTextPaint);
-      renderContext.labels.add(label);
-    }
-  }
-
-  @override
-  void renderAreaSymbol(
-      RenderContext renderContext,
-      Display display,
-      int priority,
-      String bitmapSrc,
-      int bitmapWidth,
-      int bitmapHeight,
-      PolylineContainer way,
-      MapPaint? symbolPaint) {
-    if (renderLabels && !symbolPaint!.isTransparent()) {
-      Mappoint centerPosition = way.getCenterAbsolute(renderContext.projection);
-      renderContext.labels.add(new SymbolContainer(
-          point: centerPosition,
-          display: display,
-          priority: priority,
-          bitmapSrc: bitmapSrc,
-          bitmapWidth: bitmapWidth,
-          bitmapHeight: bitmapHeight,
-          paint: symbolPaint));
-    }
-  }
-
-  @override
-  void renderPointOfInterestCaption(
-      RenderContext renderContext,
-      Display display,
-      int priority,
-      String caption,
-      double horizontalOffset,
-      double verticalOffset,
-      MapPaint fill,
-      MapPaint stroke,
-      MapTextPaint mapTextPaint,
-      Position position,
-      int maxTextWidth,
-      PointOfInterest poi) {
-    if (renderLabels) {
-      Mappoint poiPosition =
-          renderContext.projection.latLonToPixel(poi.position);
-      //_log.info("poiCaption $caption at $poiPosition, postion $position, offset: $horizontalOffset, $verticalOffset ");
-      renderContext.labels.add(FlutterPointTextContainer(
-          poiPosition.offset(horizontalOffset, verticalOffset),
-          display,
-          priority,
-          caption,
-          fill,
-          stroke,
-          position,
-          maxTextWidth,
-          mapTextPaint));
-    }
-  }
-
-  @override
-  void renderPointOfInterestCircle(RenderContext renderContext, double radius,
-      MapPaint? fill, MapPaint? stroke, int level, PointOfInterest poi) {
-    // ShapePaintContainers does not shift the position relative to the tile by themself. In case of ways this is done in the [PolylineContainer], but
-    // in case of cirles this is not done at all so do it here for now
-    if ((fill == null || fill.isTransparent()) &&
-        (stroke == null || stroke.isTransparent())) return;
-    Mappoint poiPosition = renderContext.projection
-        .pixelRelativeToTile(poi.position, renderContext.job.tile);
-    //_log.info("Adding circle $poiPosition with $radius");
-    renderContext.addToCurrentDrawingLayer(
-        level,
-        ShapePaintCircleContainer(
-            new CircleContainer(poiPosition, radius), fill, stroke, 0));
-  }
-
-  @override
-  void renderPointOfInterestSymbol(
-      RenderContext renderContext,
-      Display display,
-      int priority,
-      String bitmapSrc,
-      int bitmapWidth,
-      int bitmapHeight,
-      PointOfInterest poi,
-      MapPaint symbolPaint) {
-    if (renderLabels && !symbolPaint.isTransparent()) {
-      Mappoint poiPosition =
-          renderContext.projection.latLonToPixel(poi.position);
-      renderContext.labels.add(new SymbolContainer(
-          point: poiPosition,
-          display: display,
-          priority: priority,
-          bitmapSrc: bitmapSrc,
-          bitmapWidth: bitmapWidth,
-          bitmapHeight: bitmapHeight,
-          paint: symbolPaint,
-          alignCenter: true));
-    }
-  }
-
-  @override
-  void renderWay(
-      RenderContext renderContext,
-      MapPaint stroke,
-      double dy,
-      int level,
-      String? bitmapSrc,
-      int bitmapWidth,
-      int bitmapHeight,
-      PolylineContainer way) {
-    if (!stroke.isTransparent()) {
-      renderContext.addToCurrentDrawingLayer(
-          level,
-          ShapePaintPolylineContainer(
-              way, null, stroke, bitmapSrc, bitmapWidth, bitmapHeight, dy));
-    }
-  }
-
-  @override
-  void renderWaySymbol(
-      RenderContext renderContext,
-      Display display,
-      int priority,
-      String bitmapSrc,
-      int bitmapWidth,
-      int bitmapHeight,
-      double dy,
-      bool alignCenter,
-      bool repeat,
-      double? repeatGap,
-      double? repeatStart,
-      bool? rotate,
-      PolylineContainer way,
-      MapPaint? symbolPaint) {
-    if (renderLabels && !symbolPaint!.isTransparent()) {
-      WayDecorator.renderSymbol(
-          bitmapSrc,
-          bitmapWidth,
-          bitmapHeight,
-          display,
-          priority,
-          dy,
-          alignCenter,
-          repeat,
-          repeatGap!.toInt(),
-          repeatStart!.toInt(),
-          rotate,
-          way.getCoordinatesAbsolute(renderContext.projection),
-          renderContext.labels,
-          symbolPaint);
-    }
-  }
-
-  @override
-  void renderWayText(
-      RenderContext renderContext,
-      Display display,
-      int priority,
-      String text,
-      double dy,
-      MapPaint fill,
-      MapPaint stroke,
-      MapTextPaint textPaint,
-      bool? repeat,
-      double? repeatGap,
-      double? repeatStart,
-      bool? rotate,
-      PolylineContainer way) {
-    if (renderLabels) {
-      WayDecorator.renderText(
-          way.getUpperLeft(),
-          text,
-          display,
-          priority,
-          dy,
-          fill,
-          stroke,
-          textPaint,
-          repeat,
-          repeatGap!,
-          repeatStart!,
-          rotate,
-          way.getCoordinatesAbsolute(renderContext.projection),
-          renderContext.labels);
-    }
   }
 
   Future<Set<MapElementContainer>> _processLabels(

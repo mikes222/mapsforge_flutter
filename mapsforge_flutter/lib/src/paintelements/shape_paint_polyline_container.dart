@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
 
 import 'shape/shapecontainer.dart';
@@ -17,9 +16,7 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   static int count = 0;
 
-  final MapPaint? fill;
-
-  final MapPaint? stroke;
+  final MapPaint stroke;
 
   String? bitmapSrc;
 
@@ -27,14 +24,8 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
 
   int bitmapHeight;
 
-  ShapePaintPolylineContainer(
-      ShapeContainer shapeContainer,
-      this.fill,
-      this.stroke,
-      this.bitmapSrc,
-      this.bitmapWidth,
-      this.bitmapHeight,
-      double dy)
+  ShapePaintPolylineContainer(ShapeContainer shapeContainer, this.stroke,
+      this.bitmapSrc, this.bitmapWidth, this.bitmapHeight, double dy)
       : super(shapeContainer, dy) {
     path = GraphicFactory().createPath();
   }
@@ -65,17 +56,16 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
       }
     }
 
-    if (stroke != null && bitmapSrc != null) {
+    if (bitmapSrc != null) {
       ResourceBitmap? bitmap =
           await symbolCache.getSymbol(bitmapSrc, bitmapWidth, bitmapHeight);
       if (bitmap != null) {
-        if (stroke!.isTransparent()) stroke!.setColor(Colors.black);
-        stroke!.setBitmapShader(bitmap);
+        if (stroke.isTransparent()) stroke.setColor(Colors.black);
+        stroke.setBitmapShader(bitmap);
       }
     }
 
-    if (fill != null) canvas.drawPath(this.path, fill!);
-    if (stroke != null) canvas.drawPath(this.path, stroke!);
+    canvas.drawPath(this.path, stroke);
   }
 
   @override

@@ -25,10 +25,10 @@ class BitmapSrcMixin {
   final Map<int, int> _heights = {};
 
   /// stroke will be drawn thicker at or above this zoomlevel
-  late int strokeMinZoomLevel;
+  late int _strokeMinZoomLevel;
 
   void initBitmapSrcMixin(int strokeMinZoomLevel) {
-    this.strokeMinZoomLevel = strokeMinZoomLevel;
+    this._strokeMinZoomLevel = strokeMinZoomLevel;
   }
 
   void prepareScaleBitmapSrcMixin(int zoomLevel) {}
@@ -40,8 +40,8 @@ class BitmapSrcMixin {
     } else {
       _heights[zoomLevel] = _bitmapHeight;
     }
-    if (zoomLevel >= strokeMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - strokeMinZoomLevel + 1;
+    if (zoomLevel >= _strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
       double scaleFactor =
           pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       //print("scaling $zoomLevel to $scaleFactor and $strokeMinZoomLevel");
@@ -57,8 +57,8 @@ class BitmapSrcMixin {
     } else {
       _widths[zoomLevel] = _bitmapWidth;
     }
-    if (zoomLevel >= strokeMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - strokeMinZoomLevel + 1;
+    if (zoomLevel >= _strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
       double scaleFactor =
           pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       _widths[zoomLevel] = (_widths[zoomLevel]! * scaleFactor).round();

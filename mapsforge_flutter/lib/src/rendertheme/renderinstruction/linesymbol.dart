@@ -3,12 +3,11 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
+import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 import 'renderinstruction.dart';
 
@@ -90,14 +89,12 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
     // do nothing
   }
 
   @override
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way) {
+  void renderWay(final RenderContext renderContext, PolylineContainer way) {
     if (Display.NEVER == this.display) {
       return;
     }
@@ -108,23 +105,23 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
     double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
     dyScale ??= this.dy;
 
-    if (bitmapSrc != null) {
-      renderCallback.renderWaySymbol(
-          renderContext,
-          this.display,
-          this.priority,
-          this.bitmapSrc!,
-          getBitmapWidth(renderContext.job.tile.zoomLevel),
-          getBitmapHeight(renderContext.job.tile.zoomLevel),
-          dyScale,
-          this.alignCenter,
-          this.repeat,
-          this.repeatGap,
-          this.repeatStart,
-          this.rotate,
-          way,
-          getBitmapPaint());
-    }
+    if (bitmapSrc == null) return;
+
+    WayDecorator.renderSymbol(
+        bitmapSrc!,
+        getBitmapWidth(renderContext.job.tile.zoomLevel),
+        getBitmapHeight(renderContext.job.tile.zoomLevel),
+        display,
+        priority,
+        dy,
+        alignCenter,
+        repeat,
+        repeatGap!.toInt(),
+        repeatStart!.toInt(),
+        rotate,
+        way.getCoordinatesAbsolute(renderContext.projection),
+        renderContext.labels,
+        getBitmapPaint());
   }
 
   @override

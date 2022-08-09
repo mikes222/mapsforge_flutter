@@ -12,10 +12,10 @@ class TextMixin {
 
   final Map<int, MapTextPaint> _textPaints = {};
 
-  late int strokeMinZoomLevel;
+  late int _strokeMinZoomLevel;
 
   void initTextMixin(int strokeMinZoomLevel) {
-    this.strokeMinZoomLevel = strokeMinZoomLevel;
+    this._strokeMinZoomLevel = strokeMinZoomLevel;
     _textPaint = GraphicFactory().createTextPaint();
     this._textPaint.setTextSize(10);
   }
@@ -43,8 +43,8 @@ class TextMixin {
   }
 
   void prepareScaleTextMixin(int zoomLevel) {
-    if (zoomLevel >= strokeMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - strokeMinZoomLevel + 1;
+    if (zoomLevel >= _strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
       double scaleFactor =
           pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       MapTextPaint t = FlutterTextPaint.from(_textPaint);

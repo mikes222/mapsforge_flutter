@@ -1,8 +1,5 @@
-import 'package:mapsforge_flutter/core.dart';
-
 import '../../datastore/pointofinterest.dart';
 import '../../paintelements/shape/polylinecontainer.dart';
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 
 /// A RenderInstruction is a basic graphical primitive to draw a map.
@@ -52,14 +49,12 @@ abstract class RenderInstruction {
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param poi
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi);
+  void renderNode(final RenderContext renderContext, PointOfInterest poi);
 
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param way
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way);
+  void renderWay(final RenderContext renderContext, PolylineContainer way);
 
   Scale scaleFromValue(String value) {
     if (value == (ALL)) {

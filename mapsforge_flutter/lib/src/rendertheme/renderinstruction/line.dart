@@ -2,16 +2,14 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_polyline_container.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../rendercallback.dart';
 import '../rendercontext.dart';
 
 /// Represents a polyline on the map.
@@ -26,7 +24,8 @@ class Line extends RenderInstruction with BitmapSrcMixin, PaintMixin {
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
-    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
+    // do not scale bitmap in lines they look ugly
+    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     this.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
 
     rootElement.attributes.forEach((element) {
@@ -87,32 +86,24 @@ class Line extends RenderInstruction with BitmapSrcMixin, PaintMixin {
   }
 
   @override
-  void renderNode(RenderCallback renderCallback,
-      final RenderContext renderContext, PointOfInterest poi) {
+  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
     // do nothing
   }
 
   @override
-  void renderWay(RenderCallback renderCallback,
-      final RenderContext renderContext, PolylineContainer way) {
-    MapPaint strokePaint = getStrokePaint(renderContext.job.tile.zoomLevel);
-
-    double dyScale = getDy(renderContext.job.tile.zoomLevel);
-
+  void renderWay(final RenderContext renderContext, PolylineContainer way) {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    renderCallback.renderWay(
-        renderContext,
-        strokePaint,
-        dyScale,
-        this.level,
-        bitmapSrc,
-        getBitmapWidth(renderContext.job.tile.zoomLevel),
-        getBitmapHeight(renderContext.job.tile.zoomLevel),
-        way);
-
-    //       setStrokeBitmapShader(bitmap!);
+    renderContext.addToCurrentDrawingLayer(
+        level,
+        ShapePaintPolylineContainer(
+            way,
+            getStrokePaint(renderContext.job.tile.zoomLevel),
+            bitmapSrc,
+            getBitmapWidth(renderContext.job.tile.zoomLevel),
+            getBitmapHeight(renderContext.job.tile.zoomLevel),
+            getDy(renderContext.job.tile.zoomLevel)));
   }
 
   @override
