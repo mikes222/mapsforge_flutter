@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -18,28 +21,27 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
 
   bool alignCenter = true;
   Display display = Display.IFSPACE;
-  double dy = 0;
-  final Map<int, double> dyScaled;
+  double _dy = 0;
+  final Map<int, double> _dyScaled = {};
   int priority = 0;
   final String? relativePathPrefix;
   bool repeat = true;
 
-  /// todo increase repeatGap with zoomLevel
-  double? repeatGap;
+  late double _repeatGap;
+  final Map<int, double> _repeatGapScaled = {};
+
   double? repeatStart;
-  bool? rotate;
+  bool? rotate = true;
   Scale scale = Scale.STROKE;
   Position position = Position.CENTER;
 
-  LineSymbol(this.relativePathPrefix)
-      : dyScaled = new Map(),
-        super() {
-    this.rotate = true;
-  }
+  final _strokeMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
+
+  LineSymbol(this.relativePathPrefix);
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
     initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
+    this._repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
     this.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
 
@@ -57,7 +59,7 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
         this.display = Display.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.DY == name) {
-        this.dy = double.parse(value) * displayModel.getScaleFactor();
+        this._dy = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.POSITION == name) {
         this.position = Position.values
             .firstWhere((e) => e.toString().toLowerCase().contains(value));
@@ -66,7 +68,7 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
       } else if (RenderInstruction.REPEAT == name) {
         this.repeat = "true" == (value);
       } else if (RenderInstruction.REPEAT_GAP == name) {
-        this.repeatGap = double.parse(value) * displayModel.getScaleFactor();
+        this._repeatGap = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.REPEAT_START == name) {
         this.repeatStart = double.parse(value) * displayModel.getScaleFactor();
       } else if (RenderInstruction.ROTATE == name) {
@@ -102,8 +104,8 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    double? dyScale = this.dyScaled[renderContext.job.tile.zoomLevel];
-    dyScale ??= this.dy;
+    double? dyScale = this._dyScaled[renderContext.job.tile.zoomLevel];
+    dyScale ??= this._dy;
 
     if (bitmapSrc == null) return;
 
@@ -113,10 +115,10 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
         getBitmapHeight(renderContext.job.tile.zoomLevel),
         display,
         priority,
-        dy,
+        _dyScaled[renderContext.job.tile.zoomLevel]!,
         alignCenter,
         repeat,
-        repeatGap!.toInt(),
+        _repeatGapScaled[renderContext.job.tile.zoomLevel]!.toInt(),
         repeatStart!.toInt(),
         rotate,
         way.getCoordinatesAbsolute(renderContext.projection),
@@ -127,8 +129,13 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
   @override
   void prepareScale(int zoomLevel) {
     if (this.scale == Scale.NONE) {}
-    double scaleFactor = 1;
-    this.dyScaled[zoomLevel] = this.dy * scaleFactor;
+
+    int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
+    double scaleFactor =
+        pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+
+    this._dyScaled[zoomLevel] = this._dy * scaleFactor;
+    this._repeatGapScaled[zoomLevel] = _repeatGap * scaleFactor;
     prepareScaleBitmapSrcMixin(zoomLevel);
   }
 }

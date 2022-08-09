@@ -9,36 +9,33 @@ import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart
 import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
 
-import 'shape/shapecontainer.dart';
-
-class ShapePaintPolylineContainer extends ShapePaintContainer {
+class ShapePaintPolylineContainer
+    extends ShapePaintContainer<PolylineContainer> {
   late MapPath path;
 
   static int count = 0;
 
   final MapPaint stroke;
 
-  String? bitmapSrc;
+  final String? bitmapSrc;
 
-  int bitmapWidth;
+  final int bitmapWidth;
 
-  int bitmapHeight;
+  final int bitmapHeight;
 
-  ShapePaintPolylineContainer(ShapeContainer shapeContainer, this.stroke,
-      this.bitmapSrc, this.bitmapWidth, this.bitmapHeight, double dy)
+  ShapePaintPolylineContainer(
+      PolylineContainer shapeContainer,
+      this.stroke,
+      this.bitmapSrc,
+      this.bitmapWidth,
+      this.bitmapHeight,
+      double dy,
+      PixelProjection projection)
       : super(shapeContainer, dy) {
     path = GraphicFactory().createPath();
-  }
-
-  @override
-  Future<void> draw(MapCanvas canvas, PixelProjection projection,
-      SymbolCache symbolCache) async {
-    ++count;
-    PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
-    this.path.clear();
 
     for (List<Mappoint> outerList
-        in polylineContainer.getCoordinatesRelativeToOrigin(projection)) {
+        in shapeContainer.getCoordinatesRelativeToOrigin(projection)) {
       List<Mappoint> points;
       if (dy != 0) {
         points = RendererUtils.parallelPath(outerList, dy);
@@ -55,8 +52,13 @@ class ShapePaintPolylineContainer extends ShapePaintContainer {
         //print("path lineTo $point");
       }
     }
+  }
 
-    if (bitmapSrc != null) {
+  @override
+  Future<void> draw(MapCanvas canvas, SymbolCache symbolCache) async {
+    ++count;
+
+    if (bitmapSrc != null && stroke.getBitmapShader() == null) {
       ResourceBitmap? bitmap =
           await symbolCache.getSymbol(bitmapSrc, bitmapWidth, bitmapHeight);
       if (bitmap != null) {

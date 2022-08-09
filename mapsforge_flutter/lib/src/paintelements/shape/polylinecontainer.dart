@@ -23,7 +23,6 @@ class PolylineContainer implements ShapeContainer {
   Mappoint? center;
   List<List<Mappoint>>? coordinatesAbsolute;
   List<List<Mappoint>>? coordinatesRelativeToTile;
-  final List<Tag> tags;
   final int layer;
   final Tile upperLeft;
   final bool isClosedWay;
@@ -32,8 +31,7 @@ class PolylineContainer implements ShapeContainer {
   final double maxGap = 5;
 
   PolylineContainer(this.way, this.upperLeft)
-      : tags = way.tags,
-        layer = max(0, way.layer),
+      : layer = max(0, way.layer),
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
 
   Mappoint getCenterAbsolute(PixelProjection projection) {
@@ -93,7 +91,7 @@ class PolylineContainer implements ShapeContainer {
   }
 
   List<Tag> getTags() {
-    return tags;
+    return way.tags;
   }
 
   Tile getUpperLeft() {
@@ -102,6 +100,6 @@ class PolylineContainer implements ShapeContainer {
 
   @override
   String toString() {
-    return 'PolylineContainer{center: $center, coordinatesAbsolute: $coordinatesAbsolute, coordinatesRelativeToTile: $coordinatesRelativeToTile, tags: $tags, layer: $layer, way: $way}';
+    return 'PolylineContainer{center: $center, coordinatesAbsolute: $coordinatesAbsolute, coordinatesRelativeToTile: $coordinatesRelativeToTile, layer: $layer, way: $way}';
   }
 }

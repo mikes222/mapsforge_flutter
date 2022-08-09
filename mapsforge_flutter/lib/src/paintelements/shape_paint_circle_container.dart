@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/circlecontainer.dart';
@@ -19,8 +18,7 @@ class ShapePaintCircleContainer extends ShapePaintContainer<CircleContainer> {
       : super(shapeContainer, dy);
 
   @override
-  Future<void> draw(MapCanvas canvas, PixelProjection projection,
-      SymbolCache symbolCache) async {
+  Future<void> draw(MapCanvas canvas, SymbolCache symbolCache) async {
     Mappoint point = shapeContainer.point;
     if (fill != null)
       canvas.drawCircle(point.x, point.y, shapeContainer.radius, fill!);

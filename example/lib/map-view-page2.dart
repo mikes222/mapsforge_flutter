@@ -67,10 +67,10 @@ class MapViewPageState2 extends State<MapViewPage2> {
     // in this demo we use the markers only for offline databases.
     ViewModel viewModel = ViewModel(
       displayModel: displayModel,
-      contextMenuBuilder: DebugContextMenuBuilder(datastore: widget.mapFile!),
-      // widget.mapFileData.mapType == MAPTYPE.OFFLINE
-      //     ? MarkerdemoContextMenuBuilder()
-      //     : const DefaultContextMenuBuilder(),
+      contextMenuBuilder: //DebugContextMenuBuilder(datastore: widget.mapFile!),
+          widget.mapFileData.mapType == MAPTYPE.OFFLINE
+              ? MarkerdemoContextMenuBuilder()
+              : const DefaultContextMenuBuilder(),
     );
     if (widget.mapFileData.indoorZoomOverlay)
       viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
@@ -127,7 +127,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     );
     mapModel.markerDataStores
         .add(MarkerdemoDatastore(symbolCache: symbolCache));
-    mapModel.markerDataStores.add(DebugDatastore(symbolCache: symbolCache));
+    //mapModel.markerDataStores.add(DebugDatastore(symbolCache: symbolCache));
 
     return mapModel;
   }

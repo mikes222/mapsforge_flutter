@@ -1,4 +1,3 @@
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
@@ -35,8 +34,7 @@ class CanvasRasterer {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
         for (ShapePaintContainer element in wayList) {
           //print("         drawing now ${element}");
-          await element.draw(
-              this.canvas, renderContext.projection, symbolCache);
+          await element.draw(this.canvas, symbolCache);
           ++count;
         }
       }

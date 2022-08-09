@@ -10,6 +10,7 @@ class RenderContext {
   static final int LAYERS = 11;
 
   final Job job;
+
   final RenderTheme renderTheme;
 
   // Data generated for the rendering process

@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
 
-import 'shape/shapecontainer.dart';
-
-class ShapePaintAreaContainer extends ShapePaintContainer {
+class ShapePaintAreaContainer extends ShapePaintContainer<PolylineContainer> {
   late MapPath path;
 
   static int count = 0;
@@ -21,27 +18,25 @@ class ShapePaintAreaContainer extends ShapePaintContainer {
 
   final MapPaint? stroke;
 
-  String? bitmapSrc;
+  final String? bitmapSrc;
 
-  int bitmapWidth;
+  final int bitmapWidth;
 
-  int bitmapHeight;
+  final int bitmapHeight;
 
-  ShapePaintAreaContainer(ShapeContainer shapeContainer, this.fill, this.stroke,
-      this.bitmapSrc, this.bitmapWidth, this.bitmapHeight, double dy)
+  ShapePaintAreaContainer(
+      PolylineContainer shapeContainer,
+      this.fill,
+      this.stroke,
+      this.bitmapSrc,
+      this.bitmapWidth,
+      this.bitmapHeight,
+      double dy,
+      PixelProjection projection)
       : super(shapeContainer, dy) {
     path = GraphicFactory().createPath();
-  }
-
-  @override
-  Future<void> draw(MapCanvas canvas, PixelProjection projection,
-      SymbolCache symbolCache) async {
-    ++count;
-    PolylineContainer polylineContainer = shapeContainer as PolylineContainer;
-    this.path.clear();
-
     for (List<Mappoint> outerList
-        in polylineContainer.getCoordinatesRelativeToOrigin(projection)) {
+        in shapeContainer.getCoordinatesRelativeToOrigin(projection)) {
       List<Mappoint> points;
       if (dy != 0) {
         points = RendererUtils.parallelPath(outerList, dy);
@@ -58,8 +53,13 @@ class ShapePaintAreaContainer extends ShapePaintContainer {
         //print("path lineTo $point");
       }
     }
+  }
 
-    if (fill != null && bitmapSrc != null) {
+  @override
+  Future<void> draw(MapCanvas canvas, SymbolCache symbolCache) async {
+    ++count;
+
+    if (fill != null && fill!.getBitmapShader() == null && bitmapSrc != null) {
       // print(
       //     "fill not null and bitmapSrc is $bitmapSrc + $bitmapWidth + $bitmapHeight");
       ResourceBitmap? bitmap =

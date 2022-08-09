@@ -85,7 +85,8 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
             bitmapSrc,
             getBitmapWidth(renderContext.job.tile.zoomLevel),
             getBitmapHeight(renderContext.job.tile.zoomLevel),
-            getDy(renderContext.job.tile.zoomLevel)));
+            getDy(renderContext.job.tile.zoomLevel),
+            renderContext.projection));
   }
 
   @override
