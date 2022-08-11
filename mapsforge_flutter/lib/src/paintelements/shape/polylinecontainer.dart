@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/shapecontainer.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/renderer/minmaxmappoint.dart';
@@ -29,6 +30,11 @@ class PolylineContainer implements ShapeContainer {
   final Way way;
 
   final double maxGap = 5;
+
+  /// If one of the classes calculates the path they can save it here for use
+  /// by other classes. This makes sense because one way is often drawn by
+  /// multiple "line" rules so we do not need to calculate the path multiple times
+  MapPath? path;
 
   PolylineContainer(this.way, this.upperLeft)
       : layer = max(0, way.layer),

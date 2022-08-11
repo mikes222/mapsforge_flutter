@@ -34,6 +34,10 @@ class ShapePaintAreaContainer extends ShapePaintContainer<PolylineContainer> {
       double dy,
       PixelProjection projection)
       : super(shapeContainer, dy) {
+    if (shapeContainer.path != null) {
+      path = shapeContainer.path!;
+      return;
+    }
     path = GraphicFactory().createPath();
     for (List<Mappoint> outerList
         in shapeContainer.getCoordinatesRelativeToOrigin(projection)) {
@@ -53,6 +57,7 @@ class ShapePaintAreaContainer extends ShapePaintContainer<PolylineContainer> {
         //print("path lineTo $point");
       }
     }
+    shapeContainer.path = path;
   }
 
   @override

@@ -32,6 +32,10 @@ class ShapePaintPolylineContainer
       double dy,
       PixelProjection projection)
       : super(shapeContainer, dy) {
+    if (shapeContainer.path != null) {
+      path = shapeContainer.path!;
+      return;
+    }
     path = GraphicFactory().createPath();
 
     for (List<Mappoint> outerList
@@ -52,6 +56,7 @@ class ShapePaintPolylineContainer
         //print("path lineTo $point");
       }
     }
+    shapeContainer.path = path;
   }
 
   @override
