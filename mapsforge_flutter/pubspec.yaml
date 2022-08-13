@@ -54,7 +54,8 @@ dependencies:
 
   collection: ^1.16.0
 
-  execution_queue:  ^1.2.0
+  execution_queue:
+    git: https://github.com/marioreggiori/execution_queue.dart
   #  path: ../../execution_queue.dart
 
 dev_dependencies:
