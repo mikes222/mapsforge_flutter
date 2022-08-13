@@ -33,47 +33,58 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-  late MapModel mapModel;
-  late ViewModel viewModel;
-  late GraphicFactory graphicFactory;
+  late final MapModel mapModel;
+  late final ViewModel viewModel;
 
   Future<void> _initialize() async {
-    MapFile mapFile = await MapFile.from('/path/to/your.map', null, null);
+    // Load the mapfile which holds the openstreetmap® data
+    final mapFile =
+        await MapFile.from('C:/mapsforge/maps/berlin.map', null, null);
 
-    SymbolCache symbolCache = FileSymbolCache(rootBundle);
+    // Create the cache for assets
+    final symbolCache = FileSymbolCache(rootBundle);
 
-    graphicFactory = const FlutterGraphicFactory();
+    // Create the displayModel which defines and holds the view/display settings
+    // like maximum zoomLevel.
+    final displayModel = DisplayModel();
 
-    DisplayModel displayModel = DisplayModel();
+    // Create the render theme which specifies how to render the informations
+    // from the mapfile.
+    final renderTheme = await RenderThemeBuilder.create(
+      displayModel,
+      'assets/render_themes/defaultrender.xml',
+    );
 
-    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder(graphicFactory, symbolCache, displayModel);
-    String content = await rootBundle.loadString('assets/render_themes/defaultrender.xml');
-    renderThemeBuilder.parseXml(content);
-    RenderTheme renderTheme = renderThemeBuilder.build();
-    
-    MapDataStoreRenderer jobRenderer = MapDataStoreRenderer(mapFile, renderTheme, graphicFactory, true);
+    // Create the Renderer
+    final jobRenderer =
+        MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
+    // Glue everything together into two models.
     mapModel = MapModel(
       displayModel: displayModel,
       renderer: jobRenderer,
     );
 
     viewModel = ViewModel(displayModel: displayModel);
-    viewModel.setMapViewPosition(52.5220, 13.3917);
+    viewModel.setMapViewPosition(52.5211, 13.3905);
     viewModel.setZoomLevel(16);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialize(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return FlutterMapView( mapModel: mapModel, viewModel: viewModel, graphicFactory: graphicFactory);
-        } else {
-          return const CircularProgressIndicator();
-        }
-    });
+    return Scaffold(
+      body: FutureBuilder(
+        future: _initialize(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return FlutterMapView(mapModel: mapModel, viewModel: viewModel);
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+    );
   }
 }
