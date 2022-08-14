@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 
 import '../model/tile.dart';
 import '../utils/layerutil.dart';

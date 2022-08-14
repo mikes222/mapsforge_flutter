@@ -10,8 +10,6 @@ import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
 
 class ShapePaintAreaContainer extends ShapePaintContainer<PolylineContainer> {
-  late MapPath path;
-
   static int count = 0;
 
   final MapPaint? fill;
@@ -34,35 +32,14 @@ class ShapePaintAreaContainer extends ShapePaintContainer<PolylineContainer> {
       double dy,
       PixelProjection projection)
       : super(shapeContainer, dy) {
-    if (shapeContainer.path != null) {
-      path = shapeContainer.path!;
-      return;
-    }
-    path = GraphicFactory().createPath();
-    for (List<Mappoint> outerList
-        in shapeContainer.getCoordinatesRelativeToOrigin(projection)) {
-      List<Mappoint> points;
-      if (dy != 0) {
-        points = RendererUtils.parallelPath(outerList, dy);
-      } else {
-        points = outerList;
-      }
-      //print("Drawing ShapePaintPolyline $minMaxMappoint with $paint");
-      Mappoint point = points[0];
-      this.path.moveTo(point.x, point.y);
-      //print("path moveTo $point");
-      for (int i = 1; i < points.length; i++) {
-        point = points[i];
-        this.path.lineTo(point.x, point.y);
-        //print("path lineTo $point");
-      }
-    }
-    shapeContainer.path = path;
+    shapeContainer.getCoordinatesRelativeToOrigin(projection);
   }
 
   @override
   Future<void> draw(MapCanvas canvas, SymbolCache symbolCache) async {
     ++count;
+
+    MapPath path = shapeContainer.calculatePath(dy);
 
     if (fill != null && fill!.getBitmapShader() == null && bitmapSrc != null) {
       // print(
@@ -75,12 +52,7 @@ class ShapePaintAreaContainer extends ShapePaintContainer<PolylineContainer> {
       }
     }
 
-    if (fill != null) canvas.drawPath(this.path, fill!);
-    if (stroke != null) canvas.drawPath(this.path, stroke!);
-  }
-
-  @override
-  String toString() {
-    return 'ShapePaintAreaContainer{path: $path}';
+    if (fill != null) canvas.drawPath(path, fill!);
+    if (stroke != null) canvas.drawPath(path, stroke!);
   }
 }

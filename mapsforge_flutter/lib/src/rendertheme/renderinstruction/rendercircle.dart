@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
@@ -18,11 +20,13 @@ import 'renderinstruction.dart';
 class RenderCircle extends RenderInstruction with PaintMixin {
   final int level;
   double? radius;
-  final Map<int, double> renderRadiusScaled;
-  bool scaleRadius = false;
+  final Map<int, double> _radiusScaled;
+  bool scaleRadius = true;
+
+  int _strokeMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL;
 
   RenderCircle(this.level)
-      : renderRadiusScaled = new Map(),
+      : _radiusScaled = new Map(),
         super() {
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
     this.setFillColor(Colors.transparent);
@@ -63,7 +67,7 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   }
 
   double getRenderRadius(int zoomLevel) {
-    double? radius = renderRadiusScaled[zoomLevel];
+    double? radius = _radiusScaled[zoomLevel];
     radius ??= this.radius;
     return radius!;
   }
@@ -93,9 +97,16 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   @override
   void prepareScale(int zoomLevel) {
     if (this.scaleRadius) {
-      double scaleFactor = 1;
-      this.renderRadiusScaled[zoomLevel] = this.radius! * scaleFactor;
-      prepareScalePaintMixin(zoomLevel);
+      if (_radiusScaled[zoomLevel] != null) return;
+      if (zoomLevel >= _strokeMinZoomLevel) {
+        int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
+        double scaleFactor =
+            pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+        this._radiusScaled[zoomLevel] = this.radius! * scaleFactor;
+      } else {
+        this._radiusScaled[zoomLevel] = this.radius!;
+      }
     }
+    prepareScalePaintMixin(zoomLevel);
   }
 }

@@ -1,12 +1,13 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 
 import '../graphics/display.dart';
 import '../graphics/mappaint.dart';
-import 'mapelementcontainer.dart';
-import 'symbolcontainer.dart';
-import 'waytextcontainer.dart';
+import 'point/mapelementcontainer.dart';
+import 'point/symbolcontainer.dart';
+import 'point/waytextcontainer.dart';
 import '../model/linesegment.dart';
 import '../model/linestring.dart';
 import '../model/mappoint.dart';
@@ -134,13 +135,14 @@ class WayDecorator {
       double dy,
       MapPaint fill,
       MapPaint stroke,
-      MapTextPaint textPaint,
+      MapTextPaint mapTextPaint,
       bool? repeat,
       double repeatGap,
       double repeatStart,
       bool? rotate,
       List<List<Mappoint>> coordinates,
-      List<MapElementContainer> currentLabels) {
+      List<MapElementContainer> currentLabels,
+      double maxTextWidth) {
     if (coordinates.length == 0) {
       return;
     }
@@ -162,13 +164,13 @@ class WayDecorator {
       fullPath.segments.add(segment);
     }
 
-    double textWidth = textPaint.getTextWidth(text);
-    double textHeight = textPaint.getTextHeight(text);
+    ParagraphEntry entry =
+        ParagraphCache().getEntry(text, mapTextPaint, fill, maxTextWidth);
 
-    fullPath = reducePathForText(fullPath, textWidth);
+    fullPath = reducePathForText(fullPath, entry.getWidth());
     if (fullPath.segments.isNotEmpty)
       currentLabels.add(new WayTextContainer(fullPath, display, priority, text,
-          fill, stroke, textHeight, textPaint));
+          fill, stroke, mapTextPaint, maxTextWidth));
   }
 
   static LineString reducePathForText(LineString fullPath, double textWidth) {

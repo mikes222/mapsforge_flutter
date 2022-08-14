@@ -4,11 +4,11 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 
-import '../graphics/filter.dart';
-import '../graphics/mapcanvas.dart';
-import '../graphics/matrix.dart';
-import '../model/mappoint.dart';
-import '../model/rectangle.dart';
+import '../../graphics/filter.dart';
+import '../../graphics/mapcanvas.dart';
+import '../../graphics/matrix.dart';
+import '../../model/mappoint.dart';
+import '../../model/rectangle.dart';
 import 'mapelementcontainer.dart';
 
 class SymbolContainer extends MapElementContainer {

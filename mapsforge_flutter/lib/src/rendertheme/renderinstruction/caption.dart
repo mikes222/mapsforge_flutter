@@ -3,10 +3,10 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/paintelements/flutterpointtextcontainer.dart';
-import 'package:mapsforge_flutter/src/paintelements/pointtextcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/pointtextcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
@@ -33,12 +33,14 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
   double _horizontalOffset = 0;
   double _verticalOffset = 0;
   late double gap;
-  late int maxTextWidth;
   Position position = Position.CENTER;
   int priority = 0;
   String? symbolId;
   final SymbolFinder symbolFinder;
   TextKey? textKey;
+
+  /// The maximum width of a text as defined in the displaymodel
+  late double maxTextWidth;
 
   Caption(this.symbolFinder);
 
@@ -108,7 +110,10 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
     _init(renderContext.job.tile.zoomLevel);
     Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
     //_log.info("poiCaption $caption at $poiPosition, postion $position, offset: $horizontalOffset, $verticalOffset ");
-    renderContext.labels.add(FlutterPointTextContainer(
+
+    MapTextPaint mapTextPaint = getTextPaint(renderContext.job.tile.zoomLevel);
+
+    renderContext.labels.add(PointTextContainer(
         poiPosition.offset(_horizontalOffset,
             _verticalOffset + getDy(renderContext.job.tile.zoomLevel)),
         display,
@@ -117,8 +122,8 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         position,
-        maxTextWidth,
-        getTextPaint(renderContext.job.tile.zoomLevel)));
+        mapTextPaint,
+        maxTextWidth));
   }
 
   @override
@@ -142,7 +147,9 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
         .offset(_horizontalOffset,
             _verticalOffset + getDy(renderContext.job.tile.zoomLevel));
     //_log.info("centerPoint is ${centerPoint.toString()}, position is ${position.toString()} for $caption");
-    PointTextContainer label = FlutterPointTextContainer(
+    MapTextPaint mapTextPaint = getTextPaint(renderContext.job.tile.zoomLevel);
+
+    PointTextContainer label = PointTextContainer(
         centerPoint,
         display,
         priority,
@@ -150,8 +157,8 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
         getFillPaint(renderContext.job.tile.zoomLevel),
         getStrokePaint(renderContext.job.tile.zoomLevel),
         position,
-        maxTextWidth,
-        getTextPaint(renderContext.job.tile.zoomLevel));
+        mapTextPaint,
+        maxTextWidth);
     renderContext.labels.add(label);
   }
 

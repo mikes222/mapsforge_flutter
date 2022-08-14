@@ -1,4 +1,4 @@
-import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 
 import '../model/tile.dart';
 

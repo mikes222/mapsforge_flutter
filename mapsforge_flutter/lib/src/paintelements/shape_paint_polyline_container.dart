@@ -11,8 +11,6 @@ import 'package:mapsforge_flutter/src/renderer/rendererutils.dart';
 
 class ShapePaintPolylineContainer
     extends ShapePaintContainer<PolylineContainer> {
-  late MapPath path;
-
   static int count = 0;
 
   final MapPaint stroke;
@@ -32,36 +30,13 @@ class ShapePaintPolylineContainer
       double dy,
       PixelProjection projection)
       : super(shapeContainer, dy) {
-    if (shapeContainer.path != null) {
-      path = shapeContainer.path!;
-      return;
-    }
-    path = GraphicFactory().createPath();
-
-    for (List<Mappoint> outerList
-        in shapeContainer.getCoordinatesRelativeToOrigin(projection)) {
-      List<Mappoint> points;
-      if (dy != 0) {
-        points = RendererUtils.parallelPath(outerList, dy);
-      } else {
-        points = outerList;
-      }
-      //print("Drawing ShapePaintPolyline $minMaxMappoint with $paint");
-      Mappoint point = points[0];
-      this.path.moveTo(point.x, point.y);
-      //print("path moveTo $point");
-      for (int i = 1; i < points.length; i++) {
-        point = points[i];
-        this.path.lineTo(point.x, point.y);
-        //print("path lineTo $point");
-      }
-    }
-    shapeContainer.path = path;
+    shapeContainer.getCoordinatesRelativeToOrigin(projection);
   }
 
   @override
   Future<void> draw(MapCanvas canvas, SymbolCache symbolCache) async {
     ++count;
+    MapPath path = shapeContainer.calculatePath(dy);
 
     if (bitmapSrc != null && stroke.getBitmapShader() == null) {
       ResourceBitmap? bitmap =
@@ -72,11 +47,6 @@ class ShapePaintPolylineContainer
       }
     }
 
-    canvas.drawPath(this.path, stroke);
-  }
-
-  @override
-  String toString() {
-    return 'ShapePaintPolylineContainer{path: $path}';
+    canvas.drawPath(path, stroke);
   }
 }

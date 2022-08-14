@@ -13,7 +13,7 @@ import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
-import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
@@ -75,19 +75,19 @@ class MapDataStoreRenderer extends JobRenderer
     }
     DatastoreReadResult? mapReadResult;
     if (useIsolate) {
-      if (showTiming)
-        _log.info("Before starting the isolate to read map data from file");
       // read the mapdata in an isolate which is flutter's way to create multithreaded processes
       await startIsolateJob(IsolateMapInitParam(datastore), entryPoint);
       IsolateMapReplyParams params =
-          await sendToIsolate(IsolateMapRequestParam(job.tile));
+          await sendToIsolate(IsolateMapRequestParam(job.tile, renderContext));
       mapReadResult = params.result;
+      renderContext = params.renderContext;
     } else {
-      //if (showTiming) _log.info("Before reading map data from file");
       // read the mapdata directly in this thread
       mapDataStore = this.datastore;
-      mapReadResult =
-          await readMapDataInIsolate(IsolateMapRequestParam(job.tile));
+      IsolateMapReplyParams params = await _readMapDataInIsolate(
+          IsolateMapRequestParam(job.tile, renderContext));
+      mapReadResult = params.result;
+      renderContext = params.renderContext;
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
@@ -101,7 +101,6 @@ class MapDataStoreRenderer extends JobRenderer
       _log.warning(
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
-    _processMapReadResult(renderContext, mapReadResult);
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) {
       _log.info(
@@ -174,70 +173,6 @@ class MapDataStoreRenderer extends JobRenderer
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL);
-  }
-
-  void _processMapReadResult(
-      final RenderContext renderContext, DatastoreReadResult mapReadResult) {
-    for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
-      List<RenderInstruction> renderInstructions =
-          _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
-      renderInstructions.forEach((element) {
-        element.renderNode(renderContext, pointOfInterest);
-      });
-    }
-
-    // never ever call an async method 44000 times. It takes 2 seconds to do so!
-//    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
-    for (Way way in mapReadResult.ways) {
-      PolylineContainer container =
-          PolylineContainer(way, renderContext.job.tile);
-      List<RenderInstruction> renderInstructions =
-          _retrieveRenderInstructionsForWay(renderContext, container);
-      renderInstructions.forEach((element) {
-        element.renderWay(renderContext, container);
-      });
-    }
-    if (mapReadResult.isWater) {
-      _renderWaterBackground(renderContext);
-    }
-  }
-
-  List<RenderInstruction> _retrieveRenderInstructionsForPoi(
-      final RenderContext renderContext, PointOfInterest pointOfInterest) {
-    renderContext.setDrawingLayers(pointOfInterest.layer);
-    List<RenderInstruction> renderInstructions = renderContext.renderTheme
-        .matchNode(renderContext.job.tile, pointOfInterest);
-    return renderInstructions;
-  }
-
-  List<RenderInstruction> _retrieveRenderInstructionsForWay(
-      final RenderContext renderContext, PolylineContainer way) {
-    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
-      return [];
-    renderContext.setDrawingLayers(way.getLayer());
-    if (way.isClosedWay) {
-      List<RenderInstruction> renderInstructions = renderContext.renderTheme
-          .matchClosedWay(renderContext.job.tile, way.way);
-      return renderInstructions;
-    } else {
-      List<RenderInstruction> renderInstructions = renderContext.renderTheme
-          .matchLinearWay(renderContext.job.tile, way.way);
-      return renderInstructions;
-    }
-  }
-
-  void _renderWaterBackground(final RenderContext renderContext) {
-    // renderContext.setDrawingLayers(0);
-    // List<Mappoint> coordinates =
-    //     getTilePixelCoordinates(renderContext.job.tileSize);
-    // Mappoint tileOrigin =
-    //     renderContext.projection.getLeftUpper(renderContext.job.tile);
-    // for (int i = 0; i < coordinates.length; i++) {
-    //   coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
-    // }
-    // Watercontainer way = Watercontainer(
-    //     coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
-    //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
   }
 
   static List<Mappoint> getTilePixelCoordinates(int tileSize) {
@@ -357,11 +292,13 @@ Future<void> entryPoint(IsolateMapInitParam isolateInitParams) async {
   // Listen for messages
   await for (IsolateMapRequestParam data in receivePort) {
     try {
-      DatastoreReadResult? result = await readMapDataInIsolate(data);
-      isolateInitParams.sendPort!.send(IsolateMapReplyParams(result: result));
+      IsolateMapReplyParams? result = await _readMapDataInIsolate(data);
+      isolateInitParams.sendPort!.send(result);
     } catch (error, stacktrace) {
-      isolateInitParams.sendPort!
-          .send(IsolateMapReplyParams(error: error, stacktrace: stacktrace));
+      isolateInitParams.sendPort!.send(IsolateMapReplyParams(
+          renderContext: data.renderContext,
+          error: error,
+          stacktrace: stacktrace));
     }
   }
 }
@@ -382,7 +319,9 @@ class IsolateMapInitParam extends IsolateInitParams {
 class IsolateMapRequestParam extends IsolateRequestParams {
   final Tile tile;
 
-  const IsolateMapRequestParam(this.tile);
+  final RenderContext renderContext;
+
+  const IsolateMapRequestParam(this.tile, this.renderContext);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -390,7 +329,10 @@ class IsolateMapRequestParam extends IsolateRequestParams {
 class IsolateMapReplyParams extends IsolateReplyParams {
   final DatastoreReadResult? result;
 
-  const IsolateMapReplyParams({this.result, error, stacktrace})
+  final RenderContext renderContext;
+
+  const IsolateMapReplyParams(
+      {this.result, required this.renderContext, error, stacktrace})
       : super(error: error, stacktrace: stacktrace);
 }
 
@@ -400,9 +342,77 @@ class IsolateMapReplyParams extends IsolateReplyParams {
 /// This is the execution of reading the mapdata. If called directly the execution is done in the main thread. If called
 /// via [entryPoint] the execution is done in an isolate.
 ///
-Future<DatastoreReadResult?> readMapDataInIsolate(
+Future<IsolateMapReplyParams> _readMapDataInIsolate(
     IsolateMapRequestParam isolateParam) async {
   DatastoreReadResult? mapReadResult =
       await mapDataStore!.readMapDataSingle(isolateParam.tile);
-  return mapReadResult;
+  if (mapReadResult != null) {
+    _processMapReadResult(isolateParam.renderContext, mapReadResult);
+  }
+  return IsolateMapReplyParams(
+      result: mapReadResult, renderContext: isolateParam.renderContext);
+}
+
+void _processMapReadResult(
+    final RenderContext renderContext, DatastoreReadResult mapReadResult) {
+  for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
+    List<RenderInstruction> renderInstructions =
+        _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
+    renderInstructions.forEach((element) {
+      element.renderNode(renderContext, pointOfInterest);
+    });
+  }
+
+  // never ever call an async method 44000 times. It takes 2 seconds to do so!
+//    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
+  for (Way way in mapReadResult.ways) {
+    PolylineContainer container =
+        PolylineContainer(way, renderContext.job.tile);
+    List<RenderInstruction> renderInstructions =
+        _retrieveRenderInstructionsForWay(renderContext, container);
+    renderInstructions.forEach((element) {
+      element.renderWay(renderContext, container);
+    });
+  }
+  if (mapReadResult.isWater) {
+    _renderWaterBackground(renderContext);
+  }
+}
+
+List<RenderInstruction> _retrieveRenderInstructionsForPoi(
+    final RenderContext renderContext, PointOfInterest pointOfInterest) {
+  renderContext.setDrawingLayers(pointOfInterest.layer);
+  List<RenderInstruction> renderInstructions = renderContext.renderTheme
+      .matchNode(renderContext.job.tile, pointOfInterest);
+  return renderInstructions;
+}
+
+List<RenderInstruction> _retrieveRenderInstructionsForWay(
+    final RenderContext renderContext, PolylineContainer way) {
+  if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
+    return [];
+  renderContext.setDrawingLayers(way.getLayer());
+  if (way.isClosedWay) {
+    List<RenderInstruction> renderInstructions = renderContext.renderTheme
+        .matchClosedWay(renderContext.job.tile, way.way);
+    return renderInstructions;
+  } else {
+    List<RenderInstruction> renderInstructions = renderContext.renderTheme
+        .matchLinearWay(renderContext.job.tile, way.way);
+    return renderInstructions;
+  }
+}
+
+void _renderWaterBackground(final RenderContext renderContext) {
+  // renderContext.setDrawingLayers(0);
+  // List<Mappoint> coordinates =
+  //     getTilePixelCoordinates(renderContext.job.tileSize);
+  // Mappoint tileOrigin =
+  //     renderContext.projection.getLeftUpper(renderContext.job.tile);
+  // for (int i = 0; i < coordinates.length; i++) {
+  //   coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
+  // }
+  // Watercontainer way = Watercontainer(
+  //     coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
+  //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
 }

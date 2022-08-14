@@ -16,20 +16,20 @@ class IsolateMixin<T extends IsolateInitParams> {
   Isolate? _isolate;
 
   ExecutionQueue _queue =
-      ExecutionQueue(timeLimit: const Duration(milliseconds: 10000));
+      ExecutionQueue(/*timeLimit: const Duration(milliseconds: 10000)*/);
 
   final PublishSubject<IsolateReplyParams> _subject =
       PublishSubject<IsolateReplyParams>();
 
   void reassignQueue(ExecutionQueue executionQueue) {
-    _queue.clear();
+    //_queue.clear();
     _queue = executionQueue;
   }
 
   @mustCallSuper
   void dispose() {
     // clear the queue so that the next job will be the stopIsolate
-    _queue.clear();
+    //_queue.clear();
     if (_isolate != null) {
       stopIsolateJob();
     }

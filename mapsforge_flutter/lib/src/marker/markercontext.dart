@@ -21,7 +21,11 @@ class MarkerContext implements MarkerCallback {
   @override
   final MapViewPosition mapViewPosition;
 
-  const MarkerContext(this.flutterCanvas, this.mapViewPosition);
+  /// The maximum width of a text as defined in the displaymodel
+  final double maxTextWidth;
+
+  const MarkerContext(this.flutterCanvas, this.mapViewPosition,
+      [this.maxTextWidth = 200]);
 
   @override
   void renderBitmap(Bitmap bitmap, double latitude, double longitude,
@@ -45,7 +49,8 @@ class MarkerContext implements MarkerCallback {
   @override
   void renderPathText(String caption, LineString lineString, Mappoint origin,
       MapPaint stroke, MapTextPaint textPaint) {
-    flutterCanvas.drawPathText(caption, lineString, origin, stroke, textPaint);
+    flutterCanvas.drawPathText(
+        caption, lineString, origin, stroke, textPaint, maxTextWidth);
   }
 
   @override

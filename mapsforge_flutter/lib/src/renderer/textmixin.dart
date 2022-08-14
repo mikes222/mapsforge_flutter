@@ -43,6 +43,7 @@ class TextMixin {
   }
 
   void prepareScaleTextMixin(int zoomLevel) {
+    if (_textPaints[zoomLevel] != null) return;
     if (zoomLevel >= _strokeMinZoomLevel) {
       int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
       double scaleFactor =

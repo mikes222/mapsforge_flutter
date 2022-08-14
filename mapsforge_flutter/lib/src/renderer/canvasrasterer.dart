@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 

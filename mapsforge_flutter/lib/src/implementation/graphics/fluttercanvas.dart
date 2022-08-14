@@ -2,18 +2,18 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:ecache/ecache.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
-import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
@@ -41,11 +41,6 @@ class FlutterCanvas extends MapCanvas {
   final String? src;
 
   int actions = 0;
-
-  static LruCache<String, double> _cache = new LruCache<String, double>(
-    storage: SimpleStorage<String, double>(),
-    capacity: 2000,
-  );
 
   FlutterCanvas(this.uiCanvas, this.size, [this.src]) : pictureRecorder = null;
 
@@ -210,175 +205,73 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawPathText(String text, LineString lineString, Mappoint origin,
-      MapPaint paint, MapTextPaint mapTextPaint) {
+      MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth) {
     if (text.trim().isEmpty) {
       return;
     }
     if (paint.isTransparent()) {
       return;
     }
-    double fontSize = mapTextPaint.getTextSize();
-    ui.ParagraphBuilder builder =
-        buildParagraphBuilder(text, paint, mapTextPaint);
 
-    ui.Paragraph paragraph = builder.build();
+    ParagraphEntry entry =
+        ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
 
-    double textwidth = calculateTextWidth(text, mapTextPaint);
-
-//    double len = 0;
     lineString.segments.forEach((segment) {
-      // double segmentLength = segment.length();
-      // if (segmentLength < textlen) {
-      //   // do not draw the text on a short path because the text does not wrap around the path. It would look ugly if the next segment changes its
-      //   // direction significantly
-      //   len -= segmentLength;
-      //   return;
-      // }
-//      len = textlen + fontSize * 2;
       // So text isn't upside down
-      bool doInvert = segment.end.x <= segment.start.x;
-      Mappoint start = doInvert
-          ? segment.end.offset(-origin.x, -origin.y)
-          : segment.start.offset(-origin.x, -origin.y);
-      _drawTextRotated(
-          paragraph, textwidth, fontSize, segment, start, doInvert);
+      bool doInvert = segment.end.x < segment.start.x;
+      Mappoint start;
+      double diff = (segment.length() - entry.getWidth()) / 2;
+      if (doInvert) {
+        //start = segment.end.offset(-origin.x, -origin.y);
+        start = segment
+            .pointAlongLineSegment(diff + entry.getWidth())
+            .offset(-origin.x, -origin.y);
+      } else {
+        //start = segment.start.offset(-origin.x, -origin.y);
+        start =
+            segment.pointAlongLineSegment(diff).offset(-origin.x, -origin.y);
+      }
+      // print(
+      //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
+      _drawTextRotated(entry.paragraph, segment.getTheta(), start);
 //      len -= segmentLength;
     });
   }
 
-  void _drawTextRotated(ui.Paragraph paragraph, double textwidth,
-      double fontSize, LineSegment segment, Mappoint start, bool doInvert) {
+  void _drawTextRotated(ui.Paragraph paragraph, double theta, Mappoint start) {
     // since the text is rotated, use the textwidth as margin in all directions
-    if (start.x + textwidth < 0 ||
-        start.y + textwidth < 0 ||
-        start.x - textwidth > size.width ||
-        start.y - textwidth > size.height) return;
-    double theta = segment.getTheta();
+    // if (start.x + textwidth < 0 ||
+    //     start.y + textwidth < 0 ||
+    //     start.x - textwidth > size.width ||
+    //     start.y - textwidth > size.height) return;
+    //double theta = segment.getTheta();
 
     // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
-    double angle = theta; // 30 * pi / 180
-//    final double r = sqrt(textlen * textlen / 4 + fontSize * fontSize / 4);
-//    final double alpha = textlen == 0 ? pi / 90 * fontSize.sign : atan(fontSize / textlen);
-//    final double beta = alpha + angle;
-//    final shiftY = r * sin(beta);
-//    final shiftX = r * cos(beta);
-//    final translateX = textlen - shiftX;
-//    final translateY = fontSize - shiftY;
-    //print("drawing $segment for $textwidth $doInvert ${paragraph} $angle");
     uiCanvas.save();
     uiCanvas.translate(/*translateX +*/ start.x, /*translateY +*/ start.y);
-    uiCanvas.rotate(angle);
-    uiCanvas.translate(0, -fontSize / 2);
-    uiCanvas.drawParagraph(
-        paragraph..layout(ui.ParagraphConstraints(width: textwidth)),
-        const Offset(0, 0));
+    uiCanvas.rotate(theta);
+    uiCanvas.translate(0, -paragraph.height / 2);
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(0, 0, paragraph.longestLine, paragraph.height),
+    //     ui.Paint()..color = Colors.red);
+    // uiCanvas.drawCircle(Offset.zero, 10, ui.Paint()..color = Colors.green);
+    uiCanvas.drawParagraph(paragraph, Offset.zero);
     uiCanvas.restore();
     ++actions;
   }
 
   @override
   void drawText(String text, double x, double y, MapPaint paint,
-      MapTextPaint mapTextPaint) {
-    double textwidth = calculateTextWidth(text, mapTextPaint);
+      MapTextPaint mapTextPaint, double maxTextWidth) {
+    ParagraphEntry entry =
+        ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
+    double textwidth = entry.getWidth();
     if (x + textwidth / 2 < 0 ||
-        y + mapTextPaint.getTextSize() < 0 ||
+        y + entry.getHeight() < 0 ||
         x - textwidth / 2 > size.width ||
-        y - mapTextPaint.getTextSize() > size.height) return;
-    ui.ParagraphBuilder builder =
-        buildParagraphBuilder(text, paint, mapTextPaint);
-    uiCanvas.drawParagraph(
-        builder.build()..layout(ui.ParagraphConstraints(width: textwidth)),
-        Offset(x - textwidth / 2, y));
+        y - entry.getHeight() > size.height) return;
+    uiCanvas.drawParagraph(entry.paragraph, Offset(x - textwidth / 2, y));
     ++actions;
-  }
-
-  static double calculateTextWidth(String text, MapTextPaint mapTextPaint) {
-    String key =
-        "$text-${mapTextPaint.getTextSize()}-${mapTextPaint.getFontStyle().name}";
-    double? result = _cache.get(key);
-    if (result != null) return result;
-
-    // https://stackoverflow.com/questions/52659759/how-can-i-get-the-size-of-the-text-widget-in-flutter/52991124#52991124
-    // self-defined constraint
-    final constraints = const BoxConstraints(
-      maxWidth: 800.0, // maxwidth calculated
-      minHeight: 0.0,
-      minWidth: 0.0,
-    );
-
-    String fontFamily = mapTextPaint
-        .getFontFamily()
-        .toString()
-        .replaceAll("MapFontFamily.", "")
-        .toLowerCase();
-    RenderParagraph renderParagraph = RenderParagraph(
-      TextSpan(
-        text: text,
-        style: TextStyle(
-          fontSize: mapTextPaint.getTextSize(),
-          fontStyle: mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC ||
-                  mapTextPaint.getFontStyle() == MapFontStyle.ITALIC
-              ? FontStyle.italic
-              : FontStyle.normal,
-          fontWeight: mapTextPaint.getFontStyle() == MapFontStyle.BOLD ||
-                  mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC
-              ? FontWeight.bold
-              : FontWeight.normal,
-          fontFamily: fontFamily,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    );
-    renderParagraph.layout(constraints);
-    double textlen = renderParagraph
-        .getMinIntrinsicWidth(mapTextPaint.getTextSize())
-        .ceilToDouble();
-//    _log.info("Textlen: $textlen for $text");
-    _cache.set(key, textlen);
-    return textlen;
-  }
-
-  static ui.ParagraphBuilder buildParagraphBuilder(
-      String text, MapPaint paint, MapTextPaint mapTextPaint) {
-    String fontFamily = mapTextPaint
-        .getFontFamily()
-        .toString()
-        .replaceAll("MapFontFamily.", "")
-        .toLowerCase();
-
-    ui.ParagraphBuilder builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        fontSize: mapTextPaint.getTextSize(),
-        //textAlign: TextAlign.center,
-        fontStyle: mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC ||
-                mapTextPaint.getFontStyle() == MapFontStyle.ITALIC
-            ? ui.FontStyle.italic
-            : ui.FontStyle.normal,
-        fontWeight: mapTextPaint.getFontStyle() == MapFontStyle.BOLD ||
-                mapTextPaint.getFontStyle() == MapFontStyle.BOLD_ITALIC
-            ? ui.FontWeight.bold
-            : ui.FontWeight.normal,
-        fontFamily: fontFamily,
-      ),
-    );
-
-    if (paint.getStrokeWidth() == 0)
-      builder.pushStyle(ui.TextStyle(
-        color: paint.getColor(),
-        fontFamily: fontFamily,
-      ));
-    else
-      builder.pushStyle(ui.TextStyle(
-        foreground: Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = paint.getStrokeWidth()
-          ..color = paint.getColor(),
-        fontFamily: fontFamily,
-      ));
-
-    builder.addText(text);
-    return builder;
   }
 
   @override

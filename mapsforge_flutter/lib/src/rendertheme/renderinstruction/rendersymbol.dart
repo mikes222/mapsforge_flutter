@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
-import 'package:mapsforge_flutter/src/paintelements/symbolcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/symbolcontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';

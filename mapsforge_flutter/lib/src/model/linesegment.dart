@@ -39,17 +39,28 @@ class LineSegment {
   LineSegment.direction(this.start, Mappoint direction, double distance)
       : end = new LineSegment(start, direction).pointAlongLineSegment(distance);
 
+  /// Returns the degree of this segment. 0 means vector to the right side -->
+  /// Since positive values in y-direction points towards the bottom of the screen
+  /// the angle runs clockwise.
   double getAngle() {
     if (_angle != null) return _angle!;
-    _angle = atan2(this.start.y - this.end.y, this.start.x - this.end.x);
+    _angle = atan2(this.end.y - this.start.y, this.end.x - this.start.x);
+    _angle = toDegrees(_angle!);
     return _angle!;
   }
 
+  /// Returns the theta of this segment in radians. 0 means vector to the right side -->
+  /// Since positive values in y-direction points towards the bottom of the screen
+  /// the angle runs clockwise.
+  /// see https://de.wikipedia.org/wiki/Arkustangens_und_Arkuskotangens#/media/Datei:Arctangent.svg
   double getTheta() {
     if (_theta != null) return _theta!;
+    if (end == start) return 0;
     _theta = end.x != start.x
         ? atan((end.y - start.y) / (end.x - start.x))
-        : 0; // pi;
+        : end.y > end.x
+            ? pi / 2
+            : -pi / 2;
     return _theta!;
   }
 
@@ -60,20 +71,17 @@ class LineSegment {
    * @return angle in degrees
    */
   double angleTo(LineSegment other) {
-    double angle1 = getAngle();
-    double angle2 = other.getAngle();
+    double angle1 = getTheta();
+    double angle2 = other.getTheta();
     double angle = toDegrees(angle1 - angle2);
-    if (angle <= -180) {
-      angle += 360;
-    }
-    if (angle >= 180) {
-      angle -= 360;
-    }
     return angle;
   }
 
+  /// Returns the degree given by the radian value
   double toDegrees(double var0) {
-    return var0 * 180.0 / 3.141592653589793;
+    double result = var0 * 180.0 / pi;
+    if (result < 0) result += 360;
+    return result;
   }
 
   /**
@@ -180,16 +188,14 @@ class LineSegment {
     if (start.x == end.x) {
 // we have a vertical line
       if (start.y > end.y) {
-        return new Mappoint(end.x, end.y + distance);
+        return new Mappoint(start.x, start.y - distance);
       } else {
         return new Mappoint(start.x, start.y + distance);
       }
     } else {
       double slope = (end.y - start.y) / (end.x - start.x);
-      double dx = sqrt((distance * distance) / (1 + (slope * slope)));
-      if (end.x < start.x) {
-        dx *= -1;
-      }
+      double fraction = distance / length();
+      double dx = (end.x - start.x) * fraction;
       return new Mappoint(start.x + dx, start.y + slope * dx);
     }
   }

@@ -1,11 +1,11 @@
 import 'package:mapsforge_flutter/core.dart';
 
-import '../graphics/mapcanvas.dart';
-import '../graphics/display.dart';
-import '../graphics/matrix.dart';
-import '../model/mappoint.dart';
-import '../model/rectangle.dart';
-import '../graphics/filter.dart';
+import '../../graphics/mapcanvas.dart';
+import '../../graphics/display.dart';
+import '../../graphics/matrix.dart';
+import '../../model/mappoint.dart';
+import '../../model/rectangle.dart';
+import '../../graphics/filter.dart';
 
 /// The MapElementContainer is the abstract base class for annotations that can be placed on the
 /// map, e.g. labels and icons.

@@ -11,7 +11,7 @@ class DisplayModel {
   static const int DEFAULT_TILE_SIZE = 256;
 
   /// start to thicken the strokes at this zoomlevel
-  static const int STROKE_MIN_ZOOMLEVEL = 12;
+  static const int STROKE_MIN_ZOOMLEVEL = 13;
 
   /// start to thicken the strokes of texts at this zoomlevel
   static const int STROKE_MIN_ZOOMLEVEL_TEXT = 17;
@@ -42,7 +42,7 @@ class DisplayModel {
 
   Filter filter = Filter.NONE;
 
-  late int maxTextWidth;
+  late double maxTextWidth;
 
   late int tileSize;
 
@@ -95,7 +95,7 @@ class DisplayModel {
    *
    * @return the maximum text width
    */
-  int getMaxTextWidth() {
+  double getMaxTextWidth() {
     return maxTextWidth;
   }
 
@@ -146,7 +146,7 @@ class DisplayModel {
   }
 
   void _setMaxTextWidth() {
-    this.maxTextWidth = (this.tileSize * maxTextWidthFactor).ceil();
+    this.maxTextWidth = this.tileSize * maxTextWidthFactor;
   }
 
   void _setTileSize() {

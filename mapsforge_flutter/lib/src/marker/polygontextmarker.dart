@@ -1,6 +1,7 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
@@ -124,9 +125,13 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
         prevY = y;
       });
 
-      double textWidth = getTextPaint(markerCallback.mapViewPosition.zoomLevel)
-          .getTextWidth(caption);
-      _lineString = WayDecorator.reducePathForText(_lineString!, textWidth);
+      ParagraphEntry entry = ParagraphCache().getEntry(
+          caption,
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
+          200);
+      _lineString =
+          WayDecorator.reducePathForText(_lineString!, entry.getWidth());
       // _lineString!.segments.forEach((element) {
       //   print(
       //       "Segment ${element.end.x - element.start.x} / ${element.end.y - element.start.y} for textWidth $textWidth - $element $caption");

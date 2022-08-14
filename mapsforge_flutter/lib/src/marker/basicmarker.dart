@@ -110,6 +110,9 @@ class MarkerCaption with TextMixin, PaintMixin {
 
   int maxZoomLevel;
 
+  /// The maximum width of a text as defined in the displaymodel
+  final double maxTextWidth;
+
   MarkerCaption({
     required this.text,
     this.latLong,
@@ -121,6 +124,7 @@ class MarkerCaption with TextMixin, PaintMixin {
     this.fontSize = 10.0,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
+    this.maxTextWidth = 200,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
         assert(minZoomLevel <= maxZoomLevel),
@@ -152,13 +156,15 @@ class MarkerCaption with TextMixin, PaintMixin {
           (mappoint.x + captionOffsetX),
           (mappoint.y + captionOffsetY),
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          maxTextWidth);
       markerCallback.flutterCanvas.drawText(
           text,
           (mappoint.x + captionOffsetX),
           (mappoint.y + captionOffsetY),
           getFillPaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          maxTextWidth);
 
       // markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
       //     getStrokePaint(markerCallback.mapViewPosition.zoomLevel));

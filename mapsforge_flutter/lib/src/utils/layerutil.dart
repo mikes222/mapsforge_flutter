@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/paintelements/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 
 class LayerUtil {
   static final _log = new Logger('LayerUtil');

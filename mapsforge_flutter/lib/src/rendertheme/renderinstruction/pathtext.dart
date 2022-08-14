@@ -29,6 +29,9 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
   bool? rotate;
   TextKey? textKey;
 
+  /// The maximum width of a text as defined in the displaymodel
+  late double maxTextWidth;
+
   PathText() {
     initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
@@ -43,6 +46,7 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
+    maxTextWidth = displayModel.getMaxTextWidth();
     this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
     this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
 
@@ -125,7 +129,8 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
         repeatStart!,
         rotate,
         way.getCoordinatesAbsolute(renderContext.projection),
-        renderContext.labels);
+        renderContext.labels,
+        maxTextWidth);
   }
 
   @override

@@ -45,15 +45,15 @@ class FlutterTextPaint implements MapTextPaint {
     return _fontStyle;
   }
 
-  @override
-  double getTextHeight(String text) {
-    return _textSize;
-  }
+  // @override
+  // double getTextHeight(String text) {
+  //   return _textSize;
+  // }
 
-  @override
-  double getTextWidth(String text) {
-    return FlutterCanvas.calculateTextWidth(text, this);
-  }
+  // @override
+  // double getTextWidth(String text) {
+  //   return FlutterCanvas.calculateTextWidth(text, this);
+  // }
 
   @override
   MapFontFamily getFontFamily() => _fontFamily;

@@ -9,13 +9,13 @@ class TextKey {
     assert(key.length > 0);
     TextKey? textKey = TEXT_KEYS[key];
     if (textKey == null) {
-      textKey = new TextKey(key);
+      textKey = new TextKey._(key);
       TEXT_KEYS[key] = textKey;
     }
     return textKey;
   }
 
-  const TextKey(this.key) : assert(key.length > 0);
+  const TextKey._(this.key) : assert(key.length > 0);
 
   String? getValue(List<Tag> tags) {
     for (int i = 0; i < tags.length; ++i) {

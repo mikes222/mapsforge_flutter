@@ -2,10 +2,12 @@ import 'dart:math';
 
 /// A Point represents an immutable pair of double coordinates in screen pixels.
 class Mappoint {
-  /// The x coordinate of this point in pixels.
+  /// The x coordinate of this point in pixels. Positive values points towards
+  /// the right side of the screen.
   final double x;
 
-  /// The y coordinate of this point in pixels.
+  /// The y coordinate of this point in pixels. Positive values points to
+  /// the bottom of the screen.
   final double y;
 
   /// @param x the x coordinate of this point.

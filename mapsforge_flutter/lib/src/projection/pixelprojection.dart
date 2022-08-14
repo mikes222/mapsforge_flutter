@@ -4,8 +4,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/projection/projection.dart';
 
 class PixelProjection extends MercatorProjection {
   /// the size of a tile  in pixel. Each tile has the same width and height.

@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
 

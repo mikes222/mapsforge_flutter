@@ -14,6 +14,10 @@ import 'package:mapsforge_flutter/src/model/tag.dart';
 
 import '../testassetbundle.dart';
 
+///
+/// flutter test --update-goldens
+///
+///
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
