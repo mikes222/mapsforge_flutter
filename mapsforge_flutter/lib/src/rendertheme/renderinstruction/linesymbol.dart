@@ -30,8 +30,8 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
   late double _repeatGap;
   final Map<int, double> _repeatGapScaled = {};
 
-  double? repeatStart;
-  bool? rotate = true;
+  late double repeatStart;
+  bool rotate = true;
   Scale scale = Scale.STROKE;
   Position position = Position.CENTER;
 
@@ -104,9 +104,6 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    double? dyScale = this._dyScaled[renderContext.job.tile.zoomLevel];
-    dyScale ??= this._dy;
-
     if (bitmapSrc == null) return;
 
     WayDecorator.renderSymbol(
@@ -119,7 +116,7 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
         alignCenter,
         repeat,
         _repeatGapScaled[renderContext.job.tile.zoomLevel]!.toInt(),
-        repeatStart!.toInt(),
+        repeatStart.toInt(),
         rotate,
         way.getCoordinatesAbsolute(renderContext.projection),
         renderContext.labels,
@@ -128,14 +125,19 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
 
   @override
   void prepareScale(int zoomLevel) {
-    if (this.scale == Scale.NONE) {}
+    if (this.scale == Scale.NONE) return;
 
-    int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
-    double scaleFactor =
-        pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+    if (zoomLevel >= _strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
+      double scaleFactor =
+          pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
 
-    this._dyScaled[zoomLevel] = this._dy * scaleFactor;
-    this._repeatGapScaled[zoomLevel] = _repeatGap * scaleFactor;
+      this._dyScaled[zoomLevel] = this._dy * scaleFactor;
+      this._repeatGapScaled[zoomLevel] = _repeatGap * scaleFactor;
+    } else {
+      this._dyScaled[zoomLevel] = this._dy;
+      this._repeatGapScaled[zoomLevel] = _repeatGap;
+    }
     prepareScaleBitmapSrcMixin(zoomLevel);
   }
 }

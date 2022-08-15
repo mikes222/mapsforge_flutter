@@ -4,11 +4,8 @@ import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 
 import '../../graphics/display.dart';
-import '../../graphics/filter.dart';
-import '../../graphics/graphicutils.dart';
 import '../../graphics/mapcanvas.dart';
 import '../../graphics/mappaint.dart';
-import '../../graphics/matrix.dart';
 import '../../model/linestring.dart';
 import '../../model/mappoint.dart';
 import 'mapelementcontainer.dart';
@@ -44,34 +41,12 @@ class WayTextContainer extends MapElementContainer {
   dispose() {}
 
   @override
-  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
-      Filter filter, SymbolCache symbolCache) async {
-    //MapPath path = _generatePath(origin);
-
-    {
-      int color = this.paintBack.getColorAsNumber();
-      if (filter != Filter.NONE) {
-        this
-            .paintBack
-            .setColorFromNumber(GraphicUtils.filterColor(color, filter));
-      }
-      canvas.drawPathText(this.text, this.lineString, origin, this.paintBack,
-          mapTextPaint, maxTextWidth);
-      if (filter != Filter.NONE) {
-        this.paintBack.setColorFromNumber(color);
-      }
-    }
-    int color = this.paintFront.getColorAsNumber();
-    if (filter != Filter.NONE) {
-      this
-          .paintFront
-          .setColorFromNumber(GraphicUtils.filterColor(color, filter));
-    }
+  Future<void> draw(
+      MapCanvas canvas, Mappoint origin, SymbolCache symbolCache) async {
+    canvas.drawPathText(this.text, this.lineString, origin, this.paintBack,
+        mapTextPaint, maxTextWidth);
     canvas.drawPathText(this.text, this.lineString, origin, this.paintFront,
         mapTextPaint, maxTextWidth);
-    if (filter != Filter.NONE) {
-      this.paintFront.setColorFromNumber(color);
-    }
   }
 
   @override

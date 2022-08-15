@@ -1,23 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/special.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 /// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
-class CircleMarker<T> extends BasicPointMarker<T> {
-  MapPaint? fill;
-
-  double fillWidth;
-
-  int? fillColor;
-
-  MapPaint? stroke;
-
-  final double strokeWidth;
-
-  final int strokeColor;
-
+class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
   final double radius;
 
   final int? percent;
@@ -29,17 +19,17 @@ class CircleMarker<T> extends BasicPointMarker<T> {
     item,
     markerCaption,
     required ILatLong center,
-    this.radius = 3,
+    this.radius = 10,
     this.percent,
-    this.fillWidth = 1.0,
-    this.fillColor,
-    this.strokeWidth = 1.0,
-    this.strokeColor = 0xff000000,
+    int? fillColor,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xff000000,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(strokeWidth >= 0),
-        assert(fillWidth >= 0),
+        assert(radius > 0),
+        assert(percent == null || percent > 0),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -47,23 +37,14 @@ class CircleMarker<T> extends BasicPointMarker<T> {
           item: item,
           markerCaption: markerCaption,
           latLong: center,
-        );
-
-  Future<void> initResources(SymbolCache? symbolCache) async {
-    if (fill == null && fillColor != null) {
-      fill = GraphicFactory().createPaint();
-      fill!.setColorFromNumber(fillColor!);
-      fill!.setStyle(Style.FILL);
-      fill!.setStrokeWidth(fillWidth);
-      //this.stroke.setTextSize(fontSize);
-    }
-    if (stroke == null && strokeWidth > 0) {
-      stroke = GraphicFactory().createPaint();
-      stroke!.setColorFromNumber(strokeColor);
-      stroke!.setStyle(Style.STROKE);
-      stroke!.setStrokeWidth(strokeWidth);
-      //this.stroke.setTextSize(fontSize);
-    }
+        ) {
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
+    if (fillColor != null)
+      setFillColorFromNumber(fillColor);
+    else
+      setFillColor(Colors.transparent);
+    setStrokeColorFromNumber(strokeColor);
+    setStrokeWidth(strokeWidth);
 
     if (markerCaption != null && markerCaption!.latLong == null) {
       markerCaption!.latLong = latLong;
@@ -82,14 +63,21 @@ class CircleMarker<T> extends BasicPointMarker<T> {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    if (fill != null) {
-      markerCallback.renderCircle(
-          latLong.latitude, latLong.longitude, radius, fill!);
-    }
-    if (stroke != null) {
-      markerCallback.renderCircle(
-          latLong.latitude, latLong.longitude, radius, stroke!);
-    }
+    markerCallback.renderCircle(
+        latLong.latitude,
+        latLong.longitude,
+        getRadius(markerCallback.mapViewPosition.zoomLevel),
+        getFillPaint(markerCallback.mapViewPosition.zoomLevel));
+    markerCallback.renderCircle(
+        latLong.latitude,
+        latLong.longitude,
+        getRadius(markerCallback.mapViewPosition.zoomLevel),
+        getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+  }
+
+  double getRadius(int zoomLevel) {
+    if (percent != null && percent != 100) return radius / 100 * percent!;
+    return radius;
   }
 
   @override
@@ -98,6 +86,7 @@ class CircleMarker<T> extends BasicPointMarker<T> {
         tapEvent.x + tapEvent.leftUpperX, tapEvent.y + tapEvent.leftUpperY);
     Mappoint p2 = tapEvent.projection.latLonToPixel(latLong);
 
-    return p2.distance(p1) <= radius;
+    return p2.distance(p1) <=
+        getRadius(tapEvent.projection.scalefactor.zoomlevel);
   }
 }

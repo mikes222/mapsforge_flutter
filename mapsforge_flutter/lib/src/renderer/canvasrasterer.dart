@@ -5,20 +5,15 @@ import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../graphics/bitmap.dart';
-import '../graphics/filter.dart';
 import '../graphics/graphicutils.dart';
 import '../graphics/mapcanvas.dart';
-import '../graphics/matrix.dart';
 import '../rendertheme/rendercontext.dart';
 
 class CanvasRasterer {
   final MapCanvas canvas;
 
-  final Matrix symbolMatrix;
-
   CanvasRasterer(double width, double height, [String? src])
-      : canvas = GraphicFactory().createCanvas(width, height, src),
-        symbolMatrix = GraphicFactory().createMatrix();
+      : canvas = GraphicFactory().createCanvas(width, height, src);
 
   void destroy() {
     this.canvas.destroy();
@@ -53,8 +48,7 @@ class CanvasRasterer {
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
-      await element.draw(canvas, projection.getLeftUpper(tile),
-          this.symbolMatrix, Filter.NONE, symbolCache);
+      await element.draw(canvas, projection.getLeftUpper(tile), symbolCache);
     }
   }
 

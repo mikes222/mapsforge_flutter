@@ -59,9 +59,7 @@ abstract class BasicMarker<T> extends Marker<T> {
             display: display,
             minZoomLevel: minZoomLevel,
             maxZoomLevel: maxZoomLevel,
-            item: item) {
-    markerCaption?.initResources();
-  }
+            item: item);
 
   @override
   void dispose() {
@@ -98,14 +96,6 @@ class MarkerCaption with TextMixin, PaintMixin {
 
   double captionOffsetY;
 
-  final double strokeWidth;
-
-  int strokeColor;
-
-  int fillColor;
-
-  double fontSize;
-
   final int minZoomLevel;
 
   int maxZoomLevel;
@@ -118,19 +108,17 @@ class MarkerCaption with TextMixin, PaintMixin {
     this.latLong,
     this.captionOffsetX = 0,
     this.captionOffsetY = 0,
-    this.strokeWidth = 2.0,
-    this.strokeColor = 0xffffffff,
-    this.fillColor = 0xff000000,
-    this.fontSize = 10.0,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xffffffff,
+    int fillColor = 0xff000000,
+    double fontSize = 10.0,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
     this.maxTextWidth = 200,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
         assert(minZoomLevel <= maxZoomLevel),
-        assert(text.length > 0);
-
-  void initResources() {
+        assert(text.length > 0) {
     initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     setStrokeWidth(strokeWidth);
@@ -147,31 +135,25 @@ class MarkerCaption with TextMixin, PaintMixin {
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
-    if (latLong != null) {
-      prepareScalePaintMixin(markerCallback.mapViewPosition.zoomLevel);
-      prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
-      Mappoint mappoint = markerCallback.mapViewPosition.projection!
-          .pixelRelativeToLeftUpper(
-              latLong!, markerCallback.mapViewPosition.leftUpper!);
-      markerCallback.flutterCanvas.drawText(
-          text,
-          (mappoint.x + captionOffsetX),
-          (mappoint.y + captionOffsetY),
-          getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
-          maxTextWidth);
-      markerCallback.flutterCanvas.drawText(
-          text,
-          (mappoint.x + captionOffsetX),
-          (mappoint.y + captionOffsetY),
-          getFillPaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
-          maxTextWidth);
-
-      // markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
-      //     getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
-      // markerCallback.renderText(text, latLong!, captionOffsetX, captionOffsetY,
-      //     getFillPaint(markerCallback.mapViewPosition.zoomLevel));
-    }
+    if (latLong == null) return;
+    prepareScalePaintMixin(markerCallback.mapViewPosition.zoomLevel);
+    prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
+    Mappoint mappoint = markerCallback.mapViewPosition.projection!
+        .pixelRelativeToLeftUpper(
+            latLong!, markerCallback.mapViewPosition.leftUpper!);
+    markerCallback.flutterCanvas.drawText(
+        text,
+        (mappoint.x + captionOffsetX),
+        (mappoint.y + captionOffsetY),
+        getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
+        getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+        maxTextWidth);
+    markerCallback.flutterCanvas.drawText(
+        text,
+        (mappoint.x + captionOffsetX),
+        (mappoint.y + captionOffsetY),
+        getFillPaint(markerCallback.mapViewPosition.zoomLevel),
+        getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+        maxTextWidth);
   }
 }

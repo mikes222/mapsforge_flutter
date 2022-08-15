@@ -25,7 +25,7 @@ class ParagraphCache {
   ParagraphEntry getEntry(String text, MapTextPaint mapTextPaint,
       MapPaint paint, double maxTextWidth) {
     String key =
-        "$text-${mapTextPaint.getFontFamily()}-${mapTextPaint.getTextSize()}-${mapTextPaint.getFontStyle().name}-${paint.getStrokeWidth()}-${paint.getColor().value}";
+        "$text-${mapTextPaint.getFontFamily()}-${mapTextPaint.getTextSize()}-${mapTextPaint.getFontStyle().name}-${paint.getStrokeWidth()}-$maxTextWidth";
     ParagraphEntry? result = _cache.get(key);
     if (result != null) return result;
     result = ParagraphEntry(text, paint, mapTextPaint, maxTextWidth);

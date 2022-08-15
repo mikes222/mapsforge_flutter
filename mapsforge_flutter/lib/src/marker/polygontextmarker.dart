@@ -1,4 +1,4 @@
-import 'package:logging/logging.dart';
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
@@ -14,21 +14,11 @@ import 'markercallback.dart';
 
 /// Draws Text along a polygon. Does NOT draw the polygon. Use [PolygonMarker] in conjunction with this marker.
 class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
-  static final _log = new Logger('PolygonMarker');
-
   List<ILatLong> path = [];
 
   BoundingBox? _boundingBox;
 
-  int? fillColor;
-
-  final double strokeWidth;
-
-  final int strokeColor;
-
   final String caption;
-
-  double fontSize;
 
   int _zoom = -1;
 
@@ -47,10 +37,10 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     T? item,
-    this.fontSize = 10,
-    this.fillColor,
-    this.strokeWidth = 1.0,
-    this.strokeColor = 0xff000000,
+    double fontSize = 10,
+    int? fillColor,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xff000000,
     this.maxTextWidth = 200,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
@@ -62,7 +52,17 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
           item: item,
-        ) {}
+        ) {
+    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    setStrokeColorFromNumber(strokeColor);
+    if (fillColor != null)
+      setFillColorFromNumber(fillColor);
+    else
+      setFillColor(Colors.transparent);
+    setFontSize(fontSize);
+    setStrokeWidth(strokeWidth);
+  }
 
   @override
   void dispose() {
@@ -74,15 +74,6 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
   void addLatLong(ILatLong latLong) {
     path.add(latLong);
     _boundingBox = BoundingBox.fromLatLongs(path);
-  }
-
-  Future<void> initResources() async {
-    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    setStrokeColorFromNumber(this.strokeColor);
-    if (fillColor != null) setFillColorFromNumber(this.fillColor!);
-    setFontSize(fontSize);
-    setStrokeWidth(this.strokeWidth);
   }
 
   @override

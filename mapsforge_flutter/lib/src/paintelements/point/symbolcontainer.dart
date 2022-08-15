@@ -57,8 +57,8 @@ class SymbolContainer extends MapElementContainer {
   }
 
   @override
-  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
-      Filter filter, SymbolCache symbolCache) async {
+  Future<void> draw(
+      MapCanvas canvas, Mappoint origin, SymbolCache symbolCache) async {
     //matrix.reset();
     // We cast to int for pixel perfect positioning
     //matrix.translate((this.xy.x - origin.x + boundary.left), (this.xy.y - origin.y + boundary.top));
@@ -67,16 +67,19 @@ class SymbolContainer extends MapElementContainer {
     if (bitmap == null) return;
     //print("symbolcontainer ${xy.x - origin.x + boundary.left} / ${xy.y - origin.y + boundary.top} for ${symbol.toString()}");
 
-    if (theta != 0 && alignCenter) {
-      matrix.rotate(theta, pivotX: -boundary!.left, pivotY: -boundary!.top);
-    } else {
-      matrix.rotate(theta);
+    Matrix? matrix;
+    if (theta != null && theta != 0) {
+      matrix = GraphicFactory().createMatrix();
+      if (alignCenter) {
+        matrix.rotate(theta, pivotX: -boundary!.left, pivotY: -boundary!.top);
+      } else {
+        matrix.rotate(theta);
+      }
     }
 
     canvas.drawBitmap(
         bitmap: bitmap,
         matrix: matrix,
-        filter: filter,
         left: this.xy.x - origin.x + boundary!.left,
         top: this.xy.y - origin.y + boundary!.top,
         paint: paint);

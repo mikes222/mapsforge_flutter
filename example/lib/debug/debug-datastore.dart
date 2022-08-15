@@ -51,7 +51,6 @@ class DebugDatastore extends MarkerByItemDataStore {
       fillColor: 0x80eac71c,
       strokeColor: 0xffc2a726,
     );
-    await marker.initResources(symbolCache);
     return marker;
   }
 

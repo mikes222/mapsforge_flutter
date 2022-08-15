@@ -74,7 +74,7 @@ class MarkerClusterDataStore extends IMarkerDataStore {
           fontSize: 20,
           captionOffsetY: -10,
           fillColor: 0xffffffff),
-    )..initResources(null);
+    );
   }
 
   /// This method will be called if boundary or zoomlevel changes to give the implementation the chance to replace/retrieve markers for the new boundary/zoomlevel.

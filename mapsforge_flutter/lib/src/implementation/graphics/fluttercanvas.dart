@@ -4,9 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
@@ -14,7 +12,6 @@ import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
-import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
@@ -59,21 +56,21 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawBitmap(
-      {required Bitmap bitmap,
-      required double left,
-      required double top,
-      required MapPaint paint,
-      int? srcLeft,
-      int? srcTop,
-      int? srcRight,
-      int? srcBottom,
-      int? dstLeft,
-      int? dstTop,
-      int? dstRight,
-      int? dstBottom,
-      Matrix? matrix,
-      Filter? filter}) {
+  void drawBitmap({
+    required Bitmap bitmap,
+    required double left,
+    required double top,
+    required MapPaint paint,
+    int? srcLeft,
+    int? srcTop,
+    int? srcRight,
+    int? srcBottom,
+    int? dstLeft,
+    int? dstTop,
+    int? dstRight,
+    int? dstBottom,
+    Matrix? matrix,
+  }) {
     ui.Image bmp = (bitmap as FlutterBitmap).bitmap;
     assert(bmp.width > 0);
     assert(bmp.height > 0);

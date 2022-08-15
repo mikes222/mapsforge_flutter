@@ -62,7 +62,6 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
       radius: 20,
       strokeWidth: 5,
     );
-    await marker.initResources(symbolCache);
     return marker;
   }
 }

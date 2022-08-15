@@ -28,13 +28,13 @@ class WayDecorator {
       bool repeatSymbol,
       int repeatGap,
       int repeatStart,
-      bool? rotate,
+      bool rotate,
       List<List<Mappoint>> coordinates,
       List<MapElementContainer> currentItems,
-      MapPaint? symbolPaint) {
+      MapPaint symbolPaint) {
     int skipPixels = repeatStart;
 
-    List<Mappoint?>? c;
+    List<Mappoint?> c;
     if (dy == 0) {
       c = coordinates[0];
     } else {
@@ -68,7 +68,7 @@ class WayDecorator {
         // move the previous point forward towards the current point
         previousX += diffX * segmentSkipPercentage;
         previousY += diffY * segmentSkipPercentage;
-        if (rotate!) {
+        if (rotate) {
           // if we do not rotate theta will be 0, which is correct
           theta = atan2(currentY - previousY, currentX - previousX);
         }
@@ -84,7 +84,7 @@ class WayDecorator {
             bitmapHeight: bitmapHeight,
             theta: theta,
             alignCenter: alignCenter,
-            paint: symbolPaint!));
+            paint: symbolPaint));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {

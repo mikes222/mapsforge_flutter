@@ -12,3 +12,7 @@ example/.gradle/
 mapsforge_flutter/test/integration/failures/
 mapsforge_flutter/test/graphicsfactory/failures/
 mapsforge_flutter/test_resources/austria.map
+/mapsforge_flutter/test/marker/failures/circlemarker_isolatedDiff.png
+/mapsforge_flutter/test/marker/failures/circlemarker_maskedDiff.png
+/mapsforge_flutter/test/marker/failures/circlemarker_masterImage.png
+/mapsforge_flutter/test/marker/failures/circlemarker_testImage.png

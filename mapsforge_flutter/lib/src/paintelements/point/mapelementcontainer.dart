@@ -51,11 +51,9 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
   }
 
   /**
-   * Drawing method: element will draw itself on canvas shifted by origin point of canvas and
-   * using the matrix if rotation is required. Additionally a color filter can be applied.
+   * Drawing method: element will draw itself on canvas shifted by origin point of canvas.
    */
-  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
-      Filter filter, SymbolCache symbolCache);
+  Future<void> draw(MapCanvas canvas, Mappoint origin, SymbolCache symbolCache);
 
   /// Gets the pixel absolute boundary for this element.
   ///

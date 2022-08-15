@@ -41,47 +41,10 @@ class PointTextContainer extends MapElementContainer {
     this.mapTextPaint,
     this.maxTextWidth,
   ) : super(point, display, priority) {
-    // TextPaint frontTextPaint = new TextPaint(AndroidGraphicFactory.getPaint(this.paintFront));
-    //TextPaint backTextPaint = null;
-    //backTextPaint = new TextPaint(AndroidGraphicFactory.getPaint(this.paintBack));
+    _calculateBoundary();
+  }
 
-    ui.TextAlign alignment = ui.TextAlign.center;
-    if (Position.LEFT == this.position ||
-        Position.BELOW_LEFT == this.position ||
-        Position.ABOVE_LEFT == this.position) {
-      //alignment = Layout.Alignment.ALIGN_OPPOSITE;
-    } else if (Position.RIGHT == this.position ||
-        Position.BELOW_RIGHT == this.position ||
-        Position.ABOVE_RIGHT == this.position) {
-      //alignment = Layout.Alignment.ALIGN_NORMAL;
-    }
-
-    // strange Android behaviour: if alignment is set to center, then
-    // text is rendered with right alignment if using StaticLayout
-
-//      frontLayout = new StaticLayout(
-//          this.text,
-//          frontTextPaint,
-//          this.maxTextWidth,
-//          alignment,
-//          1,
-//          0,
-//          false);
-//      backLayout = null;
-//      if (this.paintBack != null) {
-//        backLayout = new StaticLayout(
-//            this.text,
-//            backTextPaint,
-//            this.maxTextWidth,
-//            alignment,
-//            1,
-//            0,
-//            false);
-//      }
-
-//      boxWidth = frontLayout.getWidth();
-//      boxHeight = frontLayout.getHeight();
-
+  void _calculateBoundary() {
     front =
         ParagraphCache().getEntry(text, mapTextPaint, paintFront, maxTextWidth);
     back =
@@ -142,8 +105,8 @@ class PointTextContainer extends MapElementContainer {
   }
 
   @override
-  Future<void> draw(MapCanvas canvas, Mappoint origin, Matrix matrix,
-      Filter filter, SymbolCache symbolCache) async {
+  Future<void> draw(
+      MapCanvas canvas, Mappoint origin, SymbolCache symbolCache) async {
     ui.Canvas? flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
 
     // the origin of the text is the base line, so we need to make adjustments

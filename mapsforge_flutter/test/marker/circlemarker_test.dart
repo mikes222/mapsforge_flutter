@@ -29,9 +29,7 @@ void main() {
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
     viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     CircleMarker circleMarker = CircleMarker(center: latLong);
-    await circleMarker.initResources( symbolCache);
 
     SingleMarkerPainter painter = SingleMarkerPainter(
         position: viewModel.mapViewPosition!,
@@ -79,13 +77,13 @@ void main() {
     SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
     CircleMarker circleMarker = CircleMarker(
         center: latLong, fillColor: 0xff00ff00, radius: 20, strokeWidth: 4);
-    await circleMarker.initResources( symbolCache);
 
     SingleMarkerPainter painter = SingleMarkerPainter(
-        position: viewModel.mapViewPosition!,
-        displayModel: displayModel,
-        marker: circleMarker,
-        viewModel: viewModel,);
+      position: viewModel.mapViewPosition!,
+      displayModel: displayModel,
+      marker: circleMarker,
+      viewModel: viewModel,
+    );
 
     Key key = GlobalKey();
 
