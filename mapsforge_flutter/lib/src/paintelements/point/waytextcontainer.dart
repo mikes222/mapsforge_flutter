@@ -29,7 +29,7 @@ class WayTextContainer extends MapElementContainer {
     ParagraphEntry entry =
         ParagraphCache().getEntry(text, mapTextPaint, paintFront, maxTextWidth);
 
-    double textHeight = entry.paragraph.height;
+    double textHeight = entry.getHeight();
 
     // a way text container should always run left to right, but I leave this in because it might matter
     // if we support right-to-left text.

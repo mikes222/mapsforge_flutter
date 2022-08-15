@@ -15,8 +15,8 @@ abstract class MarkerCallback {
 
   void renderPath(MapPath path, MapPaint paint);
 
-  void renderPathText(
-      String caption, LineString lineString, Mappoint origin, MapPaint stroke, MapTextPaint textPaint);
+  void renderPathText(String caption, LineString lineString, Mappoint origin,
+      MapPaint stroke, MapTextPaint textPaint, double maxTextWidth);
 
   void renderRect(MapRect rect, MapPaint paint);
 

@@ -38,6 +38,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
 
   LineString? _lineString;
 
+  /// The maximum width of a text as defined in the displaymodel
+  final double maxTextWidth;
+
   PolygonTextMarker({
     required this.caption,
     display = Display.ALWAYS,
@@ -48,6 +51,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
     this.fillColor,
     this.strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
+    this.maxTextWidth = 200,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -75,9 +79,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
   Future<void> initResources() async {
     initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    fontSize = this.fontSize;
     setStrokeColorFromNumber(this.strokeColor);
     if (fillColor != null) setFillColorFromNumber(this.fillColor!);
+    setFontSize(fontSize);
     setStrokeWidth(this.strokeWidth);
   }
 
@@ -99,13 +103,15 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
           _lineString!,
           origin,
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          maxTextWidth);
       markerCallback.renderPathText(
           caption,
           _lineString!,
           origin,
           getFillPaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          maxTextWidth);
     } else {
       _lineString = LineString();
       double? prevX = null;
@@ -129,7 +135,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
           caption,
           getTextPaint(markerCallback.mapViewPosition.zoomLevel),
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
-          200);
+          maxTextWidth);
       _lineString =
           WayDecorator.reducePathForText(_lineString!, entry.getWidth());
       // _lineString!.segments.forEach((element) {
@@ -144,13 +150,15 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
           _lineString!,
           origin,
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          maxTextWidth);
       markerCallback.renderPathText(
           caption,
           _lineString!,
           origin,
           getFillPaint(markerCallback.mapViewPosition.zoomLevel),
-          getTextPaint(markerCallback.mapViewPosition.zoomLevel));
+          getTextPaint(markerCallback.mapViewPosition.zoomLevel),
+          maxTextWidth);
 
       _zoom = markerCallback.mapViewPosition.zoomLevel;
     }

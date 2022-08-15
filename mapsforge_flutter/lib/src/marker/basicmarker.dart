@@ -135,7 +135,7 @@ class MarkerCaption with TextMixin, PaintMixin {
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     setStrokeWidth(strokeWidth);
     setStrokeColorFromNumber(strokeColor);
-    fontSize = (fontSize);
+    setFontSize(fontSize);
     setFillColorFromNumber(fillColor);
   }
 
@@ -148,6 +148,8 @@ class MarkerCaption with TextMixin, PaintMixin {
     if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
     if (latLong != null) {
+      prepareScalePaintMixin(markerCallback.mapViewPosition.zoomLevel);
+      prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
       Mappoint mappoint = markerCallback.mapViewPosition.projection!
           .pixelRelativeToLeftUpper(
               latLong!, markerCallback.mapViewPosition.leftUpper!);
