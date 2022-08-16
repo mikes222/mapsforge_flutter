@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
@@ -36,13 +35,8 @@ class WayTextContainer extends MapElementContainer {
         textHeight / 2, textHeight / 2, textHeight / 2, textHeight / 2);
   }
 
-  @mustCallSuper
   @override
-  dispose() {}
-
-  @override
-  Future<void> draw(
-      MapCanvas canvas, Mappoint origin, SymbolCache symbolCache) async {
+  void draw(MapCanvas canvas, Mappoint origin) {
     canvas.drawPathText(this.text, this.lineString, origin, this.paintBack,
         mapTextPaint, maxTextWidth);
     canvas.drawPathText(this.text, this.lineString, origin, this.paintFront,

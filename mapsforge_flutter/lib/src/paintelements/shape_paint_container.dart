@@ -11,5 +11,5 @@ abstract class ShapePaintContainer<T extends ShapeContainer> {
 
   const ShapePaintContainer(this.shapeContainer, this.dy);
 
-  Future<void> draw(MapCanvas canvas, SymbolCache symbolCache);
+  void draw(MapCanvas canvas);
 }

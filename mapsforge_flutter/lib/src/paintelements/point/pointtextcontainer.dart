@@ -1,10 +1,7 @@
 import 'dart:ui' as ui;
 
-import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/model/rectangle.dart';
@@ -105,8 +102,7 @@ class PointTextContainer extends MapElementContainer {
   }
 
   @override
-  Future<void> draw(
-      MapCanvas canvas, Mappoint origin, SymbolCache symbolCache) async {
+  void draw(MapCanvas canvas, Mappoint origin) {
     ui.Canvas? flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
 
     // the origin of the text is the base line, so we need to make adjustments
@@ -160,10 +156,5 @@ class PointTextContainer extends MapElementContainer {
   @override
   String toString() {
     return 'PointTextContainer{maxTextWidth: $maxTextWidth, paintBack: $paintBack, paintFront: $paintFront, position: $position, text: $text, ${super.toString()}';
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
   }
 }

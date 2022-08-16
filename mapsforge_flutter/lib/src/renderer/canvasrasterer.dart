@@ -19,8 +19,7 @@ class CanvasRasterer {
     this.canvas.destroy();
   }
 
-  Future<int> drawWays(
-      RenderContext renderContext, SymbolCache symbolCache) async {
+  int drawWays(RenderContext renderContext) {
     int count = 0;
     //print("drawing now ${renderContext.layerWays.length} layers");
     for (LayerPaintContainer layerPaintContainer in renderContext.layerWays) {
@@ -29,7 +28,7 @@ class CanvasRasterer {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
         for (ShapePaintContainer element in wayList) {
           //print("         drawing now ${element}");
-          await element.draw(this.canvas, symbolCache);
+          element.draw(this.canvas);
           ++count;
         }
       }
@@ -37,8 +36,8 @@ class CanvasRasterer {
     return count;
   }
 
-  Future<void> drawMapElements(Set<MapElementContainer> elements,
-      PixelProjection projection, Tile tile, SymbolCache symbolCache) async {
+  void drawMapElements(Set<MapElementContainer> elements,
+      PixelProjection projection, Tile tile) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -48,7 +47,7 @@ class CanvasRasterer {
     for (MapElementContainer element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
-      await element.draw(canvas, projection.getLeftUpper(tile), symbolCache);
+      element.draw(canvas, projection.getLeftUpper(tile));
     }
   }
 

@@ -1,3 +1,6 @@
+import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
+
 import '../../datastore/pointofinterest.dart';
 import '../../paintelements/shape/polylinecontainer.dart';
 import '../rendercontext.dart';
@@ -49,12 +52,14 @@ abstract class RenderInstruction {
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param poi
-  void renderNode(final RenderContext renderContext, PointOfInterest poi);
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache);
 
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param way
-  void renderWay(final RenderContext renderContext, PolylineContainer way);
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache);
 
   Scale scaleFromValue(String value) {
     if (value == (ALL)) {

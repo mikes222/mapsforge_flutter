@@ -95,16 +95,17 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
-      return;
+      return Future.value(null);
     }
 
     String? caption = this.textKey!.getValue(poi.tags);
     if (caption == null) {
       //_log.info("caption is null for $textKey");
-      return;
+      return Future.value(null);
     }
 
     _init(renderContext.job.tile.zoomLevel);
@@ -124,21 +125,23 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
         position,
         mapTextPaint,
         maxTextWidth));
+    return Future.value(null);
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) {
     if (Display.NEVER == this.display) {
-      return;
+      return Future.value(null);
     }
 
     String? caption = this.textKey!.getValue(way.getTags());
     if (caption == null) {
-      return;
+      return Future.value(null);
     }
 
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
-      return;
+      return Future.value(null);
 
     _init(renderContext.job.tile.zoomLevel);
 
@@ -160,6 +163,7 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
         mapTextPaint,
         maxTextWidth);
     renderContext.labels.add(label);
+    return Future.value(null);
   }
 
   @override

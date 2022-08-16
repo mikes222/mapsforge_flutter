@@ -68,6 +68,7 @@ class MapDataStoreRenderer extends JobRenderer
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext = RenderContext(job, renderTheme);
+    renderContext.prepareScale();
     if (!this.datastore.supportsTile(job.tile, renderContext.projection)) {
       // return if we do not have data for the requested tile in the datastore
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
@@ -97,6 +98,7 @@ class MapDataStoreRenderer extends JobRenderer
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
     }
+    await _processMapReadResult(renderContext, mapReadResult, symbolCache);
     if ((mapReadResult.ways.length) > 100000) {
       _log.warning(
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
@@ -121,7 +123,7 @@ class MapDataStoreRenderer extends JobRenderer
     canvasRasterer.startCanvasBitmap();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
-    int waycount = await canvasRasterer.drawWays(renderContext, symbolCache);
+    int waycount = canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
@@ -134,8 +136,8 @@ class MapDataStoreRenderer extends JobRenderer
       labels = labelsToDraw.length;
       //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
-      await canvasRasterer.drawMapElements(
-          labelsToDraw, renderContext.projection, job.tile, symbolCache);
+      canvasRasterer.drawMapElements(
+          labelsToDraw, renderContext.projection, job.tile);
       diff = DateTime.now().millisecondsSinceEpoch - time;
       if (diff > 100 && showTiming) {
         _log.info(
@@ -161,7 +163,6 @@ class MapDataStoreRenderer extends JobRenderer
 //        renderContext.canvasRasterer.fillOutsideAreas(Color.TRANSPARENT, insideArea);
 //      }
 //    }
-    renderContext.dispose();
     TileBitmap? bitmap =
         (await canvasRasterer.finalizeCanvasBitmap() as TileBitmap?);
     int actions = (canvasRasterer.canvas as FlutterCanvas).actions;
@@ -346,21 +347,18 @@ Future<IsolateMapReplyParams> _readMapDataInIsolate(
     IsolateMapRequestParam isolateParam) async {
   DatastoreReadResult? mapReadResult =
       await mapDataStore!.readMapDataSingle(isolateParam.tile);
-  if (mapReadResult != null) {
-    _processMapReadResult(isolateParam.renderContext, mapReadResult);
-  }
   return IsolateMapReplyParams(
       result: mapReadResult, renderContext: isolateParam.renderContext);
 }
 
-void _processMapReadResult(
-    final RenderContext renderContext, DatastoreReadResult mapReadResult) {
+Future<void> _processMapReadResult(final RenderContext renderContext,
+    DatastoreReadResult mapReadResult, SymbolCache symbolCache) async {
   for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
     List<RenderInstruction> renderInstructions =
         _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
-    renderInstructions.forEach((element) {
-      element.renderNode(renderContext, pointOfInterest);
-    });
+    for (RenderInstruction element in renderInstructions) {
+      await element.renderNode(renderContext, pointOfInterest, symbolCache);
+    }
   }
 
   // never ever call an async method 44000 times. It takes 2 seconds to do so!
@@ -370,9 +368,9 @@ void _processMapReadResult(
         PolylineContainer(way, renderContext.job.tile);
     List<RenderInstruction> renderInstructions =
         _retrieveRenderInstructionsForWay(renderContext, container);
-    renderInstructions.forEach((element) {
-      element.renderWay(renderContext, container);
-    });
+    for (RenderInstruction element in renderInstructions) {
+      await element.renderWay(renderContext, container, symbolCache);
+    }
   }
   if (mapReadResult.isWater) {
     _renderWaterBackground(renderContext);

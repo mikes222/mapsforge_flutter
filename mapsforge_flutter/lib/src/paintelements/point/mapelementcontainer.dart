@@ -1,11 +1,7 @@
-import 'package:mapsforge_flutter/core.dart';
-
-import '../../graphics/mapcanvas.dart';
 import '../../graphics/display.dart';
-import '../../graphics/matrix.dart';
+import '../../graphics/mapcanvas.dart';
 import '../../model/mappoint.dart';
 import '../../model/rectangle.dart';
-import '../../graphics/filter.dart';
 
 /// The MapElementContainer is the abstract base class for annotations that can be placed on the
 /// map, e.g. labels and icons.
@@ -21,8 +17,12 @@ import '../../graphics/filter.dart';
 abstract class MapElementContainer implements Comparable<MapElementContainer> {
   /// The space the item requires around the central point [xy]
   Rectangle? boundary;
+
+  /// The space the item requires relative to the absolute coordinates in pixels
   Rectangle? boundaryAbsolute;
+
   final Display display;
+
   final int priority;
 
   /// The central pivot point which is the geographic point for the entity translated
@@ -30,8 +30,6 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
   final Mappoint xy;
 
   MapElementContainer(this.xy, this.display, this.priority);
-
-  void dispose();
 
   /**
    * Compares elements according to their priority.
@@ -41,19 +39,13 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
    */
   @override
   int compareTo(MapElementContainer other) {
-    if (this.priority < other.priority) {
-      return -1;
-    }
-    if (this.priority > other.priority) {
-      return 1;
-    }
-    return 0;
+    return this.priority - other.priority;
   }
 
   /**
    * Drawing method: element will draw itself on canvas shifted by origin point of canvas.
    */
-  Future<void> draw(MapCanvas canvas, Mappoint origin, SymbolCache symbolCache);
+  void draw(MapCanvas canvas, Mappoint origin);
 
   /// Gets the pixel absolute boundary for this element.
   ///
@@ -100,7 +92,6 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
       other is MapElementContainer &&
           runtimeType == other.runtimeType &&
           boundary == other.boundary &&
-          boundaryAbsolute == other.boundaryAbsolute &&
           display == other.display &&
           priority == other.priority &&
           xy == other.xy;
@@ -108,7 +99,6 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
   @override
   int get hashCode =>
       (boundary?.hashCode ?? 15) ^
-      boundaryAbsolute.hashCode ^
       display.hashCode ^
       priority.hashCode ^
       xy.hashCode;

@@ -16,3 +16,6 @@ mapsforge_flutter/test_resources/austria.map
 /mapsforge_flutter/test/marker/failures/circlemarker_maskedDiff.png
 /mapsforge_flutter/test/marker/failures/circlemarker_masterImage.png
 /mapsforge_flutter/test/marker/failures/circlemarker_testImage.png
+*.cc
+*.h
+*.cmake

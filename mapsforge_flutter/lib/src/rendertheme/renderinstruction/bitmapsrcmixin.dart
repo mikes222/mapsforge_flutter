@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 
 class BitmapSrcMixin {
   /**
@@ -24,6 +26,10 @@ class BitmapSrcMixin {
 
   final Map<int, int> _heights = {};
 
+  //ResourceBitmap? _bitmap;
+
+  //final Map<int, ResourceBitmap> _bitmaps = {};
+
   /// stroke will be drawn thicker at or above this zoomlevel
   late int _strokeMinZoomLevel;
 
@@ -31,7 +37,26 @@ class BitmapSrcMixin {
     this._strokeMinZoomLevel = strokeMinZoomLevel;
   }
 
-  void prepareScaleBitmapSrcMixin(int zoomLevel) {}
+  void prepareScaleBitmapSrcMixin(int zoomLevel) {
+    // if (bitmapSrc == null || _bitmaps[zoomLevel] != null) return;
+    // if (getBitmapWidth(zoomLevel) == _bitmapWidth &&
+    //     getBitmapHeight(zoomLevel) == _bitmapHeight) {
+    //   if (_bitmap != null) {
+    //     _bitmaps[zoomLevel] = _bitmap!;
+    //     return;
+    //   } else {
+    //     ResourceBitmap? bitmap = await symbolCache.getSymbol(
+    //         bitmapSrc!, getBitmapWidth(zoomLevel), getBitmapHeight(zoomLevel));
+    //     if (bitmap != null) {
+    //       _bitmaps[zoomLevel] = bitmap;
+    //       _bitmap = bitmap;
+    //     }
+    //   }
+    // }
+    // ResourceBitmap? bitmap = await symbolCache.getSymbol(
+    //     bitmapSrc!, getBitmapWidth(zoomLevel), getBitmapHeight(zoomLevel));
+    // if (bitmap != null) _bitmaps[zoomLevel] = bitmap;
+  }
 
   int getBitmapHeight(int zoomLevel) {
     if (_heights[zoomLevel] != null) return _heights[zoomLevel]!;
@@ -64,6 +89,14 @@ class BitmapSrcMixin {
       _widths[zoomLevel] = (_widths[zoomLevel]! * scaleFactor).round();
     }
     return _widths[zoomLevel]!;
+  }
+
+  Future<ResourceBitmap?> loadBitmap(
+      int zoomLevel, SymbolCache symbolCache) async {
+    if (bitmapSrc == null) return null;
+    ResourceBitmap? bitmap = await symbolCache.getSymbol(
+        bitmapSrc!, getBitmapWidth(zoomLevel), getBitmapHeight(zoomLevel));
+    return bitmap;
   }
 
   void setBitmapPercent(int bitmapPercent) {

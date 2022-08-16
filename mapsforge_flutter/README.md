@@ -23,12 +23,14 @@ Please find an example APP in the subdirectory [../example/README.md](../example
 
 ## Limitations
 
-Everything is called in the same thread, isolates are flutter's way of threads but calling native
-functions is currently not possible in isolates. All graphical functions are native functions.
+In Flutter everything is called in the same thread, isolates are flutter's way of threads but calling ui
+functions is currently not possible in secondary isolates. All graphical methods which are used to 
+cretae the tiles are ui functions.
 
 - So currently the whole rendering is done in the ui thread which leads to blocked ui while
   rendering (only a couple of milliseconds)
   See https://github.com/flutter/flutter/issues/13937
+  See https://github.com/flutter/flutter/issues/10647
 
 Markers are currently not scaled while pinch'n'zoom
 
@@ -47,7 +49,10 @@ Speed:
 
 Others:
 
-- support rotating map
+- support rotating map (do not rotate the text and icons)
+- crisper view (take the physical resolution of screens into account)
+- some flaws with text spawning multiple tiles
+- Unit tests
 
 ## Getting Started
 
@@ -198,6 +203,5 @@ Same license as the original mapsforge project. LPGL-v3
 
 Help is appreciated...
 
-- support map rotating (do not rotate the text and icons then)
-- some flaws with text spawning multiple tiles
-- Unit tests
+If you find some bug or make enhancements feel free to contribute via PullRequests. 
+Also feel free to create bug reports in github.

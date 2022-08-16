@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
@@ -24,14 +25,7 @@ class RenderContext {
       : labels = [],
         projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
     this.layerWays = _createWayLists();
-    setScale(this.job.tile.zoomLevel);
     drawingLayers = layerWays[0];
-  }
-
-  void dispose() {
-    labels.forEach((element) {
-      element.dispose();
-    });
   }
 
   void setDrawingLayers(int layer) {
@@ -72,7 +66,7 @@ class RenderContext {
    *
    * @param zoomLevel the zoom level for which the scale stroke factor should be set.
    */
-  void setScale(int zoomLevel) {
+  void prepareScale() {
     this.renderTheme.prepareScale(this.job.tile.zoomLevel);
   }
 }

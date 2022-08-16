@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 
 import '../graphics/display.dart';
@@ -18,9 +19,7 @@ class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 10;
 
   static void renderSymbol(
-      String bitmapSrc,
-      int bitmapWidth,
-      int bitmapHeight,
+      ResourceBitmap bitmap,
       Display display,
       int priority,
       double dy,
@@ -79,9 +78,7 @@ class WayDecorator {
             point: point,
             display: display,
             priority: priority,
-            bitmapSrc: bitmapSrc,
-            bitmapWidth: bitmapWidth,
-            bitmapHeight: bitmapHeight,
+            bitmap: bitmap,
             theta: theta,
             alignCenter: alignCenter,
             paint: symbolPaint));

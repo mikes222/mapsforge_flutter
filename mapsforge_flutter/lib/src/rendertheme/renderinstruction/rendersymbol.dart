@@ -1,9 +1,10 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/point/symbolcontainer.dart';
+import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -17,10 +18,10 @@ import '../rendercontext.dart';
 ///
 class RenderSymbol extends RenderInstruction with BitmapSrcMixin {
   Display display = Display.IFSPACE;
-  String? id;
-  int priority = 0;
 
-  RenderSymbol() : super();
+  String? id;
+
+  int priority = 0;
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
     initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
@@ -61,13 +62,16 @@ class RenderSymbol extends RenderInstruction with BitmapSrcMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) async {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return;
     }
 
-    if (bitmapSrc == null) return;
+    ResourceBitmap? bitmap =
+        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+    if (bitmap == null) return;
 
     Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
 
@@ -75,33 +79,32 @@ class RenderSymbol extends RenderInstruction with BitmapSrcMixin {
         point: poiPosition,
         display: display,
         priority: priority,
-        bitmapSrc: bitmapSrc!,
-        bitmapWidth: getBitmapWidth(renderContext.job.tile.zoomLevel),
-        bitmapHeight: getBitmapHeight(renderContext.job.tile.zoomLevel),
+        bitmap: bitmap,
         paint: getBitmapPaint(),
         alignCenter: true));
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) async {
     if (Display.NEVER == this.display) {
       //_log.info("display is never for $textKey");
       return;
     }
 
+    ResourceBitmap? bitmap =
+        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+    if (bitmap == null) return;
+
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
-
-    if (bitmapSrc == null) return;
 
     Mappoint centerPosition = way.getCenterAbsolute(renderContext.projection);
     renderContext.labels.add(new SymbolContainer(
         point: centerPosition,
         display: display,
         priority: priority,
-        bitmapSrc: bitmapSrc!,
-        bitmapWidth: getBitmapWidth(renderContext.job.tile.zoomLevel),
-        bitmapHeight: getBitmapHeight(renderContext.job.tile.zoomLevel),
+        bitmap: bitmap,
         paint: getBitmapPaint()));
   }
 

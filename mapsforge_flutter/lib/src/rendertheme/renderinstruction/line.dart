@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint_polyline_container.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
@@ -86,23 +88,33 @@ class Line extends RenderInstruction with BitmapSrcMixin, PaintMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) {
     // do nothing
+    return Future.value(null);
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) async {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
+
+    ResourceBitmap? bitmap =
+        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+    if (bitmap != null &&
+        getStrokePaint(renderContext.job.tile.zoomLevel).getBitmapShader() ==
+            null) {
+      if (getStrokePaint(renderContext.job.tile.zoomLevel).isTransparent())
+        getStrokePaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
+      getStrokePaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
+    }
 
     renderContext.addToCurrentDrawingLayer(
         level,
         ShapePaintPolylineContainer(
             way,
             getStrokePaint(renderContext.job.tile.zoomLevel),
-            bitmapSrc,
-            getBitmapWidth(renderContext.job.tile.zoomLevel),
-            getBitmapHeight(renderContext.job.tile.zoomLevel),
             getDy(renderContext.job.tile.zoomLevel),
             renderContext.projection));
   }

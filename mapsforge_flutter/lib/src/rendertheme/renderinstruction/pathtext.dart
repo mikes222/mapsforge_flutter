@@ -100,19 +100,22 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) {
     // do nothing
+    return Future.value(null);
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) {
     if (Display.NEVER == this.display) {
-      return;
+      return Future.value(null);
     }
 
     String? caption = this.textKey!.getValue(way.getTags());
     if (caption == null) {
-      return;
+      return Future.value(null);
     }
 
     WayDecorator.renderText(
@@ -131,6 +134,7 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
         way.getCoordinatesAbsolute(renderContext.projection),
         renderContext.labels,
         maxTextWidth);
+    return Future.value(null);
   }
 
   @override

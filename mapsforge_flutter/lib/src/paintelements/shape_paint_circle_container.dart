@@ -18,7 +18,7 @@ class ShapePaintCircleContainer extends ShapePaintContainer<CircleContainer> {
       : super(shapeContainer, dy);
 
   @override
-  Future<void> draw(MapCanvas canvas, SymbolCache symbolCache) async {
+  void draw(MapCanvas canvas) {
     Mappoint point = shapeContainer.point;
     if (fill != null)
       canvas.drawCircle(point.x, point.y, shapeContainer.radius, fill!);

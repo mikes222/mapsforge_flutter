@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint_area_container.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
@@ -63,12 +64,14 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) async {
     // do nothing
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) async {
 //    synchronized(this) {
     // this needs to be synchronized as we potentially set a shift in the shader and
     // the shift is particular to the tile when rendered in multi-thread mode
@@ -76,15 +79,22 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
+    ResourceBitmap? bitmap =
+        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+    if (bitmap != null &&
+        getFillPaint(renderContext.job.tile.zoomLevel).getBitmapShader() ==
+            null) {
+      if (getFillPaint(renderContext.job.tile.zoomLevel).isTransparent())
+        getFillPaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
+      getFillPaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
+    }
+
     renderContext.addToCurrentDrawingLayer(
         level,
         ShapePaintAreaContainer(
             way,
             getFillPaint(renderContext.job.tile.zoomLevel),
             getStrokePaint(renderContext.job.tile.zoomLevel),
-            bitmapSrc,
-            getBitmapWidth(renderContext.job.tile.zoomLevel),
-            getBitmapHeight(renderContext.job.tile.zoomLevel),
             getDy(renderContext.job.tile.zoomLevel),
             renderContext.projection));
   }

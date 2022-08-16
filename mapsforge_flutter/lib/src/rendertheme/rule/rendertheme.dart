@@ -1,13 +1,12 @@
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/renderthemebuilder.dart';
 
 import '../../datastore/pointofinterest.dart';
-import '../../paintelements/shape/polylinecontainer.dart';
 import '../../rendertheme/renderinstruction/hillshading.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
 import '../../rendertheme/rule/rule.dart';
-import '../rendercontext.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
 
@@ -142,11 +141,11 @@ class RenderTheme {
    */
   void prepareScale(int zoomLevel) {
     if (!_strokes.contains(zoomLevel)) {
-      rulesList.forEach((rule) {
+      for (Rule rule in rulesList) {
         if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
           rule.prepareScale(zoomLevel);
         }
-      });
+      }
       _strokes.add(zoomLevel);
     }
   }

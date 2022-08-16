@@ -73,7 +73,8 @@ class RenderCircle extends RenderInstruction with PaintMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) {
     // if ((fill == null || fill.isTransparent()) &&
     //     (stroke == null || stroke.isTransparent())) return;
     Mappoint poiPosition = renderContext.projection
@@ -87,11 +88,14 @@ class RenderCircle extends RenderInstruction with PaintMixin {
             getFillPaint(renderContext.job.tile.zoomLevel),
             getStrokePaint(renderContext.job.tile.zoomLevel),
             getDy(renderContext.job.tile.zoomLevel)));
+    return Future.value(null);
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) {
     // do nothing
+    return Future.value(null);
   }
 
   @override

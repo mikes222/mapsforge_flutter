@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
@@ -91,12 +92,15 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
   }
 
   @override
-  void renderNode(final RenderContext renderContext, PointOfInterest poi) {
+  Future<void> renderNode(final RenderContext renderContext,
+      PointOfInterest poi, SymbolCache symbolCache) {
+    return Future.value(null);
     // do nothing
   }
 
   @override
-  void renderWay(final RenderContext renderContext, PolylineContainer way) {
+  Future<void> renderWay(final RenderContext renderContext,
+      PolylineContainer way, SymbolCache symbolCache) async {
     if (Display.NEVER == this.display) {
       return;
     }
@@ -104,12 +108,12 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    if (bitmapSrc == null) return;
+    ResourceBitmap? bitmap =
+        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+    if (bitmap == null) return;
 
     WayDecorator.renderSymbol(
-        bitmapSrc!,
-        getBitmapWidth(renderContext.job.tile.zoomLevel),
-        getBitmapHeight(renderContext.job.tile.zoomLevel),
+        bitmap,
         display,
         priority,
         _dyScaled[renderContext.job.tile.zoomLevel]!,
