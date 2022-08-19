@@ -14,7 +14,6 @@ class TestAssetBundle extends CachingAssetBundle {
     }
     File file = File('$prefix/$key');
     Uint8List content = file.readAsBytesSync();
-    if (content == null) throw Exception("Ressource $prefix / $key not found");
     return Future.value(ByteData.view(content.buffer));
   }
 
