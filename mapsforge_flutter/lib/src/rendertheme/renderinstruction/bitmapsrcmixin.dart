@@ -94,9 +94,9 @@ class BitmapSrcMixin {
   Future<ResourceBitmap?> loadBitmap(
       int zoomLevel, SymbolCache symbolCache) async {
     if (bitmapSrc == null) return null;
-    ResourceBitmap? bitmap = await symbolCache.getSymbol(
+    ResourceBitmap? resourceBitmap = await symbolCache.getSymbol(
         bitmapSrc!, getBitmapWidth(zoomLevel), getBitmapHeight(zoomLevel));
-    return bitmap;
+    return resourceBitmap;
   }
 
   void setBitmapPercent(int bitmapPercent) {

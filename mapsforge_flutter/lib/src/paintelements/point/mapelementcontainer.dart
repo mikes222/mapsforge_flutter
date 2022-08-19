@@ -31,6 +31,8 @@ abstract class MapElementContainer implements Comparable<MapElementContainer> {
 
   MapElementContainer(this.xy, this.display, this.priority);
 
+  void dispose();
+
   /**
    * Compares elements according to their priority.
    *

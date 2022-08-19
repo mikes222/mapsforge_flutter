@@ -109,7 +109,7 @@ class FlutterPaint implements MapPaint {
   @override
   void setBitmapShader(Bitmap bitmap) {
     _shaderBitmap = bitmap as FlutterBitmap;
-    ui.Image img = _shaderBitmap!.bitmap;
+    ui.Image img = _shaderBitmap!.getClonedImage();
 
     // final double devicePixelRatio = ui.window.devicePixelRatio;
     // final Float64List deviceTransform = new Float64List(16)
@@ -121,6 +121,7 @@ class FlutterPaint implements MapPaint {
         Float64List.fromList(mat.Matrix4.identity().storage);
     paint.shader = ui.ImageShader(
         img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
+    img.dispose();
   }
 
   @override

@@ -72,7 +72,7 @@ class RenderSymbol extends RenderInstruction with BitmapSrcMixin {
     ResourceBitmap? bitmap =
         await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
     if (bitmap == null) return;
-
+    //print("processing bitmap ${bitmap}");
     Mappoint poiPosition = renderContext.projection.latLonToPixel(poi.position);
 
     renderContext.labels.add(new SymbolContainer(

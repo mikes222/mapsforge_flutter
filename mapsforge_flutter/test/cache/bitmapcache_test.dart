@@ -21,13 +21,14 @@ void main() {
       ResourceBitmap? resourceBitmap =
           await (symbolCache.getSymbol("arrow.png", 0, 0));
       expect(resourceBitmap, isNotNull);
-      TileBitmap bitmap =
-          FlutterTileBitmap((resourceBitmap as FlutterResourceBitmap).bitmap);
+      TileBitmap bitmap = FlutterTileBitmap(
+          (resourceBitmap as FlutterResourceBitmap).getClonedImage());
       Tile tile = Tile(0, 0, 0, 0);
       cache.addTileBitmap(tile, bitmap);
 
       TileBitmap? result = await cache.getTileBitmapAsync(tile);
       expect(result, bitmap);
+      bitmap.dispose();
       cache.purgeAll();
     });
   });

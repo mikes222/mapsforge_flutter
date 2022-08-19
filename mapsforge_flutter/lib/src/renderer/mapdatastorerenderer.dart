@@ -68,7 +68,7 @@ class MapDataStoreRenderer extends JobRenderer
     //_log.info("Executing ${job.toString()}");
     int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext = RenderContext(job, renderTheme);
-    renderContext.prepareScale();
+    this.renderTheme.prepareScale(job.tile.zoomLevel);
     if (!this.datastore.supportsTile(job.tile, renderContext.projection)) {
       // return if we do not have data for the requested tile in the datastore
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
@@ -127,21 +127,25 @@ class MapDataStoreRenderer extends JobRenderer
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
-          "drawWays took $diff ms for ${renderContext.layerWays.length} way-layers");
+          "drawWays took $diff ms for ${renderContext.drawingLayers.length} way-layers");
 
-    int labels = 0;
+    int labelCount = 0;
     if (this.renderLabels) {
-      Set<MapElementContainer> labelsToDraw =
-          await _processLabels(renderContext);
-      labels = labelsToDraw.length;
+      _LabelResult labelResult = _processLabels(renderContext);
+      labelCount = labelResult.labelsToDisposeAfterDrawing.length +
+          labelResult.labelsForNeighbours.length;
       //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
       canvasRasterer.drawMapElements(
-          labelsToDraw, renderContext.projection, job.tile);
+          labelResult.labelsForNeighbours, renderContext.projection, job.tile);
+      canvasRasterer.drawMapElements(labelResult.labelsToDisposeAfterDrawing,
+          renderContext.projection, job.tile);
+      labelResult.labelsToDisposeAfterDrawing.forEach((element) {
+        element.dispose();
+      });
       diff = DateTime.now().millisecondsSinceEpoch - time;
       if (diff > 100 && showTiming) {
-        _log.info(
-            "drawMapElements took $diff ms for ${labelsToDraw.length} labels");
+        _log.info("drawMapElements took $diff ms for $labelCount labels");
         // labelsToDraw.forEach((element) {
         //   _log.info(
         //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
@@ -153,7 +157,6 @@ class MapDataStoreRenderer extends JobRenderer
       diff = DateTime.now().millisecondsSinceEpoch - time;
       if (diff > 100 && showTiming) _log.info("storeMapItems took $diff ms");
     }
-
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
 //      // blank out all areas outside of map
 //      Rectangle insideArea = this.mapDataStore.boundingBox().getPositionRelativeToTile(job.tile);
@@ -170,7 +173,7 @@ class MapDataStoreRenderer extends JobRenderer
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
-          "finalizeCanvasBitmap took $diff ms for $waycount ways, $labels elements and labels, $actions actions in canvas");
+          "finalizeCanvasBitmap took $diff ms for $waycount ways, $labelCount elements and labels, $actions actions in canvas");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL);
@@ -186,86 +189,88 @@ class MapDataStoreRenderer extends JobRenderer
     return result;
   }
 
-  Future<Set<MapElementContainer>> _processLabels(
-      RenderContext renderContext) async {
-    //return renderContext.labels.toSet();
+  _LabelResult _processLabels(RenderContext renderContext) {
     // if we are drawing the labels per neighbour, we need to establish which neighbour-overlapping
     // elements need to be drawn.
-    Set<MapElementContainer> labelsToDraw = new Set();
+    Set<MapElementContainer> labelsToDisposeAfterDrawing = {};
 
-    // first we need to get the labels from the adjacent tiles if they have already been drawn
-    // as those overlapping items must also be drawn on the current neighbour. They must be drawn regardless
-    // of priority clashes as a part of them has alread been drawn.
-    Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
-    //Set<MapElementContainer> undrawableElements = new Set();
-    bool fullybuilt = true;
-    neighbours.forEach((Tile neighbour) {
-      // get the overlapping elements for the current tile which were found while rendering the [neighbour]
-      Set<MapElementContainer>? labels = tileDependencies!
-          .getOverlappingElements(renderContext.job.tile, neighbour);
-      // if a neighbour has already been drawn, the elements drawn that overlap onto the
-      // current neighbour should be in the neighbour dependencies, we add them to the labels that
-      // need to be drawn onto this neighbour. For the multi-threaded renderer we also need to take
-      // those tiles into account that are not yet in the TileCache: this is taken care of by the
-      // set of tilesInProgress inside the TileDependencies.
-      if (labels != null) {
-        labelsToDraw.addAll(labels);
+    Set<MapElementContainer> labelsForNeighbours = {};
 
-        // but we need to remove the labels for this neighbour that overlap onto a neighbour that has been drawn
-        // for (MapElementContainer current in renderContext.labels) {
-        //   if (current.intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
-        //     undrawableElements.add(current);
-        //   }
-        // }
-        // since we already have the data from that neighbour, we do not need to get the data for
-        // it, so remove it from the neighbours list.
-        //neighbours.remove(neighbour);
-      } else {
-        // the neighbour was not built up to now, this means we do not know whether we have to draw some labels
-        fullybuilt = false;
-      }
-      //toRemove.add(neighbour);
-    });
-    //_log.info("undrawable: $undrawableElements");
-    //_log.info("toRemove: $toRemove");
-    //neighbours.removeWhere((tile) => toRemove.contains(tile));
-    // now we remove the elements that overlap onto a drawn neighbour from the list of labels
-    // for this neighbour
-    //renderContext.labels.removeWhere((toTest) => undrawableElements.contains(toTest));
-
-    // at this point we have two lists: one is the list of labels that must be drawn because
-    // they already overlap from other tiles. The second one is currentLabels that contains
-    // the elements on this neighbour that do not overlap onto a drawn neighbour. Now we sort this list and
+    // we sort the list of labels for this tile and
     // remove those elements that clash in this list already.
     List<MapElementContainer> currentElementsOrdered =
         LayerUtil.collisionFreeOrdered(renderContext.labels);
+
+    // get the overlapping elements for the current tile which were found while rendering the neighbours
+    Set<MapElementContainer>? labelsFromNeighbours =
+        tileDependencies!.getOverlappingElements(renderContext.job.tile);
+    // if a neighbour has already been drawn, the elements drawn that overlap onto the
+    // current neighbour should be in the neighbour dependencies, we add them to the labels that
+    // need to be drawn onto this neighbour. For the multi-threaded renderer we also need to take
+    // those tiles into account that are not yet in the TileCache: this is taken care of by the
+    // set of tilesInProgress inside the TileDependencies.
+    if (labelsFromNeighbours != null) {
+      labelsFromNeighbours.forEach((element) {
+        // todo find a way to know if this element can be disposed() afterwards or if it is still available for another tile
+        // if (labelsToDisposeAfterDrawing.contains(element)) {
+        //   labelsToDisposeAfterDrawing.remove(element);
+        labelsForNeighbours.add(element);
+        // } else if (labelsForNeighbours.contains(element)) {
+        // } else {
+        //   labelsToDisposeAfterDrawing.add(element);
+        // }
+      });
+    }
+
+    // at this point we have two lists: one is the list of labels that must be drawn because
+    // they already overlap from other tiles [labelsToDraw]. The second one is [renderContext.labels] that contains
+    // the elements on this neighbour that do not overlap onto a drawn neighbour.
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
-    List<MapElementContainer> toDraw2 = [];
-    currentElementsOrdered.forEach((MapElementContainer current) {
-      bool removed = false;
-      for (MapElementContainer label in labelsToDraw) {
-        if (label.clashesWith(current)) {
-          removed = true;
-          break;
-        }
-      }
-      if (!removed) toDraw2.add(current);
-    });
+    List<MapElementContainer> toDraw2 = LayerUtil.removeCollisions(
+        currentElementsOrdered,
+        List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours));
 
-    labelsToDraw.addAll(toDraw2);
-
+    // We need to get the labels from the adjacent tiles if they have already been drawn
+    // as those overlapping items must also be drawn on the current neighbour. They must be drawn regardless
+    // of priority clashes as a part of them has alread been drawn.
+    Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
     // update dependencies, add to the dependencies list all the elements that overlap to the
     // neighbouring tiles, first clearing out the cache for this relation.
-    for (Tile neighbour in neighbours) {
-      for (MapElementContainer element in toDraw2) {
+    for (MapElementContainer element in toDraw2) {
+      List<Tile>? added = [];
+      for (Tile neighbour in neighbours) {
         if (element
             .intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
-          tileDependencies!.addOverlappingElement(
-              renderContext.job.tile, neighbour, element);
+          bool neighbourAlreadyDrawn =
+              tileDependencies!.addOverlappingElement(neighbour, element);
+          if (neighbourAlreadyDrawn) {
+            // we cannot draw this fully because the neighbour is already drawn, ignore this element
+            added?.forEach((tile) {
+              tileDependencies!.removeOverlappingElement(tile, element);
+            });
+            added = null;
+            break;
+          } else {
+            added ??= [];
+            added.add(neighbour);
+          }
+        } else {
+          added ??= [];
+        }
+      }
+      if (added == null) {
+        // do not draw the element since one of the intersecting neighbours are already drawn
+      } else {
+        if (added.length > 0) {
+          // the label is added to at least one neighbour, do not dispose() it
+          labelsForNeighbours.add(element);
+        } else {
+          // solely at this tile, we can safely dispose() the item after we draw it
+          labelsToDisposeAfterDrawing.add(element);
         }
       }
     }
-    return labelsToDraw;
+    return _LabelResult(labelsForNeighbours, labelsToDisposeAfterDrawing);
   }
 
   @override
@@ -413,4 +418,14 @@ void _renderWaterBackground(final RenderContext renderContext) {
   // Watercontainer way = Watercontainer(
   //     coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
   //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _LabelResult {
+  final Set<MapElementContainer> labelsToDisposeAfterDrawing;
+
+  final Set<MapElementContainer> labelsForNeighbours;
+
+  _LabelResult(this.labelsForNeighbours, this.labelsToDisposeAfterDrawing);
 }

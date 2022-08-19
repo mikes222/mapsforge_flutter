@@ -108,6 +108,7 @@ class Line extends RenderInstruction with BitmapSrcMixin, PaintMixin {
       if (getStrokePaint(renderContext.job.tile.zoomLevel).isTransparent())
         getStrokePaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
       getStrokePaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
+      bitmap.dispose();
     }
 
     renderContext.addToCurrentDrawingLayer(

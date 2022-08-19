@@ -11,4 +11,13 @@ class FlutterResourceBitmap extends FlutterBitmap implements ResourceBitmap {
   String toString() {
     return 'FlutterResourceBitmap{src: $src}';
   }
+
+  @override
+  FlutterResourceBitmap clone() {
+    FlutterResourceBitmap result = FlutterResourceBitmap(
+        getClonedImage(), "$src-${++FlutterBitmap.bitmapSerial}");
+    //print("Cloning ${result.src} from $src");
+    //print(StackTrace.current);
+    return result;
+  }
 }

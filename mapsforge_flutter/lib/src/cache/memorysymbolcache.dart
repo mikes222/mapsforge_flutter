@@ -43,12 +43,12 @@ class MemorySymbolCache extends SymbolCache {
     }
     String key = "$src-$width-$height";
     ResourceBitmap? bitmap = _cache.get(key);
-    if (bitmap != null) return bitmap;
+    if (bitmap != null) return bitmap.clone();
 
     bitmap = await _createSymbol(src, width, height);
     //bitmap.incrementRefCount();
     _cache.set(key, bitmap);
-    return bitmap;
+    return bitmap.clone();
   }
 
   Future<ResourceBitmap> _createSymbol(

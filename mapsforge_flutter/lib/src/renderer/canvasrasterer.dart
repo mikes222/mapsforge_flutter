@@ -22,7 +22,8 @@ class CanvasRasterer {
   int drawWays(RenderContext renderContext) {
     int count = 0;
     //print("drawing now ${renderContext.layerWays.length} layers");
-    for (LayerPaintContainer layerPaintContainer in renderContext.layerWays) {
+    for (LayerPaintContainer layerPaintContainer
+        in renderContext.drawingLayers) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");
       for (List<ShapePaintContainer> wayList in layerPaintContainer.ways) {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");

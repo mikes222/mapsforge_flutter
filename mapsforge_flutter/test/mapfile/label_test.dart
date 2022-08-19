@@ -86,7 +86,7 @@ void main() {
 
       JobResult jobResult0 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
-      var img0 = (jobResult0.bitmap as FlutterTileBitmap).bitmap;
+      var img0 = (jobResult0.bitmap as FlutterTileBitmap).getClonedImage();
 
       _dataStoreRenderer.labelStore.debug();
       _dataStoreRenderer.tileDependencies!.debug();
@@ -96,7 +96,7 @@ void main() {
       Job mapGeneratorJob1 = new Job(tile1, false, displayModel.tileSize);
       JobResult jobResult1 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
-      var img1 = (jobResult1.bitmap as FlutterTileBitmap).bitmap;
+      var img1 = (jobResult1.bitmap as FlutterTileBitmap).getClonedImage();
 
       _dataStoreRenderer.labelStore.debug();
       _dataStoreRenderer.tileDependencies!.debug();

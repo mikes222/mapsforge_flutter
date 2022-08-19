@@ -78,10 +78,14 @@ class Rectangle {
       return true;
     }
 
-    return this.left <= rectangle.right &&
-        rectangle.left <= this.right &&
-        this.top <= rectangle.bottom &&
-        rectangle.top <= this.bottom;
+    return !(rectangle.left > right ||
+        rectangle.right < left ||
+        rectangle.top > bottom ||
+        rectangle.bottom < top);
+    // return left <= rectangle.right &&
+    //     right >= rectangle.left &&
+    //     top <= rectangle.bottom &&
+    //     bottom >= rectangle.top;
   }
 
   bool intersectsCircle(double pointX, double pointY, double radius) {

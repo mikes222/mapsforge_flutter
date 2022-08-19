@@ -95,7 +95,7 @@ class Tile {
   ///
   /// @return neighbour tiles as a set
   Set<Tile> getNeighbours() {
-    Set<Tile> neighbours = new Set<Tile>();
+    Set<Tile> neighbours = {};
     neighbours.add(getLeft());
     neighbours.add(getAboveLeft());
     neighbours.add(getAbove());

@@ -1,4 +1,3 @@
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint_container.dart';
@@ -8,36 +7,39 @@ import '../layer/job/job.dart';
 /// A RenderContext contains all the information and data to render a map area, it is passed between
 /// calls in order to avoid local data stored in the DatabaseRenderer.
 class RenderContext {
-  static final int LAYERS = 11;
+  static final int MAX_DRAWING_LAYERS = 11;
 
   final Job job;
 
   final RenderTheme renderTheme;
 
   // Data generated for the rendering process
-  late LayerPaintContainer drawingLayers;
-  final List<MapElementContainer> labels;
-  late List<LayerPaintContainer> layerWays;
+  late LayerPaintContainer currentDrawingLayer;
+
+  /// The points to process. Points may be drawn directly into the tile or later onto the tile. Reason is that
+  /// points should be drawn horizontally even if the underlying map (=tiles) are rotated.
+  final List<MapElementContainer> labels = [];
+
+  late List<LayerPaintContainer> drawingLayers;
 
   final PixelProjection projection;
 
   RenderContext(this.job, this.renderTheme)
-      : labels = [],
-        projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
-    this.layerWays = _createWayLists();
-    drawingLayers = layerWays[0];
+      : projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
+    this.drawingLayers = _createWayLists();
+    currentDrawingLayer = drawingLayers[0];
   }
 
   void setDrawingLayers(int layer) {
     assert(layer >= 0);
-    if (layer >= RenderContext.LAYERS) {
-      layer = RenderContext.LAYERS - 1;
+    if (layer >= RenderContext.MAX_DRAWING_LAYERS) {
+      layer = RenderContext.MAX_DRAWING_LAYERS - 1;
     }
-    this.drawingLayers = layerWays.elementAt(layer);
+    this.currentDrawingLayer = drawingLayers.elementAt(layer);
   }
 
   void addToCurrentDrawingLayer(int level, ShapePaintContainer element) {
-    drawingLayers.add(level, element);
+    currentDrawingLayer.add(level, element);
   }
 
   /**
@@ -55,19 +57,17 @@ class RenderContext {
     int levels = this.renderTheme.getLevels();
     //print("LAYERS: $LAYERS, levels: $levels");
 
-    for (int i = 0; i < LAYERS; ++i) {
+    for (int i = 0; i < MAX_DRAWING_LAYERS; ++i) {
       result.add(LayerPaintContainer(levels));
     }
     return result;
   }
 
-  /**
-   * Sets the scale stroke factor for the given zoom level.
-   *
-   * @param zoomLevel the zoom level for which the scale stroke factor should be set.
-   */
-  void prepareScale() {
-    this.renderTheme.prepareScale(this.job.tile.zoomLevel);
+  void disposeLabels() {
+    labels.forEach((element) {
+      element.dispose();
+    });
+    labels.clear();
   }
 }
 

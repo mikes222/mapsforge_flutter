@@ -42,18 +42,27 @@ class SymbolContainer extends MapElementContainer {
   }
 
   @override
+  void dispose() {
+    bitmap.dispose();
+  }
+
+  @override
   void draw(MapCanvas canvas, Mappoint origin) {
     //print("symbolcontainer ${xy.x - origin.x + boundary.left} / ${xy.y - origin.y + boundary.top} for ${symbol.toString()}");
     Matrix? matrix;
     if (theta != null && theta != 0) {
       matrix = GraphicFactory().createMatrix();
       if (alignCenter) {
-        matrix.rotate(theta, pivotX: -boundary!.left, pivotY: -boundary!.top);
+        matrix.rotate(theta, pivotX: boundary!.left, pivotY: boundary!.top);
       } else {
         matrix.rotate(theta);
       }
     }
 
+    //if (bitmap.debugDisposed())
+    // print(
+    //     "drawing ${bitmap} at ${this.xy.x - origin.x + boundary!.left} / ${this.xy.y - origin.y + boundary!.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
+    //print(StackTrace.current);
     canvas.drawBitmap(
         bitmap: bitmap,
         matrix: matrix,

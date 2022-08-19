@@ -17,11 +17,9 @@ class TileDependencies {
 
   ///
   /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
-  late Map<Tile, Map<Tile, Set<MapElementContainer>>> overlapData;
+  final Map<Tile, Set<MapElementContainer>> overlapData = {};
 
-  TileDependencies() {
-    overlapData = new Map<Tile, Map<Tile, Set<MapElementContainer>>>();
-  }
+  TileDependencies();
 
   /// stores an MapElementContainer that clashesWith from one tile (the one being drawn) to
   /// another (which must not have been drawn before).
@@ -29,15 +27,21 @@ class TileDependencies {
   /// @param from    origin tile
   /// @param to      tile the label clashesWith to
   /// @param element the MapElementContainer in question
-  void addOverlappingElement(
-      Tile currentTile, Tile neighbour, MapElementContainer element) {
-    if (!overlapData.containsKey(currentTile)) {
-      overlapData[currentTile] = Map<Tile, Set<MapElementContainer>>();
+  bool addOverlappingElement(Tile neighbour, MapElementContainer element) {
+    if (!overlapData.containsKey(neighbour)) {
+      overlapData[neighbour] = {};
+    } else {
+      if (overlapData[neighbour]!.length == 0) {
+        return true;
+      }
     }
-    if (!overlapData[currentTile]!.containsKey(neighbour)) {
-      overlapData[currentTile]![neighbour] = Set<MapElementContainer>();
-    }
-    overlapData[currentTile]![neighbour]!.add(element);
+    overlapData[neighbour]!.add(element);
+    return false;
+  }
+
+  void removeOverlappingElement(Tile neighbour, MapElementContainer element) {
+    if (!overlapData.containsKey(neighbour)) return;
+    overlapData[neighbour]!.remove(element);
   }
 
   /// Retrieves the overlap data from the neighbouring tiles and removes them from cache
@@ -45,15 +49,13 @@ class TileDependencies {
   /// @param tileToDraw the tile which we want to draw now
   /// @param neighbour the tile the label clashesWith from. This is the originating tile where the label was not fully fit into
   /// @return a List of the elements
-  Set<MapElementContainer>? getOverlappingElements(
-      Tile tileToDraw, Tile neighbour) {
-    Map<Tile, Set<MapElementContainer>>? map = overlapData[neighbour];
+  Set<MapElementContainer>? getOverlappingElements(Tile tileToDraw) {
+    Set<MapElementContainer>? map = overlapData[tileToDraw];
     if (map == null) return null;
-    if (map[tileToDraw] == null) return null;
-    Set<MapElementContainer>? result = Set();
-    result.addAll(map[tileToDraw]!);
+    Set<MapElementContainer>? result = {};
+    result.addAll(map);
     //map.remove(tileToDraw);
-    map[tileToDraw]!.clear();
+    map.clear();
     return result;
   }
 
@@ -80,9 +82,7 @@ class TileDependencies {
 
   void debug() {
     overlapData.forEach((key, innerMap) {
-      innerMap.forEach((innerKey, value) {
-        _log.info("OverlapData: $key with $innerKey: ${value.length} items");
-      });
+      _log.info("OverlapData: $key with $innerMap");
     });
   }
 }

@@ -1,5 +1,3 @@
-import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/filter.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
@@ -30,14 +28,6 @@ abstract class MapCanvas {
     required double left,
     required double top,
     required MapPaint paint,
-    int? srcLeft,
-    int? srcTop,
-    int? srcRight,
-    int? srcBottom,
-    int? dstLeft,
-    int? dstTop,
-    int? dstRight,
-    int? dstBottom,
     Matrix? matrix,
   });
 

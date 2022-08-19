@@ -1,13 +1,12 @@
 import 'dart:math';
 
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttermatrix.dart';
-import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
@@ -24,7 +23,7 @@ class MarkerContext implements MarkerCallback {
   const MarkerContext(this.flutterCanvas, this.mapViewPosition);
 
   @override
-  void renderBitmap(Bitmap bitmap, double latitude, double longitude,
+  void renderBitmap(ResourceBitmap bitmap, double latitude, double longitude,
       double offsetX, double offsetY, double rotation, MapPaint paint) {
     double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
     double x = mapViewPosition.projection!.longitudeToPixelX(longitude);

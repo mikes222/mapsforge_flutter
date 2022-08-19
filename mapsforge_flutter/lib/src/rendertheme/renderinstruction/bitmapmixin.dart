@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
+import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 
 class BitmapMixin {
   static final _log = new Logger('BitmapMixin');
 
   String? bitmapSrc;
 
-  Bitmap? bitmap;
+  ResourceBitmap? bitmap;
 
   bool bitmapInvalid = false;
 
@@ -35,7 +35,7 @@ class BitmapMixin {
   @mustCallSuper
   void dispose() {
     if (this.bitmap != null) {
-      //this.bitmap!.decrementRefCount();
+      bitmap!.dispose();
       bitmap = null;
     }
     bitmapPaint = null;

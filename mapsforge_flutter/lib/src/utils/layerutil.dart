@@ -105,32 +105,50 @@ class LayerUtil {
 
   /// Transforms a list of MapElements, orders it and removes those elements that overlap.
   /// This operation is useful for an early elimination of elements in a list that will never
-  /// be drawn because they overlap.
+  /// be drawn because they overlap. Overlapping items will be disposed.
   ///
   /// @param input list of MapElements
   /// @return collision-free, ordered list, a subset of the input.
   static List<MapElementContainer> collisionFreeOrdered(
       List<MapElementContainer> input) {
     // sort items by priority (highest first)
-    input.sort((MapElementContainer a, MapElementContainer b) =>
-        a.priority - b.priority);
-    //Collections.sort(input, Collections.reverseOrder());
+    input.sort();
     // in order of priority, see if an item can be drawn, i.e. none of the items
     // in the currentItemsToDraw list clashes with it.
     List<MapElementContainer> output = [];
     for (MapElementContainer item in input) {
-      bool hasSpace = true;
-      for (MapElementContainer outputElement in output) {
-        if (outputElement.clashesWith(item)) {
-          //print("$outputElement --------clashesWith-------- $item");
-          hasSpace = false;
-          break;
-        }
-      }
-      if (hasSpace) {
+      if (haveSpace(item, output)) {
         output.add(item);
+      } else {
+        item.dispose();
       }
     }
     return output;
+  }
+
+  static bool haveSpace(
+      MapElementContainer item, List<MapElementContainer> list) {
+    for (MapElementContainer outputElement in list) {
+      if (outputElement.clashesWith(item)) {
+        //print("$outputElement --------clashesWith-------- $item");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// returns the list of elements which can be added without collisions and disposes() elements which cannot be added
+  static List<MapElementContainer> removeCollisions(
+      List<MapElementContainer> addElements,
+      List<MapElementContainer> keepElements) {
+    List<MapElementContainer> toDraw2 = [];
+    addElements.forEach((MapElementContainer newElement) {
+      if (haveSpace(newElement, keepElements)) {
+        toDraw2.add(newElement);
+      } else {
+        newElement.dispose();
+      }
+    });
+    return toDraw2;
   }
 }

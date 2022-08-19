@@ -33,4 +33,10 @@ class FlutterTileBitmap extends FlutterBitmap implements TileBitmap {
   String toString() {
     return 'FlutterTileBitmap{$src}';
   }
+
+  @override
+  FlutterTileBitmap clone() {
+    return FlutterTileBitmap(
+        getClonedImage(), "$src-${++FlutterBitmap.bitmapSerial}");
+  }
 }

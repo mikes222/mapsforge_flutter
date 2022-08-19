@@ -78,13 +78,14 @@ class WayDecorator {
             point: point,
             display: display,
             priority: priority,
-            bitmap: bitmap,
+            bitmap: bitmap.clone(),
             theta: theta,
             alignCenter: alignCenter,
             paint: symbolPaint));
 
         // check if the symbolContainer should only be rendered once
         if (!repeatSymbol) {
+          bitmap.dispose();
           return;
         }
 
@@ -108,6 +109,7 @@ class WayDecorator {
       previousX = currentX;
       previousY = currentY;
     }
+    bitmap.dispose();
   }
 
   /**

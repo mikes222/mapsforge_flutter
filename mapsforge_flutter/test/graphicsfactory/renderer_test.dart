@@ -77,7 +77,7 @@ void main() {
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.bitmap, isNotNull);
-      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
+      var img = (jobResult.bitmap as FlutterTileBitmap).getClonedImage();
       return img;
     }));
 
@@ -144,7 +144,7 @@ void main() {
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.bitmap, isNotNull);
-      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
+      var img = (jobResult.bitmap as FlutterTileBitmap).getClonedImage();
       return img;
     }));
 
@@ -218,7 +218,7 @@ void main() {
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.bitmap, isNotNull);
-      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
+      var img = (jobResult.bitmap as FlutterTileBitmap).getClonedImage();
       return img;
     }));
 
@@ -295,7 +295,7 @@ void main() {
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.bitmap, isNotNull);
-      var img = (jobResult.bitmap as FlutterTileBitmap).bitmap;
+      var img = (jobResult.bitmap as FlutterTileBitmap).getClonedImage();
       return img;
     }));
 

@@ -1,9 +1,6 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
@@ -61,49 +58,58 @@ class FlutterCanvas extends MapCanvas {
     required double left,
     required double top,
     required MapPaint paint,
-    int? srcLeft,
-    int? srcTop,
-    int? srcRight,
-    int? srcBottom,
-    int? dstLeft,
-    int? dstTop,
-    int? dstRight,
-    int? dstBottom,
     Matrix? matrix,
   }) {
-    ui.Image bmp = (bitmap as FlutterBitmap).bitmap;
-    assert(bmp.width > 0);
-    assert(bmp.height > 0);
+    ui.Image image = (bitmap as FlutterBitmap).getClonedImage();
+    assert(image.width > 0);
+    assert(image.height > 0);
     if (matrix != null) {
-      FlutterMatrix f = matrix as FlutterMatrix;
-      if (f.theta != null) {
+      FlutterMatrix fm = matrix as FlutterMatrix;
+      if (fm.theta != null) {
         // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
-        double angle = f.theta!; // 30 * pi / 180
-        final double r = sqrt(f.pivotX! * f.pivotX! + f.pivotY! * f.pivotY!);
-        final double alpha = f.pivotX == 0
-            ? pi / 90 * f.pivotY!.sign
-            : atan(f.pivotY! / f.pivotX!);
-        final double beta = alpha + angle;
-        final shiftY = r * sin(beta);
-        final shiftX = r * cos(beta);
-        final translateX = f.pivotX! - shiftX;
-        final translateY = f.pivotY! - shiftY;
+        // final double r = sqrt(f.pivotX! * f.pivotX! + f.pivotY! * f.pivotY!);
+        // final double alpha = f.pivotX == 0
+        //     ? pi / 90 * f.pivotY!.sign
+        //     : atan(f.pivotY! / f.pivotX!);
+        // final double beta = alpha + angle;
+        // final shiftY = r * sin(beta);
+        // final shiftX = r * cos(beta);
+        // final translateX = f.pivotX! - shiftX;
+        // final translateY = f.pivotY! - shiftY;
         uiCanvas.save();
-        uiCanvas.translate(translateX + left, translateY + top);
-        uiCanvas.rotate(angle);
-        uiCanvas.drawImage(bmp, ui.Offset.zero, (paint as FlutterPaint).paint);
+//        uiCanvas.translate(translateX + left, translateY + top);
+        uiCanvas.translate(left, top);
+        uiCanvas.translate(-fm.pivotX!, -fm.pivotY!);
+        // uiCanvas.drawCircle(
+        //     const ui.Offset(0, 0), 10, ui.Paint()..color = Colors.blue);
+        uiCanvas.rotate(fm.theta!);
+        uiCanvas.translate(fm.pivotX!, fm.pivotY!);
+        // uiCanvas.drawRect(
+        //     ui.Rect.fromLTWH(
+        //         0, 0, image.width.toDouble(), image.height.toDouble()),
+        //     ui.Paint()..color = Colors.red.withOpacity(0.7));
+        // uiCanvas.drawCircle(
+        //     const ui.Offset(0, 0), 10, ui.Paint()..color = Colors.green);
+        uiCanvas.drawImage(
+            image, ui.Offset.zero, (paint as FlutterPaint).paint);
         uiCanvas.restore();
         ++actions;
         return;
       }
     }
     //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
-    if (left + bmp.width < 0 ||
-        top + bmp.height < 0 ||
-        left - bmp.width > size.width ||
-        top - bmp.height > size.height) return;
+    if (left + image.width < 0 ||
+        top + image.height < 0 ||
+        left - image.width > size.width ||
+        top - image.height > size.height) return;
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(
+    //         left, top, image.width.toDouble(), image.height.toDouble()),
+    //     ui.Paint()..color = Colors.red);
+    // uiCanvas.drawCircle(
+    //     ui.Offset(left, top), 10, ui.Paint()..color = Colors.green);
     uiCanvas.drawImage(
-        bmp, ui.Offset(left, top), (paint as FlutterPaint).paint);
+        image, ui.Offset(left, top), (paint as FlutterPaint).paint);
     ++actions;
   }
 

@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
@@ -40,6 +41,9 @@ class PointTextContainer extends MapElementContainer {
   ) : super(point, display, priority) {
     _calculateBoundary();
   }
+
+  @override
+  void dispose() {}
 
   void _calculateBoundary() {
     front =
@@ -103,33 +107,37 @@ class PointTextContainer extends MapElementContainer {
 
   @override
   void draw(MapCanvas canvas, Mappoint origin) {
-    ui.Canvas? flutterCanvas = (canvas as FlutterCanvas).uiCanvas;
+    ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
 
     // the origin of the text is the base line, so we need to make adjustments
     // so that the text will be within its box
-    double textOffset = 0;
-    switch (this.position) {
-      case Position.CENTER:
-      case Position.LEFT:
-      case Position.RIGHT:
-        //textOffset = textHeight / 2;
-        break;
-      case Position.BELOW:
-      case Position.BELOW_LEFT:
-      case Position.BELOW_RIGHT:
-        //textOffset = textHeight.toDouble();
-        break;
-      default:
-        break;
-    }
+    // double textOffset = 0;
+    // switch (this.position) {
+    //   case Position.CENTER:
+    //   case Position.LEFT:
+    //   case Position.RIGHT:
+    //     //textOffset = textHeight / 2;
+    //     break;
+    //   case Position.BELOW:
+    //   case Position.BELOW_LEFT:
+    //   case Position.BELOW_RIGHT:
+    //     //textOffset = textHeight.toDouble();
+    //     break;
+    //   default:
+    //     break;
+    // }
 
     double adjustedX = (this.xy.x - origin.x) + boundary!.left;
-    double adjustedY = (this.xy.y - origin.y) + textOffset + boundary!.top;
+    double adjustedY = (this.xy.y - origin.y) + /*textOffset +*/ boundary!.top;
 
-    flutterCanvas.drawParagraph(
-        back.paragraph, ui.Offset(adjustedX, adjustedY));
-    flutterCanvas.drawParagraph(
-        front.paragraph, ui.Offset(adjustedX, adjustedY));
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(
+    //         adjustedX, adjustedY, back.getWidth(), back.getHeight()),
+    //     ui.Paint()..color = Colors.red);
+    // uiCanvas.drawCircle(
+    //     ui.Offset(adjustedX, adjustedY), 10, ui.Paint()..color = Colors.green);
+    uiCanvas.drawParagraph(back.paragraph, ui.Offset(adjustedX, adjustedY));
+    uiCanvas.drawParagraph(front.paragraph, ui.Offset(adjustedX, adjustedY));
   }
 
   @override

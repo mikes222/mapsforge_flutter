@@ -36,6 +36,9 @@ class WayTextContainer extends MapElementContainer {
   }
 
   @override
+  void dispose() {}
+
+  @override
   void draw(MapCanvas canvas, Mappoint origin) {
     canvas.drawPathText(this.text, this.lineString, origin, this.paintBack,
         mapTextPaint, maxTextWidth);

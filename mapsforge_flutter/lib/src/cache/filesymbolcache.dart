@@ -29,9 +29,9 @@ class FileSymbolCache extends SymbolCache {
   LruCache<String, ResourceBitmap> _cache =
       new LruCache<String, ResourceBitmap>(
     storage: StatisticsStorage<String, ResourceBitmap>(onEvict: (key, item) {
-      item.dispose();
+      //item.dispose();
     }),
-    capacity: 500,
+    capacity: 50,
   );
 
   ///
@@ -56,13 +56,15 @@ class FileSymbolCache extends SymbolCache {
       return null;
     }
     String key = "$src-$width-$height";
-    ResourceBitmap? bitmap = _cache.get(key);
-    if (bitmap != null) return bitmap;
+    ResourceBitmap? resourceBitmap = _cache.get(key);
+    if (resourceBitmap != null) {
+      return resourceBitmap.clone();
+    }
 
-    bitmap = await _createSymbol(src, width, height);
+    resourceBitmap = await _createSymbol(src, width, height);
     //bitmap.incrementRefCount();
-    _cache.set(key, bitmap);
-    return bitmap;
+    _cache.set(key, resourceBitmap);
+    return resourceBitmap.clone();
   }
 
   Future<ResourceBitmap> _createSymbol(

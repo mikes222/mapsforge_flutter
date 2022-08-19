@@ -168,9 +168,10 @@ class FileTileBitmapCache extends TileBitmapCache {
   Future _storeFile(Tile tile, TileBitmap tileBitmap) async {
     String filename = _calculateFilename(tile);
     if (_files.contains(filename)) return;
-    Image image = (tileBitmap as FlutterTileBitmap).bitmap;
+    Image image = (tileBitmap as FlutterTileBitmap).getClonedImage();
     ByteData? content = await (image.toByteData(
         format: png ? ImageByteFormat.png : ImageByteFormat.rawRgba));
+    image.dispose();
     if (content != null) {
       File file = File(filename);
       await file.writeAsBytes(content.buffer.asUint8List(),

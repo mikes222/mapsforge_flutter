@@ -87,6 +87,7 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
       if (getFillPaint(renderContext.job.tile.zoomLevel).isTransparent())
         getFillPaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
       getFillPaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
+      bitmap.dispose();
     }
 
     renderContext.addToCurrentDrawingLayer(
