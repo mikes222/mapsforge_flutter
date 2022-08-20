@@ -100,17 +100,19 @@ class Line extends RenderInstruction with BitmapSrcMixin, PaintMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    ResourceBitmap? bitmap =
-        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
-    if (bitmap != null &&
-        getStrokePaint(renderContext.job.tile.zoomLevel).getBitmapShader() ==
-            null) {
-      if (getStrokePaint(renderContext.job.tile.zoomLevel).isTransparent())
-        getStrokePaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
-      getStrokePaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
-      bitmap.dispose();
+    if (getStrokePaint(renderContext.job.tile.zoomLevel).getBitmapShader() ==
+        null) {
+      ResourceBitmap? bitmap =
+          await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+      if (bitmap != null) {
+        if (getStrokePaint(renderContext.job.tile.zoomLevel).isTransparent())
+          getStrokePaint(renderContext.job.tile.zoomLevel)
+              .setColor(Colors.black);
+        getStrokePaint(renderContext.job.tile.zoomLevel)
+            .setBitmapShader(bitmap);
+        bitmap.dispose();
+      }
     }
-
     renderContext.addToCurrentDrawingLayer(
         level,
         ShapePaintPolylineContainer(

@@ -10,6 +10,8 @@ import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 /// This abstract class provides the foundation to render a bitmap for the given tile.
 ///
 abstract class JobRenderer {
+  void dispose() {}
+
   ///
   /// The rendering job to execute.
   ///

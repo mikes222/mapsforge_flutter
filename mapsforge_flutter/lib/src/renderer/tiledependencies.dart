@@ -17,9 +17,21 @@ class TileDependencies {
 
   ///
   /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
-  final Map<Tile, Set<MapElementContainer>> _overlapData = {};
+  final Map<Tile, Set<Dependency>> _overlapData = {};
 
   TileDependencies();
+
+  void dispose() {
+    _overlapData.forEach((tile, set) {
+      set.forEach((dependency) {
+        if (dependency.tiles.length > 0) {
+          dependency.element.dispose();
+          dependency.tiles.clear();
+        }
+      });
+    });
+    _overlapData.clear();
+  }
 
   /// stores an MapElementContainer that clashesWith from one tile (the one being drawn) to
   /// another (which must not have been drawn before).
@@ -27,49 +39,59 @@ class TileDependencies {
   /// @param from    origin tile
   /// @param to      tile the label clashesWith to
   /// @param element the MapElementContainer in question
-  bool addOverlappingElement(Tile neighbour, MapElementContainer element) {
-    if (!_overlapData.containsKey(neighbour)) {
-      // never seen this neighbour
-      _overlapData[neighbour] = {};
-    } else {
-      if (_overlapData[neighbour]!.length == 0) {
-        // seems we have already drawn that neighbour, return true and do NOT store this element
-        return true;
+  void addOverlappingElement(MapElementContainer element, List<Tile> tiles) {
+    Dependency dependency = Dependency(element, tiles);
+    tiles.forEach((tile) {
+      if (!_overlapData.containsKey(tile)) {
+        _overlapData[tile] = {};
       }
-    }
-    _overlapData[neighbour]!.add(element);
-    return false;
+      _overlapData[tile]!.add(dependency);
+    });
+  }
+
+  /// Returns true if the given neighbour is already drawn
+  bool isDrawn(Tile neighbour) {
+    if (!_overlapData.containsKey(neighbour)) return false;
+    if (_overlapData[neighbour]!.length > 0) return false;
+    return true;
   }
 
   /// If we want to draw an overlapping element and find out that this element
   /// overlaps to an neighbour which is already drawn (see [addOverlappingElement]
   /// We want to revert it and do not draw that element at all.
-  void removeOverlappingElement(Tile neighbour, MapElementContainer element) {
-    if (_overlapData[neighbour] == null) return;
-    if (_overlapData[neighbour]!.length > 0) {
-      _overlapData[neighbour]?.remove(element);
-      if (_overlapData[neighbour]!.length == 0) {
-        // we removed the last element, remove the key so that we treat the neighbour as "not yet seen"
-        _overlapData.remove(neighbour);
-      }
-    }
-  }
+  // void removeOverlappingElement(Tile neighbour, MapElementContainer element) {
+  //   if (_overlapData[neighbour] == null) return;
+  //   if (_overlapData[neighbour]!.length > 0) {
+  //     _overlapData[neighbour]?.remove(element);
+  //     if (_overlapData[neighbour]!.length == 0) {
+  //       // we removed the last element, remove the key so that we treat the neighbour as "not yet seen"
+  //       _overlapData.remove(neighbour);
+  //     }
+  //   }
+  // }
 
   /// Retrieves the overlap data from the neighbouring tiles and removes them from cache
   ///
   /// @param tileToDraw the tile which we want to draw now
   /// @param neighbour the tile the label clashesWith from. This is the originating tile where the label was not fully fit into
   /// @return a List of the elements
-  Set<MapElementContainer>? getOverlappingElements(Tile tileToDraw) {
-    Set<MapElementContainer>? map = _overlapData[tileToDraw];
+  Set<Dependency>? getOverlappingElements(Tile tileToDraw) {
+    Set<Dependency>? map = _overlapData[tileToDraw];
     if (map == null) {
       // we do not have anything for this tile but mark it as "drawn" now
       _overlapData[tileToDraw] = {};
       return null;
     }
-    Set<MapElementContainer> result = {};
-    result.addAll(map);
-    //map.remove(tileToDraw);
+
+    /// hmm, sometimes the map is empty, I do not understand why
+    //assert(map.length > 0);
+    Set<Dependency> result = {};
+    map.forEach((dependency) {
+      bool removed = dependency.tiles.remove(tileToDraw);
+      assert(removed);
+      result.add(dependency);
+    });
+    // mark as drawn
     map.clear();
     return result;
   }
@@ -100,4 +122,14 @@ class TileDependencies {
       _log.info("OverlapData: $key with $innerMap");
     });
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class Dependency {
+  final MapElementContainer element;
+
+  List<Tile> tiles;
+
+  Dependency(this.element, this.tiles);
 }

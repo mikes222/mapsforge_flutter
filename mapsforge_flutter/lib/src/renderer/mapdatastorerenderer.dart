@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -54,6 +55,13 @@ class MapDataStoreRenderer extends JobRenderer
     } else {
       this.tileDependencies = null;
     }
+  }
+
+  @override
+  @mustCallSuper
+  void dispose() {
+    tileDependencies?.dispose();
+    super.dispose();
   }
 
   ///
@@ -202,7 +210,7 @@ class MapDataStoreRenderer extends JobRenderer
         LayerUtil.collisionFreeOrdered(renderContext.labels);
 
     // get the overlapping elements for the current tile which were found while rendering the neighbours
-    Set<MapElementContainer>? labelsFromNeighbours =
+    Set<Dependency>? labelsFromNeighbours =
         tileDependencies!.getOverlappingElements(renderContext.job.tile);
     // if a neighbour has already been drawn, the elements drawn that overlap onto the
     // current neighbour should be in the neighbour dependencies, we add them to the labels that
@@ -210,16 +218,12 @@ class MapDataStoreRenderer extends JobRenderer
     // those tiles into account that are not yet in the TileCache: this is taken care of by the
     // set of tilesInProgress inside the TileDependencies.
     if (labelsFromNeighbours != null) {
-      labelsFromNeighbours.forEach((element) {
-        // todo find a way to know if this element can be disposed() afterwards or if it is still available for another tile
-        // if (labelsToDisposeAfterDrawing.contains(element)) {
-        //   labelsToDisposeAfterDrawing.remove(element);
-        labelsForNeighbours.add(element);
-        //print("Neightpor from beloved neightpours drawn $element");
-        // } else if (labelsForNeighbours.contains(element)) {
-        // } else {
-        //   labelsToDisposeAfterDrawing.add(element);
-        // }
+      labelsFromNeighbours.forEach((dependency) {
+        if (dependency.tiles.length == 0) {
+          labelsToDisposeAfterDrawing.add(dependency.element);
+        } else {
+          labelsForNeighbours.add(dependency.element);
+        }
       });
     }
 
@@ -242,13 +246,9 @@ class MapDataStoreRenderer extends JobRenderer
       for (Tile neighbour in neighbours) {
         if (element
             .intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
-          bool neighbourAlreadyDrawn =
-              tileDependencies!.addOverlappingElement(neighbour, element);
-          if (neighbourAlreadyDrawn) {
-            // we cannot draw this fully because the neighbour is already drawn, ignore this element
-            added?.forEach((tile) {
-              tileDependencies!.removeOverlappingElement(tile, element);
-            });
+          if (tileDependencies!.isDrawn(neighbour)) {
+            // neighbour is drawn and this element intersects with the already
+            // drawn neighbour, so we do not want to draw it at all
             added = null;
             break;
           } else {
@@ -266,6 +266,7 @@ class MapDataStoreRenderer extends JobRenderer
       } else {
         if (added.length > 0) {
           // the label is added to at least one neighbour, do not dispose() it
+          tileDependencies!.addOverlappingElement(element, added);
           labelsForNeighbours.add(element);
           // print("Neightpor for neightbours drawn at ${added} $element");
         } else {

@@ -93,6 +93,7 @@ class FlutterCanvas extends MapCanvas {
         uiCanvas.drawImage(
             image, ui.Offset.zero, (paint as FlutterPaint).paint);
         uiCanvas.restore();
+        image.dispose();
         ++actions;
         return;
       }
@@ -110,6 +111,7 @@ class FlutterCanvas extends MapCanvas {
     //     ui.Offset(left, top), 10, ui.Paint()..color = Colors.green);
     uiCanvas.drawImage(
         image, ui.Offset(left, top), (paint as FlutterPaint).paint);
+    image.dispose();
     ++actions;
   }
 

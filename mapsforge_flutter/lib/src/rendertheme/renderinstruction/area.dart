@@ -79,15 +79,16 @@ class Area extends RenderInstruction with BitmapSrcMixin, PaintMixin {
     if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    ResourceBitmap? bitmap =
-        await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
-    if (bitmap != null &&
-        getFillPaint(renderContext.job.tile.zoomLevel).getBitmapShader() ==
-            null) {
-      if (getFillPaint(renderContext.job.tile.zoomLevel).isTransparent())
-        getFillPaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
-      getFillPaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
-      bitmap.dispose();
+    if (getFillPaint(renderContext.job.tile.zoomLevel).getBitmapShader() ==
+        null) {
+      ResourceBitmap? bitmap =
+          await loadBitmap(renderContext.job.tile.zoomLevel, symbolCache);
+      if (bitmap != null) {
+        if (getFillPaint(renderContext.job.tile.zoomLevel).isTransparent())
+          getFillPaint(renderContext.job.tile.zoomLevel).setColor(Colors.black);
+        getFillPaint(renderContext.job.tile.zoomLevel).setBitmapShader(bitmap);
+        bitmap.dispose();
+      }
     }
 
     renderContext.addToCurrentDrawingLayer(

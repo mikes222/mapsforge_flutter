@@ -21,6 +21,7 @@ class MapModel {
             tileBitmapCacheFirstLevel ?? MemoryTileBitmapCache.create();
 
   void dispose() {
+    renderer.dispose();
     markerDataStores.forEach((datastore) {
       datastore.dispose();
     });

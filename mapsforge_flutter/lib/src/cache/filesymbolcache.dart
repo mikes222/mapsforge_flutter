@@ -29,9 +29,9 @@ class FileSymbolCache extends SymbolCache {
   LruCache<String, ResourceBitmap> _cache =
       new LruCache<String, ResourceBitmap>(
     storage: StatisticsStorage<String, ResourceBitmap>(onEvict: (key, item) {
-      //item.dispose();
+      item.dispose();
     }),
-    capacity: 50,
+    capacity: 500,
   );
 
   ///
@@ -49,8 +49,19 @@ class FileSymbolCache extends SymbolCache {
     _cache.clear();
   }
 
+  //Future? future;
   @override
   Future<ResourceBitmap?> getSymbol(String? src, int width, int height) async {
+    // if (future == null) {
+    //   future = Future.delayed(const Duration(minutes: 1), () {
+    //     print("now:");
+    //     _cache.storage.entries.forEach((element) {
+    //       print("  cached: ${element.key} ${element.value}");
+    //       element.value?.debugGetOpenHandleStackTraces();
+    //     });
+    //     future = null;
+    //   });
+    // }
     if (src == null || src.length == 0) {
 // no image source defined
       return null;
