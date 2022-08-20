@@ -17,7 +17,7 @@ class TileDependencies {
 
   ///
   /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
-  final Map<Tile, Set<MapElementContainer>> overlapData = {};
+  final Map<Tile, Set<MapElementContainer>> _overlapData = {};
 
   TileDependencies();
 
@@ -28,20 +28,31 @@ class TileDependencies {
   /// @param to      tile the label clashesWith to
   /// @param element the MapElementContainer in question
   bool addOverlappingElement(Tile neighbour, MapElementContainer element) {
-    if (!overlapData.containsKey(neighbour)) {
-      overlapData[neighbour] = {};
+    if (!_overlapData.containsKey(neighbour)) {
+      // never seen this neighbour
+      _overlapData[neighbour] = {};
     } else {
-      if (overlapData[neighbour]!.length == 0) {
+      if (_overlapData[neighbour]!.length == 0) {
+        // seems we have already drawn that neighbour, return true and do NOT store this element
         return true;
       }
     }
-    overlapData[neighbour]!.add(element);
+    _overlapData[neighbour]!.add(element);
     return false;
   }
 
+  /// If we want to draw an overlapping element and find out that this element
+  /// overlaps to an neighbour which is already drawn (see [addOverlappingElement]
+  /// We want to revert it and do not draw that element at all.
   void removeOverlappingElement(Tile neighbour, MapElementContainer element) {
-    if (!overlapData.containsKey(neighbour)) return;
-    overlapData[neighbour]!.remove(element);
+    if (_overlapData[neighbour] == null) return;
+    if (_overlapData[neighbour]!.length > 0) {
+      _overlapData[neighbour]?.remove(element);
+      if (_overlapData[neighbour]!.length == 0) {
+        // we removed the last element, remove the key so that we treat the neighbour as "not yet seen"
+        _overlapData.remove(neighbour);
+      }
+    }
   }
 
   /// Retrieves the overlap data from the neighbouring tiles and removes them from cache
@@ -50,9 +61,13 @@ class TileDependencies {
   /// @param neighbour the tile the label clashesWith from. This is the originating tile where the label was not fully fit into
   /// @return a List of the elements
   Set<MapElementContainer>? getOverlappingElements(Tile tileToDraw) {
-    Set<MapElementContainer>? map = overlapData[tileToDraw];
-    if (map == null) return null;
-    Set<MapElementContainer>? result = {};
+    Set<MapElementContainer>? map = _overlapData[tileToDraw];
+    if (map == null) {
+      // we do not have anything for this tile but mark it as "drawn" now
+      _overlapData[tileToDraw] = {};
+      return null;
+    }
+    Set<MapElementContainer> result = {};
     result.addAll(map);
     //map.remove(tileToDraw);
     map.clear();
@@ -77,11 +92,11 @@ class TileDependencies {
 
   @override
   String toString() {
-    return 'TileDependencies{overlapData: $overlapData}';
+    return 'TileDependencies{overlapData: $_overlapData}';
   }
 
   void debug() {
-    overlapData.forEach((key, innerMap) {
+    _overlapData.forEach((key, innerMap) {
       _log.info("OverlapData: $key with $innerMap");
     });
   }

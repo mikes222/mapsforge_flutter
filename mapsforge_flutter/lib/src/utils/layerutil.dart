@@ -149,6 +149,13 @@ class LayerUtil {
         newElement.dispose();
       }
     });
+    // print(
+    //     "Removed ${addElements.length - toDraw2.length} elements out of ${addElements.length}");
+    // if (addElements.length == toDraw2.length && addElements.length > 20) {
+    //   toDraw2.forEach((element) {
+    //     print(" having ${element.boundaryAbsolute} $element");
+    //   });
+    // }
     return toDraw2;
   }
 }

@@ -215,6 +215,7 @@ class MapDataStoreRenderer extends JobRenderer
         // if (labelsToDisposeAfterDrawing.contains(element)) {
         //   labelsToDisposeAfterDrawing.remove(element);
         labelsForNeighbours.add(element);
+        //print("Neightpor from beloved neightpours drawn $element");
         // } else if (labelsForNeighbours.contains(element)) {
         // } else {
         //   labelsToDisposeAfterDrawing.add(element);
@@ -237,7 +238,7 @@ class MapDataStoreRenderer extends JobRenderer
     // update dependencies, add to the dependencies list all the elements that overlap to the
     // neighbouring tiles, first clearing out the cache for this relation.
     for (MapElementContainer element in toDraw2) {
-      List<Tile>? added = [];
+      List<Tile>? added;
       for (Tile neighbour in neighbours) {
         if (element
             .intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
@@ -260,13 +261,17 @@ class MapDataStoreRenderer extends JobRenderer
       }
       if (added == null) {
         // do not draw the element since one of the intersecting neighbours are already drawn
+        element.dispose();
+        //print("Neightpor not yet drawn at ${added} $element");
       } else {
         if (added.length > 0) {
           // the label is added to at least one neighbour, do not dispose() it
           labelsForNeighbours.add(element);
+          // print("Neightpor for neightbours drawn at ${added} $element");
         } else {
           // solely at this tile, we can safely dispose() the item after we draw it
           labelsToDisposeAfterDrawing.add(element);
+          // print("Neightpor for dispose drawn at ${added} $element");
         }
       }
     }

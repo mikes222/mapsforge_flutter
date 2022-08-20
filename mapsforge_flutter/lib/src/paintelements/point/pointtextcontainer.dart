@@ -109,35 +109,49 @@ class PointTextContainer extends MapElementContainer {
   void draw(MapCanvas canvas, Mappoint origin) {
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
 
-    // the origin of the text is the base line, so we need to make adjustments
-    // so that the text will be within its box
+    // // the origin of the text is the base line, so we need to make adjustments
+    // // so that the text will be within its box
     // double textOffset = 0;
     // switch (this.position) {
     //   case Position.CENTER:
     //   case Position.LEFT:
     //   case Position.RIGHT:
-    //     //textOffset = textHeight / 2;
+    //   case Position.AUTO:
+    //     textOffset = front.getHeight() / 2;
+    //     break;
+    //   case Position.ABOVE:
+    //   case Position.ABOVE_LEFT:
+    //   case Position.ABOVE_RIGHT:
     //     break;
     //   case Position.BELOW:
     //   case Position.BELOW_LEFT:
     //   case Position.BELOW_RIGHT:
-    //     //textOffset = textHeight.toDouble();
-    //     break;
-    //   default:
+    //     textOffset = front.getHeight();
     //     break;
     // }
 
-    double adjustedX = (this.xy.x - origin.x) + boundary!.left;
-    double adjustedY = (this.xy.y - origin.y) + /*textOffset +*/ boundary!.top;
-
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(
-    //         adjustedX, adjustedY, back.getWidth(), back.getHeight()),
-    //     ui.Paint()..color = Colors.red);
+    //         this.xy.x - origin.x + boundary!.left,
+    //         this.xy.y - origin.y + boundary!.top,
+    //         front.getWidth(),
+    //         front.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
     // uiCanvas.drawCircle(
-    //     ui.Offset(adjustedX, adjustedY), 10, ui.Paint()..color = Colors.green);
-    uiCanvas.drawParagraph(back.paragraph, ui.Offset(adjustedX, adjustedY));
-    uiCanvas.drawParagraph(front.paragraph, ui.Offset(adjustedX, adjustedY));
+    //     ui.Offset(this.xy.x - origin.x + boundary!.left,
+    //         this.xy.y - origin.y + boundary!.top),
+    //     10,
+    //     ui.Paint()..color = Colors.green);
+    uiCanvas.drawParagraph(
+        back.paragraph,
+        ui.Offset(this.xy.x - origin.x + boundary!.left,
+            this.xy.y - origin.y + boundary!.top));
+    uiCanvas.drawParagraph(
+        front.paragraph,
+        ui.Offset(this.xy.x - origin.x + boundary!.left,
+            this.xy.y - origin.y + boundary!.top));
+    // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
+    //     5, ui.Paint()..color = Colors.blue);
   }
 
   @override
