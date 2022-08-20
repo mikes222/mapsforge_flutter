@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
@@ -66,22 +67,11 @@ class FlutterCanvas extends MapCanvas {
     if (matrix != null) {
       FlutterMatrix fm = matrix as FlutterMatrix;
       if (fm.theta != null) {
-        // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
-        // final double r = sqrt(f.pivotX! * f.pivotX! + f.pivotY! * f.pivotY!);
-        // final double alpha = f.pivotX == 0
-        //     ? pi / 90 * f.pivotY!.sign
-        //     : atan(f.pivotY! / f.pivotX!);
-        // final double beta = alpha + angle;
-        // final shiftY = r * sin(beta);
-        // final shiftX = r * cos(beta);
-        // final translateX = f.pivotX! - shiftX;
-        // final translateY = f.pivotY! - shiftY;
         uiCanvas.save();
-//        uiCanvas.translate(translateX + left, translateY + top);
         uiCanvas.translate(left, top);
         uiCanvas.translate(-fm.pivotX!, -fm.pivotY!);
         // uiCanvas.drawCircle(
-        //     const ui.Offset(0, 0), 10, ui.Paint()..color = Colors.blue);
+        //     const ui.Offset(0, 0), 5, ui.Paint()..color = Colors.blue);
         uiCanvas.rotate(fm.theta!);
         uiCanvas.translate(fm.pivotX!, fm.pivotY!);
         // uiCanvas.drawRect(
@@ -271,11 +261,20 @@ class FlutterCanvas extends MapCanvas {
     ParagraphEntry entry =
         ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
     double textwidth = entry.getWidth();
+    double textHeight = entry.getHeight();
     if (x + textwidth / 2 < 0 ||
         y + entry.getHeight() < 0 ||
         x - textwidth / 2 > size.width ||
         y - entry.getHeight() > size.height) return;
-    uiCanvas.drawParagraph(entry.paragraph, Offset(x - textwidth / 2, y));
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(x - textwidth / 2, y - textHeight / 2,
+    //         entry.getWidth(), entry.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.7));
+    // uiCanvas.drawCircle(ui.Offset(x - textwidth / 2, y - textHeight / 2), 10,
+    //     ui.Paint()..color = Colors.green);
+    uiCanvas.drawParagraph(
+        entry.paragraph, Offset(x - textwidth / 2, y - textHeight / 2));
+    // uiCanvas.drawCircle(ui.Offset(x, y), 5, ui.Paint()..color = Colors.blue);
     ++actions;
   }
 

@@ -219,7 +219,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
   Widget _buildMapView(MapViewPosition position) {
     JobSet? jobSet = _submitJobSet(_viewModel!, position, _jobQueue!);
-
     return Stack(
       children: [
         if (jobSet != null)

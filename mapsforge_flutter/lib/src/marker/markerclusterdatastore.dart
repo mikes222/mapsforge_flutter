@@ -1,7 +1,5 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
-import 'package:mapsforge_flutter/src/marker/imarkerdatastore.dart';
-import 'package:mapsforge_flutter/src/marker/marker.dart';
 
 ///
 /// Holds a collection of markers. Marker can only be of type [BasicPointMarker] (e.g. restaurants)
@@ -44,7 +42,10 @@ class MarkerClusterDataStore extends IMarkerDataStore {
       markersToDraw.forEach((element) {
         markerGrid.addMarker(element);
       });
-      _previousMarkers = [];
+      _previousMarkers.forEach((element) {
+        if (element is CircleMarker) element.dispose();
+      });
+      _previousMarkers.clear();
       markerGrid.markers.forEach((key, List<BasicPointMarker> value) {
         if (value.length == 1) {
           _previousMarkers.add(value.first);
@@ -64,15 +65,15 @@ class MarkerClusterDataStore extends IMarkerDataStore {
     //print("Creating marker at $latLong for ${markers.length} items");
     return CircleMarker(
       center: latLong,
-      radius: 15,
-      //strokeWidth: 5,
-      //strokeColor: 0xffff0000,
+      radius: 18,
+      strokeWidth: 3,
+      strokeColor: 0xffffffff,
       fillColor: 0xaaff0000,
       markerCaption: MarkerCaption(
           text: "${markers.length}",
           latLong: latLong,
-          fontSize: 20,
-          captionOffsetY: -10,
+          fontSize: 18,
+          captionOffsetY: 0,
           fillColor: 0xffffffff),
     );
   }

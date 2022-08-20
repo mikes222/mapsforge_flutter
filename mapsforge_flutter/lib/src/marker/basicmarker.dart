@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
@@ -62,8 +63,10 @@ abstract class BasicMarker<T> extends Marker<T> {
             item: item);
 
   @override
+  @mustCallSuper
   void dispose() {
     markerCaption?.dispose();
+    super.dispose();
   }
 
   ///
@@ -94,8 +97,6 @@ class MarkerCaption with TextMixin, PaintMixin {
   /// The offset of the caption in screen pixels
   double captionOffsetX;
 
-  double captionOffsetY;
-
   final int minZoomLevel;
 
   int maxZoomLevel;
@@ -107,7 +108,7 @@ class MarkerCaption with TextMixin, PaintMixin {
     required this.text,
     this.latLong,
     this.captionOffsetX = 0,
-    this.captionOffsetY = 0,
+    double captionOffsetY = 0,
     double strokeWidth = 2.0,
     int strokeColor = 0xffffffff,
     int fillColor = 0xff000000,
@@ -125,17 +126,19 @@ class MarkerCaption with TextMixin, PaintMixin {
     setStrokeColorFromNumber(strokeColor);
     setFontSize(fontSize);
     setFillColorFromNumber(fillColor);
+    setDy(captionOffsetY);
   }
 
+  @mustCallSuper
   void dispose() {
     disposeTextMixin();
     disposePaintMixin();
   }
 
   void renderCaption(MarkerCallback markerCallback) {
+    if (latLong == null) return;
     if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
-    if (latLong == null) return;
     prepareScalePaintMixin(markerCallback.mapViewPosition.zoomLevel);
     prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
     Mappoint mappoint = markerCallback.mapViewPosition.projection!
@@ -144,14 +147,14 @@ class MarkerCaption with TextMixin, PaintMixin {
     markerCallback.flutterCanvas.drawText(
         text,
         (mappoint.x + captionOffsetX),
-        (mappoint.y + captionOffsetY),
+        (mappoint.y + getDy(markerCallback.mapViewPosition.zoomLevel)),
         getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
         getTextPaint(markerCallback.mapViewPosition.zoomLevel),
         maxTextWidth);
     markerCallback.flutterCanvas.drawText(
         text,
         (mappoint.x + captionOffsetX),
-        (mappoint.y + captionOffsetY),
+        (mappoint.y + getDy(markerCallback.mapViewPosition.zoomLevel)),
         getFillPaint(markerCallback.mapViewPosition.zoomLevel),
         getTextPaint(markerCallback.mapViewPosition.zoomLevel),
         maxTextWidth);

@@ -36,7 +36,7 @@ class MarkerPainter extends CustomPainter {
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 50)
       _log.info(
-          "diff: $diff ms for retrieving ${markers.length} markers at zoomlevel ${position.zoomLevel}");
+          "diff: $diff ms for retrieving ${markers.length} markers at zoomlevel ${position.zoomLevel} from $dataStore");
 
     if (markers.length > 0) {
       FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
@@ -50,7 +50,7 @@ class MarkerPainter extends CustomPainter {
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 50)
       _log.info(
-          "diff: $diff ms for retrieving and rendering ${markers.length} markers at zoomlevel ${position.zoomLevel}");
+          "diff: $diff ms for retrieving and rendering ${markers.length} markers at zoomlevel ${position.zoomLevel} from $dataStore");
   }
 
   @override

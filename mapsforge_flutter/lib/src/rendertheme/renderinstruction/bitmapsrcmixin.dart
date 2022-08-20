@@ -26,10 +26,6 @@ class BitmapSrcMixin {
 
   final Map<int, int> _heights = {};
 
-  //ResourceBitmap? _bitmap;
-
-  //final Map<int, ResourceBitmap> _bitmaps = {};
-
   /// stroke will be drawn thicker at or above this zoomlevel
   late int _strokeMinZoomLevel;
 
@@ -97,6 +93,10 @@ class BitmapSrcMixin {
     ResourceBitmap? resourceBitmap = await symbolCache.getSymbol(
         bitmapSrc!, getBitmapWidth(zoomLevel), getBitmapHeight(zoomLevel));
     return resourceBitmap;
+  }
+
+  void setBitmapSrc(String bitmapSrc) {
+    this.bitmapSrc = bitmapSrc;
   }
 
   void setBitmapPercent(int bitmapPercent) {

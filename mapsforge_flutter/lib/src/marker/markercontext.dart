@@ -31,7 +31,7 @@ class MarkerContext implements MarkerCallback {
     if (rotation != 0) {
       matrix = FlutterMatrix();
       matrix.rotate(rotation / 180 * pi,
-          pivotX: bitmap.getWidth() / 2, pivotY: bitmap.getHeight() / 2);
+          pivotX: -bitmap.getWidth() / 2, pivotY: -bitmap.getHeight() / 2);
     }
     flutterCanvas.drawBitmap(
         bitmap: bitmap,
