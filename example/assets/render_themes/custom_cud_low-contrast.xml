@@ -266,75 +266,75 @@
         <!-- first draw all room types (except walls) with same color and shade them later so the circle doors will be shaded too -->
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
-            <rule e="any" k="indoor" v="room">
-                <area fill="#fff9ed" stroke="#cfcdca" stroke-width="0.01" />
+            <rule e="any" k="indoor" v="room|corridor">
+                <area fill="#ffffef" stroke="#7f7f7f" stroke-width="0.01" />
             </rule>
             <rule e="any" k="indoor" v="wall">
-                <area fill="#cfcdca"/>
+                <area fill="#9f9f9f"/>
                 <rule e="any" k="material" v="glass">
-                    <area fill="#bbeeff"/>
+                    <area fill="#afefff"/>
                 </rule>
                 <rule e="any" k="material" v="wood">
-                    <area fill="#c8805a"/>
+                    <area fill="#bf9f7f"/>
                 </rule>
             </rule>
         </rule>
 
         <rule e="way" k="indoor" v="wall" closed="no">
-            <line stroke="#cfcdca" stroke-width="0.1"/>
+            <line stroke="#9f9f9f" stroke-width="0.1"/>
         </rule>
 
         <!-- 2D door as colored wall -->
 
         <rule e="way" k="door" v="*" closed="yes">
-            <area fill="#f9f9ed" />
+            <area fill="#ffffef" />
         </rule>
 
         <!-- draw door node as circle in room color -->
 
         <rule e="node" k="door" v="*">
-            <circle fill="#f9f9ed" radius="0.175" scale-radius="true" />
+            <circle fill="#ffffef" radius="0.175" scale-radius="true" />
         </rule>
 
-        <!-- shade special rooms like corridor or toilets with transparent colors -->
+        <!-- shade special rooms like toilets with other colors -->
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
-            <rule e="any" k="indoor" v="area|corridor">
-                <area fill="#DDfff9ed"/>
+            <rule e="any" k="indoor" v="area">
+                <area fill="#ffdfbf"/>
             </rule>
 
             <rule e="any" k="amenity" v="toilets">
-                <area fill="#99bde6ff" />
+                <area fill="#6f9fff" />
             </rule>
 
-            <rule e="any" k="access" v="no|private">
+        <!--    <rule e="any" k="access" v="no|private">
                 <area fill="#33828282" />
-            </rule>
+            </rule> -->
         </rule>
 
         <!-- special indoor elements -->
 
         <rule e="way" k="highway" v="elevator|steps" closed="yes">
-            <area fill="#edf9ed" />
+            <area fill="#9fdfbf" />
         </rule>
 
         <rule e="way" k="highway" v="steps" closed="no">
-            <area fill="#edf9ed"/>
-            <line stroke="#fff9ed" stroke-linecap="butt" stroke-width="0.5"/>
-            <line stroke="#cfcdca" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
+            <area fill="#7fffffef"/>
+            <line stroke="#ffffef" stroke-linecap="butt" stroke-width="0.5"/>
+            <line stroke="#9f9f9f" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
         </rule>
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
             <rule e="way" k="public_bookcase:type" v="shelf">
-                <area fill="#c8805a" stroke="#80000000" stroke-width="0.01"/>
+                <area fill="#bf9f7f" stroke="#7f7f7f" stroke-width="0.01"/>
             </rule>
             <rule e="way" k="amenity" v="table|bench">
-                <area fill="#e3bca3" stroke="#80000000" stroke-width="0.01"/>
+                <area fill="#bf9f7f" stroke="#7f7f7f" stroke-width="0.01"/>
             </rule>
         </rule>
 
         <rule e="node" k="support" v="column">
-            <circle fill="#cfcdca" radius="0.1" scale-radius="true" stroke="#B0000000" stroke-width="0.01"/>
+            <circle fill="#9f9f9f" radius="0.1" scale-radius="true"/>
         </rule>
 
         <!-- indoor symbols -->
