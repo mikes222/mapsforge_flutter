@@ -24,7 +24,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     required ILatLong latLong,
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
-    int imageColor = 0xff000000,
+    int bitmapColor = 0xff000000,
     this.rotation = 0,
     T? item,
     MarkerCaption? markerCaption,
@@ -44,6 +44,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     this.bitmapSrc = src;
     this.setBitmapWidth(width.round());
     this.setBitmapHeight(height.round());
+    setBitmapColorFromNumber(bitmapColor);
   }
 
   @override
@@ -57,17 +58,27 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   Future<void> initResources(SymbolCache symbolCache) async {
     initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     bitmap?.dispose();
+    bitmap = null;
     bitmap = await loadBitmap(10, symbolCache);
     if (bitmap != null) {
       _imageOffsetX = -bitmap!.getWidth() / 2;
       _imageOffsetY = -bitmap!.getHeight() / 2;
     }
-    if (markerCaption != null && markerCaption!.latLong == null) {
-      markerCaption!.latLong = latLong;
+    if (markerCaption != null) {
       if (bitmap != null) {
-        markerCaption!.setDy(bitmap!.getHeight().toDouble());
+        markerCaption!.setDy(bitmap!.getHeight() / 2);
       }
     }
+  }
+
+  @override
+  void setMarkerCaption(MarkerCaption? markerCaption) {
+    if (markerCaption != null) {
+      if (bitmap != null) {
+        markerCaption.setDy(bitmap!.getHeight() / 2);
+      }
+    }
+    super.setMarkerCaption(markerCaption);
   }
 
   Future<void> setAndLoadBitmapSrc(

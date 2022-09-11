@@ -89,13 +89,12 @@ class MapViewPageState2 extends State<MapViewPage2> {
 
   Future<MapModel> _createOfflineMapModel() async {
     /// For the offline-maps we need a cache for all the tiny symbols in the map
-    final SymbolCache symbolCache;
-    if (kIsWeb) {
-      symbolCache = MemorySymbolCache(bundle: rootBundle);
-    } else {
-      symbolCache =
-          FileSymbolCache(rootBundle, widget.mapFileData.relativePathPrefix);
-    }
+    final SymbolCache symbolCache =
+        widget.mapFileData.relativePathPrefix != null
+            ? FileSymbolCache(
+                imageLoader: ImageRelativeLoader(
+                    relativePathPrefix: widget.mapFileData.relativePathPrefix))
+            : FileSymbolCache();
 
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
     RenderTheme renderTheme =

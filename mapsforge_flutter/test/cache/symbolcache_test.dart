@@ -10,11 +10,12 @@ void main() {
 
   testWidgets('SymbolCache', (WidgetTester tester) async {
     AssetBundle bundle = TestAssetBundle();
-    SymbolCache symbolCache = FileSymbolCache(bundle);
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: bundle));
 
     await tester.runAsync(() async {
       ResourceBitmap resourceBitmap =
-          (await (symbolCache.getSymbol("arrow.png", 0, 0)))!;
+          (await (symbolCache.getOrCreateSymbol("arrow.png", 0, 0)))!;
       assert(resourceBitmap != null);
     });
   });

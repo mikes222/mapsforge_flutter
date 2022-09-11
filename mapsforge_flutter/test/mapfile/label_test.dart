@@ -36,7 +36,8 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel)
         .longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     List<dynamic>? imgs = await (tester.runAsync(() async {

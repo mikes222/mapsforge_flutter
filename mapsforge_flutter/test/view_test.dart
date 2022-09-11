@@ -25,7 +25,8 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     MapModel? mapModel = await (tester.runAsync(() async {
       //String _localPath = await FileHelper.findLocalPath();

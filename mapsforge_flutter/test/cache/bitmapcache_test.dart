@@ -13,13 +13,13 @@ void main() {
 
   testWidgets('Bitmapcache', (WidgetTester tester) async {
     AssetBundle bundle = TestAssetBundle();
-    SymbolCache symbolCache = FileSymbolCache(bundle);
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: bundle));
 
     MemoryTileBitmapCache cache = MemoryTileBitmapCache.create();
 
     await tester.runAsync(() async {
       ResourceBitmap? resourceBitmap =
-          await (symbolCache.getSymbol("arrow.png", 0, 0));
+          await (symbolCache.getOrCreateSymbol("arrow.png", 0, 0));
       expect(resourceBitmap, isNotNull);
       TileBitmap bitmap = FlutterTileBitmap(
           (resourceBitmap as FlutterResourceBitmap).getClonedImage());

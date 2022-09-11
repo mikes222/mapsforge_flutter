@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
+import 'package:mapsforge_flutter/src/graphics/display.dart';
 
 ///
 /// Holds a collection of markers. Marker can only be of type [BasicPointMarker] (e.g. restaurants)
@@ -20,7 +21,10 @@ class MarkerClusterDataStore extends IMarkerDataStore {
   /// moving the map outside. This saves cpu. Measurements in meters.
   final int extendMeters;
 
-  MarkerClusterDataStore({this.extendMeters = 1000});
+  final int minClusterItems;
+
+  MarkerClusterDataStore({this.extendMeters = 1000, this.minClusterItems = 3})
+      : assert(minClusterItems >= 2);
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
@@ -37,17 +41,17 @@ class MarkerClusterDataStore extends IMarkerDataStore {
     List<BasicPointMarker> markersToDraw = _markers
         .where((marker) => marker.shouldPaint(extended, zoomLevel))
         .toList();
+    _previousMarkers.forEach((element) {
+      if (element is _ClusterMarker) element.dispose();
+    });
+    _previousMarkers.clear();
     if (zoomLevel < 15) {
       MarkerGrid markerGrid = MarkerGrid(boundingBox: extended);
       markersToDraw.forEach((element) {
         markerGrid.addMarker(element);
       });
-      _previousMarkers.forEach((element) {
-        if (element is CircleMarker) element.dispose();
-      });
-      _previousMarkers.clear();
       markerGrid.markers.forEach((key, List<BasicPointMarker> value) {
-        if (value.length == 1) {
+        if (value.length < minClusterItems) {
           _previousMarkers.add(value.first);
         } else {
           _previousMarkers.add(createClusterMarker(value));
@@ -63,7 +67,7 @@ class MarkerClusterDataStore extends IMarkerDataStore {
   BasicPointMarker createClusterMarker(List<BasicPointMarker> markers) {
     ILatLong latLong = markers.first.latLong;
     //print("Creating marker at $latLong for ${markers.length} items");
-    return CircleMarker(
+    return _ClusterMarker(
       center: latLong,
       radius: 18,
       strokeWidth: 3,
@@ -161,4 +165,33 @@ class MarkerGrid {
     }
     ms.add(marker);
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _ClusterMarker extends CircleMarker {
+  _ClusterMarker({
+    Display display = Display.ALWAYS,
+    int minZoomLevel = 0,
+    int maxZoomLevel = 65535,
+    item,
+    MarkerCaption? markerCaption,
+    required ILatLong center,
+    double radius = 10,
+    int? percent,
+    int? fillColor,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xff000000,
+  }) : super(
+            display: display,
+            minZoomLevel: minZoomLevel,
+            maxZoomLevel: maxZoomLevel,
+            item: item,
+            markerCaption: markerCaption,
+            center: center,
+            radius: radius,
+            percent: percent,
+            fillColor: fillColor,
+            strokeWidth: strokeWidth,
+            strokeColor: strokeColor);
 }

@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 
 class BitmapSrcMixin {
   /**
@@ -90,7 +89,7 @@ class BitmapSrcMixin {
   Future<ResourceBitmap?> loadBitmap(
       int zoomLevel, SymbolCache symbolCache) async {
     if (bitmapSrc == null) return null;
-    ResourceBitmap? resourceBitmap = await symbolCache.getSymbol(
+    ResourceBitmap? resourceBitmap = await symbolCache.getOrCreateSymbol(
         bitmapSrc!, getBitmapWidth(zoomLevel), getBitmapHeight(zoomLevel));
     return resourceBitmap;
   }
@@ -109,6 +108,11 @@ class BitmapSrcMixin {
 
   void setBitmapHeight(int bitmapHeight) {
     _bitmapHeight = bitmapHeight;
+  }
+
+  void setBitmapColorFromNumber(int color) {
+    _bitmapPaint ??= GraphicFactory().createPaint();
+    _bitmapPaint!.setColorFromNumber(color);
   }
 
   MapPaint getBitmapPaint() {

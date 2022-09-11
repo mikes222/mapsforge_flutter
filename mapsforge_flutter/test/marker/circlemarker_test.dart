@@ -74,7 +74,8 @@ void main() {
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
     viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     CircleMarker circleMarker = CircleMarker(
         center: latLong, fillColor: 0xff00ff00, radius: 20, strokeWidth: 4);
 

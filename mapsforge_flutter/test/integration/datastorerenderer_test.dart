@@ -35,7 +35,8 @@ void main() {
     int y =
         MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
@@ -109,7 +110,8 @@ void main() {
       Tile(x + 1, y + 1, zoomlevel, l),
     ];
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     List<dynamic>? imgs = await (tester.runAsync(() async {

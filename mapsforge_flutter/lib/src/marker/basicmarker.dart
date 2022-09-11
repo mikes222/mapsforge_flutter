@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
@@ -32,6 +33,14 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> {
             item: item,
             markerCaption: markerCaption);
 
+  @override
+  void setMarkerCaption(MarkerCaption? markerCaption) {
+    if (markerCaption != null && markerCaption.latLong == null) {
+      markerCaption.latLong = latLong;
+    }
+    super.setMarkerCaption(markerCaption);
+  }
+
   /// returns true if the marker should be painted. The [boundary] represents the currently visible area
   @override
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
@@ -45,14 +54,14 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> {
 /// Abstract Marker class for further extensions. This class handles the caption of a marker.
 abstract class BasicMarker<T> extends Marker<T> {
   /// The caption of the marker or [null]
-  final MarkerCaption? markerCaption;
+  MarkerCaption? _markerCaption;
 
   BasicMarker({
     Display display = Display.ALWAYS,
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     T? item,
-    this.markerCaption,
+    MarkerCaption? markerCaption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
@@ -60,13 +69,21 @@ abstract class BasicMarker<T> extends Marker<T> {
             display: display,
             minZoomLevel: minZoomLevel,
             maxZoomLevel: maxZoomLevel,
-            item: item);
+            item: item) {
+    setMarkerCaption(markerCaption);
+  }
 
   @override
   @mustCallSuper
   void dispose() {
-    markerCaption?.dispose();
+    _markerCaption?.dispose();
+    _markerCaption = null;
     super.dispose();
+  }
+
+  void setMarkerCaption(MarkerCaption? markerCaption) {
+    _markerCaption?.dispose();
+    _markerCaption = markerCaption;
   }
 
   ///
@@ -75,8 +92,10 @@ abstract class BasicMarker<T> extends Marker<T> {
   @override
   void render(MarkerCallback markerCallback) {
     renderBitmap(markerCallback);
-    if (markerCaption != null) markerCaption!.renderCaption(markerCallback);
+    if (_markerCaption != null) _markerCaption!.renderCaption(markerCallback);
   }
+
+  MarkerCaption? get markerCaption => _markerCaption;
 
   /// renders the bitmap portion of this marker. This method is called by [render()] which also call the render method for the caption
   void renderBitmap(MarkerCallback markerCallback);

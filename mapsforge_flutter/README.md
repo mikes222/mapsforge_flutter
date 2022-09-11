@@ -97,7 +97,7 @@ Create the cache for assets
 
 > assets are mostly small images to display in the map, for example parking signs, bus stop signs and so on
 
-    SymbolCache symbolCache = MemorySymbolCache(bundle: rootBundle);
+    SymbolCache symbolCache = FileSymbolCache();
 
 Create the displayModel which defines and holds the view/display settings like maximum zoomLevel.
 

@@ -58,7 +58,7 @@ class BitmapMixin {
     }
     try {
       //_log.info("$bitmapWidth - $bitmapHeight --> $bitmapPercent");
-      bitmap = await symbolCache.getSymbol(
+      bitmap = await symbolCache.getOrCreateSymbol(
           bitmapSrc!, bitmapWidth.round(), bitmapHeight.round());
       if (bitmap == null ||
           bitmap!.getWidth() == 0 ||

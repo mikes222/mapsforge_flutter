@@ -34,7 +34,8 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
@@ -116,7 +117,8 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
@@ -184,7 +186,8 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
@@ -258,7 +261,8 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {

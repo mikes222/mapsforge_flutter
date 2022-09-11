@@ -24,7 +24,8 @@ main() async {
     DisplayModel displayModel = DisplayModel();
     MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
 
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     String content = await TestAssetBundle().loadString("rendertheme.xml");
     renderThemeBuilder.parseXml(displayModel, content);
@@ -38,8 +39,7 @@ main() async {
 
     Tile tile = new Tile(140486, 87975, zoomlevel, indoorLevel);
 
-    Job job =
-        Job(tile, false, displayModel.tileSize);
+    Job job = Job(tile, false, displayModel.tileSize);
     JobResult result = await renderer.executeJob(job);
     expect(result.result, JOBRESULT.UNSUPPORTED);
     expect(result.bitmap, isNotNull);

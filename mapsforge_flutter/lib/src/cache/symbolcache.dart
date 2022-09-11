@@ -14,5 +14,5 @@ abstract class SymbolCache {
   ///
   /// loads and returns the desired symbol, optionally rescales it to the given width and height
   ///
-  Future<ResourceBitmap?> getSymbol(String src, int width, int height);
+  Future<ResourceBitmap?> getOrCreateSymbol(String src, int width, int height);
 }

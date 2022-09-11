@@ -40,7 +40,8 @@ main() async {
   }
 
   Future<void> runOnce(int dx, int dy) async {
-    SymbolCache symbolCache = FileSymbolCache(TestAssetBundle());
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     renderer ??= MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
     int zoomlevel = 8;
@@ -52,8 +53,7 @@ main() async {
 
     //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
     Tile upperLeft = new Tile(x + dx, y + dy, zoomlevel, indoorLevel);
-    Job job = Job(
-        upperLeft, false,  displayModel.tileSize);
+    Job job = Job(upperLeft, false, displayModel.tileSize);
     JobResult result = await renderer!.executeJob(job);
     expect(result.bitmap, isNotNull);
     //print(mapFile.toString());

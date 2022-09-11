@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await MapFile.from('C:/mapsforge/maps/berlin.map', null, null);
 
     // Create the cache for assets
-    final symbolCache = FileSymbolCache(rootBundle);
+    final symbolCache = FileSymbolCache();
 
     // Create the displayModel which defines and holds the view/display settings
     // like maximum zoomLevel.
