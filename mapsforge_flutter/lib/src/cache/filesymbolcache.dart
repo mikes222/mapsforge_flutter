@@ -27,8 +27,9 @@ class FileSymbolCache extends SymbolCache {
   );
 
   ///
-  /// Creates a new FileSymbolCache. If the [relativePathPrefix] is not null the symbols will be loaded given by the [relativePathPrefix] first and if
-  /// not found there the symbols will be loaded by the bundle.
+  /// Creates a new FileSymbolCache which loads symbols from file-sources and
+  /// holds them in memory. By specifying the [imageLoader] one can define the
+  /// source or method how to retrieve the binary data for a symbol.
   ///
   FileSymbolCache(
       {ImageLoader? imageLoader = null,
