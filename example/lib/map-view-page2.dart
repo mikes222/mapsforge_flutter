@@ -93,7 +93,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
         widget.mapFileData.relativePathPrefix != null
             ? FileSymbolCache(
                 imageLoader: ImageRelativeLoader(
-                    relativePathPrefix: widget.mapFileData.relativePathPrefix))
+                    relativePathPrefix: widget.mapFileData.relativePathPrefix!))
             : FileSymbolCache();
 
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
