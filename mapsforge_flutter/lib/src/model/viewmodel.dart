@@ -28,9 +28,28 @@ class ViewModel {
 
   Stream<TapEvent> get observeTap => _injectTap.stream;
 
+  Subject<TapEvent> _injectLongTap = PublishSubject();
+
+  Stream<TapEvent> get observeLongTap => _injectLongTap.stream;
+
   Subject<GestureEvent> _injectGesture = PublishSubject();
 
   Stream<GestureEvent> get observeGesture => _injectGesture.stream;
+
+  Subject<MoveAroundEvent> _injectMoveAroundStart = PublishSubject();
+
+  Stream<MoveAroundEvent> get observeMoveAroundStart =>
+      _injectMoveAroundStart.stream;
+
+  Subject<MoveAroundEvent> _injectMoveAroundUpdate = PublishSubject();
+
+  Stream<MoveAroundEvent> get observeMoveAroundUpdate =>
+      _injectMoveAroundUpdate.stream;
+
+  Subject<MoveAroundEvent> _injectMoveAroundEnd = PublishSubject();
+
+  Stream<MoveAroundEvent> get observeMoveAroundEnd =>
+      _injectMoveAroundEnd.stream;
 
   ViewModel(
       {this.contextMenuBuilder = const DefaultContextMenuBuilder(),
@@ -47,7 +66,11 @@ class ViewModel {
     overlays?.clear();
     _injectPosition.close();
     _injectTap.close();
+    _injectLongTap.close();
     _injectGesture.close();
+    _injectMoveAroundStart.close();
+    _injectMoveAroundUpdate.close();
+    _injectMoveAroundEnd.close();
   }
 
   MapViewPosition? get mapViewPosition => _mapViewPosition;
@@ -262,10 +285,81 @@ class ViewModel {
     _injectTap.add(const TapEvent.clear());
   }
 
+  void longTapEvent(double left, double upper) {
+    if (_mapViewPosition == null) return;
+    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    if (_mapViewPosition?.leftUpper == null) return;
+    TapEvent event = TapEvent(
+        _mapViewPosition!.projection!
+            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
+        _mapViewPosition!.projection!
+            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
+        left,
+        upper,
+        _mapViewPosition!.leftUpper!.x,
+        _mapViewPosition!.leftUpper!.y,
+        _mapViewPosition!.projection!);
+    _injectLongTap.add(event);
+  }
+
   /// An event sent by the [FlutterGestureDetector] to indicate a user-driven gesture-event. This can be used to
   /// switch off automatic movement of the map.
   void gestureEvent() {
     _injectGesture.add(GestureEvent());
+  }
+
+  void gestureMoveStartEvent(double left, double upper) {
+    if (_mapViewPosition == null) return null;
+    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    if (_mapViewPosition?.leftUpper == null) return null;
+
+    MoveAroundEvent event = MoveAroundEvent(
+        latitude: _mapViewPosition!.projection!
+            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
+        longitude: _mapViewPosition!.projection!
+            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
+        projection: _mapViewPosition!.projection!,
+        x: left,
+        y: upper,
+        leftUpperX: _mapViewPosition!.leftUpper!.x,
+        leftUpperY: _mapViewPosition!.leftUpper!.y);
+    _injectMoveAroundStart.add(event);
+  }
+
+  void gestureMoveUpdateEvent(double left, double upper) {
+    if (_mapViewPosition == null) return null;
+    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    if (_mapViewPosition?.leftUpper == null) return null;
+
+    MoveAroundEvent event = MoveAroundEvent(
+        latitude: _mapViewPosition!.projection!
+            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
+        longitude: _mapViewPosition!.projection!
+            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
+        projection: _mapViewPosition!.projection!,
+        x: left,
+        y: upper,
+        leftUpperX: _mapViewPosition!.leftUpper!.x,
+        leftUpperY: _mapViewPosition!.leftUpper!.y);
+    _injectMoveAroundUpdate.add(event);
+  }
+
+  void gestureMoveEndEvent(double left, double upper) {
+    if (_mapViewPosition == null) return null;
+    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    if (_mapViewPosition?.leftUpper == null) return null;
+
+    MoveAroundEvent event = MoveAroundEvent(
+        latitude: _mapViewPosition!.projection!
+            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
+        longitude: _mapViewPosition!.projection!
+            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
+        projection: _mapViewPosition!.projection!,
+        x: left,
+        y: upper,
+        leftUpperX: _mapViewPosition!.leftUpper!.x,
+        leftUpperY: _mapViewPosition!.leftUpper!.y);
+    _injectMoveAroundEnd.add(event);
   }
 
   Dimension? get viewDimension => _viewDimension;
@@ -326,6 +420,20 @@ class TapEvent implements ILatLong {
         leftUpperX = -1,
         leftUpperY = -1,
         _projection = null;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class MoveAroundEvent extends TapEvent {
+  MoveAroundEvent({
+    required double latitude,
+    required double longitude,
+    required PixelProjection projection,
+    required double x,
+    required double y,
+    required double leftUpperX,
+    required double leftUpperY,
+  }) : super(latitude, longitude, x, y, leftUpperX, leftUpperY, projection);
 }
 
 /////////////////////////////////////////////////////////////////////////////

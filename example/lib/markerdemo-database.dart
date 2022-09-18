@@ -13,22 +13,31 @@ import 'package:rxdart/rxdart.dart';
 /// In a real world you would have your own structures representing whatever you
 /// need to represent in the map - for example information about point of interests.
 class MarkerdemoDatabase {
-  static final List<TapEvent> events = [];
+  static final List<TapEvent> databaseItems = [];
 
-  static Subject<MarkerDatabaseEvent> _inject = BehaviorSubject<MarkerDatabaseEvent>();
+  static Subject<MarkerDatabaseEvent> _inject =
+      BehaviorSubject<MarkerDatabaseEvent>();
 
   static Stream<MarkerDatabaseEvent> get observe => _inject.stream;
 
   static void addToDatabase(TapEvent tapEvent) {
-    events.add(tapEvent);
+    databaseItems.add(tapEvent);
     // now inform listeners about changes in the database
     _inject.add(AddMarkerEvent(tapEvent: tapEvent));
   }
 
   static void removeFromDatabase(TapEvent tapEvent, Marker markerToRemove) {
-    events.remove(markerToRemove.item);
+    databaseItems.remove(markerToRemove.item);
 
     _inject.add(RemoveMarkerEvent(markerToRemove: markerToRemove));
+  }
+
+  static void move(TapEvent event, double latitude, double longitude) {
+    databaseItems.removeWhere((element) =>
+        element.latitude == event.latitude &&
+        element.longitude == event.longitude);
+    databaseItems.add(TapEvent(latitude, longitude, event.x, event.y,
+        event.leftUpperX, event.leftUpperY, event.projection));
   }
 }
 

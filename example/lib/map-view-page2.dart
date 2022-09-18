@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:mapsforge_example/debug/debug-contextmenubuilder.dart';
 import 'package:mapsforge_example/debug/debug-datastore.dart';
 import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
+import 'package:mapsforge_example/markerdemo-database.dart';
 import 'package:mapsforge_example/markerdemo-datastore.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
@@ -32,6 +33,23 @@ class MapViewPage2 extends StatefulWidget {
 /// The [State] of the [MapViewPage] Widget.
 class MapViewPageState2 extends State<MapViewPage2> {
   final DisplayModel displayModel = DisplayModel();
+
+  late SymbolCache symbolCache;
+
+  late MarkerdemoDatastore markerdemoDatastore;
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// For the offline-maps we need a cache for all the tiny symbols in the map
+    symbolCache = widget.mapFileData.relativePathPrefix != null
+        ? FileSymbolCache(
+            imageLoader: ImageRelativeLoader(
+                relativePathPrefix: widget.mapFileData.relativePathPrefix!))
+        : FileSymbolCache();
+    markerdemoDatastore = MarkerdemoDatastore(symbolCache: symbolCache);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,18 +102,22 @@ class MapViewPageState2 extends State<MapViewPage2> {
     viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
         widget.mapFileData.initialPositionLong);
     viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
+    viewModel.observeMoveAroundStart.listen((event) {
+      // Demo: If the user tries to move around a marker
+      markerdemoDatastore.moveMarkerStart(event);
+    });
+    viewModel.observeMoveAroundUpdate.listen((event) {
+      // Demo: If the user tries to move around a marker
+      markerdemoDatastore.moveMarkerUpdate(event);
+    });
+    viewModel.observeMoveAroundEnd.listen((event) {
+      // Demo: If the user tries to move around a marker
+      markerdemoDatastore.moveMarkerEnd(event);
+    });
     return viewModel;
   }
 
   Future<MapModel> _createOfflineMapModel() async {
-    /// For the offline-maps we need a cache for all the tiny symbols in the map
-    final SymbolCache symbolCache =
-        widget.mapFileData.relativePathPrefix != null
-            ? FileSymbolCache(
-                imageLoader: ImageRelativeLoader(
-                    relativePathPrefix: widget.mapFileData.relativePathPrefix!))
-            : FileSymbolCache();
-
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
     RenderTheme renderTheme =
         await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
@@ -124,8 +146,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
       tileBitmapCache: bitmapCache,
       symbolCache: symbolCache,
     );
-    mapModel.markerDataStores
-        .add(MarkerdemoDatastore(symbolCache: symbolCache));
+    mapModel.markerDataStores.add(markerdemoDatastore);
     //mapModel.markerDataStores.add(DebugDatastore(symbolCache: symbolCache));
 
     return mapModel;

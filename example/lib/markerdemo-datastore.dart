@@ -16,6 +16,8 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
 
   late StreamSubscription _subscription;
 
+  CircleMarker<TapEvent>? _moveMarker;
+
   MarkerdemoDatastore({required this.symbolCache}) {
     _subscription = MarkerdemoDatabase.observe.listen((event) async {
       // there are changes in the database
@@ -41,7 +43,7 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
   @override
   Future<void> retrieveMarkersFor(BoundingBox boundary, int zoomLevel) async {
     int count = 0;
-    for (TapEvent tapEvent in MarkerdemoDatabase.events) {
+    for (TapEvent tapEvent in MarkerdemoDatabase.databaseItems) {
       if (getMarkerWithItem(tapEvent) != null) {
         // marker is already set in the datastore, do nothing
         continue;
@@ -55,13 +57,37 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
     if (count > 0) setRepaint();
   }
 
-  Future<Marker> _createMarker(TapEvent tapEvent) async {
-    CircleMarker marker = CircleMarker(
+  Future<CircleMarker<TapEvent>> _createMarker(TapEvent tapEvent) async {
+    CircleMarker<TapEvent> marker = CircleMarker<TapEvent>(
       center: tapEvent,
       item: tapEvent,
       radius: 20,
       strokeWidth: 5,
     );
     return marker;
+  }
+
+  void moveMarkerStart(MoveAroundEvent event) {
+    List<Marker> markers = isTapped(event);
+    _moveMarker =
+        markers.isNotEmpty ? markers.first as CircleMarker<TapEvent> : null;
+    if (_moveMarker == null) return;
+    _moveMarker!.setStrokeColorFromNumber(0xffff0000);
+    setRepaint();
+  }
+
+  Future<void> moveMarkerUpdate(MoveAroundEvent event) async {
+    if (_moveMarker == null) return;
+    _moveMarker!.latLong = LatLong(event.latitude, event.longitude);
+    setRepaint();
+  }
+
+  void moveMarkerEnd(MoveAroundEvent event) {
+    if (_moveMarker == null) return;
+    MarkerdemoDatabase.move(
+        _moveMarker!.item!, event.latitude, event.longitude);
+    _moveMarker!.setStrokeColorFromNumber(0xff000000);
+    setRepaint();
+    _moveMarker = null;
   }
 }
