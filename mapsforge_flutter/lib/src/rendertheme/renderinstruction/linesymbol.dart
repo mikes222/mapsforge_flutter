@@ -42,8 +42,8 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
     initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    this._repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
-    this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
+    this._repeatGap = REPEAT_GAP_DEFAULT * displayModel.getFontScaleFactor();
+    this.repeatStart = REPEAT_START_DEFAULT * displayModel.getFontScaleFactor();
     this.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
 
     rootElement.attributes.forEach((element) {
@@ -69,9 +69,11 @@ class LineSymbol extends RenderInstruction with BitmapSrcMixin {
       } else if (RenderInstruction.REPEAT == name) {
         this.repeat = "true" == (value);
       } else if (RenderInstruction.REPEAT_GAP == name) {
-        this._repeatGap = double.parse(value) * displayModel.getScaleFactor();
+        this._repeatGap =
+            double.parse(value) * displayModel.getFontScaleFactor();
       } else if (RenderInstruction.REPEAT_START == name) {
-        this.repeatStart = double.parse(value) * displayModel.getScaleFactor();
+        this.repeatStart =
+            double.parse(value) * displayModel.getFontScaleFactor();
       } else if (RenderInstruction.ROTATE == name) {
         this.rotate = "true" == (value);
       } else if (RenderInstruction.SCALE == name) {

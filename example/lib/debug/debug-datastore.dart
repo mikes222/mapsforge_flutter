@@ -9,7 +9,9 @@ class DebugDatastore extends MarkerByItemDataStore {
 
   DatastoreReadResult? readResult;
 
-  DebugDatastore({required this.symbolCache}) {}
+  final DisplayModel displayModel;
+
+  DebugDatastore({required this.symbolCache, required this.displayModel}) {}
 
   @override
   void dispose() {
@@ -50,6 +52,7 @@ class DebugDatastore extends MarkerByItemDataStore {
       strokeWidth: 2,
       fillColor: 0x80eac71c,
       strokeColor: 0xffc2a726,
+      displayModel: displayModel,
     );
     return marker;
   }

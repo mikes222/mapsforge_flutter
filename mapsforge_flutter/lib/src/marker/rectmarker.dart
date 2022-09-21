@@ -131,12 +131,9 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
 
   @override
   bool isTapped(TapEvent tapEvent) {
-    ILatLong latLong = tapEvent.projection.pixelToLatLong(
-        tapEvent.x + tapEvent.leftUpperX, tapEvent.y + tapEvent.leftUpperY);
-    //print("Testing ${latLong.toString()} against ${title}");
-    return latLong.latitude > minLatLon.latitude &&
-        latLong.latitude < maxLatLon.latitude &&
-        latLong.longitude > minLatLon.longitude &&
-        latLong.longitude < maxLatLon.longitude;
+    return tapEvent.latitude > minLatLon.latitude &&
+        tapEvent.latitude < maxLatLon.latitude &&
+        tapEvent.longitude > minLatLon.longitude &&
+        tapEvent.longitude < maxLatLon.longitude;
   }
 }

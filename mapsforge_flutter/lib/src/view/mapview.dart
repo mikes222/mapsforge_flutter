@@ -48,10 +48,7 @@ class _FlutterMapState extends State<FlutterMapView> {
         widget.mapModel.renderer,
         widget.mapModel.tileBitmapCache,
         widget.mapModel.tileBitmapCacheFirstLevel);
-    _tileLayer = TileLayerImpl(
-      displayModel: widget.mapModel.displayModel,
-      jobQueue: _jobQueue,
-    );
+    _tileLayer = TileLayerImpl(displayModel: widget.mapModel.displayModel);
   }
 
   @override
@@ -103,12 +100,12 @@ class _FlutterMapState extends State<FlutterMapView> {
     return null;
   }
 
-  List<Widget> _createMarkerWidgets(MapViewPosition position) {
+  List<Widget> _createMarkerWidgets(MapViewPosition mapViewPosition) {
     // now draw all markers
     return widget.mapModel.markerDataStores
         .map((datastore) => CustomPaint(
               foregroundPainter: MarkerPainter(
-                position: position,
+                mapViewPosition: mapViewPosition,
                 dataStore: datastore,
                 viewModel: widget.viewModel,
               ),
@@ -155,7 +152,11 @@ class _FlutterMapState extends State<FlutterMapView> {
                             widget.mapModel,
                             widget.viewModel,
                             position,
-                            widget.viewModel.viewDimension!,
+                            Dimension(
+                                widget.viewModel.viewDimension.width /
+                                    widget.viewModel.viewScaleFactor,
+                                widget.viewModel.viewDimension.height /
+                                    widget.viewModel.viewScaleFactor),
                             event);
                   },
                 ),
@@ -169,7 +170,6 @@ class _FlutterMapState extends State<FlutterMapView> {
   JobSet? _submitJobSet(
       ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
     //_log.info("viewModel ${viewModel.viewDimension}");
-    if (viewModel.viewDimension == null) return null;
     int time = DateTime.now().millisecondsSinceEpoch;
     List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
     JobSet jobSet = JobSet();

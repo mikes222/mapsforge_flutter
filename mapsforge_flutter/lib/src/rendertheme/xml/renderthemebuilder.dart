@@ -42,6 +42,8 @@ class RenderThemeBuilder {
   int _level = 0;
   int maxLevel = 0;
 
+  String forHash = "";
+
   RenderThemeBuilder();
 
   /// Builds and returns a rendertheme by loading a rendertheme-file. This
@@ -53,6 +55,8 @@ class RenderThemeBuilder {
     String content = const Utf8Decoder().convert(bytes.buffer.asUint8List());
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     renderThemeBuilder.parseXml(displayModel, content);
+    renderThemeBuilder.forHash =
+        "${displayModel.deviceScaleFactor}_${displayModel.fontScaleFactor}_${displayModel.tileSize}";
     RenderTheme renderTheme = renderThemeBuilder.build();
     return renderTheme;
   }

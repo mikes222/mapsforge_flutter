@@ -44,8 +44,7 @@ class Hillshading {
         255;
     Tile tile = renderContext.job.tile;
     int zoomLevel = tile.zoomLevel;
-    PixelProjection projection =
-        PixelProjection(zoomLevel, renderContext.job.tileSize);
+    PixelProjection projection = renderContext.projection;
     Mappoint origin = projection.getLeftUpper(tile);
     double maptileTopLat = projection.pixelYToLatitude(origin.y);
     double maptileLeftLng = projection.pixelXToLongitude(origin.x);

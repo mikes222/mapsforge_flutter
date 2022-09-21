@@ -112,7 +112,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
           );
           _tileLayer = TileLayerImpl(
             displayModel: widget.displayModel,
-            jobQueue: _jobQueue!,
           );
           _log.info(
               "MapModel created ${_mapModel?.renderer.getRenderKey()}  ${snapshot.connectionState.toString()}");
@@ -203,12 +202,12 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     return null;
   }
 
-  List<Widget> _createMarkerWidgets(MapViewPosition position) {
+  List<Widget> _createMarkerWidgets(MapViewPosition mapViewPosition) {
     // now draw all markers
     return _mapModel!.markerDataStores
         .map((datastore) => CustomPaint(
               foregroundPainter: MarkerPainter(
-                position: position,
+                mapViewPosition: mapViewPosition,
                 dataStore: datastore,
                 viewModel: _viewModel!,
               ),
@@ -254,7 +253,9 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             _mapModel!,
             _viewModel!,
             position,
-            _viewModel!.viewDimension!,
+            Dimension(
+                _viewModel!.viewDimension.width / _viewModel!.viewScaleFactor,
+                _viewModel!.viewDimension.height / _viewModel!.viewScaleFactor),
             event);
       },
     );
@@ -263,7 +264,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   JobSet? _submitJobSet(
       ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
     //_log.info("viewModel ${viewModel.viewDimension}");
-    if (viewModel.viewDimension == null) return null;
     int time = DateTime.now().millisecondsSinceEpoch;
     List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
     JobSet jobSet = JobSet();

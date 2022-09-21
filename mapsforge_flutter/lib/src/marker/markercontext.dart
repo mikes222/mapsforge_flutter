@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
@@ -7,6 +9,8 @@ import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttermatrix.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/flutterpaint.dart';
+import 'package:mapsforge_flutter/src/implementation/graphics/flutterrect.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
@@ -20,7 +24,13 @@ class MarkerContext implements MarkerCallback {
   @override
   final MapViewPosition mapViewPosition;
 
-  const MarkerContext(this.flutterCanvas, this.mapViewPosition);
+  /// The factor to scale down the map. With [DisplayModel.deviceScaleFactor] one can scale up the view and make it bigger. With this value
+  /// one can scale down the view and make the resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images
+  @override
+  final double viewScaleFactor;
+
+  const MarkerContext(
+      this.flutterCanvas, this.mapViewPosition, this.viewScaleFactor);
 
   @override
   void renderBitmap(ResourceBitmap bitmap, double latitude, double longitude,
@@ -60,6 +70,13 @@ class MarkerContext implements MarkerCallback {
     double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
     flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x),
         (y - mapViewPosition.leftUpper!.y), radius, paint);
+    // flutterCanvas.drawRect(
+    //     FlutterRect(
+    //         x - mapViewPosition.leftUpper!.x,
+    //         y - mapViewPosition.leftUpper!.y,
+    //         x - mapViewPosition.leftUpper!.x + 10,
+    //         y - mapViewPosition.leftUpper!.y + 10),
+    //     FlutterPaint(Paint()..color = Colors.red));
   }
 
   @override

@@ -22,16 +22,15 @@ import 'tilelayer.dart';
 class TileLayerImpl extends TileLayer {
   static final _log = new Logger('TileLayer');
 
-  final JobQueue jobQueue;
-  Matrix? _matrix;
   final MapPaint _paint;
 
   TileLayerImpl({
-    required this.jobQueue,
     required displayModel,
   })  : assert(displayModel != null),
         _paint = GraphicFactory().createPaint(),
-        super(displayModel);
+        super(displayModel) {
+    _paint.setAntiAlias(true);
+  }
 
   @override
   void draw(ViewModel viewModel, MapViewPosition mapViewPosition,
@@ -49,30 +48,42 @@ class TileLayerImpl extends TileLayer {
     //canvas.resetClip();
 
     canvas.setClip(
-        0, 0, viewModel.viewDimension!.width, viewModel.viewDimension!.height);
-    mapViewPosition.calculateBoundingBox(viewModel.viewDimension!);
-    Mappoint? leftUpper = mapViewPosition.leftUpper;
+        0, 0, viewModel.viewDimension.width, viewModel.viewDimension.height);
+    mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
+    Mappoint leftUpper = mapViewPosition.leftUpper!;
 
+    if (viewModel.viewScaleFactor != 1) {
+      (canvas as FlutterCanvas).uiCanvas.save();
+      canvas.scale(
+          const Mappoint(/*viewModel.viewDimension.width / 2*/ 0,
+              /*viewModel.viewDimension.height / 2*/ 0),
+          1 / viewModel.viewScaleFactor);
+    }
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
       //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
       (canvas as FlutterCanvas).uiCanvas.save();
       canvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
     }
+    //_log.info("${jobSet.results.length} tiles");
     jobSet.results.forEach((Tile tile, JobResult jobResult) {
-      Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
-      _paint.setAntiAlias(true);
-      if (jobResult.bitmap != null)
+      if (jobResult.bitmap != null) {
+        //_log.info("  $jobResult");
+        Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
         canvas.drawBitmap(
           bitmap: jobResult.bitmap!,
-          left: point.x - leftUpper!.x,
+          left: point.x - leftUpper.x,
           top: point.y - leftUpper.y,
           paint: _paint,
         );
+      }
     });
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
       (canvas as FlutterCanvas).uiCanvas.restore();
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
+    }
+    if (viewModel.viewScaleFactor != 1) {
+      (canvas as FlutterCanvas).uiCanvas.restore();
     }
   }
 

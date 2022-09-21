@@ -159,12 +159,9 @@ Similar methods exists for zooming.
 If you want your own marker datastore add one or more of the following to the MapModel:
 
     MarkerDataStore markerDataStore = MarkerDataStore();
-    markerDataStore.markers.add(BasicMarker(src: "jar:symbols/windsock.svg", 
-    symbolCache: symbolCache,width: 20, height: 20, caption: "TestMarker",
-    latitude: 48.089355, longitude: 16.311509,)
-    ..
-    init());
-
+    markerDataStore.addMarker(PoiMarker(src: "jar:symbols/windsock.svg",
+      latLong: const LatLong(48.089355, 16.311509),
+      ));
 
 and include the new datastore in the mapModel. 
 
@@ -194,6 +191,18 @@ changes. Overlays are simple Widgets. Add them to the viewModel:
 For more information and documentation check [doc/mapdatastore.md](doc/mapdatastore.md)
 
 ----
+
+### Input gestures
+
+The default GestureDetector can deal with the following gestures:
+
+Double click: Default behavior: zoom in at the coordinates of the click
+Short click: Default behavior: show context menu
+Long click: Default behavior: none
+Pinch-to-zoom: Default behavior: zoom in/out at the specified focus point
+Click-hold, then move: Default behavior: none
+
+In order to receive the gestures and implement your own code check the appropriate observe* methods in ViewModel
 
 ## License
 

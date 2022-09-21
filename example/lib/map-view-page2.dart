@@ -1,14 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:mapsforge_example/debug/debug-contextmenubuilder.dart';
-import 'package:mapsforge_example/debug/debug-datastore.dart';
 import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
-import 'package:mapsforge_example/markerdemo-database.dart';
 import 'package:mapsforge_example/markerdemo-datastore.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/marker.dart';
 
 import 'map-file-data.dart';
 
@@ -32,7 +29,7 @@ class MapViewPage2 extends StatefulWidget {
 
 /// The [State] of the [MapViewPage] Widget.
 class MapViewPageState2 extends State<MapViewPage2> {
-  final DisplayModel displayModel = DisplayModel();
+  final DisplayModel displayModel = DisplayModel(); //deviceScaleFactor: 2);
 
   late SymbolCache symbolCache;
 
@@ -48,7 +45,8 @@ class MapViewPageState2 extends State<MapViewPage2> {
             imageLoader: ImageRelativeLoader(
                 relativePathPrefix: widget.mapFileData.relativePathPrefix!))
         : FileSymbolCache();
-    markerdemoDatastore = MarkerdemoDatastore(symbolCache: symbolCache);
+    markerdemoDatastore = MarkerdemoDatastore(
+        symbolCache: symbolCache, displayModel: displayModel);
   }
 
   @override
@@ -105,6 +103,10 @@ class MapViewPageState2 extends State<MapViewPage2> {
     viewModel.observeMoveAroundStart.listen((event) {
       // Demo: If the user tries to move around a marker
       markerdemoDatastore.moveMarkerStart(event);
+    });
+    viewModel.observeMoveAroundCancel.listen((event) {
+      // Demo: If the user tries to move around a marker
+      markerdemoDatastore.moveMarkerCancel(event);
     });
     viewModel.observeMoveAroundUpdate.listen((event) {
       // Demo: If the user tries to move around a marker

@@ -2,12 +2,9 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
-
-import 'markercallback.dart';
 
 /// Abstract Marker class for further extensions. This class holds the position of a marker as [ILatLong] and implements the shouldPaint() method.
 abstract class BasicPointMarker<T> extends BasicMarker<T> {
@@ -135,17 +132,18 @@ class MarkerCaption with TextMixin, PaintMixin {
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
     this.maxTextWidth = 200,
+    required DisplayModel displayModel,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
         assert(minZoomLevel <= maxZoomLevel),
         assert(text.length > 0) {
     initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    setStrokeWidth(strokeWidth);
+    setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());
     setStrokeColorFromNumber(strokeColor);
-    setFontSize(fontSize);
+    setFontSize(fontSize * displayModel.getFontScaleFactor());
     setFillColorFromNumber(fillColor);
-    setDy(captionOffsetY);
+    setDy(captionOffsetY * displayModel.getFontScaleFactor());
   }
 
   @mustCallSuper

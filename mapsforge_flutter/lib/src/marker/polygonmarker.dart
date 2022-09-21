@@ -174,9 +174,7 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   @override
   bool isTapped(TapEvent tapEvent) {
-    ILatLong latLong = tapEvent.projection.pixelToLatLong(
-        tapEvent.x + tapEvent.leftUpperX, tapEvent.y + tapEvent.leftUpperY);
     //print("Testing ${latLong.toString()} against ${title}");
-    return LatLongUtils.contains(path, latLong);
+    return LatLongUtils.contains(path, tapEvent);
   }
 }

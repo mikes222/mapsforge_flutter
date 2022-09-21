@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
@@ -21,7 +22,7 @@ import 'flutterrect.dart';
 import 'fluttertilebitmap.dart';
 
 class FlutterCanvas extends MapCanvas {
-  //static final _log = new Logger('FlutterCanvas');
+  static final _log = new Logger('FlutterCanvas');
 
   late ui.Canvas uiCanvas;
 
@@ -88,11 +89,8 @@ class FlutterCanvas extends MapCanvas {
         return;
       }
     }
-    //_log.info("Drawing image to $left/$top " + (bitmap as FlutterBitmap).bitmap.toString());
-    if (left + image.width < 0 ||
-        top + image.height < 0 ||
-        left - image.width > size.width ||
-        top - image.height > size.height) return;
+    // _log.info(
+    //     "Drawing image to $left/$top (${image.width} / ${image.height}) $bitmap");
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(
     //         left, top, image.width.toDouble(), image.height.toDouble()),

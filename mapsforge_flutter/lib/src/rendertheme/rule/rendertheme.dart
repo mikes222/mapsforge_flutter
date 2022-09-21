@@ -34,6 +34,8 @@ class RenderTheme {
 
   final Set<int> _strokes = {};
 
+  late final String forHash;
+
   RenderTheme(RenderThemeBuilder renderThemeBuilder)
       : //assert(renderThemeBuilder.maxLevel > 0),
         baseStrokeWidth = renderThemeBuilder.baseStrokeWidth,
@@ -45,6 +47,7 @@ class RenderTheme {
         levels = renderThemeBuilder.maxLevel + 1 {
     this.poiMatchingCache = new Map();
     this.wayMatchingCache = new Map();
+    forHash = renderThemeBuilder.forHash;
   }
 
   /**
@@ -213,7 +216,8 @@ class RenderTheme {
           hasBackgroundOutside == other.hasBackgroundOutside &&
           levels == other.levels &&
           mapBackground == other.mapBackground &&
-          mapBackgroundOutside == other.mapBackgroundOutside;
+          mapBackgroundOutside == other.mapBackgroundOutside &&
+          forHash == other.forHash;
 
   @override
   int get hashCode =>
@@ -222,5 +226,6 @@ class RenderTheme {
       hasBackgroundOutside.hashCode ^
       levels.hashCode ^
       mapBackground.hashCode ^
-      mapBackgroundOutside.hashCode;
+      mapBackgroundOutside.hashCode ^
+      forHash.hashCode;
 }

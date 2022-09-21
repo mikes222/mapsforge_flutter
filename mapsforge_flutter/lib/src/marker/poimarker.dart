@@ -99,13 +99,13 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   bool isTapped(TapEvent tapEvent) {
     double y = tapEvent.projection.latitudeToPixelY(latLong.latitude);
     double x = tapEvent.projection.longitudeToPixelX(latLong.longitude);
-    x = x + _imageOffsetX - tapEvent.leftUpperX;
-    y = y + _imageOffsetY - tapEvent.leftUpperY;
-    return tapEvent.x >= x &&
-        tapEvent.x <=
+    x = x + _imageOffsetX;
+    y = y + _imageOffsetY;
+    return tapEvent.mapPixelMappoint.x >= x &&
+        tapEvent.mapPixelMappoint.x <=
             x + getBitmapWidth(tapEvent.projection.scalefactor.zoomlevel) &&
-        tapEvent.y >= y &&
-        tapEvent.y <=
+        tapEvent.mapPixelMappoint.y >= y &&
+        tapEvent.mapPixelMappoint.y <=
             y + getBitmapHeight(tapEvent.projection.scalefactor.zoomlevel);
   }
 }

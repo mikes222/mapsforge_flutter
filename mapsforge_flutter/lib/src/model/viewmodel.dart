@@ -15,39 +15,58 @@ class ViewModel {
   List<Widget>? overlays;
 
   ///
-  /// The width and height of the view in pixels
+  /// The width and height of the visible view in pixels. Note that this is NOT equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
+  /// to gain a better resolution of the tile-images.
   ///
-  Dimension? _viewDimension;
+  late Dimension _viewDimension;
+
+  /// The factor to scale down the map. With [DisplayModel.deviceScaleFactor] one can scale up the view and make it bigger. With this value
+  /// one can scale down the view and make the resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images
+  late final double viewScaleFactor;
 
   /// The last position should be reported to a new subscriber
   Subject<MapViewPosition> _injectPosition = BehaviorSubject();
 
+  /// Receives events when the position or zoom or indoor-level of the map changes
   Stream<MapViewPosition> get observePosition => _injectPosition.stream;
 
   Subject<TapEvent> _injectTap = PublishSubject();
 
+  /// Receives events when the user taps (short) at the screen
   Stream<TapEvent> get observeTap => _injectTap.stream;
 
   Subject<TapEvent> _injectLongTap = PublishSubject();
 
+  /// Receives event when the user taps for a longer period at the same position of the screen. This event is sent when the user releases
   Stream<TapEvent> get observeLongTap => _injectLongTap.stream;
 
   Subject<GestureEvent> _injectGesture = PublishSubject();
 
+  /// Receives events when a gesture is recognized. Use this event to eventually stop automatically moving the map
   Stream<GestureEvent> get observeGesture => _injectGesture.stream;
 
   Subject<MoveAroundEvent> _injectMoveAroundStart = PublishSubject();
 
+  /// Receives events when the user taps for a longer period at the same position of the screen. This could mean either that the user wants
+  /// to drag something around or that the user performs a long-tap. In the latter case a [observeMoveAroundCancel] event will be sent.
   Stream<MoveAroundEvent> get observeMoveAroundStart =>
       _injectMoveAroundStart.stream;
 
+  Subject<MoveAroundEvent> _injectMoveAroundCancel = PublishSubject();
+
+  /// Receives events to denotes that a user just wanted to long-press at the same position. Cancels a "move-around" start event.
+  Stream<MoveAroundEvent> get observeMoveAroundCancel =>
+      _injectMoveAroundCancel.stream;
+
   Subject<MoveAroundEvent> _injectMoveAroundUpdate = PublishSubject();
 
+  /// Receives events to denote that the user moves an object around
   Stream<MoveAroundEvent> get observeMoveAroundUpdate =>
       _injectMoveAroundUpdate.stream;
 
   Subject<MoveAroundEvent> _injectMoveAroundEnd = PublishSubject();
 
+  /// Receives events when the user ended a drag'n'drop event
   Stream<MoveAroundEvent> get observeMoveAroundEnd =>
       _injectMoveAroundEnd.stream;
 
@@ -57,6 +76,8 @@ class ViewModel {
       this.noPositionView,
       this.overlays}) {
     noPositionView ??= NoPositionView();
+    viewScaleFactor = displayModel.deviceScaleFactor;
+    _viewDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
   }
 
   void dispose() {
@@ -247,7 +268,7 @@ class ViewModel {
   void setLeftUpper(double left, double upper) {
     if (_mapViewPosition != null) {
       MapViewPosition newPosition = MapViewPosition.setLeftUpper(
-          _mapViewPosition!, left, upper, _viewDimension!);
+          _mapViewPosition!, left, upper, _viewDimension);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -263,41 +284,43 @@ class ViewModel {
   }
 
   /// The user has tapped at the map. The event has been detected by the [FlutterGestureDetector].
-  /// left/upper 0/0 indicates the left-upper corner of the map (NOT of the screen)
+  /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    _mapViewPosition!.calculateBoundingBox(_viewDimension);
     if (_mapViewPosition?.leftUpper == null) return;
     TapEvent event = TapEvent(
-        _mapViewPosition!.projection!
-            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
-        _mapViewPosition!.projection!
-            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
-        left,
-        upper,
-        _mapViewPosition!.leftUpper!.x,
-        _mapViewPosition!.leftUpper!.y,
+        _mapViewPosition!.projection!.pixelYToLatitude(
+            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
+        _mapViewPosition!.projection!.pixelXToLongitude(
+            _mapViewPosition!.leftUpper!.x + left * viewScaleFactor),
+        Mappoint(left, upper),
+        _mapViewPosition!.leftUpper!,
+        Mappoint(_mapViewPosition!.leftUpper!.x + left * viewScaleFactor,
+            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
         _mapViewPosition!.projection!);
     _injectTap.add(event);
   }
 
+  /// This method is intended to remove the contextmenu. Call this method if the user clicks at the close-icon of the contextmenu
   void clearTapEvent() {
     _injectTap.add(const TapEvent.clear());
   }
 
+  /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
   void longTapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    _mapViewPosition!.calculateBoundingBox(_viewDimension);
     if (_mapViewPosition?.leftUpper == null) return;
     TapEvent event = TapEvent(
-        _mapViewPosition!.projection!
-            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
-        _mapViewPosition!.projection!
-            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
-        left,
-        upper,
-        _mapViewPosition!.leftUpper!.x,
-        _mapViewPosition!.leftUpper!.y,
+        _mapViewPosition!.projection!.pixelYToLatitude(
+            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
+        _mapViewPosition!.projection!.pixelXToLongitude(
+            _mapViewPosition!.leftUpper!.x + left * viewScaleFactor),
+        Mappoint(left, upper),
+        _mapViewPosition!.leftUpper!,
+        Mappoint(_mapViewPosition!.leftUpper!.x + left * viewScaleFactor,
+            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
         _mapViewPosition!.projection!);
     _injectLongTap.add(event);
   }
@@ -308,67 +331,97 @@ class ViewModel {
     _injectGesture.add(GestureEvent());
   }
 
-  void gestureMoveStartEvent(double left, double upper) {
+  void gestureMoveStartEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    _mapViewPosition!.calculateBoundingBox(_viewDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
-        latitude: _mapViewPosition!.projection!
-            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
-        longitude: _mapViewPosition!.projection!
-            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
-        projection: _mapViewPosition!.projection!,
-        x: left,
-        y: upper,
-        leftUpperX: _mapViewPosition!.leftUpper!.x,
-        leftUpperY: _mapViewPosition!.leftUpper!.y);
+      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection!,
+      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
+      leftUpperMappoint: _mapViewPosition!.leftUpper!,
+      mapPixelMappoint: Mappoint(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+    );
     _injectMoveAroundStart.add(event);
   }
 
-  void gestureMoveUpdateEvent(double left, double upper) {
+  /// The moveStart event has already been reported but the user decided to cancel the move events
+  void gestureMoveCancelEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    _mapViewPosition!.calculateBoundingBox(_viewDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
-        latitude: _mapViewPosition!.projection!
-            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
-        longitude: _mapViewPosition!.projection!
-            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
-        projection: _mapViewPosition!.projection!,
-        x: left,
-        y: upper,
-        leftUpperX: _mapViewPosition!.leftUpper!.x,
-        leftUpperY: _mapViewPosition!.leftUpper!.y);
+      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection!,
+      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
+      leftUpperMappoint: _mapViewPosition!.leftUpper!,
+      mapPixelMappoint: Mappoint(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+    );
+    _injectMoveAroundCancel.add(event);
+  }
+
+  void gestureMoveUpdateEvent(double widgetLeft, double widgetUpper) {
+    if (_mapViewPosition == null) return null;
+    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    if (_mapViewPosition?.leftUpper == null) return null;
+
+    MoveAroundEvent event = MoveAroundEvent(
+      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection!,
+      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
+      leftUpperMappoint: _mapViewPosition!.leftUpper!,
+      mapPixelMappoint: Mappoint(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+    );
     _injectMoveAroundUpdate.add(event);
   }
 
-  void gestureMoveEndEvent(double left, double upper) {
+  void gestureMoveEndEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension!);
+    _mapViewPosition!.calculateBoundingBox(_viewDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
-        latitude: _mapViewPosition!.projection!
-            .pixelYToLatitude(_mapViewPosition!.leftUpper!.y + upper),
-        longitude: _mapViewPosition!.projection!
-            .pixelXToLongitude(_mapViewPosition!.leftUpper!.x + left),
-        projection: _mapViewPosition!.projection!,
-        x: left,
-        y: upper,
-        leftUpperX: _mapViewPosition!.leftUpper!.x,
-        leftUpperY: _mapViewPosition!.leftUpper!.y);
+      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection!,
+      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
+      leftUpperMappoint: _mapViewPosition!.leftUpper!,
+      mapPixelMappoint: Mappoint(
+          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
+          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+    );
     _injectMoveAroundEnd.add(event);
   }
 
-  Dimension? get viewDimension => _viewDimension;
+  Dimension get viewDimension => _viewDimension;
 
   Dimension? setViewDimension(double width, double height) {
-    if (_viewDimension != null &&
-        _viewDimension!.width == width &&
-        _viewDimension!.height == height) return _viewDimension;
-    _viewDimension = Dimension(width, height);
+    assert(width >= 0);
+    assert(height >= 0);
+    if (_viewDimension.width == width * viewScaleFactor &&
+        _viewDimension.height == height * viewScaleFactor)
+      return _viewDimension;
+    _viewDimension =
+        Dimension(width * viewScaleFactor, height * viewScaleFactor);
     if (_mapViewPosition != null) _injectPosition.add(_mapViewPosition!);
     return _viewDimension;
   }
@@ -382,25 +435,24 @@ class ViewModel {
 /////////////////////////////////////////////////////////////////////////////
 
 class TapEvent implements ILatLong {
+  // The position of the event in lat direction (north-south)
   @override
   final double latitude;
 
+  // The position of the event in lon direction (east-west)
   @override
   final double longitude;
 
   final PixelProjection? _projection;
 
-  /// The x coordinate in pixels where the user tapped at the map. The left/upper point is considered 0/0
-  final double x;
-
-  /// The y coordinate in pixels where the user tapped at the map. The left/upper point is considered 0/0
-  final double y;
+  /// The coordinates of the event in logical pixels of the screen in the mapwidget. The left/upper point of the widget is considered 0/0. Note that the widgetpixels differs from the mappixels by the [viewScaleFactor]
+  final Mappoint widgetPixelMappoint;
 
   /// the left-upper point of the map in pixels
-  final double leftUpperX;
+  final Mappoint leftUpperMappoint;
 
-  /// the left-upper point of the map in pixels
-  final double leftUpperY;
+  /// The position of the event in mappixels
+  final Mappoint mapPixelMappoint;
 
   bool isCleared() {
     return _projection == null;
@@ -408,17 +460,16 @@ class TapEvent implements ILatLong {
 
   PixelProjection get projection => _projection!;
 
-  const TapEvent(this.latitude, this.longitude, this.x, this.y, this.leftUpperX,
-      this.leftUpperY, PixelProjection projection)
+  const TapEvent(this.latitude, this.longitude, this.widgetPixelMappoint,
+      this.leftUpperMappoint, this.mapPixelMappoint, PixelProjection projection)
       : _projection = projection;
 
   const TapEvent.clear()
       : latitude = 0,
         longitude = 0,
-        x = -1,
-        y = -1,
-        leftUpperX = -1,
-        leftUpperY = -1,
+        widgetPixelMappoint = const Mappoint(0, 0),
+        leftUpperMappoint = const Mappoint(0, 0),
+        mapPixelMappoint = const Mappoint(0, 0),
         _projection = null;
 }
 
@@ -429,11 +480,11 @@ class MoveAroundEvent extends TapEvent {
     required double latitude,
     required double longitude,
     required PixelProjection projection,
-    required double x,
-    required double y,
-    required double leftUpperX,
-    required double leftUpperY,
-  }) : super(latitude, longitude, x, y, leftUpperX, leftUpperY, projection);
+    required Mappoint widgetPixelMappoint,
+    required Mappoint leftUpperMappoint,
+    required Mappoint mapPixelMappoint,
+  }) : super(latitude, longitude, widgetPixelMappoint, leftUpperMappoint,
+            mapPixelMappoint, projection);
 }
 
 /////////////////////////////////////////////////////////////////////////////

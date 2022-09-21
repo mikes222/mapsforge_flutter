@@ -49,13 +49,13 @@ class DefaultContextMenuState extends State {
     // double x = widget.event.x;
     // double y = widget.event.y;
 
-    widget.position.calculateBoundingBox(widget.viewModel.viewDimension!);
-    double x =
-        widget.position.projection!.longitudeToPixelX(widget.event.longitude) -
-            widget.position.leftUpper!.x;
-    double y =
-        widget.position.projection!.latitudeToPixelY(widget.event.latitude) -
-            widget.position.leftUpper!.y;
+    widget.position.calculateBoundingBox(widget.viewModel.viewDimension);
+    double x = widget.event.widgetPixelMappoint.x;
+    // widget.position.projection!.longitudeToPixelX(widget.event.longitude) -
+    //     widget.position.leftUpper!.x;
+    double y = widget.event.widgetPixelMappoint.y;
+    // widget.position.projection!.latitudeToPixelY(widget.event.latitude) -
+    //     widget.position.leftUpper!.y;
 
     double halfWidth = widget.screen.width / 2;
     double halfHeight = widget.screen.height / 2;
@@ -100,6 +100,9 @@ class DefaultContextMenuState extends State {
               "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}",
               style: const TextStyle(fontSize: 14),
             ),
+            onTap: () {
+              widget.viewModel.clearTapEvent();
+            },
             onLongPress: () {
               Clipboard.setData(new ClipboardData(
                   text:
@@ -110,7 +113,7 @@ class DefaultContextMenuState extends State {
           // todo move the close icon to the right side
           IconButton(
             padding: const EdgeInsets.all(0),
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.close, size: 14),
             onPressed: () {
               widget.viewModel.clearTapEvent();
             },

@@ -23,7 +23,12 @@ class MarkerClusterDataStore extends IMarkerDataStore {
 
   final int minClusterItems;
 
-  MarkerClusterDataStore({this.extendMeters = 1000, this.minClusterItems = 3})
+  final DisplayModel displayModel;
+
+  MarkerClusterDataStore(
+      {this.extendMeters = 1000,
+      this.minClusterItems = 3,
+      required this.displayModel})
       : assert(minClusterItems >= 2);
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
@@ -73,12 +78,15 @@ class MarkerClusterDataStore extends IMarkerDataStore {
       strokeWidth: 3,
       strokeColor: 0xffffffff,
       fillColor: 0xaaff0000,
+      displayModel: displayModel,
       markerCaption: MarkerCaption(
-          text: "${markers.length}",
-          latLong: latLong,
-          fontSize: 18,
-          captionOffsetY: 0,
-          fillColor: 0xffffffff),
+        text: "${markers.length}",
+        latLong: latLong,
+        fontSize: 18,
+        captionOffsetY: 0,
+        fillColor: 0xffffffff,
+        displayModel: displayModel,
+      ),
     );
   }
 
@@ -182,6 +190,7 @@ class _ClusterMarker extends CircleMarker {
     int? fillColor,
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
+    required DisplayModel displayModel,
   }) : super(
             display: display,
             minZoomLevel: minZoomLevel,
@@ -193,5 +202,6 @@ class _ClusterMarker extends CircleMarker {
             percent: percent,
             fillColor: fillColor,
             strokeWidth: strokeWidth,
-            strokeColor: strokeColor);
+            strokeColor: strokeColor,
+            displayModel: displayModel);
 }

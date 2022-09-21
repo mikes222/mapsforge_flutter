@@ -18,7 +18,9 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
 
   CircleMarker<TapEvent>? _moveMarker;
 
-  MarkerdemoDatastore({required this.symbolCache}) {
+  final DisplayModel displayModel;
+
+  MarkerdemoDatastore({required this.symbolCache, required this.displayModel}) {
     _subscription = MarkerdemoDatabase.observe.listen((event) async {
       // there are changes in the database
       // do the necessary operation and trigger repaint()
@@ -63,6 +65,7 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
       item: tapEvent,
       radius: 20,
       strokeWidth: 5,
+      displayModel: displayModel,
     );
     return marker;
   }
@@ -73,6 +76,13 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
         markers.isNotEmpty ? markers.first as CircleMarker<TapEvent> : null;
     if (_moveMarker == null) return;
     _moveMarker!.setStrokeColorFromNumber(0xffff0000);
+    setRepaint();
+  }
+
+  void moveMarkerCancel(MoveAroundEvent event) {
+    if (_moveMarker == null) return;
+    _moveMarker!.setStrokeColorFromNumber(0xff000000);
+    _moveMarker = null;
     setRepaint();
   }
 

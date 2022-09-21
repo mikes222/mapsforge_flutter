@@ -20,6 +20,7 @@ export 'src/model/displaymodel.dart';
 export 'src/model/ilatlong.dart';
 export 'src/model/latlong.dart';
 export 'src/model/mapmodel.dart';
+export 'src/model/mappoint.dart';
 export 'src/model/mapviewposition.dart';
 export 'src/model/viewmodel.dart';
 export 'src/model/tile.dart';

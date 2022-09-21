@@ -36,6 +36,13 @@ class _MyHomePageState extends State<MyHomePage> {
   late final MapModel mapModel;
   late final ViewModel viewModel;
 
+  @override
+  void dispose() {
+    mapModel.dispose();
+    viewModel.dispose();
+    super.dispose();
+  }
+
   Future<void> _initialize() async {
     // Load the mapfile which holds the openstreetmap® data
     final mapFile =

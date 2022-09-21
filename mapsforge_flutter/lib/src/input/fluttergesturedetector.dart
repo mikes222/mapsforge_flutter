@@ -34,7 +34,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   /// Minimum pixels per second (squared) to activate flinging
   final double _swipeThresholdSquared = 20000;
 
-  final double _minDragThresholdSquared = 10;
+  //final double _minDragThresholdSquared = 10;
 
   final int _swipeSleepMs = 100; // milliseconds between swipes
 
@@ -47,10 +47,6 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
   Offset? _updateLocalFocalPoint;
 
-  Offset? _tapDownLocalPosition;
-
-  int? _tapDownTime;
-
   double? _lastScale;
 
   Offset? _doubleTapLocalPosition;
@@ -58,6 +54,8 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   Timer? _swipeTimer;
 
   Offset? _swipeOffset;
+
+  _TapDownEvent? _tapDownEvent;
 
   @override
   void dispose() {
@@ -69,7 +67,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
   @override
   Widget build(BuildContext context) {
-    final bool doLog = true;
+    final bool doLog = false;
 
     // short click:
     // onTapDown
@@ -88,6 +86,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
     // onScaleStart with pointerCount 1
     // several onScaleUpdate with scale 1.0, rotation 0.0 and pointerCount: 1
     // onScaleEnd with velocity 0/0 and pointerCount: 0
+    // NO onTapUp!
     //
     // zoom-in event:
     // optionally (if the user waits a bit): onTapDown
@@ -110,8 +109,10 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         _swipeTimer?.cancel();
         _swipeTimer = null;
         _swipeOffset = null;
-        _tapDownLocalPosition = details.localPosition;
-        _tapDownTime = DateTime.now().millisecondsSinceEpoch;
+        _tapDownEvent = _TapDownEvent(
+            viewModel: widget.viewModel,
+            tapDownLocalPosition: details.localPosition);
+        _startLocalFocalPoint = null;
       },
       // onLongPressDown: (LongPressDownDetails details) {
       //   if (doLog) _log.info("onLongPressDown $details");
@@ -121,17 +122,24 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       // },
       onTapUp: (TapUpDetails details) {
         if (doLog) _log.info("onTapUp $details");
-        if (_tapDownTime != null) {
-          if (_tapDownTime! < DateTime.now().millisecondsSinceEpoch - 500) {
-            // tapped at least 500 ms, short tap
-            widget.viewModel.longTapEvent(
-                details.localPosition.dx, details.localPosition.dy);
-            return;
-          } else {
-            widget.viewModel
-                .tapEvent(details.localPosition.dx, details.localPosition.dy);
-            return;
-          }
+        if (_tapDownEvent == null) return;
+        if (_tapDownEvent!.longPressed) {
+          // tapped at least 500 ms, long tap
+          // we already reported a gestureMoveStartEvent, we should cancel it
+          widget.viewModel.gestureMoveCancelEvent(
+              _tapDownEvent!.tapDownLocalPosition.dx,
+              _tapDownEvent!.tapDownLocalPosition.dy);
+          _tapDownEvent!.stop();
+          _tapDownEvent = null;
+          widget.viewModel
+              .longTapEvent(details.localPosition.dx, details.localPosition.dy);
+          return;
+        } else {
+          _tapDownEvent!.stop();
+          _tapDownEvent = null;
+          widget.viewModel
+              .tapEvent(details.localPosition.dx, details.localPosition.dy);
+          return;
         }
       },
       onDoubleTapDown: (TapDownDetails details) {
@@ -150,11 +158,13 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           // lat/lon of the position where we double-clicked
           double latitude = widget.viewModel.mapViewPosition!.projection!
               .pixelYToLatitude(widget.viewModel.mapViewPosition!.leftUpper!.y +
-                  _doubleTapLocalPosition!.dy);
+                  _doubleTapLocalPosition!.dy *
+                      widget.viewModel.viewScaleFactor);
           double longitude = widget.viewModel.mapViewPosition!.projection!
               .pixelXToLongitude(
                   widget.viewModel.mapViewPosition!.leftUpper!.x +
-                      _doubleTapLocalPosition!.dx);
+                      _doubleTapLocalPosition!.dx *
+                          widget.viewModel.viewScaleFactor);
           // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
           widget.viewModel.zoomInAround(
               (latitude - widget.viewModel.mapViewPosition!.latitude!) / 2 +
@@ -168,23 +178,21 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         _swipeTimer?.cancel();
         _swipeTimer = null;
         _swipeOffset = null;
-        _tapDownLocalPosition = null;
-        _tapDownTime = null;
+        _tapDownEvent!.stop();
+        _tapDownEvent = null;
       },
       onScaleStart: (ScaleStartDetails details) {
         if (doLog) _log.info("onScaleStart $details");
         _startLocalFocalPoint = details.localFocalPoint;
         _startLeftUpper = widget.viewModel.mapViewPosition?.leftUpper;
         _lastScale = null;
-        if (_tapDownTime != null) {
-          if (_tapDownTime! < DateTime.now().millisecondsSinceEpoch - 500) {
+        if (_tapDownEvent != null) {
+          if (_tapDownEvent!.longPressed) {
             // tapped at least 500 ms, user wants to move something
-            widget.viewModel.gestureMoveStartEvent(
-                _startLocalFocalPoint!.dx, _startLocalFocalPoint!.dy);
             return;
           } else {
-            _tapDownLocalPosition = null;
-            _tapDownTime = null;
+            // swipe event
+            _tapDownEvent!.stop();
           }
         }
         widget.viewModel.gestureEvent();
@@ -202,19 +210,21 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           //             (_startLocalFocalPoint!.dy - details.localFocalPoint.dy) <
           //     _minDragThresholdSquared) return;
           _updateLocalFocalPoint = details.localFocalPoint;
-          if (_tapDownLocalPosition != null) {
+          if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
             // user tapped down, then waited. He does not want to move the map, he wants to move something around
             widget.viewModel.gestureMoveUpdateEvent(
                 details.localFocalPoint.dx, details.localFocalPoint.dy);
             return;
           }
+          // move map around
           widget.viewModel.setLeftUpper(
               _startLeftUpper!.x +
-                  _startLocalFocalPoint!.dx -
-                  details.localFocalPoint.dx,
+                  _startLocalFocalPoint!.dx * widget.viewModel.viewScaleFactor -
+                  details.localFocalPoint.dx * widget.viewModel.viewScaleFactor,
               _startLeftUpper!.y +
-                  _startLocalFocalPoint!.dy -
-                  details.localFocalPoint.dy);
+                  _startLocalFocalPoint!.dy * widget.viewModel.viewScaleFactor -
+                  details.localFocalPoint.dy *
+                      widget.viewModel.viewScaleFactor);
         } else {
           // zoom
           // do not send tiny changes
@@ -224,8 +234,11 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             _log.info(
                 "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}");
           _lastScale = details.scale;
-          MapViewPosition? newPost = widget.viewModel.setScaleAround(
-              Mappoint(details.localFocalPoint.dx, details.localFocalPoint.dy),
+          /*MapViewPosition? newPost =*/ widget.viewModel.setScaleAround(
+              Mappoint(
+                  details.localFocalPoint.dx * widget.viewModel.viewScaleFactor,
+                  details.localFocalPoint.dy *
+                      widget.viewModel.viewScaleFactor),
               _lastScale!);
         }
       },
@@ -243,16 +256,18 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
               _log.info("onScaleEnd zooming now zoomLevelDiff $zoomLevelDiff");
             // lat/lon of the position of the focus
             widget.viewModel.mapViewPosition!
-                .calculateBoundingBox(widget.viewModel.viewDimension!);
+                .calculateBoundingBox(widget.viewModel.viewDimension);
             // lat/lon of the focalPoint
             double latitude = widget.viewModel.mapViewPosition!.projection!
                 .pixelYToLatitude(
                     widget.viewModel.mapViewPosition!.leftUpper!.y +
-                        _startLocalFocalPoint!.dy);
+                        _startLocalFocalPoint!.dy *
+                            widget.viewModel.viewScaleFactor);
             double longitude = widget.viewModel.mapViewPosition!.projection!
                 .pixelXToLongitude(
                     widget.viewModel.mapViewPosition!.leftUpper!.x +
-                        _startLocalFocalPoint!.dx);
+                        _startLocalFocalPoint!.dx *
+                            widget.viewModel.viewScaleFactor);
             MapViewPosition newPost = widget.viewModel.zoomAround(
                 latitude +
                     (widget.viewModel.mapViewPosition!.latitude! - latitude) /
@@ -265,7 +280,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
               _log.info("onScaleEnd  resulting in ${newPost.toString()}");
           } else if (_lastScale != 1) {
             // no significant zoom. Restore the old zoom
-            MapViewPosition newPost = widget.viewModel
+            /*MapViewPosition newPost =*/ widget.viewModel
                 .setZoomLevel((widget.viewModel.mapViewPosition!.zoomLevel));
             if (doLog)
               _log.info(
@@ -276,14 +291,15 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           _swipeOffset = null;
         } else {
           // there was no zoom , check for swipe
-          if (_tapDownLocalPosition != null) {
+          if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
             // user tapped down, then waited. He does not want to swipe, he wants to move something around
             widget.viewModel.gestureMoveEndEvent(
                 _updateLocalFocalPoint!.dx, _updateLocalFocalPoint!.dy);
-            _tapDownLocalPosition = null;
-            _tapDownTime = null;
+            _tapDownEvent = null;
             return;
           }
+          _tapDownEvent?.stop();
+          _tapDownEvent = null;
           if (doLog)
             _log.info(
                 "Squared is ${details.velocity.pixelsPerSecond.distanceSquared}");
@@ -337,4 +353,35 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       _swipeOffset = null;
     }
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _TapDownEvent {
+  final ViewModel viewModel;
+
+  final Offset tapDownLocalPosition;
+
+  final int tapDownTime;
+
+  bool _stop = false;
+
+  bool _longPressed = false;
+
+  _TapDownEvent({required this.viewModel, required this.tapDownLocalPosition})
+      : tapDownTime = DateTime.now().millisecondsSinceEpoch {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      // tapped at least 500 ms, user wants to move something (or long-press, but the latter is reported at onTapUp)
+      if (_stop) return;
+      _longPressed = true;
+      viewModel.gestureMoveStartEvent(
+          tapDownLocalPosition.dx, tapDownLocalPosition.dy);
+    });
+  }
+
+  void stop() {
+    _stop = true;
+  }
+
+  bool get longPressed => _longPressed;
 }

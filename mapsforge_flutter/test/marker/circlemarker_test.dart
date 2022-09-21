@@ -27,12 +27,13 @@ void main() {
     ViewModel viewModel = ViewModel(displayModel: displayModel);
     viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
+    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension);
 
-    CircleMarker circleMarker = CircleMarker(center: latLong);
+    CircleMarker circleMarker =
+        CircleMarker(center: latLong, displayModel: displayModel);
 
     SingleMarkerPainter painter = SingleMarkerPainter(
-        position: viewModel.mapViewPosition!,
+        mapViewPosition: viewModel.mapViewPosition!,
         displayModel: displayModel,
         marker: circleMarker,
         viewModel: viewModel);
@@ -72,15 +73,19 @@ void main() {
     ViewModel viewModel = ViewModel(displayModel: displayModel);
     viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension!);
+    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension);
 
     SymbolCache symbolCache = FileSymbolCache(
         imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     CircleMarker circleMarker = CircleMarker(
-        center: latLong, fillColor: 0xff00ff00, radius: 20, strokeWidth: 4);
+        center: latLong,
+        fillColor: 0xff00ff00,
+        radius: 20,
+        strokeWidth: 4,
+        displayModel: displayModel);
 
     SingleMarkerPainter painter = SingleMarkerPainter(
-      position: viewModel.mapViewPosition!,
+      mapViewPosition: viewModel.mapViewPosition!,
       displayModel: displayModel,
       marker: circleMarker,
       viewModel: viewModel,

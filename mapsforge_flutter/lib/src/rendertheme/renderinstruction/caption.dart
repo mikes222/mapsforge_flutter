@@ -82,7 +82,7 @@ class Caption extends RenderInstruction with TextMixin, PaintMixin {
         this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.fontScaleFactor);
+            displayModel.getFontScaleFactor());
       } else if (RenderInstruction.SYMBOL_ID == name) {
         this.symbolId = value;
       } else {

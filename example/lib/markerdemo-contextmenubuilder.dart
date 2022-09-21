@@ -5,8 +5,13 @@ import 'package:mapsforge_flutter/core.dart';
 
 class MarkerdemoContextMenuBuilder extends ContextMenuBuilder {
   @override
-  Widget buildContextMenu(BuildContext context, MapModel mapModel, ViewModel viewModel,
-      MapViewPosition position, Dimension screen, TapEvent event) {
+  Widget buildContextMenu(
+      BuildContext context,
+      MapModel mapModel,
+      ViewModel viewModel,
+      MapViewPosition position,
+      Dimension screen,
+      TapEvent event) {
     return MarkerdemoContextMenu(
       screen: screen,
       event: event,
@@ -28,7 +33,11 @@ class MarkerdemoContextMenu extends DefaultContextMenu {
       required this.mapModel,
       required ViewModel viewModel,
       required MapViewPosition position})
-      : super(screen: screen, event: event, viewModel: viewModel, position: position);
+      : super(
+            screen: screen,
+            event: event,
+            viewModel: viewModel,
+            position: position);
 
   @override
   State<StatefulWidget> createState() {

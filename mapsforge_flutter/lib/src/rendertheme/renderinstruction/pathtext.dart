@@ -47,8 +47,8 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
     maxTextWidth = displayModel.getMaxTextWidth();
-    this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getScaleFactor();
-    this.repeatStart = REPEAT_START_DEFAULT * displayModel.getScaleFactor();
+    this.repeatGap = REPEAT_GAP_DEFAULT * displayModel.getFontScaleFactor();
+    this.repeatStart = REPEAT_START_DEFAULT * displayModel.getFontScaleFactor();
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -76,9 +76,11 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
       } else if (RenderInstruction.REPEAT == name) {
         this.repeat = value == "true";
       } else if (RenderInstruction.REPEAT_GAP == name) {
-        this.repeatGap = double.parse(value) * displayModel.getScaleFactor();
+        this.repeatGap =
+            double.parse(value) * displayModel.getFontScaleFactor();
       } else if (RenderInstruction.REPEAT_START == name) {
-        this.repeatStart = double.parse(value) * displayModel.getScaleFactor();
+        this.repeatStart =
+            double.parse(value) * displayModel.getFontScaleFactor();
       } else if (RenderInstruction.ROTATE == name) {
         this.rotate = value == "true";
       } else if (RenderInstruction.PRIORITY == name) {
@@ -89,7 +91,7 @@ class PathText extends RenderInstruction with TextMixin, PaintMixin {
         this.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         this.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.fontScaleFactor);
+            displayModel.getFontScaleFactor());
       } else {
         throw Exception("PathText probs");
       }
