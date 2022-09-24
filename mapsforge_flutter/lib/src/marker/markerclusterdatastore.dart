@@ -57,9 +57,10 @@ class MarkerClusterDataStore extends IMarkerDataStore {
       });
       markerGrid.markers.forEach((key, List<BasicPointMarker> value) {
         if (value.length < minClusterItems) {
-          _previousMarkers.add(value.first);
+          _previousMarkers.addAll(value);
         } else {
-          _previousMarkers.add(createClusterMarker(value));
+          BasicPointMarker clusterMarker = createClusterMarker(value);
+          _previousMarkers.add(clusterMarker);
         }
       });
     } else {
