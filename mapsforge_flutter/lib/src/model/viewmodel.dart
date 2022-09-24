@@ -18,7 +18,7 @@ class ViewModel {
   /// The width and height of the visible view in pixels. Note that this is NOT equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
   /// to gain a better resolution of the tile-images.
   ///
-  late Dimension _viewDimension;
+  late Dimension _mapDimension;
 
   /// The factor to scale down the map. With [DisplayModel.deviceScaleFactor] one can scale up the view and make it bigger. With this value
   /// one can scale down the view and make the resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images
@@ -77,7 +77,7 @@ class ViewModel {
       this.overlays}) {
     noPositionView ??= NoPositionView();
     viewScaleFactor = displayModel.deviceScaleFactor;
-    _viewDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
+    _mapDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
   }
 
   void dispose() {
@@ -268,7 +268,7 @@ class ViewModel {
   void setLeftUpper(double left, double upper) {
     if (_mapViewPosition != null) {
       MapViewPosition newPosition = MapViewPosition.setLeftUpper(
-          _mapViewPosition!, left, upper, _viewDimension);
+          _mapViewPosition!, left, upper, _mapDimension);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -287,7 +287,7 @@ class ViewModel {
   /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    _mapViewPosition!.calculateBoundingBox(_mapDimension);
     if (_mapViewPosition?.leftUpper == null) return;
     TapEvent event = TapEvent(
         _mapViewPosition!.projection!.pixelYToLatitude(
@@ -310,7 +310,7 @@ class ViewModel {
   /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
   void longTapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    _mapViewPosition!.calculateBoundingBox(_mapDimension);
     if (_mapViewPosition?.leftUpper == null) return;
     TapEvent event = TapEvent(
         _mapViewPosition!.projection!.pixelYToLatitude(
@@ -333,7 +333,7 @@ class ViewModel {
 
   void gestureMoveStartEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    _mapViewPosition!.calculateBoundingBox(_mapDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
@@ -354,7 +354,7 @@ class ViewModel {
   /// The moveStart event has already been reported but the user decided to cancel the move events
   void gestureMoveCancelEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    _mapViewPosition!.calculateBoundingBox(_mapDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
@@ -374,7 +374,7 @@ class ViewModel {
 
   void gestureMoveUpdateEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    _mapViewPosition!.calculateBoundingBox(_mapDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
@@ -394,7 +394,7 @@ class ViewModel {
 
   void gestureMoveEndEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_viewDimension);
+    _mapViewPosition!.calculateBoundingBox(_mapDimension);
     if (_mapViewPosition?.leftUpper == null) return null;
 
     MoveAroundEvent event = MoveAroundEvent(
@@ -412,18 +412,21 @@ class ViewModel {
     _injectMoveAroundEnd.add(event);
   }
 
-  Dimension get viewDimension => _viewDimension;
+  ///
+  /// The width and height of the visible view in pixels. Note that this is NOT equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
+  /// to gain a better resolution of the tile-images.
+  ///
+  Dimension get mapDimension => _mapDimension;
 
   Dimension? setViewDimension(double width, double height) {
     assert(width >= 0);
     assert(height >= 0);
-    if (_viewDimension.width == width * viewScaleFactor &&
-        _viewDimension.height == height * viewScaleFactor)
-      return _viewDimension;
-    _viewDimension =
+    if (_mapDimension.width == width * viewScaleFactor &&
+        _mapDimension.height == height * viewScaleFactor) return _mapDimension;
+    _mapDimension =
         Dimension(width * viewScaleFactor, height * viewScaleFactor);
     if (_mapViewPosition != null) _injectPosition.add(_mapViewPosition!);
-    return _viewDimension;
+    return _mapDimension;
   }
 
   void addOverlay(Widget overlay) {

@@ -32,6 +32,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
     List<double>? strokeDasharray,
     required this.minLatLon,
     required this.maxLatLon,
+    required DisplayModel displayModel,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -53,7 +54,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
       setFillColorFromNumber(fillColor);
     else
       setFillColor(Colors.transparent);
-    setStrokeWidth(strokeWidth);
+    setStrokeWidth(strokeWidth * displayModel.getScaleFactor());
     setStrokeColorFromNumber(strokeColor);
     if (strokeDasharray != null) setStrokeDashArray(strokeDasharray);
   }
@@ -86,7 +87,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
     if (markerCaption != null && markerCaption.latLong == null) {
-      markerCaption!.latLong = LatLong(
+      markerCaption.latLong = LatLong(
           minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
           minLatLon.longitude +
               (maxLatLon.longitude - minLatLon.longitude) /

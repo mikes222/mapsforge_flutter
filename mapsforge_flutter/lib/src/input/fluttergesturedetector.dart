@@ -178,7 +178,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         _swipeTimer?.cancel();
         _swipeTimer = null;
         _swipeOffset = null;
-        _tapDownEvent!.stop();
+        _tapDownEvent?.stop();
         _tapDownEvent = null;
       },
       onScaleStart: (ScaleStartDetails details) {
@@ -192,7 +192,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             return;
           } else {
             // swipe event
-            _tapDownEvent!.stop();
+            _tapDownEvent?.stop();
           }
         }
         widget.viewModel.gestureEvent();
@@ -256,7 +256,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
               _log.info("onScaleEnd zooming now zoomLevelDiff $zoomLevelDiff");
             // lat/lon of the position of the focus
             widget.viewModel.mapViewPosition!
-                .calculateBoundingBox(widget.viewModel.viewDimension);
+                .calculateBoundingBox(widget.viewModel.mapDimension);
             // lat/lon of the focalPoint
             double latitude = widget.viewModel.mapViewPosition!.projection!
                 .pixelYToLatitude(

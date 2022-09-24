@@ -56,6 +56,10 @@ class TextMixin {
     }
   }
 
+  double getFontSize() {
+    return _textPaint.getTextSize();
+  }
+
   void setFontSize(double value) {
     _textPaint.setTextSize(value);
     // next call of [scaleMixinTextSize] will refill these values

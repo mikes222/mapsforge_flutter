@@ -23,13 +23,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
   MapPaint? fill;
 
-  double fillWidth;
-
   int? fillColor;
 
   MapPaint? stroke;
 
-  final double strokeWidth;
+  late final double strokeWidth;
 
   final List<double>? strokeDasharray;
 
@@ -55,17 +53,16 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
     double bitmapHeight = 20,
     int bitmapPercent = 100,
     String? bitmapSrc,
-    this.fillWidth = 1.0,
     this.fillColor,
-    this.strokeWidth = 1.0,
+    double strokeWidth = 1.0,
     this.strokeColor = 0xff000000,
     this.strokeDasharray,
+    required DisplayModel displayModel,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
         assert(strokeWidth >= 0),
-        assert(fillWidth >= 0),
         super(
           display: display,
           minZoomLevel: minZoomLevel,
@@ -73,10 +70,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
           item: item,
           markerCaption: markerCaption,
         ) {
-    this.bitmapWidth = bitmapWidth;
-    this.bitmapHeight = bitmapHeight;
+    this.bitmapWidth = bitmapWidth * displayModel.getScaleFactor();
+    this.bitmapHeight = bitmapHeight * displayModel.getScaleFactor();
     this.bitmapPercent = bitmapPercent;
     this.bitmapSrc = bitmapSrc;
+    this.strokeWidth = strokeWidth * displayModel.getScaleFactor();
     //if (bitmapSrc != null) fillColor = 0xff000000;
   }
 
@@ -91,7 +89,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
       this.fill = GraphicFactory().createPaint();
       this.fill!.setColorFromNumber(fillColor!);
       this.fill!.setStyle(Style.FILL);
-      this.fill!.setStrokeWidth(fillWidth);
       if (bitmap != null) {
         // make sure the color is not transparent
         if (fill!.isTransparent()) fill!.setColorFromNumber(0xff000000);

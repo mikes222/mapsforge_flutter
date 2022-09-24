@@ -66,7 +66,8 @@ class DisplayModel {
     this.maxTextWidthFactor = 0.7,
     this.fontScaleFactor = 1.0,
     this.backgroundColor = 0xffeeeeee,
-  }) : assert(maxZoomLevel <= 30 && maxZoomLevel > 0)
+  })  : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
+        assert(maxTextWidthFactor > 0)
   //assert(tileSize >= 256)
   {
     this._setTileSize();

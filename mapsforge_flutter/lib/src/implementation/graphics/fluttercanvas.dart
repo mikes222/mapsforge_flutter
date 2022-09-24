@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
@@ -253,6 +252,7 @@ class FlutterCanvas extends MapCanvas {
     ++actions;
   }
 
+  /// draws the given [text] so that the center of the text in at the given x/y coordinates
   @override
   void drawText(String text, double x, double y, MapPaint paint,
       MapTextPaint mapTextPaint, double maxTextWidth) {

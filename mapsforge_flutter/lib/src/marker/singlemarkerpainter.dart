@@ -26,9 +26,10 @@ class SingleMarkerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
+    FlutterCanvas flutterCanvas = FlutterCanvas(canvas,
+        Size(viewModel.mapDimension.width, viewModel.mapDimension.height));
     flutterCanvas.setClip(
-        0, 0, viewModel.viewDimension.width, viewModel.viewDimension.height);
+        0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
 
     if (viewModel.viewScaleFactor != 1) {
       (flutterCanvas).uiCanvas.save();

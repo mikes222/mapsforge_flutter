@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
@@ -42,6 +41,7 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
     this.maxTextWidth = 200,
+    required DisplayModel displayModel,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -60,8 +60,8 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
       setFillColorFromNumber(fillColor);
     else
       setFillColor(Colors.transparent);
-    setFontSize(fontSize);
-    setStrokeWidth(strokeWidth);
+    setFontSize(fontSize * displayModel.getFontScaleFactor());
+    setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());
   }
 
   @override

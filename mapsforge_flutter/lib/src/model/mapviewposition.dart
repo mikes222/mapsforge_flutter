@@ -208,15 +208,15 @@ class MapViewPosition {
   }
 
   /// Calculates the bounding box of the given dimensions of the view. Scaling or focalPoint are NOT considered.
-  BoundingBox calculateBoundingBox(Dimension viewDimension) {
+  BoundingBox calculateBoundingBox(Dimension mapDimension) {
     if (boundingBox != null) return boundingBox!;
 
     double centerY = _projection!.latitudeToPixelY(_latitude!);
     double centerX = _projection!.longitudeToPixelX(_longitude!);
-    double leftX = centerX - viewDimension.width / 2;
-    double rightX = centerX + viewDimension.width / 2;
-    double topY = centerY - viewDimension.height / 2;
-    double bottomY = centerY + viewDimension.height / 2;
+    double leftX = centerX - mapDimension.width / 2;
+    double rightX = centerX + mapDimension.width / 2;
+    double topY = centerY - mapDimension.height / 2;
+    double bottomY = centerY + mapDimension.height / 2;
     boundingBox = BoundingBox(
         _projection!
             .pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),

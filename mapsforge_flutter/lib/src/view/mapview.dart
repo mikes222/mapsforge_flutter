@@ -153,9 +153,9 @@ class _FlutterMapState extends State<FlutterMapView> {
                             widget.viewModel,
                             position,
                             Dimension(
-                                widget.viewModel.viewDimension.width /
+                                widget.viewModel.mapDimension.width /
                                     widget.viewModel.viewScaleFactor,
-                                widget.viewModel.viewDimension.height /
+                                widget.viewModel.mapDimension.height /
                                     widget.viewModel.viewScaleFactor),
                             event);
                   },

@@ -27,6 +27,7 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
     item,
     double strokeWidth = 1.0,
     int strokeColor = 0xff000000,
+    required DisplayModel displayModel,
   })  : assert(display != null),
         assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -39,7 +40,7 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
         ) {
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
     setStrokeColorFromNumber(strokeColor);
-    setStrokeWidth(strokeWidth);
+    setStrokeWidth(strokeWidth * displayModel.getScaleFactor());
     mapPath = GraphicFactory().createPath();
   }
 

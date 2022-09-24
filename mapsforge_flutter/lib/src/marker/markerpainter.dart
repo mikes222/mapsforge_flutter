@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/marker/markercontext.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 ///
@@ -31,7 +31,7 @@ class MarkerPainter extends CustomPainter {
     int time = DateTime.now().millisecondsSinceEpoch;
     List<Marker> markers = [];
     markers.addAll(dataStore.getMarkersToPaint(
-      mapViewPosition.calculateBoundingBox(viewModel.viewDimension),
+      mapViewPosition.calculateBoundingBox(viewModel.mapDimension),
       mapViewPosition.zoomLevel,
     ));
     int diff = DateTime.now().millisecondsSinceEpoch - time;
@@ -40,9 +40,10 @@ class MarkerPainter extends CustomPainter {
           "diff: $diff ms for retrieving ${markers.length} markers at zoomlevel ${mapViewPosition.zoomLevel} from $dataStore");
 
     if (markers.length > 0) {
-      FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
+      FlutterCanvas flutterCanvas = FlutterCanvas(canvas,
+          Size(viewModel.mapDimension.width, viewModel.mapDimension.height));
       flutterCanvas.setClip(
-          0, 0, viewModel.viewDimension.width, viewModel.viewDimension.height);
+          0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
       if (viewModel.viewScaleFactor != 1) {
         (flutterCanvas).uiCanvas.save();
         flutterCanvas.scale(

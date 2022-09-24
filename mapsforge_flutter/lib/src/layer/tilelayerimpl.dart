@@ -3,7 +3,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
@@ -14,7 +13,6 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import 'job/job.dart';
-import 'job/jobqueue.dart';
 import 'tilelayer.dart';
 
 ///
@@ -48,8 +46,8 @@ class TileLayerImpl extends TileLayer {
     //canvas.resetClip();
 
     canvas.setClip(
-        0, 0, viewModel.viewDimension.width, viewModel.viewDimension.height);
-    mapViewPosition.calculateBoundingBox(viewModel.viewDimension);
+        0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
+    mapViewPosition.calculateBoundingBox(viewModel.mapDimension);
     Mappoint leftUpper = mapViewPosition.leftUpper!;
 
     if (viewModel.viewScaleFactor != 1) {

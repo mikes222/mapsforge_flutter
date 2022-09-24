@@ -27,7 +27,7 @@ void main() {
     ViewModel viewModel = ViewModel(displayModel: displayModel);
     viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension);
+    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.mapDimension);
 
     CircleMarker circleMarker =
         CircleMarker(center: latLong, displayModel: displayModel);
@@ -73,7 +73,7 @@ void main() {
     ViewModel viewModel = ViewModel(displayModel: displayModel);
     viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.viewDimension);
+    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.mapDimension);
 
     SymbolCache symbolCache = FileSymbolCache(
         imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));

@@ -254,8 +254,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             _viewModel!,
             position,
             Dimension(
-                _viewModel!.viewDimension.width / _viewModel!.viewScaleFactor,
-                _viewModel!.viewDimension.height / _viewModel!.viewScaleFactor),
+                _viewModel!.mapDimension.width / _viewModel!.viewScaleFactor,
+                _viewModel!.mapDimension.height / _viewModel!.viewScaleFactor),
             event);
       },
     );

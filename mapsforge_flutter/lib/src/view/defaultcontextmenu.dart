@@ -49,7 +49,7 @@ class DefaultContextMenuState extends State {
     // double x = widget.event.x;
     // double y = widget.event.y;
 
-    widget.position.calculateBoundingBox(widget.viewModel.viewDimension);
+    widget.position.calculateBoundingBox(widget.viewModel.mapDimension);
     double x = widget.event.widgetPixelMappoint.x;
     // widget.position.projection!.longitudeToPixelX(widget.event.longitude) -
     //     widget.position.leftUpper!.x;

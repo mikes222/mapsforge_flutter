@@ -28,6 +28,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     this.rotation = 0,
     T? item,
     MarkerCaption? markerCaption,
+    required DisplayModel displayModel,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation >= 0 && rotation <= 360),
@@ -42,8 +43,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
           latLong: latLong,
         ) {
     this.bitmapSrc = src;
-    this.setBitmapWidth(width.round());
-    this.setBitmapHeight(height.round());
+    this.setBitmapWidth((width * displayModel.getFontScaleFactor()).round());
+    this.setBitmapHeight((height * displayModel.getFontScaleFactor()).round());
     setBitmapColorFromNumber(bitmapColor);
   }
 
@@ -63,10 +64,9 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     if (bitmap != null) {
       _imageOffsetX = -bitmap!.getWidth() / 2;
       _imageOffsetY = -bitmap!.getHeight() / 2;
-    }
-    if (markerCaption != null) {
-      if (bitmap != null) {
-        markerCaption!.setDy(bitmap!.getHeight() / 2);
+      if (markerCaption != null) {
+        markerCaption!
+            .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
       }
     }
   }
@@ -75,7 +75,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   void setMarkerCaption(MarkerCaption? markerCaption) {
     if (markerCaption != null) {
       if (bitmap != null) {
-        markerCaption.setDy(bitmap!.getHeight() / 2);
+        markerCaption
+            .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
       }
     }
     super.setMarkerCaption(markerCaption);

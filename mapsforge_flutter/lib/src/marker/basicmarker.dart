@@ -118,7 +118,7 @@ class MarkerCaption with TextMixin, PaintMixin {
   int maxZoomLevel;
 
   /// The maximum width of a text as defined in the displaymodel
-  final double maxTextWidth;
+  late final double maxTextWidth;
 
   MarkerCaption({
     required this.text,
@@ -131,12 +131,12 @@ class MarkerCaption with TextMixin, PaintMixin {
     double fontSize = 10.0,
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
-    this.maxTextWidth = 200,
     required DisplayModel displayModel,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
         assert(minZoomLevel <= maxZoomLevel),
         assert(text.length > 0) {
+    maxTextWidth = displayModel.getMaxTextWidth();
     initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());

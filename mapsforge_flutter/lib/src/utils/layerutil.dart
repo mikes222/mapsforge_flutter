@@ -64,14 +64,14 @@ class LayerUtil {
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
     int tileLeft = mapViewPosition.projection!
-        .pixelXToTileX(max(center.x - viewModel.viewDimension.width / 2, 0));
+        .pixelXToTileX(max(center.x - viewModel.mapDimension.width / 2, 0));
     int tileRight = mapViewPosition.projection!.pixelXToTileX(min(
-        center.x + viewModel.viewDimension.width / 2,
+        center.x + viewModel.mapDimension.width / 2,
         mapViewPosition.projection!.mapsize.toDouble()));
     int tileTop = mapViewPosition.projection!
-        .pixelYToTileY(max(center.y - viewModel.viewDimension.height / 2, 0));
+        .pixelYToTileY(max(center.y - viewModel.mapDimension.height / 2, 0));
     int tileBottom = mapViewPosition.projection!.pixelYToTileY(min(
-        center.y + viewModel.viewDimension.height / 2,
+        center.y + viewModel.mapDimension.height / 2,
         mapViewPosition.projection!.mapsize.toDouble()));
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 50) _log.info("diff: $diff ms, tileBoundaries2");
