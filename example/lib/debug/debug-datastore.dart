@@ -62,9 +62,9 @@ class DebugDatastore extends MarkerByItemDataStore {
       PolygonMarker marker = PolygonMarker(
         item: way,
         strokeWidth: 2,
-        fillWidth: 1,
         fillColor: 0x1088e283,
         strokeColor: 0x50349a2e,
+        displayModel: displayModel,
       );
       way.latLongs.first.forEach((element) {
         marker.addLatLong(element);
@@ -75,9 +75,9 @@ class DebugDatastore extends MarkerByItemDataStore {
       PolygonMarker marker = PolygonMarker(
         item: way,
         strokeWidth: 6,
-        fillWidth: 0,
         fillColor: 0x0088e283,
         strokeColor: 0x60349a2e,
+        displayModel: displayModel,
       );
       way.latLongs.first.forEach((element) {
         marker.addLatLong(element);
