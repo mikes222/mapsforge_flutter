@@ -9,7 +9,7 @@ class MarkerdemoContextMenuBuilder extends ContextMenuBuilder {
       BuildContext context,
       MapModel mapModel,
       ViewModel viewModel,
-      MapViewPosition position,
+      MapViewPosition mapViewPosition,
       Dimension screen,
       TapEvent event) {
     return MarkerdemoContextMenu(
@@ -17,7 +17,7 @@ class MarkerdemoContextMenuBuilder extends ContextMenuBuilder {
       event: event,
       mapModel: mapModel,
       viewModel: viewModel,
-      position: position,
+      mapViewPosition: mapViewPosition,
     );
   }
 }
@@ -32,12 +32,12 @@ class MarkerdemoContextMenu extends DefaultContextMenu {
       required TapEvent event,
       required this.mapModel,
       required ViewModel viewModel,
-      required MapViewPosition position})
+      required MapViewPosition mapViewPosition})
       : super(
             screen: screen,
             event: event,
             viewModel: viewModel,
-            position: position);
+            mapViewPosition: mapViewPosition);
 
   @override
   State<StatefulWidget> createState() {

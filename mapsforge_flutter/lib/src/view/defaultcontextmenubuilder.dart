@@ -20,7 +20,7 @@ class DefaultContextMenuBuilder extends ContextMenuBuilder {
       screen: screen,
       event: event,
       viewModel: viewModel,
-      position: position,
+      mapViewPosition: position,
     );
   }
 

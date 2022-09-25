@@ -15,7 +15,7 @@ class DebugContextMenuBuilder extends ContextMenuBuilder {
       BuildContext context,
       MapModel mapModel,
       ViewModel viewModel,
-      MapViewPosition position,
+      MapViewPosition mapViewPosition,
       Dimension screen,
       TapEvent event) {
     return DebugContextMenu(
@@ -23,7 +23,7 @@ class DebugContextMenuBuilder extends ContextMenuBuilder {
       event: event,
       mapModel: mapModel,
       viewModel: viewModel,
-      position: position,
+      mapViewPosition: mapViewPosition,
       datastore: this.datastore,
     );
   }
@@ -41,13 +41,13 @@ class DebugContextMenu extends DefaultContextMenu {
       required TapEvent event,
       required this.mapModel,
       required ViewModel viewModel,
-      required MapViewPosition position,
+      required MapViewPosition mapViewPosition,
       required this.datastore})
       : super(
             screen: screen,
             event: event,
             viewModel: viewModel,
-            position: position);
+            mapViewPosition: mapViewPosition);
 
   @override
   State<StatefulWidget> createState() {

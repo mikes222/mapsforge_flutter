@@ -14,13 +14,13 @@ class DefaultContextMenu extends StatefulWidget {
   /// The current position of the map. Note that the map could move even if the contextmenu is shown.
   /// This means the x/y coordinates of the [event] may not be accurate anymore. The lat/lon
   /// position also represents the CURRENT position and not the position when the tap event occured.
-  final MapViewPosition position;
+  final MapViewPosition mapViewPosition;
 
   DefaultContextMenu(
       {required this.screen,
       required this.event,
       required this.viewModel,
-      required this.position});
+      required this.mapViewPosition});
 
   @override
   State<StatefulWidget> createState() {
@@ -49,13 +49,18 @@ class DefaultContextMenuState extends State {
     // double x = widget.event.x;
     // double y = widget.event.y;
 
-    widget.position.calculateBoundingBox(widget.viewModel.mapDimension);
-    double x = widget.event.widgetPixelMappoint.x;
-    // widget.position.projection!.longitudeToPixelX(widget.event.longitude) -
-    //     widget.position.leftUpper!.x;
-    double y = widget.event.widgetPixelMappoint.y;
-    // widget.position.projection!.latitudeToPixelY(widget.event.latitude) -
-    //     widget.position.leftUpper!.y;
+    widget.mapViewPosition.calculateBoundingBox(widget.viewModel.mapDimension);
+    double x = //widget.event.widgetPixelMappoint.x;
+        widget.mapViewPosition.projection!
+                .longitudeToPixelX(widget.event.longitude) -
+            widget.mapViewPosition.leftUpper!.x;
+    double y = //widget.event.widgetPixelMappoint.y;
+        widget.mapViewPosition.projection!
+                .latitudeToPixelY(widget.event.latitude) -
+            widget.mapViewPosition.leftUpper!.y;
+
+    x = x / widget.viewModel.viewScaleFactor;
+    y = y / widget.viewModel.viewScaleFactor;
 
     double halfWidth = widget.screen.width / 2;
     double halfHeight = widget.screen.height / 2;
