@@ -44,7 +44,8 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {4: 'OG4', 3: 'OG3', 2: 'OG2', 1: 'OG1', 0: 'EG', -1: 'UG1'},
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/indoorUB-ext.map",
+//    url: "https://www.dailyflightbuddy.com/mapsforge_examples/indoorUB-ext.map",
+    url: "https://tuc.cloud/index.php/s/3SWmkSt7eZafqgM/download/indoorUB_Stand_22-09-23.map",
     fileName: "indoorUB-ext.map",
     displayedName: "Chemnitz - Library (Indoor) - cud low contrast",
     theme: "assets/render_themes/custom_cud_low-contrast.xml",

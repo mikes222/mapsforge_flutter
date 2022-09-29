@@ -319,8 +319,7 @@
         </rule>
 
         <rule e="way" k="highway" v="steps" closed="no">
-            <area fill="#7fffffef"/>
-            <line stroke="#ffffef" stroke-linecap="butt" stroke-width="0.5"/>
+            <line stroke="#9fdfbf" stroke-linecap="butt" stroke-width="0.5"/>
             <line stroke="#9f9f9f" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
         </rule>
 
@@ -394,12 +393,17 @@
     </rule>
 
     <!-- indoor -->
-    <rule e="any" k="indoor|level" v="*" zoom-min="18">
+    <rule e="any" k="indoor" v="room|corridor" zoom-min="18">
         <rule e="any" k="name" v="*">
-            <caption font-size="14" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="2.0" />
         </rule>
         <rule e="any" k="ref" v="*">
-            <caption font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="12" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="2.0" />
+        </rule>
+    </rule>
+    <rule e="any" k="amenity" v="*">
+        <rule e="any" k="name" v="*">
+            <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="2.0" />
         </rule>
     </rule>
 </rendertheme>
