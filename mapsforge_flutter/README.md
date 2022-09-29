@@ -19,7 +19,18 @@ render the mapfiles directly on the user's device without internet connection.
 
 ## Examples
 
-Please find an example APP in the subdirectory [../example/README.md](../example/README.md)
+Start with the [..simplified_example/README.md](../simplified_example/README.md)
+
+Find many more examples in the subdirectory [../example/README.md](../example/README.md)
+
+- Day and night themes
+- World map
+- Indoor examples
+- Hillshading
+- Context menus
+- Markers
+- Drag'n'drop
+- Online-maps
 
 ## Limitations
 
@@ -50,7 +61,6 @@ Speed:
 Others:
 
 - support rotating map (do not rotate the text and icons)
-- crisper view (take the physical resolution of screens into account)
 - some flaws with text spawning multiple tiles
 - Unit tests
 
@@ -66,6 +76,8 @@ include the library in your pubspec.yaml:
     # git:
   #  url: https://github.com/mikes222/mapsforge_flutter
 ```
+
+Note: For development purposes consider to include the github repository directly.
 
 include a list of all used assets in your ``pubspec.yaml`` (see pubspec file from example project)
 
@@ -103,6 +115,8 @@ Create the displayModel which defines and holds the view/display settings like m
 
     DisplayModel displayModel = DisplayModel();
 
+Note: For crisper maps consider to set the deviceScaleFactor to a higher value, e.g. 2
+
 Create the render theme which specifies how to render the informations from the mapfile.
 
 > You can think of it like a css-file for mapsforge
@@ -126,6 +140,8 @@ Optionally you can create a cache for the bitmap tiles. The tiles will survive a
 fill the disk space.
 
     TileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
+
+Note: If storing tiles at the filesystem is not desired one can also use MemoryTileBitmapCache
 
 Glue everything together into two models.
 
@@ -170,6 +186,11 @@ and include the new datastore in the mapModel.
 You can add many markers to a datastore and you can
 add many datastores to the model.
 
+Note: We provide also datastores for single markers as well as ClusterDatastores for many marker which 
+should be clustered when zooming out
+
+Note: We provide a bunch of different markers. Markers with images like PoiMarkers, PathMarkers, RectMarkers, CircleMarkers and more
+
 ### ContextMenu
 
 ContextMenus are created with the contextMenuBuilder. Add one to the viewModel:
@@ -186,12 +207,6 @@ changes. Overlays are simple Widgets. Add them to the viewModel:
 
     viewModel.addOverlay(DistanceOverlay(viewModel));
 
-----
-
-For more information and documentation check [doc/mapdatastore.md](doc/mapdatastore.md)
-
-----
-
 ### Input gestures
 
 The default GestureDetector can deal with the following gestures:
@@ -203,6 +218,12 @@ Pinch-to-zoom: Default behavior: zoom in/out at the specified focus point
 Click-hold, then move: Default behavior: none
 
 In order to receive the gestures and implement your own code check the appropriate observe* methods in ViewModel
+
+----
+
+For more information and documentation check [doc/mapdatastore.md](doc/mapdatastore.md)
+
+----
 
 ## License
 

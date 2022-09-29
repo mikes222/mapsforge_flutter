@@ -138,6 +138,10 @@ class PaintMixin {
     // });
   }
 
+  double getStrokeWidth() {
+    return _stroke.getStrokeWidth();
+  }
+
   void setFillBitmapShader(Bitmap bitmap) {
     // make sure the color is not transparent
     if (isFillTransparent()) setFillColor(Colors.black);

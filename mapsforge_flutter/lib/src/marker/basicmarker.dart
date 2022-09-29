@@ -2,12 +2,11 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
 
 /// Abstract Marker class for further extensions. This class holds the position of a marker as [ILatLong] and implements the shouldPaint() method.
-abstract class BasicPointMarker<T> extends BasicMarker<T> {
+abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
   ///
   /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
   ///
@@ -44,6 +43,12 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> {
     return super.shouldPaint(boundary, zoomLevel) &&
         boundary.contains(latLong.latitude, latLong.longitude);
   }
+
+  @override
+  double get latitude => latLong.latitude;
+
+  @override
+  double get longitude => latLong.longitude;
 }
 
 /////////////////////////////////////////////////////////////////////////////

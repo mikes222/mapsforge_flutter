@@ -2,7 +2,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 /// Draws an normally open path as marker. Note that isTapped() returns
@@ -99,5 +98,21 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
       markerCallback.renderPath(
           mapPath!, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
     }
+  }
+
+  @override
+  bool isTapped(TapEvent tapEvent) {
+    //print("Testing ${latLong.toString()} against ${title}");
+    for (int idx = 0; idx < _points.length - 1; ++idx) {
+      double distance = LatLongUtils.distanceSegmentPoint(
+          _points[idx].x,
+          _points[idx].y,
+          _points[idx + 1].x,
+          _points[idx + 1].y,
+          tapEvent.mapPixelMappoint.x,
+          tapEvent.mapPixelMappoint.y);
+      if (distance <= getStrokeWidth()) return true;
+    }
+    return false;
   }
 }
