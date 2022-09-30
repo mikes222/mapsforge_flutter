@@ -29,7 +29,7 @@ class MapViewPage2 extends StatefulWidget {
 
 /// The [State] of the [MapViewPage] Widget.
 class MapViewPageState2 extends State<MapViewPage2> {
-  final DisplayModel displayModel = DisplayModel(deviceScaleFactor: 2);
+  final DisplayModel displayModel = DisplayModel(deviceScaleFactor: 1);
 
   late SymbolCache symbolCache;
 

@@ -6,6 +6,10 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
 
+///
+/// flutter test --update-goldens
+///
+///
 main() async {
   //create a mapfile from .map
   MapFile mapFile = await MapFile.from(

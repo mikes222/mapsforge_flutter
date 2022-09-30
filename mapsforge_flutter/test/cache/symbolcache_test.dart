@@ -5,6 +5,10 @@ import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 
 import '../testassetbundle.dart';
 
+///
+/// flutter test --update-goldens
+///
+///
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

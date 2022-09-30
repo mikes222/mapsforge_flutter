@@ -100,9 +100,7 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
     }
   }
 
-  @override
-  bool isTapped(TapEvent tapEvent) {
-    //print("Testing ${latLong.toString()} against ${title}");
+  int indexOfTappedPath(TapEvent tapEvent) {
     for (int idx = 0; idx < _points.length - 1; ++idx) {
       double distance = LatLongUtils.distanceSegmentPoint(
           _points[idx].x,
@@ -111,8 +109,13 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
           _points[idx + 1].y,
           tapEvent.mapPixelMappoint.x,
           tapEvent.mapPixelMappoint.y);
-      if (distance <= getStrokeWidth()) return true;
+      if (distance <= getStrokeWidth()) return idx;
     }
-    return false;
+    return -1;
+  }
+
+  @override
+  bool isTapped(TapEvent tapEvent) {
+    return indexOfTappedPath(tapEvent) >= 0;
   }
 }

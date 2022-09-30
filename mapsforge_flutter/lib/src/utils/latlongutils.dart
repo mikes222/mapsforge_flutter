@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import '../model/latlong.dart';
 
@@ -52,7 +52,7 @@ class LatLongUtils {
    */
   static double distanceSegmentPoint(double startX, double startY, double endX,
       double endY, double pointX, double pointY) {
-    Point nearest =
+    Mappoint nearest =
         nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
     return sqrt(pow(nearest.x - pointX, 2) + pow(nearest.y - pointY, 2));
   }
@@ -107,19 +107,18 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static Point nearestSegmentPoint(double startX, double startY, double endX,
+  static Mappoint nearestSegmentPoint(double startX, double startY, double endX,
       double endY, double pointX, double pointY) {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
     double length2 = xDiff * xDiff + yDiff * yDiff;
-    if (length2 == 0) return new Point(startX, startY);
+    if (length2 == 0) return Mappoint(startX, startY);
     double t = ((pointX - startX) * (endX - startX) +
             (pointY - startY) * (endY - startY)) /
         length2;
-    if (t < 0) return new Point(startX, startY);
-    if (t > 1) return new Point(endX, endY);
-    return new Point(
-        startX + t * (endX - startX), startY + t * (endY - startY));
+    if (t < 0) return Mappoint(startX, startY);
+    if (t > 1) return Mappoint(endX, endY);
+    return Mappoint(startX + t * (endX - startX), startY + t * (endY - startY));
   }
 
   /**

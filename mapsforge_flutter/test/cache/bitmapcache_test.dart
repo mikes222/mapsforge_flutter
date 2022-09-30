@@ -8,12 +8,17 @@ import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.
 
 import '../testassetbundle.dart';
 
+///
+/// flutter test --update-goldens
+///
+///
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Bitmapcache', (WidgetTester tester) async {
     AssetBundle bundle = TestAssetBundle();
-    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: bundle));
+    SymbolCache symbolCache =
+        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: bundle));
 
     MemoryTileBitmapCache cache = MemoryTileBitmapCache.create();
 

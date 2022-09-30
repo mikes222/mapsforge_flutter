@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
-import 'package:mapsforge_flutter/src/mapfile/mapfile.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
-import '../testassetbundle.dart';
-
+///
+/// flutter test --update-goldens
+///
+///
 main() async {
   test("MultimapDatastore without maps", () {
     MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
