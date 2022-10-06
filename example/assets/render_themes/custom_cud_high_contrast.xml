@@ -319,7 +319,7 @@
             <line stroke="#000000" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
         </rule>
 
-        <rule e="way" k="indoor|level" v="*" zoom-min="19" closed="yes">
+        <rule e="way" k="indoor|level" v="*" closed="yes">
             <rule e="way" k="public_bookcase:type" v="shelf">
                 <area fill="#ff3f00" stroke="#000000" stroke-width="0.01"/>
             </rule>
@@ -328,7 +328,7 @@
             </rule>
         </rule>
 
-        <rule e="node" k="support" v="column" zoom-min="19">
+        <rule e="node" k="support" v="column">
             <circle fill="#000000" radius="0.1" scale-radius="true"/>
         </rule>
 

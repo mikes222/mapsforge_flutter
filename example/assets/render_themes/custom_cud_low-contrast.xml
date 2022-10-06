@@ -306,10 +306,6 @@
             <rule e="any" k="amenity" v="toilets">
                 <area fill="#6f9fff" />
             </rule>
-
-        <!--    <rule e="any" k="access" v="no|private">
-                <area fill="#33828282" />
-            </rule> -->
         </rule>
 
         <!-- special indoor elements -->
