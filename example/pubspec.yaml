@@ -1,5 +1,7 @@
 name: mapsforge_example
 description: Example app to demonstrate mapsforge capabilites.
+homepage: https://github.com/mikes222/mapsforge_flutter
+repository: https://github.com/mikes222/mapsforge_flutter
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43

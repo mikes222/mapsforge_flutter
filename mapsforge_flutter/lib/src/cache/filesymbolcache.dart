@@ -1,11 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:ecache/ecache.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/cache/imagebuilder.dart';
-import 'package:mapsforge_flutter/src/cache/imagebundleloader.dart';
-import 'package:mapsforge_flutter/src/cache/imageloader.dart';
 import 'package:mapsforge_flutter/src/exceptions/symbolnotfoundexception.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 

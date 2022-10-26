@@ -3,6 +3,7 @@ description: A port of mapsforge for pure flutter. Show maps while the device is
 version: 2.0.2
 # author: devemux86, mikes222
 homepage: https://github.com/mikes222/mapsforge_flutter
+repository: https://github.com/mikes222/mapsforge_flutter
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -40,7 +41,7 @@ dependencies:
   synchronized: ^3.0.0+2
 
   # BSD License
-  flutter_svg: ^1.1.1+1
+  flutter_svg: ^1.1.3
 
   # BSD License
   #image: 2.1.13
@@ -55,7 +56,7 @@ dependencies:
   collection: ^1.16.0
 
   execution_queue: ^1.2.0
-    # path: ../../execution_queue.dart
+   # path: ../../execution_queue.dart
 
 dev_dependencies:
   flutter_test:

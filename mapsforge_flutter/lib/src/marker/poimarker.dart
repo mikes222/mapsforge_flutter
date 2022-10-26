@@ -76,7 +76,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     if (markerCaption != null) {
       if (bitmap != null) {
         markerCaption
-            .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
+            .setDy(bitmap!.getHeight() / 2 + markerCaption.getFontSize() / 2);
       }
     }
     super.setMarkerCaption(markerCaption);

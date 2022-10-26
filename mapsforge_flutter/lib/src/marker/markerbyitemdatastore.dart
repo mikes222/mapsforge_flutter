@@ -84,7 +84,9 @@ class MarkerByItemDataStore extends IMarkerDataStore {
 
   @override
   List<Marker> isTapped(TapEvent tapEvent) {
-    return _previousMarkers.where((element) => element.isTapped(tapEvent)).toList();
+    return _previousMarkers
+        .where((element) => element.isTapped(tapEvent))
+        .toList();
   }
 
   /// Finds the old marker with the given item and replaces it with the new marker

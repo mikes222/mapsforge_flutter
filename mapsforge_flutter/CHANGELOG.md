@@ -1,3 +1,9 @@
+## (2.0.2) - 2022-10-26
+
+* Improved speed
+* Improved image quality
+* drag'n'drop support
+
 ## [2.0.1] - 2021-12-01
 
 * Fling/Swipe-Support

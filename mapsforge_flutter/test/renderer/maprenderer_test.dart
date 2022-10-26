@@ -24,8 +24,8 @@ main() async {
     DisplayModel displayModel = DisplayModel();
     MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
 
-    SymbolCache symbolCache =
-        FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     String content = await TestAssetBundle().loadString("rendertheme.xml");
     renderThemeBuilder.parseXml(displayModel, content);
