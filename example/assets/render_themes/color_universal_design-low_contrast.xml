@@ -274,9 +274,6 @@
                 <rule e="any" k="material" v="glass">
                     <area fill="#afefff"/>
                 </rule>
-                <rule e="any" k="material" v="wood">
-                    <area fill="#bf9f7f"/>
-                </rule>
             </rule>
         </rule>
 
@@ -296,10 +293,31 @@
             <circle fill="#ffffef" radius="0.175" scale-radius="true" />
         </rule>
 
-        <!-- shade special rooms like toilets with other colors -->
+        <!-- draw column or wall nodes as little wall circle -->
+
+        <rule e="node" k="indoor" v="wall">
+            <circle fill="#9f9f9f" radius="0.1" scale-radius="true" stroke="#7f7f7f" stroke-width="0.01"/>
+        </rule>
+        <rule e="node" k="material" v="concrete">
+            <circle fill="#9f9f9f" radius="0.1" scale-radius="true" stroke="#7f7f7f" stroke-width="0.01"/>
+        </rule>
+
+        <!-- draw window nodes as little glass circle -->
+
+        <rule e="node" k="window" v="*">
+            <circle fill="#afefff" radius="0.25" scale-radius="true"/>
+        </rule>
+
+        <!-- shade special areas like playgrounds or toilets with other colors -->
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
             <rule e="any" k="indoor" v="area">
+                <area fill="#ffdfbf"/>
+            </rule>
+            <rule e="any" k="leisure" v="playground">
+                <area fill="#ffdfbf"/>
+            </rule>
+            <rule e="any" k="amenity" v="lounger">
                 <area fill="#ffdfbf"/>
             </rule>
 
@@ -310,7 +328,7 @@
 
         <!-- special indoor elements -->
 
-        <rule e="way" k="highway" v="elevator|steps" closed="yes">
+        <rule e="way" k="highway|area:highway" v="elevator|steps" closed="yes">
             <area fill="#9fdfbf" />
         </rule>
 
@@ -320,16 +338,9 @@
         </rule>
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
-            <rule e="way" k="public_bookcase:type" v="shelf">
+            <rule e="way" k="amenity" v="table|bench|shelf|glass_cabinet">
                 <area fill="#bf9f7f" stroke="#7f7f7f" stroke-width="0.01"/>
             </rule>
-            <rule e="way" k="amenity" v="table|bench">
-                <area fill="#bf9f7f" stroke="#7f7f7f" stroke-width="0.01"/>
-            </rule>
-        </rule>
-
-        <rule e="node" k="support" v="column">
-            <circle fill="#9f9f9f" radius="0.1" scale-radius="true"/>
         </rule>
 
         <!-- indoor symbols -->
@@ -338,7 +349,7 @@
             <symbol src="assets/icons/elevator.svg"/>
         </rule>
 
-        <rule e="any" k="stairs" v="yes">
+        <rule e="any" k="highway" v="steps">
             <symbol src="assets/icons/stairs.svg"/>
         </rule>
 
@@ -398,7 +409,7 @@
         </rule>
     </rule>
     <rule e="any" k="amenity" v="*">
-        <rule e="any" k="name" v="*">
+        <rule e="any" k="name" v="Information">
             <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="2.0" />
         </rule>
     </rule>

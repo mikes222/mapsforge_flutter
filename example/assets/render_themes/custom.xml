@@ -266,16 +266,13 @@
         <!-- first draw all room types (except walls) with same color and shade them later so the circle doors will be shaded too -->
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
-            <rule e="any" k="indoor" v="room">
+            <rule e="any" k="indoor" v="room|corridor">
                 <area fill="#fff9ed" stroke="#cfcdca" stroke-width="0.01" />
             </rule>
             <rule e="any" k="indoor" v="wall">
                 <area fill="#cfcdca"/>
                 <rule e="any" k="material" v="glass">
                     <area fill="#bbeeff"/>
-                </rule>
-                <rule e="any" k="material" v="wood">
-                    <area fill="#c8805a"/>
                 </rule>
             </rule>
         </rule>
@@ -296,10 +293,31 @@
             <circle fill="#f9f9ed" radius="0.175" scale-radius="true" />
         </rule>
 
-        <!-- shade special rooms like corridor or toilets with transparent colors -->
+        <!-- draw column or wall nodes as little wall circle -->
+
+        <rule e="node" k="indoor" v="wall">
+            <circle fill="#cfcdca" radius="0.1" scale-radius="true" stroke="#B0000000" stroke-width="0.01"/>
+        </rule>
+        <rule e="node" k="material" v="concrete">
+            <circle fill="#cfcdca" radius="0.1" scale-radius="true" stroke="#B0000000" stroke-width="0.01"/>
+        </rule>
+
+        <!-- draw window nodes as little glass circle -->
+
+        <rule e="node" k="window" v="*">
+            <circle fill="#bbeeff" radius="0.25" scale-radius="true"/>
+        </rule>
+
+        <!-- shade special areas like playgrounds or toilets with other colors -->
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
             <rule e="any" k="indoor" v="area|corridor">
+                <area fill="#DDfff9ed"/>
+            </rule>
+            <rule e="any" k="leisure" v="playground">
+                <area fill="#DDfff9ed"/>
+            </rule>
+            <rule e="any" k="amenity" v="lounger">
                 <area fill="#DDfff9ed"/>
             </rule>
 
@@ -314,27 +332,19 @@
 
         <!-- special indoor elements -->
 
-        <rule e="way" k="highway" v="elevator|steps" closed="yes">
+        <rule e="way" k="highway|area:highway" v="elevator|steps" closed="yes">
             <area fill="#edf9ed" />
         </rule>
 
         <rule e="way" k="highway" v="steps" closed="no">
-            <area fill="#edf9ed"/>
             <line stroke="#fff9ed" stroke-linecap="butt" stroke-width="0.5"/>
             <line stroke="#cfcdca" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
         </rule>
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
-            <rule e="way" k="public_bookcase:type" v="shelf">
-                <area fill="#c8805a" stroke="#80000000" stroke-width="0.01"/>
-            </rule>
-            <rule e="way" k="amenity" v="table|bench">
+            <rule e="way" k="amenity" v="table|bench|shelf|glass_cabinet">
                 <area fill="#e3bca3" stroke="#80000000" stroke-width="0.01"/>
             </rule>
-        </rule>
-
-        <rule e="node" k="support" v="column">
-            <circle fill="#cfcdca" radius="0.1" scale-radius="true" stroke="#B0000000" stroke-width="0.01"/>
         </rule>
 
         <!-- indoor symbols -->
@@ -343,7 +353,7 @@
             <symbol src="assets/icons/elevator.svg"/>
         </rule>
 
-        <rule e="any" k="stairs" v="yes">
+        <rule e="any" k="highway" v="steps">
             <symbol src="assets/icons/stairs.svg"/>
         </rule>
 
@@ -394,12 +404,17 @@
     </rule>
 
     <!-- indoor -->
-    <rule e="any" k="indoor|level" v="*" zoom-min="18">
+    <rule e="any" k="indoor" v="room|corridor" zoom-min="18">
         <rule e="any" k="name" v="*">
-            <caption font-size="14" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="2.5" />
         </rule>
         <rule e="any" k="ref" v="*">
-            <caption font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="12" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="2.5" />
+        </rule>
+    </rule>
+    <rule e="any" k="amenity" v="*">
+        <rule e="any" k="name" v="Information">
+            <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="2.5" />
         </rule>
     </rule>
 </rendertheme>
