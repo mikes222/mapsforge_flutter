@@ -14,9 +14,19 @@ Additionally, this file needs to be extended to include tags used for indoor map
     <osm-tag key="indoor" value="corridor" zoom-appear="18"/>
     <osm-tag key="indoor" value="level" zoom-appear="18"/>
 </ways>
+<ways>
+	<osm-tag key="door" value="yes" zoom-appear="18"/>
+	<osm-tag key="material" value="concrete" zoom-appear="18"/>
+	<osm-tag key="material" value="glass" zoom-appear="18"/>
+	<osm-tag key="material" value="wood" zoom-appear="18"/>
+	<osm-tag key="amenity" value="table" zoom-appear="18"/>
+	<osm-tag key="amenity" value="bench" zoom-appear="18"/>
+	<osm-tag key="amenity" value="shelf" zoom-appear="18"/>
+	<osm-tag key="amenity" value="glass_cabinet" zoom-appear="18"/>
+</ways>
 
 <pois>
-    <osm-tag key="support" value="column" zoom-appear="18"/>
+	<osm-tag key="material" value="concrete" zoom-appear="18"/>
 </pois>
 
 <ways>
