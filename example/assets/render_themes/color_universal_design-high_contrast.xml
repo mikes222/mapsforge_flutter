@@ -274,9 +274,6 @@
                 <rule e="any" k="material" v="glass">
                     <area fill="#33ffff"/>
                 </rule>
-                <rule e="any" k="material" v="wood">
-                    <area fill="#ff3300"/>
-                </rule>
             </rule>
         </rule>
 
@@ -296,10 +293,31 @@
             <circle fill="#efef0f" radius="0.175" scale-radius="true" />
         </rule>
 
-        <!-- shade special rooms like toilets with other colors -->
+        <!-- draw column or wall nodes as little wall circle -->
+
+        <rule e="node" k="indoor" v="wall">
+            <circle fill="#000000" radius="0.1" scale-radius="true" stroke="#000000" stroke-width="0.01"/>
+        </rule>
+        <rule e="node" k="material" v="concrete">
+            <circle fill="#000000" radius="0.1" scale-radius="true" stroke="#000000" stroke-width="0.01"/>
+        </rule>
+
+        <!-- draw window nodes as little glass circle -->
+
+        <rule e="node" k="window" v="*">
+            <circle fill="#33ffff" radius="0.25" scale-radius="true"/>
+        </rule>
+
+        <!-- shade special areas like playgrounds or toilets with other colors -->
 
         <rule e="way" k="indoor|level" v="*" closed="yes">
             <rule e="any" k="indoor" v="area">
+                <area fill="#ff7f00"/>
+            </rule>
+            <rule e="any" k="leisure" v="playground">
+                <area fill="#ff7f00"/>
+            </rule>
+            <rule e="any" k="amenity" v="lounger">
                 <area fill="#ff7f00"/>
             </rule>
 
@@ -310,21 +328,19 @@
 
         <!-- special indoor elements -->
 
-        <rule e="way" k="highway" v="elevator|steps" closed="yes">
+        <rule e="way" k="highway|area:highway" v="elevator|steps" closed="yes">
             <area fill="#00ff3f" />
         </rule>
 
-        <rule e="way" k="indoor|level" v="*" zoom-min="19" closed="yes">
-            <rule e="way" k="public_bookcase:type" v="shelf">
-                <area fill="#ff3f00" stroke="#000000" stroke-width="0.01"/>
-            </rule>
-            <rule e="way" k="amenity" v="table|bench">
-                <area fill="#ff3f00" stroke="#000000" stroke-width="0.01"/>
-            </rule>
+        <rule e="way" k="highway" v="steps" closed="no">
+            <line stroke="#00ff3f" stroke-linecap="butt" stroke-width="0.5"/>
+            <line stroke="#000000" stroke-dasharray="0.1,0.1" stroke-linecap="butt" stroke-width="0.5"/>
         </rule>
 
-        <rule e="node" k="support" v="column" zoom-min="19">
-            <circle fill="#000000" radius="0.1" scale-radius="true"/>
+        <rule e="way" k="indoor|level" v="*" closed="yes">
+            <rule e="way" k="amenity" v="table|bench|shelf|glass_cabinet">
+                <area fill="#ff3f00" stroke="#000000" stroke-width="0.01"/>
+            </rule>
         </rule>
 
         <!-- indoor symbols -->
@@ -333,7 +349,7 @@
             <symbol src="assets/icons/elevator.svg"/>
         </rule>
 
-        <rule e="any" k="stairs" v="yes">
+        <rule e="any" k="highway" v="steps">
             <symbol src="assets/icons/stairs.svg"/>
         </rule>
 
@@ -384,12 +400,17 @@
     </rule>
 
     <!-- indoor -->
-    <rule e="any" k="indoor|level" v="*" zoom-min="18">
+    <rule e="any" k="indoor" v="room|corridor" zoom-min="18">
         <rule e="any" k="name" v="*">
-            <caption font-size="14" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="3.0" />
         </rule>
         <rule e="any" k="ref" v="*">
-            <caption font-size="14" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
+            <caption font-size="12" fill="#000000" k="ref" stroke="#FFFFFF" stroke-width="3.0" />
+        </rule>
+    </rule>
+    <rule e="any" k="amenity" v="*">
+        <rule e="any" k="name" v="Information">
+            <caption font-size="12" fill="#000000" k="name" stroke="#FFFFFF" stroke-width="3.0" />
         </rule>
     </rule>
 </rendertheme>
