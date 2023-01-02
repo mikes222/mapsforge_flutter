@@ -21,7 +21,7 @@ class MarkerDataStore extends IMarkerDataStore {
   /// moving the map outside. This saves cpu. Measurements in meters.
   final int extendMeters;
 
-  MarkerDataStore({this.extendMeters = 1000});
+  MarkerDataStore({this.extendMeters = 5000});
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
@@ -57,7 +57,9 @@ class MarkerDataStore extends IMarkerDataStore {
   /// markers at once without repainting after every modification.
   void addMarker(Marker marker) {
     _markers.add(marker);
-    _previousZoomLevel = -1;
+    if (_previousBoundingBox != null &&
+        marker.shouldPaint(_previousBoundingBox!, _previousZoomLevel))
+      _previousMarkers.add(marker);
   }
 
   void removeMarker(Marker marker) {
@@ -73,6 +75,8 @@ class MarkerDataStore extends IMarkerDataStore {
     _markers.clear();
     _previousMarkers.clear();
   }
+
+  List<Marker> getAllMarkers() => _markers;
 
   @override
   List<Marker> isTapped(TapEvent tapEvent) {

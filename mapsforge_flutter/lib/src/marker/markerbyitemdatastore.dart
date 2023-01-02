@@ -13,7 +13,7 @@ class MarkerByItemDataStore extends IMarkerDataStore {
 
   BoundingBox? _previousBoundingBox;
 
-  int? _previousZoomLevel;
+  int _previousZoomLevel = -1;
 
   List<Marker> _previousMarkers = [];
 
@@ -24,7 +24,7 @@ class MarkerByItemDataStore extends IMarkerDataStore {
   /// moving the map outside. This saves cpu. Measurements in meters.
   final int extendMeters;
 
-  MarkerByItemDataStore({this.extendMeters = 1000});
+  MarkerByItemDataStore({this.extendMeters = 5000});
 
   /// returns the markers to draw for the given [boundary]. If this method
   /// needs more time return an empty list and call [setRepaint()] when finished.
@@ -65,15 +65,19 @@ class MarkerByItemDataStore extends IMarkerDataStore {
   /// markers at once without repainting after every modification.
   void addMarker(Marker marker) {
     _markers[marker.item] = marker;
-    _previousZoomLevel = -1;
+    if (_previousBoundingBox != null &&
+        marker.shouldPaint(_previousBoundingBox!, _previousZoomLevel))
+      _previousMarkers.add(marker);
   }
 
+  /// Do not forget to call setRepaint()
   void removeMarker(Marker marker) {
     _markers.removeWhere((key, value) => value == marker);
     marker.dispose();
     _previousMarkers.remove(marker);
   }
 
+  /// Do not forget to call setRepaint()
   void clearMarkers() {
     _markers.values.forEach((marker) {
       marker.dispose();
@@ -89,18 +93,21 @@ class MarkerByItemDataStore extends IMarkerDataStore {
         .toList();
   }
 
-  /// Finds the old marker with the given item and replaces it with the new marker
+  /// Finds the old marker with the given item and replaces it with the new marker. Do not forget to call setRepaint()
   void replaceMarker(var item, BasicMarker newMarker) {
     Marker? oldMarker = getMarkerWithItem(item);
     if (oldMarker != null) {
       _markers.remove(item);
+      _previousMarkers.remove(oldMarker);
       oldMarker.dispose();
     }
     _markers[item] = newMarker;
-    _previousZoomLevel = -1;
+    if (_previousBoundingBox != null &&
+        newMarker.shouldPaint(_previousBoundingBox!, _previousZoomLevel))
+      _previousMarkers.add(newMarker);
   }
 
-  /// remove the marker with the given [item]
+  /// remove the marker with the given [item]. Do not forget to call setRepaint()
   void removeMarkerWithItem(var item) {
     Marker? oldMarker = getMarkerWithItem(item);
     if (oldMarker != null) {

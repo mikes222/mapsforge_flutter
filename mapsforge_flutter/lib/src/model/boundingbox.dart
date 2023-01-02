@@ -343,6 +343,6 @@ class BoundingBox {
 
   @override
   String toString() {
-    return 'BoundingBox{maxLatitude: $maxLatitude, maxLongitude: $maxLongitude, minLatitude: $minLatitude, minLongitude: $minLongitude, intersectsArea: $intersectsArea}';
+    return 'BoundingBox{maxLatitude: $maxLatitude, maxLongitude: $maxLongitude, minLatitude: $minLatitude, minLongitude: $minLongitude}';
   }
 }
