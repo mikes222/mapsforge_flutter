@@ -1,3 +1,8 @@
+## next
+
+* Add marker.svg
+* Add functionality to add a PoiMarker after longTap on Map
+
 ## [1.0.1] - 2022-08-13
 
 * Use git repo as dependency
