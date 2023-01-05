@@ -1,3 +1,7 @@
+## next
+
+* Add Alignment property to BasicPointMarker + use Alignment when painting PoiMarker. Default is Alignment.bottomCenter.
+
 ## (2.0.2) - 2022-10-26
 
 * Improved speed

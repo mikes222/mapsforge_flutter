@@ -10,3 +10,4 @@ Note:
 - Download a MapsForge map from, for example, one of the servers mentioned by [mapforge.org](https://download.mapsforge.org/), to your client. The example uses a downloaded map of [Berlin](https://download.mapsforge.org/maps/v5/europe/germany/berlin.map).
 
 - In `main.dart`, on line 42, update the path to your downloaded map.
+- Using a long tap, a marker can be added to the Map.

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/marker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,8 +33,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late final MapModel mapModel;
-  late final ViewModel viewModel;
+  late MapModel mapModel;
+  late ViewModel viewModel;
+
+  final MarkerDataStore markerDataStore = MarkerDataStore();
+  PoiMarker? marker;
 
   @override
   void dispose() {
@@ -72,9 +75,34 @@ class _MyHomePageState extends State<MyHomePage> {
       renderer: jobRenderer,
     );
 
+    // Add MarkerDataStore to hold added markers
+    mapModel.markerDataStores.add(markerDataStore);
+
     viewModel = ViewModel(displayModel: displayModel);
     viewModel.setMapViewPosition(52.5211, 13.3905);
     viewModel.setZoomLevel(16);
+
+
+    // Listen to longTap and add marker
+    viewModel.observeLongTap.listen((event) async {
+      if (marker != null) {
+        markerDataStore.removeMarker(marker!);
+      }
+
+      marker = PoiMarker(
+        displayModel: DisplayModel(),
+        src: 'assets/icons/marker.svg',
+        height: 64,
+        width: 48,
+        latLong: LatLong(event.latitude, event.longitude),
+        alignment: Alignment.bottomCenter
+      );
+
+      await marker!.initResources(symbolCache);
+      markerDataStore.addMarker(marker!);
+
+      setState(() {});
+    });
   }
 
   @override

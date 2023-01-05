@@ -11,6 +11,7 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
   /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
   ///
   ILatLong latLong;
+  Alignment alignment;
 
   BasicPointMarker({
     display = Display.ALWAYS,
@@ -19,6 +20,7 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
     required this.latLong,
     T? item,
     MarkerCaption? markerCaption,
+    this.alignment = Alignment.center,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),

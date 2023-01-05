@@ -1,5 +1,6 @@
 mapsforge_flutter/pubspec.lock
 mapsforge_flutter/.metadata
+.vscode/
 .idea/
 example/.metadata
 example/pubspec.lock
