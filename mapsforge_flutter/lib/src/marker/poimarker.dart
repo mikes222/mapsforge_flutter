@@ -29,6 +29,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     T? item,
     MarkerCaption? markerCaption,
     required DisplayModel displayModel,
+    Alignment alignment = Alignment.center,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation >= 0 && rotation <= 360),
@@ -41,6 +42,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
           maxZoomLevel: maxZoomLevel,
           item: item,
           latLong: latLong,
+          alignment: alignment,
         ) {
     this.bitmapSrc = src;
     this.setBitmapWidth((width * displayModel.getFontScaleFactor()).round());
@@ -61,9 +63,14 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     bitmap?.dispose();
     bitmap = null;
     bitmap = await loadBitmap(10, symbolCache);
+
     if (bitmap != null) {
-      _imageOffsetX = -bitmap!.getWidth() / 2;
-      _imageOffsetY = -bitmap!.getHeight() / 2;
+      double centerX = bitmap!.getWidth() / 2;
+      double centerY = bitmap!.getHeight() / 2;
+
+      _imageOffsetX = -(alignment.x * centerX + centerX);
+      _imageOffsetY = -(alignment.y * centerY + centerY);
+
       if (markerCaption != null) {
         markerCaption!
             .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
