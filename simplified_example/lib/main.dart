@@ -99,9 +99,9 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
       await marker!.initResources(symbolCache);
+      
       markerDataStore.addMarker(marker!);
-
-      setState(() {});
+      markerDataStore.setRepaint();
     });
   }
 
