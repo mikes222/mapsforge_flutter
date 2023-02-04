@@ -33,30 +33,6 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {1: 'OG', 0: 'EG', -1: 'UG'},
   ),
   const MapFileData(
-    url: "https://tuc.cloud/index.php/s/J2eJ9p56szKC6E5/download/Chemnitz_UB_indoor.map",
-    // TODO Link will only last to the end of 2022
-    fileName: "Chemnitz_UB_indoor.map",
-    displayedName: "Chemnitz - Library (Indoor) - cud low contrast",
-    theme: "assets/render_themes/color_universal_design-low_contrast.xml",
-    initialPositionLat: 50.84160,
-    initialPositionLong: 12.92700,
-    initialZoomLevel: 18,
-    indoorZoomOverlay: true,
-    indoorLevels: {4: 'OG4', 3: 'OG3', 2: 'OG2', 1: 'OG1', 0: 'EG', -1: 'UG1'},
-  ),
-  const MapFileData(
-    url: "https://dailyflightbuddy.com/mapsforge_examples/Chemnitz_UB_indoor.map",
-    // TODO Link seems to not work properly
-    fileName: "Chemnitz_UB_indoor.map",
-    displayedName: "Chemnitz - Library (Indoor) - cud high contrast",
-    theme: "assets/render_themes/color_universal_design-high_contrast.xml",
-    initialPositionLat: 50.84160,
-    initialPositionLong: 12.92700,
-    initialZoomLevel: 18,
-    indoorZoomOverlay: true,
-    indoorLevels: {4: 'OG4', 3: 'OG3', 2: 'OG2', 1: 'OG1', 0: 'EG', -1: 'UG1'},
-  ),
-  const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/Louvre.map",
     fileName: "Louvre.map",
     displayedName: "Paris - Louvre (Indoor)",
@@ -73,26 +49,26 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLat: 48.86085,
     initialPositionLong: 2.33665,
   ),
-  const MapFileData(
-    url:
-        "https://www.dailyflightbuddy.com/mapsforge_examples/Meadowhall Shopping Center.map",
-    fileName: "Meadowhall Shopping Center.map",
-    displayedName: "Meadowhall Shopping Center (Indoor)",
-    initialPositionLat: 53.41388,
-    initialPositionLong: -1.41063,
-    indoorZoomOverlay: true,
-    indoorLevels: {1: 'OG', 0: 'EG'},
-  ),
-  const MapFileData(
-    url:
-        "https://www.dailyflightbuddy.com/mapsforge_examples/Northglenn High School.map",
-    fileName: "Northglenn High School.map",
-    displayedName: "Northglenn High School (Indoor)",
-    initialPositionLat: 39.88039,
-    initialPositionLong: -104.99388,
-    indoorZoomOverlay: true,
-    indoorLevels: {1: 'OG', 0: 'EG'},
-  ),
+  // const MapFileData(
+  //   url:
+  //       "https://www.dailyflightbuddy.com/mapsforge_examples/Meadowhall Shopping Center.map",
+  //   fileName: "Meadowhall Shopping Center.map",
+  //   displayedName: "Meadowhall Shopping Center (Indoor)",
+  //   initialPositionLat: 53.41388,
+  //   initialPositionLong: -1.41063,
+  //   indoorZoomOverlay: true,
+  //   indoorLevels: {1: 'OG', 0: 'EG'},
+  // ),
+  // const MapFileData(
+  //   url:
+  //       "https://www.dailyflightbuddy.com/mapsforge_examples/Northglenn High School.map",
+  //   fileName: "Northglenn High School.map",
+  //   displayedName: "Northglenn High School (Indoor)",
+  //   initialPositionLat: 39.88039,
+  //   initialPositionLong: -104.99388,
+  //   indoorZoomOverlay: true,
+  //   indoorLevels: {1: 'OG', 0: 'EG'},
+  // ),
   const MapFileData(
     url: "https://www.dailyflightbuddy.com/mapsforge_examples/sachsen.map",
     fileName: "sachsen.map",
@@ -149,18 +125,17 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 7.4262,
     initialZoomLevel: 5,
   ),
+  // const MapFileData(
+  //   url: "https://www.dailyflightbuddy.com/mapsforge_examples/world.map",
+  //   fileName: "world.map",
+  //   displayedName: "Worldmap Dark mode",
+  //   theme: "assets/render_themes/darkrender.xml",
+  //   initialPositionLat: 43.7399,
+  //   initialPositionLong: 7.4262,
+  //   initialZoomLevel: 5,
+  // ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/world.map",
-    fileName: "world.map",
-    displayedName: "Worldmap Dark mode",
-    theme: "assets/render_themes/darkrender.xml",
-    initialPositionLat: 43.7399,
-    initialPositionLong: 7.4262,
-    initialZoomLevel: 5,
-  ),
-  const MapFileData(
-    url:
-        "http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/germany/berlin.map",
+    url: "https://www.dailyflightbuddy.com/mapsforge_examples/berlin.map",
     fileName: "berlin.map",
     displayedName: "Berlin with original mapsforge theme",
     theme: "assets/render_themes/mapsforge_default.xml",

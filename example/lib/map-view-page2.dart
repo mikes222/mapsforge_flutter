@@ -134,7 +134,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
     final TileBitmapCache bitmapCache;
     if (kIsWeb) {
-      bitmapCache = MemoryTileBitmapCache.create();
+      bitmapCache = await WebTileBitmapCache.create(jobRenderer.getRenderKey());
     } else {
       bitmapCache =
           await FileTileBitmapCache.create(jobRenderer.getRenderKey());

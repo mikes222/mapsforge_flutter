@@ -12,6 +12,7 @@ export 'src/cache/imageloader.dart';
 export 'src/cache/imagebundleloader.dart';
 export 'src/cache/imagerelativeloader.dart';
 export 'src/cache/imageabsoluteloader.dart';
+export 'src/cache/webtilebitmapcache.dart';
 export 'src/exceptions/filenotfoundexception.dart';
 export 'src/graphics/graphicfactory.dart';
 export 'src/model/boundingbox.dart';
