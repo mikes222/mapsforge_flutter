@@ -114,7 +114,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             displayModel: widget.displayModel,
           );
           _log.info(
-              "MapModel created ${_mapModel?.renderer.getRenderKey()}  ${snapshot.connectionState.toString()}");
+              "MapModel created with renderer key ${_mapModel?.renderer.getRenderKey()} in connectionState ${snapshot.connectionState.toString()}");
           return child();
         });
   }
@@ -133,7 +133,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
           }
           if (snapshot.data == null) return progress("Creating View");
           _viewModel = snapshot.data;
-          _log.info("ViewModel created ${snapshot.connectionState.toString()}");
+          _log.info(
+              "ViewModel created in connectionState ${snapshot.connectionState.toString()}");
           return child();
         });
   }

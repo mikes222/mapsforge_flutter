@@ -6,7 +6,6 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
 
 class BlockPage extends StatelessWidget {
@@ -103,18 +102,19 @@ class BlockPage extends StatelessWidget {
 
   Future<DatastoreReadResult?> _readBlock() async {
     try {
-      ReadbufferFile readBufferMaster = ReadbufferFile(mapFile.filename!);
+      ReadbufferFile readBufferMaster =
+          ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
 
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
       MercatorProjection mercatorProjection =
-          MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
+          MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
       Tile upperLeft = Tile(subFileParameter.boundaryTileLeft,
-          subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel!, 0);
+          subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0);
       Tile lowerRight = Tile(
           subFileParameter.boundaryTileRight,
           subFileParameter.boundaryTileBottom,
-          subFileParameter.baseZoomLevel!,
+          subFileParameter.baseZoomLevel,
           0);
       queryParameters.calculateBaseTiles(
           upperLeft, lowerRight, subFileParameter);

@@ -33,7 +33,7 @@ class Readbuffer {
 
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
-    assert(position + length < _bufferData.length);
+    assert(position + length <= _bufferData.length);
     return _bufferData.sublist(position, position + length);
   }
 

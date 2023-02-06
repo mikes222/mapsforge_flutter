@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:ecache/ecache.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -19,7 +18,6 @@ import '../datastore/mapdatastore.dart';
 import '../datastore/pointofinterest.dart';
 import '../datastore/poiwaybundle.dart';
 import '../datastore/way.dart';
-import '../model/tile.dart';
 import '../projection/mercatorprojection.dart';
 import '../reader/queryparameters.dart';
 import 'indexcache.dart';
@@ -71,8 +69,6 @@ class MapFile extends MapDataStore {
   int zoomLevelMin = 0;
   int zoomLevelMax = 30;
 
-  final String? filename;
-
   late MapfileHelper _helper;
 
   /// just to see if we should create a cache for blocks
@@ -85,17 +81,17 @@ class MapFile extends MapDataStore {
 
   ReadbufferSource? readBufferSource;
 
-  static Future<MapFile> from(
-      String filename, int? timestamp, String? language) async {
-    MapFile mapFile = MapFile._(filename, timestamp, language);
-    await mapFile._init();
+  static Future<MapFile> from(String filename, int? timestamp, String? language,
+      {ReadbufferSource? source}) async {
+    MapFile mapFile = MapFile._(timestamp, language);
+    await mapFile._init(source != null ? source : ReadbufferFile(filename));
     return mapFile;
   }
 
   static Future<MapFile> using(
       Uint8List content, int? timestamp, String? language) async {
     assert(content.length > 0);
-    MapFile mapFile = MapFile._(null, timestamp, language);
+    MapFile mapFile = MapFile._(timestamp, language);
     await mapFile._initContent(content);
     return mapFile;
   }
@@ -105,19 +101,17 @@ class MapFile extends MapDataStore {
   /// @param filename the filename of the mapfile.
   /// @param language       the language to use (may be null).
   /// @throws MapFileException if the given map file channel is null or invalid.
-  MapFile._(this.filename, this.timestamp, String? language) : super(language) {
-//    _blockCache = LruCache(storage: _storage, capacity: 500);
-  }
+  MapFile._(this.timestamp, String? language) : super(language);
 
-  Future<MapFile> _init() async {
+  Future<MapFile> _init(ReadbufferSource source) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
-    this.readBufferSource = ReadbufferFile(filename!);
+    this.readBufferSource = source;
     this._fileSize = await readBufferSource!.length();
     _mapFileHeader = MapFileHeader();
     await this._mapFileHeader.readHeader(readBufferSource!, this._fileSize);
     // we will send this structure to the isolate later on. Unfortunately we cannot send the io library status to the isolate so we need to close and nullify it for now.
-    readBufferSource!.close();
-    readBufferSource = null;
+    // readBufferSource!.close();
+    // readBufferSource = null;
     _helper = MapfileHelper(_mapFileHeader, preferredLanguage);
     return this;
   }
@@ -136,13 +130,14 @@ class MapFile extends MapDataStore {
 
   @override
   String toString() {
-    return 'MapFile{_databaseIndexCache: $_databaseIndexCache, _fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, filename: $filename, _helper: $_helper}';
+    return 'MapFile{_databaseIndexCache: $_databaseIndexCache, _fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, _helper: $_helper}';
   }
 
   @mustCallSuper
   void dispose() {
     this._databaseIndexCache.dispose();
     readBufferSource?.close();
+    readBufferSource = null;
   }
 
   @override
@@ -232,10 +227,8 @@ class MapFile extends MapDataStore {
       ways = [];
     } else {
       // finished reading POIs, check if the current buffer position is valid
-      if (readBuffer.getBufferPosition() > firstWayOffset) {
-        throw Exception(
-            "invalid buffer position: ${readBuffer.getBufferPosition()}");
-      }
+      assert(readBuffer.getBufferPosition() <= firstWayOffset,
+          "invalid buffer position: ${readBuffer.getBufferPosition()}");
       if (firstWayOffset == readBuffer.getBufferSize()) {
         // no ways in this block
         ways = [];
@@ -486,11 +479,6 @@ class MapFile extends MapDataStore {
       _log.info(
           "  readMapDataComplete took $diff ms up to create query $queryParameters");
 
-    if (readBufferSource == null) {
-      assert(filename != null);
-      _log.info("Creating ReadBuffer for $filename");
-      readBufferSource = ReadbufferFile(filename!);
-    }
     DatastoreReadResult? result = await processBlocks(
         readBufferSource!,
         queryParameters,
