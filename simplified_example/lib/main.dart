@@ -36,7 +36,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // Create the displayModel which defines and holds the view/display settings
   // like maximum zoomLevel.
-  final displayModel = DisplayModel();
+  final displayModel = DisplayModel(deviceScaleFactor: 2);
 
   // Create the cache for assets
   final symbolCache = FileSymbolCache();

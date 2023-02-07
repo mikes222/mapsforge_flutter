@@ -393,6 +393,13 @@ class MultiMapDataStore extends MapDataStore {
     }
     return false;
   }
+
+  @override
+  Future<void> lateOpen() async {
+    for (MapDataStore mdb in mapDatabases) {
+      await mdb.lateOpen();
+    }
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

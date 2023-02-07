@@ -27,20 +27,20 @@ dependencies:
   cupertino_icons: ^1.0.5
 
  # BSD License
-  intl: ^0.17.0
+  intl: ^0.18.0
 
   mapsforge_flutter:
     path: ../mapsforge_flutter
 
   # BSD License
-  logging: ^1.0.2
+  logging: ^1.1.1
 
   flutter_archive: ^5.0.0
 
   # Apache 2.0 License
-  archive: ^3.3.1
+  archive: ^3.3.6
 
-  rxdart: ^0.27.5
+  rxdart: ^0.27.7
 
 dev_dependencies:
   flutter_test:

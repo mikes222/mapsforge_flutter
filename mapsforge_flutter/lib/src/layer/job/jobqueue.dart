@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:execution_queue/execution_queue.dart';
+import 'package:queue/queue.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
@@ -25,12 +25,13 @@ class JobQueue {
 
   final TileBitmapCache tileBitmapCache1stLevel;
 
-  final ExecutionQueue _executionQueue = ExecutionQueue();
+  final Queue _executionQueue = Queue();
 
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
       this.tileBitmapCache1stLevel);
 
   void dispose() {
+    _executionQueue.dispose();
     _currentJobSet?.dispose();
     _currentJobSet = null;
   }

@@ -44,7 +44,7 @@ class MapFile extends MapDataStore {
   static final int DEFAULT_START_ZOOM_LEVEL = 12;
 
   /// Amount of cache blocks that the index cache should store.
-  static final int INDEX_CACHE_SIZE = 64;
+  static final int INDEX_CACHE_SIZE = 256;
 
   /**
    * Error message for an invalid first way offset.
@@ -59,17 +59,17 @@ class MapFile extends MapDataStore {
   /// for debugging purposes
   static final bool complete = true;
 
-  late IndexCache _databaseIndexCache;
+  late final IndexCache _databaseIndexCache;
 
-  late int _fileSize;
+  int _fileSize = 0;
 
-  late MapFileHeader _mapFileHeader;
+  late final MapFileHeader _mapFileHeader;
   final int? timestamp;
 
   int zoomLevelMin = 0;
   int zoomLevelMax = 30;
 
-  late MapfileHelper _helper;
+  late final MapfileHelper _helper;
 
   /// just to see if we should create a cache for blocks
   //final Set<int> _blockSet = Set();
@@ -106,9 +106,7 @@ class MapFile extends MapDataStore {
   Future<MapFile> _init(ReadbufferSource source) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = source;
-    this._fileSize = await readBufferSource!.length();
     _mapFileHeader = MapFileHeader();
-    await this._mapFileHeader.readHeader(readBufferSource!, this._fileSize);
     // we will send this structure to the isolate later on. Unfortunately we cannot send the io library status to the isolate so we need to close and nullify it for now.
     // readBufferSource!.close();
     // readBufferSource = null;
@@ -119,10 +117,7 @@ class MapFile extends MapDataStore {
   Future<MapFile> _initContent(Uint8List content) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = ReadbufferMemory(content);
-    this._fileSize = await readBufferSource!.length();
-    assert(_fileSize > 0);
     _mapFileHeader = MapFileHeader();
-    await this._mapFileHeader.readHeader(readBufferSource!, this._fileSize);
     // we will send this structure to the isolate later on. Unfortunately we cannot send the io library status to the isolate so we need to close and nullify it for now.
     _helper = MapfileHelper(_mapFileHeader, preferredLanguage);
     return this;
@@ -130,7 +125,7 @@ class MapFile extends MapDataStore {
 
   @override
   String toString() {
-    return 'MapFile{_databaseIndexCache: $_databaseIndexCache, _fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, _helper: $_helper}';
+    return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, readBufferSource: $readBufferSource}';
   }
 
   @mustCallSuper
@@ -446,8 +441,17 @@ class MapFile extends MapDataStore {
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.ALL);
   }
 
+  @override
+  Future<void> lateOpen() async {
+    // late reading of header. Necessary for isolates because we cannot transfer a non-null RandomAccessFile descriptor to the isolate.
+    this._fileSize = await readBufferSource!.length();
+    assert(_fileSize > 0);
+    await this._mapFileHeader.readHeader(readBufferSource!, this._fileSize);
+  }
+
   Future<DatastoreReadResult> _readMapDataComplete(
       Tile upperLeft, Tile lowerRight, MapfileSelector selector) async {
+    await lateOpen();
     Projection projection =
         MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     assert(supportsTile(upperLeft, projection));

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
-import 'package:execution_queue/execution_queue.dart';
+import 'package:queue/queue.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
@@ -25,7 +25,7 @@ class ReadbufferFile implements ReadbufferSource {
 
   late LruCache<String, Readbuffer> _cache;
 
-  ExecutionQueue queue = ExecutionQueue();
+  Queue queue = Queue();
 
   ReadbufferFile(this.filename) {
     _cache = LruCache(storage: _storage, capacity: 1000);
@@ -107,5 +107,10 @@ class ReadbufferFile implements ReadbufferSource {
     assert(_length != null && _length! >= 0);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return _length!;
+  }
+
+  @override
+  String toString() {
+    return 'ReadbufferFile{_raf: $_raf, filename: $filename, _length: $_length}';
   }
 }

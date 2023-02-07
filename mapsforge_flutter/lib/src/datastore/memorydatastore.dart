@@ -89,4 +89,9 @@ class MemoryDatastore extends Datastore {
   String toString() {
     return 'MemoryDatastore{pointOfInterests: $pointOfInterests, ways: $ways}';
   }
+
+  @override
+  Future<void> lateOpen() {
+    return Future.value(null);
+  }
 }

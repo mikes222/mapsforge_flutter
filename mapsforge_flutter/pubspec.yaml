@@ -13,9 +13,9 @@ dependencies:
     sdk: flutter
 
   # BSD License
-  logging: ^1.1.0
+  logging: ^1.1.1
 
-  collection: ^1.16.0
+  collection: ^1.17.0
 
   # BSD License
   convert: ^3.1.1
@@ -26,7 +26,10 @@ dependencies:
 #      url: https://github.com/mikes222/dcache
 #    path: ../../github_ecache/
 
-  execution_queue: ^1.2.0
+  # MIT License
+  queue: ^3.1.0+2
+
+  # execution_queue: ^1.2.0
   #  path: ../../execution_queue.dart
 
   golden_toolkit: ^0.14.0
@@ -34,7 +37,7 @@ dependencies:
   # BSD License
   http: ^0.13.5
 
-  idb_shim: ^2.1.0
+  idb_shim: ^2.3.0+1
 
   #image: ^3.2.0
 
@@ -42,7 +45,7 @@ dependencies:
   rxdart: ^0.27.7
 
   # BSD License
-  synchronized: ^3.0.0+3
+  synchronized: ^3.0.1
 
   # BSD License
   flutter_svg: ^1.1.6
@@ -57,7 +60,7 @@ dependencies:
   provider: ^6.0.5
 
   # MIT License
-  xml: ^6.1.0
+  xml: ^6.2.2
 
 dev_dependencies:
   flutter_test:
