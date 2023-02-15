@@ -1,11 +1,11 @@
-import '../../model/tag.dart';
+import 'package:mapsforge_flutter/src/indoor/indoornotationmatcher.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
+import '../../model/tag.dart';
 import 'attributematcher.dart';
 import 'closed.dart';
 import 'element.dart';
 import 'rule.dart';
-import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
-import 'package:mapsforge_flutter/src/indoor/indoornotationmatcher.dart';
 
 class PositiveRule extends Rule {
   final AttributeMatcher keyMatcher;
@@ -14,11 +14,26 @@ class PositiveRule extends Rule {
   PositiveRule(RuleBuilder ruleBuilder, this.keyMatcher, this.valueMatcher)
       : super(ruleBuilder);
 
+  /// Creates a ruleset which is a subset of the current rules
+  PositiveRule.create(PositiveRule oldRule, List<Rule> subs)
+      : keyMatcher = oldRule.keyMatcher,
+        valueMatcher = oldRule.valueMatcher,
+        super.create(oldRule, subs);
+
   @override
-  bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel) {
-    return this.zoomMin <= zoomLevel &&
-        this.zoomMax >= zoomLevel &&
-        IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
+  PositiveRule createRule(List<Rule> subs) {
+    PositiveRule result = PositiveRule.create(this, subs);
+    return result;
+  }
+
+  @override
+  bool matchesForZoomLevel(int zoomLevel) {
+    return zoomMin <= zoomLevel && zoomMax >= zoomLevel;
+  }
+
+  @override
+  bool matchesNode(List<Tag> tags, int indoorLevel) {
+    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
             tags, indoorLevel) &&
         this.elementMatcher!.matchesElement(Element.NODE) &&
         this.keyMatcher.matchesTagList(tags) &&
@@ -27,10 +42,8 @@ class PositiveRule extends Rule {
 
   @override
   bool matchesWay(
-      List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed) {
-    return this.zoomMin <= zoomLevel &&
-        this.zoomMax >= zoomLevel &&
-        IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
+      List<Tag> tags, int indoorLevel, Closed closed) {
+    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
             tags, indoorLevel) &&
         this.elementMatcher!.matchesElement(Element.WAY) &&
         this.closedMatcher!.matchesClosed(closed) &&

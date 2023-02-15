@@ -2,18 +2,19 @@ import 'dart:core';
 
 import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 
+import '../../maps.dart';
 import '../model/tile.dart';
+import '../rendertheme/renderinfo.dart';
 import '../utils/layerutil.dart';
 import 'labelstore.dart';
 
 /// A LabelStore where the data is stored per tile.
 class TileBasedLabelStore implements LabelStore {
   static final _log = new Logger('TileBasedLabelStore');
-  final Storage<Tile, List<MapElementContainer>> storage =
-      StatisticsStorage<Tile, List<MapElementContainer>>();
-  late LruCache<Tile, List<MapElementContainer>> _cache;
+  final Storage<Tile, List<RenderInfo>> storage =
+      StatisticsStorage<Tile, List<RenderInfo>>();
+  late LruCache<Tile, List<RenderInfo>> _cache;
 
   late Set<Tile> lastVisibleTileSet;
   int version = 0;
@@ -29,7 +30,7 @@ class TileBasedLabelStore implements LabelStore {
   }
 
   TileBasedLabelStore(int capacity) {
-    _cache = new LruCache<Tile, List<MapElementContainer>>(
+    _cache = new LruCache<Tile, List<RenderInfo>>(
       storage: storage,
       capacity: capacity,
     );
@@ -53,8 +54,9 @@ class TileBasedLabelStore implements LabelStore {
    * @param tile     tile on which the mapItems reside.
    * @param mapItems the map elements.
    */
-  void storeMapItems(Tile tile, List<MapElementContainer> mapItems) {
-    _cache.set(tile, LayerUtil.collisionFreeOrdered(mapItems));
+  void storeMapItems(
+      Tile tile, List<RenderInfo> mapItems, PixelProjection projection) {
+    _cache.set(tile, LayerUtil.collisionFreeOrdered(mapItems, projection));
     ++this.version;
   }
 
@@ -64,15 +66,15 @@ class TileBasedLabelStore implements LabelStore {
   }
 
   @override
-  List<MapElementContainer> getVisibleItems(Tile upperLeft, Tile lowerRight) {
+  List<RenderInfo> getVisibleItems(Tile upperLeft, Tile lowerRight) {
     return getVisibleItemsInternal(
         LayerUtil.getTilesByTile(upperLeft, lowerRight));
   }
 
-  List<MapElementContainer> getVisibleItemsInternal(Set<Tile> tiles) {
+  List<RenderInfo> getVisibleItemsInternal(Set<Tile> tiles) {
     lastVisibleTileSet = tiles;
 
-    List<MapElementContainer> visibleItems = [];
+    List<RenderInfo> visibleItems = [];
     for (Tile tile in lastVisibleTileSet) {
       if (_cache.containsKey(tile)) {
         visibleItems.addAll(_cache.get(tile)!);

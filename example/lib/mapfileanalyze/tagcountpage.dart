@@ -14,6 +14,7 @@ import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
 import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
+import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 
 class TagsCountPage extends StatelessWidget {
   final MapFile mapFile;
@@ -65,7 +66,8 @@ class TagsCountPage extends StatelessWidget {
             itemCount: pois.length,
             itemBuilder: (BuildContext context, int index) {
               _PoiCount _poiCount = pois.elementAt(index);
-              List renderers = renderTheme.matchNode(tile, _poiCount.poi);
+              NodeProperties nodeProperties = NodeProperties(_poiCount.poi);
+              List renderers = renderTheme.matchNode(tile, nodeProperties);
               return Card(
                   child: Row(
                 children: [

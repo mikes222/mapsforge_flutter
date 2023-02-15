@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
 
 import '../model/tile.dart';
+import '../rendertheme/renderinfo.dart';
 
 /// The TileDependecies class tracks the dependencies between tiles for labels.
 /// When the labels are drawn on a per-tile basis it is important to know where
@@ -25,7 +25,7 @@ class TileDependencies {
     _overlapData.forEach((tile, set) {
       set.forEach((dependency) {
         if (dependency.tiles.length > 0) {
-          dependency.element.dispose();
+          //dependency.element.dispose();
           dependency.tiles.clear();
         }
       });
@@ -39,7 +39,7 @@ class TileDependencies {
   /// @param from    origin tile
   /// @param to      tile the label clashesWith to
   /// @param element the MapElementContainer in question
-  void addOverlappingElement(MapElementContainer element, List<Tile> tiles) {
+  void addOverlappingElement(RenderInfo element, List<Tile> tiles) {
     Dependency dependency = Dependency(element, tiles);
     tiles.forEach((tile) {
       if (!_overlapData.containsKey(tile)) {
@@ -127,7 +127,7 @@ class TileDependencies {
 /////////////////////////////////////////////////////////////////////////////
 
 class Dependency {
-  final MapElementContainer element;
+  final RenderInfo element;
 
   List<Tile> tiles;
 

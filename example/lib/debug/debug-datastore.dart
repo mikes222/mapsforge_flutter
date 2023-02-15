@@ -35,9 +35,16 @@ class DebugDatastore extends MarkerByItemDataStore {
     }
 
     for (Way way in readResult.ways) {
-      Marker marker = await _createWayMarker(way);
+      Marker marker = await _createWayMarker(way, false);
       addMarker(marker);
     }
+    setRepaint();
+  }
+
+  Future<void> createWayMarker(Way way) async {
+    clearMarkers();
+    Marker marker = await _createWayMarker(way, true);
+    addMarker(marker);
     setRepaint();
   }
 
@@ -48,7 +55,7 @@ class DebugDatastore extends MarkerByItemDataStore {
     CircleMarker marker = CircleMarker(
       center: poi.position,
       item: poi,
-      radius: 10,
+      radius: 5,
       strokeWidth: 2,
       fillColor: 0x80eac71c,
       strokeColor: 0xffc2a726,
@@ -57,13 +64,13 @@ class DebugDatastore extends MarkerByItemDataStore {
     return marker;
   }
 
-  Future<Marker> _createWayMarker(Way way) async {
+  Future<Marker> _createWayMarker(Way way, bool intense) async {
     if (LatLongUtils.isClosedWay(way.latLongs.first)) {
       PolygonMarker marker = PolygonMarker(
         item: way,
-        strokeWidth: 2,
-        fillColor: 0x1088e283,
-        strokeColor: 0x50349a2e,
+        strokeWidth: intense ? 10 : 2,
+        fillColor: 0x10c8c623,
+        strokeColor: 0x80c8c623, // yellowish
         displayModel: displayModel,
       );
       way.latLongs.first.forEach((element) {
@@ -72,17 +79,17 @@ class DebugDatastore extends MarkerByItemDataStore {
       await marker.initResources(symbolCache);
       return marker;
     } else {
-      PolygonMarker marker = PolygonMarker(
+      PathMarker marker = PathMarker(
         item: way,
-        strokeWidth: 6,
-        fillColor: 0x0088e283,
-        strokeColor: 0x60349a2e,
+        strokeWidth: intense ? 10 : 2,
+        //fillColor: 0x0088e283,
+        strokeColor: 0x80e97656, // redish
         displayModel: displayModel,
       );
       way.latLongs.first.forEach((element) {
         marker.addLatLong(element);
       });
-      await marker.initResources(symbolCache);
+      //await marker.initResources(symbolCache);
       return marker;
     }
   }

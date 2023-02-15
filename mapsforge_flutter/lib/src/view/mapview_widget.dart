@@ -96,8 +96,9 @@ class _MapviewWidgetState extends State<MapviewWidget> {
         future: widget.createMapModel(),
         builder: (BuildContext context, AsyncSnapshot<MapModel> snapshot) {
           if (snapshot.hasError) {
+            _log.warning(snapshot.stackTrace);
             return Text(
-                snapshot.error?.toString() ?? "Error while creating map",
+                "Error while creating map: ${snapshot.error?.toString()}",
                 style: const TextStyle(color: Colors.red));
           }
           if (snapshot.data == null) return progress("Creating Map");
@@ -127,8 +128,9 @@ class _MapviewWidgetState extends State<MapviewWidget> {
           if (snapshot.connectionState == ConnectionState.waiting)
             return progress("Waiting for View");
           if (snapshot.hasError) {
+            _log.warning(snapshot.stackTrace);
             return Text(
-                snapshot.error?.toString() ?? "Error while creating view",
+                "Error while creating view: ${snapshot.error?.toString()}",
                 style: const TextStyle(color: Colors.red));
           }
           if (snapshot.data == null) return progress("Creating View");

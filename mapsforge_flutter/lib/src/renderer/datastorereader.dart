@@ -3,7 +3,10 @@ import 'dart:isolate';
 import '../../core.dart';
 import '../../datastore.dart';
 import '../../maps.dart';
+import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/rendercontext.dart';
+import '../rendertheme/renderinstruction/renderinstruction.dart';
+import '../rendertheme/wayproperties.dart';
 import '../utils/isolatemixin.dart';
 
 /// Reads the content of a datastore - e.g. MapFile - either via isolate or direct
@@ -13,19 +16,19 @@ class DatastoreReader with IsolateMixin<IsolateMapInitParam> {
 
   DatastoreReader({required this.useIsolate});
 
-  Future<IsolateMapReplyParams> read(
-      Datastore datastore, Tile tile, PixelProjection projection) async {
+  Future<IsolateMapReplyParams> read(Datastore datastore, Tile tile,
+      PixelProjection projection, RenderContext renderContext) async {
     if (useIsolate) {
       await startIsolateJob(IsolateMapInitParam(datastore), entryPoint);
-      IsolateMapReplyParams params =
-          await sendToIsolate(IsolateMapRequestParam(tile, projection));
+      IsolateMapReplyParams params = await sendToIsolate(
+          IsolateMapRequestParam(tile, projection, renderContext));
       return params;
     } else {
       // read the mapdata directly in this thread
       _mapDataStore = datastore;
       await _mapDataStore!.lateOpen();
-      IsolateMapReplyParams params =
-          await _readMapDataInIsolate(IsolateMapRequestParam(tile, projection));
+      IsolateMapReplyParams params = await _readMapDataInIsolate(
+          IsolateMapRequestParam(tile, projection, renderContext));
       return params;
     }
   }
@@ -49,7 +52,9 @@ class IsolateMapRequestParam extends IsolateRequestParams {
 
   final PixelProjection projection;
 
-  const IsolateMapRequestParam(this.tile, this.projection);
+  final RenderContext renderContext;
+
+  const IsolateMapRequestParam(this.tile, this.projection, this.renderContext);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -57,7 +62,10 @@ class IsolateMapRequestParam extends IsolateRequestParams {
 class IsolateMapReplyParams extends IsolateReplyParams {
   final DatastoreReadResult? result;
 
-  const IsolateMapReplyParams({this.result, error, stacktrace})
+  final RenderContext renderContext;
+
+  const IsolateMapReplyParams(
+      {this.result, required this.renderContext, error, stacktrace})
       : super(error: error, stacktrace: stacktrace);
 }
 
@@ -83,8 +91,10 @@ Future<void> entryPoint(IsolateMapInitParam isolateInitParams) async {
       IsolateMapReplyParams? result = await _readMapDataInIsolate(data);
       isolateInitParams.sendPort!.send(result);
     } catch (error, stacktrace) {
-      isolateInitParams.sendPort!
-          .send(IsolateMapReplyParams(error: error, stacktrace: stacktrace));
+      isolateInitParams.sendPort!.send(IsolateMapReplyParams(
+          renderContext: data.renderContext,
+          error: error,
+          stacktrace: stacktrace));
     }
   }
 }
@@ -97,9 +107,78 @@ Future<IsolateMapReplyParams> _readMapDataInIsolate(
     IsolateMapRequestParam isolateParam) async {
   if (!_mapDataStore!
       .supportsTile(isolateParam.tile, isolateParam.projection)) {
-    return const IsolateMapReplyParams(result: null);
+    return IsolateMapReplyParams(
+        result: null, renderContext: isolateParam.renderContext);
   }
   DatastoreReadResult? mapReadResult =
       await _mapDataStore!.readMapDataSingle(isolateParam.tile);
-  return IsolateMapReplyParams(result: mapReadResult);
+  if (mapReadResult != null)
+    _processMapReadResult(isolateParam.renderContext, mapReadResult);
+  return IsolateMapReplyParams(
+      result: mapReadResult, renderContext: isolateParam.renderContext);
+}
+
+/// Creates rendering instructions based on the given ways and nodes
+void _processMapReadResult(
+    final RenderContext renderContext, DatastoreReadResult mapReadResult) {
+  for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
+    NodeProperties nodeProperties = NodeProperties(pointOfInterest);
+    List<RenderInstruction> renderInstructions =
+        _retrieveRenderInstructionsForPoi(renderContext, nodeProperties);
+    for (RenderInstruction element in renderInstructions) {
+      element.renderNode(renderContext, nodeProperties);
+    }
+  }
+
+  // never ever call an async method 44000 times. It takes 2 seconds to do so!
+//    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
+  for (Way way in mapReadResult.ways) {
+    WayProperties wayProperties = WayProperties(way);
+    List<RenderInstruction> renderInstructions =
+        _retrieveRenderInstructionsForWay(renderContext, wayProperties);
+    for (RenderInstruction element in renderInstructions) {
+      element.renderWay(renderContext, wayProperties);
+    }
+  }
+  if (mapReadResult.isWater) {
+    _renderWaterBackground(renderContext);
+  }
+}
+
+List<RenderInstruction> _retrieveRenderInstructionsForPoi(
+    final RenderContext renderContext, NodeProperties nodeProperties) {
+  renderContext.setDrawingLayers(nodeProperties.layer);
+  List<RenderInstruction> renderInstructions = renderContext.renderTheme
+      .matchNode(renderContext.job.tile, nodeProperties);
+  return renderInstructions;
+}
+
+List<RenderInstruction> _retrieveRenderInstructionsForWay(
+    final RenderContext renderContext, WayProperties wayProperties) {
+  if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
+      0) return [];
+  renderContext.setDrawingLayers(wayProperties.getLayer());
+  if (wayProperties.isClosedWay) {
+    List<RenderInstruction> renderInstructions = renderContext.renderTheme
+        .matchClosedWay(renderContext.job.tile, wayProperties.way);
+    return renderInstructions;
+  } else {
+    List<RenderInstruction> renderInstructions = renderContext.renderTheme
+        .matchLinearWay(renderContext.job.tile, wayProperties.way);
+    return renderInstructions;
+  }
+}
+
+void _renderWaterBackground(final RenderContext renderContext) {
+  // renderContext.setDrawingLayers(0);
+  // List<Mappoint> coordinates =
+  //     getTilePixelCoordinates(renderContext.job.tileSize);
+  // Mappoint tileOrigin =
+  //     renderContext.projection.getLeftUpper(renderContext.job.tile);
+  // for (int i = 0; i < coordinates.length; i++) {
+  //   coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
+  // }
+  // Watercontainer way = Watercontainer(
+  //     coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
+  //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
 }

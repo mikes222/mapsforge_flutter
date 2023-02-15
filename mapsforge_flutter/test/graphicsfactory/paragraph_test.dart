@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/flutterpaint.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttertextpaint.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/flutterpaint.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertextpaint.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
 
 ///
 /// flutter test --update-goldens

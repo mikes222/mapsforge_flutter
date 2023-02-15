@@ -1,27 +1,19 @@
-import 'dart:isolate';
-
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
-import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
-import 'package:mapsforge_flutter/src/datastore/way.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
-import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
-import 'package:mapsforge_flutter/src/paintelements/shape/polylinecontainer.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
-import 'package:mapsforge_flutter/src/utils/isolatemixin.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
+import '../rendertheme/renderinfo.dart';
 import 'canvasrasterer.dart';
 import 'datastorereader.dart';
 
@@ -88,8 +80,9 @@ class MapDataStoreRenderer extends JobRenderer {
 
     DatastoreReadResult? mapReadResult;
     IsolateMapReplyParams params = await _datastoreReader.read(
-        datastore, job.tile, renderContext.projection);
+        datastore, job.tile, renderContext.projection, renderContext);
     mapReadResult = params.result;
+    renderContext = params.renderContext;
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
@@ -98,7 +91,6 @@ class MapDataStoreRenderer extends JobRenderer {
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
     }
-    await _processMapReadResult(renderContext, mapReadResult, symbolCache);
     if ((mapReadResult.ways.length) > 100000) {
       _log.warning(
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
@@ -118,12 +110,18 @@ class MapDataStoreRenderer extends JobRenderer {
       //   });
       // });
     }
+    await renderContext.initDrawingLayers(symbolCache);
+    diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 100 && showTiming) {
+      _log.info(
+          "initDrawingLayers took $diff ms for ${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois");
+    }
     CanvasRasterer canvasRasterer = CanvasRasterer(job.tileSize.toDouble(),
         job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
-    int waycount = canvasRasterer.drawWays(renderContext);
+    canvasRasterer.drawWays(renderContext);
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
@@ -140,9 +138,9 @@ class MapDataStoreRenderer extends JobRenderer {
           labelResult.labelsForNeighbours, renderContext.projection, job.tile);
       canvasRasterer.drawMapElements(labelResult.labelsToDisposeAfterDrawing,
           renderContext.projection, job.tile);
-      labelResult.labelsToDisposeAfterDrawing.forEach((element) {
-        element.dispose();
-      });
+      // labelResult.labelsToDisposeAfterDrawing.forEach((element) {
+      //   element.dispose();
+      // });
       diff = DateTime.now().millisecondsSinceEpoch - time;
       if (diff > 100 && showTiming) {
         _log.info("drawMapElements took $diff ms for $labelCount labels");
@@ -153,7 +151,8 @@ class MapDataStoreRenderer extends JobRenderer {
       }
     } else {
       // store elements for this tile in the label cache
-      this.labelStore.storeMapItems(job.tile, renderContext.labels);
+      this.labelStore.storeMapItems(
+          job.tile, renderContext.labels, renderContext.projection);
       diff = DateTime.now().millisecondsSinceEpoch - time;
       if (diff > 100 && showTiming) _log.info("storeMapItems took $diff ms");
     }
@@ -173,7 +172,7 @@ class MapDataStoreRenderer extends JobRenderer {
     diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 100 && showTiming)
       _log.info(
-          "finalizeCanvasBitmap took $diff ms for $waycount ways, $labelCount elements and labels, $actions actions in canvas");
+          "finalizeCanvasBitmap took $diff ms, $labelCount elements and labels, $actions actions in canvas");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL);
@@ -192,14 +191,14 @@ class MapDataStoreRenderer extends JobRenderer {
   _LabelResult _processLabels(RenderContext renderContext) {
     // if we are drawing the labels per neighbour, we need to establish which neighbour-overlapping
     // elements need to be drawn.
-    Set<MapElementContainer> labelsToDisposeAfterDrawing = {};
+    Set<RenderInfo> labelsToDisposeAfterDrawing = {};
 
-    Set<MapElementContainer> labelsForNeighbours = {};
+    Set<RenderInfo> labelsForNeighbours = {};
 
     // we sort the list of labels for this tile and
     // remove those elements that clash in this list already.
-    List<MapElementContainer> currentElementsOrdered =
-        LayerUtil.collisionFreeOrdered(renderContext.labels);
+    List<RenderInfo> currentElementsOrdered = LayerUtil.collisionFreeOrdered(
+        renderContext.labels, renderContext.projection);
 
     // get the overlapping elements for the current tile which were found while rendering the neighbours
     Set<Dependency>? labelsFromNeighbours =
@@ -223,9 +222,10 @@ class MapDataStoreRenderer extends JobRenderer {
     // they already overlap from other tiles [labelsToDraw]. The second one is [renderContext.labels] that contains
     // the elements on this neighbour that do not overlap onto a drawn neighbour.
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
-    List<MapElementContainer> toDraw2 = LayerUtil.removeCollisions(
+    List<RenderInfo> toDraw2 = LayerUtil.removeCollisions(
         currentElementsOrdered,
-        List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours));
+        List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours),
+        renderContext.projection);
 
     // We need to get the labels from the adjacent tiles if they have already been drawn
     // as those overlapping items must also be drawn on the current neighbour. They must be drawn regardless
@@ -233,11 +233,12 @@ class MapDataStoreRenderer extends JobRenderer {
     Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
     // update dependencies, add to the dependencies list all the elements that overlap to the
     // neighbouring tiles, first clearing out the cache for this relation.
-    for (MapElementContainer element in toDraw2) {
+    for (RenderInfo element in toDraw2) {
       List<Tile>? added;
       for (Tile neighbour in neighbours) {
-        if (element
-            .intersects(renderContext.projection.boundaryAbsolute(neighbour))) {
+        if (element.intersects(
+            renderContext.projection.boundaryAbsolute(neighbour),
+            renderContext.projection)) {
           if (tileDependencies!.isDrawn(neighbour)) {
             // neighbour is drawn and this element intersects with the already
             // drawn neighbour, so we do not want to draw it at all
@@ -253,7 +254,7 @@ class MapDataStoreRenderer extends JobRenderer {
       }
       if (added == null) {
         // do not draw the element since one of the intersecting neighbours are already drawn
-        element.dispose();
+        //element.dispose();
         //print("Neightpor not yet drawn at ${added} $element");
       } else {
         if (added.length > 0) {
@@ -271,70 +272,6 @@ class MapDataStoreRenderer extends JobRenderer {
     return _LabelResult(labelsForNeighbours, labelsToDisposeAfterDrawing);
   }
 
-  Future<void> _processMapReadResult(final RenderContext renderContext,
-      DatastoreReadResult mapReadResult, SymbolCache symbolCache) async {
-    for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
-      List<RenderInstruction> renderInstructions =
-          _retrieveRenderInstructionsForPoi(renderContext, pointOfInterest);
-      for (RenderInstruction element in renderInstructions) {
-        await element.renderNode(renderContext, pointOfInterest, symbolCache);
-      }
-    }
-
-    // never ever call an async method 44000 times. It takes 2 seconds to do so!
-//    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
-    for (Way way in mapReadResult.ways) {
-      PolylineContainer container =
-          PolylineContainer(way, renderContext.job.tile);
-      List<RenderInstruction> renderInstructions =
-          _retrieveRenderInstructionsForWay(renderContext, container);
-      for (RenderInstruction element in renderInstructions) {
-        await element.renderWay(renderContext, container, symbolCache);
-      }
-    }
-    if (mapReadResult.isWater) {
-      _renderWaterBackground(renderContext);
-    }
-  }
-
-  List<RenderInstruction> _retrieveRenderInstructionsForPoi(
-      final RenderContext renderContext, PointOfInterest pointOfInterest) {
-    renderContext.setDrawingLayers(pointOfInterest.layer);
-    List<RenderInstruction> renderInstructions = renderContext.renderTheme
-        .matchNode(renderContext.job.tile, pointOfInterest);
-    return renderInstructions;
-  }
-
-  List<RenderInstruction> _retrieveRenderInstructionsForWay(
-      final RenderContext renderContext, PolylineContainer way) {
-    if (way.getCoordinatesAbsolute(renderContext.projection).length == 0)
-      return [];
-    renderContext.setDrawingLayers(way.getLayer());
-    if (way.isClosedWay) {
-      List<RenderInstruction> renderInstructions = renderContext.renderTheme
-          .matchClosedWay(renderContext.job.tile, way.way);
-      return renderInstructions;
-    } else {
-      List<RenderInstruction> renderInstructions = renderContext.renderTheme
-          .matchLinearWay(renderContext.job.tile, way.way);
-      return renderInstructions;
-    }
-  }
-
-  void _renderWaterBackground(final RenderContext renderContext) {
-    // renderContext.setDrawingLayers(0);
-    // List<Mappoint> coordinates =
-    //     getTilePixelCoordinates(renderContext.job.tileSize);
-    // Mappoint tileOrigin =
-    //     renderContext.projection.getLeftUpper(renderContext.job.tile);
-    // for (int i = 0; i < coordinates.length; i++) {
-    //   coordinates[i] = coordinates[i].offset(tileOrigin.x, tileOrigin.y);
-    // }
-    // Watercontainer way = Watercontainer(
-    //     coordinates, renderContext.job.tile, [TAG_NATURAL_WATER]);
-    //renderContext.renderTheme.matchClosedWay(databaseRenderer, renderContext, way);
-  }
-
   @override
   String getRenderKey() {
     return "${renderTheme.hashCode}";
@@ -344,9 +281,9 @@ class MapDataStoreRenderer extends JobRenderer {
 /////////////////////////////////////////////////////////////////////////////
 
 class _LabelResult {
-  final Set<MapElementContainer> labelsToDisposeAfterDrawing;
+  final Set<RenderInfo> labelsToDisposeAfterDrawing;
 
-  final Set<MapElementContainer> labelsForNeighbours;
+  final Set<RenderInfo> labelsForNeighbours;
 
   _LabelResult(this.labelsForNeighbours, this.labelsToDisposeAfterDrawing);
 }

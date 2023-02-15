@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
 import '../../core.dart';
 import 'basicmarker.dart';
@@ -47,7 +47,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
           item: item,
           markerCaption: markerCaption,
         ) {
-    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     this.bitmapSrc = bitmapSrc;
     if (fillColor != null)
@@ -69,7 +69,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
 
   Future<void> initResources(SymbolCache symbolCache) async {
     bitmap?.dispose();
-    bitmap = await loadBitmap(10, symbolCache);
+    //bitmap = await loadBitmap(10, symbolCache);
     if (bitmap != null) {
       if (isFillTransparent()) setFillColorFromNumber(0xff000000);
       setFillBitmapShader(bitmap!);

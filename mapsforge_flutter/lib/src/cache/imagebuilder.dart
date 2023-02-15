@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/flutterresourcebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/flutterresourcebitmap.dart';
 import 'dart:ui' as ui;
 
 class ImageBuilder {

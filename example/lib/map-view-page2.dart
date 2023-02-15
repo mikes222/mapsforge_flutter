@@ -7,6 +7,8 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
 
+import 'debug/debug-contextmenubuilder.dart';
+import 'debug/debug-datastore.dart';
 import 'map-file-data.dart';
 
 /// The [StatefulWidget] displaying the interactive map page. This is a demo
@@ -149,7 +151,8 @@ class MapViewPageState2 extends State<MapViewPage2> {
       symbolCache: symbolCache,
     );
     mapModel.markerDataStores.add(markerdemoDatastore);
-    //mapModel.markerDataStores.add(DebugDatastore(symbolCache: symbolCache));
+    // mapModel.markerDataStores.add(
+    //     DebugDatastore(symbolCache: symbolCache, displayModel: displayModel));
 
     return mapModel;
   }

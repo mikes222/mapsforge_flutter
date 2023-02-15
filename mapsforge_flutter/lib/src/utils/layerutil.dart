@@ -2,8 +2,9 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/paintelements/point/mapelementcontainer.dart';
+import 'package:mapsforge_flutter/maps.dart';
+
+import '../rendertheme/renderinfo.dart';
 
 class LayerUtil {
   static final _log = new Logger('LayerUtil');
@@ -105,27 +106,27 @@ class LayerUtil {
   ///
   /// @param input list of MapElements
   /// @return collision-free, ordered list, a subset of the input.
-  static List<MapElementContainer> collisionFreeOrdered(
-      List<MapElementContainer> input) {
+  static List<RenderInfo> collisionFreeOrdered(
+      List<RenderInfo> input, PixelProjection projection) {
     // sort items by priority (highest first)
     input.sort();
     // in order of priority, see if an item can be drawn, i.e. none of the items
     // in the currentItemsToDraw list clashes with it.
-    List<MapElementContainer> output = [];
-    for (MapElementContainer item in input) {
-      if (haveSpace(item, output)) {
+    List<RenderInfo> output = [];
+    for (RenderInfo item in input) {
+      if (haveSpace(item, output, projection)) {
         output.add(item);
       } else {
-        item.dispose();
+        //item.dispose();
       }
     }
     return output;
   }
 
   static bool haveSpace(
-      MapElementContainer item, List<MapElementContainer> list) {
-    for (MapElementContainer outputElement in list) {
-      if (outputElement.clashesWith(item)) {
+      RenderInfo item, List<RenderInfo> list, PixelProjection projection) {
+    for (RenderInfo outputElement in list) {
+      if (outputElement.clashesWith(item, projection)) {
         //print("$outputElement --------clashesWith-------- $item");
         return false;
       }
@@ -134,15 +135,14 @@ class LayerUtil {
   }
 
   /// returns the list of elements which can be added without collisions and disposes() elements which cannot be added
-  static List<MapElementContainer> removeCollisions(
-      List<MapElementContainer> addElements,
-      List<MapElementContainer> keepElements) {
-    List<MapElementContainer> toDraw2 = [];
-    addElements.forEach((MapElementContainer newElement) {
-      if (haveSpace(newElement, keepElements)) {
+  static List<RenderInfo> removeCollisions(List<RenderInfo> addElements,
+      List<RenderInfo> keepElements, PixelProjection projection) {
+    List<RenderInfo> toDraw2 = [];
+    addElements.forEach((RenderInfo newElement) {
+      if (haveSpace(newElement, keepElements, projection)) {
         toDraw2.add(newElement);
       } else {
-        newElement.dispose();
+        //newElement.dispose();
       }
     });
     // print(

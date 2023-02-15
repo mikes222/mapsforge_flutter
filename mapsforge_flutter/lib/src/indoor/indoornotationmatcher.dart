@@ -152,7 +152,7 @@ class IndoorNotationMatcher {
   static bool isOutdoorOrMatchesIndoorLevel(List<Tag> tags, int level) {
     String? levelValue = getLevelValue(tags);
     // return true if no level tag exists
-    if (levelValue == null || level == null) return true;
+    if (levelValue == null) return true;
     return matchesIndoorLevelNotation(levelValue, level);
   }
 }

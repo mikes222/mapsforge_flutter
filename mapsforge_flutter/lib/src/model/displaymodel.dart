@@ -14,7 +14,7 @@ class DisplayModel {
   static const int STROKE_MIN_ZOOMLEVEL = 13;
 
   /// start to thicken the strokes of texts at this zoomlevel
-  static const int STROKE_MIN_ZOOMLEVEL_TEXT = 17;
+  static const int STROKE_MIN_ZOOMLEVEL_TEXT = 18;
 
   int DEFAULT_ZOOM = 10;
 

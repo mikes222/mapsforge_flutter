@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';

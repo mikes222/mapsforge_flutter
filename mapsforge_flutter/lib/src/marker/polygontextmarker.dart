@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/paragraph_cache.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/model/linesegment.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
@@ -59,10 +59,10 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   }
 
   Future<void> initResources(SymbolCache symbolCache) async {
-    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     bitmap?.dispose();
     bitmap = null;
-    bitmap = await loadBitmap(10, symbolCache);
+    //bitmap = await loadBitmap(10, symbolCache);
 
     if (bitmap != null) {
       double centerX = bitmap!.getWidth() / 2;
@@ -98,8 +98,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null) {
-      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
-          _imageOffsetX, _imageOffsetY, rotation, getBitmapPaint());
+      // markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
+      //     _imageOffsetX, _imageOffsetY, rotation, getBitmapPaint());
     }
   }
 
@@ -110,10 +110,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     x = x + _imageOffsetX;
     y = y + _imageOffsetY;
     return tapEvent.mapPixelMappoint.x >= x &&
-        tapEvent.mapPixelMappoint.x <=
-            x + getBitmapWidth(tapEvent.projection.scalefactor.zoomlevel) &&
+        tapEvent.mapPixelMappoint.x <= x + getBitmapWidth() &&
         tapEvent.mapPixelMappoint.y >= y &&
-        tapEvent.mapPixelMappoint.y <=
-            y + getBitmapHeight(tapEvent.projection.scalefactor.zoomlevel);
+        tapEvent.mapPixelMappoint.y <= y + getBitmapHeight();
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttergraphicfactory.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttergraphicfactory.dart';
 
 import '../graphics/position.dart';
 import '../model/mappoint.dart';
