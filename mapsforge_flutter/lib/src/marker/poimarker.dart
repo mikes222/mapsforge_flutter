@@ -4,6 +4,9 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
+import '../../special.dart';
+import '../graphics/cap.dart';
+import '../graphics/join.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
@@ -15,6 +18,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   double rotation;
 
   ResourceBitmap? bitmap;
+
+  MapPaint? paint;
 
   PoiMarker({
     Display display = Display.ALWAYS,
@@ -59,11 +64,16 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   }
 
   Future<void> initResources(SymbolCache symbolCache) async {
-    //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     bitmap?.dispose();
     bitmap = null;
-    //bitmap = await loadBitmap(10, symbolCache);
-
+    setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    paint = createPaint(style: Style.FILL);
+    bitmap = await createBitmap(
+        symbolCache: symbolCache,
+        bitmapSrc: bitmapSrc!,
+        bitmapWidth: getBitmapWidth(),
+        bitmapHeight: getBitmapHeight());
+    print("bitmap is $bitmap");
     if (bitmap != null) {
       double centerX = bitmap!.getWidth() / 2;
       double centerY = bitmap!.getHeight() / 2;
@@ -76,6 +86,40 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
             .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
       }
     }
+  }
+
+  /// copied from ShapePaint
+  Future<ResourceBitmap?> createBitmap(
+      {required SymbolCache symbolCache,
+      required String bitmapSrc,
+      required int bitmapWidth,
+      required int bitmapHeight}) async {
+    ResourceBitmap? resourceBitmap = await symbolCache.getOrCreateSymbol(
+        bitmapSrc, bitmapWidth, bitmapHeight);
+    return resourceBitmap;
+  }
+
+  /// copie from ShapePaint
+  MapPaint createPaint(
+      {required Style style,
+
+      /// The color of the paint. Default is black
+      int color = 0xff000000,
+
+      /// strokeWidth must be zero for fillers when used for text. See [ParagraphEntry]
+      double? strokeWidth,
+      Cap cap = Cap.ROUND,
+      Join join = Join.ROUND,
+      List<double>? strokeDashArray}) {
+    MapPaint result = GraphicFactory().createPaint();
+    result.setStyle(style);
+    result.setColorFromNumber(color);
+    result.setStrokeWidth(strokeWidth ?? (style == Style.STROKE ? 1 : 0));
+    result.setStrokeCap(cap);
+    result.setStrokeJoin(join);
+    result.setStrokeDasharray(strokeDashArray);
+    result.setAntiAlias(true);
+    return result;
   }
 
   @override
@@ -98,8 +142,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null) {
-      // markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
-      //     _imageOffsetX, _imageOffsetY, rotation, getBitmapPaint());
+      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
+          _imageOffsetX, _imageOffsetY, rotation, paint!);
     }
   }
 
