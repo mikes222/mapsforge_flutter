@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 import '../../core.dart';
 
@@ -154,17 +152,18 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
               "onDoubleTap with _doubleTapLocalPosition ${_doubleTapLocalPosition}");
         // it should always non-null but just for safety do a null-check
         if (_doubleTapLocalPosition == null) return;
-        if (widget.viewModel.mapViewPosition?.leftUpper != null) {
+        Mappoint? leftUpper = widget.viewModel.mapViewPosition
+            ?.getLeftUpper(widget.viewModel.mapDimension);
+        if (leftUpper != null) {
           // lat/lon of the position where we double-clicked
-          double latitude = widget.viewModel.mapViewPosition!.projection!
-              .pixelYToLatitude(widget.viewModel.mapViewPosition!.leftUpper!.y +
+          double latitude = widget.viewModel.mapViewPosition!.projection
+              .pixelYToLatitude(leftUpper.y +
                   _doubleTapLocalPosition!.dy *
                       widget.viewModel.viewScaleFactor);
-          double longitude = widget.viewModel.mapViewPosition!.projection!
-              .pixelXToLongitude(
-                  widget.viewModel.mapViewPosition!.leftUpper!.x +
-                      _doubleTapLocalPosition!.dx *
-                          widget.viewModel.viewScaleFactor);
+          double longitude = widget.viewModel.mapViewPosition!.projection
+              .pixelXToLongitude(leftUpper.x +
+                  _doubleTapLocalPosition!.dx *
+                      widget.viewModel.viewScaleFactor);
           // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
           widget.viewModel.zoomInAround(
               (latitude - widget.viewModel.mapViewPosition!.latitude!) / 2 +
@@ -184,7 +183,8 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       onScaleStart: (ScaleStartDetails details) {
         if (doLog) _log.info("onScaleStart $details");
         _startLocalFocalPoint = details.localFocalPoint;
-        _startLeftUpper = widget.viewModel.mapViewPosition?.leftUpper;
+        _startLeftUpper = widget.viewModel.mapViewPosition
+            ?.getLeftUpper(widget.viewModel.mapDimension);
         _lastScale = null;
         if (_tapDownEvent != null) {
           if (_tapDownEvent!.longPressed) {
@@ -234,7 +234,8 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             _log.info(
                 "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}");
           _lastScale = details.scale;
-          /*MapViewPosition? newPost =*/ widget.viewModel.setScaleAround(
+          /*MapViewPosition? newPost =*/
+          widget.viewModel.setScaleAround(
               Mappoint(
                   details.localFocalPoint.dx * widget.viewModel.viewScaleFactor,
                   details.localFocalPoint.dy *
@@ -258,16 +259,16 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             widget.viewModel.mapViewPosition!
                 .calculateBoundingBox(widget.viewModel.mapDimension);
             // lat/lon of the focalPoint
-            double latitude = widget.viewModel.mapViewPosition!.projection!
-                .pixelYToLatitude(
-                    widget.viewModel.mapViewPosition!.leftUpper!.y +
-                        _startLocalFocalPoint!.dy *
-                            widget.viewModel.viewScaleFactor);
-            double longitude = widget.viewModel.mapViewPosition!.projection!
-                .pixelXToLongitude(
-                    widget.viewModel.mapViewPosition!.leftUpper!.x +
-                        _startLocalFocalPoint!.dx *
-                            widget.viewModel.viewScaleFactor);
+            Mappoint? leftUpper = widget.viewModel.mapViewPosition
+                ?.getLeftUpper(widget.viewModel.mapDimension);
+            double latitude = widget.viewModel.mapViewPosition!.projection
+                .pixelYToLatitude(leftUpper!.y +
+                    _startLocalFocalPoint!.dy *
+                        widget.viewModel.viewScaleFactor);
+            double longitude = widget.viewModel.mapViewPosition!.projection
+                .pixelXToLongitude(leftUpper.x +
+                    _startLocalFocalPoint!.dx *
+                        widget.viewModel.viewScaleFactor);
             MapViewPosition newPost = widget.viewModel.zoomAround(
                 latitude +
                     (widget.viewModel.mapViewPosition!.latitude! - latitude) /
@@ -339,10 +340,11 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       return;
     }
     if (doLog) _log.info("Swiping ${_swipeOffset!.distance}");
-    if (widget.viewModel.mapViewPosition?.leftUpper != null) {
+    Mappoint? leftUpper = widget.viewModel.mapViewPosition
+        ?.getLeftUpper(widget.viewModel.mapDimension);
+    if (leftUpper != null) {
       widget.viewModel.setLeftUpper(
-          widget.viewModel.mapViewPosition!.leftUpper!.x - _swipeOffset!.dx,
-          widget.viewModel.mapViewPosition!.leftUpper!.y - _swipeOffset!.dy);
+          leftUpper.x - _swipeOffset!.dx, leftUpper.y - _swipeOffset!.dy);
     }
     // slow down after each iteration
     _swipeOffset = _swipeOffset! * _swipeAbsorption;

@@ -45,7 +45,7 @@ class SingleMarkerPainter extends CustomPainter {
     }
 
     MarkerContext context = MarkerContext(
-        flutterCanvas, mapViewPosition, viewModel.viewScaleFactor);
+        flutterCanvas, mapViewPosition, viewModel.viewScaleFactor, viewModel);
     marker.render(context);
 
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {

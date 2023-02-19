@@ -112,6 +112,7 @@ Future<IsolateMapReplyParams> _readMapDataInIsolate(
   }
   DatastoreReadResult? mapReadResult =
       await _mapDataStore!.readMapDataSingle(isolateParam.tile);
+  //print("mapReadResult $mapReadResult for ${isolateParam.tile}");
   if (mapReadResult != null)
     _processMapReadResult(isolateParam.renderContext, mapReadResult);
   return IsolateMapReplyParams(

@@ -1,3 +1,6 @@
+import '../../core.dart';
+import '../../maps.dart';
+
 /// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
 /// with their zoom level. The actual area that a tile covers on a map depends on the underlying map projection.
 class Tile {
@@ -12,6 +15,9 @@ class Tile {
 
   /// The indoor level of this tile.
   final int indoorLevel;
+
+  /// The (cached) bounding box of this tile
+  BoundingBox? _boundary;
 
   /**
    * Extend of the area defined by the two tiles in absolute coordinates.
@@ -252,6 +258,12 @@ class Tile {
     }
 
     return this.tileY % 2 + 2 * getParent()!.getShiftY(otherTile);
+  }
+
+  BoundingBox getBoundingBox(Projection projection) {
+    if (_boundary != null) return _boundary!;
+    _boundary = projection.boundingBoxOfTile(this);
+    return _boundary!;
   }
 
   @override

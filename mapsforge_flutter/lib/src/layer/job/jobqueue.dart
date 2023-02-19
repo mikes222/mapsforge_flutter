@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:queue/queue.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
+import 'package:queue/queue.dart';
 
 import '../../graphics/tilebitmap.dart';
 import '../../renderer/jobrenderer.dart';
@@ -13,7 +14,7 @@ import 'job.dart';
 ///
 /// The jobqueue receives jobs and starts the renderer for missing bitmaps.
 ///
-class JobQueue {
+class JobQueue extends ChangeNotifier {
   static final _log = new Logger('JobQueue');
 
   final DisplayModel displayModel;
@@ -30,10 +31,12 @@ class JobQueue {
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
       this.tileBitmapCache1stLevel);
 
+  @override
   void dispose() {
     _executionQueue.dispose();
     _currentJobSet?.dispose();
     _currentJobSet = null;
+    super.dispose();
   }
 
   /// Let the queue process this jobset. A Jobset is a collection of jobs needed to render a whole view. It often consists of several tiles.
@@ -56,6 +59,7 @@ class JobQueue {
     });
 
     _currentJobSet = jobSet;
+    notifyListeners();
     _executionQueue.add(() async {
       await _startNextJob(jobSet);
     });
@@ -79,6 +83,7 @@ class JobQueue {
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       jobSet.jobFinished(job, JobResult(tileBitmap, JOBRESULT.NORMAL));
+      notifyListeners();
       unawaited(_executionQueue.add(() async {
         await _startNextJob(jobSet);
       }));
@@ -94,6 +99,7 @@ class JobQueue {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     jobSet.jobFinished(job, jobResult);
+    notifyListeners();
     unawaited(_executionQueue.add(() async {
       await _startNextJob(jobSet);
     }));

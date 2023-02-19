@@ -1,20 +1,10 @@
-import 'dart:math';
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
-import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttermatrix.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/flutterpaint.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/flutterrect.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 
+import '../../core.dart';
 import 'markercallback.dart';
 
 class MarkerContext implements MarkerCallback {
@@ -29,27 +19,11 @@ class MarkerContext implements MarkerCallback {
   @override
   final double viewScaleFactor;
 
-  const MarkerContext(
-      this.flutterCanvas, this.mapViewPosition, this.viewScaleFactor);
-
   @override
-  void renderBitmap(ResourceBitmap bitmap, double latitude, double longitude,
-      double offsetX, double offsetY, double rotation, MapPaint paint) {
-    double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
-    double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
-    FlutterMatrix? matrix;
-    if (rotation != 0) {
-      matrix = FlutterMatrix();
-      matrix.rotate(rotation / 180 * pi,
-          pivotX: -bitmap.getWidth() / 2, pivotY: -bitmap.getHeight() / 2);
-    }
-    flutterCanvas.drawBitmap(
-        bitmap: bitmap,
-        left: x + offsetX - mapViewPosition.leftUpper!.x,
-        top: y + offsetY - mapViewPosition.leftUpper!.y,
-        matrix: matrix,
-        paint: paint);
-  }
+  final ViewModel viewModel;
+
+  const MarkerContext(this.flutterCanvas, this.mapViewPosition,
+      this.viewScaleFactor, this.viewModel);
 
   @override
   void renderPathText(String caption, LineString lineString, Mappoint origin,
@@ -62,21 +36,4 @@ class MarkerContext implements MarkerCallback {
   void renderPath(MapPath path, MapPaint paint) {
     flutterCanvas.drawPath(path, paint);
   }
-
-  @override
-  void renderCircle(
-      double latitude, double longitude, double radius, MapPaint paint) {
-    double y = mapViewPosition.projection!.latitudeToPixelY(latitude);
-    double x = mapViewPosition.projection!.longitudeToPixelX(longitude);
-    flutterCanvas.drawCircle((x - mapViewPosition.leftUpper!.x),
-        (y - mapViewPosition.leftUpper!.y), radius, paint);
-    // flutterCanvas.drawRect(
-    //     FlutterRect(
-    //         x - mapViewPosition.leftUpper!.x,
-    //         y - mapViewPosition.leftUpper!.y,
-    //         x - mapViewPosition.leftUpper!.x + 10,
-    //         y - mapViewPosition.leftUpper!.y + 10),
-    //     FlutterPaint(Paint()..color = Colors.red));
-  }
-
 }

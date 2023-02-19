@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
-import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
-import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
+import 'package:mapsforge_flutter/src/view/zoompainter.dart';
 
 import '../../core.dart';
+import '../layer/job/jobset.dart';
+import '../layer/tilelayer.dart';
 import 'backgroundpainter.dart';
-import 'tilelayerpainter.dart';
 
 typedef Future<MapModel> CreateMapModel();
 typedef Future<ViewModel> CreateViewModel();
@@ -55,7 +54,7 @@ typedef Widget Func();
 class _MapviewWidgetState extends State<MapviewWidget> {
   static final _log = new Logger('_MapviewWidgetState');
 
-  TileLayerImpl? _tileLayer;
+  TileLayer? _tileLayer;
 
   GlobalKey _keyView = GlobalKey();
 
@@ -65,6 +64,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
   ViewModel? _viewModel;
 
+  _Statistics? _statistics; // = _Statistics();
+
   @override
   void initState() {
     super.initState();
@@ -73,11 +74,12 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   @override
   void dispose() {
     _viewModel?.dispose();
-    //_tileLayer.dis
+    _tileLayer?.dispose();
     _jobQueue?.dispose();
     _mapModel?.dispose();
 
     super.dispose();
+    if (_statistics != null) _log.info(_statistics?.toString());
   }
 
   @override
@@ -142,18 +144,25 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   }
 
   Widget _buildView() {
+    _statistics?.buildCount++;
     return LayoutBuilder(builder: (context, BoxConstraints boxConstraints) {
       _viewModel!
           .setViewDimension(boxConstraints.maxWidth, boxConstraints.maxHeight);
       return Stack(
         children: [
           _buildBackgroundView() ?? const SizedBox(),
+          // if (_viewModel!.mapViewPosition != null &&
+          //     _viewModel!.mapViewPosition!.hasPosition())
+          //   _buildMapView(_viewModel!.mapViewPosition!)
+          // else
+          //   _buildNoPositionView(),
           StreamBuilder<MapViewPosition?>(
             stream: _viewModel!.observePosition,
             builder: (BuildContext context,
                 AsyncSnapshot<MapViewPosition?> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting)
                 return _buildNoPositionView();
+              _statistics?.positionChangeCount++;
               if (snapshot.hasData) {
                 if (snapshot.data!.hasPosition()) {
                   //_log.info("I have a new position ${snapshot.data.toString()}");
@@ -195,6 +204,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   }
 
   Widget? _buildBackgroundView() {
+    _statistics?.buildBackgroundCount++;
     if (_viewModel!.displayModel.backgroundColor != Colors.transparent.value) {
       // draw the background first
       return CustomPaint(
@@ -219,22 +229,29 @@ class _MapviewWidgetState extends State<MapviewWidget> {
         .toList();
   }
 
-  Widget _buildMapView(MapViewPosition position) {
-    JobSet? jobSet = _submitJobSet(_viewModel!, position, _jobQueue!);
+  Widget _buildMapView(MapViewPosition mapViewPosition) {
+    //print("_buildMapView $mapViewPosition");
+    _statistics?.mapViewCount++;
+    JobSet? jobSet =
+        LayerUtil.submitJobSet(_viewModel!, mapViewPosition, _jobQueue!);
+    if (jobSet == null) return const SizedBox();
     return Stack(
       children: [
-        if (jobSet != null)
-          FlutterGestureDetector(
-            key: _keyView,
-            viewModel: _viewModel!,
-            child: CustomPaint(
-              foregroundPainter:
-                  TileLayerPainter(_tileLayer!, position, _viewModel!, jobSet),
-              child: const SizedBox.expand(),
-            ),
+        FlutterGestureDetector(
+          key: _keyView,
+          viewModel: _viewModel!,
+          child: CustomPaint(
+            foregroundPainter: ZoomPainter(
+                tileLayer: _tileLayer!,
+                mapViewPosition: mapViewPosition,
+                viewModel: _viewModel!,
+                jobSet: jobSet),
+            child: const SizedBox.expand(),
           ),
-        for (Widget widget in _createMarkerWidgets(position)) widget,
-        if (_viewModel!.contextMenuBuilder != null) _buildContextMenu(position),
+        ),
+        for (Widget widget in _createMarkerWidgets(mapViewPosition)) widget,
+        if (_viewModel!.contextMenuBuilder != null)
+          _buildContextMenu(mapViewPosition),
       ],
     );
   }
@@ -264,27 +281,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     );
   }
 
-  JobSet? _submitJobSet(
-      ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
-    //_log.info("viewModel ${viewModel.viewDimension}");
-    int time = DateTime.now().millisecondsSinceEpoch;
-    List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
-    JobSet jobSet = JobSet();
-    tiles.forEach((Tile tile) {
-      Job job = Job(tile, false, viewModel.displayModel.tileSize);
-      jobSet.add(job);
-    });
-    int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 50)
-      _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
-    //_log.info("JobSets created: ${jobSet.jobs.length}");
-    if (jobSet.jobs.length > 0) {
-      jobQueue.processJobset(jobSet);
-      return jobSet;
-    }
-    return null;
-  }
-
   @override
   void didUpdateWidget(covariant MapviewWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -298,11 +294,28 @@ class _MapviewWidgetState extends State<MapviewWidget> {
       _tileLayer = null;
       _mapModel = null;
       Future.delayed(const Duration(milliseconds: 5000), () {
-        // destroy the models ATER they are not used anymore
+        // destroy the models AFTER they are not used anymore
         tempViewModel?.dispose();
         tempJobqueue?.dispose();
         tempMapModel?.dispose();
       });
     }
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _Statistics {
+  int buildCount = 0;
+
+  int buildBackgroundCount = 0;
+
+  int positionChangeCount = 0;
+
+  int mapViewCount = 0;
+
+  @override
+  String toString() {
+    return '_Statistics{buildCount: $buildCount, buildBackgroundCount: $buildBackgroundCount, positionChangeCount: $positionChangeCount, mapViewCount: $mapViewCount}';
   }
 }

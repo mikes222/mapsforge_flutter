@@ -66,15 +66,17 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    markerCallback.renderCircle(
-        latLong.latitude,
-        latLong.longitude,
-        getRadius(markerCallback.mapViewPosition.zoomLevel),
+    Mappoint leftUpper = markerCallback.mapViewPosition
+        .getLeftUpper(markerCallback.viewModel.mapDimension);
+    markerCallback.flutterCanvas.drawCircle(
+        (mappoint.x - leftUpper.x),
+        (mappoint.y - leftUpper.y),
+        radius,
         getFillPaint(markerCallback.mapViewPosition.zoomLevel));
-    markerCallback.renderCircle(
-        latLong.latitude,
-        latLong.longitude,
-        getRadius(markerCallback.mapViewPosition.zoomLevel),
+    markerCallback.flutterCanvas.drawCircle(
+        (mappoint.x - leftUpper.x),
+        (mappoint.y - leftUpper.y),
+        radius,
         getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
   }
 

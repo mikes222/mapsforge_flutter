@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -129,6 +128,7 @@ class ViewModel {
   }
 
   void zoomInAround(double latitude, double longitude) {
+    print("zoominAround");
     if (_mapViewPosition == null) return;
     if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
     MapViewPosition newPosition =
@@ -288,17 +288,17 @@ class ViewModel {
   void tapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
     _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    if (_mapViewPosition?.leftUpper == null) return;
+    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
     TapEvent event = TapEvent(
-        _mapViewPosition!.projection!.pixelYToLatitude(
-            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection!.pixelXToLongitude(
-            _mapViewPosition!.leftUpper!.x + left * viewScaleFactor),
+        _mapViewPosition!.projection
+            .pixelYToLatitude(leftUpper.y + upper * viewScaleFactor),
+        _mapViewPosition!.projection
+            .pixelXToLongitude(leftUpper.x + left * viewScaleFactor),
         Mappoint(left, upper),
-        _mapViewPosition!.leftUpper!,
-        Mappoint(_mapViewPosition!.leftUpper!.x + left * viewScaleFactor,
-            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection!);
+        leftUpper,
+        Mappoint(leftUpper.x + left * viewScaleFactor,
+            leftUpper.y + upper * viewScaleFactor),
+        _mapViewPosition!.projection);
     _injectTap.add(event);
   }
 
@@ -311,17 +311,17 @@ class ViewModel {
   void longTapEvent(double left, double upper) {
     if (_mapViewPosition == null) return;
     _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    if (_mapViewPosition?.leftUpper == null) return;
+    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
     TapEvent event = TapEvent(
-        _mapViewPosition!.projection!.pixelYToLatitude(
-            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection!.pixelXToLongitude(
-            _mapViewPosition!.leftUpper!.x + left * viewScaleFactor),
+        _mapViewPosition!.projection
+            .pixelYToLatitude(leftUpper.y + upper * viewScaleFactor),
+        _mapViewPosition!.projection
+            .pixelXToLongitude(leftUpper.x + left * viewScaleFactor),
         Mappoint(left, upper),
-        _mapViewPosition!.leftUpper!,
-        Mappoint(_mapViewPosition!.leftUpper!.x + left * viewScaleFactor,
-            _mapViewPosition!.leftUpper!.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection!);
+        leftUpper,
+        Mappoint(leftUpper.x + left * viewScaleFactor,
+            leftUpper.y + upper * viewScaleFactor),
+        _mapViewPosition!.projection);
     _injectLongTap.add(event);
   }
 
@@ -334,19 +334,18 @@ class ViewModel {
   void gestureMoveStartEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
     _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    if (_mapViewPosition?.leftUpper == null) return null;
+    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
 
     MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection!,
+      latitude: _mapViewPosition!.projection
+          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection
+          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection,
       widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: _mapViewPosition!.leftUpper!,
-      mapPixelMappoint: Mappoint(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      leftUpperMappoint: leftUpper,
+      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
+          leftUpper.y + widgetUpper * viewScaleFactor),
     );
     _injectMoveAroundStart.add(event);
   }
@@ -355,19 +354,18 @@ class ViewModel {
   void gestureMoveCancelEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
     _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    if (_mapViewPosition?.leftUpper == null) return null;
+    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
 
     MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection!,
+      latitude: _mapViewPosition!.projection
+          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection
+          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection,
       widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: _mapViewPosition!.leftUpper!,
-      mapPixelMappoint: Mappoint(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      leftUpperMappoint: leftUpper,
+      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
+          leftUpper.y + widgetUpper * viewScaleFactor),
     );
     _injectMoveAroundCancel.add(event);
   }
@@ -375,19 +373,18 @@ class ViewModel {
   void gestureMoveUpdateEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
     _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    if (_mapViewPosition?.leftUpper == null) return null;
+    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
 
     MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection!,
+      latitude: _mapViewPosition!.projection
+          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection
+          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection,
       widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: _mapViewPosition!.leftUpper!,
-      mapPixelMappoint: Mappoint(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      leftUpperMappoint: leftUpper,
+      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
+          leftUpper.y + widgetUpper * viewScaleFactor),
     );
     _injectMoveAroundUpdate.add(event);
   }
@@ -395,19 +392,18 @@ class ViewModel {
   void gestureMoveEndEvent(double widgetLeft, double widgetUpper) {
     if (_mapViewPosition == null) return null;
     _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    if (_mapViewPosition?.leftUpper == null) return null;
+    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
 
     MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection!.pixelYToLatitude(
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection!.pixelXToLongitude(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection!,
+      latitude: _mapViewPosition!.projection
+          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
+      longitude: _mapViewPosition!.projection
+          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
+      projection: _mapViewPosition!.projection,
       widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: _mapViewPosition!.leftUpper!,
-      mapPixelMappoint: Mappoint(
-          _mapViewPosition!.leftUpper!.x + widgetLeft * viewScaleFactor,
-          _mapViewPosition!.leftUpper!.y + widgetUpper * viewScaleFactor),
+      leftUpperMappoint: leftUpper,
+      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
+          leftUpper.y + widgetUpper * viewScaleFactor),
     );
     _injectMoveAroundEnd.add(event);
   }
@@ -418,6 +414,7 @@ class ViewModel {
   ///
   Dimension get mapDimension => _mapDimension;
 
+  // called if the size of the widget changes
   Dimension? setViewDimension(double width, double height) {
     assert(width >= 0);
     assert(height >= 0);
@@ -425,7 +422,9 @@ class ViewModel {
         _mapDimension.height == height * viewScaleFactor) return _mapDimension;
     _mapDimension =
         Dimension(width * viewScaleFactor, height * viewScaleFactor);
-    if (_mapViewPosition != null) _injectPosition.add(_mapViewPosition!);
+    if (_mapViewPosition != null) {
+      _injectPosition.add(_mapViewPosition!);
+    }
     return _mapDimension;
   }
 
@@ -437,6 +436,7 @@ class ViewModel {
 
 /////////////////////////////////////////////////////////////////////////////
 
+/// Event which is triggered when the user taps at the map
 class TapEvent implements ILatLong {
   // The position of the event in lat direction (north-south)
   @override
@@ -478,6 +478,7 @@ class TapEvent implements ILatLong {
 
 /////////////////////////////////////////////////////////////////////////////
 
+/// Triggered when the user moves the map around (tap and hold and move)
 class MoveAroundEvent extends TapEvent {
   MoveAroundEvent({
     required double latitude,

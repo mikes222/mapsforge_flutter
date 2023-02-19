@@ -87,8 +87,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
-      Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
-          markerCallback.mapViewPosition.leftUpper!.y);
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      Mappoint origin = Mappoint(leftUpper.x, leftUpper.y);
       markerCallback.renderPathText(
           caption,
           _lineString!,
@@ -108,9 +109,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
       double? prevX = null;
       double? prevY = null;
       path.forEach((latLong) {
-        double y = markerCallback.mapViewPosition.projection!
+        double y = markerCallback.mapViewPosition.projection
             .latitudeToPixelY(latLong.latitude);
-        double x = markerCallback.mapViewPosition.projection!
+        double x = markerCallback.mapViewPosition.projection
             .longitudeToPixelX(latLong.longitude);
 
         if (prevX != null && prevY != null) {
@@ -134,8 +135,9 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
       //       "Segment ${element.end.x - element.start.x} / ${element.end.y - element.start.y} for textWidth $textWidth - $element $caption");
       // });
 
-      Mappoint origin = Mappoint(markerCallback.mapViewPosition.leftUpper!.x,
-          markerCallback.mapViewPosition.leftUpper!.y);
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      Mappoint origin = Mappoint(leftUpper.x, leftUpper.y);
       markerCallback.renderPathText(
           caption,
           _lineString!,

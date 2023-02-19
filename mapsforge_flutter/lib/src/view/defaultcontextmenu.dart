@@ -16,11 +16,10 @@ class DefaultContextMenu extends StatefulWidget {
   /// position also represents the CURRENT position and not the position when the tap event occured.
   final MapViewPosition mapViewPosition;
 
-  DefaultContextMenu(
-      {required this.screen,
-      required this.event,
-      required this.viewModel,
-      required this.mapViewPosition});
+  DefaultContextMenu({required this.screen,
+    required this.event,
+    required this.viewModel,
+    required this.mapViewPosition});
 
   @override
   State<StatefulWidget> createState() {
@@ -50,14 +49,16 @@ class DefaultContextMenuState extends State {
     // double y = widget.event.y;
 
     widget.mapViewPosition.calculateBoundingBox(widget.viewModel.mapDimension);
-    double x = //widget.event.widgetPixelMappoint.x;
-        widget.mapViewPosition.projection!
-                .longitudeToPixelX(widget.event.longitude) -
-            widget.mapViewPosition.leftUpper!.x;
-    double y = //widget.event.widgetPixelMappoint.y;
-        widget.mapViewPosition.projection!
-                .latitudeToPixelY(widget.event.latitude) -
-            widget.mapViewPosition.leftUpper!.y;
+    Mappoint leftUpper = widget.mapViewPosition.getLeftUpper(
+        widget.viewModel.mapDimension);
+    double x =
+        widget.mapViewPosition.projection
+            .longitudeToPixelX(widget.event.longitude) -
+            leftUpper.x;
+    double y =
+        widget.mapViewPosition.projection
+            .latitudeToPixelY(widget.event.latitude) -
+            leftUpper.y;
 
     x = x / widget.viewModel.viewScaleFactor;
     y = y / widget.viewModel.viewScaleFactor;
@@ -91,8 +92,12 @@ class DefaultContextMenuState extends State {
   }
 
   void setValues(BuildContext context) {
-    backgroundColor = Theme.of(context).scaffoldBackgroundColor;
-    borderColor = Theme.of(context).primaryColor;
+    backgroundColor = Theme
+        .of(context)
+        .scaffoldBackgroundColor;
+    borderColor = Theme
+        .of(context)
+        .primaryColor;
   }
 
   List<Widget> buildColumns(BuildContext context) {
@@ -102,7 +107,8 @@ class DefaultContextMenuState extends State {
         children: [
           InkWell(
             child: Text(
-              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}",
+              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event
+                  .longitude.toStringAsFixed(6)}",
               style: const TextStyle(fontSize: 14),
             ),
             onTap: () {
@@ -111,7 +117,8 @@ class DefaultContextMenuState extends State {
             onLongPress: () {
               Clipboard.setData(new ClipboardData(
                   text:
-                      "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}"));
+                  "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event
+                      .longitude.toStringAsFixed(6)}"));
             },
           ),
           //const Spacer(),

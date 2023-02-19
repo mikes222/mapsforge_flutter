@@ -4,10 +4,34 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
+import '../layer/job/job.dart';
+import '../layer/job/jobqueue.dart';
+import '../layer/job/jobset.dart';
 import '../rendertheme/renderinfo.dart';
 
 class LayerUtil {
   static final _log = new Logger('LayerUtil');
+
+  static JobSet? submitJobSet(
+      ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
+    //_log.info("viewModel ${viewModel.viewDimension}");
+    int time = DateTime.now().millisecondsSinceEpoch;
+    List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
+    JobSet jobSet = JobSet();
+    tiles.forEach((Tile tile) {
+      Job job = Job(tile, false, viewModel.displayModel.tileSize);
+      jobSet.add(job);
+    });
+    int diff = DateTime.now().millisecondsSinceEpoch - time;
+    if (diff > 50)
+      _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
+    //_log.info("JobSets created: ${jobSet.jobs.length}");
+    if (jobSet.jobs.length > 0) {
+      jobQueue.processJobset(jobSet);
+      return jobSet;
+    }
+    return null;
+  }
 
   /**
    * Upper left tile for an area.
@@ -57,23 +81,19 @@ class LayerUtil {
   ///
   static List<Tile> getTiles(
       ViewModel viewModel, MapViewPosition mapViewPosition, int time) {
-    Mappoint center = Mappoint(
-        mapViewPosition.projection!
-            .longitudeToPixelX(mapViewPosition.longitude!),
-        mapViewPosition.projection!
-            .latitudeToPixelY(mapViewPosition.latitude!));
+    Mappoint center = mapViewPosition.getCenter();
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
-    int tileLeft = mapViewPosition.projection!
+    int tileLeft = mapViewPosition.projection
         .pixelXToTileX(max(center.x - viewModel.mapDimension.width / 2, 0));
-    int tileRight = mapViewPosition.projection!.pixelXToTileX(min(
+    int tileRight = mapViewPosition.projection.pixelXToTileX(min(
         center.x + viewModel.mapDimension.width / 2,
-        mapViewPosition.projection!.mapsize.toDouble()));
-    int tileTop = mapViewPosition.projection!
+        mapViewPosition.projection.mapsize.toDouble()));
+    int tileTop = mapViewPosition.projection
         .pixelYToTileY(max(center.y - viewModel.mapDimension.height / 2, 0));
-    int tileBottom = mapViewPosition.projection!.pixelYToTileY(min(
+    int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
         center.y + viewModel.mapDimension.height / 2,
-        mapViewPosition.projection!.mapsize.toDouble()));
+        mapViewPosition.projection.mapsize.toDouble()));
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff > 50) _log.info("diff: $diff ms, tileBoundaries2");
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
@@ -83,7 +103,7 @@ class LayerUtil {
     for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
       for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
         Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
-        Mappoint leftUpper = mapViewPosition.projection!.getLeftUpper(tile);
+        Mappoint leftUpper = mapViewPosition.projection.getLeftUpper(tile);
         tileMap[tile] =
             (pow(leftUpper.x - center.x, 2) + pow(leftUpper.y - center.y, 2))
                 .toDouble();

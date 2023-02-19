@@ -1,16 +1,10 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import 'job/job.dart';
 import 'tilelayer.dart';
@@ -22,6 +16,8 @@ class TileLayerImpl extends TileLayer {
 
   final MapPaint _paint;
 
+  _Statistics? _statistics; // = _Statistics();
+
   TileLayerImpl({
     required displayModel,
   })  : assert(displayModel != null),
@@ -31,8 +27,14 @@ class TileLayerImpl extends TileLayer {
   }
 
   @override
+  void dispose() {
+    if (_statistics != null) _log.info(_statistics.toString());
+  }
+
+  @override
   void draw(ViewModel viewModel, MapViewPosition mapViewPosition,
-      MapCanvas canvas, JobSet jobSet) {
+      MapCanvas mapCanvas, JobSet jobSet) {
+    Mappoint leftUpper = mapViewPosition.getLeftUpper(viewModel.mapDimension);
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -45,29 +47,17 @@ class TileLayerImpl extends TileLayer {
     // to hook this into the onConfigurationChanged call chain.
     //canvas.resetClip();
 
-    canvas.setClip(
-        0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
-    mapViewPosition.calculateBoundingBox(viewModel.mapDimension);
-    Mappoint leftUpper = mapViewPosition.leftUpper!;
+    _statistics?.drawCount++;
 
-    if (viewModel.viewScaleFactor != 1) {
-      (canvas as FlutterCanvas).uiCanvas.save();
-      canvas.scale(
-          const Mappoint(/*viewModel.viewDimension.width / 2*/ 0,
-              /*viewModel.viewDimension.height / 2*/ 0),
-          1 / viewModel.viewScaleFactor);
-    }
-    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
-      //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
-      (canvas as FlutterCanvas).uiCanvas.save();
-      canvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
-    }
-    //_log.info("${jobSet.results.length} tiles");
+    // _TileLayerPainter _tileLayerPainter = _TileLayerPainter(jobSet,
+    //     mapViewPosition.projection, mapCanvas, _paint, leftUpper, _statistics);
     jobSet.results.forEach((Tile tile, JobResult jobResult) {
       if (jobResult.bitmap != null) {
         //_log.info("  $jobResult");
-        Mappoint point = mapViewPosition.projection!.getLeftUpper(tile);
-        canvas.drawBitmap(
+        _statistics?.drawBitmapCount++;
+        Mappoint point = mapViewPosition.projection.getLeftUpper(tile);
+        //print("drawing ${point.x - leftUpper.x} / ${point.y - leftUpper.y}");
+        mapCanvas.drawBitmap(
           bitmap: jobResult.bitmap!,
           left: point.x - leftUpper.x,
           top: point.y - leftUpper.y,
@@ -75,14 +65,6 @@ class TileLayerImpl extends TileLayer {
         );
       }
     });
-    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
-      //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
-      (canvas as FlutterCanvas).uiCanvas.restore();
-      //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
-    }
-    if (viewModel.viewScaleFactor != 1) {
-      (canvas as FlutterCanvas).uiCanvas.restore();
-    }
   }
 
   /**
@@ -179,5 +161,18 @@ class TileLayerImpl extends TileLayer {
     }
 
     return getCachedParentTile(parentTile, level - 1);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _Statistics {
+  int drawCount = 0;
+
+  int drawBitmapCount = 0;
+
+  @override
+  String toString() {
+    return '_Statistics{drawCount: $drawCount, drawBitmapCount: $drawBitmapCount}';
   }
 }

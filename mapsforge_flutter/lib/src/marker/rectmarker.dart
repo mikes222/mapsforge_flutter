@@ -15,6 +15,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
 
   final ILatLong maxLatLon;
 
+  /// the box which enclosed the rect specified by the given minLatLon and maxLatLon
   final BoundingBox boundingBox;
 
   ResourceBitmap? bitmap;
@@ -113,20 +114,21 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
     // prepareScaleBitmapSrcMixin(zoomLevel);
     if (mapRect == null ||
         lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+      // cache the rect in pixel-coordinates
       mapRect = GraphicFactory().createRect(
-          markerCallback.mapViewPosition.projection!
+          markerCallback.mapViewPosition.projection
               .longitudeToPixelX(minLatLon.longitude),
-          markerCallback.mapViewPosition.projection!
+          markerCallback.mapViewPosition.projection
               .latitudeToPixelY(maxLatLon.latitude),
-          markerCallback.mapViewPosition.projection!
+          markerCallback.mapViewPosition.projection
               .longitudeToPixelX(maxLatLon.longitude),
-          markerCallback.mapViewPosition.projection!
+          markerCallback.mapViewPosition.projection
               .latitudeToPixelY(minLatLon.latitude));
       lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
     }
-
-    MapRect mr = mapRect!.offset(-markerCallback.mapViewPosition.leftUpper!.x,
-        -markerCallback.mapViewPosition.leftUpper!.y);
+    Mappoint leftUpper = markerCallback.mapViewPosition
+        .getLeftUpper(markerCallback.viewModel.mapDimension);
+    MapRect mr = mapRect!.offset(-leftUpper.x, -leftUpper.y);
 
     if (!isFillTransparent())
       markerCallback.flutterCanvas

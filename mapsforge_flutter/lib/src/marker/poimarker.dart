@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
@@ -6,6 +8,7 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
 import '../../special.dart';
 import '../graphics/cap.dart';
+import '../graphics/implementation/fluttermatrix.dart';
 import '../graphics/join.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
@@ -141,8 +144,20 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null) {
-      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
-          _imageOffsetX, _imageOffsetY, rotation, paint!);
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      FlutterMatrix? matrix;
+      if (rotation != 0) {
+        matrix = FlutterMatrix();
+        matrix.rotate(rotation / 180 * pi,
+            pivotX: -getBitmapWidth() / 2, pivotY: -getBitmapHeight() / 2);
+      }
+      markerCallback.flutterCanvas.drawBitmap(
+          bitmap: bitmap!,
+          left: mappoint.x + _imageOffsetX - leftUpper.x,
+          top: mappoint.y + _imageOffsetY - leftUpper.y,
+          matrix: matrix,
+          paint: paint!);
     }
   }
 

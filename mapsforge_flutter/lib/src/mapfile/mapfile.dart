@@ -576,8 +576,8 @@ class MapFile extends MapDataStore {
   bool supportsTile(Tile tile, Projection projection) {
     if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax)
       return false;
-    return projection
-        .boundingBoxOfTile(tile)
+    return tile
+        .getBoundingBox(projection)
         .intersects(getMapFileInfo().boundingBox);
   }
 }

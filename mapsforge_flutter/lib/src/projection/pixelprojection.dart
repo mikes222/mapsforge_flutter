@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 class PixelProjection extends MercatorProjection {
@@ -10,7 +9,7 @@ class PixelProjection extends MercatorProjection {
   final int tileSize;
 
   ///
-  /// the size of the map in pixel. At scalefactor 1 the _mapSize is equal to the tileSize.
+  /// the size of the map in pixel. At scalefactor 1 (or zoomLevel 0) the _mapSize is equal to the tileSize.
   ///
   late int _mapSize;
 
@@ -162,4 +161,9 @@ class PixelProjection extends MercatorProjection {
   }
 
   int get mapsize => _mapSize;
+
+  @override
+  String toString() {
+    return 'PixelProjection{tileSize: $tileSize, _mapSize: $_mapSize, zoomLevel: ${scalefactor.zoomlevel}}';
+  }
 }

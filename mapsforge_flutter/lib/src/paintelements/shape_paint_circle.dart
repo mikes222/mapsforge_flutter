@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/rendertheme/shape/shape_circle.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/shape_circle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
 
 import '../../maps.dart';
@@ -37,7 +37,7 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
       PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {
     Mappoint point =
-        nodeProperties.getCoordinateRelativeToTile(projection, tile);
+    nodeProperties.getCoordinateRelativeToTile(projection, tile);
     if (fill != null) canvas.drawCircle(point.x, point.y, shape.radius, fill!);
     if (stroke != null)
       canvas.drawCircle(point.x, point.y, shape.radius, stroke!);
