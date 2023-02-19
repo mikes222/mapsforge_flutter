@@ -1,4 +1,3 @@
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
@@ -28,11 +27,18 @@ class RenderinstructionCaption extends RenderInstruction {
 
   final SymbolFinder symbolFinder;
 
-  final ShapeCaption base = ShapeCaption.base();
+  late final ShapeCaption base;
 
-  final Map<int, ShapeCaption> _shapeScaled = {};
+  RenderinstructionCaption(this.symbolFinder, [ShapeCaption? base]) {
+    this.base = base ?? ShapeCaption.base();
+  }
 
-  RenderinstructionCaption(this.symbolFinder);
+  @override
+  RenderinstructionCaption? prepareScale(int zoomLevel) {
+    ShapeCaption newShape = ShapeCaption.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionCaption(symbolFinder, newShape);
+  }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
     base.maxTextWidth = displayModel.getMaxTextWidth();
@@ -84,49 +90,29 @@ class RenderinstructionCaption extends RenderInstruction {
         rootElement.name.toString(), RenderInstruction.K, base.textKey);
   }
 
-  ShapeCaption _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapeCaption result = ShapeCaption.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(final RenderContext renderContext, NodeProperties container) {
-    ShapeCaption shape = _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
-
-    if (Display.NEVER == shape.display) {
-      //_log.info("display is never for $textKey");
-      return;
-    }
-
-    String? caption = shape.textKey!.getValue(container.tags);
+    String? caption = base.textKey!.getValue(container.tags);
     if (caption == null) {
       //_log.info("caption is null for $textKey");
       return;
     }
 
-    if (shape.symbolId != null) {
+    if (base.symbolId != null) {
       // This caption belongs to a symbol. Try to find it and connect both
       SymbolHolder symbolHolder = symbolFinder.findSymbolHolder(
-          shape.symbolId!, renderContext.job.tile.zoomLevel);
-      shape.symbolHolder = symbolHolder;
+          base.symbolId!, renderContext.job.tile.zoomLevel);
+      base.symbolHolder = symbolHolder;
     }
 
     renderContext.labels
-        .add(NodeRenderInfo(container, shape)..caption = caption);
+        .add(NodeRenderInfo(container, base)..caption = caption);
     return;
   }
 
   @override
   void renderWay(final RenderContext renderContext, WayProperties container) {
-    ShapeCaption shape = _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
-
-    if (Display.NEVER == shape.display) {
-      return;
-    }
-
-    String? caption = shape.textKey!.getValue(container.getTags());
+    String? caption = base.textKey!.getValue(container.getTags());
     if (caption == null) {
       return;
     }
@@ -134,15 +120,14 @@ class RenderinstructionCaption extends RenderInstruction {
     if (container.getCoordinatesAbsolute(renderContext.projection).length == 0)
       return;
 
-    if (shape.symbolId != null) {
+    if (base.symbolId != null) {
       // This caption belongs to a symbol. Try to find it and connect both
       SymbolHolder symbolHolder = symbolFinder.findSymbolHolder(
-          shape.symbolId!, renderContext.job.tile.zoomLevel);
-      shape.symbolHolder = symbolHolder;
+          base.symbolId!, renderContext.job.tile.zoomLevel);
+      base.symbolHolder = symbolHolder;
     }
 
-    renderContext.labels
-        .add(WayRenderInfo(container, shape)..caption = caption);
+    renderContext.labels.add(WayRenderInfo(container, base)..caption = caption);
     return;
   }
 }

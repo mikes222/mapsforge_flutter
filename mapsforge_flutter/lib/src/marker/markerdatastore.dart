@@ -62,6 +62,14 @@ class MarkerDataStore extends IMarkerDataStore {
       _previousMarkers.add(marker);
   }
 
+  /// Updates the marker. The marker was already updated but the position changed so it may not be in the _previousMarkers list
+  void updateMarker(Marker marker) {
+    if (_previousBoundingBox != null &&
+        marker.shouldPaint(_previousBoundingBox!, _previousZoomLevel) &&
+        !_previousMarkers.contains(marker))
+      _previousMarkers.add(marker);
+  }
+
   void removeMarker(Marker marker) {
     _markers.remove(marker);
     marker.dispose();

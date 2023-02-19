@@ -129,7 +129,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
     final JobRenderer jobRenderer = MapDataStoreRenderer(
         widget.mapFile!, renderTheme, symbolCache, true,
-        useIsolate: true);
+        useIsolate: false);
 
     /// and now it is similar to online rendering.
 

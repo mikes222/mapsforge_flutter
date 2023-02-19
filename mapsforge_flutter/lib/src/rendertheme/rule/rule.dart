@@ -39,16 +39,17 @@ abstract class Rule {
     });
   }
 
-  Rule.create(Rule oldRule, List<Rule> subs)
+  Rule.create(
+      Rule oldRule, List<Rule> subs, List<RenderInstruction> renderInstructions)
       : cat = oldRule.cat,
         closedMatcher = oldRule.closedMatcher,
         elementMatcher = oldRule.elementMatcher,
-        renderInstructions = oldRule.renderInstructions,
+        this.renderInstructions = renderInstructions,
         subRules = subs,
         zoomMin = oldRule.zoomMin,
         zoomMax = oldRule.zoomMax;
 
-  Rule createRule(List<Rule> subs);
+  Rule createRule(List<Rule> subs, List<RenderInstruction> renderInstructions);
 
   void addRenderingInstruction(RenderInstruction renderInstruction) {
     this.renderInstructions.add(renderInstruction);
@@ -79,8 +80,13 @@ abstract class Rule {
         if (sub != null) subs.add(sub);
       });
       // we do not have subrules AND we do not have instructions, so this is a no-op
-      if (renderInstructions.isEmpty && subs.isEmpty) return null;
-      Rule rule = createRule(subs);
+      List<RenderInstruction> newRenderInstructions = [];
+      for (RenderInstruction ri in renderInstructions) {
+        RenderInstruction? newRi = ri.prepareScale(zoomLevel);
+        if (newRi != null) newRenderInstructions.add(newRi);
+      }
+      if (newRenderInstructions.isEmpty && subs.isEmpty) return null;
+      Rule rule = createRule(subs, newRenderInstructions);
       return rule;
     }
     return null;

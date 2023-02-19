@@ -2,14 +2,14 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_area.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_caption.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_circle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_line.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_linesymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_pathtext.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_circle.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_symbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/ruleoptimizer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
@@ -282,7 +282,7 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionArea area = new RenderinstructionArea(qName, level);
+      RenderinstructionArea area = new RenderinstructionArea(level);
       area.parse(displayModel, rootElement);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
@@ -335,7 +335,7 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionLine line = new RenderinstructionLine(qName, level);
+      RenderinstructionLine line = new RenderinstructionLine(level);
       line.parse(displayModel, rootElement);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);

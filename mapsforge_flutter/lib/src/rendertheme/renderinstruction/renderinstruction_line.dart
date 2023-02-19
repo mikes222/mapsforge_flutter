@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
+import '../../graphics/display.dart';
 import '../nodeproperties.dart';
 import '../rendercontext.dart';
 import '../wayproperties.dart';
@@ -15,12 +16,18 @@ import '../wayproperties.dart';
 class RenderinstructionLine extends RenderInstruction {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
-  final ShapePolyline base = ShapePolyline.base();
+  late final ShapePolyline base;
 
-  final Map<int, ShapePolyline> _shapeScaled = {};
+  RenderinstructionLine(int level, [ShapePolyline? base]) {
+    this.base = base ?? ShapePolyline.base()
+      ..level = level;
+  }
 
-  RenderinstructionLine(String elementName, int level) {
-    base.level = level;
+  @override
+  RenderinstructionLine? prepareScale(int zoomLevel) {
+    ShapePolyline newShape = ShapePolyline.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionLine(base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -90,13 +97,6 @@ class RenderinstructionLine extends RenderInstruction {
     return dashIntervals;
   }
 
-  ShapePolyline _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapePolyline result = ShapePolyline.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(
       final RenderContext renderContext, NodeProperties nodeProperties) {
@@ -110,9 +110,7 @@ class RenderinstructionLine extends RenderInstruction {
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 
-    ShapePolyline shape =
-        _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
     renderContext.addToCurrentDrawingLayer(
-        shape.level, WayRenderInfo<ShapePolyline>(wayProperties, shape));
+        base.level, WayRenderInfo<ShapePolyline>(wayProperties, base));
   }
 }

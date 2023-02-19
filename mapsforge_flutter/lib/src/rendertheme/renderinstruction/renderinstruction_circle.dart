@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/shape_circle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
+import '../../graphics/display.dart';
 import '../nodeproperties.dart';
 import '../noderenderinfo.dart';
 import '../rendercontext.dart';
@@ -13,12 +14,18 @@ import 'renderinstruction.dart';
  * Represents a round area on the map.
  */
 class RenderinstructionCircle extends RenderInstruction {
-  final ShapeCircle base = ShapeCircle.base();
+  late final ShapeCircle base;
 
-  final Map<int, ShapeCircle> _shapeScaled = {};
+  RenderinstructionCircle(int level, [ShapeCircle? base]) {
+    this.base = base ?? ShapeCircle.base()
+      ..level = level;
+  }
 
-  RenderinstructionCircle(int level) {
-    base.level = level;
+  @override
+  RenderinstructionCircle? prepareScale(int zoomLevel) {
+    ShapeCircle newShape = ShapeCircle.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionCircle(base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -49,19 +56,10 @@ class RenderinstructionCircle extends RenderInstruction {
         rootElement.name.toString(), RenderInstruction.RADIUS, base.radius);
   }
 
-  ShapeCircle _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapeCircle result = ShapeCircle.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(final RenderContext renderContext, NodeProperties container) {
-    ShapeCircle shapeSymbol =
-        _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
     renderContext.addToCurrentDrawingLayer(
-        shapeSymbol.level, NodeRenderInfo<ShapeCircle>(container, shapeSymbol));
+        base.level, NodeRenderInfo<ShapeCircle>(container, base));
     return;
   }
 

@@ -21,8 +21,6 @@ abstract class MarkerCallback {
   void renderPathText(String caption, LineString lineString, Mappoint origin,
       MapPaint stroke, MapTextPaint textPaint, double maxTextWidth);
 
-  void renderRect(MapRect rect, MapPaint paint);
-
   void renderCircle(
       double latitude, double longitude, double radius, MapPaint paint);
 

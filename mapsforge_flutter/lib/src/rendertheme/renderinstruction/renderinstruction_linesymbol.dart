@@ -1,15 +1,10 @@
-import 'dart:math';
-
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/position.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../../renderer/rendererutils.dart';
 import '../nodeproperties.dart';
 import '../rendercontext.dart';
 import '../shape/shape_linesymbol.dart';
@@ -21,12 +16,18 @@ class RenderinstructionLinesymbol extends RenderInstruction {
   static final double REPEAT_GAP_DEFAULT = 200;
   static final double REPEAT_START_DEFAULT = 30;
 
-  final ShapeLinesymbol base = ShapeLinesymbol.base();
+  late final ShapeLinesymbol base;
 
-  final Map<int, ShapeLinesymbol> _shapeScaled = {};
+  RenderinstructionLinesymbol(int level, [ShapeLinesymbol? base]) {
+    this.base = base ?? ShapeLinesymbol.base()
+      ..level = level;
+  }
 
-  RenderinstructionLinesymbol(int level) {
-    base.level = level;
+  @override
+  RenderinstructionLinesymbol? prepareScale(int zoomLevel) {
+    ShapeLinesymbol newShape = ShapeLinesymbol.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionLinesymbol(base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -86,13 +87,6 @@ class RenderinstructionLinesymbol extends RenderInstruction {
     });
   }
 
-  ShapeLinesymbol _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapeLinesymbol result = ShapeLinesymbol.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(
       final RenderContext renderContext, NodeProperties nodeProperties) {
@@ -103,18 +97,11 @@ class RenderinstructionLinesymbol extends RenderInstruction {
   @override
   void renderWay(
       final RenderContext renderContext, WayProperties wayProperties) {
-    if (Display.NEVER == base.display) {
-      return;
-    }
-
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 
-    ShapeLinesymbol shape =
-        _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
-
     //renderContext.labels.add(WayRenderInfo(wayProperties, shape));
     renderContext.addToClashDrawingLayer(
-        shape.level, WayRenderInfo(wayProperties, shape));
+        base.level, WayRenderInfo(wayProperties, base));
   }
 }

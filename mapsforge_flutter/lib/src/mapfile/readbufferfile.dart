@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
-import 'package:queue/queue.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
+import 'package:queue/queue.dart';
 
 /// Reads the mapfile from a physical file
 class ReadbufferFile implements ReadbufferSource {

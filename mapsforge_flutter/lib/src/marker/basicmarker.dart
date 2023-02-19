@@ -21,15 +21,16 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
     T? item,
     MarkerCaption? markerCaption,
     this.alignment = Alignment.center,
-  })  : assert(minZoomLevel >= 0),
+  })
+      : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
         super(
-            display: display,
-            minZoomLevel: minZoomLevel,
-            maxZoomLevel: maxZoomLevel,
-            item: item,
-            markerCaption: markerCaption);
+          display: display,
+          minZoomLevel: minZoomLevel,
+          maxZoomLevel: maxZoomLevel,
+          item: item,
+          markerCaption: markerCaption);
 
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
@@ -51,6 +52,10 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
 
   @override
   double get longitude => latLong.longitude;
+
+  void setLatLong(ILatLong latLong) {
+    this.latLong = latLong;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,14 +71,15 @@ abstract class BasicMarker<T> extends Marker<T> {
     int maxZoomLevel = 65535,
     T? item,
     MarkerCaption? markerCaption,
-  })  : assert(minZoomLevel >= 0),
+  })
+      : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
         super(
-            display: display,
-            minZoomLevel: minZoomLevel,
-            maxZoomLevel: maxZoomLevel,
-            item: item) {
+          display: display,
+          minZoomLevel: minZoomLevel,
+          maxZoomLevel: maxZoomLevel,
+          item: item) {
     setMarkerCaption(markerCaption);
   }
 
@@ -139,7 +145,8 @@ class MarkerCaption with TextMixin, PaintMixin {
     this.minZoomLevel = 0,
     this.maxZoomLevel = 65535,
     required DisplayModel displayModel,
-  })  : assert(strokeWidth >= 0),
+  })
+      : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
         assert(minZoomLevel <= maxZoomLevel) /*assert(text.length > 0)*/ {
     maxTextWidth = displayModel.getMaxTextWidth();
@@ -166,7 +173,7 @@ class MarkerCaption with TextMixin, PaintMixin {
     prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
     Mappoint mappoint = markerCallback.mapViewPosition.projection!
         .pixelRelativeToLeftUpper(
-            latLong!, markerCallback.mapViewPosition.leftUpper!);
+        latLong!, markerCallback.mapViewPosition.leftUpper!);
     markerCallback.flutterCanvas.drawText(
         text,
         (mappoint.x + captionOffsetX),

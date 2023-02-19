@@ -17,14 +17,20 @@ import '../xml/rulebuilder.dart';
 /// The [RenderinstructionSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementations.
 ///
 class RenderinstructionSymbol extends RenderInstruction {
-  final ShapeSymbol base = ShapeSymbol.base();
-
-  final Map<int, ShapeSymbol> _shapeScaled = {};
+  late final ShapeSymbol base;
 
   final SymbolFinder symbolFinder;
 
-  RenderinstructionSymbol(this.symbolFinder, int level) {
-    base.level = level;
+  RenderinstructionSymbol(this.symbolFinder, int level, [ShapeSymbol? base]) {
+    this.base = base ?? ShapeSymbol.base()
+      ..level = level;
+  }
+
+  @override
+  RenderinstructionSymbol? prepareScale(int zoomLevel) {
+    ShapeSymbol newShape = ShapeSymbol.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionSymbol(symbolFinder, base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -61,45 +67,24 @@ class RenderinstructionSymbol extends RenderInstruction {
     });
   }
 
-  ShapeSymbol _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapeSymbol result = ShapeSymbol.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(
       final RenderContext renderContext, NodeProperties nodeProperties) {
-    ShapeSymbol shape = _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
+    if (base.id != null)
+      symbolFinder.add(base.id!, renderContext.job.tile.zoomLevel, base);
 
-    if (Display.NEVER == shape.display) {
-      //_log.info("display is never for $textKey");
-      return;
-    }
-
-    if (shape.id != null)
-      symbolFinder.add(shape.id!, renderContext.job.tile.zoomLevel, shape);
-
-    renderContext.labels.add(NodeRenderInfo(nodeProperties, shape));
+    renderContext.labels.add(NodeRenderInfo(nodeProperties, base));
   }
 
   @override
   void renderWay(
       final RenderContext renderContext, WayProperties wayProperties) {
-    ShapeSymbol shape = _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
-
-    if (Display.NEVER == shape.display) {
-      //_log.info("display is never for $textKey");
-      return;
-    }
-
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 
-    if (shape.id != null)
-      symbolFinder.add(shape.id!, renderContext.job.tile.zoomLevel, shape);
+    if (base.id != null)
+      symbolFinder.add(base.id!, renderContext.job.tile.zoomLevel, base);
 
-    renderContext.labels.add(WayRenderInfo(wayProperties, shape));
+    renderContext.labels.add(WayRenderInfo(wayProperties, base));
   }
 }

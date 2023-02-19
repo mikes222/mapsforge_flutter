@@ -170,8 +170,6 @@ See [doc/usage.md](doc/usage.md)
 
 See [doc/structure.md](doc/structure.md)
 
-See [doc/mapdatastore.md](doc/mapdatastore.md)
-
 See [doc/combine_osm_files.md](doc/combine_osm_files.md)
 
 See [doc/build_indoor_map_files.md](doc/build_indoor_map_files.md)

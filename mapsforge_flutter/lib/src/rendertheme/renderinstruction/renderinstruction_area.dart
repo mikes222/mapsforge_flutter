@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
+import '../../graphics/display.dart';
 import '../nodeproperties.dart';
 import '../rendercontext.dart';
 import '../shape/shape_area.dart';
@@ -13,16 +14,20 @@ import 'renderinstruction.dart';
  * Represents a closed polygon on the map.
  */
 class RenderinstructionArea extends RenderInstruction {
-  final ShapeArea base = ShapeArea.base();
+  late final ShapeArea base;
 
-  final Map<int, ShapeArea> _shapeScaled = {};
-
-  RenderinstructionArea(String elementName, int level) : super() {
+  RenderinstructionArea(int level, [ShapeArea? base]) : super() {
     // do not scale bitmaps in areas. They look ugly
-    base.setBitmapMinZoomLevel(65535);
-    base.level = level;
-    // setFillColor(Colors.transparent);
-    // setStrokeColor(Colors.transparent);
+    this.base = base ?? ShapeArea.base()
+      ..setBitmapMinZoomLevel(65535)
+      ..level = level;
+  }
+
+  @override
+  RenderinstructionArea? prepareScale(int zoomLevel) {
+    ShapeArea newShape = ShapeArea.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionArea(base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -62,13 +67,6 @@ class RenderinstructionArea extends RenderInstruction {
     });
   }
 
-  ShapeArea _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapeArea result = ShapeArea.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(
       final RenderContext renderContext, NodeProperties nodeProperties) {
@@ -81,8 +79,7 @@ class RenderinstructionArea extends RenderInstruction {
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 
-    ShapeArea shape = _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
     renderContext.addToCurrentDrawingLayer(
-        shape.level, WayRenderInfo<ShapeArea>(wayProperties, shape));
+        base.level, WayRenderInfo<ShapeArea>(wayProperties, base));
   }
 }

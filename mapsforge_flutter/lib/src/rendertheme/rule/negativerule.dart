@@ -1,11 +1,12 @@
-import '../../model/tag.dart';
+import 'package:mapsforge_flutter/src/indoor/indoornotationmatcher.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
+import '../../model/tag.dart';
+import '../renderinstruction/renderinstruction.dart';
 import 'attributematcher.dart';
 import 'closed.dart';
 import 'element.dart';
 import 'rule.dart';
-import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
-import 'package:mapsforge_flutter/src/indoor/indoornotationmatcher.dart';
 
 class NegativeRule extends Rule {
   final AttributeMatcher attributeMatcher;
@@ -14,13 +15,15 @@ class NegativeRule extends Rule {
       : super(ruleBuilder);
 
   /// Creates a ruleset which is a subset of the current rules
-  NegativeRule.create(NegativeRule oldRule, List<Rule> subs)
+  NegativeRule.create(NegativeRule oldRule, List<Rule> subs,
+      List<RenderInstruction> renderInstructions)
       : attributeMatcher = oldRule.attributeMatcher,
-        super.create(oldRule, subs);
+        super.create(oldRule, subs, renderInstructions);
 
   @override
-  NegativeRule createRule(List<Rule> subs) {
-    NegativeRule result = NegativeRule.create(this, subs);
+  NegativeRule createRule(
+      List<Rule> subs, List<RenderInstruction> renderInstructions) {
+    NegativeRule result = NegativeRule.create(this, subs, renderInstructions);
     return result;
   }
 

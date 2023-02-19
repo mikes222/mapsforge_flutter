@@ -10,6 +10,8 @@ class TextSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
   int _textMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
 
+  double _maxFontSize = 50;
+
   double _fontSize = 10;
 
   MapFontFamily _fontFamily = MapFontFamily.DEFAULT;
@@ -32,8 +34,8 @@ class TextSrcMixin {
     if (zoomLevel >= _textMinZoomLevel) {
       int zoomLevelDiff = zoomLevel - _textMinZoomLevel + 1;
       double scaleFactor =
-          pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
-      _fontSize = _fontSize * scaleFactor;
+      pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      _fontSize = min(_fontSize * scaleFactor, _maxFontSize);
     }
   }
 

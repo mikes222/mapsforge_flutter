@@ -73,7 +73,6 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
         bitmapSrc: bitmapSrc!,
         bitmapWidth: getBitmapWidth(),
         bitmapHeight: getBitmapHeight());
-    print("bitmap is $bitmap");
     if (bitmap != null) {
       double centerX = bitmap!.getWidth() / 2;
       double centerY = bitmap!.getHeight() / 2;

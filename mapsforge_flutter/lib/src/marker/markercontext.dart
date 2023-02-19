@@ -79,8 +79,4 @@ class MarkerContext implements MarkerCallback {
     //     FlutterPaint(Paint()..color = Colors.red));
   }
 
-  @override
-  void renderRect(MapRect rect, MapPaint paint) {
-    flutterCanvas.drawRect(rect, paint);
-  }
 }

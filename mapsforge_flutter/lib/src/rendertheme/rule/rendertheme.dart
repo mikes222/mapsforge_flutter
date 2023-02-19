@@ -64,6 +64,11 @@ class RenderTheme {
     for (Rule r in this.rulesList) {
       r.dispose();
     }
+    for (int zoomLevel in zoomLevelRulesList.keys) {
+      for (Rule r in zoomLevelRulesList[zoomLevel]!) {
+        r.dispose();
+      }
+    }
   }
 
   /**

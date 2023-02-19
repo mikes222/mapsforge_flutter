@@ -19,6 +19,10 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
 
   ResourceBitmap? bitmap;
 
+  MapRect? mapRect;
+
+  int lastZoomLevel = -1;
+
   RectMarker({
     display = Display.ALWAYS,
     int minZoomLevel = 0,
@@ -107,27 +111,29 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
   void renderBitmap(MarkerCallback markerCallback) {
     // prepareScalePaintMixin(zoomLevel);
     // prepareScaleBitmapSrcMixin(zoomLevel);
-    MapRect mapRect = GraphicFactory().createRect(
-        markerCallback.mapViewPosition.projection!
-                .longitudeToPixelX(minLatLon.longitude) -
-            markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.projection!
-                .latitudeToPixelY(maxLatLon.latitude) -
-            markerCallback.mapViewPosition.leftUpper!.y,
-        markerCallback.mapViewPosition.projection!
-                .longitudeToPixelX(maxLatLon.longitude) -
-            markerCallback.mapViewPosition.leftUpper!.x,
-        markerCallback.mapViewPosition.projection!
-                .latitudeToPixelY(minLatLon.latitude) -
-            markerCallback.mapViewPosition.leftUpper!.y);
+    if (mapRect == null ||
+        lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+      mapRect = GraphicFactory().createRect(
+          markerCallback.mapViewPosition.projection!
+              .longitudeToPixelX(minLatLon.longitude),
+          markerCallback.mapViewPosition.projection!
+              .latitudeToPixelY(maxLatLon.latitude),
+          markerCallback.mapViewPosition.projection!
+              .longitudeToPixelX(maxLatLon.longitude),
+          markerCallback.mapViewPosition.projection!
+              .latitudeToPixelY(minLatLon.latitude));
+      lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
+    }
 
-//    markerCallback.renderRect(mapRect, stroke);
+    MapRect mr = mapRect!.offset(-markerCallback.mapViewPosition.leftUpper!.x,
+        -markerCallback.mapViewPosition.leftUpper!.y);
 
     if (!isFillTransparent())
-      markerCallback.renderRect(
-          mapRect, getFillPaint(markerCallback.mapViewPosition.zoomLevel));
-    markerCallback.renderRect(
-        mapRect, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+      markerCallback.flutterCanvas
+          .drawRect(mr, getFillPaint(markerCallback.mapViewPosition.zoomLevel));
+    if (!isStrokeTransparent())
+      markerCallback.flutterCanvas.drawRect(
+          mr, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
   }
 
   @override

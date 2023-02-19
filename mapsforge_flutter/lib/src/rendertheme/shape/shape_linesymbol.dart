@@ -27,6 +27,8 @@ class ShapeLinesymbol extends ShapeSymbol {
 
   bool alignCenter = false;
 
+  int _lineSymbolMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
+
   ShapeLinesymbol.base() : super.base();
 
   ShapeLinesymbol.scale(ShapeLinesymbol base, int zoomLevel)
@@ -41,16 +43,18 @@ class ShapeLinesymbol extends ShapeSymbol {
     scale = base.scale;
     position = base.position;
     alignCenter = base.alignCenter;
+    _lineSymbolMinZoomLevel = base._lineSymbolMinZoomLevel;
 
     if (this.scale == Scale.NONE) return;
 
-//     if (zoomLevel >= ) {
-//       int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
-//       double scaleFactor =
-//           pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
-// //      this._dyScaled[zoomLevel] = this._dy * scaleFactor;
-// //      this._repeatGapScaled[zoomLevel] = _repeatGap * scaleFactor;
-//     }
+    if (zoomLevel >= _lineSymbolMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - _lineSymbolMinZoomLevel + 1;
+      double scaleFactor =
+          pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      _repeatGap = _repeatGap * scaleFactor;
+      repeatStart = repeatStart * scaleFactor;
+      dy = dy * scaleFactor;
+    }
   }
 
   void setRepeatGap(double repeatGap) {
@@ -62,6 +66,12 @@ class ShapeLinesymbol extends ShapeSymbol {
   }
 
   double get repeatGap => _repeatGap;
+
+  int get lineSymbolMinZoomLevel => _lineSymbolMinZoomLevel;
+
+  void setLineSymbolMinZoomLevel(int lineSymbolMinZoomLevel) {
+    this._lineSymbolMinZoomLevel = lineSymbolMinZoomLevel;
+  }
 
   @override
   String getShapeType() {

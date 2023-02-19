@@ -1,8 +1,6 @@
-import 'package:mapsforge_flutter/core.dart';
-
 import '../nodeproperties.dart';
-import '../wayproperties.dart';
 import '../rendercontext.dart';
+import '../wayproperties.dart';
 
 /// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
 /// instructions from an xml file. It can be seen like a CSS-file for html.
@@ -67,6 +65,10 @@ abstract class RenderInstruction {
     }
     return Scale.STROKE;
   }
+
+  /// prepares the renderinstruction for the given zoomLevel. Returns the
+  /// new RenderInstruction or NULL if it would never draw anything
+  RenderInstruction? prepareScale(int zoomLevel);
 }
 
 /////////////////////////////////////////////////////////////////////////////

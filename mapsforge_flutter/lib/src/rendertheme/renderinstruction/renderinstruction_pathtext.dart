@@ -1,14 +1,10 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 import '../../graphics/mapfontfamily.dart';
-import '../../model/linesegment.dart';
-import '../../model/linestring.dart';
-import '../../renderer/rendererutils.dart';
 import '../nodeproperties.dart';
 import '../rendercontext.dart';
 import '../shape/shape_pathtext.dart';
@@ -24,16 +20,22 @@ class RenderinstructionPathtext extends RenderInstruction {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
 
-  final ShapePathtext base = ShapePathtext.base();
+  late final ShapePathtext base;
 
-  final Map<int, ShapePathtext> _shapeScaled = {};
-
-  RenderinstructionPathtext(int level) {
+  RenderinstructionPathtext(int level, [ShapePathtext? base]) {
     //initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     //initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    base.rotate = true;
-    base.repeat = true;
-    base.level = level;
+    this.base = base ?? ShapePathtext.base()
+      ..rotate = true
+      ..repeat = true
+      ..level = level;
+  }
+
+  @override
+  RenderinstructionPathtext? prepareScale(int zoomLevel) {
+    ShapePathtext newShape = ShapePathtext.scale(base, zoomLevel);
+    if (newShape.display == Display.NEVER) return null;
+    return RenderinstructionPathtext(base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -94,13 +96,6 @@ class RenderinstructionPathtext extends RenderInstruction {
         rootElement.name.toString(), RenderInstruction.K, base.textKey);
   }
 
-  ShapePathtext _getShapeByZoomLevel(int zoomLevel) {
-    if (_shapeScaled.containsKey(zoomLevel)) return _shapeScaled[zoomLevel]!;
-    ShapePathtext result = ShapePathtext.scale(base, zoomLevel);
-    _shapeScaled[zoomLevel] = result;
-    return result;
-  }
-
   @override
   void renderNode(final RenderContext renderContext, NodeProperties container) {
     // do nothing
@@ -110,20 +105,13 @@ class RenderinstructionPathtext extends RenderInstruction {
   @override
   void renderWay(
       final RenderContext renderContext, WayProperties wayProperties) {
-    ShapePathtext shape =
-        _getShapeByZoomLevel(renderContext.job.tile.zoomLevel);
-
-    if (Display.NEVER == shape.display) {
-      return;
-    }
-
-    String? caption = shape.textKey!.getValue(wayProperties.getTags());
+    String? caption = base.textKey!.getValue(wayProperties.getTags());
     if (caption == null) {
       return;
     }
 
     renderContext.addToClashDrawingLayer(
-        shape.level, WayRenderInfo(wayProperties, shape)..caption = caption);
+        base.level, WayRenderInfo(wayProperties, base)..caption = caption);
     return;
   }
 }
