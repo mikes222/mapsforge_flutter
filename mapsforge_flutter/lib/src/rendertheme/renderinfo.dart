@@ -60,9 +60,13 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
     if (shapePaint != null) return;
     switch (shape.getShapeType()) {
       case "Area":
-        // area
-        shapePaint = ShapePaintArea(shape as ShapeArea) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
+        if (shape.shapePaint != null) {
+          shapePaint = shape.shapePaint! as ShapePaint<T>?;
+        } else {
+          shapePaint = ShapePaintArea(shape as ShapeArea) as ShapePaint<T>;
+          await shapePaint!.init(symbolCache);
+          shape.shapePaint = shapePaint;
+        }
         break;
       case "Caption":
 
@@ -73,15 +77,24 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
             as ShapePaint<T>;
         break;
       case "Circle":
-        shapePaint = ShapePaintCircle(shape as ShapeCircle) as ShapePaint<T>;
+        if (shape.shapePaint != null) {
+          shapePaint = shape.shapePaint! as ShapePaint<T>?;
+        } else {
+          shapePaint = ShapePaintCircle(shape as ShapeCircle) as ShapePaint<T>;
+          shape.shapePaint = shapePaint;
+        }
         break;
       // case "Hillshading":
       //   shapePaint = ShapePaintHillshading(shape as ShapeHillshading) as ShapePaint<T>;
       //   break;
       case "Linesymbol":
-        shapePaint =
-            ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
+        if (shape.shapePaint != null) {
+          shapePaint = shape.shapePaint! as ShapePaint<T>?;
+        } else {
+          shapePaint =
+              ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
+          await shapePaint!.init(symbolCache);
+        }
         break;
       case "Pathtext":
         shapePaint =
@@ -90,13 +103,23 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         break;
       case "Polyline":
         // same as area but for open ways
-        shapePaint =
-            ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
+        if (shape.shapePaint != null) {
+          shapePaint = shape.shapePaint! as ShapePaint<T>?;
+        } else {
+          shapePaint =
+              ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
+          await shapePaint!.init(symbolCache);
+          shape.shapePaint = shapePaint;
+        }
         break;
       case "Symbol":
-        shapePaint = ShapePaintSymbol(shape as ShapeSymbol) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
+        if (shape.shapePaint != null) {
+          shapePaint = shape.shapePaint! as ShapePaint<T>?;
+        } else {
+          shapePaint = ShapePaintSymbol(shape as ShapeSymbol) as ShapePaint<T>;
+          await shapePaint!.init(symbolCache);
+          shape.shapePaint = shapePaint;
+        }
         break;
       default:
         print(

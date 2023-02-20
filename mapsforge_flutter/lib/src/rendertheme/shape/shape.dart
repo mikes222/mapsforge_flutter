@@ -1,5 +1,6 @@
 import '../../graphics/display.dart';
 import '../../model/maprectangle.dart';
+import '../../paintelements/shape_paint.dart';
 
 /// These subclasses defines the zoomlevel-dependent properties of the shapes. It will
 /// be created by the renderinstructions and used to define how to draw a shape.
@@ -11,6 +12,10 @@ class Shape implements Comparable<Shape> {
   /// The boundary of this object in pixels relative to the center of the
   /// corresponding node or way
   MapRectangle? boundary = null;
+
+  /// A cache for paint objects. Note that not every painter can be reused. Painters which
+  /// depends on the given way/node cannot be cached.
+  ShapePaint? shapePaint;
 
   Shape.base();
 

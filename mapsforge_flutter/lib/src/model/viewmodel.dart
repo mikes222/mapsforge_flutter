@@ -128,7 +128,6 @@ class ViewModel {
   }
 
   void zoomInAround(double latitude, double longitude) {
-    print("zoominAround");
     if (_mapViewPosition == null) return;
     if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
     MapViewPosition newPosition =
