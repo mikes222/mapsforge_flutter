@@ -23,7 +23,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 12,
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/Chemnitz Uni.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/Chemnitz Uni.map",
     fileName: "Chemnitz Uni.map",
     displayedName: "Chemnitz - University (Indoor)",
     initialPositionLat: 50.81348,
@@ -33,7 +33,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {1: 'OG', 0: 'EG', -1: 'UG'},
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/Louvre.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/Louvre.map",
     fileName: "Louvre.map",
     displayedName: "Paris - Louvre (Indoor)",
     initialPositionLat: 48.86085,
@@ -43,7 +43,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   ),
   const MapFileData(
     url:
-        "https://www.dailyflightbuddy.com/mapsforge_examples/ile-de-france.map",
+        "https://dailyflightbuddy.com/mapsforge_examples/ile-de-france.map",
     fileName: "ile-de-france.map",
     displayedName: "ile-de-france",
     initialPositionLat: 48.86085,
@@ -51,7 +51,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   ),
   // const MapFileData(
   //   url:
-  //       "https://www.dailyflightbuddy.com/mapsforge_examples/Meadowhall Shopping Center.map",
+  //       "https://dailyflightbuddy.com/mapsforge_examples/Meadowhall Shopping Center.map",
   //   fileName: "Meadowhall Shopping Center.map",
   //   displayedName: "Meadowhall Shopping Center (Indoor)",
   //   initialPositionLat: 53.41388,
@@ -61,7 +61,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   // ),
   // const MapFileData(
   //   url:
-  //       "https://www.dailyflightbuddy.com/mapsforge_examples/Northglenn High School.map",
+  //       "https://dailyflightbuddy.com/mapsforge_examples/Northglenn High School.map",
   //   fileName: "Northglenn High School.map",
   //   displayedName: "Northglenn High School (Indoor)",
   //   initialPositionLat: 39.88039,
@@ -70,7 +70,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   //   indoorLevels: {1: 'OG', 0: 'EG'},
   // ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/sachsen.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/sachsen.map",
     fileName: "sachsen.map",
     displayedName: "Offline Saxony",
     theme: "assets/render_themes/defaultrender.xml",
@@ -79,7 +79,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 12,
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/austria.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/austria.map",
     fileName: "austria.map",
     displayedName: "Offline Austria",
     theme: "assets/render_themes/defaultrender.xml",
@@ -88,7 +88,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 12,
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/austria.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/austria.map",
     fileName: "austria.map",
     displayedName: "Offline Austria Dark mode",
     theme: "assets/render_themes/darkrender.xml",
@@ -97,7 +97,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 12,
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/monaco.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/monaco.map",
     fileName: "monaco.map",
     displayedName: "Offline Monaco (Supports web)",
     theme: "assets/render_themes/defaultrender.xml",
@@ -106,7 +106,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 15,
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/sicilia_oam.zip",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/sicilia_oam.zip",
     fileName:
         "sicilia_oam.map", // will automatically unzipped if the extension of the destination is not .zip
     displayedName: "Contour Sizilia",
@@ -117,7 +117,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 15,
   ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/world.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/world.map",
     fileName: "world.map",
     displayedName: "Worldmap",
     theme: "assets/render_themes/defaultrender.xml",
@@ -126,7 +126,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialZoomLevel: 5,
   ),
   // const MapFileData(
-  //   url: "https://www.dailyflightbuddy.com/mapsforge_examples/world.map",
+  //   url: "https://dailyflightbuddy.com/mapsforge_examples/world.map",
   //   fileName: "world.map",
   //   displayedName: "Worldmap Dark mode",
   //   theme: "assets/render_themes/darkrender.xml",
@@ -135,7 +135,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   //   initialZoomLevel: 5,
   // ),
   const MapFileData(
-    url: "https://www.dailyflightbuddy.com/mapsforge_examples/berlin.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/berlin.map",
     fileName: "berlin.map",
     displayedName: "Berlin with original mapsforge theme",
     theme: "assets/render_themes/mapsforge_default.xml",
