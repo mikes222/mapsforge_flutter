@@ -1,7 +1,10 @@
 import 'dart:math';
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/core.dart';
 
+import '../../graphics/display.dart';
+import '../../graphics/position.dart';
 import '../../renderer/paintmixin.dart';
 import '../renderinstruction/renderinstruction.dart';
 import 'shape_symbol.dart';
@@ -17,7 +20,7 @@ class ShapeLinesymbol extends ShapeSymbol {
 
   bool repeat = true;
 
-  late double _repeatGap;
+  late double repeatGap;
 
   late double repeatStart;
 
@@ -27,7 +30,7 @@ class ShapeLinesymbol extends ShapeSymbol {
 
   bool alignCenter = false;
 
-  int _lineSymbolMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
+  int lineSymbolMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
 
   ShapeLinesymbol.base() : super.base();
 
@@ -37,40 +40,36 @@ class ShapeLinesymbol extends ShapeSymbol {
     //bitmapSrcMixinScale(base, zoomLevel);
     dy = base.dy;
     repeat = base.repeat;
-    _repeatGap = base.repeatGap;
+    repeatGap = base.repeatGap;
     repeatStart = base.repeatStart;
     rotate = base.rotate;
     scale = base.scale;
     position = base.position;
     alignCenter = base.alignCenter;
-    _lineSymbolMinZoomLevel = base._lineSymbolMinZoomLevel;
+    lineSymbolMinZoomLevel = base.lineSymbolMinZoomLevel;
 
     if (this.scale == Scale.NONE) return;
 
-    if (zoomLevel >= _lineSymbolMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - _lineSymbolMinZoomLevel + 1;
+    if (zoomLevel >= lineSymbolMinZoomLevel) {
+      int zoomLevelDiff = zoomLevel - lineSymbolMinZoomLevel + 1;
       double scaleFactor =
           pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
-      _repeatGap = _repeatGap * scaleFactor;
+      repeatGap = repeatGap * scaleFactor;
       repeatStart = repeatStart * scaleFactor;
       dy = dy * scaleFactor;
     }
   }
 
   void setRepeatGap(double repeatGap) {
-    _repeatGap = repeatGap;
+    this.repeatGap = repeatGap;
   }
 
   void setDy(double dy) {
     this.dy = dy;
   }
 
-  double get repeatGap => _repeatGap;
-
-  int get lineSymbolMinZoomLevel => _lineSymbolMinZoomLevel;
-
   void setLineSymbolMinZoomLevel(int lineSymbolMinZoomLevel) {
-    this._lineSymbolMinZoomLevel = lineSymbolMinZoomLevel;
+    this.lineSymbolMinZoomLevel = lineSymbolMinZoomLevel;
   }
 
   @override

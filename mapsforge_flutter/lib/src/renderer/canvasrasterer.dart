@@ -7,6 +7,7 @@ import '../graphics/graphicutils.dart';
 import '../graphics/mapcanvas.dart';
 import '../rendertheme/rendercontext.dart';
 import '../rendertheme/renderinfo.dart';
+import '../utils/layerutil.dart';
 
 class CanvasRasterer {
   final MapCanvas canvas;
@@ -20,6 +21,8 @@ class CanvasRasterer {
 
   void drawWays(RenderContext renderContext) {
     //print("drawing now ${renderContext.layerWays.length} layers");
+    Mappoint leftUpper =
+        renderContext.projection.getLeftUpper(renderContext.job.tile);
     for (LayerPaintContainer layerPaintContainer
         in renderContext.drawingLayers) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");
@@ -27,23 +30,24 @@ class CanvasRasterer {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
         for (RenderInfo element in wayList) {
           //print("         drawing now ${element}");
-          element.render(
-              this.canvas, renderContext.projection, renderContext.job.tile);
+          element.render(this.canvas, renderContext.projection, leftUpper);
         }
       }
     }
     for (List<RenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
+      List<RenderInfo> renderInfos =
+          LayerUtil.collisionFreeOrdered(wayList, renderContext.projection);
       //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
-      for (RenderInfo element in wayList) {
+      for (RenderInfo element in renderInfos) {
         //print("         drawing now ${element}");
-        element.render(
-            this.canvas, renderContext.projection, renderContext.job.tile);
+        element.render(this.canvas, renderContext.projection, leftUpper);
       }
     }
   }
 
   void drawMapElements(
       Set<RenderInfo> elements, PixelProjection projection, Tile tile) {
+    Mappoint leftUpper = projection.getLeftUpper(tile);
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -53,7 +57,7 @@ class CanvasRasterer {
     for (RenderInfo element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
-      element.render(this.canvas, projection, tile);
+      element.render(this.canvas, projection, leftUpper);
     }
   }
 

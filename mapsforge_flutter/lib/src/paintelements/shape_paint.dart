@@ -10,9 +10,9 @@ import '../graphics/join.dart';
 import '../graphics/maptextpaint.dart';
 import '../graphics/resourcebitmap.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/wayproperties.dart';
 import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape.dart';
+import '../rendertheme/wayproperties.dart';
 import '../rendertheme/wayrenderinfo.dart';
 
 /// A container which holds a shape and is able to draw the shape to the canvas (=Tile)
@@ -21,11 +21,15 @@ abstract class ShapePaint<T extends Shape> {
 
   const ShapePaint(this.shape);
 
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo);
+  void renderNode(
+      MapCanvas canvas,
+      NodeProperties nodeProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      NodeRenderInfo renderInfo);
 
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo);
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo);
 
   Future<void> init(SymbolCache symbolCache);
 

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodewayproperties.dart';
 
 import '../../core.dart';
@@ -8,11 +9,18 @@ import '../../maps.dart';
 import '../model/linesegment.dart';
 import '../model/linestring.dart';
 import '../model/tag.dart';
-import '../renderer/rendererutils.dart';
-import '../utils/reducehelper.dart';
 import '../renderer/geometryutils.dart';
 import '../renderer/minmaxmappoint.dart';
+import '../renderer/rendererutils.dart';
+import '../utils/reducehelper.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 /// Properties for one Way as read from the datastore. Note that the properties are
 /// dependent on the zoomLevel and pixelsize of the device.
 class WayProperties implements NodeWayProperties {
@@ -24,8 +32,10 @@ class WayProperties implements NodeWayProperties {
 
   final bool isClosedWay;
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   Mappoint? center;
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   List<List<Mappoint>>? coordinatesAbsolute;
 
   WayProperties(this.way)
@@ -66,23 +76,21 @@ class WayProperties implements NodeWayProperties {
     return this.center!;
   }
 
-  Mappoint getCenterRelativeToTile(
-      PixelProjection projection, Tile tile, double dy) {
-    Mappoint tileOrigin = projection.getLeftUpper(tile);
+  Mappoint getCenterRelativeToLeftUpper(
+      PixelProjection projection, Mappoint leftUpper, double dy) {
     Mappoint center = getCenterAbsolute(projection);
-    return center.offset(-tileOrigin.x, -tileOrigin.y + dy);
+    return center.offset(-leftUpper.x, -leftUpper.y + dy);
   }
 
-  List<List<Mappoint>> getCoordinatesRelativeToTile(
-      PixelProjection projection, Tile tile, double dy) {
-    Mappoint tileOrigin = projection.getLeftUpper(tile);
+  List<List<Mappoint>> getCoordinatesRelativeToLeftUpper(
+      PixelProjection projection, Mappoint leftUpper, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
         getCoordinatesAbsolute(projection);
     List<List<Mappoint>> coordinatesRelativeToTile = [];
 
     coordinatesAbsolute.forEach((outerList) {
       List<Mappoint> mp1 = outerList
-          .map((inner) => inner.offset(-tileOrigin.x, -tileOrigin.y + dy))
+          .map((inner) => inner.offset(-leftUpper.x, -leftUpper.y + dy))
           .toList();
       coordinatesRelativeToTile.add(mp1);
 

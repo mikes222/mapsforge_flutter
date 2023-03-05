@@ -15,6 +15,8 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   double _verticalOffset = 0;
 
+  int level = 0;
+
   late double gap;
 
   /// The position of this caption relative to the corresponding symbol. If the symbol is not set
@@ -51,6 +53,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     symbolId = base.symbolId;
     textKey = base.textKey;
     dy = base.dy;
+    level = base.level;
 // do NOT copy symbolHolder. It is dependent on the zoomLevel
 
     if (zoomLevel >= strokeMinZoomLevel) {

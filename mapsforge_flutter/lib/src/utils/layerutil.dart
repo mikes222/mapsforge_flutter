@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/utils/timing.dart';
 
 import '../layer/job/job.dart';
 import '../layer/job/jobqueue.dart';
@@ -15,16 +16,14 @@ class LayerUtil {
   static JobSet? submitJobSet(
       ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
     //_log.info("viewModel ${viewModel.viewDimension}");
-    int time = DateTime.now().millisecondsSinceEpoch;
-    List<Tile> tiles = LayerUtil.getTiles(viewModel, mapViewPosition, time);
+    Timing timing = Timing(log: _log, active: true);
+    List<Tile> tiles = getTiles(viewModel, mapViewPosition);
     JobSet jobSet = JobSet();
     tiles.forEach((Tile tile) {
       Job job = Job(tile, false, viewModel.displayModel.tileSize);
       jobSet.add(job);
     });
-    int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 50)
-      _log.info("diff: $diff ms, ${jobSet.jobs.length} missing tiles");
+    timing.lap(50, "${jobSet.jobs.length} missing tiles");
     //_log.info("JobSets created: ${jobSet.jobs.length}");
     if (jobSet.jobs.length > 0) {
       jobQueue.processJobset(jobSet);
@@ -80,7 +79,7 @@ class LayerUtil {
   /// the user (tile in the middle should be created first
   ///
   static List<Tile> getTiles(
-      ViewModel viewModel, MapViewPosition mapViewPosition, int time) {
+      ViewModel viewModel, MapViewPosition mapViewPosition) {
     Mappoint center = mapViewPosition.getCenter();
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
@@ -94,8 +93,6 @@ class LayerUtil {
     int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
         center.y + viewModel.mapDimension.height / 2,
         mapViewPosition.projection.mapsize.toDouble()));
-    int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 50) _log.info("diff: $diff ms, tileBoundaries2");
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
     center = center.offset(-viewModel.displayModel.tileSize / 2,
         -viewModel.displayModel.tileSize / 2);
@@ -111,12 +108,8 @@ class LayerUtil {
     }
     //_log.info("$tileTop, $tileBottom, sort ${tileMap.length} items");
 
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 50) _log.info("diff: $diff ms, forfor");
     List<Tile> sortedKeys = tileMap.keys.toList(growable: false)
       ..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 50) _log.info("diff: $diff ms, sort");
     return sortedKeys;
   }
 

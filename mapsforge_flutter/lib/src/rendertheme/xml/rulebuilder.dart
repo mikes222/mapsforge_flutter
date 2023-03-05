@@ -291,10 +291,11 @@ class RuleBuilder {
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderinstructionCaption caption =
-          new RenderinstructionCaption(symbolFinder);
+          new RenderinstructionCaption(symbolFinder, level);
       caption.parse(displayModel, rootElement);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
+//        maxLevel = max(maxLevel, level);
       }
     } else if ("cat" == qName) {
       checkState(qName, XmlElementType.RENDERING_STYLE);

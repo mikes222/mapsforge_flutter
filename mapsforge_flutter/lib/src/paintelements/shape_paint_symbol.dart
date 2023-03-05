@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
 
 import '../../maps.dart';
@@ -34,11 +34,15 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {
+  void renderNode(
+      MapCanvas canvas,
+      NodeProperties nodeProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      NodeRenderInfo renderInfo) {
     if (bitmap == null) return;
     Mappoint point =
-        nodeProperties.getCoordinateRelativeToTile(projection, tile);
+        nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
     MapRectangle boundary = shape.calculateBoundary();
     //print("paint symbol boundar: $boundary");
     Matrix? matrix;
@@ -61,10 +65,15 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
   }
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
+  void renderWay(
+      MapCanvas canvas,
+      WayProperties wayProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      WayRenderInfo renderInfo) {
     if (bitmap == null) return;
-    Mappoint point = wayProperties.getCenterRelativeToTile(projection, tile, 0);
+    Mappoint point =
+        wayProperties.getCenterRelativeToLeftUpper(projection, leftUpper, 0);
     MapRectangle boundary = shape.calculateBoundary();
     Matrix? matrix;
     if (shape.theta != 0) {

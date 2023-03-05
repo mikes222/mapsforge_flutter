@@ -10,14 +10,22 @@ import '../renderer/rendererutils.dart';
 import 'shape/shape.dart';
 import 'wayproperties.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   final WayProperties wayProperties;
 
-  WayRenderInfo(this.wayProperties, T shapeSymbol) : super(shapeSymbol);
+  WayRenderInfo(this.wayProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Tile tile) {
-    shapePaint!.renderWay(canvas, wayProperties, projection, tile, this);
+  void render(
+      MapCanvas canvas, PixelProjection projection, Mappoint leftUpper) {
+    shapePaint!.renderWay(canvas, wayProperties, projection, leftUpper, this);
   }
 
   /// Returns if MapElementContainers clash with each other

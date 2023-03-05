@@ -8,14 +8,22 @@ import '../graphics/mapcanvas.dart';
 import 'nodeproperties.dart';
 import 'shape/shape.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   final NodeProperties nodeProperties;
 
-  NodeRenderInfo(this.nodeProperties, T shapeSymbol) : super(shapeSymbol);
+  NodeRenderInfo(this.nodeProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Tile tile) {
-    shapePaint!.renderNode(canvas, nodeProperties, projection, tile, this);
+  void render(
+      MapCanvas canvas, PixelProjection projection, Mappoint leftUpper) {
+    shapePaint!.renderNode(canvas, nodeProperties, projection, leftUpper, this);
   }
 
   /// Returns true if shapes clash with each other

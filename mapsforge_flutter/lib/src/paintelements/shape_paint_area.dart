@@ -50,16 +50,24 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
   }
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
-    MapPath path = calculatePath(
-        wayProperties.getCoordinatesRelativeToTile(projection, tile, shape.dy));
+  void renderWay(
+      MapCanvas canvas,
+      WayProperties wayProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      WayRenderInfo renderInfo) {
+    MapPath path = calculatePath(wayProperties
+        .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
 
     if (fill != null) canvas.drawPath(path, fill!);
     if (stroke != null) canvas.drawPath(path, stroke!);
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {}
+  void renderNode(
+      MapCanvas canvas,
+      NodeProperties nodeProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      NodeRenderInfo renderInfo) {}
 }

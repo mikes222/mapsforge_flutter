@@ -1,20 +1,21 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:queue/queue.dart';
 
+import '../../../maps.dart';
 import '../../graphics/tilebitmap.dart';
-import '../../renderer/jobrenderer.dart';
+import '../../rendertheme/renderinfo.dart';
+import '../../rendertheme/shape/shape.dart';
 import 'job.dart';
 
 ///
 /// The jobqueue receives jobs and starts the renderer for missing bitmaps.
 ///
-class JobQueue extends ChangeNotifier {
+class JobQueue {
   static final _log = new Logger('JobQueue');
 
   final DisplayModel displayModel;
@@ -28,15 +29,16 @@ class JobQueue extends ChangeNotifier {
 
   final Queue _executionQueue = Queue();
 
-  JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
-      this.tileBitmapCache1stLevel);
+  final TileBasedLabelStore labelStore;
 
-  @override
+  JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
+      this.tileBitmapCache1stLevel)
+      : labelStore = TileBasedLabelStore(1000);
+
   void dispose() {
     _executionQueue.dispose();
     _currentJobSet?.dispose();
     _currentJobSet = null;
-    super.dispose();
   }
 
   /// Let the queue process this jobset. A Jobset is a collection of jobs needed to render a whole view. It often consists of several tiles.
@@ -53,13 +55,16 @@ class JobQueue extends ChangeNotifier {
         toRemove[job] = tileBitmap;
       }
     });
-    toRemove.forEach((key, value) {
+    toRemove.forEach((Job key, TileBitmap tileBitmap) {
       // we have this already in our 1st level cache
-      jobSet.jobFinished(key, JobResult(value, JOBRESULT.NORMAL));
+      jobSet.jobFinished(key, JobResult(tileBitmap, JOBRESULT.NORMAL));
     });
-
+    Map<Job, List<RenderInfo<Shape>>> items =
+        labelStore.getVisibleItems(jobSet.labelJobs);
+    items.forEach((tile, value) {
+      jobSet.addLabels(tile, value);
+    });
     _currentJobSet = jobSet;
-    notifyListeners();
     _executionQueue.add(() async {
       await _startNextJob(jobSet);
     });
@@ -67,7 +72,10 @@ class JobQueue extends ChangeNotifier {
 
   Future<void> _startNextJob(JobSet jobSet) async {
     //_log.info("ListQueue has ${_listQueue.length} elements");
-    if (jobSet.jobs.isEmpty) return;
+    if (jobSet.jobs.isEmpty) {
+      unawaited(_startNextLabelJob(jobSet));
+      return;
+    }
     Job nextJob = jobSet.jobs.first;
     //_log.info("taken ${nextJob?.toString()} from queue");
     try {
@@ -77,13 +85,23 @@ class JobQueue extends ChangeNotifier {
     }
   }
 
+  Future<void> _startNextLabelJob(JobSet jobSet) async {
+    if (jobSet.labelJobs.isEmpty) return;
+    Job job = jobSet.labelJobs.first;
+    JobResult jobResult = await jobRenderer.retrieveLabels(job);
+    if (jobResult.renderInfos != null) {
+      labelStore.storeMapItems(job.tile, jobResult.renderInfos!);
+      jobSet.addLabels(job, jobResult.renderInfos!);
+    }
+    unawaited(_startNextLabelJob(jobSet));
+  }
+
   Future<void> _donowDirect(JobSet jobSet, Job job) async {
     TileBitmap? tileBitmap =
         await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       jobSet.jobFinished(job, JobResult(tileBitmap, JOBRESULT.NORMAL));
-      notifyListeners();
       unawaited(_executionQueue.add(() async {
         await _startNextJob(jobSet);
       }));
@@ -99,7 +117,10 @@ class JobQueue extends ChangeNotifier {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     jobSet.jobFinished(job, jobResult);
-    notifyListeners();
+    if (jobResult.renderInfos != null) {
+      labelStore.storeMapItems(job.tile, jobResult.renderInfos!);
+      jobSet.addLabels(job, jobResult.renderInfos!);
+    }
     unawaited(_executionQueue.add(() async {
       await _startNextJob(jobSet);
     }));

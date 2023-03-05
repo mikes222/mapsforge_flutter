@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
-import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
+import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
 
 ///
 /// The dummy renderer renders dummy bitmaps for each given job
@@ -46,6 +46,11 @@ class DummyRenderer extends JobRenderer {
 
     FlutterTileBitmap tileBitmap = FlutterTileBitmap(img);
     return JobResult(tileBitmap, JOBRESULT.NORMAL); //Future.value(tileBitmap);
+  }
+
+  @override
+  Future<JobResult> retrieveLabels(Job job) {
+    throw UnimplementedError();
   }
 
   @override

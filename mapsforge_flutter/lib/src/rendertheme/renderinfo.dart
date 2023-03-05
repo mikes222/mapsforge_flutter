@@ -1,3 +1,4 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_area.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_caption.dart';
@@ -20,12 +21,21 @@ import '../paintelements/shape_paint_pathtext.dart';
 import '../paintelements/shape_paint_polyline.dart';
 import '../paintelements/shape_paint_symbol.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
   final T shape;
 
   /// The boundary of this object in absolute pixels.
+  @JsonKey(includeToJson: false, includeFromJson: false)
   MapRectangle? boundaryAbsolute;
 
+  @JsonKey(includeToJson: false, includeFromJson: false)
   ShapePaint<T>? shapePaint;
 
   /// The caption to draw. (used by renderinstructionCaption)
@@ -33,7 +43,7 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
 
   RenderInfo(this.shape);
 
-  void render(MapCanvas canvas, PixelProjection projection, Tile tile);
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper);
 
   MapRectangle getBoundaryAbsolute(PixelProjection projection);
 

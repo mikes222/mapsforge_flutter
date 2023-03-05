@@ -68,13 +68,17 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {
+  void renderNode(
+      MapCanvas canvas,
+      NodeProperties nodeProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      NodeRenderInfo renderInfo) {
     MapRectangle boundary = shape.calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
     Mappoint point =
-        nodeProperties.getCoordinateRelativeToTile(projection, tile);
+        nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     // // uiCanvas.drawRect(
@@ -101,13 +105,17 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   }
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
+  void renderWay(
+      MapCanvas canvas,
+      WayProperties wayProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      WayRenderInfo renderInfo) {
     MapRectangle boundary = shape.calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
-    Mappoint point =
-        wayProperties.getCenterRelativeToTile(projection, tile, shape.dy);
+    Mappoint point = wayProperties.getCenterRelativeToLeftUpper(
+        projection, leftUpper, shape.dy);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     // // uiCanvas.drawRect(

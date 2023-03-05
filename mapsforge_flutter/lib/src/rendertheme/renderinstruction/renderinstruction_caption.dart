@@ -29,15 +29,16 @@ class RenderinstructionCaption extends RenderInstruction {
 
   late final ShapeCaption base;
 
-  RenderinstructionCaption(this.symbolFinder, [ShapeCaption? base]) {
-    this.base = base ?? ShapeCaption.base();
+  RenderinstructionCaption(this.symbolFinder, int level, [ShapeCaption? base]) {
+    this.base = base ?? ShapeCaption.base()
+      ..level = level;
   }
 
   @override
   RenderinstructionCaption? prepareScale(int zoomLevel) {
     ShapeCaption newShape = ShapeCaption.scale(base, zoomLevel);
     if (newShape.display == Display.NEVER) return null;
-    return RenderinstructionCaption(symbolFinder, newShape);
+    return RenderinstructionCaption(symbolFinder, base.level, newShape);
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -127,7 +128,8 @@ class RenderinstructionCaption extends RenderInstruction {
       base.symbolHolder = symbolHolder;
     }
 
-    renderContext.labels.add(WayRenderInfo(container, base)..caption = caption);
+    renderContext.addToClashDrawingLayer(
+        base.level, WayRenderInfo(container, base)..caption = caption);
     return;
   }
 }

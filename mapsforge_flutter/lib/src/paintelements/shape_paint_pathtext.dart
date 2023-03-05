@@ -66,8 +66,12 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   }
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
+  void renderWay(
+      MapCanvas canvas,
+      WayProperties wayProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      WayRenderInfo renderInfo) {
     if (fullPath == null) {
       paragraph(renderInfo.caption!);
 
@@ -78,14 +82,17 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
     }
     if (fullPath!.segments.isEmpty) return;
 
-    Mappoint tileOrigin = projection.getLeftUpper(tile);
-    canvas.drawPathText(renderInfo.caption!, fullPath!, tileOrigin,
+    canvas.drawPathText(renderInfo.caption!, fullPath!, leftUpper,
         this.paintBack!, mapTextPaint, shape.maxTextWidth);
-    canvas.drawPathText(renderInfo.caption!, fullPath!, tileOrigin,
+    canvas.drawPathText(renderInfo.caption!, fullPath!, leftUpper,
         this.paintFront!, mapTextPaint, shape.maxTextWidth);
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {}
+  void renderNode(
+      MapCanvas canvas,
+      NodeProperties nodeProperties,
+      PixelProjection projection,
+      Mappoint leftUpper,
+      NodeRenderInfo renderInfo) {}
 }

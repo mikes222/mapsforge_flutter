@@ -5,7 +5,9 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 
+import '../rendertheme/shape/shape.dart';
 import 'job/job.dart';
 import 'tilelayer.dart';
 
@@ -20,7 +22,8 @@ class TileLayerImpl extends TileLayer {
 
   TileLayerImpl({
     required displayModel,
-  })  : assert(displayModel != null),
+  })
+      : assert(displayModel != null),
         _paint = GraphicFactory().createPaint(),
         super(displayModel) {
     _paint.setAntiAlias(true);
@@ -64,6 +67,11 @@ class TileLayerImpl extends TileLayer {
           paint: _paint,
         );
       }
+    });
+
+    jobSet.renderInfos?.forEach((RenderInfo<Shape> renderInfo) {
+      _statistics?.drawLabelCount++;
+      renderInfo.render(mapCanvas, mapViewPosition.projection, leftUpper);
     });
   }
 
@@ -171,8 +179,10 @@ class _Statistics {
 
   int drawBitmapCount = 0;
 
+  int drawLabelCount = 0;
+
   @override
   String toString() {
-    return '_Statistics{drawCount: $drawCount, drawBitmapCount: $drawBitmapCount}';
+    return '_Statistics{drawCount: $drawCount, drawBitmapCount: $drawBitmapCount, drawLabelCount: $drawLabelCount}';
   }
 }

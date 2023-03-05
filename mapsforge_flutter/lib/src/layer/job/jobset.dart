@@ -4,6 +4,9 @@ import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
+import '../../rendertheme/renderinfo.dart';
+import '../../rendertheme/shape/shape.dart';
+
 ///
 /// A JobSet is a collection of one or more jobs which belongs together. When the map should be shown on screen,
 /// the screen is split into Tiles and a job for each tile is created. All this jobs form a jobSet.
@@ -11,19 +14,39 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 /// need to be finished.
 ///
 class JobSet extends ChangeNotifier {
-  final List<Job> jobs = [];
+  final List<Job> _jobs = [];
+
+  final Set<Job> _labelJobs = {};
 
   /// The resulting bitmaps after the jobs has been processed.
   Map<Tile, JobResult>? _bitmaps = Map();
 
+  List<RenderInfo<Shape>>? _renderInfos;
+
+  List<Job> get jobs => _jobs;
+
+  Set<Job> get labelJobs => _labelJobs;
+
+  List<RenderInfo>? get renderInfos => _renderInfos;
+
   void add(Job job) {
-    assert(!jobs.contains(job));
-    jobs.add(job);
+    assert(!_jobs.contains(job));
+    _jobs.add(job);
+    _labelJobs.add(job);
+  }
+
+  void addLabels(Job job, List<RenderInfo> renderInfos) {
+    _renderInfos ??= [];
+    if (_labelJobs.contains(job)) {
+      _renderInfos!.addAll(renderInfos);
+      _labelJobs.remove(job);
+      notifyListeners();
+    }
   }
 
   void jobFinished(Job job, JobResult jobResult) {
     if (_bitmaps == null) return;
-    jobs.remove(job);
+    _jobs.remove(job);
     //jobResult.bitmap?.incrementRefCount();
     TileBitmap? old = _bitmaps![job.tile]?.bitmap;
     if (old != null) {
@@ -42,7 +65,8 @@ class JobSet extends ChangeNotifier {
   @mustCallSuper
   @override
   void dispose() {
-    jobs.clear();
+    _jobs.clear();
+    _labelJobs.clear();
     _bitmaps!.values.forEach((element) {
       //element.bitmap?.decrementRefCount();
     });
@@ -53,7 +77,8 @@ class JobSet extends ChangeNotifier {
   Map<Tile, JobResult> get results => _bitmaps!;
 
   void removeJobs() {
-    jobs.clear();
+    _jobs.clear();
+    _labelJobs.clear();
     _bitmaps!.values.forEach((element) {
       //element.bitmap?.decrementRefCount();
     });
@@ -62,6 +87,6 @@ class JobSet extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'JobSet{jobs: $jobs, _bitmaps: $_bitmaps}';
+    return 'JobSet{jobs: $_jobs, _bitmaps: $_bitmaps}';
   }
 }
