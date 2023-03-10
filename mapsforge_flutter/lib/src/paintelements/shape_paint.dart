@@ -21,12 +21,9 @@ abstract class ShapePaint<T extends Shape> {
 
   const ShapePaint(this.shape);
 
-  void renderNode(
-      MapCanvas canvas,
-      NodeProperties nodeProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      NodeRenderInfo renderInfo);
+  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
+      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      [double rotationRadian = 0]);
 
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
       PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo);

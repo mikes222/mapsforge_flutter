@@ -43,7 +43,8 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
 
   RenderInfo(this.shape);
 
-  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper);
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]);
 
   MapRectangle getBoundaryAbsolute(PixelProjection projection);
 

@@ -1,0 +1,46 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter/core.dart';
+
+class RotationOverlay extends StatefulWidget {
+
+  final ViewModel viewModel;
+
+  RotationOverlay(this.viewModel);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _RotationState();
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _RotationState extends State {
+
+  double _rotation = 0;
+
+  @override
+  RotationOverlay get widget => super.widget as RotationOverlay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Slider(
+        value: _rotation,
+        min: 0,
+        max: 359,
+        onChanged: (double value) {
+          _rotation = value;
+          widget.viewModel.rotate(_rotation);
+          setState(() {
+
+          });
+        },
+      ),
+    );
+  }
+}

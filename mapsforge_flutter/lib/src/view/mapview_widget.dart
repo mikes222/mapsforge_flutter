@@ -3,6 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
+import 'package:mapsforge_flutter/src/layer/tilelayerlabel.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:mapsforge_flutter/src/view/zoompainter.dart';
@@ -56,6 +57,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
   TileLayer? _tileLayer;
 
+  TileLayer? _labelLayer;
+
   GlobalKey _keyView = GlobalKey();
 
   JobQueue? _jobQueue;
@@ -75,6 +78,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   void dispose() {
     _viewModel?.dispose();
     _tileLayer?.dispose();
+    _labelLayer?.dispose();
     _jobQueue?.dispose();
     _mapModel?.dispose();
 
@@ -116,6 +120,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
           _tileLayer = TileLayerImpl(
             displayModel: widget.displayModel,
           );
+          _labelLayer = TileLayerLabel(displayModel: widget.displayModel);
           _log.info(
               "MapModel created with renderer key ${_mapModel?.renderer.getRenderKey()} in connectionState ${snapshot.connectionState.toString()}");
           return child();
@@ -240,13 +245,25 @@ class _MapviewWidgetState extends State<MapviewWidget> {
         FlutterGestureDetector(
           key: _keyView,
           viewModel: _viewModel!,
-          child: CustomPaint(
-            foregroundPainter: ZoomPainter(
-                tileLayer: _tileLayer!,
-                mapViewPosition: mapViewPosition,
-                viewModel: _viewModel!,
-                jobSet: jobSet),
-            child: const SizedBox.expand(),
+          child: Stack(
+            children: [
+              CustomPaint(
+                foregroundPainter: ZoomPainter(
+                    tileLayer: _tileLayer!,
+                    mapViewPosition: mapViewPosition,
+                    viewModel: _viewModel!,
+                    jobSet: jobSet),
+                child: const SizedBox.expand(),
+              ),
+              CustomPaint(
+                foregroundPainter: ZoomPainter(
+                    tileLayer: _labelLayer!,
+                    mapViewPosition: mapViewPosition,
+                    viewModel: _viewModel!,
+                    jobSet: jobSet),
+                child: const SizedBox.expand(),
+              ),
+            ],
           ),
         ),
         for (Widget widget in _createMarkerWidgets(mapViewPosition)) widget,
@@ -292,6 +309,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
       _viewModel = null;
       _jobQueue = null;
       _tileLayer = null;
+      _labelLayer = null;
       _mapModel = null;
       Future.delayed(const Duration(milliseconds: 5000), () {
         // destroy the models AFTER they are not used anymore

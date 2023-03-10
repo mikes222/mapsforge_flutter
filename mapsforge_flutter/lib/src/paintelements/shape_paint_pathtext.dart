@@ -89,10 +89,7 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas,
-      NodeProperties nodeProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      NodeRenderInfo renderInfo) {}
+  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
+      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      [double rotationRadian = 0]) {}
 }

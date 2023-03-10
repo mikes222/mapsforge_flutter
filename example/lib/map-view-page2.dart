@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
 import 'package:mapsforge_example/markerdemo-datastore.dart';
+import 'package:mapsforge_example/rotation-overlay.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -118,6 +119,8 @@ class MapViewPageState2 extends State<MapViewPage2> {
       // Demo: If the user tries to move around a marker
       markerdemoDatastore.moveMarkerEnd(event);
     });
+    // used to demo the rotation-feature
+    viewModel.addOverlay(RotationOverlay(viewModel));
     return viewModel;
   }
 
@@ -128,7 +131,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
     final JobRenderer jobRenderer = MapDataStoreRenderer(
-        widget.mapFile!, renderTheme, symbolCache, true,
+        widget.mapFile!, renderTheme, symbolCache, false,
         useIsolate: false);
 
     /// and now it is similar to online rendering.

@@ -1,15 +1,12 @@
 import 'dart:math';
 
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
-import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
+import '../../maps.dart';
 import 'boundingbox.dart';
 import 'mappoint.dart';
 
 class MapViewPosition {
-  static final _log = new Logger('MapViewPosition');
-
   /// The latitude of the center of the widget
   double? _latitude;
 
@@ -41,12 +38,18 @@ class MapViewPosition {
   /// needs to be recalculated if the map moves OR if the map zooms
   Mappoint? _center;
 
+  /// orientation of the map in clockwise direction 0-360°. 360 is excluded
+  final double _rotation;
+
+  final double _rotationRadian;
+
   final PixelProjection _projection;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
-      this.indoorLevel, this.tileSize)
+      this.indoorLevel, this.tileSize, this._rotation)
       : scale = 1,
         focalPoint = null,
+        _rotationRadian = Projection.degToRadian(_rotation),
         assert(zoomLevel >= 0),
         assert(tileSize > 0),
         _projection = PixelProjection(zoomLevel, tileSize);
@@ -57,6 +60,8 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel + 1,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
         _projection = PixelProjection(old.zoomLevel + 1, old.tileSize);
@@ -68,6 +73,8 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel + 1,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
         _projection = PixelProjection(old.zoomLevel + 1, old.tileSize);
@@ -78,6 +85,8 @@ class MapViewPosition {
         zoomLevel = max(old.zoomLevel - 1, 0),
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
         _projection = PixelProjection(max(old.zoomLevel - 1, 0), old.tileSize);
@@ -88,6 +97,8 @@ class MapViewPosition {
         this.zoomLevel = max(zoomLevel, 0),
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
         _projection = PixelProjection(max(zoomLevel, 0), old.tileSize);
@@ -99,6 +110,8 @@ class MapViewPosition {
         this.zoomLevel = max(zoomLevel, 0),
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
         _projection = PixelProjection(max(zoomLevel, 0), old.tileSize);
@@ -109,6 +122,8 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel + 1,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         _projection = old._projection,
         scale = 1,
         focalPoint = null,
@@ -122,6 +137,8 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel - 1,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         _projection = old._projection,
         scale = 1,
         focalPoint = null,
@@ -135,6 +152,8 @@ class MapViewPosition {
         zoomLevel = old.zoomLevel,
         this.indoorLevel = indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         _projection = old._projection,
         scale = 1,
         focalPoint = null,
@@ -152,6 +171,8 @@ class MapViewPosition {
         _latitude = old._latitude,
         _longitude = old._longitude,
         this.zoomLevel = old.zoomLevel,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
         _center = old._center,
@@ -161,17 +182,33 @@ class MapViewPosition {
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         _projection = old._projection,
         scale = old.scale,
         focalPoint = old.focalPoint,
         assert(_latitude == null),
         assert(_longitude == null);
 
+  MapViewPosition.rotate(MapViewPosition old, this._rotation)
+      : _latitude = old._latitude,
+        _longitude = old._longitude,
+        zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel,
+        tileSize = old.tileSize,
+        _projection = old._projection,
+        scale = old.scale,
+        focalPoint = old.focalPoint,
+        _rotationRadian = Projection.degToRadian(_rotation),
+        assert(_rotation >= 0 && _rotation < 360);
+
   MapViewPosition.setLeftUpper(
       MapViewPosition old, double left, double upper, Dimension viewDimension)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
         scale = old.scale,
         focalPoint = old.focalPoint,
         _projection = old._projection {
@@ -256,6 +293,12 @@ class MapViewPosition {
     return _center!;
   }
 
+  /// Returns the rotation in radians
+  double get rotationRadian => _rotationRadian;
+
+  /// Returns the rotation of the map in degrees clockwise
+  double get rotation => _rotation;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -265,6 +308,7 @@ class MapViewPosition {
           _longitude == other._longitude &&
           zoomLevel == other.zoomLevel &&
           indoorLevel == other.indoorLevel &&
+          _rotation == other._rotation &&
           scale == other.scale;
 
   @override
@@ -272,6 +316,7 @@ class MapViewPosition {
       _latitude.hashCode ^
       _longitude.hashCode ^
       zoomLevel.hashCode ^
+      _rotation.hashCode ^
       indoorLevel.hashCode << 5 ^
       scale.hashCode;
 

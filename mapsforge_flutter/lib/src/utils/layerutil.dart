@@ -83,16 +83,31 @@ class LayerUtil {
     Mappoint center = mapViewPosition.getCenter();
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
-    int tileLeft = mapViewPosition.projection
-        .pixelXToTileX(max(center.x - viewModel.mapDimension.width / 2, 0));
+    double halfWidth = viewModel.mapDimension.width / 2;
+    double halfHeight = viewModel.mapDimension.height / 2;
+    if (mapViewPosition.rotation > 2) {
+      // we rotate. Use the max side for both width and height
+      halfWidth = max(halfWidth, halfHeight);
+      halfHeight = max(halfWidth, halfHeight);
+    }
+    // rising from 0 to 45, then falling to 0 at 90°
+    int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
+    int tileLeft =
+        mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
     int tileRight = mapViewPosition.projection.pixelXToTileX(min(
-        center.x + viewModel.mapDimension.width / 2,
-        mapViewPosition.projection.mapsize.toDouble()));
-    int tileTop = mapViewPosition.projection
-        .pixelYToTileY(max(center.y - viewModel.mapDimension.height / 2, 0));
+        center.x + halfWidth, mapViewPosition.projection.mapsize.toDouble()));
+    int tileTop =
+        mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
     int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
-        center.y + viewModel.mapDimension.height / 2,
-        mapViewPosition.projection.mapsize.toDouble()));
+        center.y + halfHeight, mapViewPosition.projection.mapsize.toDouble()));
+    if (degreeDiff > 5) {
+      tileLeft = max(tileLeft - 1, 0);
+      tileRight = min(tileRight + 1,
+          mapViewPosition.projection.scalefactor.scalefactor.ceil());
+      tileTop = max(tileTop - 1, 0);
+      tileBottom = min(tileBottom + 1,
+          mapViewPosition.projection.scalefactor.scalefactor.ceil());
+    }
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
     center = center.offset(-viewModel.displayModel.tileSize / 2,
         -viewModel.displayModel.tileSize / 2);

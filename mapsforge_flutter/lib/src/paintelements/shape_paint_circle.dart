@@ -34,12 +34,9 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas,
-      NodeProperties nodeProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      NodeRenderInfo renderInfo) {
+  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
+      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     Mappoint point =
         nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
     if (fill != null) canvas.drawCircle(point.x, point.y, shape.radius, fill!);

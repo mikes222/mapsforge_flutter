@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter/core.dart';
@@ -68,12 +69,9 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas,
-      NodeProperties nodeProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      NodeRenderInfo renderInfo) {
+  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
+      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     MapRectangle boundary = shape.calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
@@ -94,6 +92,13 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     //     10,
     //     ui.Paint()..color = Colors.green);
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
+    if (rotationRadian != 0) {
+      uiCanvas.save();
+      uiCanvas.translate(point.x + boundary.left, point.y + boundary.top);
+      // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
+      uiCanvas.rotate(2 * pi - rotationRadian);
+      uiCanvas.translate(-point.x + boundary.left, -point.y + boundary.top);
+    }
     if (back != null)
       uiCanvas.drawParagraph(back!.paragraph,
           ui.Offset(point.x + boundary.left, point.y + boundary.top));
@@ -102,6 +107,9 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
           ui.Offset(point.x + boundary.left, point.y + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
+    if (rotationRadian != 0) {
+      uiCanvas.restore();
+    }
   }
 
   @override

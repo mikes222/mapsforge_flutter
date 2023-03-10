@@ -60,10 +60,7 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas,
-      NodeProperties nodeProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      NodeRenderInfo renderInfo) {}
+  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
+      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      [double rotationRadian = 0]) {}
 }

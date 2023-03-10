@@ -104,7 +104,8 @@ class ViewModel {
           longitude,
           _mapViewPosition!.zoomLevel,
           _mapViewPosition!.indoorLevel,
-          displayModel.tileSize);
+          displayModel.tileSize,
+          _mapViewPosition!.rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -113,7 +114,35 @@ class ViewModel {
           longitude,
           displayModel.DEFAULT_ZOOM,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize);
+          displayModel.tileSize,
+          displayModel.DEFAULT_ROTATION);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    }
+  }
+
+  void setMapViewPositionAndRotation(
+      double latitude, double longitude, double rotation) {
+    if (_mapViewPosition != null) {
+      if (_mapViewPosition!.latitude == latitude &&
+          _mapViewPosition!.longitude == longitude) return;
+      MapViewPosition newPosition = MapViewPosition(
+          latitude,
+          longitude,
+          _mapViewPosition!.zoomLevel,
+          _mapViewPosition!.indoorLevel,
+          displayModel.tileSize,
+          rotation);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(
+          latitude,
+          longitude,
+          displayModel.DEFAULT_ZOOM,
+          displayModel.DEFAULT_INDOOR_LEVEL,
+          displayModel.tileSize,
+          rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -157,8 +186,13 @@ class ViewModel {
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel,
-          displayModel.DEFAULT_INDOOR_LEVEL, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(
+          null,
+          null,
+          zoomLevel,
+          displayModel.DEFAULT_INDOOR_LEVEL,
+          displayModel.tileSize,
+          displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -204,8 +238,13 @@ class ViewModel {
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null,
-          displayModel.DEFAULT_ZOOM, indoorLevel, displayModel.tileSize);
+      MapViewPosition newPosition = MapViewPosition(
+          null,
+          null,
+          displayModel.DEFAULT_ZOOM,
+          indoorLevel,
+          displayModel.tileSize,
+          displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -256,11 +295,31 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize);
+          displayModel.tileSize,
+          displayModel.DEFAULT_ROTATION);
       newPosition = MapViewPosition.scaleAround(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
+    }
+  }
+
+  void rotate(double rotation) {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition =
+          MapViewPosition.rotate(_mapViewPosition!, rotation);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(
+          null,
+          null,
+          displayModel.DEFAULT_ZOOM - 1,
+          displayModel.DEFAULT_INDOOR_LEVEL,
+          displayModel.tileSize,
+          rotation);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
     }
   }
 
@@ -276,7 +335,8 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM - 1,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize);
+          displayModel.tileSize,
+          displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }

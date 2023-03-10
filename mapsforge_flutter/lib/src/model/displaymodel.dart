@@ -20,6 +20,8 @@ class DisplayModel {
 
   int DEFAULT_INDOOR_LEVEL = 0;
 
+  double DEFAULT_ROTATION = 0;
+
   /// device scale factor. The bigger that value the larger the size of the tiles.
   /// That also means that the map shows more details at a certain zoomLevel. Think of it
   /// the following way: At zoom level 0 the whole world is shown in one tile. That tile is x

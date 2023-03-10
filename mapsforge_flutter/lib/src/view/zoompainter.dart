@@ -43,6 +43,12 @@ class ZoomPainter extends CustomPainter {
       flutterCanvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
     }
 
+    if (mapViewPosition.rotationRadian != 0) {
+      canvas.save();
+      canvas.translate(size.width / 2, size.height / 2);
+      canvas.rotate(mapViewPosition.rotationRadian);
+      canvas.translate(-size.width / 2, -size.height / 2);
+    }
     tileLayer.draw(viewModel, mapViewPosition, flutterCanvas, jobSet);
 
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
@@ -51,6 +57,10 @@ class ZoomPainter extends CustomPainter {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
     if (viewModel.viewScaleFactor != 1) {
+      canvas.restore();
+    }
+
+    if (mapViewPosition.rotationRadian != 0) {
       canvas.restore();
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
@@ -34,21 +36,19 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas,
-      NodeProperties nodeProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      NodeRenderInfo renderInfo) {
+  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
+      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     if (bitmap == null) return;
     Mappoint point =
         nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
     MapRectangle boundary = shape.calculateBoundary();
     //print("paint symbol boundar: $boundary");
     Matrix? matrix;
-    if (shape.theta != 0) {
+    if (shape.theta != 0 || rotationRadian != 0) {
       matrix = GraphicFactory().createMatrix();
-      matrix.rotate(shape.theta, pivotX: boundary.left, pivotY: boundary.top);
+      matrix.rotate(shape.theta + 2 * pi - rotationRadian,
+          pivotX: boundary.left, pivotY: boundary.top);
 //        matrix.rotate(shapeSymbol.theta);
     }
 
