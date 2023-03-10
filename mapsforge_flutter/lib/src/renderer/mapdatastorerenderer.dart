@@ -175,11 +175,13 @@ class MapDataStoreRenderer extends JobRenderer {
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
 
-    List<RenderInfo<Shape>>? renderInfos = LayerUtil.collisionFreeOrdered(
-        renderContext.labels, renderContext.projection);
-    for (RenderInfo renderInfo in renderInfos) {
+    // unfortunately we need the painter for captions in order to determine the size of the caption. In isolates however we cannot access
+    // ui code. We are in an isolate here. We are doomed.
+    for (RenderInfo renderInfo in renderContext.labels) {
       await renderInfo.createShapePaint(symbolCache);
     }
+    List<RenderInfo<Shape>>? renderInfos = LayerUtil.collisionFreeOrdered(
+        renderContext.labels, renderContext.projection);
     // this.labelStore.storeMapItems(
     //     job.tile, renderContext.labels, renderContext.projection);
     timing.lap(100,

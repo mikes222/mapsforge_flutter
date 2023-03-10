@@ -25,7 +25,8 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   @override
   void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
-    shapePaint!.renderWay(canvas, wayProperties, projection, leftUpper, this);
+    shapePaint!.renderWay(
+        canvas, wayProperties, projection, leftUpper, this, rotationRadian);
   }
 
   /// Returns if MapElementContainers clash with each other

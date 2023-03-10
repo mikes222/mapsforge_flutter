@@ -66,12 +66,9 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   }
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     if (fullPath == null) {
       paragraph(renderInfo.caption!);
 

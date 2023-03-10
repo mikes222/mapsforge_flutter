@@ -31,7 +31,19 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
 
   ParagraphEntry? back;
 
-  ShapePaintCaption(ShapeCaption shape, {RenderInfo? renderInfo})
+  /// The width of the caption. Since we cannot calculate the width in an isolate (ui calls are not allowed)
+  /// we need to set it later on in the ShapePaintCaption
+  double _boxWidth = 0;
+
+  /// The height of the caption. Since we cannot calculate the height in an isolate (ui calls are not allowed)
+  /// we need to set it later on in the ShapePaintCaption
+  double _boxHeight = 0;
+
+  /// The boundary of this object in pixels relative to the center of the
+  /// corresponding node or way
+  MapRectangle? boundary = null;
+
+  ShapePaintCaption(ShapeCaption shape, {required RenderInfo renderInfo})
       : super(shape) {
     if (!shape.isFillTransparent())
       paintFront = createPaint(
@@ -50,17 +62,15 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
         fontFamily: shape.fontFamily,
         fontStyle: shape.fontStyle,
         fontSize: shape.fontSize);
-    if (renderInfo != null) {
-      if (paintFront != null)
-        front = ParagraphCache().getEntry(
-            renderInfo.caption!, mapTextPaint, paintFront!, shape.maxTextWidth);
-      if (paintBack != null)
-        back = ParagraphCache().getEntry(
-            renderInfo.caption!, mapTextPaint, paintBack!, shape.maxTextWidth);
-      double boxWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
-      double boxHeight = back?.getHeight() ?? front?.getWidth() ?? 0;
-      shape.setTextBoundary(boxWidth, boxHeight);
-    }
+    if (paintFront != null)
+      front = ParagraphCache().getEntry(
+          renderInfo.caption!, mapTextPaint, paintFront!, shape.maxTextWidth);
+    if (paintBack != null)
+      back = ParagraphCache().getEntry(
+          renderInfo.caption!, mapTextPaint, paintBack!, shape.maxTextWidth);
+    _boxWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
+    _boxHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
+    shape.calculateOffsets(_boxWidth, _boxHeight);
   }
 
   @override
@@ -69,35 +79,41 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   }
 
   @override
+  MapRectangle calculateBoundary() {
+    if (boundary != null) return boundary!;
+    boundary = MapRectangle(
+        -_boxWidth / 2 + shape.horizontalOffset,
+        -_boxHeight / 2 + shape.verticalOffset,
+        _boxWidth / 2 + shape.horizontalOffset,
+        _boxHeight / 2 + shape.verticalOffset);
+
+    return boundary!;
+  }
+
+  @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
       PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
       [double rotationRadian = 0]) {
-    MapRectangle boundary = shape.calculateBoundary();
+    MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
     Mappoint point =
         nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
-    // // uiCanvas.drawRect(
-    //     ui.Rect.fromLTWH(
-    //         this.xy.x - origin.x + boundary!.left,
-    //         this.xy.y - origin.y + boundary!.top,
-    //         front.getWidth(),
-    //         front.getHeight()),
-    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    // uiCanvas.drawCircle(
-    //     ui.Offset(this.xy.x - origin.x + boundary!.left,
-    //         this.xy.y - origin.y + boundary!.top),
-    //     10,
-    //     ui.Paint()..color = Colors.green);
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
+    //         boundary.getWidth(), boundary.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
+    // uiCanvas.drawCircle(ui.Offset(point.x, point.y), 10,
+    //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (rotationRadian != 0) {
       uiCanvas.save();
-      uiCanvas.translate(point.x + boundary.left, point.y + boundary.top);
+      uiCanvas.translate(point.x, point.y);
       // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
       uiCanvas.rotate(2 * pi - rotationRadian);
-      uiCanvas.translate(-point.x + boundary.left, -point.y + boundary.top);
+      uiCanvas.translate(-point.x, -point.y);
     }
     if (back != null)
       uiCanvas.drawParagraph(back!.paragraph,
@@ -113,13 +129,10 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   }
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {
-    MapRectangle boundary = shape.calculateBoundary();
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
+    MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
     Mappoint point = wayProperties.getCenterRelativeToLeftUpper(
@@ -139,6 +152,13 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     //     10,
     //     ui.Paint()..color = Colors.green);
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
+    if (rotationRadian != 0) {
+      uiCanvas.save();
+      uiCanvas.translate(point.x, point.y);
+      // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
+      uiCanvas.rotate(2 * pi - rotationRadian);
+      uiCanvas.translate(-point.x, -point.y);
+    }
     if (back != null)
       uiCanvas.drawParagraph(back!.paragraph,
           ui.Offset(point.x + boundary.left, point.y + boundary.top));
@@ -147,5 +167,8 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
           ui.Offset(point.x + boundary.left, point.y + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
+    if (rotationRadian != 0) {
+      uiCanvas.restore();
+    }
   }
 }

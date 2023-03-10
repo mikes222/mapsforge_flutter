@@ -1,13 +1,15 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
+/// A very simple slider on top of the map to rotate the map. This is used to demonstrate
+/// the map-rotation feature. In your case you would maybe call viewModel.rotate() with the
+/// bearing from the GPS receiver instead.
 class RotationOverlay extends StatefulWidget {
 
   final ViewModel viewModel;
 
   RotationOverlay(this.viewModel);
-
+  
   @override
   State<StatefulWidget> createState() {
     return _RotationState();

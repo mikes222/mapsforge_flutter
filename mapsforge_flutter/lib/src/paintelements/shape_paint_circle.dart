@@ -45,10 +45,7 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   }
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {}
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {}
 }

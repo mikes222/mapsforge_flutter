@@ -38,8 +38,6 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
         Display.ALWAYS == other.shape.display) {
       return false;
     }
-    // print(
-    //     "clashes ${getBoundaryAbsolute(projection).intersects(other.getBoundaryAbsolute(projection))} for ${getBoundaryAbsolute(projection)} (${shape.calculateBoundary()}) and ${other.getBoundaryAbsolute(projection)}");
     return getBoundaryAbsolute(projection)
         .intersects(other.getBoundaryAbsolute(projection));
   }
@@ -56,7 +54,8 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   @override
   MapRectangle getBoundaryAbsolute(PixelProjection projection) {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
-    MapRectangle boundary = shape.calculateBoundary();
+    MapRectangle boundary =
+        shapePaint?.calculateBoundary() ?? shape.calculateBoundary();
     Mappoint mappoint = nodeProperties.getCoordinatesAbsolute(projection);
     boundaryAbsolute = boundary.shift(mappoint);
     //print("   boundAbs: ${boundaryAbsolute} ($boundary)");

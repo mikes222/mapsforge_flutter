@@ -31,14 +31,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   double dy = 0;
 
-  /// The width of the caption. Since we cannot calculate the width in an isolate (ui calls are not allowed)
-  /// we need to set it later on in the ShapePaintCaption
-  double _boxWidth = 0;
-
-  /// The height of the caption. Since we cannot calculate the height in an isolate (ui calls are not allowed)
-  /// we need to set it later on in the ShapePaintCaption
-  double _boxHeight = 0;
-
   ShapeCaption.base() : super.base();
 
   ShapeCaption.scale(ShapeCaption base, int zoomLevel)
@@ -71,17 +63,19 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   @override
   MapRectangle calculateBoundary() {
-    if (boundary != null) return boundary!;
-    boundary = MapRectangle(
-        -_boxWidth / 2 + _horizontalOffset,
-        -_boxHeight / 2 + _verticalOffset,
-        _boxWidth / 2 + _horizontalOffset,
-        _boxHeight / 2 + _verticalOffset);
+    // the boundary is dependent on the text which is a property of renderInfo
+    throw UnimplementedError();
+    //if (boundary != null) return boundary!;
+    // boundary = MapRectangle(
+    //     -_boxWidth / 2 + _horizontalOffset,
+    //     -_boxHeight / 2 + _verticalOffset,
+    //     _boxWidth / 2 + _horizontalOffset,
+    //     _boxHeight / 2 + _verticalOffset);
 
-    return boundary!;
+    //return boundary!;
   }
 
-  void calculateOffsets() {
+  void calculateOffsets(double boxWidth, double boxHeight) {
     _verticalOffset = 0;
     _horizontalOffset = 0;
     // print(
@@ -103,37 +97,36 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
       case Position.CENTER:
         break;
       case Position.BELOW:
-        _verticalOffset += symbolBoundary.bottom + _boxHeight / 2 + this.gap;
+        _verticalOffset += symbolBoundary.bottom + boxHeight / 2 + this.gap;
         break;
       case Position.ABOVE:
-        _verticalOffset += symbolBoundary.top - _boxHeight / 2 - this.gap;
+        _verticalOffset += symbolBoundary.top - boxHeight / 2 - this.gap;
         break;
       case Position.BELOW_LEFT:
-        _horizontalOffset += symbolBoundary.left - _boxWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.bottom + _boxHeight / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.left - boxWidth / 2 - this.gap;
+        _verticalOffset += symbolBoundary.bottom + boxHeight / 2 + this.gap;
         break;
       case Position.ABOVE_LEFT:
-        _horizontalOffset += symbolBoundary.left - _boxWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.top - _boxHeight / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.left - boxWidth / 2 - this.gap;
+        _verticalOffset += symbolBoundary.top - boxHeight / 2 - this.gap;
         break;
       case Position.LEFT:
-        _horizontalOffset += symbolBoundary.left - _boxWidth / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.left - boxWidth / 2 - this.gap;
         break;
       case Position.BELOW_RIGHT:
-        _horizontalOffset += symbolBoundary.right + _boxWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.bottom + _boxHeight / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.right + boxWidth / 2 + this.gap;
+        _verticalOffset += symbolBoundary.bottom + boxHeight / 2 + this.gap;
         break;
       case Position.ABOVE_RIGHT:
-        _horizontalOffset += symbolBoundary.right + _boxWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.top - _boxHeight / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.right + boxWidth / 2 + this.gap;
+        _verticalOffset += symbolBoundary.top - boxHeight / 2 - this.gap;
         break;
       case Position.RIGHT:
-        _horizontalOffset += symbolBoundary.right + _boxWidth / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.right + boxWidth / 2 + this.gap;
         break;
       default:
         throw new Exception("Position invalid");
     }
-    boundary = null;
   }
 
   @override
@@ -141,9 +134,12 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     return "Caption";
   }
 
-  void setTextBoundary(double width, double height) {
-    _boxWidth = width;
-    _boxHeight = height;
-    calculateOffsets();
+  double get horizontalOffset => _horizontalOffset;
+
+  double get verticalOffset => _verticalOffset;
+
+  @override
+  String toString() {
+    return 'ShapeCaption{_horizontalOffset: $_horizontalOffset, _verticalOffset: $_verticalOffset, level: $level, gap: $gap, position: $position, symbolId: $symbolId, textKey: $textKey, dy: $dy}';
   }
 }

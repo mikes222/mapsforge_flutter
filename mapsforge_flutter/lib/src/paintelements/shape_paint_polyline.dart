@@ -46,12 +46,9 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   }
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     if (shape.isStrokeTransparent()) return;
 
     MapPath path = calculatePath(wayProperties

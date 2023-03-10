@@ -47,6 +47,9 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
     Matrix? matrix;
     if (shape.theta != 0 || rotationRadian != 0) {
       matrix = GraphicFactory().createMatrix();
+      // rotation of the rotationRadian parameter is always in the opposite direction.
+      // If the map is moving clockwise we must rotate the symbol counterclockwise
+      // to keep it horizontal
       matrix.rotate(shape.theta + 2 * pi - rotationRadian,
           pivotX: boundary.left, pivotY: boundary.top);
 //        matrix.rotate(shapeSymbol.theta);
@@ -65,12 +68,9 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
   }
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     if (bitmap == null) return;
     Mappoint point =
         wayProperties.getCenterRelativeToLeftUpper(projection, leftUpper, 0);

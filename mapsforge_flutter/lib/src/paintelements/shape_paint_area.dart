@@ -50,12 +50,9 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
   }
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     MapPath path = calculatePath(wayProperties
         .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
 

@@ -9,6 +9,7 @@ import '../graphics/cap.dart';
 import '../graphics/join.dart';
 import '../graphics/maptextpaint.dart';
 import '../graphics/resourcebitmap.dart';
+import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape.dart';
@@ -21,12 +22,19 @@ abstract class ShapePaint<T extends Shape> {
 
   const ShapePaint(this.shape);
 
+  /// Returns the boundary of the underlying shape. This can be used if the boundary
+  /// of the shape is dependent on other parameters like the caption in renderInfo
+  MapRectangle calculateBoundary() {
+    return shape.calculateBoundary();
+  }
+
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
       PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
       [double rotationRadian = 0]);
 
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo);
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]);
 
   Future<void> init(SymbolCache symbolCache);
 

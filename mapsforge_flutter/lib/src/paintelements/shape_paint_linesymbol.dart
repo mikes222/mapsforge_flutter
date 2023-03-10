@@ -41,12 +41,9 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
       [double rotationRadian = 0]) {}
 
   @override
-  void renderWay(
-      MapCanvas canvas,
-      WayProperties wayProperties,
-      PixelProjection projection,
-      Mappoint leftUpper,
-      WayRenderInfo renderInfo) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties,
+      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      [double rotationRadian = 0]) {
     if (bitmap == null) return;
 
     int skipPixels = shape.repeatStart.round();

@@ -128,8 +128,7 @@ class RenderinstructionCaption extends RenderInstruction {
       base.symbolHolder = symbolHolder;
     }
 
-    renderContext.addToClashDrawingLayer(
-        base.level, WayRenderInfo(container, base)..caption = caption);
+    renderContext.labels.add(WayRenderInfo(container, base)..caption = caption);
     return;
   }
 }
