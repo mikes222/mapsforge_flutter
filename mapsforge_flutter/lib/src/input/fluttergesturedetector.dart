@@ -154,25 +154,38 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         if (_doubleTapLocalPosition == null) return;
         Mappoint? leftUpper = widget.viewModel.mapViewPosition
             ?.getLeftUpper(widget.viewModel.mapDimension);
-        if (leftUpper != null) {
+        Mappoint? center = widget.viewModel.mapViewPosition?.getCenter();
+        if (center != null && leftUpper != null) {
+          /// x/y relative from the center
+          double diffX =
+              (_doubleTapLocalPosition!.dx - center.x + leftUpper.x) *
+                  widget.viewModel.viewScaleFactor;
+          double diffY =
+              (_doubleTapLocalPosition!.dy - center.y + leftUpper.y) *
+                  widget.viewModel.viewScaleFactor;
+          if (widget.viewModel.mapViewPosition?.rotation != 0) {
+            double hyp = sqrt(diffX * diffX + diffY * diffY);
+            double rad = atan2(diffY, diffX);
+            double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+            diffX = cos(-rot + rad) * hyp;
+            diffY = sin(-rot + rad) * hyp;
+
+            // print(
+            //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+          }
+          //print("diff: $diffX/$diffY");
           // lat/lon of the position where we double-clicked
           double latitude = widget.viewModel.mapViewPosition!.projection
-              .pixelYToLatitude(leftUpper.y +
-                  _doubleTapLocalPosition!.dy *
-                      widget.viewModel.viewScaleFactor);
+              .pixelYToLatitude(center.y + diffY);
           double longitude = widget.viewModel.mapViewPosition!.projection
-              .pixelXToLongitude(leftUpper.x +
-                  _doubleTapLocalPosition!.dx *
-                      widget.viewModel.viewScaleFactor);
-          // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
+              .pixelXToLongitude(center.x + diffX);
+          // interpolate the new center between the old center and where we
+          // pressed now. The new center is half-way between our double-pressed point and the old-center
           widget.viewModel.zoomInAround(
               (latitude - widget.viewModel.mapViewPosition!.latitude!) / 2 +
                   widget.viewModel.mapViewPosition!.latitude!,
               (longitude - widget.viewModel.mapViewPosition!.longitude!) / 2 +
                   widget.viewModel.mapViewPosition!.longitude!);
-          // widget.viewModel
-          //     .doubleTapEvent(latitude, longitude);
-          //widget.viewModel.gestureEvent();
         }
         _swipeTimer?.cancel();
         _swipeTimer = null;
@@ -217,14 +230,24 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             return;
           }
           // move map around
+          double diffX =
+              (details.localFocalPoint.dx - _startLocalFocalPoint!.dx) *
+                  widget.viewModel.viewScaleFactor;
+          double diffY =
+              (details.localFocalPoint.dy - _startLocalFocalPoint!.dy) *
+                  widget.viewModel.viewScaleFactor;
+          if (widget.viewModel.mapViewPosition?.rotation != 0) {
+            double hyp = sqrt(diffX * diffX + diffY * diffY);
+            double rad = atan2(diffY, diffX);
+            double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+            diffX = cos(-rot + rad) * hyp;
+            diffY = sin(-rot + rad) * hyp;
+
+            // print(
+            //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+          }
           widget.viewModel.setLeftUpper(
-              _startLeftUpper!.x +
-                  _startLocalFocalPoint!.dx * widget.viewModel.viewScaleFactor -
-                  details.localFocalPoint.dx * widget.viewModel.viewScaleFactor,
-              _startLeftUpper!.y +
-                  _startLocalFocalPoint!.dy * widget.viewModel.viewScaleFactor -
-                  details.localFocalPoint.dy *
-                      widget.viewModel.viewScaleFactor);
+              _startLeftUpper!.x - diffX, _startLeftUpper!.y - diffY);
         } else {
           // zoom
           // do not send tiny changes

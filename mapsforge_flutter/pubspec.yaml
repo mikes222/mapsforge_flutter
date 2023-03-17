@@ -32,7 +32,7 @@ dependencies:
   # execution_queue: ^1.2.0
   #  path: ../../execution_queue.dart
 
-  golden_toolkit: ^0.14.0
+  golden_toolkit: ^0.15.0
 
   # BSD License
   http: ^0.13.5
@@ -48,10 +48,7 @@ dependencies:
   synchronized: ^3.0.1
 
   # BSD License
-  flutter_svg: ^1.1.6
-
-  # BSD License
-  #image: 2.1.13
+  flutter_svg: ^2.0.3
 
   # BSD License, currently no WEB support
   path_provider: ^2.0.11
@@ -73,11 +70,6 @@ dev_dependencies:
   #test: 1.15.2
 
   mockito: ^5.3.2
-
-  # MIT License
-  # run flutter pub run flutter_launcher_icons:main
-  flutter_launcher_icons: ^0.11.0
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

@@ -1,4 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodewayproperties.dart';
 
 import '../../core.dart';
@@ -24,7 +23,6 @@ class NodeProperties implements NodeWayProperties {
 
   List<Tag> get tags => pointOfInterest.tags;
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   Mappoint? coordinatesAbsolute;
 
   /// Returns the absolute coordinates in pixel of this node

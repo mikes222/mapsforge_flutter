@@ -1,8 +1,8 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/flutterresourcebitmap.dart';
-import 'dart:ui' as ui;
 
 class ImageBuilder {
   const ImageBuilder();
@@ -32,19 +32,12 @@ class ImageBuilder {
 
   Future<FlutterResourceBitmap> createSvgSymbol(
       ByteData content, String src, int width, int height) async {
-    DrawableRoot svgRoot =
-        await svg.fromSvgBytes(content.buffer.asUint8List(), src);
-
-// If you only want the final Picture output, just use
-    final ui.Picture picture =
-        svgRoot.toPicture(size: ui.Size(width.toDouble(), height.toDouble()));
+    PictureInfo pictureInfo = await vg.loadPicture(
+        SvgBytesLoader(content.buffer.asUint8List()), null);
+    final ui.Picture picture = pictureInfo.picture;
     ui.Image image = await picture.toImage(width, height);
-    //print("image: " + image.toString());
     FlutterResourceBitmap result = FlutterResourceBitmap(image, src);
+    pictureInfo.picture.dispose();
     return result;
-
-    //final Widget svg = new SvgPicture.asset(assetName, semanticsLabel: 'Acme Logo');
-
-    //return graphicFactory.renderSvg(inputStream, displayModel.getScaleFactor(), width, height, percent);
   }
 }

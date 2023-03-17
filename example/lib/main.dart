@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:leak_tracker/leak_tracker.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_example/map-list.dart';
 
@@ -145,7 +147,12 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
   ),
 ];
 
-void main() => runApp(MyApp());
+void main() {
+  // enableLeakTracking();
+  // MemoryAllocations.instance
+  //     .addListener((ObjectEvent event) => dispatchObjectEvent(event.toMap()));
+  runApp(MyApp());
+}
 
 /// This is the entry point, the main application widget.
 class MyApp extends StatelessWidget {

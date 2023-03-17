@@ -69,6 +69,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
   _Statistics? _statistics; // = _Statistics();
 
+  JobSet? _jobSet;
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +83,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     _labelLayer?.dispose();
     _jobQueue?.dispose();
     _mapModel?.dispose();
+    //_jobSet?.dispose();
 
     super.dispose();
     if (_statistics != null) _log.info(_statistics?.toString());
@@ -239,6 +242,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     _statistics?.mapViewCount++;
     JobSet? jobSet =
         LayerUtil.submitJobSet(_viewModel!, mapViewPosition, _jobQueue!);
+    _jobSet?.dispose();
+    _jobSet = jobSet;
     if (jobSet == null) return const SizedBox();
     return Stack(
       children: [

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodewayproperties.dart';
 
 import '../../core.dart';
@@ -32,10 +31,8 @@ class WayProperties implements NodeWayProperties {
 
   final bool isClosedWay;
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   Mappoint? center;
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   List<List<Mappoint>>? coordinatesAbsolute;
 
   WayProperties(this.way)

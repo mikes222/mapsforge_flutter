@@ -1,10 +1,7 @@
 import 'dart:math';
 
-import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/core.dart';
 
-import '../../graphics/display.dart';
-import '../../graphics/position.dart';
 import '../../renderer/paintmixin.dart';
 import '../renderinstruction/renderinstruction.dart';
 import 'shape_symbol.dart';

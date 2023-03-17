@@ -1,4 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_area.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_caption.dart';
@@ -32,10 +31,8 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
   final T shape;
 
   /// The boundary of this object in absolute pixels.
-  @JsonKey(includeToJson: false, includeFromJson: false)
   MapRectangle? boundaryAbsolute;
 
-  @JsonKey(includeToJson: false, includeFromJson: false)
   ShapePaint<T>? shapePaint;
 
   /// The caption to draw. (used by renderinstructionCaption)

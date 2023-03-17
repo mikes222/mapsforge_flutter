@@ -24,9 +24,17 @@ abstract class IMarkerDataStore extends ChangeNotifier {
   /// Triggers a repaint of the markers for this datastore
   void setRepaint() {
     try {
-      if (!_disposed) notifyListeners();
+      notifyListeners();
     } catch (error, stacktrace) {
       // ignore that error
+    }
+  }
+
+  /// https://stackoverflow.com/questions/63884633/unhandled-exception-a-changenotifier-was-used-after-being-disposed
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
     }
   }
 }

@@ -14,12 +14,14 @@ import '../../rendertheme/shape/shape.dart';
 /// need to be finished.
 ///
 class JobSet extends ChangeNotifier {
+  bool _disposed = false;
+
   final List<Job> _jobs = [];
 
   final Set<Job> _labelJobs = {};
 
   /// The resulting bitmaps after the jobs has been processed.
-  Map<Tile, JobResult>? _bitmaps = Map();
+  Map<Tile, JobResult>? _bitmaps = {};
 
   List<RenderInfo<Shape>>? _renderInfos;
 
@@ -65,9 +67,10 @@ class JobSet extends ChangeNotifier {
   @mustCallSuper
   @override
   void dispose() {
+    _disposed = true;
     _jobs.clear();
     _labelJobs.clear();
-    _bitmaps!.values.forEach((element) {
+    _bitmaps?.values.forEach((element) {
       //element.bitmap?.decrementRefCount();
     });
     _bitmaps = null;
@@ -88,5 +91,13 @@ class JobSet extends ChangeNotifier {
   @override
   String toString() {
     return 'JobSet{jobs: $_jobs, _bitmaps: $_bitmaps}';
+  }
+
+  /// https://stackoverflow.com/questions/63884633/unhandled-exception-a-changenotifier-was-used-after-being-disposed
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
   }
 }

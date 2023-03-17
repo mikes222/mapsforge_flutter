@@ -171,7 +171,7 @@ class _DistanceOverlayState extends State<DistanceOverlay>
 
 /////////////////////////////////////////////////////////////////////////////
 
-class MeterPainter extends ChangeNotifier implements CustomPainter {
+class MeterPainter extends CustomPainter {
   final double pixel;
 
   final Color color;

@@ -285,6 +285,7 @@ class MapViewPosition {
   /// The longitude of the center of the widget
   double? get longitude => _longitude;
 
+  /// Returns the center of the map in absolute pixels
   Mappoint getCenter() {
     if (_center != null) return _center!;
     double centerY = _projection.latitudeToPixelY(_latitude!);
