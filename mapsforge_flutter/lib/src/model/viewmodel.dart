@@ -344,20 +344,7 @@ class ViewModel {
 
   /// The user has tapped at the map. The event has been detected by the [FlutterGestureDetector].
   /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
-  void tapEvent(double left, double upper) {
-    if (_mapViewPosition == null) return;
-    _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
-    TapEvent event = TapEvent(
-        _mapViewPosition!.projection
-            .pixelYToLatitude(leftUpper.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection
-            .pixelXToLongitude(leftUpper.x + left * viewScaleFactor),
-        Mappoint(left, upper),
-        leftUpper,
-        Mappoint(leftUpper.x + left * viewScaleFactor,
-            leftUpper.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection);
+  void tapEvent(TapEvent event) {
     _injectTap.add(event);
   }
 

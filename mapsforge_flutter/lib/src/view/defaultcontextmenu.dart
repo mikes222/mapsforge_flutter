@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -16,10 +18,11 @@ class DefaultContextMenu extends StatefulWidget {
   /// position also represents the CURRENT position and not the position when the tap event occured.
   final MapViewPosition mapViewPosition;
 
-  DefaultContextMenu({required this.screen,
-    required this.event,
-    required this.viewModel,
-    required this.mapViewPosition});
+  DefaultContextMenu(
+      {required this.screen,
+      required this.event,
+      required this.viewModel,
+      required this.mapViewPosition});
 
   @override
   State<StatefulWidget> createState() {
@@ -49,35 +52,54 @@ class DefaultContextMenuState extends State {
     // double y = widget.event.y;
 
     widget.mapViewPosition.calculateBoundingBox(widget.viewModel.mapDimension);
-    Mappoint leftUpper = widget.mapViewPosition.getLeftUpper(
-        widget.viewModel.mapDimension);
-    double x =
-        widget.mapViewPosition.projection
-            .longitudeToPixelX(widget.event.longitude) -
-            leftUpper.x;
-    double y =
-        widget.mapViewPosition.projection
-            .latitudeToPixelY(widget.event.latitude) -
-            leftUpper.y;
+    Mappoint leftUpper =
+        widget.mapViewPosition.getLeftUpper(widget.viewModel.mapDimension);
+    Mappoint center = widget.mapViewPosition.getCenter();
 
-    x = x / widget.viewModel.viewScaleFactor;
-    y = y / widget.viewModel.viewScaleFactor;
+    /// distance from the center
+    double diffX = widget.mapViewPosition.projection
+            .longitudeToPixelX(widget.event.longitude) -
+        center.x;
+    double diffY = widget.mapViewPosition.projection
+            .latitudeToPixelY(widget.event.latitude) -
+        center.y;
+
+    diffX = diffX / widget.viewModel.viewScaleFactor;
+    diffY = diffY / widget.viewModel.viewScaleFactor;
+
+    if (widget.viewModel.mapViewPosition?.rotation != 0) {
+      double hyp = sqrt(diffX * diffX + diffY * diffY);
+      double rad = atan2(diffY, diffX);
+      double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+      diffX = cos(rot + rad) * hyp;
+      diffY = sin(rot + rad) * hyp;
+
+      // print(
+      //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+    }
 
     double halfWidth = widget.screen.width / 2;
     double halfHeight = widget.screen.height / 2;
+
+    diffX += halfWidth;
+    diffY += halfHeight;
     return Positioned(
-      left: x <= halfWidth ? x : null,
-      top: y <= halfHeight ? y : null,
-      right: x > halfWidth ? widget.screen.width - x : null,
-      bottom: y > halfHeight ? widget.screen.height - y : null,
+      left: diffX <= halfWidth ? diffX : null,
+      top: diffY <= halfHeight ? diffY : null,
+      right: diffX > halfWidth ? widget.screen.width - diffX : null,
+      bottom: diffY > halfHeight ? widget.screen.height - diffY : null,
       child: Container(
         //margin: EdgeInsets.only(left: x, top: y),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
-            topLeft: x <= halfWidth && y <= halfHeight ? Radius.zero : outer,
-            topRight: x > halfWidth && y <= halfHeight ? Radius.zero : outer,
-            bottomLeft: x <= halfWidth && y > halfHeight ? Radius.zero : outer,
-            bottomRight: x > halfWidth && y > halfHeight ? Radius.zero : outer,
+            topLeft:
+                diffX <= halfWidth && diffY <= halfHeight ? Radius.zero : outer,
+            topRight:
+                diffX > halfWidth && diffY <= halfHeight ? Radius.zero : outer,
+            bottomLeft:
+                diffX <= halfWidth && diffY > halfHeight ? Radius.zero : outer,
+            bottomRight:
+                diffX > halfWidth && diffY > halfHeight ? Radius.zero : outer,
           ),
           color: backgroundColor,
           border: Border.all(color: borderColor, width: width),
@@ -92,12 +114,8 @@ class DefaultContextMenuState extends State {
   }
 
   void setValues(BuildContext context) {
-    backgroundColor = Theme
-        .of(context)
-        .scaffoldBackgroundColor;
-    borderColor = Theme
-        .of(context)
-        .primaryColor;
+    backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    borderColor = Theme.of(context).primaryColor;
   }
 
   List<Widget> buildColumns(BuildContext context) {
@@ -107,8 +125,7 @@ class DefaultContextMenuState extends State {
         children: [
           InkWell(
             child: Text(
-              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event
-                  .longitude.toStringAsFixed(6)}",
+              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}",
               style: const TextStyle(fontSize: 14),
             ),
             onTap: () {
@@ -117,8 +134,7 @@ class DefaultContextMenuState extends State {
             onLongPress: () {
               Clipboard.setData(new ClipboardData(
                   text:
-                  "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event
-                      .longitude.toStringAsFixed(6)}"));
+                      "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}"));
             },
           ),
           //const Spacer(),

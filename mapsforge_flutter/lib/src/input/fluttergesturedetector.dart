@@ -135,10 +135,50 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         } else {
           _tapDownEvent!.stop();
           _tapDownEvent = null;
-          widget.viewModel
-              .tapEvent(details.localPosition.dx, details.localPosition.dy);
-          return;
+          // widget.viewModel.mapViewPosition!
+          //     .calculateBoundingBox(widget.viewModel.mapDimension);
+          Mappoint? leftUpper = widget.viewModel.mapViewPosition
+              ?.getLeftUpper(widget.viewModel.mapDimension);
+          Mappoint? center = widget.viewModel.mapViewPosition?.getCenter();
+          if (center != null && leftUpper != null) {
+            /// x/y relative from the center
+            double diffX = (details.localPosition.dx - center.x + leftUpper.x) *
+                widget.viewModel.viewScaleFactor;
+            double diffY = (details.localPosition.dy - center.y + leftUpper.y) *
+                widget.viewModel.viewScaleFactor;
+            if (widget.viewModel.mapViewPosition?.rotation != 0) {
+              double hyp = sqrt(diffX * diffX + diffY * diffY);
+              double rad = atan2(diffY, diffX);
+              double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+              diffX = cos(-rot + rad) * hyp;
+              diffY = sin(-rot + rad) * hyp;
+              // print(
+              //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+            }
+            // lat/lon of the position where we double-clicked
+            double latitude = widget.viewModel.mapViewPosition!.projection
+                .pixelYToLatitude(center.y + diffY);
+            double longitude = widget.viewModel.mapViewPosition!.projection
+                .pixelXToLongitude(center.x + diffX);
+
+            TapEvent event = TapEvent(
+                latitude,
+                longitude,
+                Mappoint(details.localPosition.dx, details.localPosition.dy),
+                leftUpper,
+                Mappoint(
+                    leftUpper.x +
+                        details.localPosition.dx *
+                            widget.viewModel.viewScaleFactor,
+                    leftUpper.y +
+                        details.localPosition.dy *
+                            widget.viewModel.viewScaleFactor),
+                widget.viewModel.mapViewPosition!.projection);
+
+            widget.viewModel.tapEvent(event);
+          }
         }
+        return;
       },
       onDoubleTapDown: (TapDownDetails details) {
         if (doLog)
@@ -284,24 +324,43 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             // lat/lon of the focalPoint
             Mappoint? leftUpper = widget.viewModel.mapViewPosition
                 ?.getLeftUpper(widget.viewModel.mapDimension);
-            double latitude = widget.viewModel.mapViewPosition!.projection
-                .pixelYToLatitude(leftUpper!.y +
-                    _startLocalFocalPoint!.dy *
-                        widget.viewModel.viewScaleFactor);
-            double longitude = widget.viewModel.mapViewPosition!.projection
-                .pixelXToLongitude(leftUpper.x +
-                    _startLocalFocalPoint!.dx *
-                        widget.viewModel.viewScaleFactor);
-            MapViewPosition newPost = widget.viewModel.zoomAround(
-                latitude +
-                    (widget.viewModel.mapViewPosition!.latitude! - latitude) /
-                        mult,
-                longitude +
-                    (widget.viewModel.mapViewPosition!.longitude! - longitude) /
-                        mult,
-                widget.viewModel.mapViewPosition!.zoomLevel + zoomLevelDiff);
-            if (doLog)
-              _log.info("onScaleEnd  resulting in ${newPost.toString()}");
+            Mappoint? center = widget.viewModel.mapViewPosition?.getCenter();
+            if (center != null && leftUpper != null) {
+              /// x/y relative from the center
+              double diffX =
+                  (_startLocalFocalPoint!.dx - center.x + leftUpper.x) *
+                      widget.viewModel.viewScaleFactor;
+              double diffY =
+                  (_startLocalFocalPoint!.dy - center.y + leftUpper.y) *
+                      widget.viewModel.viewScaleFactor;
+              if (widget.viewModel.mapViewPosition?.rotation != 0) {
+                double hyp = sqrt(diffX * diffX + diffY * diffY);
+                double rad = atan2(diffY, diffX);
+                double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+                diffX = cos(-rot + rad) * hyp;
+                diffY = sin(-rot + rad) * hyp;
+
+                // print(
+                //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+              }
+              //print("diff: $diffX/$diffY");
+              // lat/lon of the position where we double-clicked
+              double latitude = widget.viewModel.mapViewPosition!.projection
+                  .pixelYToLatitude(center.y + diffY);
+              double longitude = widget.viewModel.mapViewPosition!.projection
+                  .pixelXToLongitude(center.x + diffX);
+              MapViewPosition newPost = widget.viewModel.zoomAround(
+                  latitude +
+                      (widget.viewModel.mapViewPosition!.latitude! - latitude) /
+                          mult,
+                  longitude +
+                      (widget.viewModel.mapViewPosition!.longitude! -
+                              longitude) /
+                          mult,
+                  widget.viewModel.mapViewPosition!.zoomLevel + zoomLevelDiff);
+              if (doLog)
+                _log.info("onScaleEnd  resulting in ${newPost.toString()}");
+            }
           } else if (_lastScale != 1) {
             // no significant zoom. Restore the old zoom
             /*MapViewPosition newPost =*/ widget.viewModel
