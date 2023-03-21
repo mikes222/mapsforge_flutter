@@ -55,9 +55,11 @@ class MarkerPainter extends CustomPainter {
       }
       if (mapViewPosition.rotationRadian != 0) {
         canvas.save();
-        canvas.translate(size.width / 2, size.height / 2);
+        canvas.translate(size.width * viewModel.viewScaleFactor / 2,
+            size.height * viewModel.viewScaleFactor / 2);
         canvas.rotate(mapViewPosition.rotationRadian);
-        canvas.translate(-size.width / 2, -size.height / 2);
+        canvas.translate(-size.width * viewModel.viewScaleFactor / 2,
+            -size.height * viewModel.viewScaleFactor / 2);
       }
 
       MarkerContext context = MarkerContext(

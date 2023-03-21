@@ -15,13 +15,14 @@ class ZoomPainter extends CustomPainter {
 
   final JobSet jobSet;
 
-  ZoomPainter(
-      {required this.tileLayer,
-      required this.mapViewPosition,
-      required this.viewModel,
-      required this.jobSet})
+  ZoomPainter({required this.tileLayer,
+    required this.mapViewPosition,
+    required this.viewModel,
+    required this.jobSet})
       : super(repaint: jobSet);
 
+  /// The [size] is the size of the widget in screenpixels, take care that we
+  /// often use mappixels which is off by some zoomFactors
   @override
   void paint(Canvas canvas, Size size) {
     //print("zoomPainter paint $size");
@@ -45,9 +46,11 @@ class ZoomPainter extends CustomPainter {
 
     if (mapViewPosition.rotationRadian != 0) {
       canvas.save();
-      canvas.translate(size.width / 2, size.height / 2);
+      canvas.translate(size.width * viewModel.viewScaleFactor / 2,
+          size.height * viewModel.viewScaleFactor / 2);
       canvas.rotate(mapViewPosition.rotationRadian);
-      canvas.translate(-size.width / 2, -size.height / 2);
+      canvas.translate(-size.width * viewModel.viewScaleFactor / 2,
+          -size.height * viewModel.viewScaleFactor / 2);
     }
     tileLayer.draw(viewModel, mapViewPosition, flutterCanvas, jobSet);
 

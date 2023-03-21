@@ -354,20 +354,7 @@ class ViewModel {
   }
 
   /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
-  void longTapEvent(double left, double upper) {
-    if (_mapViewPosition == null) return;
-    _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
-    TapEvent event = TapEvent(
-        _mapViewPosition!.projection
-            .pixelYToLatitude(leftUpper.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection
-            .pixelXToLongitude(leftUpper.x + left * viewScaleFactor),
-        Mappoint(left, upper),
-        leftUpper,
-        Mappoint(leftUpper.x + left * viewScaleFactor,
-            leftUpper.y + upper * viewScaleFactor),
-        _mapViewPosition!.projection);
+  void longTapEvent(TapEvent event) {
     _injectLongTap.add(event);
   }
 
@@ -377,85 +364,26 @@ class ViewModel {
     _injectGesture.add(GestureEvent());
   }
 
-  void gestureMoveStartEvent(double widgetLeft, double widgetUpper) {
-    if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
-
-    MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection
-          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection
-          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection,
-      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: leftUpper,
-      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
-          leftUpper.y + widgetUpper * viewScaleFactor),
-    );
+  void gestureMoveStartEvent(MoveAroundEvent event) {
     _injectMoveAroundStart.add(event);
   }
 
   /// The moveStart event has already been reported but the user decided to cancel the move events
-  void gestureMoveCancelEvent(double widgetLeft, double widgetUpper) {
-    if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
-
-    MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection
-          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection
-          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection,
-      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: leftUpper,
-      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
-          leftUpper.y + widgetUpper * viewScaleFactor),
-    );
+  void gestureMoveCancelEvent(MoveAroundEvent event) {
     _injectMoveAroundCancel.add(event);
   }
 
-  void gestureMoveUpdateEvent(double widgetLeft, double widgetUpper) {
-    if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
-
-    MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection
-          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection
-          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection,
-      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: leftUpper,
-      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
-          leftUpper.y + widgetUpper * viewScaleFactor),
-    );
+  void gestureMoveUpdateEvent(MoveAroundEvent event) {
     _injectMoveAroundUpdate.add(event);
   }
 
-  void gestureMoveEndEvent(double widgetLeft, double widgetUpper) {
-    if (_mapViewPosition == null) return null;
-    _mapViewPosition!.calculateBoundingBox(_mapDimension);
-    Mappoint leftUpper = _mapViewPosition!.getLeftUpper(_mapDimension);
-
-    MoveAroundEvent event = MoveAroundEvent(
-      latitude: _mapViewPosition!.projection
-          .pixelYToLatitude(leftUpper.y + widgetUpper * viewScaleFactor),
-      longitude: _mapViewPosition!.projection
-          .pixelXToLongitude(leftUpper.x + widgetLeft * viewScaleFactor),
-      projection: _mapViewPosition!.projection,
-      widgetPixelMappoint: Mappoint(widgetLeft, widgetUpper),
-      leftUpperMappoint: leftUpper,
-      mapPixelMappoint: Mappoint(leftUpper.x + widgetLeft * viewScaleFactor,
-          leftUpper.y + widgetUpper * viewScaleFactor),
-    );
+  void gestureMoveEndEvent(MoveAroundEvent event) {
     _injectMoveAroundEnd.add(event);
   }
 
   ///
-  /// The width and height of the visible view in pixels. Note that this is NOT equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
+  /// The width and height of the visible view in pixels. Note that this is NOT
+  /// equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
   /// to gain a better resolution of the tile-images.
   ///
   Dimension get mapDimension => _mapDimension;
@@ -495,10 +423,10 @@ class TapEvent implements ILatLong {
   final PixelProjection? _projection;
 
   /// The coordinates of the event in logical pixels of the screen in the mapwidget. The left/upper point of the widget is considered 0/0. Note that the widgetpixels differs from the mappixels by the [viewScaleFactor]
-  final Mappoint widgetPixelMappoint;
+//  final Mappoint widgetPixelMappoint;
 
   /// the left-upper point of the map in pixels
-  final Mappoint leftUpperMappoint;
+  //final Mappoint leftUpperMappoint;
 
   /// The position of the event in mappixels
   final Mappoint mapPixelMappoint;
@@ -509,15 +437,18 @@ class TapEvent implements ILatLong {
 
   PixelProjection get projection => _projection!;
 
-  const TapEvent(this.latitude, this.longitude, this.widgetPixelMappoint,
-      this.leftUpperMappoint, this.mapPixelMappoint, PixelProjection projection)
+  const TapEvent(
+      {required this.latitude,
+      required this.longitude,
+      //required this.leftUpperMappoint,
+      required this.mapPixelMappoint,
+      required PixelProjection projection})
       : _projection = projection;
 
   const TapEvent.clear()
       : latitude = 0,
         longitude = 0,
-        widgetPixelMappoint = const Mappoint(0, 0),
-        leftUpperMappoint = const Mappoint(0, 0),
+        //leftUpperMappoint = const Mappoint(0, 0),
         mapPixelMappoint = const Mappoint(0, 0),
         _projection = null;
 }
@@ -530,11 +461,14 @@ class MoveAroundEvent extends TapEvent {
     required double latitude,
     required double longitude,
     required PixelProjection projection,
-    required Mappoint widgetPixelMappoint,
-    required Mappoint leftUpperMappoint,
+    //required Mappoint leftUpperMappoint,
     required Mappoint mapPixelMappoint,
-  }) : super(latitude, longitude, widgetPixelMappoint, leftUpperMappoint,
-            mapPixelMappoint, projection);
+  }) : super(
+            latitude: latitude,
+            longitude: longitude,
+            //leftUpperMappoint: leftUpperMappoint,
+            mapPixelMappoint: mapPixelMappoint,
+            projection: projection);
 }
 
 /////////////////////////////////////////////////////////////////////////////
