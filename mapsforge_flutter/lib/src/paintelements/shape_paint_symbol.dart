@@ -12,8 +12,6 @@ import '../graphics/matrix.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
   late final MapPaint fill;
@@ -37,7 +35,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
     Mappoint point =
@@ -57,7 +55,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 
     //if (bitmap.debugDisposed())
     // print(
-    //     "drawing ${bitmap} at ${this.xy.x - origin.x + boundary!.left} / ${this.xy.y - origin.y + boundary!.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
+    //     "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
     //print(StackTrace.current);
     canvas.drawBitmap(
         bitmap: bitmap!,
@@ -69,7 +67,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
     Mappoint point =

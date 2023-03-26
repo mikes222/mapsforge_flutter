@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/singlemarkerpainter.dart';
 
 import '../testassetbundle.dart';
+import '../testhelper.dart';
 
 ///
 /// flutter test --update-goldens
@@ -36,30 +37,13 @@ void main() {
         marker: circleMarker,
         viewModel: viewModel);
 
-    Key key = GlobalKey();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              key: key,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 1),
-              ),
-              child: CustomPaint(
-                foregroundPainter: painter,
-                child: Container(),
-              ),
-            ),
-          ),
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: CustomPaint(
+          foregroundPainter: painter,
+          child: Container(),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(find.byKey(key), matchesGoldenFile('poimarker.png'));
+        goldenfile: 'poimarker.png');
   });
 
   testWidgets('Renders a poimarker with text', (WidgetTester tester) async {
@@ -89,29 +73,12 @@ void main() {
         marker: circleMarker,
         viewModel: viewModel);
 
-    Key key = GlobalKey();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              key: key,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 1),
-              ),
-              child: CustomPaint(
-                foregroundPainter: painter,
-                child: Container(),
-              ),
-            ),
-          ),
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: CustomPaint(
+          foregroundPainter: painter,
+          child: Container(),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(find.byKey(key), matchesGoldenFile('poimarker_text.png'));
+        goldenfile: 'poimarker_text.png');
   });
 }

@@ -26,7 +26,7 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     shapePaint!.renderWay(
-        canvas, wayProperties, projection, leftUpper, this, rotationRadian);
+        canvas, wayProperties, projection, leftUpper, rotationRadian);
   }
 
   /// Returns if MapElementContainers clash with each other
@@ -53,7 +53,7 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   MapRectangle getBoundaryAbsolute(PixelProjection projection) {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
     List<List<Mappoint>> coordinates =
-        wayProperties.getCoordinatesAbsolute(projection);
+    wayProperties.getCoordinatesAbsolute(projection);
     List<Mappoint>? c;
     double dy = 0;
     if (dy == 0) {

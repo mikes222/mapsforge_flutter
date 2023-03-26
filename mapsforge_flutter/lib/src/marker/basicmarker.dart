@@ -2,8 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
-import 'package:mapsforge_flutter/src/renderer/textmixin.dart';
+import 'package:mapsforge_flutter/src/marker/captionmarker.dart';
 
 /// Abstract Marker class for further extensions. This class holds the position of a marker as [ILatLong] and implements the shouldPaint() method.
 abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
@@ -39,7 +38,7 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
 
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
-    if (markerCaption != null && markerCaption.latLong == null) {
+    if (markerCaption != null) {
       markerCaption.latLong = latLong;
     }
     super.setMarkerCaption(markerCaption);
@@ -132,79 +131,56 @@ abstract class BasicMarker<T> extends Marker<T> {
 /////////////////////////////////////////////////////////////////////////////
 
 /// The caption of a marker
-class MarkerCaption with TextMixin, PaintMixin {
-  /// The text to show.
-  ///
-  String text;
-
-  /// The position of the text or [null] if the position should be calculated based on the position of the marker
-  ///
-  ILatLong? latLong;
-
+class MarkerCaption extends CaptionMarker {
   /// The offset of the caption in screen pixels
   double captionOffsetX;
 
-  final int minZoomLevel;
-
-  int maxZoomLevel;
-
-  /// The maximum width of a text as defined in the displaymodel
-  late final double maxTextWidth;
-
   MarkerCaption({
-    required this.text,
-    this.latLong,
+    required String text,
+    ILatLong? latLong,
     this.captionOffsetX = 0,
     double captionOffsetY = 0,
     double strokeWidth = 2.0,
     int strokeColor = 0xffffffff,
     int fillColor = 0xff000000,
     double fontSize = 10.0,
-    this.minZoomLevel = 0,
-    this.maxZoomLevel = 65535,
+    int minZoomLevel = 0,
+    int maxZoomLevel = 65535,
     required DisplayModel displayModel,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
-        assert(minZoomLevel <= maxZoomLevel) /*assert(text.length > 0)*/ {
-    maxTextWidth = displayModel.getMaxTextWidth();
-    initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());
-    setStrokeColorFromNumber(strokeColor);
-    setFontSize(fontSize * displayModel.getFontScaleFactor());
-    setFillColorFromNumber(fillColor);
-    setDy(captionOffsetY * displayModel.getFontScaleFactor());
-  }
-
-  @mustCallSuper
-  void dispose() {
-    disposeTextMixin();
-    disposePaintMixin();
-  }
+        assert(minZoomLevel <= maxZoomLevel) /*assert(text.length > 0)*/,
+        super(
+          latLong: latLong ?? const LatLong(0, 0),
+          caption: text,
+          fillColor: fillColor,
+          fontSize: fontSize,
+          strokeColor: strokeColor,
+          strokeWidth: strokeWidth,
+          minZoomLevel: minZoomLevel,
+          maxZoomLevel: maxZoomLevel,
+          maxTextWidth: displayModel.getMaxTextWidth(),
+          displayModel: displayModel,
+        ) {}
 
   void renderCaption(MarkerCallback markerCallback) {
-    if (latLong == null) return;
     if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
-    prepareScalePaintMixin(markerCallback.mapViewPosition.zoomLevel);
-    prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
-    Mappoint leftUpper = markerCallback.mapViewPosition
-        .getLeftUpper(markerCallback.viewModel.mapDimension);
-    Mappoint mappoint = markerCallback.mapViewPosition.projection
-        .pixelRelativeToLeftUpper(latLong!, leftUpper);
-    markerCallback.flutterCanvas.drawText(
-        text,
-        (mappoint.x + captionOffsetX),
-        (mappoint.y + getDy(markerCallback.mapViewPosition.zoomLevel)),
-        getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
-        getTextPaint(markerCallback.mapViewPosition.zoomLevel),
-        maxTextWidth);
-    markerCallback.flutterCanvas.drawText(
-        text,
-        (mappoint.x + captionOffsetX),
-        (mappoint.y + getDy(markerCallback.mapViewPosition.zoomLevel)),
-        getFillPaint(markerCallback.mapViewPosition.zoomLevel),
-        getTextPaint(markerCallback.mapViewPosition.zoomLevel),
-        maxTextWidth);
+    renderBitmap(markerCallback);
+  }
+
+  void set text(String text) {
+    caption = text;
+    if (scaled != null) shapePaint.setCaption(caption);
+  }
+
+  void setStrokeColorFromNumber(int strokeColor) {
+    base.setStrokeColorFromNumber(strokeColor);
+    if (scaled != null) shapePaint.reinit(caption);
+  }
+
+  void setFillColorFromNumber(int fillColor) {
+    base.setFillColorFromNumber(fillColor);
+    if (scaled != null) shapePaint.reinit(caption);
   }
 }

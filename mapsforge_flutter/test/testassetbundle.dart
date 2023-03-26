@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
@@ -8,6 +7,7 @@ class TestAssetBundle extends CachingAssetBundle {
   Future<ByteData> load(String key) {
     if (key.contains("packages/mapsforge_flutter/assets/"))
       key = key.replaceAll("packages/mapsforge_flutter/assets/", "");
+    if (key.startsWith("jar:")) key = key.replaceAll("jar:", "/");
     String prefix = "test_resources";
     if (!File("$prefix/arrow.png").existsSync()) {
       prefix = "../test_resources";

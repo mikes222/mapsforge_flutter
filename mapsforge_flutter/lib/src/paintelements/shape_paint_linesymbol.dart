@@ -11,9 +11,7 @@ import '../graphics/matrix.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape_linesymbol.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
   late final MapPaint fill;
@@ -37,12 +35,12 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {}
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
 

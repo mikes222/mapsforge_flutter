@@ -7,8 +7,6 @@ import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
 import '../../maps.dart';
 import '../../special.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   late final MapPaint? fill;
@@ -35,7 +33,7 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     Mappoint point =
         nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
@@ -46,6 +44,6 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {}
 }

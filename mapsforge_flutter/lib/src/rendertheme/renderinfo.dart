@@ -81,7 +81,7 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         /// we need to calculate the boundary for the caption. Remember that we cannot
         /// use ui code in isolates but here we are back again from isolates so we can
         /// calculate the width/height of the caption.
-        shapePaint = ShapePaintCaption(shape as ShapeCaption, renderInfo: this)
+        shapePaint = ShapePaintCaption(shape as ShapeCaption, caption: caption!)
             as ShapePaint<T>;
         break;
       case "Circle":
@@ -105,8 +105,8 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         }
         break;
       case "Pathtext":
-        shapePaint =
-            ShapePaintPathtext(shape as ShapePathtext) as ShapePaint<T>;
+        shapePaint = ShapePaintPathtext(shape as ShapePathtext, caption!)
+            as ShapePaint<T>;
         await shapePaint!.init(symbolCache);
         break;
       case "Polyline":

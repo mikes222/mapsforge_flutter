@@ -17,7 +17,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   int level = 0;
 
-  late double gap;
+  late double gap = 0;
 
   /// The position of this caption relative to the corresponding symbol. If the symbol is not set
   /// the position is always center
@@ -75,54 +75,59 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     //return boundary!;
   }
 
-  void calculateOffsets(double boxWidth, double boxHeight) {
+  void calculateOffsets(double fontWidth, double fontHeight,
+      [MapRectangle? symbolBoundary]) {
     _verticalOffset = 0;
     _horizontalOffset = 0;
     // print(
     //     "shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $_boxWidth, $_boxHeight");
 
-    if (position == Position.CENTER &&
-        symbolHolder?.shapeSymbol?.bitmapSrc != null) {
-      // sensible defaults: below if symbolContainer is present, center if not
-      position = Position.BELOW;
-    }
-    MapRectangle? symbolBoundary =
-        symbolHolder?.shapeSymbol?.calculateBoundary();
     if (symbolBoundary == null) {
-      position = Position.CENTER;
-      return;
+      if (position == Position.CENTER &&
+          symbolHolder?.shapeSymbol?.bitmapSrc != null) {
+        // sensible defaults: below if symbolContainer is present, center if not
+        position = Position.BELOW;
+      }
+      symbolBoundary = symbolHolder?.shapeSymbol?.calculateBoundary();
+      if (symbolBoundary == null) {
+        position = Position.CENTER;
+        return;
+      }
     }
 
     switch (position) {
       case Position.CENTER:
         break;
       case Position.BELOW:
-        _verticalOffset += symbolBoundary.bottom + boxHeight / 2 + this.gap;
+        _verticalOffset +=
+            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE:
-        _verticalOffset += symbolBoundary.top - boxHeight / 2 - this.gap;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
         break;
       case Position.BELOW_LEFT:
-        _horizontalOffset += symbolBoundary.left - boxWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.bottom + boxHeight / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
+        _verticalOffset +=
+            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE_LEFT:
-        _horizontalOffset += symbolBoundary.left - boxWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.top - boxHeight / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
         break;
       case Position.LEFT:
-        _horizontalOffset += symbolBoundary.left - boxWidth / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
         break;
       case Position.BELOW_RIGHT:
-        _horizontalOffset += symbolBoundary.right + boxWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.bottom + boxHeight / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
+        _verticalOffset +=
+            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE_RIGHT:
-        _horizontalOffset += symbolBoundary.right + boxWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.top - boxHeight / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
         break;
       case Position.RIGHT:
-        _horizontalOffset += symbolBoundary.right + boxWidth / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
         break;
       default:
         throw new Exception("Position invalid");

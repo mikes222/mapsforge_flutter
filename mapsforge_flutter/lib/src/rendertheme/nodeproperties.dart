@@ -25,14 +25,19 @@ class NodeProperties implements NodeWayProperties {
 
   Mappoint? coordinatesAbsolute;
 
+  int _lastZoomLevel = -1;
+
   /// Returns the absolute coordinates in pixel of this node
   Mappoint getCoordinatesAbsolute(PixelProjection projection) {
+    if (projection.scalefactor.zoomlevel != _lastZoomLevel)
+      coordinatesAbsolute = null;
     coordinatesAbsolute ??= projection.latLonToPixel(pointOfInterest.position);
+    _lastZoomLevel = projection.scalefactor.zoomlevel;
     return coordinatesAbsolute!;
   }
 
-  Mappoint getCoordinateRelativeToLeftUpper(
-      PixelProjection projection, Mappoint leftUpper) {
+  Mappoint getCoordinateRelativeToLeftUpper(PixelProjection projection,
+      Mappoint leftUpper) {
     Mappoint absolute = getCoordinatesAbsolute(projection);
     return absolute.offset(-1.0 * leftUpper.x, -1.0 * leftUpper.y);
   }

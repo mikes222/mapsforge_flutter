@@ -24,7 +24,7 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     shapePaint!.renderNode(
-        canvas, nodeProperties, projection, leftUpper, this, rotationRadian);
+        canvas, nodeProperties, projection, leftUpper, rotationRadian);
   }
 
   /// Returns true if shapes clash with each other

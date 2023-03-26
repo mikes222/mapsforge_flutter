@@ -14,9 +14,6 @@ import '../graphics/implementation/paragraph_cache.dart';
 import '../graphics/maptextpaint.dart';
 import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
-import '../rendertheme/renderinfo.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   // this is the stroke, normally white and represents the "surrounding of the text"
@@ -33,18 +30,32 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
 
   /// The width of the caption. Since we cannot calculate the width in an isolate (ui calls are not allowed)
   /// we need to set it later on in the ShapePaintCaption
-  double _boxWidth = 0;
+  double _fontWidth = 0;
 
   /// The height of the caption. Since we cannot calculate the height in an isolate (ui calls are not allowed)
   /// we need to set it later on in the ShapePaintCaption
-  double _boxHeight = 0;
+  double _fontHeight = 0;
 
   /// The boundary of this object in pixels relative to the center of the
   /// corresponding node or way
   MapRectangle? boundary = null;
 
-  ShapePaintCaption(ShapeCaption shape, {required RenderInfo renderInfo})
+  ShapePaintCaption(ShapeCaption shape,
+      {required String caption, MapRectangle? symbolBoundary})
       : super(shape) {
+    reinit(caption, symbolBoundary);
+  }
+
+  @override
+  Future<void> init(SymbolCache symbolCache) {
+    return Future.value();
+  }
+
+  void reinit(String caption, [MapRectangle? symbolBoundary]) {
+    paintFront = null;
+    paintBack = null;
+    front = null;
+    back = null;
     if (!shape.isFillTransparent())
       paintFront = createPaint(
         style: Style.FILL,
@@ -62,37 +73,36 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
         fontFamily: shape.fontFamily,
         fontStyle: shape.fontStyle,
         fontSize: shape.fontSize);
-    if (paintFront != null)
-      front = ParagraphCache().getEntry(
-          renderInfo.caption!, mapTextPaint, paintFront!, shape.maxTextWidth);
-    if (paintBack != null)
-      back = ParagraphCache().getEntry(
-          renderInfo.caption!, mapTextPaint, paintBack!, shape.maxTextWidth);
-    _boxWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
-    _boxHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
-    shape.calculateOffsets(_boxWidth, _boxHeight);
+    setCaption(caption, symbolBoundary);
   }
 
-  @override
-  Future<void> init(SymbolCache symbolCache) {
-    return Future.value();
+  setCaption(String caption, [MapRectangle? symbolBoundary]) {
+    if (paintFront != null)
+      front = ParagraphCache()
+          .getEntry(caption, mapTextPaint, paintFront!, shape.maxTextWidth);
+    if (paintBack != null)
+      back = ParagraphCache()
+          .getEntry(caption, mapTextPaint, paintBack!, shape.maxTextWidth);
+    _fontWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
+    _fontHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
+    shape.calculateOffsets(_fontWidth, _fontHeight, symbolBoundary);
   }
 
   @override
   MapRectangle calculateBoundary() {
     if (boundary != null) return boundary!;
     boundary = MapRectangle(
-        -_boxWidth / 2 + shape.horizontalOffset,
-        -_boxHeight / 2 + shape.verticalOffset,
-        _boxWidth / 2 + shape.horizontalOffset,
-        _boxHeight / 2 + shape.verticalOffset);
+        -_fontWidth / 2 + shape.horizontalOffset,
+        -_fontHeight / 2 + shape.verticalOffset,
+        _fontWidth / 2 + shape.horizontalOffset,
+        _fontHeight / 2 + shape.verticalOffset);
 
     return boundary!;
   }
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 
@@ -130,7 +140,7 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 

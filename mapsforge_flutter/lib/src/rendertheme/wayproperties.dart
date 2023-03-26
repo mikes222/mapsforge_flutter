@@ -35,6 +35,8 @@ class WayProperties implements NodeWayProperties {
 
   List<List<Mappoint>>? coordinatesAbsolute;
 
+  int _lastZoomLevel = -1;
+
   WayProperties(this.way)
       : layer = max(0, way.layer),
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
@@ -42,6 +44,8 @@ class WayProperties implements NodeWayProperties {
   List<List<Mappoint>> getCoordinatesAbsolute(PixelProjection projection) {
     // deferred evaluation as some PolyLineContainers will never be drawn. However,
     // to save memory, after computing the absolute coordinates, the way is released.
+    if (projection.scalefactor.zoomlevel != _lastZoomLevel)
+      coordinatesAbsolute = null;
     if (coordinatesAbsolute == null) {
       coordinatesAbsolute = [];
       way.latLongs.forEach((outerList) {
@@ -56,6 +60,7 @@ class WayProperties implements NodeWayProperties {
           coordinatesAbsolute!.add(mp1);
         }
       });
+      _lastZoomLevel = projection.scalefactor.zoomlevel;
     }
     return coordinatesAbsolute!;
   }
@@ -73,8 +78,8 @@ class WayProperties implements NodeWayProperties {
     return this.center!;
   }
 
-  Mappoint getCenterRelativeToLeftUpper(
-      PixelProjection projection, Mappoint leftUpper, double dy) {
+  Mappoint getCenterRelativeToLeftUpper(PixelProjection projection,
+      Mappoint leftUpper, double dy) {
     Mappoint center = getCenterAbsolute(projection);
     return center.offset(-leftUpper.x, -leftUpper.y + dy);
   }
@@ -82,7 +87,7 @@ class WayProperties implements NodeWayProperties {
   List<List<Mappoint>> getCoordinatesRelativeToLeftUpper(
       PixelProjection projection, Mappoint leftUpper, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
-        getCoordinatesAbsolute(projection);
+    getCoordinatesAbsolute(projection);
     List<List<Mappoint>> coordinatesRelativeToTile = [];
 
     coordinatesAbsolute.forEach((outerList) {
@@ -99,7 +104,7 @@ class WayProperties implements NodeWayProperties {
 
   LineString? calculateStringPath(PixelProjection projection, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
-        getCoordinatesAbsolute(projection);
+    getCoordinatesAbsolute(projection);
 
     if (coordinatesAbsolute.length == 0) {
       return null;

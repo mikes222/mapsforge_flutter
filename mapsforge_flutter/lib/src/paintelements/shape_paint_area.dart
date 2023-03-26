@@ -7,10 +7,8 @@ import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 
-import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape_area.dart';
 import '../rendertheme/wayproperties.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintArea extends ShapePaint<ShapeArea> {
   MapPaint? fill;
@@ -51,7 +49,7 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     MapPath path = calculatePath(wayProperties
         .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
@@ -62,6 +60,6 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {}
 }

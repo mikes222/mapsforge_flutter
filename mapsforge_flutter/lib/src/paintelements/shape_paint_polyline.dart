@@ -8,9 +8,7 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/shape_polyline.dart';
 
 import '../../core.dart';
 import '../graphics/resourcebitmap.dart';
-import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/wayproperties.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   late final MapPaint? stroke;
@@ -47,7 +45,7 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     if (shape.isStrokeTransparent()) return;
 
@@ -58,6 +56,6 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {}
 }

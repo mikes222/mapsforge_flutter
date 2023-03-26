@@ -200,6 +200,7 @@ class MapViewPosition {
         scale = old.scale,
         focalPoint = old.focalPoint,
         _rotationRadian = Projection.degToRadian(_rotation),
+        _center = old._center,
         assert(_rotation >= 0 && _rotation < 360);
 
   MapViewPosition.setLeftUpper(
@@ -219,16 +220,16 @@ class MapViewPosition {
         min(max(upper, -viewDimension.height / 2),
             _projection.mapsize - viewDimension.height / 2));
 
-    double rightX = _leftUpper!.x + viewDimension.width;
-    double bottomY = _leftUpper!.y + viewDimension.height;
+    // double rightX = _leftUpper!.x + viewDimension.width;
+    // double bottomY = _leftUpper!.y + viewDimension.height;
 
-    boundingBox = BoundingBox(
-        _projection
-            .pixelYToLatitude(min(bottomY, _projection.mapsize.toDouble())),
-        _projection.pixelXToLongitude(max(_leftUpper!.x, 0)),
-        _projection.pixelYToLatitude(max(_leftUpper!.y, 0)),
-        _projection
-            .pixelXToLongitude(min(rightX, _projection.mapsize.toDouble())));
+    // boundingBox = BoundingBox(
+    //     _projection
+    //         .pixelYToLatitude(min(bottomY, _projection.mapsize.toDouble())),
+    //     _projection.pixelXToLongitude(max(_leftUpper!.x, 0)),
+    //     _projection.pixelYToLatitude(max(_leftUpper!.y, 0)),
+    //     _projection
+    //         .pixelXToLongitude(min(rightX, _projection.mapsize.toDouble())));
 
     _latitude =
         _projection.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);

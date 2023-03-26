@@ -287,7 +287,7 @@ class MapDataStoreRenderer extends JobRenderer {
 
   @override
   String getRenderKey() {
-    return "${renderTheme.hashCode}";
+    return "${renderTheme.hashCode ^ renderLabels.hashCode}";
   }
 }
 

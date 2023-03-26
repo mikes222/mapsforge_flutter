@@ -11,10 +11,8 @@ import '../graphics/maptextpaint.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape.dart';
 import '../rendertheme/wayproperties.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 /// A container which holds a shape and is able to draw the shape to the canvas (=Tile)
 abstract class ShapePaint<T extends Shape> {
@@ -29,11 +27,11 @@ abstract class ShapePaint<T extends Shape> {
   }
 
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper, NodeRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]);
 
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper, WayRenderInfo renderInfo,
+      PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]);
 
   Future<void> init(SymbolCache symbolCache);
