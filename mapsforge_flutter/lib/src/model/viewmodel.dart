@@ -451,6 +451,11 @@ class TapEvent implements ILatLong {
         //leftUpperMappoint = const Mappoint(0, 0),
         mapPixelMappoint = const Mappoint(0, 0),
         _projection = null;
+
+  @override
+  String toString() {
+    return 'TapEvent{latitude: $latitude, longitude: $longitude, _projection: $_projection, mapPixelMappoint: $mapPixelMappoint}';
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

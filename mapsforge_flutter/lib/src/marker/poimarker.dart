@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../../datastore.dart';
 import '../paintelements/shape_paint_symbol.dart';
@@ -20,6 +23,8 @@ class PoiMarker<T> extends BasicPointMarker<T> {
 
   ShapeSymbol? scaled;
 
+  final bool rotateWithMap;
+
   PoiMarker({
     Display display = Display.ALWAYS,
     required String src,
@@ -34,6 +39,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     MarkerCaption? markerCaption,
     required DisplayModel displayModel,
     Alignment alignment = Alignment.center,
+    this.rotateWithMap = true,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation >= 0 && rotation <= 360),
@@ -53,7 +59,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     base.bitmapSrc = src;
     base.setBitmapColorFromNumber(bitmapColor);
     base.setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    //base.theta = ;
+    base.theta = rotation / 180 * pi;
     base.setBitmapWidth((width * displayModel.getFontScaleFactor()).round());
     base.setBitmapHeight((height * displayModel.getFontScaleFactor()).round());
 //    setBitmapColorFromNumber(bitmapColor);
@@ -61,8 +67,6 @@ class PoiMarker<T> extends BasicPointMarker<T> {
       markerCaption.latLong = latLong;
     }
     if (markerCaption != null) {
-      // markerCaption
-      //     .setDy(radius + strokeWidth + markerCaption.getFontSize() / 2);
       markerCaption.setSymbolBoundary(base.calculateBoundary());
     }
   }
@@ -80,55 +84,20 @@ class PoiMarker<T> extends BasicPointMarker<T> {
       shapePaint = ShapePaintSymbol(scaled!);
       await shapePaint.init(symbolCache);
     }
-
-    // bitmap?.dispose();
-    // bitmap = null;
-    //
-    // paint = createPaint(style: Style.FILL);
-    // bitmap = await createBitmap(
-    //     symbolCache: symbolCache,
-    //     bitmapSrc: bitmapSrc!,
-    //     bitmapWidth: getBitmapWidth(),
-    //     bitmapHeight: getBitmapHeight());
-    // if (markerCaption != null) {
-    //   markerCaption!.latLong = latLong;
-    // }
-    // if (bitmap != null) {
-    //   double centerX = bitmap!.getWidth() / 2;
-    //   double centerY = bitmap!.getHeight() / 2;
-    //
-    //   _imageOffsetX = -(alignment.x * centerX + centerX);
-    //   _imageOffsetY = -(alignment.y * centerY + centerY);
-    //
-    //   if (markerCaption != null) {
-    //     // markerCaption!
-    //     //     .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
-    //     markerCaption!.setSymbolBoundary(MapRectangle(
-    //         -bitmap!.getWidth() / 2,
-    //         -bitmap!.getHeight() / 2,
-    //         bitmap!.getWidth() / 2,
-    //         bitmap!.getHeight() / 2));
-    //   }
-    // }
   }
 
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
-    if (markerCaption != null) {
-      // if (bitmap != null) {
-      //   // markerCaption
-      //   //     .setDy(bitmap!.getHeight() / 2 + markerCaption.getFontSize() / 2);
-      //   markerCaption.setSymbolBoundary(MapRectangle(
-      //       -bitmap!.getWidth() / 2,
-      //       -bitmap!.getHeight() / 2,
-      //       bitmap!.getWidth() / 2,
-      //       bitmap!.getHeight() / 2));
-      // }
-    }
     super.setMarkerCaption(markerCaption);
+    if (markerCaption != null) {
+      markerCaption.setSymbolBoundary(base.calculateBoundary());
+    }
   }
 
-  void set rotation(double rotation) {}
+  void set rotation(double rotation) {
+    base.theta = rotation / 180 * pi;
+    if (scaled != null) scaled!.theta = rotation / 180 * pi;
+  }
 
   void setBitmapColorFromNumber(int color) {
     base.setBitmapColorFromNumber(color);
@@ -136,7 +105,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
 
   Future<void> setAndLoadBitmapSrc(
       String bitmapSrc, SymbolCache symbolCache) async {
-//    super.setBitmapSrc(bitmapSrc);
+    base.bitmapSrc = bitmapSrc;
     await initResources(symbolCache);
   }
 
@@ -158,21 +127,20 @@ class PoiMarker<T> extends BasicPointMarker<T> {
       markerCallback.mapViewPosition.projection,
       markerCallback.mapViewPosition
           .getLeftUpper(markerCallback.viewModel.mapDimension),
-      markerCallback.mapViewPosition.rotationRadian,
+      rotateWithMap ? markerCallback.mapViewPosition.rotationRadian : 0,
     );
   }
 
   @override
   bool isTapped(TapEvent tapEvent) {
-    double y = tapEvent.projection.latitudeToPixelY(latLong.latitude);
-    double x = tapEvent.projection.longitudeToPixelX(latLong.longitude);
-    return false;
-    // x = x + _imageOffsetX;
-    // y = y + _imageOffsetY;
-    // return tapEvent.mapPixelMappoint.x >= x &&
-    //     tapEvent.mapPixelMappoint.x <= x + getBitmapWidth() &&
-    //     tapEvent.mapPixelMappoint.y >= y &&
-    //     tapEvent.mapPixelMappoint.y <= y + getBitmapHeight();
+    Mappoint absolute =
+        nodeProperties.getCoordinatesAbsolute(tapEvent.projection);
+    MapRectangle boundary = base.calculateBoundary();
+    //print("${tapEvent.mapPixelMappoint.x} ${absolute.x} ${boundary.left}");
+    return tapEvent.mapPixelMappoint.x >= absolute.x + boundary.left &&
+        tapEvent.mapPixelMappoint.x <= absolute.x + boundary.right &&
+        tapEvent.mapPixelMappoint.y >= absolute.y + boundary.top &&
+        tapEvent.mapPixelMappoint.y <= absolute.y + boundary.bottom;
   }
 
   @override
