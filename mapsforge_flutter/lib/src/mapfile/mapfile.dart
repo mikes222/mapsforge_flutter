@@ -2,25 +2,26 @@ import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfilehelper.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfileinfo.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
+import 'package:mapsforge_flutter/src/mapfile/readbuffersd.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
-import 'package:mapsforge_flutter/src/projection/projection.dart';
+import 'package:mapsforge_storage/mapsforge_storage.dart';
 
 import '../datastore/datastorereadresult.dart';
 import '../datastore/mapdatastore.dart';
 import '../datastore/pointofinterest.dart';
 import '../datastore/poiwaybundle.dart';
 import '../datastore/way.dart';
-import '../model/tile.dart';
-import '../projection/mercatorprojection.dart';
 import '../reader/queryparameters.dart';
 import 'indexcache.dart';
 import 'mapfileheader.dart';
@@ -74,6 +75,7 @@ class MapFile extends MapDataStore {
   final String? filename;
 
   late MapfileHelper _helper;
+  MapsforgeStorage? _safHandler;
 
   /// just to see if we should create a cache for blocks
   //final Set<int> _blockSet = Set();
@@ -84,6 +86,20 @@ class MapFile extends MapDataStore {
   // late LruCache<String, PoiWayBundle> _blockCache;
 
   ReadbufferSource? readBufferSource;
+
+  /// Create a new MapFile using a Map stored on sdCard
+  /// 
+  /// Parameter [storageHandler] handles access to sdCard using Androids `Storage Access Framework`.
+  static Future<MapFile> fromsd(
+    MapsforgeStorage mapsforgeStorage, {
+    int? timestamp = null,
+    String? language = null,
+  }) async {
+    MapFile mapFile = MapFile._(null, timestamp, language);
+
+    await mapFile._init(safHandler: mapsforgeStorage);
+    return mapFile;
+  }
 
   static Future<MapFile> from(
       String filename, int? timestamp, String? language) async {
@@ -109,9 +125,16 @@ class MapFile extends MapDataStore {
 //    _blockCache = LruCache(storage: _storage, capacity: 500);
   }
 
-  Future<MapFile> _init() async {
+  Future<MapFile> _init({MapsforgeStorage? safHandler}) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
-    this.readBufferSource = ReadbufferFile(filename!);
+
+    if (safHandler != null) {
+      _safHandler = safHandler;
+      this.readBufferSource = ReadbufferSd(safHandler);
+    } else {
+      this.readBufferSource = ReadbufferFile(filename!);
+    }
+
     this._fileSize = await readBufferSource!.length();
     _mapFileHeader = MapFileHeader();
     await this._mapFileHeader.readHeader(readBufferSource!, this._fileSize);
@@ -487,9 +510,14 @@ class MapFile extends MapDataStore {
           "  readMapDataComplete took $diff ms up to create query $queryParameters");
 
     if (readBufferSource == null) {
-      assert(filename != null);
-      _log.info("Creating ReadBuffer for $filename");
-      readBufferSource = ReadbufferFile(filename!);
+      if (_safHandler != null) {
+        _log.info("Creating ReadBufferSd for $filename");
+        readBufferSource = ReadbufferSd(_safHandler!);
+      } else {
+        assert(filename != null);
+        _log.info("Creating ReadBuffer for $filename");
+        readBufferSource = ReadbufferFile(filename!);
+      }
     }
     DatastoreReadResult? result = await processBlocks(
         readBufferSource!,

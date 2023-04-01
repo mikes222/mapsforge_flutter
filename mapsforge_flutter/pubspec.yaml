@@ -12,6 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  mapsforge_storage:
+    path: ../mapsforge_storage
+
   # BSD License
   logging: ^1.0.2
 
