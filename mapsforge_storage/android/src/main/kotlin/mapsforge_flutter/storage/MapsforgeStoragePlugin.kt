@@ -295,7 +295,7 @@ class MapsforgeStoragePlugin: FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     companion object {
-        private const val REQUESTCODE_READ_PERMISSION = 0
-        private const val REQUESTCODE_WRITE_PERMISSION = 1
+        private const val REQUESTCODE_READ_PERMISSION = 2
+        private const val REQUESTCODE_WRITE_PERMISSION = 3
     }
 }
