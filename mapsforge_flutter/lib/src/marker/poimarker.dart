@@ -1,11 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../../datastore.dart';
+import '../../maps.dart';
 import '../paintelements/shape_paint_symbol.dart';
 import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_symbol.dart';
@@ -59,7 +58,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     base.bitmapSrc = src;
     base.setBitmapColorFromNumber(bitmapColor);
     base.setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    base.theta = rotation / 180 * pi;
+    base.theta = Projection.degToRadian(rotation);
     base.setBitmapWidth((width * displayModel.getFontScaleFactor()).round());
     base.setBitmapHeight((height * displayModel.getFontScaleFactor()).round());
 //    setBitmapColorFromNumber(bitmapColor);
@@ -89,14 +88,14 @@ class PoiMarker<T> extends BasicPointMarker<T> {
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
     super.setMarkerCaption(markerCaption);
-    if (markerCaption != null) {
-      markerCaption.setSymbolBoundary(base.calculateBoundary());
-    }
+    // if (markerCaption != null) {
+    //   markerCaption.setSymbolBoundary(base.calculateBoundary());
+    // }
   }
 
   void set rotation(double rotation) {
-    base.theta = rotation / 180 * pi;
-    if (scaled != null) scaled!.theta = rotation / 180 * pi;
+    base.theta = Projection.degToRadian(rotation);
+    if (scaled != null) scaled!.theta = Projection.degToRadian(rotation);
   }
 
   void setBitmapColorFromNumber(int color) {
@@ -111,14 +110,14 @@ class PoiMarker<T> extends BasicPointMarker<T> {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    if (scaled == null ||
-        _lastZoom != markerCallback.mapViewPosition.zoomLevel) {
-      scaled =
-          ShapeSymbol.scale(base, markerCallback.mapViewPosition.zoomLevel);
-      _lastZoom = markerCallback.mapViewPosition.zoomLevel;
-      //shapePaint = ShapePaintSymbol(scaled!);
-      //shapePaint.init(symbolCache).then((value) {});
-    }
+    // if (scaled == null ||
+    //     _lastZoom != markerCallback.mapViewPosition.zoomLevel) {
+    //   scaled =
+    //       ShapeSymbol.scale(base, markerCallback.mapViewPosition.zoomLevel);
+    //   _lastZoom = markerCallback.mapViewPosition.zoomLevel;
+    //   //shapePaint = ShapePaintSymbol(scaled!);
+    //   //shapePaint.init(symbolCache).then((value) {});
+    // }
     // print(
     //     "renderCaption $caption for $minZoomLevel and $maxZoomLevel at ${markerCallback.mapViewPosition.zoomLevel}");
     shapePaint.renderNode(

@@ -22,7 +22,7 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   /// This is the fill, normally black and represents the text itself
   MapPaint? paintFront;
 
-  late final MapTextPaint mapTextPaint;
+  late MapTextPaint mapTextPaint;
 
   ParagraphEntry? front;
 

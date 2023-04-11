@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
@@ -18,7 +16,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 
   ResourceBitmap? bitmap;
 
-  ShapePaintSymbol(ShapeSymbol shapeSymbol) : super(shapeSymbol) {
+  ShapePaintSymbol(ShapeSymbol shape) : super(shape) {
     fill = createPaint(style: Style.FILL);
   }
 
@@ -48,7 +46,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
       // rotation of the rotationRadian parameter is always in the opposite direction.
       // If the map is moving clockwise we must rotate the symbol counterclockwise
       // to keep it horizontal
-      matrix.rotate(shape.theta + 2 * pi - rotationRadian,
+      matrix.rotate(shape.theta /*+ 2 * pi*/ - rotationRadian,
           pivotX: boundary.left, pivotY: boundary.top);
 //        matrix.rotate(shapeSymbol.theta);
     }
