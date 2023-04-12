@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -15,6 +14,7 @@ import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
 import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
+import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 
 class TagsCountPage extends StatelessWidget {
   final MapFile mapFile;
@@ -59,15 +59,15 @@ class TagsCountPage extends StatelessWidget {
   }
 
   Widget _showPois(List<_PoiCount> pois) {
-    Tile tile = Tile(0, 0,
-        subFileParameter.baseZoomLevel ?? subFileParameter.zoomLevelMin, 0);
+    Tile tile = Tile(0, 0, subFileParameter.baseZoomLevel, 0);
     return pois.isEmpty
         ? const Text("No POIs")
         : ListView.builder(
             itemCount: pois.length,
             itemBuilder: (BuildContext context, int index) {
               _PoiCount _poiCount = pois.elementAt(index);
-              List renderers = renderTheme.matchNode(tile, _poiCount.poi);
+              NodeProperties nodeProperties = NodeProperties(_poiCount.poi);
+              List renderers = renderTheme.matchNode(tile, nodeProperties);
               return Card(
                   child: Row(
                 children: [
@@ -98,10 +98,8 @@ class TagsCountPage extends StatelessWidget {
   }
 
   Widget _showWays(List<_WayCount> ways) {
-    Tile tile = Tile(0, 0,
-        subFileParameter.baseZoomLevel ?? subFileParameter.zoomLevelMin, 0);
-    Tile tileMax = Tile(0, 0,
-        subFileParameter.baseZoomLevel ?? subFileParameter.zoomLevelMax, 0);
+    Tile tile = Tile(0, 0, subFileParameter.baseZoomLevel, 0);
+    Tile tileMax = Tile(0, 0, subFileParameter.baseZoomLevel, 0);
     return ways.isEmpty
         ? const Text("No Ways")
         : ListView.builder(
@@ -141,7 +139,7 @@ class TagsCountPage extends StatelessWidget {
                   ),
                   const Spacer(),
                   _wayCount.isClosedWay
-                      ? Icon(Icons.circle_outlined)
+                      ? const Icon(Icons.circle_outlined)
                       : const SizedBox(),
                 ],
               ));
@@ -217,12 +215,13 @@ class TagsCountPage extends StatelessWidget {
 
   Future<_PoiWayCount> _readBlock() async {
     try {
-      ReadbufferFile readBufferMaster = ReadbufferFile(mapFile.filename!);
+      ReadbufferFile readBufferMaster =
+          ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
 
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
       MercatorProjection mercatorProjection =
-          MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel!);
+          MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
       _PoiWayCount _poiWayCount = _PoiWayCount();
       int step = 20;
       for (int x = subFileParameter.boundaryTileLeft;
@@ -231,11 +230,11 @@ class TagsCountPage extends StatelessWidget {
         for (int y = subFileParameter.boundaryTileTop;
             y < subFileParameter.boundaryTileBottom;
             y += step) {
-          Tile upperLeft = Tile(x, y, subFileParameter.baseZoomLevel!, 0);
+          Tile upperLeft = Tile(x, y, subFileParameter.baseZoomLevel, 0);
           Tile lowerRight = Tile(
               min(x + step - 1, subFileParameter.boundaryTileRight),
               min(y + step - 1, subFileParameter.boundaryTileBottom),
-              subFileParameter.baseZoomLevel!,
+              subFileParameter.baseZoomLevel,
               0);
           queryParameters.calculateBaseTiles(
               upperLeft, lowerRight, subFileParameter);

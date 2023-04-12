@@ -1,13 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/exceptions/filenotfoundexception.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
-import 'dart:io';
-
 import 'package:mapsforge_flutter/src/parameters.dart';
+import 'package:queue/queue.dart';
 
 /// Reads the mapfile from a physical file
 class ReadbufferFile implements ReadbufferSource {
@@ -26,6 +25,8 @@ class ReadbufferFile implements ReadbufferSource {
 
   late LruCache<String, Readbuffer> _cache;
 
+  Queue queue = Queue();
+
   ReadbufferFile(this.filename) {
     _cache = LruCache(storage: _storage, capacity: 1000);
   }
@@ -33,13 +34,9 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   Future<Uint8List> readDirect(
       int indexBlockPosition, int indexBlockSize) async {
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    RandomAccessFile newInstance = await _raf!.setPosition(indexBlockPosition);
-    //_log.info("readDirect needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    Uint8List result = await newInstance.read(indexBlockSize);
-    assert(result.length == indexBlockSize);
-    return result;
+    Readbuffer buffer =
+        await readFromFile(length: indexBlockSize, offset: indexBlockPosition);
+    return buffer.getBuffer(0, indexBlockSize);
   }
 
   /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
@@ -52,9 +49,7 @@ class ReadbufferFile implements ReadbufferSource {
   Future<Readbuffer> readFromFile({int? offset, required int length}) async {
     assert(length > 0);
     // ensure that the read buffer is large enough
-    if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
-      throw Exception("invalid read length: $length");
-    }
+    assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
 
     String cacheKey = "$offset-$length";
     Readbuffer? result = _cache.get(cacheKey);
@@ -63,16 +58,20 @@ class ReadbufferFile implements ReadbufferSource {
       return Readbuffer.from(result);
     }
 
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    RandomAccessFile? _newRaf = _raf;
-    if (offset != null) {
-      assert(offset >= 0);
-      _newRaf = await this._raf!.setPosition(offset);
-    }
-    Uint8List _bufferData = await _newRaf!.read(length);
-    assert(_bufferData.length == length);
-    //_log.info("readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
+    int time = DateTime.now().millisecondsSinceEpoch;
+    Uint8List _bufferData = await queue.add(() async {
+      await _openRaf();
+      if (offset != null) {
+        assert(offset >= 0);
+        await this._raf!.setPosition(offset);
+      }
+      Uint8List _bufferData = await _raf!.read(length);
+      assert(_bufferData.length == length);
+      return _bufferData;
+    });
+    if (DateTime.now().millisecondsSinceEpoch - time > 100)
+      _log.info(
+          "readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     result = Readbuffer(_bufferData, offset);
     _cache[cacheKey] = result;
     return result;
@@ -82,6 +81,8 @@ class ReadbufferFile implements ReadbufferSource {
   void close() {
     _raf?.close();
     _raf = null;
+    _log.info("Statistics for ReadBufferFile: ${_storage.toString()}");
+    _cache.clear();
   }
 
   Future<RandomAccessFile?> _openRaf() async {
@@ -89,10 +90,10 @@ class ReadbufferFile implements ReadbufferSource {
       return Future.value(_raf);
     }
     File file = File(filename);
-    bool ok = await file.exists();
-    if (!ok) {
-      throw FileNotFoundException(filename);
-    }
+    // bool ok = await file.exists();
+    // if (!ok) {
+    //   throw FileNotFoundException(filename);
+    // }
     _raf = await file.open();
     return _raf;
   }
@@ -106,5 +107,10 @@ class ReadbufferFile implements ReadbufferSource {
     assert(_length != null && _length! >= 0);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return _length!;
+  }
+
+  @override
+  String toString() {
+    return 'ReadbufferFile{_raf: $_raf, filename: $filename, _length: $_length}';
   }
 }

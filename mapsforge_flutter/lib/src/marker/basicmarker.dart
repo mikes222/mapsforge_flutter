@@ -11,6 +11,12 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
   /// The position in the map if the current marker is a "point". For path this makes no sense so a pathmarker must control its own position
   ///
   ILatLong latLong;
+
+  /// latLong in absolute pixel coordinates
+  Mappoint? _mappoint;
+
+  int _lastZoomLevel = -1;
+
   Alignment alignment;
 
   BasicPointMarker({
@@ -51,6 +57,24 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
 
   @override
   double get longitude => latLong.longitude;
+
+  Mappoint get mappoint => _mappoint!;
+
+  void setLatLong(ILatLong latLong) {
+    this.latLong = latLong;
+    _mappoint = null;
+  }
+
+  @override
+  void render(MarkerCallback markerCallback) {
+    if (_mappoint == null ||
+        markerCallback.mapViewPosition.zoomLevel != _lastZoomLevel) {
+      _mappoint =
+          markerCallback.mapViewPosition.projection.latLonToPixel(latLong);
+      _lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
+    }
+    super.render(markerCallback);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -164,9 +188,10 @@ class MarkerCaption with TextMixin, PaintMixin {
     if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
     prepareScalePaintMixin(markerCallback.mapViewPosition.zoomLevel);
     prepareScaleTextMixin(markerCallback.mapViewPosition.zoomLevel);
-    Mappoint mappoint = markerCallback.mapViewPosition.projection!
-        .pixelRelativeToLeftUpper(
-            latLong!, markerCallback.mapViewPosition.leftUpper!);
+    Mappoint leftUpper = markerCallback.mapViewPosition
+        .getLeftUpper(markerCallback.viewModel.mapDimension);
+    Mappoint mappoint = markerCallback.mapViewPosition.projection
+        .pixelRelativeToLeftUpper(latLong!, leftUpper);
     markerCallback.flutterCanvas.drawText(
         text,
         (mappoint.x + captionOffsetX),

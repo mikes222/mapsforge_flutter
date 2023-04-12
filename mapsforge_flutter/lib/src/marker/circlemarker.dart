@@ -11,11 +11,11 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
   final int? percent;
 
   CircleMarker({
-    display = Display.ALWAYS,
-    minZoomLevel = 0,
-    maxZoomLevel = 65535,
-    item,
-    markerCaption,
+    Display display = Display.ALWAYS,
+    int minZoomLevel = 0,
+    int maxZoomLevel = 65535,
+    T? item,
+    MarkerCaption? markerCaption,
     required ILatLong center,
     double radius = 10,
     this.percent,
@@ -23,8 +23,7 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
     required DisplayModel displayModel,
-  })  : assert(display != null),
-        assert(minZoomLevel >= 0),
+  })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(strokeWidth >= 0),
         assert(radius > 0),
@@ -46,8 +45,12 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
     setStrokeWidth(strokeWidth * displayModel.getScaleFactor());
     this.radius = radius * displayModel.getScaleFactor();
 
-    if (markerCaption != null && markerCaption!.latLong == null) {
-      markerCaption!.latLong = latLong;
+    if (markerCaption != null && markerCaption.latLong == null) {
+      markerCaption.latLong = latLong;
+    }
+    if (markerCaption != null) {
+      markerCaption
+          .setDy(radius + strokeWidth + markerCaption.getFontSize() / 2);
     }
   }
 
@@ -63,15 +66,17 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
-    markerCallback.renderCircle(
-        latLong.latitude,
-        latLong.longitude,
-        getRadius(markerCallback.mapViewPosition.zoomLevel),
+    Mappoint leftUpper = markerCallback.mapViewPosition
+        .getLeftUpper(markerCallback.viewModel.mapDimension);
+    markerCallback.flutterCanvas.drawCircle(
+        (mappoint.x - leftUpper.x),
+        (mappoint.y - leftUpper.y),
+        radius,
         getFillPaint(markerCallback.mapViewPosition.zoomLevel));
-    markerCallback.renderCircle(
-        latLong.latitude,
-        latLong.longitude,
-        getRadius(markerCallback.mapViewPosition.zoomLevel),
+    markerCallback.flutterCanvas.drawCircle(
+        (mappoint.x - leftUpper.x),
+        (mappoint.y - leftUpper.y),
+        radius,
         getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
   }
 

@@ -8,11 +8,14 @@ import '../datastore/deserializer.dart';
 import 'indexcacheentrykey.dart';
 import 'subfileparameter.dart';
 import 'subfileparameterbuilder.dart';
+import 'package:logging/logging.dart';
 
 ///
 /// A cache for database index blocks with a fixed size and LRU policy.
 ///
 class IndexCache {
+  static final _log = new Logger('IndexCache');
+
   /// Number of index entries that one index block consists of.
   static const int INDEX_ENTRIES_PER_BLOCK = 128;
 
@@ -35,7 +38,8 @@ class IndexCache {
 
   /// Destroy the cache at the end of its lifetime.
   void dispose() {
-    print("Statistics for IndexCache: ${_cache.storage.toString()}");
+    _log.info(
+        "Statistics for IndexCache: ${_cache.storage.toString()}, successes: $_successes, misses: $_misses");
     this._cache.clear();
   }
 

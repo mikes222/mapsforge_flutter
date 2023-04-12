@@ -1,6 +1,5 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
 /// Implementations of this class provides caches for [Tile]s.

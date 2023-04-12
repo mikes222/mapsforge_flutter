@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
@@ -50,7 +49,7 @@ class MapHeaderPage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      LabeltextCustom(label: "Filename", value: mapFile.filename),
+                      //LabeltextCustom(label: "Filename", value: mapFile.filename),
                       // _fileSize is private but only used to verify header and to check if read beyond file
                       LabeltextCustom(
                           label: "Zoomlevel",

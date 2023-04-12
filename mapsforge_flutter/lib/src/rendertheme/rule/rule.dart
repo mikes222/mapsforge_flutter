@@ -2,20 +2,18 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
-import '../../datastore/pointofinterest.dart';
 import '../../model/tag.dart';
 import '../../model/tile.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
+import '../nodeproperties.dart';
 import 'attributematcher.dart';
 import 'closed.dart';
 import 'closedmatcher.dart';
 import 'elementmatcher.dart';
 
 abstract class Rule {
-  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY =
-      new Map();
-  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE =
-      new Map<List<String>, AttributeMatcher>();
+  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY = {};
+  static final Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE = {};
 
   final String? cat;
   final ClosedMatcher? closedMatcher;
@@ -41,6 +39,18 @@ abstract class Rule {
     });
   }
 
+  Rule.create(
+      Rule oldRule, List<Rule> subs, List<RenderInstruction> renderInstructions)
+      : cat = oldRule.cat,
+        closedMatcher = oldRule.closedMatcher,
+        elementMatcher = oldRule.elementMatcher,
+        this.renderInstructions = renderInstructions,
+        subRules = subs,
+        zoomMin = oldRule.zoomMin,
+        zoomMax = oldRule.zoomMax;
+
+  Rule createRule(List<Rule> subs, List<RenderInstruction> renderInstructions);
+
   void addRenderingInstruction(RenderInstruction renderInstruction) {
     this.renderInstructions.add(renderInstruction);
   }
@@ -59,24 +69,46 @@ abstract class Rule {
     }
   }
 
-  bool matchesNode(List<Tag> tags, int zoomLevel, int indoorLevel);
+  /// Returns true if this rule would apply for the given zoomLevel.
+  bool matchesForZoomLevel(int zoomLevel);
 
-  bool matchesWay(
-      List<Tag> tags, int zoomLevel, int indoorLevel, Closed closed);
+  Rule? matchForZoomLevel(int zoomLevel) {
+    if (matchesForZoomLevel(zoomLevel)) {
+      List<Rule> subs = [];
+      subRules.forEach((element) {
+        Rule? sub = element.matchForZoomLevel(zoomLevel);
+        if (sub != null) subs.add(sub);
+      });
+      // we do not have subrules AND we do not have instructions, so this is a no-op
+      List<RenderInstruction> newRenderInstructions = [];
+      for (RenderInstruction ri in renderInstructions) {
+        RenderInstruction? newRi = ri.prepareScale(zoomLevel);
+        if (newRi != null) newRenderInstructions.add(newRi);
+      }
+      if (newRenderInstructions.isEmpty && subs.isEmpty) return null;
+      Rule rule = createRule(subs, newRenderInstructions);
+      return rule;
+    }
+    return null;
+  }
+
+  bool matchesNode(List<Tag> tags, int indoorLevel);
+
+  bool matchesWay(List<Tag> tags, int indoorLevel, Closed closed);
 
   void matchNode(final Tile tile, List<RenderInstruction> matchingList,
-      PointOfInterest pointOfInterest) {
-    if (matchesNode(pointOfInterest.tags, tile.zoomLevel, tile.indoorLevel)) {
+      NodeProperties container) {
+    if (matchesNode(container.tags, tile.indoorLevel)) {
       matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
-        element.matchNode(tile, matchingList, pointOfInterest);
+        element.matchNode(tile, matchingList, container);
       });
     }
   }
 
   void matchWay(
       Way way, Tile tile, Closed closed, List<RenderInstruction> matchingList) {
-    if (matchesWay(way.tags, tile.zoomLevel, tile.indoorLevel, closed)) {
+    if (matchesWay(way.tags, tile.indoorLevel, closed)) {
       matchingList.addAll(renderInstructions);
       subRules.forEach((element) {
         element.matchWay(way, tile, closed, matchingList);
@@ -92,15 +124,6 @@ abstract class Rule {
 //    this.subRules.trimToSize();
     for (int i = 0, n = this.subRules.length; i < n; ++i) {
       this.subRules.elementAt(i).onComplete();
-    }
-  }
-
-  void prepareScale(int zoomLevel) {
-    for (int i = 0, n = this.renderInstructions.length; i < n; ++i) {
-      this.renderInstructions.elementAt(i).prepareScale(zoomLevel);
-    }
-    for (int i = 0, n = this.subRules.length; i < n; ++i) {
-      this.subRules.elementAt(i).prepareScale(zoomLevel);
     }
   }
 

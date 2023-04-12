@@ -4,8 +4,8 @@ import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 
 ///
@@ -21,7 +21,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   ///
   String renderkey;
 
-  late Set<String> _files;
+  final Set<String> _files = {};
 
   late String _dir;
 
@@ -43,14 +43,15 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
 
     result = FileTileBitmapCache(renderkey, png, tileSize);
-    _instances[renderkey] = result;
+    // init before adding to the instances, otherwise purgeAll may find an uninitialized entry
     await result._init();
+    _instances[renderkey] = result;
     return result;
   }
 
   /// Purges all cached files from all caches regardless if the cache is used or not
   static Future<void> purgeAllCaches() async {
-    for (FileTileBitmapCache cache in _instances.values) {
+    for (FileTileBitmapCache cache in List.from(_instances.values)) {
       await cache.purgeAll();
     }
     _instances.clear();
@@ -76,7 +77,7 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
-    _files = (await FileHelper.getFiles(_dir)).toSet();
+    _files.addAll((await FileHelper.getFiles(_dir)).toSet());
     _log.info(
         "Starting cache for renderkey $renderkey with ${_files.length} items in filecache");
     // int timestamp = DateTime.now().millisecondsSinceEpoch;

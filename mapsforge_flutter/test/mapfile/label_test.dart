@@ -1,33 +1,22 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttertilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 
 import '../testassetbundle.dart';
+import '../testhelper.dart';
 
 ///
 /// flutter test --update-goldens
 ///
 ///
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  setUp(() {
-    _initLogging();
-  });
-
   testWidgets("Split label between two tiles", (WidgetTester tester) async {
-    await loadAppFonts();
-
     final DisplayModel displayModel = DisplayModel();
 
     int l = 0;
@@ -99,8 +88,8 @@ void main() {
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
       var img1 = (jobResult1.bitmap as FlutterTileBitmap).getClonedImage();
 
-      _dataStoreRenderer.labelStore.debug();
-      _dataStoreRenderer.tileDependencies!.debug();
+      //_dataStoreRenderer.labelStore.debug();
+      //_dataStoreRenderer.tileDependencies!.debug();
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile1]!.length, greaterThan(0));
 
       return [img0, img1];
@@ -108,40 +97,15 @@ void main() {
 
     assert(imgs != null);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              decoration: BoxDecoration(
-                  border: Border.all(width: 2, color: Colors.blue)),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RawImage(image: imgs![0]),
-                  RawImage(image: imgs[1]),
-                ],
-              ),
-            ),
-          ),
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RawImage(image: imgs![0]),
+            RawImage(image: imgs[1]),
+          ],
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(find.byType(Row), matchesGoldenFile('splittedlabel.png'));
+        goldenfile: 'splittedlabel.png');
   });
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void _initLogging() {
-// Print output to console.
-  Logger.root.onRecord.listen((LogRecord r) {
-    print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
-  });
-
-// Root logger level.
-  Logger.root.level = Level.FINEST;
 }

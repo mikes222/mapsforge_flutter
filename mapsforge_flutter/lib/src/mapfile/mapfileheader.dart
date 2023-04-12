@@ -75,6 +75,7 @@ class MapFileHeader {
   /// @throws IOException if an error occurs while reading the file.
   Future<void> readHeader(
       ReadbufferSource readBufferMaster, int fileSize) async {
+    if (mapFileInfo != null) return;
     Readbuffer? readBuffer =
         await RequiredFields.readMagicByte(readBufferMaster);
 
@@ -218,5 +219,10 @@ class MapFileHeader {
         this.subFileParameters[zoomLevel] = subFileParameter;
       }
     }
+  }
+
+  @override
+  String toString() {
+    return 'MapFileHeader{mapFileInfo: $mapFileInfo, subFileParameters: $subFileParameters, zoomLevelMinimum: $zoomLevelMinimum, zoomLevelMaximum: $zoomLevelMaximum}';
   }
 }

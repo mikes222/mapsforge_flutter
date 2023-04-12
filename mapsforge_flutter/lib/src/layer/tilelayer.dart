@@ -1,10 +1,11 @@
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/model/latlong.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/mapviewposition.dart';
 import 'package:mapsforge_flutter/src/model/viewmodel.dart';
+
+import 'job/jobset.dart';
 
 ///
 /// this class presents the whole map by requesting the tiles and drawing them when available
@@ -147,4 +148,5 @@ abstract class TileLayer {
 //    onRemove();
 //  }
 
+  void dispose();
 }

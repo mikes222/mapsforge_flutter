@@ -1,3 +1,5 @@
+import '../../core.dart';
+
 abstract class MapRect {
   double getLeft();
 
@@ -6,4 +8,6 @@ abstract class MapRect {
   double getRight();
 
   double getBottom();
+
+  MapRect offset(double x, double y);
 }

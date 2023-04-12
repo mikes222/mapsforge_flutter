@@ -4,10 +4,8 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
-import 'package:mapsforge_flutter/src/utils/latlongutils.dart';
 
 import 'basicmarker.dart';
 import 'markercallback.dart';
@@ -126,9 +124,10 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
 
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
       markerCallback.flutterCanvas.uiCanvas.save();
-      markerCallback.flutterCanvas.uiCanvas.translate(
-          _leftUpperX - markerCallback.mapViewPosition.leftUpper!.x,
-          _leftUpperY - markerCallback.mapViewPosition.leftUpper!.y);
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      markerCallback.flutterCanvas.uiCanvas
+          .translate(_leftUpperX - leftUpper.x, _leftUpperY - leftUpper.y);
       if (fill != null) markerCallback.renderPath(mapPath!, fill!);
       if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);
       markerCallback.flutterCanvas.uiCanvas.restore();
@@ -145,14 +144,16 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
       mapPath!.clear();
       _points.clear();
       _zoom = markerCallback.mapViewPosition.zoomLevel;
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
       path.forEach((latLong) {
         Mappoint mappoint = Mappoint(
-            markerCallback.mapViewPosition.projection!
+            markerCallback.mapViewPosition.projection
                 .longitudeToPixelX(latLong.longitude),
-            markerCallback.mapViewPosition.projection!
+            markerCallback.mapViewPosition.projection
                 .latitudeToPixelY(latLong.latitude));
-        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
-        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+        double y = mappoint.y - leftUpper.y;
+        double x = mappoint.x - leftUpper.x;
 
         _points.add(mappoint);
 
@@ -162,8 +163,8 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
           mapPath!.lineTo(x, y);
       });
       mapPath!.close();
-      _leftUpperX = markerCallback.mapViewPosition.leftUpper!.x;
-      _leftUpperY = markerCallback.mapViewPosition.leftUpper!.y;
+      _leftUpperX = leftUpper.x;
+      _leftUpperY = leftUpper.y;
     }
     if (fill != null) markerCallback.renderPath(mapPath!, fill!);
     if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);

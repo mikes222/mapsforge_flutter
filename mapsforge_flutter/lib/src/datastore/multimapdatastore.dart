@@ -53,12 +53,12 @@ class MultiMapDataStore extends MapDataStore {
     if (useStartPosition) {
       this.startPosition = mapDataStore.startPosition;
     }
-    if (null == this.boundingBox) {
-      this.boundingBox = mapDataStore.boundingBox;
-    } else {
-      this.boundingBox =
-          this.boundingBox!.extendBoundingBox(mapDataStore.boundingBox!);
-    }
+    // if (null == this.boundingBox) {
+    //   this.boundingBox = mapDataStore.boundingBox;
+    // } else {
+    //   this.boundingBox =
+    //       this.boundingBox!.extendBoundingBox(mapDataStore.boundingBox!);
+    // }
   }
 
   void removeMapDataStore(double minLatitude, double minLongitude,
@@ -392,6 +392,13 @@ class MultiMapDataStore extends MapDataStore {
       }
     }
     return false;
+  }
+
+  @override
+  Future<void> lateOpen() async {
+    for (MapDataStore mdb in mapDatabases) {
+      await mdb.lateOpen();
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 
 class BackgroundPainter extends ChangeNotifier implements CustomPainter {

@@ -35,11 +35,11 @@ class MemoryDatastore extends Datastore {
     Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     List<PointOfInterest> poiResults = pointOfInterests
         .where((poi) =>
-            projection.boundingBoxOfTile(tile).containsLatLong(poi.position))
+            tile.getBoundingBox(projection).containsLatLong(poi.position))
         .toList();
     List<Way> wayResults = [];
     for (Way way in ways) {
-      if (projection.boundingBoxOfTile(tile).intersectsArea(way.latLongs)) {
+      if (tile.getBoundingBox(projection).intersectsArea(way.latLongs)) {
         wayResults.add(way);
       }
     }
@@ -88,5 +88,10 @@ class MemoryDatastore extends Datastore {
   @override
   String toString() {
     return 'MemoryDatastore{pointOfInterests: $pointOfInterests, ways: $ways}';
+  }
+
+  @override
+  Future<void> lateOpen() {
+    return Future.value(null);
   }
 }

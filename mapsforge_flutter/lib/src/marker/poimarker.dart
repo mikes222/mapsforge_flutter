@@ -1,9 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapsrcmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
+import '../../special.dart';
+import '../graphics/cap.dart';
+import '../graphics/implementation/fluttermatrix.dart';
+import '../graphics/join.dart';
 import 'basicmarker.dart';
 import 'markercallback.dart';
 
@@ -15,6 +21,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   double rotation;
 
   ResourceBitmap? bitmap;
+
+  MapPaint? paint;
 
   PoiMarker({
     Display display = Display.ALWAYS,
@@ -59,11 +67,15 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   }
 
   Future<void> initResources(SymbolCache symbolCache) async {
-    initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     bitmap?.dispose();
     bitmap = null;
-    bitmap = await loadBitmap(10, symbolCache);
-
+    setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    paint = createPaint(style: Style.FILL);
+    bitmap = await createBitmap(
+        symbolCache: symbolCache,
+        bitmapSrc: bitmapSrc!,
+        bitmapWidth: getBitmapWidth(),
+        bitmapHeight: getBitmapHeight());
     if (bitmap != null) {
       double centerX = bitmap!.getWidth() / 2;
       double centerY = bitmap!.getHeight() / 2;
@@ -76,6 +88,40 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
             .setDy(bitmap!.getHeight() / 2 + markerCaption!.getFontSize() / 2);
       }
     }
+  }
+
+  /// copied from ShapePaint
+  Future<ResourceBitmap?> createBitmap(
+      {required SymbolCache symbolCache,
+      required String bitmapSrc,
+      required int bitmapWidth,
+      required int bitmapHeight}) async {
+    ResourceBitmap? resourceBitmap = await symbolCache.getOrCreateSymbol(
+        bitmapSrc, bitmapWidth, bitmapHeight);
+    return resourceBitmap;
+  }
+
+  /// copie from ShapePaint
+  MapPaint createPaint(
+      {required Style style,
+
+      /// The color of the paint. Default is black
+      int color = 0xff000000,
+
+      /// strokeWidth must be zero for fillers when used for text. See [ParagraphEntry]
+      double? strokeWidth,
+      Cap cap = Cap.ROUND,
+      Join join = Join.ROUND,
+      List<double>? strokeDashArray}) {
+    MapPaint result = GraphicFactory().createPaint();
+    result.setStyle(style);
+    result.setColorFromNumber(color);
+    result.setStrokeWidth(strokeWidth ?? (style == Style.STROKE ? 1 : 0));
+    result.setStrokeCap(cap);
+    result.setStrokeJoin(join);
+    result.setStrokeDasharray(strokeDashArray);
+    result.setAntiAlias(true);
+    return result;
   }
 
   @override
@@ -98,8 +144,20 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (bitmap != null) {
-      markerCallback.renderBitmap(bitmap!, latLong.latitude, latLong.longitude,
-          _imageOffsetX, _imageOffsetY, rotation, getBitmapPaint());
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      FlutterMatrix? matrix;
+      if (rotation != 0) {
+        matrix = FlutterMatrix();
+        matrix.rotate(rotation / 180 * pi,
+            pivotX: -getBitmapWidth() / 2, pivotY: -getBitmapHeight() / 2);
+      }
+      markerCallback.flutterCanvas.drawBitmap(
+          bitmap: bitmap!,
+          left: mappoint.x + _imageOffsetX - leftUpper.x,
+          top: mappoint.y + _imageOffsetY - leftUpper.y,
+          matrix: matrix,
+          paint: paint!);
     }
   }
 
@@ -110,10 +168,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with BitmapSrcMixin {
     x = x + _imageOffsetX;
     y = y + _imageOffsetY;
     return tapEvent.mapPixelMappoint.x >= x &&
-        tapEvent.mapPixelMappoint.x <=
-            x + getBitmapWidth(tapEvent.projection.scalefactor.zoomlevel) &&
+        tapEvent.mapPixelMappoint.x <= x + getBitmapWidth() &&
         tapEvent.mapPixelMappoint.y >= y &&
-        tapEvent.mapPixelMappoint.y <=
-            y + getBitmapHeight(tapEvent.projection.scalefactor.zoomlevel);
+        tapEvent.mapPixelMappoint.y <= y + getBitmapHeight();
   }
 }

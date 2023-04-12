@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
 import 'package:mapsforge_flutter/src/marker/markercontext.dart';
 
 ///
@@ -45,7 +45,7 @@ class SingleMarkerPainter extends CustomPainter {
     }
 
     MarkerContext context = MarkerContext(
-        flutterCanvas, mapViewPosition, viewModel.viewScaleFactor);
+        flutterCanvas, mapViewPosition, viewModel.viewScaleFactor, viewModel);
     marker.render(context);
 
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {

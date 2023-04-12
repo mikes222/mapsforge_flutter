@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -211,7 +211,7 @@ class RenderThemeBuilder {
                 }
               });
 
-              Hillshading hillshading = new Hillshading(
+              RenderinstructionHillshading hillshading = RenderinstructionHillshading(
                   minZoom, maxZoom, magnitude, layer, always, _level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:execution_queue/execution_queue.dart';
+import 'package:queue/queue.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
@@ -15,21 +15,20 @@ class IsolateMixin<T extends IsolateInitParams> {
 
   Isolate? _isolate;
 
-  ExecutionQueue _queue =
-      ExecutionQueue(/*timeLimit: const Duration(milliseconds: 10000)*/);
+  Queue _queue = Queue(timeout: const Duration(milliseconds: 10000));
 
   final PublishSubject<IsolateReplyParams> _subject =
       PublishSubject<IsolateReplyParams>();
 
-  void reassignQueue(ExecutionQueue executionQueue) {
-    //_queue.clear();
-    _queue = executionQueue;
-  }
+  // void reassignQueue(Queue executionQueue) {
+  //   _queue.dispose();
+  //   _queue = executionQueue;
+  // }
 
   @mustCallSuper
   void dispose() {
     // clear the queue so that the next job will be the stopIsolate
-    //_queue.clear();
+    _queue.dispose();
     if (_isolate != null) {
       stopIsolateJob();
     }
@@ -50,12 +49,11 @@ class IsolateMixin<T extends IsolateInitParams> {
         var res = await _subject.first;
         //_log.info("Received ${res.runtimeType} for $isolateRequestParams");
         T result = res as T;
-        if (result.error != null) {
-          _log.warning(
-              "Error ${result.error} while sending $isolateRequestParams");
-          _log.warning(result.stacktrace);
-          throw result.error;
-        }
+//      if (result.error != null) {
+        // _log.warning(
+        //     "Error ${result.error} while sending $isolateRequestParams",
+        //     result.stacktrace);
+//      }
         return result;
       });
     } on TimeoutException catch (error, stacktrace) {
@@ -151,7 +149,6 @@ class IsolateReplyParams {
 /////////////////////////////////////////////////////////////////////////////
 
 /*
-
 Future<void> entryPoint(IsolateInitParams isolateInitParams) async {
   // Open the ReceivePort to listen for incoming messages
   var receivePort = new ReceivePort();
@@ -172,5 +169,4 @@ Future<void> entryPoint(IsolateInitParams isolateInitParams) async {
     }
   }
 }
-
 */

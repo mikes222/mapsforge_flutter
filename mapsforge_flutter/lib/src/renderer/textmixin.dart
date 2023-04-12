@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/implementation/graphics/fluttertextpaint.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertextpaint.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 class TextMixin {

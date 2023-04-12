@@ -16,14 +16,18 @@ class MapViewPosition {
   /// The longitude of the center of the widget
   double? _longitude;
 
+  /// The size of a tile in pixel
   final int tileSize;
 
+  /// The current zoomLevel
   final int zoomLevel;
 
+  /// The current indoorLevel
   final int indoorLevel;
 
   final double scale;
 
+  /// The focal point. Used when pinch-and-zoom to know the center of the zoom
   final Mappoint? focalPoint;
 
   /// the latitude/longitude boundaries of the current map view.
@@ -33,7 +37,11 @@ class MapViewPosition {
   // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
   Mappoint? _leftUpper;
 
-  PixelProjection? _projection;
+  /// The center of the map in absolute pixel coordinates. Note that the center
+  /// needs to be recalculated if the map moves OR if the map zooms
+  Mappoint? _center;
+
+  final PixelProjection _projection;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
       this.indoorLevel, this.tileSize)
@@ -50,9 +58,8 @@ class MapViewPosition {
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
         scale = 1,
-        focalPoint = null {
-    _projection = PixelProjection(zoomLevel, tileSize);
-  }
+        focalPoint = null,
+        _projection = PixelProjection(old.zoomLevel + 1, old.tileSize);
 
   MapViewPosition.zoomInAround(
       MapViewPosition old, double latitude, double longitude)
@@ -62,9 +69,8 @@ class MapViewPosition {
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
         scale = 1,
-        focalPoint = null {
-    _projection = PixelProjection(zoomLevel, old.tileSize);
-  }
+        focalPoint = null,
+        _projection = PixelProjection(old.zoomLevel + 1, old.tileSize);
 
   MapViewPosition.zoomOut(MapViewPosition old)
       : _latitude = old._latitude,
@@ -73,9 +79,8 @@ class MapViewPosition {
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
         scale = 1,
-        focalPoint = null {
-    _projection = PixelProjection(zoomLevel, old.tileSize);
-  }
+        focalPoint = null,
+        _projection = PixelProjection(max(old.zoomLevel - 1, 0), old.tileSize);
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
       : _latitude = old._latitude,
@@ -84,9 +89,8 @@ class MapViewPosition {
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
         scale = 1,
-        focalPoint = null {
-    _projection = PixelProjection(zoomLevel, old.tileSize);
-  }
+        focalPoint = null,
+        _projection = PixelProjection(max(zoomLevel, 0), old.tileSize);
 
   MapViewPosition.zoomAround(
       MapViewPosition old, double latitude, double longitude, int zoomLevel)
@@ -96,9 +100,8 @@ class MapViewPosition {
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
         scale = 1,
-        focalPoint = null {
-    _projection = PixelProjection(zoomLevel, old.tileSize);
-  }
+        focalPoint = null,
+        _projection = PixelProjection(max(zoomLevel, 0), old.tileSize);
 
   MapViewPosition.indoorLevelUp(MapViewPosition old)
       : _latitude = old._latitude,
@@ -110,7 +113,8 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         boundingBox = old.boundingBox,
-        _leftUpper = old._leftUpper;
+        _leftUpper = old._leftUpper,
+        _center = old._center;
 
   MapViewPosition.indoorLevelDown(MapViewPosition old)
       : _latitude = old._latitude,
@@ -122,7 +126,8 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         boundingBox = old.boundingBox,
-        _leftUpper = old._leftUpper;
+        _leftUpper = old._leftUpper,
+        _center = old._center;
 
   MapViewPosition.setIndoorLevel(MapViewPosition old, int indoorLevel)
       : _latitude = old._latitude,
@@ -134,7 +139,8 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         boundingBox = old.boundingBox,
-        _leftUpper = old._leftUpper;
+        _leftUpper = old._leftUpper,
+        _center = old._center;
 
   ///
   /// sets the new scale relative to the current zoomlevel. A scale of 1 means no action,
@@ -148,6 +154,7 @@ class MapViewPosition {
         this.zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
+        _center = old._center,
         _projection = old._projection;
 
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
@@ -171,26 +178,26 @@ class MapViewPosition {
     //calculateBoundingBox(tileSize, viewSize);
     _leftUpper = Mappoint(
         min(max(left, -viewDimension.width / 2),
-            _projection!.mapsize - viewDimension.width / 2),
+            _projection.mapsize - viewDimension.width / 2),
         min(max(upper, -viewDimension.height / 2),
-            _projection!.mapsize - viewDimension.height / 2));
+            _projection.mapsize - viewDimension.height / 2));
 
     double rightX = _leftUpper!.x + viewDimension.width;
     double bottomY = _leftUpper!.y + viewDimension.height;
 
     boundingBox = BoundingBox(
-        _projection!
-            .pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
-        _projection!.pixelXToLongitude(max(_leftUpper!.x, 0)),
-        _projection!.pixelYToLatitude(max(_leftUpper!.y, 0)),
-        _projection!
-            .pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
+        _projection
+            .pixelYToLatitude(min(bottomY, _projection.mapsize.toDouble())),
+        _projection.pixelXToLongitude(max(_leftUpper!.x, 0)),
+        _projection.pixelYToLatitude(max(_leftUpper!.y, 0)),
+        _projection
+            .pixelXToLongitude(min(rightX, _projection.mapsize.toDouble())));
 
     _latitude =
-        _projection!.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
+        _projection.pixelYToLatitude(_leftUpper!.y + viewDimension.height / 2);
 
     _longitude =
-        _projection!.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
+        _projection.pixelXToLongitude(_leftUpper!.x + viewDimension.width / 2);
 
     // Projection.checkLatitude(_latitude!);
     // Projection.checkLongitude(_longitude!);
@@ -200,6 +207,7 @@ class MapViewPosition {
   /// destroyed then as well as the _leftUpper variable.
   void sizeChanged() {
     _leftUpper = null;
+    _center = null;
     boundingBox = null;
   }
 
@@ -210,33 +218,43 @@ class MapViewPosition {
   /// Calculates the bounding box of the given dimensions of the view. Scaling or focalPoint are NOT considered.
   BoundingBox calculateBoundingBox(Dimension mapDimension) {
     if (boundingBox != null) return boundingBox!;
-
-    double centerY = _projection!.latitudeToPixelY(_latitude!);
-    double centerX = _projection!.longitudeToPixelX(_longitude!);
-    double leftX = centerX - mapDimension.width / 2;
-    double rightX = centerX + mapDimension.width / 2;
-    double topY = centerY - mapDimension.height / 2;
-    double bottomY = centerY + mapDimension.height / 2;
+    Mappoint center = getCenter();
+    double leftX = center.x - mapDimension.width / 2;
+    double rightX = center.x + mapDimension.width / 2;
+    double topY = center.y - mapDimension.height / 2;
+    double bottomY = center.y + mapDimension.height / 2;
     boundingBox = BoundingBox(
-        _projection!
-            .pixelYToLatitude(min(bottomY, _projection!.mapsize.toDouble())),
-        _projection!.pixelXToLongitude(max(leftX, 0)),
-        _projection!.pixelYToLatitude(max(topY, 0)),
-        _projection!
-            .pixelXToLongitude(min(rightX, _projection!.mapsize.toDouble())));
+        _projection
+            .pixelYToLatitude(min(bottomY, _projection.mapsize.toDouble())),
+        _projection.pixelXToLongitude(max(leftX, 0)),
+        _projection.pixelYToLatitude(max(topY, 0)),
+        _projection
+            .pixelXToLongitude(min(rightX, _projection.mapsize.toDouble())));
     _leftUpper = Mappoint(leftX, topY);
     return boundingBox!;
   }
 
-  PixelProjection? get projection => _projection;
+  PixelProjection get projection => _projection;
 
-  Mappoint? get leftUpper => _leftUpper;
+  Mappoint getLeftUpper(Dimension mapDimension) {
+    if (_leftUpper != null) return _leftUpper!;
+    calculateBoundingBox(mapDimension);
+    return _leftUpper!;
+  }
 
   /// The latitude of the center of the widget
   double? get latitude => _latitude;
 
   /// The longitude of the center of the widget
   double? get longitude => _longitude;
+
+  Mappoint getCenter() {
+    if (_center != null) return _center!;
+    double centerY = _projection.latitudeToPixelY(_latitude!);
+    double centerX = _projection.longitudeToPixelX(_longitude!);
+    _center = Mappoint(centerX, centerY);
+    return _center!;
+  }
 
   @override
   bool operator ==(Object other) =>

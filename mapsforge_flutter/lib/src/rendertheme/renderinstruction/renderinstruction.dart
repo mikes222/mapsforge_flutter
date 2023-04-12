@@ -1,11 +1,9 @@
-import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
-
-import '../../datastore/pointofinterest.dart';
-import '../../paintelements/shape/polylinecontainer.dart';
+import '../nodeproperties.dart';
 import '../rendercontext.dart';
+import '../wayproperties.dart';
 
-/// A RenderInstruction is a basic graphical primitive to draw a map.
+/// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
+/// instructions from an xml file. It can be seen like a CSS-file for html.
 abstract class RenderInstruction {
   static final String ALIGN_CENTER = "align-center";
   static final String ALL = "all";
@@ -52,14 +50,12 @@ abstract class RenderInstruction {
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param poi
-  Future<void> renderNode(final RenderContext renderContext,
-      PointOfInterest poi, SymbolCache symbolCache);
+  void renderNode(final RenderContext renderContext, NodeProperties container);
 
   /// @param renderCallback a reference to the receiver of all render callbacks.
   /// @param renderContext
   /// @param way
-  Future<void> renderWay(final RenderContext renderContext,
-      PolylineContainer way, SymbolCache symbolCache);
+  void renderWay(final RenderContext renderContext, WayProperties way);
 
   Scale scaleFromValue(String value) {
     if (value == (ALL)) {
@@ -70,8 +66,9 @@ abstract class RenderInstruction {
     return Scale.STROKE;
   }
 
-  /// Scales the stroke width of this RenderInstruction by the given factor.
-  void prepareScale(int zoomLevel);
+  /// prepares the renderinstruction for the given zoomLevel. Returns the
+  /// new RenderInstruction or NULL if it would never draw anything
+  RenderInstruction? prepareScale(int zoomLevel);
 }
 
 /////////////////////////////////////////////////////////////////////////////

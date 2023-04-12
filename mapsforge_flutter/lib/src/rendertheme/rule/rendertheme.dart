@@ -3,10 +3,10 @@ import 'package:mapsforge_flutter/src/datastore/way.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/renderthemebuilder.dart';
 
-import '../../datastore/pointofinterest.dart';
-import '../../rendertheme/renderinstruction/hillshading.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';
+import '../../rendertheme/renderinstruction/renderinstruction_hillshading.dart';
 import '../../rendertheme/rule/rule.dart';
+import '../nodeproperties.dart';
 import 'closed.dart';
 import 'matchingcachekey.dart';
 
@@ -28,11 +28,16 @@ class RenderTheme {
   final int? mapBackgroundOutside;
   late Map<MatchingCacheKey, List<RenderInstruction>> wayMatchingCache;
   late Map<MatchingCacheKey, List<RenderInstruction>> poiMatchingCache;
-  final List<Rule> rulesList; // NOPMD we need specific interface
-  List<Hillshading> hillShadings =
-      []; // NOPMD specific interface for trimToSize
 
-  final Set<int> _strokes = {};
+  /// A list of rules which contains a list of rules which ...
+  /// see defaultrender.xml how this is constructed.
+  final List<Rule> rulesList; // NOPMD we need specific interface
+
+  /// ZoomLevel dependent (iterative) list of rules
+  final Map<int, List<Rule>> zoomLevelRulesList = {};
+
+  List<RenderinstructionHillshading> hillShadings =
+      []; // NOPMD specific interface for trimToSize
 
   late final String forHash;
 
@@ -58,6 +63,11 @@ class RenderTheme {
     this.wayMatchingCache.clear();
     for (Rule r in this.rulesList) {
       r.dispose();
+    }
+    for (int zoomLevel in zoomLevelRulesList.keys) {
+      for (Rule r in zoomLevelRulesList[zoomLevel]!) {
+        r.dispose();
+      }
     }
   }
 
@@ -118,9 +128,9 @@ class RenderTheme {
    * @param renderContext
    * @param poi            the point of interest.
    */
-  List<RenderInstruction> matchNode(final Tile tile, PointOfInterest poi) {
+  List<RenderInstruction> matchNode(final Tile tile, NodeProperties container) {
     MatchingCacheKey matchingCacheKey = new MatchingCacheKey(
-        poi.tags, tile.zoomLevel, tile.indoorLevel, Closed.NO);
+        container.tags, tile.zoomLevel, tile.indoorLevel, Closed.NO);
 
     List<RenderInstruction>? matchingList =
         this.poiMatchingCache[matchingCacheKey];
@@ -128,8 +138,8 @@ class RenderTheme {
       // build cache
       matchingList = [];
 
-      rulesList.forEach((element) {
-        element.matchNode(tile, matchingList!, poi);
+      zoomLevelRulesList[tile.zoomLevel]!.forEach((element) {
+        element.matchNode(tile, matchingList!, container);
       });
       this.poiMatchingCache[matchingCacheKey] = matchingList;
     }
@@ -143,21 +153,22 @@ class RenderTheme {
    * @param zoomLevel   the zoom level to which this is applied.
    */
   void prepareScale(int zoomLevel) {
-    if (!_strokes.contains(zoomLevel)) {
-      for (Rule rule in rulesList) {
-        if (rule.zoomMin <= zoomLevel && rule.zoomMax >= zoomLevel) {
-          rule.prepareScale(zoomLevel);
-        }
+    if (zoomLevelRulesList.containsKey(zoomLevel)) return;
+    List<Rule> rules = [];
+    for (Rule rule in rulesList) {
+      Rule? r = rule.matchForZoomLevel(zoomLevel);
+      if (r != null) {
+        rules.add(r);
       }
-      _strokes.add(zoomLevel);
     }
+    zoomLevelRulesList[zoomLevel] = rules;
   }
 
   void addRule(Rule rule) {
     this.rulesList.add(rule);
   }
 
-  void addHillShadings(Hillshading hillshading) {
+  void addHillShadings(RenderinstructionHillshading hillshading) {
     this.hillShadings.add(hillshading);
   }
 
@@ -182,7 +193,7 @@ class RenderTheme {
     if (matchingList == null) {
       // build cache
       matchingList = [];
-      this.rulesList.forEach((rule) {
+      zoomLevelRulesList[tile.zoomLevel]!.forEach((rule) {
         rule.matchWay(way, tile, closed, matchingList!);
       });
 

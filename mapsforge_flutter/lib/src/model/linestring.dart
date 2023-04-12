@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'rectangle.dart';
+import 'maprectangle.dart';
 
 import 'linesegment.dart';
 import 'mappoint.dart';
@@ -8,7 +8,7 @@ import 'mappoint.dart';
 class LineString {
   final List<LineSegment> segments = [];
 
-  Rectangle? _bounds;
+  MapRectangle? _bounds;
 
   /**
    * Creates a new LineString that consists of only the part between startDistance and endDistance.
@@ -59,7 +59,7 @@ class LineString {
     return result;
   }
 
-  Rectangle getBounds() {
+  MapRectangle getBounds() {
     if (_bounds != null) return _bounds!;
 
     double minX = double.maxFinite;
@@ -73,7 +73,7 @@ class LineString {
       maxX = max(maxX, max(segment.start.x, segment.end.x));
       maxY = max(maxY, max(segment.start.y, segment.end.y));
     }
-    _bounds = Rectangle(minX, minY, maxX, maxY);
+    _bounds = MapRectangle(minX, minY, maxX, maxY);
     return _bounds!;
   }
 

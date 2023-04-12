@@ -58,33 +58,28 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
   void render(MarkerCallback markerCallback) {
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
       markerCallback.flutterCanvas.uiCanvas.save();
-      markerCallback.flutterCanvas.uiCanvas.translate(
-          _leftUpperX - markerCallback.mapViewPosition.leftUpper!.x,
-          _leftUpperY - markerCallback.mapViewPosition.leftUpper!.y);
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      markerCallback.flutterCanvas.uiCanvas
+          .translate(_leftUpperX - leftUpper.x, _leftUpperY - leftUpper.y);
       //if (fill != null) markerCallback.renderPath(mapPath!, fill!);
       markerCallback.renderPath(
           mapPath!, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
       markerCallback.flutterCanvas.uiCanvas.restore();
-      // _points.forEach((mappoint) {
-      //   double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
-      //   double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
-      //   if (mapPath!.isEmpty())
-      //     mapPath!.moveTo(x, y);
-      //   else
-      //     mapPath!.lineTo(x, y);
-      // });
     } else {
       mapPath?.clear();
       _points.clear();
       _zoom = markerCallback.mapViewPosition.zoomLevel;
+      Mappoint leftUpper = markerCallback.mapViewPosition
+          .getLeftUpper(markerCallback.viewModel.mapDimension);
       path.forEach((latLong) {
         Mappoint mappoint = Mappoint(
-            markerCallback.mapViewPosition.projection!
+            markerCallback.mapViewPosition.projection
                 .longitudeToPixelX(latLong.longitude),
-            markerCallback.mapViewPosition.projection!
+            markerCallback.mapViewPosition.projection
                 .latitudeToPixelY(latLong.latitude));
-        double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
-        double x = mappoint.x - markerCallback.mapViewPosition.leftUpper!.x;
+        double y = mappoint.y - leftUpper.y;
+        double x = mappoint.x - leftUpper.x;
 
         _points.add(mappoint);
 
@@ -93,8 +88,8 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
         else
           mapPath!.lineTo(x, y);
       });
-      _leftUpperX = markerCallback.mapViewPosition.leftUpper!.x;
-      _leftUpperY = markerCallback.mapViewPosition.leftUpper!.y;
+      _leftUpperX = leftUpper.x;
+      _leftUpperY = leftUpper.y;
       markerCallback.renderPath(
           mapPath!, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
     }

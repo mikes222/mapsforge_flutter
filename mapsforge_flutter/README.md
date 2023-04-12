@@ -34,15 +34,6 @@ Find many more examples in the subdirectory [../example/README.md](../example/RE
 
 ## Limitations
 
-In Flutter everything is called in the same thread, isolates are flutter's way of threads but calling ui
-functions is currently not possible in secondary isolates. All graphical methods which are used to 
-cretae the tiles are ui functions.
-
-- So currently the whole rendering is done in the ui thread which leads to blocked ui while
-  rendering (only a couple of milliseconds)
-  See https://github.com/flutter/flutter/issues/13937
-  See https://github.com/flutter/flutter/issues/10647
-
 Markers are currently not scaled while pinch'n'zoom
 
 ## Credits
@@ -53,16 +44,8 @@ Also to the university of chemnitz which implements indoor map support
 
 ## TODO
 
-Speed:
-
-- support for more than one concurrent job in the jobqueue
-- check why the IndexCache is read 512 times with only 13 entries containing
-
-Others:
-
 - support rotating map (do not rotate the text and icons)
 - some flaws with text spawning multiple tiles
-- Unit tests
 
 ## Getting Started
 
@@ -74,7 +57,7 @@ include the library in your pubspec.yaml:
   mapsforge_flutter: ^2.0.2
     # path: ../mapsforge_flutter
     # git:
-  #  url: https://github.com/mikes222/mapsforge_flutter
+    #  url: https://github.com/mikes222/mapsforge_flutter
 ```
 
 Note: For development purposes consider to include the github repository directly.
@@ -97,7 +80,7 @@ Load the mapfile which holds the openstreetmap &reg; data
 
 > Mapfiles are files specifically designed for mobile use and provide the information about an area in condensed form. Please visit the original project for more information about how to download/generate them.
 
-    MapFile mapFile = await MapFile.from(filename, null, null);```
+    MapFile mapFile = await MapFile.from(filename, null, null);
 
 or
 
@@ -170,61 +153,6 @@ In order to change the position in the map programmatically call the viewModel w
 
 Similar methods exists for zooming.
 
-### Marker
-
-If you want your own marker datastore add one or more of the following to the MapModel:
-
-    MarkerDataStore markerDataStore = MarkerDataStore();
-    markerDataStore.addMarker(PoiMarker(src: "jar:symbols/windsock.svg",
-      latLong: const LatLong(48.089355, 16.311509),
-      ));
-
-and include the new datastore in the mapModel. 
-
-    mapModel.markerDataStores.add(markerDataStore);
-
-You can add many markers to a datastore and you can
-add many datastores to the model.
-
-Note: We provide also datastores for single markers as well as ClusterDatastores for many marker which 
-should be clustered when zooming out
-
-Note: We provide a bunch of different markers. Markers with images like PoiMarkers, PathMarkers, RectMarkers, CircleMarkers and more
-
-### ContextMenu
-
-ContextMenus are created with the contextMenuBuilder. Add one to the viewModel:
-
-    ViewModel viewModel = ViewModel(
-          displayModel: displayModel,
-          contextMenuBuilder: const DefaultContextMenuBuilder(),
-        );
-
-### Overlays
-
-Overlays are drawn on top of the map and refresh of the overlay is triggered whenever the position or zoom
-changes. Overlays are simple Widgets. Add them to the viewModel:
-
-    viewModel.addOverlay(DistanceOverlay(viewModel));
-
-### Input gestures
-
-The default GestureDetector can deal with the following gestures:
-
-Double click: Default behavior: zoom in at the coordinates of the click
-Short click: Default behavior: show context menu
-Long click: Default behavior: none
-Pinch-to-zoom: Default behavior: zoom in/out at the specified focus point
-Click-hold, then move: Default behavior: none
-
-In order to receive the gestures and implement your own code check the appropriate observe* methods in ViewModel
-
-----
-
-For more information and documentation check [doc/mapdatastore.md](doc/mapdatastore.md)
-
-----
-
 ## License
 
 Same license as the original mapsforge project. LPGL-v3
@@ -235,3 +163,15 @@ Help is appreciated...
 
 If you find some bug or make enhancements feel free to contribute via PullRequests. 
 Also feel free to create bug reports in github.
+
+## Documentation
+
+See [doc/usage.md](doc/usage.md)
+
+See [doc/structure.md](doc/structure.md)
+
+See [doc/combine_osm_files.md](doc/combine_osm_files.md)
+
+See [doc/build_indoor_map_files.md](doc/build_indoor_map_files.md)
+
+See [doc/render_indoor_elements.md](doc/render_indoor_elements.md)

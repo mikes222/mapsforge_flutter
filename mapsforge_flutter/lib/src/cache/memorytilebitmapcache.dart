@@ -2,7 +2,6 @@ import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
 /// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.
@@ -78,7 +77,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   void purgeByBoundary(BoundingBox boundingBox) {
     storage.keys.where((Tile tile) {
       Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-      if (projection.boundingBoxOfTile(tile).intersects(boundingBox)) {
+      if (tile.getBoundingBox(projection).intersects(boundingBox)) {
         return true;
       }
       return false;

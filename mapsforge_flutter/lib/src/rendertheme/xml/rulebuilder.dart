@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/area.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/caption.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/hillshading.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/line.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/linesymbol.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/pathtext.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendercircle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/rendersymbol.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_area.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_caption.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_circle.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_hillshading.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_line.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_linesymbol.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_pathtext.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_symbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/ruleoptimizer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -31,6 +31,7 @@ import '../rule/negativematcher.dart';
 import '../rule/negativerule.dart';
 import '../rule/positiverule.dart';
 import '../rule/valuematcher.dart';
+import '../shape/shape_symbol.dart';
 
 class RuleBuilder {
   static final _log = new Logger('RuleBuilder');
@@ -63,7 +64,7 @@ class RuleBuilder {
       renderInstructions; // NOSONAR NOPMD we need specific interface
   final List<RuleBuilder> ruleBuilderStack;
   final SymbolFinder symbolFinder;
-  List<Hillshading> hillShadings =
+  List<RenderinstructionHillshading> hillShadings =
       []; // NOPMD specific interface for trimToSize
   final List<String> valueList = [];
   String? values;
@@ -281,7 +282,7 @@ class RuleBuilder {
 //      this.ruleStack.push(this.currentRule);
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Area area = new Area(qName, level);
+      RenderinstructionArea area = new RenderinstructionArea(level);
       area.parse(displayModel, rootElement);
       if (isVisible(area)) {
         this.addRenderingInstruction(area);
@@ -289,7 +290,8 @@ class RuleBuilder {
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Caption caption = new Caption(symbolFinder);
+      RenderinstructionCaption caption =
+          new RenderinstructionCaption(symbolFinder);
       caption.parse(displayModel, rootElement);
       if (isVisible(caption)) {
         this.addRenderingInstruction(caption);
@@ -299,7 +301,7 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderCircle circle = new RenderCircle(level);
+      RenderinstructionCircle circle = new RenderinstructionCircle(level);
       circle.parse(displayModel, rootElement);
       if (isVisible(circle)) {
         this.addRenderingInstruction(circle);
@@ -333,7 +335,7 @@ class RuleBuilder {
 //      }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      Line line = new Line(qName, level, null);
+      RenderinstructionLine line = new RenderinstructionLine(level);
       line.parse(displayModel, rootElement);
       if (isVisible(line)) {
         this.addRenderingInstruction(line);
@@ -341,10 +343,12 @@ class RuleBuilder {
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      LineSymbol lineSymbol = new LineSymbol(null);
+      RenderinstructionLinesymbol lineSymbol =
+          new RenderinstructionLinesymbol(level);
       lineSymbol.parse(displayModel, rootElement);
       if (isVisible(lineSymbol)) {
         this.addRenderingInstruction(lineSymbol);
+        //maxLevel = max(maxLevel, level);
       }
     }
 
@@ -365,10 +369,11 @@ class RuleBuilder {
 //      }
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      PathText pathText = new PathText();
+      RenderinstructionPathtext pathText = new RenderinstructionPathtext(level);
       pathText.parse(displayModel, rootElement);
       if (isVisible(pathText)) {
         this.addRenderingInstruction(pathText);
+        //maxLevel = max(maxLevel, level);
       }
     } else if ("stylemenu" == qName) {
       checkState(qName, XmlElementType.RENDERING_STYLE);
@@ -379,14 +384,12 @@ class RuleBuilder {
 //          getStringAttribute("defaultvalue"));
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderSymbol symbol = new RenderSymbol();
+      RenderinstructionSymbol symbol =
+          new RenderinstructionSymbol(symbolFinder, level);
       symbol.parse(displayModel, rootElement);
       if (isVisible(symbol)) {
         this.addRenderingInstruction(symbol);
-      }
-      String? symbolId = symbol.getId();
-      if (symbolId != null) {
-        symbolFinder.add(symbolId, symbol);
+        //maxLevel = max(maxLevel, level);
       }
     } else if ("hillshading" == qName) {
       checkState(qName, XmlElementType.RULE);
@@ -419,8 +422,9 @@ class RuleBuilder {
         }
       });
 
-      Hillshading hillshading = new Hillshading(
-          minZoom, maxZoom, magnitude, layer, always, this.level);
+      RenderinstructionHillshading hillshading =
+          new RenderinstructionHillshading(
+              minZoom, maxZoom, magnitude, layer, always, this.level);
       maxLevel = max(maxLevel, level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
@@ -502,21 +506,54 @@ enum XmlElementType {
 class SymbolFinder {
   final SymbolFinder? parentSymbolFinder;
 
-  final Map<String, RenderSymbol> _symbols = Map();
+  // map of symbolIds contains a map of zoomLevels
+  final Map<String, Map<int, SymbolHolder>> _symbols = {};
 
   SymbolFinder(this.parentSymbolFinder);
 
-  void add(String symbolId, RenderSymbol renderSymbol) {
-    assert(!_symbols.containsKey(symbolId));
-    _symbols[symbolId] = renderSymbol;
+  void add(String symbolId, int zoomLevel, ShapeSymbol shapeSymbol) {
+    if (!_symbols.containsKey(symbolId)) {
+      _symbols[symbolId] = {};
+    }
+    Map<int, SymbolHolder> holders = _symbols[symbolId]!;
+    if (!holders.containsKey(zoomLevel)) {
+      holders[zoomLevel] = SymbolHolder();
+    }
+    holders[zoomLevel]!.shapeSymbol = shapeSymbol;
   }
 
-  RenderSymbol? find(String symbolId) {
-    RenderSymbol? result = _symbols[symbolId];
-    if (result != null) {
-      return result;
+  SymbolHolder? search(String symbolId, int zoomLevel) {
+    if (_symbols.containsKey(symbolId)) {
+      Map<int, SymbolHolder> holders = _symbols[symbolId]!;
+      if (holders.containsKey(zoomLevel)) {
+        return holders[zoomLevel];
+      }
     }
-    if (parentSymbolFinder == null) return null;
-    return parentSymbolFinder!.find(symbolId);
+    return parentSymbolFinder?.search(symbolId, zoomLevel);
+  }
+
+  SymbolHolder findSymbolHolder(String symbolId, int zoomLevel) {
+    SymbolHolder? result = search(symbolId, zoomLevel);
+    if (result != null) return result;
+
+    if (!_symbols.containsKey(symbolId)) {
+      _symbols[symbolId] = {};
+    }
+    Map<int, SymbolHolder> holders = _symbols[symbolId]!;
+    if (!holders.containsKey(zoomLevel)) {
+      holders[zoomLevel] = SymbolHolder();
+    }
+    return holders[zoomLevel]!;
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class SymbolHolder {
+  ShapeSymbol? shapeSymbol;
+
+  @override
+  String toString() {
+    return 'SymbolHolder{shapeSymbol: $shapeSymbol}';
   }
 }
