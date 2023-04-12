@@ -138,7 +138,7 @@ class MapFile extends MapDataStore {
     // readBufferSource!.close();
     // readBufferSource = null;
     _helper = MapfileHelper(_mapFileHeader, preferredLanguage);
-    //await lateOpen();
+    await lateOpen();
     return this;
   }
 
