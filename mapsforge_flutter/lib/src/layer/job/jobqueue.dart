@@ -92,6 +92,9 @@ class JobQueue {
     if (jobResult.renderInfos != null) {
       labelStore.storeMapItems(job.tile, jobResult.renderInfos!);
       jobSet.addLabels(job, jobResult.renderInfos!);
+    } else {
+      // we have to remove this job even if we do not have labels
+      jobSet.labelJobs.remove(job);
     }
     unawaited(_startNextLabelJob(jobSet));
   }

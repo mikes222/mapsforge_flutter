@@ -3,13 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
+import 'package:logging/logging.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key) {
+    _initLogging();
+  }
 
   // This widget is the root of your application.
   @override
@@ -22,6 +25,18 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
+
+  /// Sets a [Logger] to log debug messages.
+  void _initLogging() {
+    // Print output to console.
+    Logger.root.onRecord.listen((LogRecord r) {
+      print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+    });
+
+    // Root logger level.
+    Logger.root.level = Level.FINEST;
+  }
+
 }
 
 class MyHomePage extends StatefulWidget {
@@ -87,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("Simplified example")),
       body: MapviewWidget(
         displayModel: displayModel,
         createMapModel: _createMapModel,

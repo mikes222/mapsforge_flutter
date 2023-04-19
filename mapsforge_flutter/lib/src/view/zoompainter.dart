@@ -15,17 +15,18 @@ class ZoomPainter extends CustomPainter {
 
   final JobSet jobSet;
 
-  ZoomPainter({required this.tileLayer,
-    required this.mapViewPosition,
-    required this.viewModel,
-    required this.jobSet})
+  ZoomPainter(
+      {required this.tileLayer,
+      required this.mapViewPosition,
+      required this.viewModel,
+      required this.jobSet})
       : super(repaint: jobSet);
 
   /// The [size] is the size of the widget in screenpixels, take care that we
   /// often use mappixels which is off by some zoomFactors
   @override
   void paint(Canvas canvas, Size size) {
-    //print("zoomPainter paint $size");
+    // print("zoomPainter paint $size");
     FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
     flutterCanvas.setClip(
         0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
