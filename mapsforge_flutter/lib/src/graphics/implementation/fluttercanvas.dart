@@ -3,13 +3,13 @@ import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
@@ -89,7 +89,7 @@ class FlutterCanvas extends MapCanvas {
       }
     }
     // _log.info(
-    //     "Drawing image to $left/$top (${image.width} / ${image.height}) $bitmap");
+    //     "Drawing image to $left/$top (${image.width} / ${image.height}) $bitmap, $matrix");
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(
     //         left, top, image.width.toDouble(), image.height.toDouble()),

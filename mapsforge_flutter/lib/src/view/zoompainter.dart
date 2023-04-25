@@ -15,7 +15,7 @@ class ZoomPainter extends CustomPainter {
 
   final JobSet jobSet;
 
-  ZoomPainter(
+  const ZoomPainter(
       {required this.tileLayer,
       required this.mapViewPosition,
       required this.viewModel,

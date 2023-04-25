@@ -51,10 +51,16 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 //        matrix.rotate(shapeSymbol.theta);
     }
 
-    //if (bitmap.debugDisposed())
     // print(
-    //     "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
-    //print(StackTrace.current);
+    //     "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
+    // ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
+    //         boundary.getWidth(), boundary.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
+    // uiCanvas.drawCircle(ui.Offset(point.x, point.y), 10,
+    //     ui.Paint()..color = Colors.green.withOpacity(0.5));
+
     canvas.drawBitmap(
         bitmap: bitmap!,
         matrix: matrix,

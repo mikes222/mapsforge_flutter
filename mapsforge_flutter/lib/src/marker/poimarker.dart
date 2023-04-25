@@ -55,12 +55,13 @@ class PoiMarker<T> extends BasicPointMarker<T> {
         ) {
     base = ShapeSymbol.base();
     setLatLong(latLong);
+    base.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
     base.bitmapSrc = src;
     base.setBitmapColorFromNumber(bitmapColor);
     base.setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     base.theta = Projection.degToRadian(rotation);
-    base.setBitmapWidth((width * displayModel.getFontScaleFactor()).round());
-    base.setBitmapHeight((height * displayModel.getFontScaleFactor()).round());
+    base.setBitmapWidth(width.round());
+    base.setBitmapHeight(height.round());
 //    setBitmapColorFromNumber(bitmapColor);
     if (markerCaption != null) {
       markerCaption.latLong = latLong;

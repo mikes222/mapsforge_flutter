@@ -19,7 +19,7 @@ class MarkerPainter extends CustomPainter {
 
   final ViewModel viewModel;
 
-  MarkerPainter({
+  const MarkerPainter({
     required this.mapViewPosition,
     required this.dataStore,
     required this.viewModel,
@@ -37,8 +37,9 @@ class MarkerPainter extends CustomPainter {
         "retrieving ${markers.length} markers at zoomlevel ${mapViewPosition.zoomLevel} from $dataStore");
 
     if (markers.length > 0) {
-      FlutterCanvas flutterCanvas = FlutterCanvas(canvas,
-          Size(viewModel.mapDimension.width, viewModel.mapDimension.height));
+      FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
+      // print(
+      //     "canvas size ${viewModel.mapDimension.width} / ${viewModel.mapDimension.height} and scaleFactor ${viewModel.viewScaleFactor}");
       flutterCanvas.setClip(
           0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
       if (viewModel.viewScaleFactor != 1) {

@@ -35,9 +35,29 @@ class ImageBuilder {
     PictureInfo pictureInfo = await vg.loadPicture(
         SvgBytesLoader(content.buffer.asUint8List()), null);
     final ui.Picture picture = pictureInfo.picture;
-    ui.Image image = await picture.toImage(width, height);
-    FlutterResourceBitmap result = FlutterResourceBitmap(image, src);
-    pictureInfo.picture.dispose();
-    return result;
+    ui.Image image = await picture.toImage(
+        pictureInfo.size.width.round(), pictureInfo.size.height.round());
+    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (width != 0 && height != 0) {
+      var codec = await ui.instantiateImageCodec(byteData!.buffer.asUint8List(),
+          targetHeight: height, targetWidth: width);
+      // add additional checking for number of frames etc here
+      var frame = await codec.getNextFrame();
+      ui.Image img = frame.image;
+
+      FlutterResourceBitmap result = FlutterResourceBitmap(img, src);
+      pictureInfo.picture.dispose();
+      return result;
+    } else {
+      var codec =
+          await ui.instantiateImageCodec(byteData!.buffer.asUint8List());
+      // add additional checking for number of frames etc here
+      var frame = await codec.getNextFrame();
+      ui.Image img = frame.image;
+
+      FlutterResourceBitmap result = FlutterResourceBitmap(img, src);
+      pictureInfo.picture.dispose();
+      return result;
+    }
   }
 }
