@@ -161,7 +161,7 @@ class _MarkerOverlayState extends State {
             height: 64,
             width: 48,
             latLong: snapshot.data!,
-            alignment: Alignment.bottomCenter,
+            position: Position.ABOVE,
           );
 
           _marker!.initResources(widget.symbolCache).then((value) {

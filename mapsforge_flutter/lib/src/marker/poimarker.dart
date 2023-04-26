@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../../datastore.dart';
 import '../../maps.dart';
+import '../graphics/position.dart';
 import '../paintelements/shape_paint_symbol.dart';
 import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_symbol.dart';
@@ -24,6 +25,8 @@ class PoiMarker<T> extends BasicPointMarker<T> {
 
   final bool rotateWithMap;
 
+  final Position position;
+
   PoiMarker({
     Display display = Display.ALWAYS,
     required String src,
@@ -37,7 +40,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     T? item,
     MarkerCaption? markerCaption,
     required DisplayModel displayModel,
-    Alignment alignment = Alignment.center,
+    this.position = Position.CENTER,
     this.rotateWithMap = true,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
@@ -51,7 +54,6 @@ class PoiMarker<T> extends BasicPointMarker<T> {
           maxZoomLevel: maxZoomLevel,
           item: item,
           latLong: latLong,
-          alignment: alignment,
         ) {
     base = ShapeSymbol.base();
     setLatLong(latLong);
@@ -62,6 +64,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     base.theta = Projection.degToRadian(rotation);
     base.setBitmapWidth(width.round());
     base.setBitmapHeight(height.round());
+    base.position = position;
 //    setBitmapColorFromNumber(bitmapColor);
     if (markerCaption != null) {
       markerCaption.latLong = latLong;

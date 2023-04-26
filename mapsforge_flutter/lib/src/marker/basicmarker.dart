@@ -16,8 +16,6 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
 
   int _lastZoomLevel = -1;
 
-  Alignment alignment;
-
   BasicPointMarker({
     display = Display.ALWAYS,
     int minZoomLevel = 0,
@@ -25,17 +23,15 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
     required this.latLong,
     T? item,
     MarkerCaption? markerCaption,
-    this.alignment = Alignment.center,
-  })
-      : assert(minZoomLevel >= 0),
+  })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
         super(
-          display: display,
-          minZoomLevel: minZoomLevel,
-          maxZoomLevel: maxZoomLevel,
-          item: item,
-          markerCaption: markerCaption);
+            display: display,
+            minZoomLevel: minZoomLevel,
+            maxZoomLevel: maxZoomLevel,
+            item: item,
+            markerCaption: markerCaption);
 
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
@@ -90,15 +86,14 @@ abstract class BasicMarker<T> extends Marker<T> {
     int maxZoomLevel = 65535,
     T? item,
     MarkerCaption? markerCaption,
-  })
-      : assert(minZoomLevel >= 0),
+  })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(minZoomLevel <= maxZoomLevel),
         super(
-          display: display,
-          minZoomLevel: minZoomLevel,
-          maxZoomLevel: maxZoomLevel,
-          item: item) {
+            display: display,
+            minZoomLevel: minZoomLevel,
+            maxZoomLevel: maxZoomLevel,
+            item: item) {
     setMarkerCaption(markerCaption);
   }
 
@@ -149,22 +144,21 @@ class MarkerCaption extends CaptionMarker {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     required DisplayModel displayModel,
-  }) : assert(strokeWidth >= 0),
+  })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
-        assert(minZoomLevel <= maxZoomLevel)
-  /*assert(text.length > 0)*/,
+        assert(minZoomLevel <= maxZoomLevel) /*assert(text.length > 0)*/,
         super(
-        latLong: latLong ?? const LatLong(0, 0),
-        caption: text,
-        fillColor: fillColor,
-        fontSize: fontSize,
-        strokeColor: strokeColor,
-        strokeWidth: strokeWidth,
-        minZoomLevel: minZoomLevel,
-        maxZoomLevel: maxZoomLevel,
-        maxTextWidth: displayModel.getMaxTextWidth(),
-        displayModel: displayModel,
-      ) {}
+          latLong: latLong ?? const LatLong(0, 0),
+          caption: text,
+          fillColor: fillColor,
+          fontSize: fontSize,
+          strokeColor: strokeColor,
+          strokeWidth: strokeWidth,
+          minZoomLevel: minZoomLevel,
+          maxZoomLevel: maxZoomLevel,
+          maxTextWidth: displayModel.getMaxTextWidth(),
+          displayModel: displayModel,
+        ) {}
 
   void renderCaption(MarkerCallback markerCallback) {
     if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;

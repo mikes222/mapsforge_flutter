@@ -30,6 +30,9 @@ class ImageBuilder {
     }
   }
 
+  /// Make sure this method runs in a real loop, not a fake-loop while testing. Use e.g.
+  ///
+  ///     await tester.runAsync(() async {...});
   Future<FlutterResourceBitmap> createSvgSymbol(
       ByteData content, String src, int width, int height) async {
     PictureInfo pictureInfo = await vg.loadPicture(
