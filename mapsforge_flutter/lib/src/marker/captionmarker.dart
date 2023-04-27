@@ -6,7 +6,6 @@ import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_caption.dart';
 
 import '../../marker.dart';
-import '../graphics/position.dart';
 
 class CaptionMarker<T> extends BasicPointMarker<T> {
   static final double DEFAULT_GAP = 2;
@@ -25,6 +24,8 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
 
   MapRectangle? _symbolBoundary;
 
+  final Position position;
+
   CaptionMarker({
     required this.caption,
     required ILatLong latLong,
@@ -35,6 +36,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     double maxTextWidth = 200,
+    this.position = Position.BELOW,
     required DisplayModel displayModel,
   }) : super(
             latLong: latLong,
@@ -45,7 +47,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
     base.setStrokeColorFromNumber(strokeColor);
     base.setFillColorFromNumber(fillColor);
     base.setFontSize(fontSize * displayModel.getFontScaleFactor());
-    base.position = Position.BELOW;
+    base.position = position;
     base.maxTextWidth = maxTextWidth;
     base.gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
     base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
