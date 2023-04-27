@@ -3,27 +3,25 @@ import 'dart:core';
 import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 
-import '../../maps.dart';
+import '../layer/job/job.dart';
 import '../model/tile.dart';
 import '../rendertheme/renderinfo.dart';
-import '../utils/layerutil.dart';
+import '../rendertheme/shape/shape.dart';
 import 'labelstore.dart';
 
 /// A LabelStore where the data is stored per tile.
 class TileBasedLabelStore implements LabelStore {
   static final _log = new Logger('TileBasedLabelStore');
+
   final Storage<Tile, List<RenderInfo>> storage =
       StatisticsStorage<Tile, List<RenderInfo>>();
+
   late LruCache<Tile, List<RenderInfo>> _cache;
 
-  late Set<Tile> lastVisibleTileSet;
   int version = 0;
 
   void debug() {
     _log.info("version: $version, items in Cache: ${_cache.length}");
-    lastVisibleTileSet.forEach((element) {
-      _log.info("LastVisibleTile: $element");
-    });
     storage.keys.forEach((key) {
       _log.info("Storage: $key - ${storage.get(key)!.value!.length} items");
     });
@@ -34,7 +32,6 @@ class TileBasedLabelStore implements LabelStore {
       storage: storage,
       capacity: capacity,
     );
-    lastVisibleTileSet = new Set<Tile>();
   }
 
   void destroy() {
@@ -54,9 +51,8 @@ class TileBasedLabelStore implements LabelStore {
    * @param tile     tile on which the mapItems reside.
    * @param mapItems the map elements.
    */
-  void storeMapItems(
-      Tile tile, List<RenderInfo> mapItems, PixelProjection projection) {
-    _cache.set(tile, LayerUtil.collisionFreeOrdered(mapItems, projection));
+  void storeMapItems(Tile tile, List<RenderInfo<Shape>> renderInfos) {
+    _cache.set(tile, renderInfos);
     ++this.version;
   }
 
@@ -66,30 +62,22 @@ class TileBasedLabelStore implements LabelStore {
   }
 
   @override
-  List<RenderInfo> getVisibleItems(Tile upperLeft, Tile lowerRight) {
-    return getVisibleItemsInternal(
-        LayerUtil.getTilesByTile(upperLeft, lowerRight));
-  }
-
-  List<RenderInfo> getVisibleItemsInternal(Set<Tile> tiles) {
-    lastVisibleTileSet = tiles;
-
-    List<RenderInfo> visibleItems = [];
-    for (Tile tile in lastVisibleTileSet) {
-      if (_cache.containsKey(tile)) {
-        visibleItems.addAll(_cache.get(tile)!);
+  Map<Job, List<RenderInfo<Shape>>> getVisibleItems(Set<Job> jobs) {
+    Map<Job, List<RenderInfo<Shape>>> visibleItems = {};
+    for (Job job in jobs) {
+      if (_cache.containsKey(job.tile)) {
+        visibleItems[job] = _cache.get(job.tile)!;
       }
     }
     return visibleItems;
   }
 
-  /**
-   * Returns if a tile is in the current tile set and no data is stored for this tile.
-   *
-   * @param tile the tile
-   * @return true if the tile is in the current tile set, but no data is stored for it.
-   */
-  bool requiresTile(Tile tile) {
-    return this.lastVisibleTileSet.contains(tile) && !_cache.containsKey(tile);
+  @override
+  bool hasTile(Tile tile) {
+    return _cache.containsKey(tile);
+  }
+
+  List<RenderInfo>? get(Tile tile) {
+    return _cache.get(tile);
   }
 }

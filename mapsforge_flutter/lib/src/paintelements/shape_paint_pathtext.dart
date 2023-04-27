@@ -9,10 +9,8 @@ import '../graphics/implementation/paragraph_cache.dart';
 import '../graphics/mapcanvas.dart';
 import '../graphics/maptextpaint.dart';
 import '../model/linestring.dart';
-import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape_pathtext.dart';
 import '../rendertheme/wayproperties.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   late final MapPaint? paintBack;
@@ -27,7 +25,10 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
 
   LineString? fullPath;
 
-  ShapePaintPathtext(ShapePathtext shapeSymbol) : super(shapeSymbol) {
+  final String caption;
+
+  ShapePaintPathtext(ShapePathtext shapeSymbol, this.caption)
+      : super(shapeSymbol) {
     if (!shapeSymbol.isFillTransparent())
       paintFront = createPaint(style: Style.FILL, color: shapeSymbol.fillColor);
     if (!shapeSymbol.isStrokeTransparent())
@@ -67,9 +68,10 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
+      PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {
     if (fullPath == null) {
-      paragraph(renderInfo.caption!);
+      paragraph(caption);
 
       fullPath = wayProperties.calculateStringPath(projection, shape.dy);
       if (fullPath == null || fullPath!.segments.isEmpty) return;
@@ -78,14 +80,14 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
     }
     if (fullPath!.segments.isEmpty) return;
 
-    Mappoint tileOrigin = projection.getLeftUpper(tile);
-    canvas.drawPathText(renderInfo.caption!, fullPath!, tileOrigin,
+    canvas.drawPathText(caption, fullPath!, leftUpper,
         this.paintBack!, mapTextPaint, shape.maxTextWidth);
-    canvas.drawPathText(renderInfo.caption!, fullPath!, tileOrigin,
+    canvas.drawPathText(caption, fullPath!, leftUpper,
         this.paintFront!, mapTextPaint, shape.maxTextWidth);
   }
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {}
+      PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {}
 }

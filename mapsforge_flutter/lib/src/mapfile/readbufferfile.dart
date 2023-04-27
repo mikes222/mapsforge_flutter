@@ -8,6 +8,8 @@ import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 import 'package:queue/queue.dart';
 
+import '../utils/timing.dart';
+
 /// Reads the mapfile from a physical file
 class ReadbufferFile implements ReadbufferSource {
   static final _log = new Logger('ReadbufferFile');
@@ -52,14 +54,21 @@ class ReadbufferFile implements ReadbufferSource {
     assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
 
     String cacheKey = "$offset-$length";
+
     Readbuffer? result = _cache.get(cacheKey);
     if (result != null) {
       // return a new copy so that the new buffer can work independently from the old one
       return Readbuffer.from(result);
     }
 
-    int time = DateTime.now().millisecondsSinceEpoch;
-    Uint8List _bufferData = await queue.add(() async {
+    Timing timing = Timing(log: _log);
+    Readbuffer readbuffer = await queue.add(() async {
+      /// now try the cache again, it may be already here
+      Readbuffer? result = _cache.get(cacheKey);
+      if (result != null) {
+        // return a new copy so that the new buffer can work independently from the old one
+        return Readbuffer.from(result);
+      }
       await _openRaf();
       if (offset != null) {
         assert(offset >= 0);
@@ -67,14 +76,12 @@ class ReadbufferFile implements ReadbufferSource {
       }
       Uint8List _bufferData = await _raf!.read(length);
       assert(_bufferData.length == length);
-      return _bufferData;
+      result = Readbuffer(_bufferData, offset);
+      _cache[cacheKey] = result;
+      return result;
     });
-    if (DateTime.now().millisecondsSinceEpoch - time > 100)
-      _log.info(
-          "readFromFile needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
-    result = Readbuffer(_bufferData, offset);
-    _cache[cacheKey] = result;
-    return result;
+    timing.lap(100, "readFromFile offset: $offset, length: $length");
+    return readbuffer;
   }
 
   @override

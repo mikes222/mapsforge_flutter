@@ -15,7 +15,9 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   double _verticalOffset = 0;
 
-  late double gap;
+  int level = 0;
+
+  late double gap = 0;
 
   /// The position of this caption relative to the corresponding symbol. If the symbol is not set
   /// the position is always center
@@ -28,14 +30,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
   TextKey? textKey;
 
   double dy = 0;
-
-  /// The width of the caption. Since we cannot calculate the width in an isolate (ui calls are not allowed)
-  /// we need to set it later on in the ShapePaintCaption
-  double _boxWidth = 0;
-
-  /// The height of the caption. Since we cannot calculate the height in an isolate (ui calls are not allowed)
-  /// we need to set it later on in the ShapePaintCaption
-  double _boxHeight = 0;
 
   ShapeCaption.base() : super.base();
 
@@ -51,6 +45,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     symbolId = base.symbolId;
     textKey = base.textKey;
     dy = base.dy;
+    level = base.level;
 // do NOT copy symbolHolder. It is dependent on the zoomLevel
 
     if (zoomLevel >= strokeMinZoomLevel) {
@@ -68,69 +63,75 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   @override
   MapRectangle calculateBoundary() {
-    if (boundary != null) return boundary!;
-    boundary = MapRectangle(
-        -_boxWidth / 2 + _horizontalOffset,
-        -_boxHeight / 2 + _verticalOffset,
-        _boxWidth / 2 + _horizontalOffset,
-        _boxHeight / 2 + _verticalOffset);
+    // the boundary is dependent on the text which is a property of renderInfo
+    throw UnimplementedError();
+    //if (boundary != null) return boundary!;
+    // boundary = MapRectangle(
+    //     -_boxWidth / 2 + _horizontalOffset,
+    //     -_boxHeight / 2 + _verticalOffset,
+    //     _boxWidth / 2 + _horizontalOffset,
+    //     _boxHeight / 2 + _verticalOffset);
 
-    return boundary!;
+    //return boundary!;
   }
 
-  void calculateOffsets() {
+  void calculateOffsets(double fontWidth, double fontHeight,
+      [MapRectangle? symbolBoundary]) {
     _verticalOffset = 0;
     _horizontalOffset = 0;
     // print(
     //     "shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $_boxWidth, $_boxHeight");
 
-    if (position == Position.CENTER &&
-        symbolHolder?.shapeSymbol?.bitmapSrc != null) {
-      // sensible defaults: below if symbolContainer is present, center if not
-      position = Position.BELOW;
-    }
-    MapRectangle? symbolBoundary =
-        symbolHolder?.shapeSymbol?.calculateBoundary();
     if (symbolBoundary == null) {
-      position = Position.CENTER;
-      return;
+      if (position == Position.CENTER &&
+          symbolHolder?.shapeSymbol?.bitmapSrc != null) {
+        // sensible defaults: below if symbolContainer is present, center if not
+        position = Position.BELOW;
+      }
+      symbolBoundary = symbolHolder?.shapeSymbol?.calculateBoundary();
+      if (symbolBoundary == null) {
+        position = Position.CENTER;
+        return;
+      }
     }
 
     switch (position) {
       case Position.CENTER:
         break;
       case Position.BELOW:
-        _verticalOffset += symbolBoundary.bottom + _boxHeight / 2 + this.gap;
+        _verticalOffset +=
+            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE:
-        _verticalOffset += symbolBoundary.top - _boxHeight / 2 - this.gap;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
         break;
       case Position.BELOW_LEFT:
-        _horizontalOffset += symbolBoundary.left - _boxWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.bottom + _boxHeight / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
+        _verticalOffset +=
+            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE_LEFT:
-        _horizontalOffset += symbolBoundary.left - _boxWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.top - _boxHeight / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
         break;
       case Position.LEFT:
-        _horizontalOffset += symbolBoundary.left - _boxWidth / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
         break;
       case Position.BELOW_RIGHT:
-        _horizontalOffset += symbolBoundary.right + _boxWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.bottom + _boxHeight / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
+        _verticalOffset +=
+            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE_RIGHT:
-        _horizontalOffset += symbolBoundary.right + _boxWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.top - _boxHeight / 2 - this.gap;
+        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
         break;
       case Position.RIGHT:
-        _horizontalOffset += symbolBoundary.right + _boxWidth / 2 + this.gap;
+        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
         break;
       default:
         throw new Exception("Position invalid");
     }
-    boundary = null;
   }
 
   @override
@@ -138,9 +139,12 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     return "Caption";
   }
 
-  void setTextBoundary(double width, double height) {
-    _boxWidth = width;
-    _boxHeight = height;
-    calculateOffsets();
+  double get horizontalOffset => _horizontalOffset;
+
+  double get verticalOffset => _verticalOffset;
+
+  @override
+  String toString() {
+    return 'ShapeCaption{_horizontalOffset: $_horizontalOffset, _verticalOffset: $_verticalOffset, level: $level, gap: $gap, position: $position, symbolId: $symbolId, textKey: $textKey, dy: $dy}';
   }
 }

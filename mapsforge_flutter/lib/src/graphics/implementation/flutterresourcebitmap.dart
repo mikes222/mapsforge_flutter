@@ -9,7 +9,7 @@ class FlutterResourceBitmap extends FlutterBitmap implements ResourceBitmap {
 
   @override
   String toString() {
-    return 'FlutterResourceBitmap{src: $src}';
+    return "FlutterResourceBitmap{src: $src, width: ${getWidth()}, height: ${getHeight()}}";
   }
 
   @override

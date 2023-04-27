@@ -20,6 +20,8 @@ class DisplayModel {
 
   int DEFAULT_INDOOR_LEVEL = 0;
 
+  double DEFAULT_ROTATION = 0;
+
   /// device scale factor. The bigger that value the larger the size of the tiles.
   /// That also means that the map shows more details at a certain zoomLevel. Think of it
   /// the following way: At zoom level 0 the whole world is shown in one tile. That tile is x
@@ -44,6 +46,9 @@ class DisplayModel {
 
   late double maxTextWidth;
 
+  /// The size of a tile in mappixel. The default is 256, but if
+  /// deviceScaleFactor or userScaleFactor is not 1 the tileSize will be
+  /// stretched accordingly.
   late int tileSize;
 
   /// maximum zoomlevel
@@ -66,7 +71,8 @@ class DisplayModel {
     this.maxTextWidthFactor = 0.7,
     this.fontScaleFactor = 1.0,
     this.backgroundColor = 0xffeeeeee,
-  })  : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
+  })
+      : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
         assert(maxTextWidthFactor > 0)
   //assert(tileSize >= 256)
   {

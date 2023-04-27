@@ -1,8 +1,12 @@
 import 'dart:math';
 
 class Scalefactor {
+  /// The number of tiles in horizontal/vertical direction. ZoomLevel 3 (8*8 tiles)
+  /// results to 2^zoomlevel = 8. To reflect pinch'n'zoom the scalefactor can also
+  /// be a fractional number
   final double scalefactor;
 
+  /// zoomLevel 0 means the whole world fits at 1 tile, 1 means the whole world fits at 2*2 tiles and so on
   final int zoomlevel;
 
   static Scalefactor fromZoomlevel(int zoomlevel) {

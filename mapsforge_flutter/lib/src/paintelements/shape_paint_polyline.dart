@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/rendertheme/shape/shape_polyline.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/shape_polyline.dart';
 
 import '../../core.dart';
 import '../graphics/resourcebitmap.dart';
 import '../rendertheme/wayproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   late final MapPaint? stroke;
@@ -47,15 +45,17 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
+      PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {
     if (shape.isStrokeTransparent()) return;
 
-    MapPath path = calculatePath(
-        wayProperties.getCoordinatesRelativeToTile(projection, tile, shape.dy));
+    MapPath path = calculatePath(wayProperties
+        .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
     canvas.drawPath(path, stroke!);
   }
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {}
+      PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {}
 }

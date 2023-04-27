@@ -1,5 +1,7 @@
+import '../layer/job/job.dart';
 import '../model/tile.dart';
 import '../rendertheme/renderinfo.dart';
+import '../rendertheme/shape/shape.dart';
 
 /**
  * The LabelStore is an abstract store for labels from which it is possible to retrieve a priority-ordered
@@ -25,5 +27,7 @@ abstract class LabelStore {
    * @param lowerRight tile in lower right corner of visible area.
    * @return a list of MapElements that are visible on the tiles.
    */
-  List<RenderInfo> getVisibleItems(Tile upperLeft, Tile lowerRight);
+  Map<Job, List<RenderInfo<Shape>>> getVisibleItems(Set<Job> jobs);
+
+  bool hasTile(Tile tile);
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/singlemarkerpainter.dart';
 
 import '../testassetbundle.dart';
+import '../testhelper.dart';
 
 ///
 /// flutter test --update-goldens
@@ -32,30 +32,13 @@ void main() {
         marker: circleMarker,
         viewModel: viewModel);
 
-    Key key = GlobalKey();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              key: key,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 1),
-              ),
-              child: CustomPaint(
-                foregroundPainter: painter,
-                child: Container(),
-              ),
-            ),
-          ),
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: CustomPaint(
+          foregroundPainter: painter,
+          child: Container(),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(find.byKey(key), matchesGoldenFile('circlemarker.png'));
+        goldenfile: 'circlemarker.png');
   });
 
   testWidgets('Renders a circlemarker with text', (WidgetTester tester) async {
@@ -81,31 +64,13 @@ void main() {
         marker: circleMarker,
         viewModel: viewModel);
 
-    Key key = GlobalKey();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              key: key,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 1),
-              ),
-              child: CustomPaint(
-                foregroundPainter: painter,
-                child: Container(),
-              ),
-            ),
-          ),
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: CustomPaint(
+          foregroundPainter: painter,
+          child: Container(),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(
-        find.byKey(key), matchesGoldenFile('circlemarker_text.png'));
+        goldenfile: 'circlemarker_text.png');
   });
 
   testWidgets('Renders a filled circlemarker', (WidgetTester tester) async {
@@ -135,30 +100,12 @@ void main() {
       viewModel: viewModel,
     );
 
-    Key key = GlobalKey();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              key: key,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 1),
-              ),
-              child: CustomPaint(
-                foregroundPainter: painter,
-                child: Container(),
-              ),
-            ),
-          ),
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: CustomPaint(
+          foregroundPainter: painter,
+          child: Container(),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(
-        find.byKey(key), matchesGoldenFile('circlemarker_filled.png'));
+        goldenfile: 'circlemarker_filled.png');
   });
 }

@@ -11,9 +11,7 @@ import '../graphics/matrix.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
-import '../rendertheme/noderenderinfo.dart';
 import '../rendertheme/shape/shape_linesymbol.dart';
-import '../rendertheme/wayrenderinfo.dart';
 
 class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
   late final MapPaint fill;
@@ -37,17 +35,19 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Tile tile, NodeRenderInfo renderInfo) {}
+      PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {}
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Tile tile, WayRenderInfo renderInfo) {
+      PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {
     if (bitmap == null) return;
 
     int skipPixels = shape.repeatStart.round();
 
-    List<List<Mappoint>> coordinates =
-        wayProperties.getCoordinatesRelativeToTile(projection, tile, shape.dy);
+    List<List<Mappoint>> coordinates = wayProperties
+        .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy);
 
     List<Mappoint?> c = coordinates[0];
 
@@ -89,8 +89,8 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
         if (point.x + boundary.left >= 0 &&
             point.y + boundary.bottom >= 0 &&
-            point.x + boundary.right <= tile.tileX &&
-            point.y + boundary.top <= tile.tileY) {
+            point.x + boundary.right <= leftUpper.x &&
+            point.y + boundary.top <= leftUpper.y) {
           Matrix? matrix;
           if (theta != 0) {
             matrix = GraphicFactory().createMatrix();

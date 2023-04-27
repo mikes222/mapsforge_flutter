@@ -32,6 +32,23 @@ class DatastoreReader with IsolateMixin<IsolateMapInitParam> {
       return params;
     }
   }
+
+  Future<IsolateMapReplyParams> readLabels(Datastore datastore, Tile tile,
+      PixelProjection projection, RenderContext renderContext) async {
+    if (useIsolate) {
+      await startIsolateJob(IsolateMapInitParam(datastore), entryPoint);
+      IsolateMapReplyParams params = await sendToIsolate(
+          IsolateMapRequestParam(tile, projection, renderContext));
+      return params;
+    } else {
+      // read the mapdata directly in this thread
+      _mapDataStore = datastore;
+      await _mapDataStore!.lateOpen();
+      IsolateMapReplyParams params = await _readLabelsInIsolate(
+          IsolateMapRequestParam(tile, projection, renderContext));
+      return params;
+    }
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -112,6 +129,22 @@ Future<IsolateMapReplyParams> _readMapDataInIsolate(
   }
   DatastoreReadResult? mapReadResult =
       await _mapDataStore!.readMapDataSingle(isolateParam.tile);
+  //print("mapReadResult $mapReadResult for ${isolateParam.tile}");
+  if (mapReadResult != null)
+    _processMapReadResult(isolateParam.renderContext, mapReadResult);
+  return IsolateMapReplyParams(
+      result: mapReadResult, renderContext: isolateParam.renderContext);
+}
+
+Future<IsolateMapReplyParams> _readLabelsInIsolate(
+    IsolateMapRequestParam isolateParam) async {
+  if (!_mapDataStore!
+      .supportsTile(isolateParam.tile, isolateParam.projection)) {
+    return IsolateMapReplyParams(
+        result: null, renderContext: isolateParam.renderContext);
+  }
+  DatastoreReadResult? mapReadResult =
+      await _mapDataStore!.readPoiDataSingle(isolateParam.tile);
   //print("mapReadResult $mapReadResult for ${isolateParam.tile}");
   if (mapReadResult != null)
     _processMapReadResult(isolateParam.renderContext, mapReadResult);

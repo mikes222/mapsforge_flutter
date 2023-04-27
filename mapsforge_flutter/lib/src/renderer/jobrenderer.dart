@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
@@ -19,6 +19,10 @@ abstract class JobRenderer {
   /// @returns an exception e.g. if the server is not reachable
   ///
   Future<JobResult> executeJob(Job job);
+
+  /// For mapfiles we can either render everything into the images or render just the basic map and rotate the captions while rotating the map.
+  /// If supported this method returns the captions to draw each time (maybe rotated)
+  Future<JobResult> retrieveLabels(Job job);
 
   /// Returns a key for the caches. In order to use different caches for different renderings the
   /// renderer can provide a unique key. The key should be the same if the rendering should provide the

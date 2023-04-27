@@ -85,6 +85,7 @@ class RenderinstructionSymbol extends RenderInstruction {
     if (base.id != null)
       symbolFinder.add(base.id!, renderContext.job.tile.zoomLevel, base);
 
-    renderContext.labels.add(WayRenderInfo(wayProperties, base));
+    renderContext.addToClashDrawingLayer(
+        base.level, WayRenderInfo(wayProperties, base));
   }
 }

@@ -1,30 +1,25 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 
+import '../rendertheme/shape/shape.dart';
 import 'job/job.dart';
 import 'tilelayer.dart';
 
 ///
 /// this class presents the whole map by requesting the tiles and drawing them when available
-class TileLayerImpl extends TileLayer {
-  static final _log = new Logger('TileLayer');
-
-  final MapPaint _paint;
+class TileLayerLabel extends TileLayer {
+  static final _log = new Logger('TileLayerLabel');
 
   _Statistics? _statistics; // = _Statistics();
 
-  TileLayerImpl({
+  TileLayerLabel({
     required displayModel,
   })  : assert(displayModel != null),
-        _paint = GraphicFactory().createPaint(),
-        super(displayModel) {
-    _paint.setAntiAlias(true);
-  }
+        super(displayModel);
 
   @override
   void dispose() {
@@ -49,21 +44,10 @@ class TileLayerImpl extends TileLayer {
 
     _statistics?.drawCount++;
 
-    // _TileLayerPainter _tileLayerPainter = _TileLayerPainter(jobSet,
-    //     mapViewPosition.projection, mapCanvas, _paint, leftUpper, _statistics);
-    jobSet.results.forEach((Tile tile, JobResult jobResult) {
-      if (jobResult.bitmap != null) {
-        //_log.info("  $jobResult");
-        _statistics?.drawBitmapCount++;
-        Mappoint point = mapViewPosition.projection.getLeftUpper(tile);
-        //print("drawing ${point.x - leftUpper.x} / ${point.y - leftUpper.y}");
-        mapCanvas.drawBitmap(
-          bitmap: jobResult.bitmap!,
-          left: point.x - leftUpper.x,
-          top: point.y - leftUpper.y,
-          paint: _paint,
-        );
-      }
+    jobSet.renderInfos?.forEach((RenderInfo<Shape> renderInfo) {
+      _statistics?.drawLabelCount++;
+      renderInfo.render(mapCanvas, mapViewPosition.projection, leftUpper,
+          mapViewPosition.rotationRadian);
     });
   }
 

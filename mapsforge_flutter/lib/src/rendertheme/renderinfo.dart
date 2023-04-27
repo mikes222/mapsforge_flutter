@@ -20,6 +20,13 @@ import '../paintelements/shape_paint_pathtext.dart';
 import '../paintelements/shape_paint_polyline.dart';
 import '../paintelements/shape_paint_symbol.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
   final T shape;
 
@@ -33,7 +40,8 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
 
   RenderInfo(this.shape);
 
-  void render(MapCanvas canvas, PixelProjection projection, Tile tile);
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]);
 
   MapRectangle getBoundaryAbsolute(PixelProjection projection);
 
@@ -73,7 +81,7 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         /// we need to calculate the boundary for the caption. Remember that we cannot
         /// use ui code in isolates but here we are back again from isolates so we can
         /// calculate the width/height of the caption.
-        shapePaint = ShapePaintCaption(shape as ShapeCaption, renderInfo: this)
+        shapePaint = ShapePaintCaption(shape as ShapeCaption, caption: caption!)
             as ShapePaint<T>;
         break;
       case "Circle":
@@ -97,8 +105,8 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         }
         break;
       case "Pathtext":
-        shapePaint =
-            ShapePaintPathtext(shape as ShapePathtext) as ShapePaint<T>;
+        shapePaint = ShapePaintPathtext(shape as ShapePathtext, caption!)
+            as ShapePaint<T>;
         await shapePaint!.init(symbolCache);
         break;
       case "Polyline":

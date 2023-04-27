@@ -78,7 +78,6 @@ void main() {
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img0 = (jobResult0.bitmap as FlutterTileBitmap).getClonedImage();
 
-      _dataStoreRenderer.labelStore.debug();
       _dataStoreRenderer.tileDependencies!.debug();
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
 

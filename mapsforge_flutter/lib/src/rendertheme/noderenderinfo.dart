@@ -8,14 +8,23 @@ import '../graphics/mapcanvas.dart';
 import 'nodeproperties.dart';
 import 'shape/shape.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   final NodeProperties nodeProperties;
 
-  NodeRenderInfo(this.nodeProperties, T shapeSymbol) : super(shapeSymbol);
+  NodeRenderInfo(this.nodeProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Tile tile) {
-    shapePaint!.renderNode(canvas, nodeProperties, projection, tile, this);
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {
+    shapePaint!.renderNode(
+        canvas, nodeProperties, projection, leftUpper, rotationRadian);
   }
 
   /// Returns true if shapes clash with each other
@@ -29,8 +38,6 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
         Display.ALWAYS == other.shape.display) {
       return false;
     }
-    // print(
-    //     "clashes ${getBoundaryAbsolute(projection).intersects(other.getBoundaryAbsolute(projection))} for ${getBoundaryAbsolute(projection)} (${shape.calculateBoundary()}) and ${other.getBoundaryAbsolute(projection)}");
     return getBoundaryAbsolute(projection)
         .intersects(other.getBoundaryAbsolute(projection));
   }
@@ -47,7 +54,8 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   @override
   MapRectangle getBoundaryAbsolute(PixelProjection projection) {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
-    MapRectangle boundary = shape.calculateBoundary();
+    MapRectangle boundary =
+        shapePaint?.calculateBoundary() ?? shape.calculateBoundary();
     Mappoint mappoint = nodeProperties.getCoordinatesAbsolute(projection);
     boundaryAbsolute = boundary.shift(mappoint);
     //print("   boundAbs: ${boundaryAbsolute} ($boundary)");

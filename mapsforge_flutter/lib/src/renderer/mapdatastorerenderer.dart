@@ -14,6 +14,8 @@ import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 
 import '../rendertheme/renderinfo.dart';
+import '../rendertheme/shape/shape.dart';
+import '../utils/timing.dart';
 import 'canvasrasterer.dart';
 import 'datastorereader.dart';
 
@@ -30,11 +32,12 @@ class MapDataStoreRenderer extends JobRenderer {
 
   final SymbolCache symbolCache;
 
+  /// When using the map heading north we can render the labels onto the images.
+  /// However if you want to support rotation the labels should not rotate with
+  /// the map so we are not allowed to render the labels onto the images.
   final bool renderLabels;
 
   TileDependencies? tileDependencies;
-
-  final TileBasedLabelStore labelStore;
 
   /// true if isolates should be used for reading the mapfile. Isolate is flutter's
   /// way of using threads. However due to the huge amount of data which must
@@ -47,8 +50,7 @@ class MapDataStoreRenderer extends JobRenderer {
 
   MapDataStoreRenderer(
       this.datastore, this.renderTheme, this.symbolCache, this.renderLabels,
-      {this.useIsolate = false})
-      : labelStore = TileBasedLabelStore(100) {
+      {this.useIsolate = false}) {
     if (renderLabels) {
       this.tileDependencies = TileDependencies();
     } else {
@@ -70,11 +72,9 @@ class MapDataStoreRenderer extends JobRenderer {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    bool showTiming = true;
+    Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    //_log.info("Executing ${job.toString()}");
-    int time = DateTime.now().millisecondsSinceEpoch;
     RenderContext renderContext = RenderContext(job, renderTheme);
     this.renderTheme.prepareScale(job.tile.zoomLevel);
 
@@ -83,10 +83,8 @@ class MapDataStoreRenderer extends JobRenderer {
         datastore, job.tile, renderContext.projection, renderContext);
     mapReadResult = params.result;
     renderContext = params.renderContext;
-    int diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming)
-      _log.info(
-          "mapReadResult took $diff ms for ${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois");
+    timing.lap(100,
+        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read for tile");
     if (mapReadResult == null) {
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
@@ -95,39 +93,19 @@ class MapDataStoreRenderer extends JobRenderer {
       _log.warning(
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming) {
-      _log.info(
-          "_processReadMapData took $diff ms for ${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois");
-      // Mappoint leftUpper = renderContext.projection.getLeftUpper(job.tile);
-      // mapReadResult.ways.forEach((element1) {
-      //   _log.info("  ${element1.latLongs.length} items");
-      //   element1.latLongs.forEach((element2) {
-      //     element2.forEach((element3) {
-      //       _log.info(
-      //           "    ${element3} is ${leftUpper.x - renderContext.projection.longitudeToPixelX(element3.longitude)} / ${leftUpper.y - renderContext.projection.latitudeToPixelY(element3.latitude)}");
-      //     });
-      //   });
-      // });
-    }
     await renderContext.initDrawingLayers(symbolCache);
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming) {
-      _log.info(
-          "initDrawingLayers took $diff ms for ${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois");
-    }
+    timing.lap(100,
+        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized for tile");
     CanvasRasterer canvasRasterer = CanvasRasterer(job.tileSize.toDouble(),
         job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming) _log.info("startCanvasBitmap took $diff ms");
+    timing.lap(100, "startCanvasBitmap for tile");
     canvasRasterer.drawWays(renderContext);
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming)
-      _log.info(
-          "drawWays took $diff ms for ${renderContext.drawingLayers.length} way-layers");
+    timing.lap(
+        100, "${renderContext.drawingLayers.length} way-layers for tile");
 
     int labelCount = 0;
+    List<RenderInfo<Shape>>? renderInfos;
     if (this.renderLabels) {
       _LabelResult labelResult = _processLabels(renderContext);
       labelCount = labelResult.labelsToDisposeAfterDrawing.length +
@@ -141,20 +119,18 @@ class MapDataStoreRenderer extends JobRenderer {
       // labelResult.labelsToDisposeAfterDrawing.forEach((element) {
       //   element.dispose();
       // });
-      diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff > 100 && showTiming) {
-        _log.info("drawMapElements took $diff ms for $labelCount labels");
-        // labelsToDraw.forEach((element) {
-        //   _log.info(
-        //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
-        // });
-      }
+      timing.lap(100, "$labelCount labels for tile");
+      // labelsToDraw.forEach((element) {
+      //   _log.info(
+      //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
+      // });
     } else {
       // store elements for this tile in the label cache
-      this.labelStore.storeMapItems(
-          job.tile, renderContext.labels, renderContext.projection);
-      diff = DateTime.now().millisecondsSinceEpoch - time;
-      if (diff > 100 && showTiming) _log.info("storeMapItems took $diff ms");
+      renderInfos = LayerUtil.collisionFreeOrdered(
+          renderContext.labels, renderContext.projection);
+      // this.labelStore.storeMapItems(
+      //     job.tile, renderContext.labels, renderContext.projection);
+      timing.lap(100, "storeMapItems for tile");
     }
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
 //      // blank out all areas outside of map
@@ -169,13 +145,50 @@ class MapDataStoreRenderer extends JobRenderer {
         (await canvasRasterer.finalizeCanvasBitmap() as TileBitmap?);
     int actions = (canvasRasterer.canvas as FlutterCanvas).actions;
     canvasRasterer.destroy();
-    diff = DateTime.now().millisecondsSinceEpoch - time;
-    if (diff > 100 && showTiming)
-      _log.info(
-          "finalizeCanvasBitmap took $diff ms, $labelCount elements and labels, $actions actions in canvas");
+    timing.lap(100,
+        "$labelCount elements and labels, $actions actions in canvas for tile");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
-    return JobResult(bitmap, JOBRESULT.NORMAL);
+    return JobResult(bitmap, JOBRESULT.NORMAL, renderInfos);
+  }
+
+  @override
+  Future<JobResult> retrieveLabels(Job job) async {
+    Timing timing = Timing(log: _log, active: true);
+    // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
+    // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
+    RenderContext renderContext = RenderContext(job, renderTheme);
+    this.renderTheme.prepareScale(job.tile.zoomLevel);
+
+    DatastoreReadResult? mapReadResult;
+    IsolateMapReplyParams params = await _datastoreReader.readLabels(
+        datastore, job.tile, renderContext.projection, renderContext);
+    mapReadResult = params.result;
+    renderContext = params.renderContext;
+    timing.lap(100,
+        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois for labels");
+    if (mapReadResult == null) {
+      return JobResult(null, JOBRESULT.UNSUPPORTED);
+    }
+    if ((mapReadResult.ways.length) > 100000) {
+      _log.warning(
+          "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
+    }
+
+    // unfortunately we need the painter for captions in order to determine the size of the caption. In isolates however we cannot access
+    // ui code. We are in an isolate here. We are doomed.
+    for (RenderInfo renderInfo in renderContext.labels) {
+      await renderInfo.createShapePaint(symbolCache);
+    }
+    List<RenderInfo<Shape>>? renderInfos = LayerUtil.collisionFreeOrdered(
+        renderContext.labels, renderContext.projection);
+    // this.labelStore.storeMapItems(
+    //     job.tile, renderContext.labels, renderContext.projection);
+    timing.lap(100,
+        "${renderInfos.length} items from collisionFreeOrdered for labels");
+    //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
+    //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
+    return JobResult(null, JOBRESULT.NORMAL, renderInfos);
   }
 
   static List<Mappoint> getTilePixelCoordinates(int tileSize) {
@@ -274,7 +287,7 @@ class MapDataStoreRenderer extends JobRenderer {
 
   @override
   String getRenderKey() {
-    return "${renderTheme.hashCode}";
+    return "${renderTheme.hashCode ^ renderLabels.hashCode}";
   }
 }
 

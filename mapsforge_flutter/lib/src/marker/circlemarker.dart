@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 /// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
@@ -45,12 +46,14 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
     setStrokeWidth(strokeWidth * displayModel.getScaleFactor());
     this.radius = radius * displayModel.getScaleFactor();
 
-    if (markerCaption != null && markerCaption.latLong == null) {
+    if (markerCaption != null) {
       markerCaption.latLong = latLong;
     }
     if (markerCaption != null) {
+      // markerCaption
+      //     .setDy(radius + strokeWidth + markerCaption.getFontSize() / 2);
       markerCaption
-          .setDy(radius + strokeWidth + markerCaption.getFontSize() / 2);
+          .setSymbolBoundary(MapRectangle(-radius, -radius, radius, radius));
     }
   }
 

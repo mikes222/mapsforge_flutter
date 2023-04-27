@@ -1,11 +1,16 @@
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 
+import '../../rendertheme/renderinfo.dart';
+import '../../rendertheme/shape/shape.dart';
+
 class JobResult {
   final TileBitmap? bitmap;
 
   final JOBRESULT result;
 
-  JobResult(this.bitmap, this.result);
+  final List<RenderInfo<Shape>>? renderInfos;
+
+  JobResult(this.bitmap, this.result, [this.renderInfos]);
 }
 
 /////////////////////////////////////////////////////////////////////////////

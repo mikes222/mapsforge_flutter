@@ -26,19 +26,21 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.5
 
- # BSD License
-  intl: ^0.18.0
-
   mapsforge_flutter:
     path: ../mapsforge_flutter
 
-  # BSD License
-  logging: ^1.1.1
+  # Apache 2.0 License
+  archive: ^3.3.7
 
   flutter_archive: ^5.0.0
 
-  # Apache 2.0 License
-  archive: ^3.3.6
+ # BSD License
+  intl: ^0.18.1
+
+  leak_tracker: ^3.0.1
+
+ # BSD License
+  logging: ^1.1.1
 
   rxdart: ^0.27.7
 

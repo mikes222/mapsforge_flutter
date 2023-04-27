@@ -36,8 +36,11 @@ class MarkerdemoDatabase {
     databaseItems.removeWhere((element) =>
         element.latitude == event.latitude &&
         element.longitude == event.longitude);
-    databaseItems.add(TapEvent(latitude, longitude, event.widgetPixelMappoint,
-        event.leftUpperMappoint, event.mapPixelMappoint, event.projection));
+    databaseItems.add(TapEvent(
+        latitude: latitude,
+        longitude: longitude,
+        mapPixelMappoint: event.mapPixelMappoint,
+        projection: event.projection));
   }
 }
 

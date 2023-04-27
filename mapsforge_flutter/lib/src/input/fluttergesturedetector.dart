@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
 import '../../core.dart';
+import '../utils/rotatehelper.dart';
 
 ///
 /// A detector for finger-gestures. It currently supports move, pinch-to-zoom and doubleclick
@@ -124,19 +125,50 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         if (_tapDownEvent!.longPressed) {
           // tapped at least 500 ms, long tap
           // we already reported a gestureMoveStartEvent, we should cancel it
-          widget.viewModel.gestureMoveCancelEvent(
+          PositionInfo? positionInfo = RotateHelper.normalize(
+              widget.viewModel,
               _tapDownEvent!.tapDownLocalPosition.dx,
               _tapDownEvent!.tapDownLocalPosition.dy);
+          if (positionInfo == null) return;
+
+          MoveAroundEvent event = MoveAroundEvent(
+            latitude: positionInfo.latitude,
+            longitude: positionInfo.longitude,
+            mapPixelMappoint: Mappoint(positionInfo.center.x + positionInfo.dx,
+                positionInfo.center.y + positionInfo.dy),
+            projection: widget.viewModel.mapViewPosition!.projection,
+          );
+
+          widget.viewModel.gestureMoveCancelEvent(event);
           _tapDownEvent!.stop();
           _tapDownEvent = null;
-          widget.viewModel
-              .longTapEvent(details.localPosition.dx, details.localPosition.dy);
+
+          TapEvent tapEvent = TapEvent(
+              latitude: positionInfo.latitude,
+              longitude: positionInfo.longitude,
+              mapPixelMappoint: Mappoint(
+                  positionInfo.center.x + positionInfo.dx,
+                  positionInfo.center.y + positionInfo.dy),
+              projection: widget.viewModel.mapViewPosition!.projection);
+          widget.viewModel.longTapEvent(tapEvent);
           return;
         } else {
           _tapDownEvent!.stop();
           _tapDownEvent = null;
-          widget.viewModel
-              .tapEvent(details.localPosition.dx, details.localPosition.dy);
+
+          PositionInfo? positionInfo = RotateHelper.normalize(widget.viewModel,
+              details.localPosition.dx, details.localPosition.dy);
+          if (positionInfo == null) return;
+
+          TapEvent event = TapEvent(
+              latitude: positionInfo.latitude,
+              longitude: positionInfo.longitude,
+              mapPixelMappoint: Mappoint(
+                  positionInfo.center.x + positionInfo.dx,
+                  positionInfo.center.y + positionInfo.dy),
+              projection: widget.viewModel.mapViewPosition!.projection);
+
+          widget.viewModel.tapEvent(event);
           return;
         }
       },
@@ -152,28 +184,21 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
               "onDoubleTap with _doubleTapLocalPosition ${_doubleTapLocalPosition}");
         // it should always non-null but just for safety do a null-check
         if (_doubleTapLocalPosition == null) return;
-        Mappoint? leftUpper = widget.viewModel.mapViewPosition
-            ?.getLeftUpper(widget.viewModel.mapDimension);
-        if (leftUpper != null) {
-          // lat/lon of the position where we double-clicked
-          double latitude = widget.viewModel.mapViewPosition!.projection
-              .pixelYToLatitude(leftUpper.y +
-                  _doubleTapLocalPosition!.dy *
-                      widget.viewModel.viewScaleFactor);
-          double longitude = widget.viewModel.mapViewPosition!.projection
-              .pixelXToLongitude(leftUpper.x +
-                  _doubleTapLocalPosition!.dx *
-                      widget.viewModel.viewScaleFactor);
-          // interpolate the new center between the old center and where we pressed now. The new center is half-way between our double-pressed point and the old-center
-          widget.viewModel.zoomInAround(
-              (latitude - widget.viewModel.mapViewPosition!.latitude!) / 2 +
-                  widget.viewModel.mapViewPosition!.latitude!,
-              (longitude - widget.viewModel.mapViewPosition!.longitude!) / 2 +
-                  widget.viewModel.mapViewPosition!.longitude!);
-          // widget.viewModel
-          //     .doubleTapEvent(latitude, longitude);
-          //widget.viewModel.gestureEvent();
-        }
+        PositionInfo? positionInfo = RotateHelper.normalize(widget.viewModel,
+            _doubleTapLocalPosition!.dx, _doubleTapLocalPosition!.dy);
+        if (positionInfo == null) return;
+
+        // interpolate the new center between the old center and where we
+        // pressed now. The new center is half-way between our double-pressed point and the old-center
+        widget.viewModel.zoomInAround(
+            (positionInfo.latitude -
+                        widget.viewModel.mapViewPosition!.latitude!) /
+                    2 +
+                widget.viewModel.mapViewPosition!.latitude!,
+            (positionInfo.longitude -
+                        widget.viewModel.mapViewPosition!.longitude!) /
+                    2 +
+                widget.viewModel.mapViewPosition!.longitude!);
         _swipeTimer?.cancel();
         _swipeTimer = null;
         _swipeOffset = null;
@@ -212,19 +237,44 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           _updateLocalFocalPoint = details.localFocalPoint;
           if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
             // user tapped down, then waited. He does not want to move the map, he wants to move something around
-            widget.viewModel.gestureMoveUpdateEvent(
-                details.localFocalPoint.dx, details.localFocalPoint.dy);
+            PositionInfo? positionInfo = RotateHelper.normalize(
+                widget.viewModel,
+                details.localFocalPoint.dx,
+                details.localFocalPoint.dy);
+            if (positionInfo == null) return;
+
+            MoveAroundEvent event = MoveAroundEvent(
+              latitude: positionInfo.latitude,
+              longitude: positionInfo.longitude,
+              mapPixelMappoint: Mappoint(
+                positionInfo.center.x + positionInfo.dx,
+                positionInfo.center.y + positionInfo.dy,
+              ),
+              projection: widget.viewModel.mapViewPosition!.projection,
+            );
+
+            widget.viewModel.gestureMoveUpdateEvent(event);
             return;
           }
           // move map around
+          double diffX =
+              (details.localFocalPoint.dx - _startLocalFocalPoint!.dx) *
+                  widget.viewModel.viewScaleFactor;
+          double diffY =
+              (details.localFocalPoint.dy - _startLocalFocalPoint!.dy) *
+                  widget.viewModel.viewScaleFactor;
+          if (widget.viewModel.mapViewPosition?.rotation != 0) {
+            double hyp = sqrt(diffX * diffX + diffY * diffY);
+            double rad = atan2(diffY, diffX);
+            double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+            diffX = cos(-rot + rad) * hyp;
+            diffY = sin(-rot + rad) * hyp;
+
+            // print(
+            //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+          }
           widget.viewModel.setLeftUpper(
-              _startLeftUpper!.x +
-                  _startLocalFocalPoint!.dx * widget.viewModel.viewScaleFactor -
-                  details.localFocalPoint.dx * widget.viewModel.viewScaleFactor,
-              _startLeftUpper!.y +
-                  _startLocalFocalPoint!.dy * widget.viewModel.viewScaleFactor -
-                  details.localFocalPoint.dy *
-                      widget.viewModel.viewScaleFactor);
+              _startLeftUpper!.x - diffX, _startLeftUpper!.y - diffY);
         } else {
           // zoom
           // do not send tiny changes
@@ -261,24 +311,43 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             // lat/lon of the focalPoint
             Mappoint? leftUpper = widget.viewModel.mapViewPosition
                 ?.getLeftUpper(widget.viewModel.mapDimension);
-            double latitude = widget.viewModel.mapViewPosition!.projection
-                .pixelYToLatitude(leftUpper!.y +
-                    _startLocalFocalPoint!.dy *
-                        widget.viewModel.viewScaleFactor);
-            double longitude = widget.viewModel.mapViewPosition!.projection
-                .pixelXToLongitude(leftUpper.x +
-                    _startLocalFocalPoint!.dx *
-                        widget.viewModel.viewScaleFactor);
-            MapViewPosition newPost = widget.viewModel.zoomAround(
-                latitude +
-                    (widget.viewModel.mapViewPosition!.latitude! - latitude) /
-                        mult,
-                longitude +
-                    (widget.viewModel.mapViewPosition!.longitude! - longitude) /
-                        mult,
-                widget.viewModel.mapViewPosition!.zoomLevel + zoomLevelDiff);
-            if (doLog)
-              _log.info("onScaleEnd  resulting in ${newPost.toString()}");
+            Mappoint? center = widget.viewModel.mapViewPosition?.getCenter();
+            if (center != null && leftUpper != null) {
+              /// x/y relative from the center
+              double diffX =
+                  (_startLocalFocalPoint!.dx - center.x + leftUpper.x) *
+                      widget.viewModel.viewScaleFactor;
+              double diffY =
+                  (_startLocalFocalPoint!.dy - center.y + leftUpper.y) *
+                      widget.viewModel.viewScaleFactor;
+              if (widget.viewModel.mapViewPosition?.rotation != 0) {
+                double hyp = sqrt(diffX * diffX + diffY * diffY);
+                double rad = atan2(diffY, diffX);
+                double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+                diffX = cos(-rot + rad) * hyp;
+                diffY = sin(-rot + rad) * hyp;
+
+                // print(
+                //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+              }
+              //print("diff: $diffX/$diffY");
+              // lat/lon of the position where we double-clicked
+              double latitude = widget.viewModel.mapViewPosition!.projection
+                  .pixelYToLatitude(center.y + diffY);
+              double longitude = widget.viewModel.mapViewPosition!.projection
+                  .pixelXToLongitude(center.x + diffX);
+              MapViewPosition newPost = widget.viewModel.zoomAround(
+                  latitude +
+                      (widget.viewModel.mapViewPosition!.latitude! - latitude) /
+                          mult,
+                  longitude +
+                      (widget.viewModel.mapViewPosition!.longitude! -
+                              longitude) /
+                          mult,
+                  widget.viewModel.mapViewPosition!.zoomLevel + zoomLevelDiff);
+              if (doLog)
+                _log.info("onScaleEnd  resulting in ${newPost.toString()}");
+            }
           } else if (_lastScale != 1) {
             // no significant zoom. Restore the old zoom
             /*MapViewPosition newPost =*/ widget.viewModel
@@ -294,8 +363,22 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           // there was no zoom , check for swipe
           if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
             // user tapped down, then waited. He does not want to swipe, he wants to move something around
-            widget.viewModel.gestureMoveEndEvent(
-                _updateLocalFocalPoint!.dx, _updateLocalFocalPoint!.dy);
+            PositionInfo? positionInfo = RotateHelper.normalize(
+                widget.viewModel,
+                _updateLocalFocalPoint!.dx,
+                _updateLocalFocalPoint!.dy);
+            if (positionInfo == null) return;
+
+            MoveAroundEvent event = MoveAroundEvent(
+              latitude: positionInfo.latitude,
+              longitude: positionInfo.longitude,
+              mapPixelMappoint: Mappoint(
+                  positionInfo.center.x + positionInfo.dx,
+                  positionInfo.center.y + positionInfo.dy),
+              projection: widget.viewModel.mapViewPosition!.projection,
+            );
+
+            widget.viewModel.gestureMoveEndEvent(event);
             _tapDownEvent = null;
             return;
           }
@@ -376,10 +459,26 @@ class _TapDownEvent {
       // tapped at least 500 ms, user wants to move something (or long-press, but the latter is reported at onTapUp)
       if (_stop) return;
       _longPressed = true;
-      viewModel.gestureMoveStartEvent(
-          tapDownLocalPosition.dx, tapDownLocalPosition.dy);
+
+      PositionInfo? positionInfo = RotateHelper.normalize(
+          viewModel, tapDownLocalPosition.dx, tapDownLocalPosition.dy);
+      if (positionInfo == null) return;
+
+      MoveAroundEvent event = MoveAroundEvent(
+        latitude: positionInfo.latitude,
+        longitude: positionInfo.longitude,
+        mapPixelMappoint: Mappoint(
+          positionInfo.center.x + positionInfo.dx,
+          positionInfo.center.y + positionInfo.dy,
+        ),
+        projection: viewModel.mapViewPosition!.projection,
+      );
+
+      viewModel.gestureMoveStartEvent(event);
     });
   }
+
+  void processLongPress() {}
 
   void stop() {
     _stop = true;

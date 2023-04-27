@@ -15,6 +15,7 @@ export 'src/cache/imageabsoluteloader.dart';
 export 'src/cache/webtilebitmapcache.dart';
 export 'src/exceptions/filenotfoundexception.dart';
 export 'src/graphics/graphicfactory.dart';
+export 'src/graphics/position.dart';
 export 'src/model/boundingbox.dart';
 export 'src/model/dimension.dart';
 export 'src/model/displaymodel.dart';

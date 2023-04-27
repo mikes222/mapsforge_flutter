@@ -6,6 +6,8 @@ class TestHelper {
       {required WidgetTester tester,
       required Widget child,
       required String goldenfile}) async {
+    Key key = GlobalKey();
+
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData(),
@@ -13,6 +15,7 @@ class TestHelper {
           appBar: AppBar(title: Text(child.runtimeType.toString())),
           body: Center(
             child: Container(
+              key: key,
               decoration: BoxDecoration(
                   border: Border.all(width: 2, color: Colors.blue)),
               child: child,
@@ -23,6 +26,6 @@ class TestHelper {
     );
     await tester.pumpAndSettle();
     //await tester.pump();
-    await expectLater(find.byType(Row), matchesGoldenFile(goldenfile));
+    await expectLater(find.byKey(key), matchesGoldenFile(goldenfile));
   }
 }

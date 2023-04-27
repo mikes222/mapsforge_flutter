@@ -10,14 +10,23 @@ import '../renderer/rendererutils.dart';
 import 'shape/shape.dart';
 import 'wayproperties.dart';
 
+///
+/// In the terminal window run
+///
+///```
+/// flutter packages pub run build_runner build --delete-conflicting-outputs
+///```
+///
 class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   final WayProperties wayProperties;
 
-  WayRenderInfo(this.wayProperties, T shapeSymbol) : super(shapeSymbol);
+  WayRenderInfo(this.wayProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Tile tile) {
-    shapePaint!.renderWay(canvas, wayProperties, projection, tile, this);
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
+      [double rotationRadian = 0]) {
+    shapePaint!.renderWay(
+        canvas, wayProperties, projection, leftUpper, rotationRadian);
   }
 
   /// Returns if MapElementContainers clash with each other
@@ -44,7 +53,7 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   MapRectangle getBoundaryAbsolute(PixelProjection projection) {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
     List<List<Mappoint>> coordinates =
-        wayProperties.getCoordinatesAbsolute(projection);
+    wayProperties.getCoordinatesAbsolute(projection);
     List<Mappoint>? c;
     double dy = 0;
     if (dy == 0) {

@@ -15,16 +15,18 @@ class ZoomPainter extends CustomPainter {
 
   final JobSet jobSet;
 
-  ZoomPainter(
+  const ZoomPainter(
       {required this.tileLayer,
       required this.mapViewPosition,
       required this.viewModel,
       required this.jobSet})
       : super(repaint: jobSet);
 
+  /// The [size] is the size of the widget in screenpixels, take care that we
+  /// often use mappixels which is off by some zoomFactors
   @override
   void paint(Canvas canvas, Size size) {
-    //print("zoomPainter paint $size");
+    // print("zoomPainter paint $size");
     FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
     flutterCanvas.setClip(
         0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
@@ -43,6 +45,14 @@ class ZoomPainter extends CustomPainter {
       flutterCanvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
     }
 
+    if (mapViewPosition.rotationRadian != 0) {
+      canvas.save();
+      canvas.translate(size.width * viewModel.viewScaleFactor / 2,
+          size.height * viewModel.viewScaleFactor / 2);
+      canvas.rotate(mapViewPosition.rotationRadian);
+      canvas.translate(-size.width * viewModel.viewScaleFactor / 2,
+          -size.height * viewModel.viewScaleFactor / 2);
+    }
     tileLayer.draw(viewModel, mapViewPosition, flutterCanvas, jobSet);
 
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
@@ -51,6 +61,10 @@ class ZoomPainter extends CustomPainter {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
     }
     if (viewModel.viewScaleFactor != 1) {
+      canvas.restore();
+    }
+
+    if (mapViewPosition.rotationRadian != 0) {
       canvas.restore();
     }
   }
