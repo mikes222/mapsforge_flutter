@@ -116,6 +116,8 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
         break;
       case Position.LEFT:
         _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
+        _verticalOffset +=
+            symbolBoundary.top + symbolBoundary.getHeight() / 2 + dy;
         break;
       case Position.BELOW_RIGHT:
         _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
@@ -128,6 +130,8 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
         break;
       case Position.RIGHT:
         _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
+        _verticalOffset +=
+            symbolBoundary.top + symbolBoundary.getHeight() / 2 + dy;
         break;
       default:
         throw new Exception("Position invalid");
