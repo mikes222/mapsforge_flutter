@@ -139,6 +139,7 @@ class MarkerCaption extends CaptionMarker {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     Position position = Position.BELOW,
+    double dy = 0,
     required DisplayModel displayModel,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
@@ -155,6 +156,7 @@ class MarkerCaption extends CaptionMarker {
           maxTextWidth: displayModel.getMaxTextWidth(),
           position: position,
           displayModel: displayModel,
+          dy: dy,
         ) {}
 
   void renderCaption(MarkerCallback markerCallback) {
