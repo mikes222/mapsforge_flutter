@@ -84,7 +84,6 @@ class MarkerClusterDataStore extends IMarkerDataStore {
         text: "${markers.length}",
         latLong: latLong,
         fontSize: 18,
-        captionOffsetY: 0,
         fillColor: 0xffffffff,
         displayModel: displayModel,
       ),
