@@ -129,14 +129,9 @@ abstract class BasicMarker<T> extends Marker<T> {
 
 /// The caption of a marker
 class MarkerCaption extends CaptionMarker {
-  /// The offset of the caption in screen pixels
-  double captionOffsetX;
-
   MarkerCaption({
     required String text,
     ILatLong? latLong,
-    this.captionOffsetX = 0,
-    double captionOffsetY = 0,
     double strokeWidth = 2.0,
     int strokeColor = 0xffffffff,
     int fillColor = 0xff000000,
@@ -144,6 +139,7 @@ class MarkerCaption extends CaptionMarker {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     Position position = Position.BELOW,
+    double dy = 0,
     required DisplayModel displayModel,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
@@ -160,6 +156,7 @@ class MarkerCaption extends CaptionMarker {
           maxTextWidth: displayModel.getMaxTextWidth(),
           position: position,
           displayModel: displayModel,
+          dy: dy,
         ) {}
 
   void renderCaption(MarkerCallback markerCallback) {
