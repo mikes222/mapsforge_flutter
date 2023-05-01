@@ -41,10 +41,11 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
     this.dy = 0,
     this.position = Position.BELOW,
     required DisplayModel displayModel,
+    int strokeMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT,
   }) : super(
-      latLong: latLong,
-      minZoomLevel: minZoomLevel,
-      maxZoomLevel: maxZoomLevel) {
+            latLong: latLong,
+            minZoomLevel: minZoomLevel,
+            maxZoomLevel: maxZoomLevel) {
     base = ShapeCaption.base();
     base.setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());
     base.setStrokeColorFromNumber(strokeColor);
@@ -53,7 +54,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
     base.position = position;
     base.maxTextWidth = maxTextWidth;
     base.gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
-    base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    base.setStrokeMinZoomLevel(strokeMinZoomLevel);
     base.dy = dy;
     setLatLong(latLong);
   }
