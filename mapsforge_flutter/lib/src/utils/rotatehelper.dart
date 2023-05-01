@@ -51,16 +51,18 @@ class PositionInfo implements ILatLong {
   /// value towards bottom. Unit: Mappixels
   final double dy;
 
+  /// The latitude of the given point
   @override
   final double latitude;
 
+  /// The longitude of given point
   @override
   final double longitude;
 
   /// The center of the current view in mappixels
   final Mappoint center;
 
-  PositionInfo(
+  const PositionInfo(
       {required this.dx,
       required this.dy,
       required this.latitude,

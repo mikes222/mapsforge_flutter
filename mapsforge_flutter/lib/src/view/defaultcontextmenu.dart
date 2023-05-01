@@ -52,8 +52,7 @@ class DefaultContextMenuState extends State {
     // double y = widget.event.y;
 
     widget.mapViewPosition.calculateBoundingBox(widget.viewModel.mapDimension);
-    Mappoint leftUpper =
-        widget.mapViewPosition.getLeftUpper(widget.viewModel.mapDimension);
+
     Mappoint center = widget.mapViewPosition.getCenter();
 
     /// distance from the center

@@ -342,6 +342,25 @@ class ViewModel {
     }
   }
 
+  void setCenter(double left, double upper) {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.setCenter(
+          _mapViewPosition!, left, upper, _mapDimension);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      MapViewPosition newPosition = MapViewPosition(
+          null,
+          null,
+          displayModel.DEFAULT_ZOOM - 1,
+          displayModel.DEFAULT_INDOOR_LEVEL,
+          displayModel.tileSize,
+          displayModel.DEFAULT_ROTATION);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    }
+  }
+
   /// The user has tapped at the map. The event has been detected by the [FlutterGestureDetector].
   /// left/upper 0/0 indicates the left-upper corner of the widget (NOT of the screen)
   void tapEvent(TapEvent event) {

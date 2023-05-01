@@ -241,6 +241,27 @@ class MapViewPosition {
     // Projection.checkLongitude(_longitude!);
   }
 
+  MapViewPosition.setCenter(
+      MapViewPosition old, double left, double upper, Dimension viewDimension)
+      : zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel,
+        tileSize = old.tileSize,
+        _rotation = old._rotation,
+        _rotationRadian = old._rotationRadian,
+        scale = old.scale,
+        focalPoint = old.focalPoint,
+        _projection = old._projection {
+    _center = Mappoint(
+        min(max(left, -viewDimension.width / 2),
+            _projection.mapsize - viewDimension.width / 2),
+        min(max(upper, -viewDimension.height / 2),
+            _projection.mapsize - viewDimension.height / 2));
+    _leftUpper = null;
+
+    _latitude = _projection.pixelYToLatitude(upper);
+    _longitude = _projection.pixelXToLongitude(left);
+  }
+
   /// called if the size of the view has been changed. The boundingBox needs to be
   /// destroyed then as well as the _leftUpper variable.
   void sizeChanged() {
