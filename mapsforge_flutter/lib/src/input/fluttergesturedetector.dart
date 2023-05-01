@@ -15,9 +15,17 @@ class FlutterGestureDetector extends StatefulWidget {
 
   final Widget child;
 
+  /// The absorption factor of a swipe. The lower the factor the faster swiping
+  /// stops.
+  final double swipeAbsorption;
+
   const FlutterGestureDetector(
-      {Key? key, required this.viewModel, required this.child})
-      : super(key: key);
+      {Key? key,
+      required this.viewModel,
+      required this.child,
+      this.swipeAbsorption = 0.8})
+      : assert(swipeAbsorption >= 0 && swipeAbsorption <= 1),
+        super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -38,7 +46,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   final int _swipeSleepMs = 100; // milliseconds between swipes
 
   /// The rate of the slowdown after each iteration
-  final double _swipeAbsorption = 0.8;
+  late final double _swipeAbsorption;
 
   Offset? _updateLocalFocalPoint;
 
@@ -53,6 +61,15 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   _ScaleEvent? _scaleEvent;
 
   @override
+  FlutterGestureDetector get widget => super.widget;
+
+  @override
+  void initState() {
+    super.initState();
+    _swipeAbsorption = widget.swipeAbsorption;
+  }
+
+  @override
   void dispose() {
     _swipeTimer?.cancel();
     _swipeTimer = null;
@@ -62,7 +79,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
   @override
   Widget build(BuildContext context) {
-    final bool doLog = true;
+    final bool doLog = false;
 
     // short click:
     // onTapDown
@@ -324,6 +341,15 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           _swipeOffset = details.velocity.pixelsPerSecond /
               1000 *
               _swipeSleepMs.toDouble();
+          if (widget.viewModel.mapViewPosition?.rotation != 0) {
+            double hyp = sqrt(_swipeOffset!.dx * _swipeOffset!.dx +
+                _swipeOffset!.dy * _swipeOffset!.dy);
+            double rad = atan2(_swipeOffset!.dy, _swipeOffset!.dx);
+            double rot = widget.viewModel.mapViewPosition!.rotationRadian;
+            _swipeOffset = Offset(cos(-rot + rad) * hyp, sin(-rot + rad) * hyp);
+            // print(
+            //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+          }
           // if there is still a timer running, stop it now
           _swipeTimer?.cancel();
           _swipeTimer =

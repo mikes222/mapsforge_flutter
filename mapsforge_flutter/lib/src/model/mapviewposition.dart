@@ -66,8 +66,8 @@ class MapViewPosition {
         focalPoint = null,
         _projection = PixelProjection(old.zoomLevel + 1, old.tileSize);
 
-  MapViewPosition.zoomInAround(
-      MapViewPosition old, double latitude, double longitude)
+  MapViewPosition.zoomInAround(MapViewPosition old, double latitude,
+      double longitude)
       : _latitude = latitude,
         _longitude = longitude,
         zoomLevel = old.zoomLevel + 1,
@@ -103,8 +103,8 @@ class MapViewPosition {
         focalPoint = null,
         _projection = PixelProjection(max(zoomLevel, 0), old.tileSize);
 
-  MapViewPosition.zoomAround(
-      MapViewPosition old, double latitude, double longitude, int zoomLevel)
+  MapViewPosition.zoomAround(MapViewPosition old, double latitude,
+      double longitude, int zoomLevel)
       : _latitude = latitude,
         _longitude = longitude,
         this.zoomLevel = max(zoomLevel, 0),
@@ -203,8 +203,8 @@ class MapViewPosition {
         _center = old._center,
         assert(_rotation >= 0 && _rotation < 360);
 
-  MapViewPosition.setLeftUpper(
-      MapViewPosition old, double left, double upper, Dimension viewDimension)
+  MapViewPosition.setLeftUpper(MapViewPosition old, double left, double upper,
+      Dimension viewDimension)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
@@ -241,8 +241,8 @@ class MapViewPosition {
     // Projection.checkLongitude(_longitude!);
   }
 
-  MapViewPosition.setCenter(
-      MapViewPosition old, double left, double upper, Dimension viewDimension)
+  MapViewPosition.setCenter(MapViewPosition old, double left, double upper,
+      Dimension viewDimension)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
         tileSize = old.tileSize,
@@ -295,6 +295,10 @@ class MapViewPosition {
 
   PixelProjection get projection => _projection;
 
+  /// returns the absoulute pixel-coordinates of the left-upper point of the mapview.
+  /// Since this is confusing while rotating the map we encourage you to use center()
+  /// instead and calculate everything from there.
+  @Deprecated("Use getCenter() instead if possible")
   Mappoint getLeftUpper(Dimension mapDimension) {
     if (_leftUpper != null) return _leftUpper!;
     calculateBoundingBox(mapDimension);
@@ -325,14 +329,14 @@ class MapViewPosition {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MapViewPosition &&
-          runtimeType == other.runtimeType &&
-          _latitude == other._latitude &&
-          _longitude == other._longitude &&
-          zoomLevel == other.zoomLevel &&
-          indoorLevel == other.indoorLevel &&
-          _rotation == other._rotation &&
-          scale == other.scale;
+          other is MapViewPosition &&
+              runtimeType == other.runtimeType &&
+              _latitude == other._latitude &&
+              _longitude == other._longitude &&
+              zoomLevel == other.zoomLevel &&
+              indoorLevel == other.indoorLevel &&
+              _rotation == other._rotation &&
+              scale == other.scale;
 
   @override
   int get hashCode =>
