@@ -103,7 +103,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
             symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
         break;
       case Position.ABOVE:
-        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap + dy;
         break;
       case Position.BELOW_LEFT:
         _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
@@ -112,10 +112,12 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
         break;
       case Position.ABOVE_LEFT:
         _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap + dy;
         break;
       case Position.LEFT:
         _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
+        _verticalOffset +=
+            symbolBoundary.top + symbolBoundary.getHeight() / 2 + dy;
         break;
       case Position.BELOW_RIGHT:
         _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
@@ -124,10 +126,12 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
         break;
       case Position.ABOVE_RIGHT:
         _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap - dy;
+        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap + dy;
         break;
       case Position.RIGHT:
         _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
+        _verticalOffset +=
+            symbolBoundary.top + symbolBoundary.getHeight() / 2 + dy;
         break;
       default:
         throw new Exception("Position invalid");
