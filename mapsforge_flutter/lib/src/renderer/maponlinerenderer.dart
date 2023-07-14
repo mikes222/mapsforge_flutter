@@ -50,7 +50,7 @@ class MapOnlineRenderer extends JobRenderer {
 
   @override
   Future<JobResult> retrieveLabels(Job job) {
-    throw UnimplementedError();
+    return Future.value(JobResult(null, JOBRESULT.NORMAL));
   }
 
   @override

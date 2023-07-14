@@ -14,13 +14,14 @@ class ViewModel {
   List<Widget>? overlays;
 
   ///
-  /// The width and height of the visible view in pixels. Note that this is NOT equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
-  /// to gain a better resolution of the tile-images.
-  ///
+  /// The width and height of the visible view in mappixels. Note that this is NOT equal to device-independent screen-pixels since the
+  /// view will be scaled by [viewScaleFactor] in order to gain a better resolution of the tile-images
   late Dimension _mapDimension;
 
-  /// The factor to scale down the map. With [DisplayModel.deviceScaleFactor] one can scale up the view and make it bigger. With this value
-  /// one can scale down the view and make the resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images
+  /// The factor to scale down the map. [DisplayModel.deviceScaleFactor] scales the size of the map up and make it bigger. With this value
+  /// - which is equal to [DisplayModel.deviceScaleFactor] - the view will be scaled down again by the same ratio and hence makes the
+  /// resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images.
+  /// Note that the DisplayModel.userScaleFactor will not taken into account here.
   late final double viewScaleFactor;
 
   /// The last position should be reported to a new subscriber
@@ -344,8 +345,8 @@ class ViewModel {
 
   void setCenter(double left, double upper) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition.setCenter(
-          _mapViewPosition!, left, upper, _mapDimension);
+      MapViewPosition newPosition =
+          MapViewPosition.setCenter(_mapViewPosition!, left, upper);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -401,14 +402,14 @@ class ViewModel {
   }
 
   ///
-  /// The width and height of the visible view in pixels. Note that this is NOT
+  /// The width and height of the visible view in mappixels. Note that this is NOT
   /// equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
   /// to gain a better resolution of the tile-images.
   ///
   Dimension get mapDimension => _mapDimension;
 
-  // called if the size of the widget changes
-  Dimension? setViewDimension(double width, double height) {
+  // called if the size of the widget changes. Dimension of width and height are in device independent pixels as delivered by flutter
+  Dimension setViewDimension(double width, double height) {
     assert(width >= 0);
     assert(height >= 0);
     if (_mapDimension.width == width * viewScaleFactor &&
@@ -441,15 +442,6 @@ class TapEvent implements ILatLong {
 
   final PixelProjection? _projection;
 
-  /// The coordinates of the event in logical pixels of the screen in the mapwidget. The left/upper point of the widget is considered 0/0. Note that the widgetpixels differs from the mappixels by the [viewScaleFactor]
-//  final Mappoint widgetPixelMappoint;
-
-  /// the left-upper point of the map in pixels
-  //final Mappoint leftUpperMappoint;
-
-  /// The position of the event in mappixels
-  final Mappoint mapPixelMappoint;
-
   bool isCleared() {
     return _projection == null;
   }
@@ -459,21 +451,17 @@ class TapEvent implements ILatLong {
   const TapEvent(
       {required this.latitude,
       required this.longitude,
-      //required this.leftUpperMappoint,
-      required this.mapPixelMappoint,
       required PixelProjection projection})
       : _projection = projection;
 
   const TapEvent.clear()
       : latitude = 0,
         longitude = 0,
-        //leftUpperMappoint = const Mappoint(0, 0),
-        mapPixelMappoint = const Mappoint(0, 0),
         _projection = null;
 
   @override
   String toString() {
-    return 'TapEvent{latitude: $latitude, longitude: $longitude, _projection: $_projection, mapPixelMappoint: $mapPixelMappoint}';
+    return 'TapEvent{latitude: $latitude, longitude: $longitude, _projection: $_projection}';
   }
 }
 
@@ -485,14 +473,7 @@ class MoveAroundEvent extends TapEvent {
     required double latitude,
     required double longitude,
     required PixelProjection projection,
-    //required Mappoint leftUpperMappoint,
-    required Mappoint mapPixelMappoint,
-  }) : super(
-            latitude: latitude,
-            longitude: longitude,
-            //leftUpperMappoint: leftUpperMappoint,
-            mapPixelMappoint: mapPixelMappoint,
-            projection: projection);
+  }) : super(latitude: latitude, longitude: longitude, projection: projection);
 }
 
 /////////////////////////////////////////////////////////////////////////////

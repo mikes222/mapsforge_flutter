@@ -63,8 +63,10 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
   }
 
   @override
-  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel;
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    return minZoomLevel <= zoomLevel &&
+        maxZoomLevel >= zoomLevel &&
+        boundary.contains(latLong.latitude, latLong.longitude);
   }
 
   @override
@@ -91,7 +93,8 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
   @override
   bool isTapped(TapEvent tapEvent) {
     Mappoint p2 = tapEvent.projection.latLonToPixel(latLong);
-    return p2.distance(tapEvent.mapPixelMappoint) <=
+    Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
+    return p2.distance(tapped) <=
         getRadius(tapEvent.projection.scalefactor.zoomlevel);
   }
 }

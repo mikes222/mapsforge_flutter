@@ -9,7 +9,8 @@ class PixelProjection extends MercatorProjection {
   final int tileSize;
 
   ///
-  /// the size of the map in pixel. At scalefactor 1 (or zoomLevel 0) the _mapSize is equal to the tileSize.
+  /// the size of the whole map in mappixel. At scalefactor 1 (or zoomLevel 0)
+  /// the _mapSize is equal to the tileSize.
   ///
   late int _mapSize;
 
@@ -164,6 +165,7 @@ class PixelProjection extends MercatorProjection {
 
   @override
   String toString() {
-    return 'PixelProjection{tileSize: $tileSize, _mapSize: $_mapSize, zoomLevel: ${scalefactor.zoomlevel}}';
+    return 'PixelProjection{tileSize: $tileSize, _mapSize: $_mapSize, zoomLevel: ${scalefactor
+        .zoomlevel}}';
   }
 }

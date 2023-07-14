@@ -1,3 +1,6 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
@@ -6,12 +9,16 @@ import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
 
 import '../../maps.dart';
 import '../../special.dart';
+import '../graphics/implementation/fluttercanvas.dart';
 import '../graphics/matrix.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
 import '../rendertheme/nodeproperties.dart';
+//import 'dart:ui' as ui;
 
 class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
+  final bool debug = false;
+
   late final MapPaint fill;
 
   ResourceBitmap? bitmap;
@@ -51,15 +58,17 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 //        matrix.rotate(shapeSymbol.theta);
     }
 
-    // print(
-    //     "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
-    // ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
-    // uiCanvas.drawRect(
-    //     ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
-    //         boundary.getWidth(), boundary.getHeight()),
-    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    // uiCanvas.drawCircle(ui.Offset(point.x, point.y), 10,
-    //     ui.Paint()..color = Colors.green.withOpacity(0.5));
+    if (debug) {
+      print(
+          "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
+      ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
+      uiCanvas.drawRect(
+          ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
+              boundary.getWidth(), boundary.getHeight()),
+          ui.Paint()..color = Colors.red.withOpacity(0.5));
+      uiCanvas.drawCircle(ui.Offset(point.x, point.y), 10,
+          ui.Paint()..color = Colors.green.withOpacity(0.5));
+    }
 
     canvas.drawBitmap(
         bitmap: bitmap!,

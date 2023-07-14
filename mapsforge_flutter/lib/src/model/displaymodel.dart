@@ -22,12 +22,8 @@ class DisplayModel {
 
   double DEFAULT_ROTATION = 0;
 
-  /// device scale factor. The bigger that value the larger the size of the tiles.
-  /// That also means that the map shows more details at a certain zoomLevel. Think of it
-  /// the following way: At zoom level 0 the whole world is shown in one tile. That tile is x
-  /// times larger depenending on the deviceScaleFactor and userScaleFactor. Therefore a small
-  /// widget may not be able to show the whole tile anymore so we see more details at larger
-  /// scales.
+  /// Device scale factor. The bigger that value the larger the size of the tiles and hence the map. In [ViewModel] the map will be shrinked again
+  /// by the same factor so that the size stays the same but the quality of the image increases.
   final double deviceScaleFactor;
 
   /// scale factor requested by the user. The bigger that value the larger the size of the tiles.
@@ -71,11 +67,8 @@ class DisplayModel {
     this.maxTextWidthFactor = 0.7,
     this.fontScaleFactor = 1.0,
     this.backgroundColor = 0xffeeeeee,
-  })
-      : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
-        assert(maxTextWidthFactor > 0)
-  //assert(tileSize >= 256)
-  {
+  })  : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
+        assert(maxTextWidthFactor > 0) {
     this._setTileSize();
     _setMaxTextWidth();
   }

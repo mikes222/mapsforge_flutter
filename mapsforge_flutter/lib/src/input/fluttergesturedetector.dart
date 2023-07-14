@@ -147,8 +147,6 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           MoveAroundEvent event = MoveAroundEvent(
             latitude: positionInfo.latitude,
             longitude: positionInfo.longitude,
-            mapPixelMappoint: Mappoint(positionInfo.center.x + positionInfo.dx,
-                positionInfo.center.y + positionInfo.dy),
             projection: widget.viewModel.mapViewPosition!.projection,
           );
 
@@ -159,9 +157,6 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           TapEvent tapEvent = TapEvent(
               latitude: positionInfo.latitude,
               longitude: positionInfo.longitude,
-              mapPixelMappoint: Mappoint(
-                  positionInfo.center.x + positionInfo.dx,
-                  positionInfo.center.y + positionInfo.dy),
               projection: widget.viewModel.mapViewPosition!.projection);
           widget.viewModel.longTapEvent(tapEvent);
           return;
@@ -176,9 +171,6 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
           TapEvent event = TapEvent(
               latitude: positionInfo.latitude,
               longitude: positionInfo.longitude,
-              mapPixelMappoint: Mappoint(
-                  positionInfo.center.x + positionInfo.dx,
-                  positionInfo.center.y + positionInfo.dy),
               projection: widget.viewModel.mapViewPosition!.projection);
 
           widget.viewModel.tapEvent(event);
@@ -251,10 +243,6 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             MoveAroundEvent event = MoveAroundEvent(
               latitude: positionInfo.latitude,
               longitude: positionInfo.longitude,
-              mapPixelMappoint: Mappoint(
-                positionInfo.center.x + positionInfo.dx,
-                positionInfo.center.y + positionInfo.dy,
-              ),
               projection: widget.viewModel.mapViewPosition!.projection,
             );
 
@@ -306,9 +294,6 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             MoveAroundEvent event = MoveAroundEvent(
               latitude: positionInfo.latitude,
               longitude: positionInfo.longitude,
-              mapPixelMappoint: Mappoint(
-                  positionInfo.center.x + positionInfo.dx,
-                  positionInfo.center.y + positionInfo.dy),
               projection: widget.viewModel.mapViewPosition!.projection,
             );
 
@@ -475,10 +460,6 @@ class _TapDownEvent {
       MoveAroundEvent event = MoveAroundEvent(
         latitude: positionInfo.latitude,
         longitude: positionInfo.longitude,
-        mapPixelMappoint: Mappoint(
-          positionInfo.center.x + positionInfo.dx,
-          positionInfo.center.y + positionInfo.dy,
-        ),
         projection: viewModel.mapViewPosition!.projection,
       );
 
