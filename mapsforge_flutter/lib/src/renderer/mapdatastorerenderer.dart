@@ -84,7 +84,7 @@ class MapDataStoreRenderer extends JobRenderer {
     mapReadResult = params.result;
     renderContext = params.renderContext;
     timing.lap(100,
-        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read for tile");
+        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read for tile ${renderContext.job.tile}");
     if (mapReadResult == null) {
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
@@ -95,14 +95,14 @@ class MapDataStoreRenderer extends JobRenderer {
     }
     await renderContext.initDrawingLayers(symbolCache);
     timing.lap(100,
-        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized for tile");
+        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized for tile ${renderContext.job.tile}");
     CanvasRasterer canvasRasterer = CanvasRasterer(job.tileSize.toDouble(),
         job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
-    timing.lap(100, "startCanvasBitmap for tile");
+    timing.lap(100, "startCanvasBitmap for tile ${renderContext.job.tile}");
     canvasRasterer.drawWays(renderContext);
-    timing.lap(
-        100, "${renderContext.drawingLayers.length} way-layers for tile");
+    timing.lap(100,
+        "${renderContext.drawingLayers.length} way-layers for tile ${renderContext.job.tile}");
 
     int labelCount = 0;
     List<RenderInfo<Shape>>? renderInfos;
@@ -119,7 +119,7 @@ class MapDataStoreRenderer extends JobRenderer {
       // labelResult.labelsToDisposeAfterDrawing.forEach((element) {
       //   element.dispose();
       // });
-      timing.lap(100, "$labelCount labels for tile");
+      timing.lap(100, "$labelCount labels for tile ${renderContext.job.tile}");
       // labelsToDraw.forEach((element) {
       //   _log.info(
       //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
@@ -130,7 +130,7 @@ class MapDataStoreRenderer extends JobRenderer {
           renderContext.labels, renderContext.projection);
       // this.labelStore.storeMapItems(
       //     job.tile, renderContext.labels, renderContext.projection);
-      timing.lap(100, "storeMapItems for tile");
+      timing.lap(100, "storeMapItems for tile ${renderContext.job.tile}");
     }
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
 //      // blank out all areas outside of map
@@ -146,7 +146,7 @@ class MapDataStoreRenderer extends JobRenderer {
     int actions = (canvasRasterer.canvas as FlutterCanvas).actions;
     canvasRasterer.destroy();
     timing.lap(100,
-        "$labelCount elements and labels, $actions actions in canvas for tile");
+        "$labelCount elements and labels, $actions actions in canvas for tile ${renderContext.job.tile}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL, renderInfos);
@@ -166,7 +166,7 @@ class MapDataStoreRenderer extends JobRenderer {
     mapReadResult = params.result;
     renderContext = params.renderContext;
     timing.lap(100,
-        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois for labels");
+        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois for labels for tile ${renderContext.job.tile}");
     if (mapReadResult == null) {
       return JobResult(null, JOBRESULT.UNSUPPORTED);
     }
@@ -185,7 +185,7 @@ class MapDataStoreRenderer extends JobRenderer {
     // this.labelStore.storeMapItems(
     //     job.tile, renderContext.labels, renderContext.projection);
     timing.lap(100,
-        "${renderInfos.length} items from collisionFreeOrdered for labels");
+        "${renderInfos.length} items from collisionFreeOrdered for labels for tile ${renderContext.job.tile}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(null, JOBRESULT.NORMAL, renderInfos);

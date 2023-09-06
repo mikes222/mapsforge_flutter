@@ -30,17 +30,17 @@ dependencies:
     path: ../mapsforge_flutter
 
   # Apache 2.0 License
-  archive: ^3.3.7
+  archive: ^3.3.8
 
   flutter_archive: ^5.0.0
 
  # BSD License
   intl: ^0.18.1
 
-  leak_tracker: ^3.0.1
+  leak_tracker: ^9.0.6
 
  # BSD License
-  logging: ^1.1.1
+  logging: ^1.2.0
 
   rxdart: ^0.27.7
 

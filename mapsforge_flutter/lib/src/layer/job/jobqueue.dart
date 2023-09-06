@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -10,6 +11,8 @@ import '../../../maps.dart';
 import '../../graphics/tilebitmap.dart';
 import '../../rendertheme/renderinfo.dart';
 import '../../rendertheme/shape/shape.dart';
+import '../../utils/layerutil.dart';
+import '../../utils/timing.dart';
 import 'job.dart';
 
 ///
@@ -31,6 +34,16 @@ class JobQueue {
 
   final TileBasedLabelStore labelStore;
 
+  static TileBoundary? _lastBoundary;
+
+  static int _lastIndoorLevel = -1;
+
+  static JobSet? _lastJobset;
+
+  final Map<Job, _JobQueueInfo> _renderJobs = {};
+
+  final Map<Job, _JobQueueInfo> _renderLabelJobs = {};
+
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
       this.tileBitmapCache1stLevel)
       : labelStore = TileBasedLabelStore(1000);
@@ -38,15 +51,46 @@ class JobQueue {
   void dispose() {
     _executionQueue.dispose();
     _currentJobSet?.dispose();
+    _renderJobs.clear();
+    _renderLabelJobs.clear();
     _currentJobSet = null;
   }
 
   /// Let the queue process this jobset. A Jobset is a collection of jobs needed to render a whole view. It often consists of several tiles.
   void processJobset(JobSet jobSet) {
-    // stop processing the former jobSet
-    _currentJobSet?.removeJobs();
+    _immedateProcessing(jobSet);
+    // remove existing jobs
+    _renderJobs.forEach((key, value) {
+      value.jobSet = null;
+    });
+    _renderLabelJobs.forEach((key, value) {
+      value.jobSet = null;
+    });
+    // add new jobs
+    jobSet.jobs.forEach((job) {
+      _JobQueueInfo? jobQueueInfo = _renderJobs[job];
+      if (jobQueueInfo == null) {
+        jobQueueInfo = _JobQueueInfo();
+        _renderJobs[job] = jobQueueInfo;
+      }
+      jobQueueInfo.jobSet = jobSet;
+    });
+    jobSet.labelJobs.forEach((job) {
+      _JobQueueInfo? jobQueueInfo = _renderLabelJobs[job];
+      if (jobQueueInfo == null) {
+        jobQueueInfo = _JobQueueInfo();
+        _renderLabelJobs[job] = jobQueueInfo;
+      }
+      jobQueueInfo.jobSet = jobSet;
+    });
+    if (_executionQueue.isCancelled) return;
+    _executionQueue.add(() async {
+      await _startNextJob();
+    });
+  }
 
-    // remove all jobs which can be fulfilled via the 1st level cache
+  // remove all jobs which can be fulfilled via the 1st level caches
+  void _immedateProcessing(JobSet jobSet) {
     Map<Job, TileBitmap> toRemove = {};
     jobSet.jobs.forEach((job) {
       TileBitmap? tileBitmap =
@@ -55,59 +99,76 @@ class JobQueue {
         toRemove[job] = tileBitmap;
       }
     });
-    toRemove.forEach((Job key, TileBitmap tileBitmap) {
-      // we have this already in our 1st level cache
-      jobSet.jobFinished(key, JobResult(tileBitmap, JOBRESULT.NORMAL));
-    });
+    jobSet.jobsFinished(toRemove);
+
     Map<Job, List<RenderInfo<Shape>>> items =
         labelStore.getVisibleItems(jobSet.labelJobs);
-    items.forEach((tile, value) {
-      jobSet.addLabels(tile, value);
-    });
-    _currentJobSet = jobSet;
-    _executionQueue.add(() async {
-      await _startNextJob(jobSet);
-    });
+    jobSet.renderingJobsFinished(items);
   }
 
-  Future<void> _startNextJob(JobSet jobSet) async {
+  Future<void> _startNextJob() async {
     //_log.info("ListQueue has ${_listQueue.length} elements");
-    if (jobSet.jobs.isEmpty) {
-      unawaited(_startNextLabelJob(jobSet));
+    if (_renderJobs.isEmpty) {
+      unawaited(_startNextLabelJob());
       return;
     }
-    Job nextJob = jobSet.jobs.first;
-    //_log.info("taken ${nextJob?.toString()} from queue");
-    try {
-      await _donowDirect(jobSet, nextJob);
-    } catch (e, stacktrace) {
-      _log.warning("$e\n$stacktrace");
+    MapEntry<Job, _JobQueueInfo> entry = _renderJobs.entries.first;
+    Job job = entry.key;
+    if (entry.value.jobSet != null) {
+      if (!entry.value.processing) {
+        entry.value.processing = true;
+        //_log.info("taken ${nextJob?.toString()} from queue");
+        try {
+          await _donowDirect(job);
+        } catch (e, stacktrace) {
+          _log.warning("$e\n$stacktrace");
+        }
+      }
     }
+    _renderJobs.remove(job);
+    if (_executionQueue.isCancelled) return;
+    unawaited(_executionQueue.add(() async {
+      await _startNextJob();
+    }));
   }
 
-  Future<void> _startNextLabelJob(JobSet jobSet) async {
-    if (jobSet.labelJobs.isEmpty) return;
-    Job job = jobSet.labelJobs.first;
-    JobResult jobResult = await jobRenderer.retrieveLabels(job);
-    if (jobResult.renderInfos != null) {
-      labelStore.storeMapItems(job.tile, jobResult.renderInfos!);
-      jobSet.addLabels(job, jobResult.renderInfos!);
-    } else {
-      // we have to remove this job even if we do not have labels
-      jobSet.labelJobs.remove(job);
+  Future<void> _startNextLabelJob() async {
+    if (_renderLabelJobs.isEmpty) {
+      return;
     }
-    unawaited(_startNextLabelJob(jobSet));
+    MapEntry<Job, _JobQueueInfo> entry = _renderLabelJobs.entries.first;
+    Job job = entry.key;
+    if (entry.value.jobSet != null) {
+      if (!entry.value.processing) {
+        entry.value.processing = true;
+        JobResult jobResult = await jobRenderer.retrieveLabels(job);
+        _JobQueueInfo? jobQueueInfo = _renderLabelJobs[job];
+        if (jobResult.renderInfos != null) {
+          labelStore.storeMapItems(job.tile, jobResult.renderInfos!);
+          jobQueueInfo?.jobSet
+              ?.renderingJobFinished(job, jobResult.renderInfos!);
+        } else {
+          // we have to remove this job even if we do not have labels
+          jobQueueInfo?.jobSet?.labelJobs.remove(job);
+        }
+      }
+    }
+    _renderLabelJobs.remove(job);
+    if (_executionQueue.isCancelled) return;
+    unawaited(_executionQueue.add(() async {
+      await _startNextLabelJob();
+    }));
   }
 
-  Future<void> _donowDirect(JobSet jobSet, Job job) async {
+  Future<void> _donowDirect(Job job) async {
     TileBitmap? tileBitmap =
         await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
-      jobSet.jobFinished(job, JobResult(tileBitmap, JOBRESULT.NORMAL));
-      unawaited(_executionQueue.add(() async {
-        await _startNextJob(jobSet);
-      }));
+      _JobQueueInfo? jobQueueInfo = _renderJobs[job];
+      jobQueueInfo?.jobSet
+          ?.jobFinished(job, JobResult(tileBitmap, JOBRESULT.NORMAL));
+      _renderJobs.remove(job);
       return;
     }
     JobResult jobResult = await renderDirect(IsolateParam(job, jobRenderer));
@@ -119,15 +180,110 @@ class JobQueue {
         jobResult.result == JOBRESULT.UNSUPPORTED) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
-    jobSet.jobFinished(job, jobResult);
+    _JobQueueInfo? jobQueueInfo = _renderJobs[job];
+    jobQueueInfo?.jobSet?.jobFinished(job, jobResult);
+    _renderJobs.remove(job);
+
     if (jobResult.renderInfos != null) {
       labelStore.storeMapItems(job.tile, jobResult.renderInfos!);
-      jobSet.addLabels(job, jobResult.renderInfos!);
     }
-    unawaited(_executionQueue.add(() async {
-      await _startNextJob(jobSet);
-    }));
   }
+
+  JobSet? submitJobSet(
+      ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
+    //_log.info("viewModel ${viewModel.viewDimension}");
+    Timing timing = Timing(log: _log, active: true);
+    TileBoundary? _boundary = _lastBoundary;
+    List<Tile> tiles = _getTiles(viewModel, mapViewPosition);
+    if (_boundary == _lastBoundary &&
+        (_lastJobset?.completed() ?? false) &&
+        _lastIndoorLevel == tiles.first.indoorLevel) {
+      /// The last jobset is completed and represents still the desired data so use it.
+      return _lastJobset;
+    }
+    _lastJobset?.dispose();
+    _lastJobset = null;
+    JobSet jobSet = JobSet();
+    tiles.forEach((Tile tile) {
+      Job job = Job(tile, false, viewModel.displayModel.tileSize);
+      jobSet.add(job);
+    });
+    timing.lap(50, "${jobSet.jobs.length} missing tiles");
+    //_log.info("JobSets created: ${jobSet.jobs.length}");
+    if (jobSet.jobs.length > 0) {
+      jobQueue.processJobset(jobSet);
+      _lastJobset = jobSet;
+      _lastIndoorLevel = tiles.first.indoorLevel;
+      return jobSet;
+    }
+    return null;
+  }
+
+  ///
+  /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
+  /// the user (tile in the middle should be created first
+  ///
+  List<Tile> _getTiles(ViewModel viewModel, MapViewPosition mapViewPosition) {
+    Mappoint center = mapViewPosition.getCenter();
+    int zoomLevel = mapViewPosition.zoomLevel;
+    int indoorLevel = mapViewPosition.indoorLevel;
+    double halfWidth = viewModel.mapDimension.width / 2;
+    double halfHeight = viewModel.mapDimension.height / 2;
+    if (mapViewPosition.rotation > 2) {
+      // we rotate. Use the max side for both width and height
+      halfWidth = max(halfWidth, halfHeight);
+      halfHeight = max(halfWidth, halfHeight);
+    }
+    // rising from 0 to 45, then falling to 0 at 90°
+    int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
+    int tileLeft =
+        mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
+    int tileRight = mapViewPosition.projection.pixelXToTileX(min(
+        center.x + halfWidth, mapViewPosition.projection.mapsize.toDouble()));
+    int tileTop =
+        mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
+    int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
+        center.y + halfHeight, mapViewPosition.projection.mapsize.toDouble()));
+    if (degreeDiff > 5) {
+      tileLeft = max(tileLeft - 1, 0);
+      tileRight = min(tileRight + 1,
+          mapViewPosition.projection.scalefactor.scalefactor.ceil());
+      tileTop = max(tileTop - 1, 0);
+      tileBottom = min(tileBottom + 1,
+          mapViewPosition.projection.scalefactor.scalefactor.ceil());
+    }
+    // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
+    center = center.offset(-viewModel.displayModel.tileSize / 2,
+        -viewModel.displayModel.tileSize / 2);
+    Map<Tile, double> tileMap = Map<Tile, double>();
+    for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
+      for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
+        Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
+        Mappoint leftUpper = mapViewPosition.projection.getLeftUpper(tile);
+        tileMap[tile] =
+            (pow(leftUpper.x - center.x, 2) + pow(leftUpper.y - center.y, 2))
+                .toDouble();
+      }
+    }
+    //_log.info("$tileTop, $tileBottom, sort ${tileMap.length} items");
+
+    List<Tile> sortedKeys = tileMap.keys.toList(growable: false)
+      ..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
+    _lastBoundary = TileBoundary(
+        tileLeft: tileLeft,
+        tileRight: tileRight,
+        tileTop: tileTop,
+        tileBottom: tileBottom);
+    return sortedKeys;
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _JobQueueInfo {
+  JobSet? jobSet;
+
+  bool processing = false;
 }
 
 /////////////////////////////////////////////////////////////////////////////

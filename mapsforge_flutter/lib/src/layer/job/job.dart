@@ -4,8 +4,14 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 /// A job is a job to produce or retrieve a bitmap for a tile
 ///
 class Job {
+
+  /// not used anymore
   final bool hasAlpha;
+
+  /// A tile.
   final Tile tile;
+
+  /// The size of the requested tile. Same as viewModel.displayModel.tileSize
   final int tileSize;
 
   const Job._(this.tile, this.hasAlpha, this.tileSize) : assert(tileSize > 0);
@@ -18,10 +24,10 @@ class Job {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Job &&
-          runtimeType == other.runtimeType &&
-          hasAlpha == other.hasAlpha &&
-          tile == other.tile;
+          other is Job &&
+              runtimeType == other.runtimeType &&
+              hasAlpha == other.hasAlpha &&
+              tile == other.tile;
 
   @override
   int get hashCode => hasAlpha.hashCode ^ tile.hashCode;

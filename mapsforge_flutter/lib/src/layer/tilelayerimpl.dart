@@ -51,7 +51,7 @@ class TileLayerImpl extends TileLayer {
 
     // _TileLayerPainter _tileLayerPainter = _TileLayerPainter(jobSet,
     //     mapViewPosition.projection, mapCanvas, _paint, leftUpper, _statistics);
-    jobSet.results.forEach((Tile tile, JobResult jobResult) {
+    jobSet.bitmaps.forEach((Tile tile, JobResult jobResult) {
       if (jobResult.bitmap != null) {
         //_log.info("  $jobResult");
         _statistics?.drawBitmapCount++;
