@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
-import 'package:mapsforge_flutter/src/projection/projection.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 
 main() {

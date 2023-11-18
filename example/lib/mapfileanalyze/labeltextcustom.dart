@@ -26,7 +26,7 @@ class LabeltextCustom extends StatelessWidget {
       Text(label + (label.length > 0 ? ": " : ""),
           style: TextStyle(
               fontSize: this.fontSize ??
-                  Theme.of(context).textTheme.bodyText2?.fontSize,
+                  Theme.of(context).textTheme.bodyMedium?.fontSize,
               fontStyle: FontStyle.italic,
               color: Colors.blueGrey)),
       buildText(context),
@@ -43,9 +43,9 @@ class LabeltextCustom extends StatelessWidget {
                 maxLines: maxLines,
                 style: TextStyle(
                   fontSize: fontSize ??
-                      Theme.of(context).textTheme.bodyText2?.fontSize,
+                      Theme.of(context).textTheme.bodyMedium?.fontSize,
                   color:
-                      fontColor ?? Theme.of(context).textTheme.bodyText2?.color,
+                      fontColor ?? Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ),
@@ -55,9 +55,9 @@ class LabeltextCustom extends StatelessWidget {
               value ?? "",
               style: TextStyle(
                 fontSize:
-                    fontSize ?? Theme.of(context).textTheme.bodyText2?.fontSize,
+                    fontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize,
                 color:
-                    fontColor ?? Theme.of(context).textTheme.bodyText2?.color,
+                    fontColor ?? Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
           );

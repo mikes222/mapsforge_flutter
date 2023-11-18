@@ -61,7 +61,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
     if (debug) {
       print(
           "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
-      ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
+      ui.Canvas? uiCanvas = (canvas).uiCanvas;
       uiCanvas.drawRect(
           ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
               boundary.getWidth(), boundary.getHeight()),

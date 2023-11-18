@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_example/debug/debug-datastore.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -73,10 +72,8 @@ class _DebugContextMenuState extends DefaultContextMenuState {
 
   @override
   List<Widget> buildColumns(BuildContext context) {
-    int tileY = widget.viewModel.mapViewPosition!.projection!
-        .latitudeToTileY(widget.event.latitude);
-    int tileX = widget.viewModel.mapViewPosition!.projection!
-        .longitudeToTileX(widget.event.longitude);
+    int tileY = widget.viewModel.mapViewPosition!.projection.latitudeToTileY(widget.event.latitude);
+    int tileX = widget.viewModel.mapViewPosition!.projection.longitudeToTileX(widget.event.longitude);
     Tile tile = Tile(tileX, tileY, widget.viewModel.mapViewPosition!.zoomLevel,
         widget.viewModel.mapViewPosition!.indoorLevel);
 

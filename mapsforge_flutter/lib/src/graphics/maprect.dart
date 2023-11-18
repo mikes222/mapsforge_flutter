@@ -1,4 +1,3 @@
-import '../../core.dart';
 
 abstract class MapRect {
   double getLeft();

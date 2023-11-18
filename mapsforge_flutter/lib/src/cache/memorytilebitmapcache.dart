@@ -11,9 +11,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   static final List<MemoryTileBitmapCache> _instances = [];
 
   final Storage<Tile, TileBitmap> storage =
-      StatisticsStorage<Tile, TileBitmap>(onEvict: (key, item) {
-    //item.decrementRefCount();
-  });
+      WeakReferenceStorage<Tile, TileBitmap>();
   late LruCache<Tile, TileBitmap> _cache;
 
   factory MemoryTileBitmapCache.create() {

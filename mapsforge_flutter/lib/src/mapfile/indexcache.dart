@@ -34,7 +34,7 @@ class IndexCache {
   /// @throws IllegalArgumentException if the capacity is negative.
   IndexCache(int capacity)
       : _cache = LruCache<IndexCacheEntryKey, Uint8List>(
-            storage: StatisticsStorage(), capacity: capacity);
+            storage: WeakReferenceStorage(), capacity: capacity);
 
   /// Destroy the cache at the end of its lifetime.
   void dispose() {

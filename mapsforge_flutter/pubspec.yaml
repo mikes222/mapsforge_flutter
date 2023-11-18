@@ -1,13 +1,15 @@
 name: mapsforge_flutter
 description: A port of mapsforge for pure flutter. Show maps while the device is offline.
-version: 2.0.2
+version: 2.0.3
 # author: devemux86, mikes222
 homepage: https://github.com/mikes222/mapsforge_flutter
 repository: https://github.com/mikes222/mapsforge_flutter
 
 environment:
   # switched from 2.12 to 2.15 to support unawaited()
-  sdk: '>=2.15.0 <3.0.0'
+  # 2.17 needed for weakreference
+  # 4.0.0 for future dart versions
+  sdk: '>=2.17.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -22,10 +24,10 @@ dependencies:
   convert: ^3.1.1
 
   # MIT License
-  ecache: ^2.0.2
+  ecache: ^2.0.3
   #    git:
   #      url: https://github.com/mikes222/dcache
-  #    path: ../../github_ecache/
+  #  path: ../../ecache
 
   # MIT License
   queue: ^3.1.0+2

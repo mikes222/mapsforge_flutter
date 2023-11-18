@@ -108,6 +108,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
   Future<void> setAndLoadBitmapSrc(
       String bitmapSrc, SymbolCache symbolCache) async {
     base.bitmapSrc = bitmapSrc;
+    scaled = null;
     await initResources(symbolCache);
   }
 

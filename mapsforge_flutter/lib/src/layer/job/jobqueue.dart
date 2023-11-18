@@ -94,7 +94,7 @@ class JobQueue {
     Map<Job, TileBitmap> toRemove = {};
     jobSet.jobs.forEach((job) {
       TileBitmap? tileBitmap =
-          tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
+      tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
       if (tileBitmap != null) {
         toRemove[job] = tileBitmap;
       }
@@ -102,7 +102,7 @@ class JobQueue {
     jobSet.jobsFinished(toRemove);
 
     Map<Job, List<RenderInfo<Shape>>> items =
-        labelStore.getVisibleItems(jobSet.labelJobs);
+    labelStore.getVisibleItems(jobSet.labelJobs);
     jobSet.renderingJobsFinished(items);
   }
 
@@ -162,7 +162,7 @@ class JobQueue {
 
   Future<void> _donowDirect(Job job) async {
     TileBitmap? tileBitmap =
-        await tileBitmapCache?.getTileBitmapAsync(job.tile);
+    await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       _JobQueueInfo? jobQueueInfo = _renderJobs[job];
@@ -177,7 +177,7 @@ class JobQueue {
       tileBitmapCache?.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     if (/*jobResult.result == JOBRESULT.ERROR ||*/
-        jobResult.result == JOBRESULT.UNSUPPORTED) {
+    jobResult.result == JOBRESULT.UNSUPPORTED) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     _JobQueueInfo? jobQueueInfo = _renderJobs[job];
@@ -189,8 +189,8 @@ class JobQueue {
     }
   }
 
-  JobSet? submitJobSet(
-      ViewModel viewModel, MapViewPosition mapViewPosition, JobQueue jobQueue) {
+  JobSet? submitJobSet(ViewModel viewModel, MapViewPosition mapViewPosition,
+      JobQueue jobQueue) {
     //_log.info("viewModel ${viewModel.viewDimension}");
     Timing timing = Timing(log: _log, active: true);
     TileBoundary? _boundary = _lastBoundary;
@@ -237,20 +237,21 @@ class JobQueue {
     // rising from 0 to 45, then falling to 0 at 90°
     int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
     int tileLeft =
-        mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
+    mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
     int tileRight = mapViewPosition.projection.pixelXToTileX(min(
         center.x + halfWidth, mapViewPosition.projection.mapsize.toDouble()));
     int tileTop =
-        mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
+    mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
     int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
         center.y + halfHeight, mapViewPosition.projection.mapsize.toDouble()));
     if (degreeDiff > 5) {
+      // the map is rotated. To avoid empty corners enhance each side by one tile
       tileLeft = max(tileLeft - 1, 0);
-      tileRight = min(tileRight + 1,
-          mapViewPosition.projection.scalefactor.scalefactor.ceil());
+      tileRight =
+          min(tileRight + 1, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
       tileTop = max(tileTop - 1, 0);
-      tileBottom = min(tileBottom + 1,
-          mapViewPosition.projection.scalefactor.scalefactor.ceil());
+      tileBottom =
+          min(tileBottom + 1, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
     }
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
     center = center.offset(-viewModel.displayModel.tileSize / 2,
@@ -305,21 +306,27 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
   final _log = new Logger('JobQueueRender');
 
   Job job = isolateParam.job;
-  int time = DateTime.now().millisecondsSinceEpoch;
+  int time = DateTime
+      .now()
+      .millisecondsSinceEpoch;
   try {
     JobResult jobResult = await isolateParam.jobRenderer.executeJob(job);
     if (jobResult.bitmap != null) {
       //jobResult.bitmap!.incrementRefCount();
     }
-    int diff = DateTime.now().millisecondsSinceEpoch - time;
+    int diff = DateTime
+        .now()
+        .millisecondsSinceEpoch - time;
     if (diff >= 250)
       _log.info("Renderer needed $diff ms for job ${job.toString()}");
     return jobResult;
   } catch (error, stackTrace) {
     _log.warning(error.toString());
-    if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
+    if (stackTrace
+        .toString()
+        .length > 0) _log.warning(stackTrace.toString());
     TileBitmap bmp =
-        await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
+    await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
     //bmp.incrementRefCount();
     return JobResult(bmp, JOBRESULT.ERROR);
   }

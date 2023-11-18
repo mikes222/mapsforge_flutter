@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_example/markerdemo-database.dart';
 import 'package:mapsforge_flutter/core.dart';
 

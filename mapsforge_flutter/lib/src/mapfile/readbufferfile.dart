@@ -22,15 +22,15 @@ class ReadbufferFile implements ReadbufferSource {
 
   int? _length;
 
-  final StatisticsStorage<String, Readbuffer> _storage =
-      StatisticsStorage<String, Readbuffer>();
+  final Storage<String, Readbuffer> _storage =
+      WeakReferenceStorage<String, Readbuffer>();
 
   late LruCache<String, Readbuffer> _cache;
 
   Queue queue = Queue();
 
   ReadbufferFile(this.filename) {
-    _cache = LruCache(storage: _storage, capacity: 1000);
+    _cache = LruCache(storage: _storage, capacity: 500);
   }
 
   @override

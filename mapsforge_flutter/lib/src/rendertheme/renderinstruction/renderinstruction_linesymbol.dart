@@ -1,6 +1,5 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';

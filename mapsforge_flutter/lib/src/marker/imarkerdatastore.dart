@@ -25,7 +25,7 @@ abstract class IMarkerDataStore extends ChangeNotifier {
   void setRepaint() {
     try {
       notifyListeners();
-    } catch (error, stacktrace) {
+    } catch (error) {
       // ignore that error
     }
   }

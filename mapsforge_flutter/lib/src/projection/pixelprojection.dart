@@ -31,7 +31,8 @@ class PixelProjection extends MercatorProjection {
   /// @param zoomLevel the zoom level at which the coordinate should be converted.
   /// @return the tile X number.
   int pixelXToTileX(double pixelX) {
-    assert(pixelX >= 0 && pixelX <= _mapSize);
+    assert(pixelX >= 0);
+    assert(pixelX <= _mapSize);
     return min(pixelX / tileSize, scalefactor.scalefactor - 1).floor();
   }
 
@@ -41,7 +42,8 @@ class PixelProjection extends MercatorProjection {
   /// @param zoomLevel the zoom level at which the coordinate should be converted.
   /// @return the tile Y number.
   int pixelYToTileY(double pixelY) {
-    assert(pixelY >= 0 && pixelY <= _mapSize);
+    assert(pixelY >= 0);
+    assert(pixelY <= _mapSize);
     return min(pixelY / tileSize, scalefactor.scalefactor - 1).floor();
   }
 

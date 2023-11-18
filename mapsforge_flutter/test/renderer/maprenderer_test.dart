@@ -1,14 +1,11 @@
-import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 import '../testassetbundle.dart';
 
