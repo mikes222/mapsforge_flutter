@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
 /// This class provides the calculation from Lat/Lon to pixelY/pixelX and vice versa

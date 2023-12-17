@@ -91,7 +91,7 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
 
   @override
   void setMarkerCaption(MarkerCaption? markerCaption) {
-    if (markerCaption != null && markerCaption.latLong == null) {
+    if (markerCaption != null) {
       markerCaption.latLong = LatLong(
           minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
           minLatLon.longitude +
@@ -102,10 +102,10 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
   }
 
   @override
-  bool shouldPaint(BoundingBox? boundary, int zoomLevel) {
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
     return minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
-        boundary!.intersects(boundingBox);
+        boundary.intersects(boundingBox);
   }
 
   @override
@@ -126,9 +126,14 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
               .latitudeToPixelY(minLatLon.latitude));
       lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
     }
-    Mappoint leftUpper = markerCallback.mapViewPosition
-        .getLeftUpper(markerCallback.viewModel.mapDimension);
-    MapRect mr = mapRect!.offset(-leftUpper.x, -leftUpper.y);
+    Mappoint center = markerCallback.mapViewPosition.getCenter();
+    // Mappoint leftUpper = markerCallback.mapViewPosition
+    //     .getLeftUpper(markerCallback.viewModel.mapDimension);
+    MapRect mr = mapRect!.offset(
+        -center.x + markerCallback.viewModel.mapDimension.width / 2,
+        -center.y + markerCallback.viewModel.mapDimension.height / 2);
+    // mr = GraphicFactory().createRect(mr.getLeft() * 2, mr.getTop() * 2,
+    //     mr.getRight() * 2, mr.getBottom() * 2);
 
     if (!isFillTransparent())
       markerCallback.flutterCanvas

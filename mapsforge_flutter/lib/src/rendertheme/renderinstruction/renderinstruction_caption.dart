@@ -2,7 +2,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/graphics/position.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/textkey.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
@@ -45,6 +44,7 @@ class RenderinstructionCaption extends RenderInstruction {
     base.maxTextWidth = displayModel.getMaxTextWidth();
     base.gap = DEFAULT_GAP * displayModel.getFontScaleFactor();
     base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    base.setFontSize(10 * displayModel.getFontScaleFactor());
 
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();

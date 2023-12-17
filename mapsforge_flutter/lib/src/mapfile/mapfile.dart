@@ -187,7 +187,8 @@ class MapFile extends MapDataStore {
   }
 
   /**
-   * @return the metadata for the current map file.
+   * @return the metadata for the current map file. Make sure [lateOpen] is
+   * already executed
    */
   MapFileInfo getMapFileInfo() {
     return this._mapFileHeader.getMapFileInfo();

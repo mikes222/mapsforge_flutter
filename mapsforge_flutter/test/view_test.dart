@@ -5,8 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/cache/filesymbolcache.dart';
-import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 import 'testassetbundle.dart';
 

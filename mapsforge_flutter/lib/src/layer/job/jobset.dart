@@ -14,16 +14,20 @@ import '../../rendertheme/shape/shape.dart';
 /// need to be finished.
 ///
 class JobSet extends ChangeNotifier {
+  /// true if we do not need this jobset anymore. Happens if we move the position before the jobset is completed.
   bool _disposed = false;
 
+  /// The jobs to perform where we need images
   final List<Job> _jobs = [];
 
+  /// The jobs where we need labels
   final Set<Job> _labelJobs = {};
 
   /// The resulting bitmaps after the jobs has been processed.
-  Map<Tile, JobResult>? _bitmaps = {};
+  Map<Tile, JobResult> _bitmaps = {};
 
-  List<RenderInfo<Shape>>? _renderInfos;
+  /// All labels and rendering infos
+  List<RenderInfo<Shape>> _renderInfos = [];
 
   List<Job> get jobs => _jobs;
 
@@ -37,31 +41,59 @@ class JobSet extends ChangeNotifier {
     _labelJobs.add(job);
   }
 
-  void addLabels(Job job, List<RenderInfo> renderInfos) {
-    _renderInfos ??= [];
+  void renderingJobFinished(Job job, List<RenderInfo> renderInfos) {
+    if (_disposed) return;
     if (_labelJobs.contains(job)) {
-      _renderInfos!.addAll(renderInfos);
+      _renderInfos.addAll(renderInfos);
       _labelJobs.remove(job);
       notifyListeners();
     }
   }
 
-  void jobFinished(Job job, JobResult jobResult) {
-    if (_bitmaps == null) return;
-    _jobs.remove(job);
-    //jobResult.bitmap?.incrementRefCount();
-    TileBitmap? old = _bitmaps![job.tile]?.bitmap;
-    if (old != null) {
-      //old.decrementRefCount();
-    }
-    _bitmaps![job.tile] = jobResult;
-    //print("jobSet job finished ${_bitmaps!.length}");
-    if (_bitmaps == null) return;
+  void renderingJobsFinished(Map<Job, List<RenderInfo<Shape>>> items) {
+    items.forEach((job, renderInfos) {
+      if (_labelJobs.contains(job)) {
+        _renderInfos.addAll(renderInfos);
+        _labelJobs.remove(job);
+      }
+    });
     notifyListeners();
   }
 
-  JobResult? getJobResult(Tile tile) {
-    return _bitmaps![tile];
+  void jobFinished(Job job, JobResult jobResult) {
+    if (_disposed) return;
+    _jobs.remove(job);
+    //jobResult.bitmap?.incrementRefCount();
+    TileBitmap? old = _bitmaps[job.tile]?.bitmap;
+    if (old != null) {
+      //old.decrementRefCount();
+    }
+    _bitmaps[job.tile] = jobResult;
+    //print("jobSet job finished ${_bitmaps!.length}");
+    notifyListeners();
+  }
+
+  void jobsFinished(Map<Job, TileBitmap> jobResults) {
+    jobResults.forEach((Job job, TileBitmap tileBitmap) {
+      _jobs.remove(job);
+      TileBitmap? old = _bitmaps[job.tile]?.bitmap;
+      if (old != null) {
+        //old.decrementRefCount();
+      }
+      _bitmaps[job.tile] = JobResult(tileBitmap, JOBRESULT.NORMAL);
+    });
+    notifyListeners();
+  }
+
+  // JobResult? getJobResult(Tile tile) {
+  //   return _bitmaps[tile];
+  // }
+
+  bool completed() {
+    if (_disposed) return false;
+    if (_jobs.isNotEmpty) return false;
+    if (_labelJobs.isNotEmpty) return false;
+    return true;
   }
 
   @mustCallSuper
@@ -70,23 +102,23 @@ class JobSet extends ChangeNotifier {
     _disposed = true;
     _jobs.clear();
     _labelJobs.clear();
-    _bitmaps?.values.forEach((element) {
+    _bitmaps.values.forEach((element) {
       //element.bitmap?.decrementRefCount();
     });
-    _bitmaps = null;
+    _bitmaps.clear();
     super.dispose();
   }
 
-  Map<Tile, JobResult> get results => _bitmaps!;
+  Map<Tile, JobResult> get bitmaps => _bitmaps;
 
-  void removeJobs() {
-    _jobs.clear();
-    _labelJobs.clear();
-    _bitmaps!.values.forEach((element) {
-      //element.bitmap?.decrementRefCount();
-    });
-    _bitmaps!.clear();
-  }
+  // void removeJobs() {
+  //   _jobs.clear();
+  //   _labelJobs.clear();
+  //   _bitmaps.values.forEach((element) {
+  //     //element.bitmap?.decrementRefCount();
+  //   });
+  //   _bitmaps.clear();
+  // }
 
   @override
   String toString() {

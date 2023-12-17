@@ -32,9 +32,9 @@ Find many more examples in the subdirectory [../example/README.md](../example/RE
 - Drag'n'drop
 - Online-maps
 
-## Limitations
+## Limitations and todo's
 
-Markers are currently not scaled while pinch'n'zoom
+- Increase performance
 
 ## Credits
 
@@ -42,22 +42,14 @@ First and foremost to the author of mapsforge. He has done an outstanding job!
 
 Also to the university of chemnitz which implements indoor map support
 
-## TODO
-
-- support rotating map (do not rotate the text and icons)
-- some flaws with text spawning multiple tiles
-
 ## Getting Started
 
 ### Prerequisites
 
-include the library in your pubspec.yaml:
+include the library in your ``pubspec.yaml``:
 
 ```yaml
-  mapsforge_flutter: ^2.0.2
-    # path: ../mapsforge_flutter
-    # git:
-    #  url: https://github.com/mikes222/mapsforge_flutter
+  mapsforge_flutter: ^2.0.3
 ```
 
 Note: For development purposes consider to include the github repository directly.

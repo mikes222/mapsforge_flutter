@@ -13,3 +13,4 @@ linter:
     - null_closures
     - overridden_fields
     - prefer_conditional_assignment
+    - use_build_context_synchronously

@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 
-import '../../../core.dart';
 import '../../renderer/paintmixin.dart';
 import '../renderinstruction/renderinstruction.dart';
 import '../renderinstruction/textkey.dart';

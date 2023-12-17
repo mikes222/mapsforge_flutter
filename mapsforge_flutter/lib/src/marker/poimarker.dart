@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../../datastore.dart';
 import '../../maps.dart';
-import '../graphics/position.dart';
 import '../paintelements/shape_paint_symbol.dart';
 import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_symbol.dart';
@@ -109,6 +108,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
   Future<void> setAndLoadBitmapSrc(
       String bitmapSrc, SymbolCache symbolCache) async {
     base.bitmapSrc = bitmapSrc;
+    scaled = null;
     await initResources(symbolCache);
   }
 
@@ -138,12 +138,18 @@ class PoiMarker<T> extends BasicPointMarker<T> {
   bool isTapped(TapEvent tapEvent) {
     Mappoint absolute =
         nodeProperties.getCoordinatesAbsolute(tapEvent.projection);
+    Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
     MapRectangle boundary = base.calculateBoundary();
-    //print("${tapEvent.mapPixelMappoint.x} ${absolute.x} ${boundary.left}");
-    return tapEvent.mapPixelMappoint.x >= absolute.x + boundary.left &&
-        tapEvent.mapPixelMappoint.x <= absolute.x + boundary.right &&
-        tapEvent.mapPixelMappoint.y >= absolute.y + boundary.top &&
-        tapEvent.mapPixelMappoint.y <= absolute.y + boundary.bottom;
+    bool tpd = tapped.x >= absolute.x + boundary.left &&
+        tapped.x <= absolute.x + boundary.right &&
+        tapped.y >= absolute.y + boundary.top &&
+        tapped.y <= absolute.y + boundary.bottom;
+    // print(
+    //     "src: ${base.bitmapSrc}, tapX: ${tapped.x}, absolute: ${absolute.x}, boundary: ${boundary.left} ${boundary.right}");
+    // print(
+    //     "src: ${base.bitmapSrc}, tapY: ${tapped.y}, absolute: ${absolute.y}, boundary: ${boundary.top} ${boundary.bottom}");
+    // print("src: ${base.bitmapSrc}, tapped: $tpd");
+    return tpd;
   }
 
   @override

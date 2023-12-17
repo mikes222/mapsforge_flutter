@@ -9,7 +9,8 @@ class PixelProjection extends MercatorProjection {
   final int tileSize;
 
   ///
-  /// the size of the map in pixel. At scalefactor 1 (or zoomLevel 0) the _mapSize is equal to the tileSize.
+  /// the size of the whole map in mappixel. At scalefactor 1 (or zoomLevel 0)
+  /// the _mapSize is equal to the tileSize.
   ///
   late int _mapSize;
 
@@ -30,7 +31,8 @@ class PixelProjection extends MercatorProjection {
   /// @param zoomLevel the zoom level at which the coordinate should be converted.
   /// @return the tile X number.
   int pixelXToTileX(double pixelX) {
-    assert(pixelX >= 0 && pixelX <= _mapSize);
+    assert(pixelX >= 0);
+    assert(pixelX <= _mapSize);
     return min(pixelX / tileSize, scalefactor.scalefactor - 1).floor();
   }
 
@@ -40,7 +42,8 @@ class PixelProjection extends MercatorProjection {
   /// @param zoomLevel the zoom level at which the coordinate should be converted.
   /// @return the tile Y number.
   int pixelYToTileY(double pixelY) {
-    assert(pixelY >= 0 && pixelY <= _mapSize);
+    assert(pixelY >= 0);
+    assert(pixelY <= _mapSize);
     return min(pixelY / tileSize, scalefactor.scalefactor - 1).floor();
   }
 
@@ -164,6 +167,7 @@ class PixelProjection extends MercatorProjection {
 
   @override
   String toString() {
-    return 'PixelProjection{tileSize: $tileSize, _mapSize: $_mapSize, zoomLevel: ${scalefactor.zoomlevel}}';
+    return 'PixelProjection{tileSize: $tileSize, _mapSize: $_mapSize, zoomLevel: ${scalefactor
+        .zoomlevel}}';
   }
 }

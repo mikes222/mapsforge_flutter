@@ -94,10 +94,10 @@ class SubfileParamsPage extends StatelessWidget {
                       ],
                     ),
                     InkWell(
-                      child: Row(
+                      child: const Row(
                         children: <Widget>[
-                          const Text("Blocks"),
-                          const Icon(Icons.more_horiz),
+                          Text("Blocks"),
+                          Icon(Icons.more_horiz),
                         ],
                       ),
                       onTap: () {
@@ -112,10 +112,10 @@ class SubfileParamsPage extends StatelessWidget {
                       },
                     ),
                     InkWell(
-                      child: Row(
+                      child: const Row(
                         children: <Widget>[
-                          const Text("Count tags"),
-                          const Icon(Icons.more_horiz),
+                          Text("Count tags"),
+                          Icon(Icons.more_horiz),
                         ],
                       ),
                       onTap: () {

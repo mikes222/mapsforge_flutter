@@ -39,7 +39,6 @@ class MarkerdemoDatabase {
     databaseItems.add(TapEvent(
         latitude: latitude,
         longitude: longitude,
-        mapPixelMappoint: event.mapPixelMappoint,
         projection: event.projection));
   }
 }

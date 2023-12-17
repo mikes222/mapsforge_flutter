@@ -8,7 +8,6 @@ import 'package:mapsforge_flutter/src/view/zoompainter.dart';
 
 import '../../core.dart';
 import '../layer/job/jobset.dart';
-import '../utils/layerutil.dart';
 import 'backgroundpainter.dart';
 
 /// Use [MapviewWidget] instead
@@ -117,7 +116,7 @@ class _FlutterMapState extends State<FlutterMapView> {
       builder: (BuildContext context, BoxConstraints constraints) {
         widget.viewModel
             .setViewDimension(constraints.maxWidth, constraints.maxHeight);
-        JobSet? jobSet = LayerUtil.submitJobSet(
+        JobSet? jobSet = _jobQueue.submitJobSet(
             widget.viewModel, mapViewPosition, _jobQueue);
         if (jobSet == null) return const SizedBox();
         return FlutterGestureDetector(

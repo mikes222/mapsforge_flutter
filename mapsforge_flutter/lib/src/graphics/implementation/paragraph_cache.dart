@@ -10,8 +10,8 @@ class ParagraphCache {
 
   LruCache<String, ParagraphEntry> _cache =
       new LruCache<String, ParagraphEntry>(
-    storage: SimpleStorage<String, ParagraphEntry>(),
-    capacity: 2000,
+    storage: WeakReferenceStorage<String, ParagraphEntry>(),
+    capacity: 500,
   );
 
   factory ParagraphCache() {

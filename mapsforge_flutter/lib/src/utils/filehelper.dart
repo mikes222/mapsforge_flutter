@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';

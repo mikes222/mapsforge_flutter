@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/flutterresourcebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/flutterresourcebitmap.dart';
-import 'package:mapsforge_flutter/src//graphics/implementation/fluttertilebitmap.dart';
 
 import '../testassetbundle.dart';
 

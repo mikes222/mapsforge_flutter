@@ -56,7 +56,7 @@ class IsolateMixin<T extends IsolateInitParams> {
 //      }
         return result;
       });
-    } on TimeoutException catch (error, stacktrace) {
+    } on TimeoutException {
       throw TimeoutException("Timeout while sending $isolateRequestParams");
     }
   }
@@ -85,7 +85,7 @@ class IsolateMixin<T extends IsolateInitParams> {
         _log.info(
             "Starting isolate mixin for ${this.runtimeType} took ${DateTime.now().millisecondsSinceEpoch - _time} ms");
       });
-    } on TimeoutException catch (error, stacktrace) {
+    } on TimeoutException {
       throw TimeoutException(
           "Timeout while starting isolate $isolateInitParams");
     }
