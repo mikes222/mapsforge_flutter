@@ -1,7 +1,7 @@
 class FileNotFoundException implements Exception {
   final String filename;
 
-  FileNotFoundException(this.filename) : assert(filename != null);
+  FileNotFoundException(this.filename);
 
   @override
   String toString() {

@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Create the cache for assets
   final symbolCache = FileSymbolCache();
 
+  // Bonus: A markerstore
   final MarkerDataStore markerDataStore = MarkerDataStore();
 
   Future<MapModel> _createMapModel() async {
@@ -73,13 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
     final jobRenderer =
         MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
-    // Glue everything together into two models.
+    // Glue everything together into two models, the mapModel here and the viewModel below.
     MapModel mapModel = MapModel(
       displayModel: displayModel,
       renderer: jobRenderer,
     );
 
-    // Add MarkerDataStore to hold added markers
+    // Bonus: Add MarkerDataStore to hold added markers
     mapModel.markerDataStores.add(markerDataStore);
     return mapModel;
   }
@@ -113,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-/// An overlay is just a normal widget which will be drawn on top of the map. In this case we do not
+/// Bonus: An overlay is just a normal widget which will be drawn on top of the map. In this case we do not
 /// draw anything but just receive long tap events and add/remove a marker to the datastore. Take note
 /// that the marker needs to be initialized (async) and afterwards added to the datastore and the
 /// setRepaint() method is called to inform the datastore about changes so that it gets repainted

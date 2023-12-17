@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
@@ -55,36 +54,40 @@ class _ZoomOverlayState extends State<ZoomOverlay>
     return Positioned(
       bottom: toolbarSpacing,
       right: toolbarSpacing,
-      top: toolbarSpacing,
+      //top: toolbarSpacing,
       // this widget has an unbound width
       // left: toolbarSpacing,
-      child: FadeTransition(
-        opacity: _fadeAnimationController,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            RawMaterialButton(
-              onPressed: () => widget.viewModel.zoomIn(),
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: const Icon(Icons.add),
-              padding: const EdgeInsets.all(10.0),
-              shape: const CircleBorder(),
-              constraints: const BoxConstraints(),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            SizedBox(height: toolbarSpacing),
-            RawMaterialButton(
-              onPressed: () => widget.viewModel.zoomOut(),
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: const Icon(Icons.remove),
-              padding: const EdgeInsets.all(10.0),
-              shape: const CircleBorder(),
-              constraints: const BoxConstraints(),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          ],
+      child: Padding(
+        padding: const EdgeInsets.only(
+            bottom: kBottomNavigationBarHeight),
+        child: FadeTransition(
+          opacity: _fadeAnimationController,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              RawMaterialButton(
+                onPressed: () => widget.viewModel.zoomIn(),
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: const Icon(Icons.add),
+                padding: const EdgeInsets.all(10.0),
+                shape: const CircleBorder(),
+                constraints: const BoxConstraints(),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              SizedBox(height: toolbarSpacing),
+              RawMaterialButton(
+                onPressed: () => widget.viewModel.zoomOut(),
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: const Icon(Icons.remove),
+                padding: const EdgeInsets.all(10.0),
+                shape: const CircleBorder(),
+                constraints: const BoxConstraints(),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
+          ),
         ),
       ),
     );

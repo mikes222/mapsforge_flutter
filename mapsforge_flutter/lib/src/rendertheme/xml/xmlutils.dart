@@ -1,7 +1,5 @@
-import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/inputstream.dart';
 
 import '../../graphics/graphicfactory.dart';
 import '../../rendertheme/renderinstruction/renderinstruction.dart';

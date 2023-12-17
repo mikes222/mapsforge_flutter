@@ -1,4 +1,3 @@
-import 'dart:convert' as cnv;
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -71,7 +70,7 @@ class WebTileBitmapCache extends TileBitmapCache {
       for (String file in files) {
         try {
           await FileHelper.delete(file);
-        } catch (error, stacktrace) {
+        } catch (error) {
           // ignore this error
         }
       }
@@ -176,7 +175,7 @@ class WebTileBitmapCache extends TileBitmapCache {
       TileBitmap tileBitmap =
           FlutterTileBitmap(image, "FileTileBitmapCache ${tile.toString()}");
       return tileBitmap;
-    } catch (error, stacktrace) {
+    } catch (error) {
       _log.warning(
           "Error $error while reading image from file, deleting file $filename");
       _files.remove(filename);
@@ -226,7 +225,7 @@ class WebTileBitmapCache extends TileBitmapCache {
       try {
         bool ok = await FileHelper.delete(file);
         if (ok) ++count;
-      } catch (error, stacktrace) {
+      } catch (error) {
         _log.warning("purging $file was not successful, ignoring");
       }
     }

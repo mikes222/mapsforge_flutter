@@ -14,7 +14,7 @@ class TileBasedLabelStore implements LabelStore {
   static final _log = new Logger('TileBasedLabelStore');
 
   final Storage<Tile, List<RenderInfo>> storage =
-      StatisticsStorage<Tile, List<RenderInfo>>();
+      WeakReferenceStorage<Tile, List<RenderInfo>>();
 
   late LruCache<Tile, List<RenderInfo>> _cache;
 

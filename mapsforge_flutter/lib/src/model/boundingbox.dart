@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 
-import 'latlong.dart';
 
 /// A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
 class BoundingBox {

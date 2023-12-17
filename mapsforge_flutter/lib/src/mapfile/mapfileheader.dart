@@ -1,12 +1,12 @@
 import 'package:logging/logging.dart';
-
 import 'package:mapsforge_flutter/src/exceptions/mapfileexception.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
+
+import 'mapfileinfo.dart';
+import 'mapfileinfobuilder.dart';
 import 'optionalfields.dart';
 import 'readbuffer.dart';
 import 'requiredfields.dart';
-import 'mapfileinfo.dart';
-import 'mapfileinfobuilder.dart';
 import 'subfileparameter.dart';
 import 'subfileparameterbuilder.dart';
 
@@ -43,7 +43,8 @@ class MapFileHeader {
   int zoomLevelMaximum = -65536;
 
   /**
-   * @return a MapFileInfo containing the header data.
+   * @return a MapFileInfo containing the header data. [readHeader] must be
+   * executed first
    */
   MapFileInfo getMapFileInfo() {
     // execute the init() method before using mapfiles

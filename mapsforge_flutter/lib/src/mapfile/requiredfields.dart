@@ -114,9 +114,6 @@ class RequiredFields {
     for (int currentTagId = 0; currentTagId < numberOfPoiTags; ++currentTagId) {
 // get and check the POI tag
       String tag = readBuffer.readUTF8EncodedString();
-      if (tag == null) {
-        throw new Exception("POI tag must not be null: $currentTagId");
-      }
       poiTags.add(Tag.fromTag(tag));
     }
     mapFileInfoBuilder.poiTags = poiTags;
@@ -155,9 +152,6 @@ class RequiredFields {
     for (int currentTagId = 0; currentTagId < numberOfWayTags; ++currentTagId) {
 // get and check the way tag
       String tag = readBuffer.readUTF8EncodedString();
-      if (tag == null) {
-        throw new Exception("way tag must not be null: $currentTagId");
-      }
       wayTags.add(new Tag.fromTag(tag));
     }
     mapFileInfoBuilder.wayTags = wayTags;

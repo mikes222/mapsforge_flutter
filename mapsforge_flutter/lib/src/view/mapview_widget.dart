@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerlabel.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
-import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:mapsforge_flutter/src/view/zoompainter.dart';
 
 import '../../core.dart';
@@ -68,8 +67,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   ViewModel? _viewModel;
 
   _Statistics? _statistics; // = _Statistics();
-
-  JobSet? _jobSet;
 
   @override
   void initState() {
@@ -241,9 +238,9 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     //print("_buildMapView $mapViewPosition");
     _statistics?.mapViewCount++;
     JobSet? jobSet =
-        LayerUtil.submitJobSet(_viewModel!, mapViewPosition, _jobQueue!);
-    _jobSet?.dispose();
-    _jobSet = jobSet;
+        _jobQueue?.submitJobSet(_viewModel!, mapViewPosition, _jobQueue!);
+    // _jobSet?.dispose();
+    // _jobSet = jobSet;
     if (jobSet == null) return const SizedBox();
     return Stack(
       children: [

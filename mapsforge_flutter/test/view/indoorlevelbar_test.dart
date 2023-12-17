@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/src/view/indoorlevelbar.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rxdart/subjects.dart';
 
 void main() {
   testWidgets('indoor level bar mapping names', (WidgetTester tester) async {

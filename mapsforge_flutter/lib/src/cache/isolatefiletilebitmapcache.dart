@@ -56,7 +56,7 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
       for (String file in files) {
         try {
           await FileHelper.delete(file);
-        } catch (error, stacktrace) {
+        } catch (error) {
           // ignore this error
         }
       }
@@ -175,7 +175,7 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
       try {
         bool ok = await FileHelper.delete(file);
         if (ok) ++count;
-      } catch (error, stacktrace) {
+      } catch (error) {
         _log.warning("purging $file was not successful, ignoring");
       }
     }

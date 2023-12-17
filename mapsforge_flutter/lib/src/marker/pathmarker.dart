@@ -96,14 +96,15 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
   }
 
   int indexOfTappedPath(TapEvent tapEvent) {
+    Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
     for (int idx = 0; idx < _points.length - 1; ++idx) {
       double distance = LatLongUtils.distanceSegmentPoint(
           _points[idx].x,
           _points[idx].y,
           _points[idx + 1].x,
           _points[idx + 1].y,
-          tapEvent.mapPixelMappoint.x,
-          tapEvent.mapPixelMappoint.y);
+          tapped.x,
+          tapped.y);
       if (distance <= getStrokeWidth()) return idx;
     }
     return -1;

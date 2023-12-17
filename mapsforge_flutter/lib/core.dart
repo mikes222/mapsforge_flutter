@@ -1,17 +1,18 @@
+/// Core files for mapsforge
 library mapsforge_flutter;
 
 export 'src/cache/filesymbolcache.dart';
 export 'src/cache/filetilebitmapcache.dart';
+export 'src/cache/imageabsoluteloader.dart';
+export 'src/cache/imagebuilder.dart';
+export 'src/cache/imagebundleloader.dart';
+export 'src/cache/imageloader.dart';
+export 'src/cache/imagerelativeloader.dart';
 export 'src/cache/isolatefiletilebitmapcache.dart';
 export 'src/cache/memorysymbolcache.dart';
 export 'src/cache/memorytilebitmapcache.dart';
 export 'src/cache/symbolcache.dart';
 export 'src/cache/tilebitmapcache.dart';
-export 'src/cache/imagebuilder.dart';
-export 'src/cache/imageloader.dart';
-export 'src/cache/imagebundleloader.dart';
-export 'src/cache/imagerelativeloader.dart';
-export 'src/cache/imageabsoluteloader.dart';
 export 'src/cache/webtilebitmapcache.dart';
 export 'src/exceptions/filenotfoundexception.dart';
 export 'src/graphics/graphicfactory.dart';
@@ -24,8 +25,8 @@ export 'src/model/latlong.dart';
 export 'src/model/mapmodel.dart';
 export 'src/model/mappoint.dart';
 export 'src/model/mapviewposition.dart';
-export 'src/model/viewmodel.dart';
 export 'src/model/tile.dart';
+export 'src/model/viewmodel.dart';
 export 'src/utils/latlongutils.dart';
 export 'src/view/contextmenubuilder.dart';
 export 'src/view/defaultcontextmenu.dart';

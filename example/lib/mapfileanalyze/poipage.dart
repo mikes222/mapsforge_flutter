@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
@@ -43,7 +42,6 @@ class PoiPage extends StatelessWidget {
   }
 
   String formatLatLong(ILatLong latLong) {
-    if (latLong == null) return "Unknown";
     return "${latLong.latitude.toStringAsPrecision(6)} / ${latLong.longitude.toStringAsPrecision(6)}";
   }
 }

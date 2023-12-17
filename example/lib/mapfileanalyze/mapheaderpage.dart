@@ -78,11 +78,11 @@ class MapHeaderPage extends StatelessWidget {
                           value:
                               "${mapFile.getMapFileHeader().zoomLevelMinimum} - ${mapFile.getMapFileHeader().zoomLevelMaximum}"),
                       InkWell(
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            const Text("SubfileParams: "),
-                            const Icon(Icons.more_horiz),
+                            Text("SubfileParams: "),
+                            Icon(Icons.more_horiz),
                           ],
                         ),
                         onTap: () {

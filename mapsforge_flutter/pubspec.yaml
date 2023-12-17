@@ -1,30 +1,33 @@
 name: mapsforge_flutter
 description: A port of mapsforge for pure flutter. Show maps while the device is offline.
-version: 2.0.2
+version: 2.0.3
 # author: devemux86, mikes222
 homepage: https://github.com/mikes222/mapsforge_flutter
 repository: https://github.com/mikes222/mapsforge_flutter
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  # switched from 2.12 to 2.15 to support unawaited()
+  # 2.17 needed for weakreference
+  # 4.0.0 for future dart versions
+  sdk: '>=2.17.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
   # BSD License
-  logging: ^1.1.1
+  logging: ^1.2.0
 
-  collection: ^1.17.0
+  collection: ^1.17.2
 
   # BSD License
   convert: ^3.1.1
 
   # MIT License
-  ecache: ^2.0.2
+  ecache: ^2.0.3
   #    git:
   #      url: https://github.com/mikes222/dcache
-  #    path: ../../github_ecache/
+  #  path: ../../ecache
 
   # MIT License
   queue: ^3.1.0+2
@@ -35,21 +38,21 @@ dependencies:
   golden_toolkit: ^0.15.0
 
   # BSD License
-  http: ^0.13.5
+  http: ^1.1.0
 
-  idb_shim: ^2.3.0+2
+  idb_shim: ^2.3.1
 
   # Apache 2.0 License
   rxdart: ^0.27.7
 
   # BSD License
-  synchronized: ^3.0.1
+  synchronized: ^3.1.0
 
   # BSD License
-  flutter_svg: ^2.0.5
+  flutter_svg: ^2.0.7
 
   # BSD License, currently no WEB support
-  path_provider: ^2.0.14
+  path_provider: ^2.1.1
 
   # MIT License
   provider: ^6.0.5
@@ -62,12 +65,12 @@ dev_dependencies:
     sdk: flutter
 
   # BSD License, needed for json_serializable
-  build_runner: ^2.3.3
+  build_runner: ^2.4.6
 
   # BSD License
   #test: 1.15.2
 
-  mockito: ^5.4.0
+  mockito: ^5.4.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

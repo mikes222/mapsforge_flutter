@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 typedef void OnChange(int level);
 
@@ -25,13 +24,13 @@ class IndoorLevelBar extends StatefulWidget {
     Key? key,
     required this.indoorLevels,
     required this.onChange,
-    this.width: 30,
-    this.itemHeight: 45,
-    this.maxVisibleItems: 5,
-    this.fillColor: Colors.white,
-    this.activeColor: Colors.blue,
-    this.elevation: 2,
-    this.borderRadius: const BorderRadius.all(Radius.circular(20)),
+    this.width = 30,
+    this.itemHeight = 45,
+    this.maxVisibleItems = 5,
+    this.fillColor = Colors.white,
+    this.activeColor = Colors.blue,
+    this.elevation = 2,
+    this.borderRadius = const BorderRadius.all(Radius.circular(20)),
     this.initialLevel = 0,
   }) : super(key: key);
 
@@ -127,8 +126,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                   builder: (BuildContext context, bool onTop, Widget? child) {
                     return TextButton(
                       style: TextButton.styleFrom(
-                        primary: Colors.black,
-                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.black, backgroundColor: Colors.transparent,
                         shape: const ContinuousRectangleBorder(),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         // make buttons same height as items
@@ -156,14 +154,13 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       // widget
                       return TextButton(
                         style: TextButton.styleFrom(
-                          shape: const ContinuousRectangleBorder(),
+                          foregroundColor: _level == itemIndoorLevel
+                              ? Colors.white
+                              : Colors.black, shape: const ContinuousRectangleBorder(),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           backgroundColor: _level == itemIndoorLevel
                               ? widget.activeColor
                               : Colors.transparent,
-                          primary: _level == itemIndoorLevel
-                              ? Colors.white
-                              : Colors.black,
                         ),
                         onPressed: () {
                           // do nothing if already selected
@@ -195,8 +192,7 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                       (BuildContext context, bool onBottom, Widget? child) {
                     return TextButton(
                       style: TextButton.styleFrom(
-                        primary: Colors.black,
-                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.black, backgroundColor: Colors.transparent,
                         shape: const ContinuousRectangleBorder(),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         // make buttons same height as items

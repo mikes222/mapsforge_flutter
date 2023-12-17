@@ -185,7 +185,7 @@ class FileMgr {
       List<int> content = await _downloadNowToMemory(
           scheme, host, port, path, ignoreCertificate);
       return content;
-    } catch (error, stacktrace) {
+    } catch (error) {
       _log.warning(
           "Error while downloading file from $scheme://$host:$port/$path: $error");
       _fileDownloadInject.add(
@@ -212,7 +212,7 @@ class FileMgr {
           scheme, host, port, path, ignoreCertificate);
       await saveFileAbsolute(filename, content);
       return content;
-    } catch (error, stacktrace) {
+    } catch (error) {
       _log.warning(
           "Error while downloading file from $scheme://$host:$port/$path: $error");
       _fileDownloadInject.add(
@@ -264,7 +264,7 @@ class FileMgr {
     try {
       await _downloadNowToFile(
           scheme, host, port, path, destination, ignoreCertificate);
-    } catch (error, stacktrace) {
+    } catch (error) {
       _fileDownloadInject.add(
           FileDownloadEvent.error("$scheme://$host:$port/$path", destination));
       throw error;
@@ -339,7 +339,7 @@ class FileMgr {
       });
       await sink.flush();
       await sink.close();
-    } catch (error, stacktrace) {
+    } catch (error) {
       await sink.close();
       await tempFile.delete();
       throw error;
@@ -385,7 +385,6 @@ class FileMgr {
           "File $source already in downloadqueue, ignoring the downloadrequest");
       return false;
     }
-
     int active = _downloadTasks.values
         .where((element) => element.status == _DOWNLOADINFOSTATUS.DOWNLOADING)
         .length;
@@ -416,7 +415,7 @@ class FileMgr {
       await _downloadNowToFile(scheme, host, port, path, destination);
       _downloadTasks.remove(info.source);
       unawaited(_downloadNext());
-    } catch (error, stacktrace) {
+    } catch (error) {
       _fileDownloadInject.add(FileDownloadEvent.error(source, destination));
       _downloadTasks.remove(source);
       unawaited(_downloadNext());
@@ -427,18 +426,17 @@ class FileMgr {
   Future<void> _downloadNext() async {
     _DownloadInfo? info = _downloadTasks.values.firstWhereOrNull(
         (element) => element.status == _DOWNLOADINFOSTATUS.QUEUED);
-    if (info != null) {
-      info.status = _DOWNLOADINFOSTATUS.DOWNLOADING;
-      try {
-        await _downloadNowToFile(
-            info.scheme, info.host, info.port, info.path, info.destination);
-      } catch (error, stacktrace) {
-        _fileDownloadInject
-            .add(FileDownloadEvent.error(info.source, info.destination));
-      }
-      _downloadTasks.remove(info.source);
-      unawaited(_downloadNext());
+    if (info == null) return;
+    info.status = _DOWNLOADINFOSTATUS.DOWNLOADING;
+    try {
+      await _downloadNowToFile(
+          info.scheme, info.host, info.port, info.path, info.destination);
+    } catch (error) {
+      _fileDownloadInject
+          .add(FileDownloadEvent.error(info.source, info.destination));
     }
+    _downloadTasks.remove(info.source);
+    unawaited(_downloadNext());
   }
 }
 

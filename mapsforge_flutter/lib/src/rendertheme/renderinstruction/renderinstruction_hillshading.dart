@@ -29,14 +29,6 @@ class RenderinstructionHillshading {
 
   void render(
       final RenderContext renderContext, HillsRenderConfig hillsRenderConfig) {
-    if (hillsRenderConfig == null) {
-      if (always) {
-        renderContext.setDrawingLayers(layer);
-        Shape hillShape = new ShapeHillshading.base();
-        //renderContext.addToCurrentDrawingLayer(level, new ShapePaintContainer(hillShape, null, 0));
-      }
-      return;
-    }
     double effectiveMagnitude = min(
             max(0, this.magnitude * hillsRenderConfig.getMaginuteScaleFactor()),
             255) /

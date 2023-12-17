@@ -2,8 +2,6 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 
