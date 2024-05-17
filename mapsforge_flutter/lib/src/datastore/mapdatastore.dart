@@ -188,14 +188,12 @@ abstract class MapDataStore extends Datastore {
   /// Gets the initial map position.
   ///
   /// @return the start position, if available.
-  LatLong? get startPosition;
+  Future<LatLong?> getStartPosition();
 
-  /**
-   * Gets the initial zoom level.
-   *
-   * @return the start zoom level.
-   */
-  int? get startZoomLevel;
+  /// Gets the initial zoom level.
+  ///
+  /// @return the start zoom level.
+  Future<int?> getStartZoomLevel();
 
   /// Returns true if a way should be included in the result set for readLabels()
   /// By default only ways with names, house numbers or a ref are included in the result set
