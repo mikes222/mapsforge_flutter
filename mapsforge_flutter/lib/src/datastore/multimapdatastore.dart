@@ -5,8 +5,8 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
-import 'mapdatastore.dart';
 import 'datastorereadresult.dart';
+import 'mapdatastore.dart';
 
 /// A MapDatabase that reads and combines data from multiple map files.
 /// The MultiMapDatabase supports the following modes for reading from multiple files:
@@ -26,9 +26,9 @@ class MultiMapDataStore extends MapDataStore {
   BoundingBox? boundingBox;
   final DataPolicy dataPolicy;
   final List<MapDataStore> mapDatabases;
-  @override
+
   LatLong? startPosition;
-  @override
+
   int? startZoomLevel;
 
   MultiMapDataStore(this.dataPolicy)
@@ -40,17 +40,17 @@ class MultiMapDataStore extends MapDataStore {
   /// @param mapDataStore      the mapDataStore to add
   /// @param useStartZoomLevel if true, use the start zoom level of this mapDataStore as the start zoom level
   /// @param useStartPosition  if true, use the start position of this mapDataStore as the start position
-  void addMapDataStore(MapDataStore mapDataStore, bool useStartZoomLevel,
-      bool useStartPosition) {
+  Future<void> addMapDataStore(MapDataStore mapDataStore,
+      bool useStartZoomLevel, bool useStartPosition) async {
     if (this.mapDatabases.contains(mapDataStore)) {
       throw new Exception("Duplicate map database");
     }
     this.mapDatabases.add(mapDataStore);
     if (useStartZoomLevel) {
-      this.startZoomLevel = mapDataStore.startZoomLevel;
+      this.startZoomLevel = await mapDataStore.getStartZoomLevel();
     }
     if (useStartPosition) {
-      this.startPosition = mapDataStore.startPosition;
+      this.startPosition = await mapDataStore.getStartPosition();
     }
     // if (null == this.boundingBox) {
     //   this.boundingBox = mapDataStore.boundingBox;
@@ -398,6 +398,16 @@ class MultiMapDataStore extends MapDataStore {
     for (MapDataStore mdb in mapDatabases) {
       await mdb.lateOpen();
     }
+  }
+
+  @override
+  Future<LatLong?> getStartPosition() {
+    return Future.value(startPosition);
+  }
+
+  @override
+  Future<int?> getStartZoomLevel() {
+    return Future.value(startZoomLevel);
   }
 }
 
