@@ -52,7 +52,7 @@ class _ZoomOverlayState extends State<ZoomOverlay>
   Widget build(BuildContext context) {
     _fadeAnimationController.forward();
     return Positioned(
-      bottom: toolbarSpacing,
+      bottom: toolbarSpacing + kBottomNavigationBarHeight,
       right: toolbarSpacing,
       //top: toolbarSpacing,
       // this widget has an unbound width
