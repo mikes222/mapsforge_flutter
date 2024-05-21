@@ -4,6 +4,9 @@ import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
 import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
+import 'package:mapsforge_flutter/src/marker/userpositionmarker.dart';
+import 'package:mapsforge_flutter/src/model/usercurrentposition.dart';
+import 'package:mapsforge_flutter/src/service/gpsservice.dart';
 import 'package:mapsforge_flutter/src/view/zoompainter.dart';
 
 import '../../core.dart';
@@ -13,12 +16,17 @@ import 'backgroundpainter.dart';
 /// Use [MapviewWidget] instead
 class FlutterMapView extends StatefulWidget {
   final MapModel mapModel;
-
+  final bool displayRealTimeLocation;
+  final String? userLocationAssetIcon;
   final ViewModel viewModel;
 
-  const FlutterMapView(
-      {Key? key, required this.mapModel, required this.viewModel})
-      : super(key: key);
+  const FlutterMapView({
+    Key? key,
+    required this.mapModel,
+    required this.viewModel,
+    this.displayRealTimeLocation = false,
+    this.userLocationAssetIcon,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -36,6 +44,22 @@ class _FlutterMapState extends State<FlutterMapView> {
   GlobalKey _keyView = GlobalKey();
 
   late JobQueue _jobQueue;
+  Future<void> _initializePosition() async {
+    try {
+      GpsService gpsService = GpsService();
+      var position = await gpsService.determinePosition();
+      gpsService.startPositioning();
+      widget.viewModel.updateUserLocation(UserLocation(
+          latitude: position.latitude, longitude: position.longitude));
+      widget.viewModel
+          .setMapViewPosition(position.latitude, position.longitude);
+
+      // Any additional initialization or state updates can go here
+    } catch (e) {
+      // Handle errors here
+      print("Error determining position: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -46,6 +70,9 @@ class _FlutterMapState extends State<FlutterMapView> {
         widget.mapModel.tileBitmapCache,
         widget.mapModel.tileBitmapCacheFirstLevel);
     _tileLayer = TileLayerImpl(displayModel: widget.mapModel.displayModel);
+    if (widget.displayRealTimeLocation) {
+      _initializePosition();
+    }
   }
 
   @override
@@ -56,26 +83,36 @@ class _FlutterMapState extends State<FlutterMapView> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<MapViewPosition>(
-      stream: widget.viewModel.observePosition,
-      builder: (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
-        //print("position ${snapshot.connectionState} with ${snapshot.data}");
-        if (snapshot.connectionState == ConnectionState.waiting)
-          return _buildNoPositionView();
-        if (snapshot.hasData) {
-          if (snapshot.data!.hasPosition()) {
-            //_log.info("I have a new position ${snapshot.data.toString()}");
-            return _buildMapView(snapshot.data!);
-          }
-          //return _buildNoPositionView();
-        }
-        if (widget.viewModel.mapViewPosition != null &&
-            widget.viewModel.mapViewPosition!.hasPosition()) {
-          //_log.info(
-          //    "I have an old position ${widget.viewModel.mapViewPosition!.toString()}");
-          return _buildMapView(widget.viewModel.mapViewPosition!);
-        }
-        return _buildNoPositionView();
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        widget.viewModel
+            .setViewDimension(constraints.maxWidth, constraints.maxHeight);
+
+        return SizedBox.expand(
+          child: Stack(
+            children: [
+              StreamBuilder<MapViewPosition>(
+                stream: widget.viewModel.observePosition,
+                builder: (BuildContext context,
+                    AsyncSnapshot<MapViewPosition> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildNoPositionView();
+                  }
+                  if (snapshot.hasData && snapshot.data!.hasPosition()) {
+                    return _buildMapView(snapshot.data!);
+                  }
+                  if (widget.viewModel.mapViewPosition != null &&
+                      widget.viewModel.mapViewPosition!.hasPosition()) {
+                    return _buildMapView(widget.viewModel.mapViewPosition!);
+                  }
+                  return _buildNoPositionView();
+                },
+              ),
+              if (widget.displayRealTimeLocation)
+                _buildUserLocationMarkerStream(),
+            ],
+          ),
+        );
       },
     );
   }
@@ -95,6 +132,27 @@ class _FlutterMapState extends State<FlutterMapView> {
       );
     }
     return null;
+  }
+
+  Widget _buildUserLocationMarkerStream() {
+    return StreamBuilder<UserLocation>(
+      stream: widget.viewModel.observeUserLocation,
+      builder: (context, userLocationSnapshot) {
+        if (userLocationSnapshot.hasData) {
+          UserLocation userLocation = userLocationSnapshot.data!;
+          JobSet? jobSet = _jobQueue.submitJobSet(
+              widget.viewModel, widget.viewModel.mapViewPosition!, _jobQueue);
+          if (jobSet == null) return const SizedBox();
+
+          widget.mapModel.markerDataStores.add(UserPositionMarker(
+              assetIcon: widget.userLocationAssetIcon!,
+              symbolCache: widget.mapModel.symbolCache!,
+              displayModel: widget.mapModel.displayModel,
+              viewModel: widget.viewModel));
+        }
+        return const SizedBox();
+      },
+    );
   }
 
   List<Widget> _createMarkerWidgets(MapViewPosition mapViewPosition) {

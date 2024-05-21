@@ -64,7 +64,7 @@ void main() {
           body: Center(
             child: FlutterMapView(
               mapModel: mapModel,
-              viewModel: viewModel,
+              viewModel: viewModel
             ),
           ),
         ),

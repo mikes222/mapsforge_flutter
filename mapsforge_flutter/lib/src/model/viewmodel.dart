@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/model/usercurrentposition.dart';
 import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -29,6 +30,9 @@ class ViewModel {
 
   /// Receives events when the position or zoom or indoor-level of the map changes
   Stream<MapViewPosition> get observePosition => _injectPosition.stream;
+
+  BehaviorSubject<UserLocation> _injectUserLocation = BehaviorSubject();
+  Stream<UserLocation> get observeUserLocation => _injectUserLocation.stream;
 
   Subject<TapEvent> _injectTap = PublishSubject();
 
@@ -92,6 +96,7 @@ class ViewModel {
     _injectMoveAroundStart.close();
     _injectMoveAroundUpdate.close();
     _injectMoveAroundEnd.close();
+    _injectUserLocation.close();
   }
 
   MapViewPosition? get mapViewPosition => _mapViewPosition;
@@ -426,6 +431,11 @@ class ViewModel {
     overlays ??= [];
     overlays!.add(overlay);
   }
+
+  void updateUserLocation(UserLocation userLocation) {
+    _injectUserLocation.add(userLocation);
+  }
+  
 }
 
 /////////////////////////////////////////////////////////////////////////////

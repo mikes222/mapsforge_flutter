@@ -59,6 +59,7 @@ dependencies:
 
   # MIT License
   xml: ^6.2.2
+  geolocator: ^12.0.0
 
 dev_dependencies:
   flutter_test:
