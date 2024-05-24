@@ -5,8 +5,7 @@ import '../../core.dart';
 import '../../maps.dart';
 import '../graphics/display.dart';
 import '../graphics/mapcanvas.dart';
-import '../renderer/minmaxmappoint.dart';
-import '../renderer/rendererutils.dart';
+import '../renderer/minmaxdouble.dart';
 import 'shape/shape.dart';
 import 'wayproperties.dart';
 
@@ -53,17 +52,9 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   MapRectangle getBoundaryAbsolute(PixelProjection projection) {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
     List<List<Mappoint>> coordinates =
-    wayProperties.getCoordinatesAbsolute(projection);
-    List<Mappoint>? c;
-    double dy = 0;
-    if (dy == 0) {
-      c = coordinates[0];
-    } else {
-      c = RendererUtils.parallelPath(coordinates[0], dy);
-    }
-    MinMaxMappoint minMax = MinMaxMappoint(c);
-    boundaryAbsolute =
-        MapRectangle(minMax.minX, minMax.minY, minMax.maxX, minMax.maxY);
+        wayProperties.getCoordinatesAbsolute(projection);
+    MinMaxDouble minMax = MinMaxDouble(coordinates[0]);
+    boundaryAbsolute = minMax.getBoundary();
     return boundaryAbsolute!;
   }
 }

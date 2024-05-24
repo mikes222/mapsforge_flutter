@@ -1,0 +1,115 @@
+import 'package:flutter/cupertino.dart';
+import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
+
+import '../../core.dart';
+import '../rendertheme/rendercontext.dart';
+import '../rendertheme/renderinfo.dart';
+import '../rendertheme/shape/shape.dart';
+import '../utils/timing.dart';
+
+/// zooms and rotates the canvas when needed before painting the map
+class ViewZoomPainter extends CustomPainter {
+  static final _log = new Logger('ViewZoomPainter');
+
+  final ViewModel viewModel;
+
+  final RenderContext renderContext;
+
+  ViewZoomPainter({required this.viewModel, required this.renderContext})
+      : super();
+
+  /// The [size] is the size of the widget in screenpixels, take care that we
+  /// often use mappixels which is off by some zoomFactors
+  @override
+  void paint(Canvas canvas, Size size) {
+    //print("inViewZoomPainter");
+    Timing timing = Timing(log: _log, active: true);
+    //print("zoomPainter paint $size and position ${viewModel.mapViewPosition}");
+    if (viewModel.mapViewPosition == null) return;
+    //print("    inViewZoomPainter ====");
+
+    FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
+    flutterCanvas.setClip(
+        0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
+    MapViewPosition mapViewPosition = viewModel.mapViewPosition!;
+    mapViewPosition.calculateBoundingBox(viewModel.mapDimension);
+
+    if (viewModel.viewScaleFactor != 1) {
+      canvas.save();
+      flutterCanvas.scale(
+          const Mappoint(/*viewModel.viewDimension.width / 2*/ 0,
+              /*viewModel.viewDimension.height / 2*/ 0),
+          1 / viewModel.viewScaleFactor);
+    }
+    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
+      //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
+      canvas.save();
+      flutterCanvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
+    }
+
+    if (mapViewPosition.rotationRadian != 0) {
+      canvas.save();
+      canvas.translate(size.width * viewModel.viewScaleFactor / 2,
+          size.height * viewModel.viewScaleFactor / 2);
+      canvas.rotate(mapViewPosition.rotationRadian);
+      canvas.translate(-size.width * viewModel.viewScaleFactor / 2,
+          -size.height * viewModel.viewScaleFactor / 2);
+    }
+    // now start drawing
+    Mappoint leftUpper = mapViewPosition.getLeftUpper(viewModel.mapDimension);
+    renderContext.drawingLayers
+        .forEach((LayerPaintContainer layerpaintContainer) {
+      //_statistics?.drawLabelCount++;
+      layerpaintContainer.ways.forEach((List<RenderInfo<Shape>> renderInfos) {
+        renderInfos.forEach((RenderInfo<Shape> renderInfo) {
+          renderInfo.render(flutterCanvas, mapViewPosition.projection,
+              leftUpper, mapViewPosition.rotationRadian);
+        });
+      });
+    });
+    //_statistics?.drawLabelCount++;
+    renderContext.clashDrawingLayer.ways
+        .forEach((List<RenderInfo<Shape>> renderInfos) {
+      renderInfos.forEach((RenderInfo<Shape> renderInfo) {
+        renderInfo.render(flutterCanvas, mapViewPosition.projection, leftUpper,
+            mapViewPosition.rotationRadian);
+      });
+    });
+    renderContext.labels.forEach((RenderInfo<Shape> renderInfo) {
+      //_statistics?.drawLabelCount++;
+      renderInfo.render(flutterCanvas, mapViewPosition.projection, leftUpper,
+          mapViewPosition.rotationRadian);
+    });
+
+    // MapPaint paint = FlutterPaint(ui.Paint());
+    // MapTextPaint mapTextPaint = FlutterTextPaint()..setTextSize(30);
+    // flutterCanvas.drawText("$_count", 10, 10, paint, mapTextPaint, 100);
+    // flutterCanvas.drawText("$_globalCount", 120, 10, paint, mapTextPaint, 100);
+    // ++_count;
+    // ++_globalCount;
+
+    // restore canvas
+    if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
+      //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());
+      canvas.restore();
+      //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 15, Paint()..color = Colors.amber);
+    }
+    if (viewModel.viewScaleFactor != 1) {
+      canvas.restore();
+    }
+
+    if (mapViewPosition.rotationRadian != 0) {
+      canvas.restore();
+    }
+    timing.lap(30, "ZoomPainter done");
+  }
+
+  @override
+  bool shouldRepaint(covariant ViewZoomPainter oldDelegate) {
+    // print(
+    //     "zoomPainter shouldRepaint ${oldDelegate.mapViewPosition != mapViewPosition}");
+//    if (oldDelegate.mapViewPosition != mapViewPosition) return true;
+    return true;
+  }
+}

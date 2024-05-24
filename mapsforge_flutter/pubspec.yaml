@@ -38,39 +38,39 @@ dependencies:
   golden_toolkit: ^0.15.0
 
   # BSD License
-  http: ^1.1.0
+  http: ^1.2.1
 
-  idb_shim: ^2.3.1
+  idb_shim: ^2.4.1+1
 
   # Apache 2.0 License
   rxdart: ^0.27.7
 
   # BSD License
-  synchronized: ^3.1.0
+  synchronized: ^3.1.0+1
 
   # BSD License
-  flutter_svg: ^2.0.7
+  flutter_svg: ^2.0.10+1
 
   # BSD License, currently no WEB support
-  path_provider: ^2.1.1
+  path_provider: ^2.1.3
 
   # MIT License
-  provider: ^6.0.5
+  provider: ^6.1.2
 
   # MIT License
-  xml: ^6.2.2
+  xml: ^6.5.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   # BSD License, needed for json_serializable
-  build_runner: ^2.4.6
+  build_runner: ^2.4.10
 
   # BSD License
   #test: 1.15.2
 
-  mockito: ^5.4.2
+  mockito: ^5.4.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

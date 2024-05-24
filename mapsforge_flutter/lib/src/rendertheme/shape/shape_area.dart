@@ -13,18 +13,15 @@ import 'paintsrcmixin.dart';
 class ShapeArea extends Shape with PaintSrcMixin, BitmapSrcMixin {
   Scale scale = Scale.STROKE;
 
-  int level = 0;
-
   double dy = 0;
 
-  ShapeArea.base() : super.base();
+  ShapeArea.base(int level) : super.base(level: level);
 
   ShapeArea.scale(ShapeArea base, int zoomLevel)
       : super.scale(base, zoomLevel) {
     paintSrcMixinScale(base, zoomLevel);
     bitmapSrcMixinScale(base, zoomLevel);
     scale = base.scale;
-    level = base.level;
     dy = base.dy;
   }
 

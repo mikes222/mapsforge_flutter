@@ -10,6 +10,7 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 import '../../../core.dart';
 import '../../../maps.dart';
 import '../graphics/mapcanvas.dart';
+import '../model/linestring.dart';
 import '../model/maprectangle.dart';
 import '../paintelements/shape_paint.dart';
 import '../paintelements/shape_paint_area.dart';
@@ -30,13 +31,16 @@ import '../paintelements/shape_paint_symbol.dart';
 abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
   final T shape;
 
-  /// The boundary of this object in absolute pixels.
+  /// The boundary of this object in absolute pixels. This is a cache and will
+  /// be calculated by asking [ShapePaint] or [Shape].
   MapRectangle? boundaryAbsolute;
 
   ShapePaint<T>? shapePaint;
 
   /// The caption to draw. (used by renderinstructionCaption)
   String? caption;
+
+  LineString? stringPath;
 
   RenderInfo(this.shape);
 
@@ -102,11 +106,13 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
           shapePaint =
               ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
           await shapePaint!.init(symbolCache);
+          shape.shapePaint = shapePaint;
         }
         break;
       case "Pathtext":
-        shapePaint = ShapePaintPathtext(shape as ShapePathtext, caption!)
-            as ShapePaint<T>;
+        shapePaint =
+            ShapePaintPathtext(shape as ShapePathtext, caption!, stringPath!)
+                as ShapePaint<T>;
         await shapePaint!.init(symbolCache);
         break;
       case "Polyline":
@@ -133,5 +139,11 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         print(
             "cannot find ShapePaint for ${shape.getShapeType()} of type ${shape.runtimeType}");
     }
+  }
+
+  /// manually added
+  @override
+  String toString() {
+    return 'RenderInfo{type: ${getShapeType()}}, boundaryAbsolute: ${boundaryAbsolute}';
   }
 }

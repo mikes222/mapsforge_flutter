@@ -19,8 +19,7 @@ class RenderinstructionLine extends RenderInstruction {
   late final ShapePolyline base;
 
   RenderinstructionLine(int level, [ShapePolyline? base]) {
-    this.base = base ?? ShapePolyline.base()
-      ..level = level;
+    this.base = base ?? ShapePolyline.base(level);
   }
 
   @override
@@ -107,6 +106,7 @@ class RenderinstructionLine extends RenderInstruction {
   @override
   void renderWay(
       final RenderContext renderContext, WayProperties wayProperties) {
+    if (base.bitmapSrc == null && base.isStrokeTransparent()) return;
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 

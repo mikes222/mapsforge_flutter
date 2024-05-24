@@ -18,8 +18,7 @@ class RenderinstructionLinesymbol extends RenderInstruction {
   late final ShapeLinesymbol base;
 
   RenderinstructionLinesymbol(int level, [ShapeLinesymbol? base]) {
-    this.base = base ?? ShapeLinesymbol.base()
-      ..level = level;
+    this.base = base ?? ShapeLinesymbol.base(level);
   }
 
   @override
@@ -96,6 +95,7 @@ class RenderinstructionLinesymbol extends RenderInstruction {
   @override
   void renderWay(
       final RenderContext renderContext, WayProperties wayProperties) {
+    if (base.bitmapSrc == null) return;
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 

@@ -38,7 +38,7 @@ class MapViewPosition {
   /// needs to be recalculated if the map moves OR if the map zooms
   Mappoint? _center;
 
-  /// orientation of the map in clockwise direction 0-360°. 360 is excluded
+  /// orientation of the map in clockwise direction 0-360°. 0° is north, 360° is excluded.
   final double _rotation;
 
   final double _rotationRadian;

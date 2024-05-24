@@ -401,6 +401,10 @@ class ViewModel {
     _injectMoveAroundEnd.add(event);
   }
 
+  void rebuild() {
+    if (_mapViewPosition != null) _injectPosition.add(_mapViewPosition!);
+  }
+
   ///
   /// The width and height of the visible view in mappixels. Note that this is NOT
   /// equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
@@ -425,6 +429,16 @@ class ViewModel {
   void addOverlay(Widget overlay) {
     overlays ??= [];
     overlays!.add(overlay);
+  }
+
+  @override
+  void addListener(VoidCallback listener) {
+    // TODO: implement addListener
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    // TODO: implement removeListener
   }
 }
 

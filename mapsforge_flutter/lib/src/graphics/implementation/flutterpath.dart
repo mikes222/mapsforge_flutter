@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter/src/graphics/fillrule.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
+import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
 class FlutterPath implements MapPath {
   final ui.Path path;
@@ -48,5 +49,15 @@ class FlutterPath implements MapPath {
         path.fillType = ui.PathFillType.nonZero;
         break;
     }
+  }
+
+  @override
+  void lineToMappoint(Mappoint point) {
+    path.lineTo(point.x, point.y);
+  }
+
+  @override
+  void moveToMappoint(Mappoint point) {
+    path.moveTo(point.x, point.y);
   }
 }

@@ -29,7 +29,7 @@ class ShapeLinesymbol extends ShapeSymbol {
 
   int lineSymbolMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
 
-  ShapeLinesymbol.base() : super.base();
+  ShapeLinesymbol.base(int level) : super.base(level);
 
   ShapeLinesymbol.scale(ShapeLinesymbol base, int zoomLevel)
       : super.scale(base, zoomLevel) {

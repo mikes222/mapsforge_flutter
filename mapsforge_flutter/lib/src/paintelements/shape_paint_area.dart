@@ -18,6 +18,7 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
   ShapePaintArea(ShapeArea symbol) : super(symbol) {
     if (!symbol.isFillTransparent() || symbol.bitmapSrc != null)
       fill = createPaint(style: Style.FILL, color: symbol.fillColor);
+
     if (!symbol.isStrokeTransparent() && symbol.strokeWidth > 0) {
       stroke = createPaint(
           style: Style.STROKE,
@@ -39,6 +40,7 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
           bitmapHeight: shape.getBitmapHeight());
       if (bitmap != null) {
         if (shape.isStrokeTransparent()) {
+          // for bitmaps set the stroke color so that the bitmap is drawn
           fill!.setColor(Colors.black);
         }
         fill!.setBitmapShader(bitmap);

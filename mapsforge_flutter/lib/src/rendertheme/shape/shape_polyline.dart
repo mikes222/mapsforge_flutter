@@ -13,18 +13,15 @@ import 'paintsrcmixin.dart';
 class ShapePolyline extends Shape with PaintSrcMixin, BitmapSrcMixin {
   Scale scale = Scale.STROKE;
 
-  int level = 0;
-
   double dy = 0;
 
-  ShapePolyline.base() : super.base();
+  ShapePolyline.base(int level) : super.base(level: level);
 
   ShapePolyline.scale(ShapePolyline base, int zoomLevel)
       : super.scale(base, zoomLevel) {
     paintSrcMixinScale(base, zoomLevel);
     bitmapSrcMixinScale(base, zoomLevel);
     scale = base.scale;
-    level = base.level;
     dy = base.dy;
   }
 

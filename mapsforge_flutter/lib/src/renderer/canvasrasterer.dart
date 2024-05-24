@@ -22,7 +22,7 @@ class CanvasRasterer {
   void drawWays(RenderContext renderContext) {
     //print("drawing now ${renderContext.layerWays.length} layers");
     Mappoint leftUpper =
-        renderContext.projection.getLeftUpper(renderContext.job.tile);
+        renderContext.projection.getLeftUpper(renderContext.upperLeft);
     for (LayerPaintContainer layerPaintContainer
         in renderContext.drawingLayers) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");

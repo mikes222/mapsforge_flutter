@@ -12,9 +12,6 @@ import '../layer/job/jobset.dart';
 import '../layer/tilelayer.dart';
 import 'backgroundpainter.dart';
 
-typedef Future<MapModel> CreateMapModel();
-typedef Future<ViewModel> CreateViewModel();
-
 /// A Widget which provides the map. The widget asks for MapModel and ViewModel when
 /// needed and also destroys the models when not needed anymore. You cannot
 /// directly access the viewmodel and mapmodel to avoid access-problems after
@@ -48,8 +45,6 @@ class MapviewWidget extends StatefulWidget {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-typedef Widget Func();
 
 class _MapviewWidgetState extends State<MapviewWidget> {
   static final _log = new Logger('_MapviewWidgetState');

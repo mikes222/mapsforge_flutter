@@ -35,6 +35,7 @@ export 'src/view/distance_overlay.dart';
 export 'src/view/indoorlevel_zoom_overlay.dart';
 export 'src/view/indoorlevelbar.dart';
 export 'src/view/mapview.dart';
+export 'src/view/mapview2_widget.dart';
 export 'src/view/mapview_widget.dart';
 export 'src/view/nopositionview.dart';
 export 'src/view/zoom_overlay.dart';

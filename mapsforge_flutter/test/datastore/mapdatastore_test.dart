@@ -75,6 +75,8 @@ main() async {
 
   bool indoorDetector() {
     bool indoorDataDetector = false;
+    expect(mapReadResult.ways.length, 185);
+    expect(mapReadResult.pointOfInterests.length, 111);
     //POI's
     mapReadResult.pointOfInterests.forEach((poi) {
       poi.tags.forEach((tag) {

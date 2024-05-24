@@ -8,18 +8,15 @@ class ShapeSymbol extends Shape with BitmapSrcMixin {
 
   double theta = 0;
 
-  int level = 0;
-
   String? id;
 
-  ShapeSymbol.base() : super.base();
+  ShapeSymbol.base(int level) : super.base(level: level);
 
   ShapeSymbol.scale(ShapeSymbol base, int zoomLevel)
       : super.scale(base, zoomLevel) {
     bitmapSrcMixinScale(base, zoomLevel);
     position = base.position;
     theta = base.theta;
-    level = base.level;
     id = base.id;
   }
 

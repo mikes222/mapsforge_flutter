@@ -15,8 +15,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   double _verticalOffset = 0;
 
-  int level = 0;
-
   late double gap = 0;
 
   /// The position of this caption relative to the corresponding symbol. If the symbol is not set
@@ -31,7 +29,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   double dy = 0;
 
-  ShapeCaption.base() : super.base();
+  ShapeCaption.base(int level) : super.base(level: level);
 
   ShapeCaption.scale(ShapeCaption base, int zoomLevel)
       : super.scale(base, zoomLevel) {
@@ -45,7 +43,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     symbolId = base.symbolId;
     textKey = base.textKey;
     dy = base.dy;
-    level = base.level;
 // do NOT copy symbolHolder. It is dependent on the zoomLevel
 
     if (zoomLevel >= strokeMinZoomLevel) {
@@ -149,6 +146,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   @override
   String toString() {
-    return 'ShapeCaption{_horizontalOffset: $_horizontalOffset, _verticalOffset: $_verticalOffset, level: $level, gap: $gap, position: $position, symbolId: $symbolId, textKey: $textKey, dy: $dy}';
+    return 'ShapeCaption{_horizontalOffset: $_horizontalOffset, _verticalOffset: $_verticalOffset, level: $level, gap: $gap, position: $position, symbolId: $symbolId, symbolHolder: $symbolHolder, textKey: $textKey, dy: $dy}';
   }
 }

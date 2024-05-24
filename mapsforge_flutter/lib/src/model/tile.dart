@@ -19,37 +19,6 @@ class Tile {
   /// The (cached) bounding box of this tile
   BoundingBox? _boundary;
 
-  /**
-   * Extend of the area defined by the two tiles in absolute coordinates.
-   *
-   * @param upperLeft  tile in upper left corner of area.
-   * @param lowerRight tile in lower right corner of area.
-   * @return rectangle with the absolute coordinates.
-   */
-  // static Rectangle getBoundaryAbsoluteStatic(Tile upperLeft, Tile lowerRight) {
-  //   return new Rectangle(upperLeft.getOrigin().x, upperLeft.getOrigin().y, lowerRight.getOrigin().x + upperLeft.mercatorProjection.tileSize,
-  //       lowerRight.getOrigin().y + upperLeft.mercatorProjection.tileSize);
-  // }
-
-  /// Returns true if two tile areas, defined by upper left and lower right tiles, overlap.
-  /// Precondition: zoom levels of upperLeft/lowerRight and upperLeftOther/lowerRightOther are the
-  /// same.
-  ///
-  /// @param upperLeft       tile in upper left corner of area 1.
-  /// @param lowerRight      tile in lower right corner of area 1.
-  /// @param upperLeftOther  tile in upper left corner of area 2.
-  /// @param lowerRightOther tile in lower right corner of area 2.
-  /// @return true if the areas overlap, false if zoom levels differ or areas do not overlap.
-  // static bool tileAreasOverlap(Tile upperLeft, Tile lowerRight, Tile upperLeftOther, Tile lowerRightOther) {
-  //   if (upperLeft.zoomLevel != upperLeftOther.zoomLevel || upperLeft.indoorLevel != upperLeftOther.indoorLevel) {
-  //     return false;
-  //   }
-  //   if (upperLeft == (upperLeftOther) && lowerRight == lowerRightOther) {
-  //     return true;
-  //   }
-  //   return getBoundaryAbsoluteStatic(upperLeft, lowerRight).intersects(getBoundaryAbsoluteStatic(upperLeftOther, lowerRightOther));
-  // }
-
   /// @return the maximum valid tile number for the given zoom level, 2<sup>zoomLevel</sup> -1.
   static int getMaxTileNumber(int zoomLevel) {
     if (zoomLevel < 0) {

@@ -14,9 +14,7 @@ class ShapeCircle extends Shape with PaintSrcMixin {
 
   double dy = 0;
 
-  int level = 0;
-
-  ShapeCircle.base() : super.base() {
+  ShapeCircle.base(int level) : super.base(level: level) {
     fillColor = PaintSrcMixin.transparent();
   }
 

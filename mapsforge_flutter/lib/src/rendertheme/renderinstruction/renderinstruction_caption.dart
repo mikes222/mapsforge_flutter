@@ -29,8 +29,7 @@ class RenderinstructionCaption extends RenderInstruction {
   late final ShapeCaption base;
 
   RenderinstructionCaption(this.symbolFinder, int level, [ShapeCaption? base]) {
-    this.base = base ?? ShapeCaption.base()
-      ..level = level;
+    this.base = base ?? ShapeCaption.base(level);
   }
 
   @override
@@ -102,7 +101,7 @@ class RenderinstructionCaption extends RenderInstruction {
     if (base.symbolId != null) {
       // This caption belongs to a symbol. Try to find it and connect both
       SymbolHolder symbolHolder = symbolFinder.findSymbolHolder(
-          base.symbolId!, renderContext.job.tile.zoomLevel);
+          base.symbolId!, renderContext.upperLeft.zoomLevel);
       base.symbolHolder = symbolHolder;
     }
 
@@ -124,7 +123,7 @@ class RenderinstructionCaption extends RenderInstruction {
     if (base.symbolId != null) {
       // This caption belongs to a symbol. Try to find it and connect both
       SymbolHolder symbolHolder = symbolFinder.findSymbolHolder(
-          base.symbolId!, renderContext.job.tile.zoomLevel);
+          base.symbolId!, renderContext.upperLeft.zoomLevel);
       base.symbolHolder = symbolHolder;
     }
 

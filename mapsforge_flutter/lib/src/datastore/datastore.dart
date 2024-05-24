@@ -40,7 +40,7 @@ abstract class Datastore {
   /// @param upperLeft  tile that defines the upper left corner of the requested area.
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
-  Future<DatastoreReadResult?> readMapData(Tile upperLeft, Tile lowerRight);
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight);
 
   /**
    * Reads only POI data for tile.

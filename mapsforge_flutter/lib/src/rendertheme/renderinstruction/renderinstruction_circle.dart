@@ -17,8 +17,7 @@ class RenderinstructionCircle extends RenderInstruction {
   late final ShapeCircle base;
 
   RenderinstructionCircle(int level, [ShapeCircle? base]) {
-    this.base = base ?? ShapeCircle.base()
-      ..level = level;
+    this.base = base ?? ShapeCircle.base(level);
   }
 
   @override

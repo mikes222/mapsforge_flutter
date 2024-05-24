@@ -25,18 +25,18 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.5
+  cupertino_icons: ^1.0.8
 
   mapsforge_flutter:
     path: ../mapsforge_flutter
 
   # Apache 2.0 License
-  archive: ^3.3.8
+  archive: ^3.6.0
 
-  flutter_archive: ^5.0.0
+  flutter_archive: ^6.0.3
 
  # BSD License
-  intl: ^0.18.1
+  intl: ^0.19.0
 
   #leak_tracker: ^9.0.6
 

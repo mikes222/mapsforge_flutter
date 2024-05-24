@@ -11,6 +11,7 @@ import '../layer/job/jobset.dart';
 import 'backgroundpainter.dart';
 
 /// Use [MapviewWidget] instead
+@Deprecated("Use MapviewWidget instead. To be removed 01/2025")
 class FlutterMapView extends StatefulWidget {
   final MapModel mapModel;
 

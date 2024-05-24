@@ -21,11 +21,9 @@ class ShapePathtext extends Shape with PaintSrcMixin, TextSrcMixin {
 
   bool rotate = true;
 
-  int level = 0;
-
   TextKey? textKey;
 
-  ShapePathtext.base() : super.base() {
+  ShapePathtext.base(int level) : super.base(level: level) {
     fillColor = PaintSrcMixin.transparent();
   }
 
@@ -39,7 +37,6 @@ class ShapePathtext extends Shape with PaintSrcMixin, TextSrcMixin {
     repeatGap = base.repeatGap;
     repeatStart = base.repeatStart;
     rotate = base.rotate;
-    level = base.level;
     textKey = base.textKey;
 
     if (zoomLevel >= strokeMinZoomLevel) {

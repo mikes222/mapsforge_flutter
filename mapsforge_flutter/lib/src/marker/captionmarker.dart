@@ -46,7 +46,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
             latLong: latLong,
             minZoomLevel: minZoomLevel,
             maxZoomLevel: maxZoomLevel) {
-    base = ShapeCaption.base();
+    base = ShapeCaption.base(0);
     base.setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());
     base.setStrokeColorFromNumber(strokeColor);
     base.setFillColorFromNumber(fillColor);

@@ -1,6 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
+import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -25,10 +26,9 @@ class RenderinstructionPathtext extends RenderInstruction {
   RenderinstructionPathtext(int level, [ShapePathtext? base]) {
     //initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     //initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    this.base = base ?? ShapePathtext.base()
+    this.base = base ?? ShapePathtext.base(level)
       ..rotate = true
-      ..repeat = true
-      ..level = level;
+      ..repeat = true;
   }
 
   @override
@@ -110,8 +110,17 @@ class RenderinstructionPathtext extends RenderInstruction {
       return;
     }
 
+    LineString? stringPath =
+        wayProperties.calculateStringPath(renderContext.projection, base.dy);
+    if (stringPath == null || stringPath.segments.isEmpty) {
+      return;
+    }
+
     renderContext.addToClashDrawingLayer(
-        base.level, WayRenderInfo(wayProperties, base)..caption = caption);
+        base.level,
+        WayRenderInfo(wayProperties, base)
+          ..caption = caption
+          ..stringPath = stringPath);
     return;
   }
 }

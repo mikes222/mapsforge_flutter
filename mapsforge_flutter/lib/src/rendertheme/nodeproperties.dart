@@ -13,7 +13,8 @@ import '../model/tag.dart';
 ///```
 ///
 /// Properties for one Node (PointOfInterest) read from the datastore. Note that the properties are
-// /// dependent on the zoomLevel and pixelsize of the device.
+/// dependent on the zoomLevel and pixelsize of the device. However one instance
+/// of NodeProperties is used for one zoomlevel only.
 class NodeProperties implements NodeWayProperties {
   final PointOfInterest pointOfInterest;
 
@@ -23,22 +24,33 @@ class NodeProperties implements NodeWayProperties {
 
   List<Tag> get tags => pointOfInterest.tags;
 
-  Mappoint? coordinatesAbsolute;
+  /// a cache for absolute coordinates
+  Mappoint? _coordinatesAbsolute;
 
+  // remove this security feature after 2025/01
+  @deprecated
   int _lastZoomLevel = -1;
 
   /// Returns the absolute coordinates in pixel of this node
   Mappoint getCoordinatesAbsolute(PixelProjection projection) {
-    if (projection.scalefactor.zoomlevel != _lastZoomLevel)
-      coordinatesAbsolute = null;
-    coordinatesAbsolute ??= projection.latLonToPixel(pointOfInterest.position);
+    // remove this security feature after 2025/01
+    if (_lastZoomLevel != -1 &&
+        projection.scalefactor.zoomlevel != _lastZoomLevel)
+      throw UnimplementedError("Invalid zoomlevel");
+    _coordinatesAbsolute ??= projection.latLonToPixel(pointOfInterest.position);
     _lastZoomLevel = projection.scalefactor.zoomlevel;
-    return coordinatesAbsolute!;
+    return _coordinatesAbsolute!;
   }
 
-  Mappoint getCoordinateRelativeToLeftUpper(PixelProjection projection,
-      Mappoint leftUpper) {
+  Mappoint getCoordinateRelativeToLeftUpper(
+      PixelProjection projection, Mappoint leftUpper) {
     Mappoint absolute = getCoordinatesAbsolute(projection);
     return absolute.offset(-1.0 * leftUpper.x, -1.0 * leftUpper.y);
+  }
+
+  Mappoint getCoordinateRelativeToCenter(
+      PixelProjection projection, Mappoint center, double dy) {
+    Mappoint absolute = getCoordinatesAbsolute(projection);
+    return absolute.offset(-1.0 * center.x, -1.0 * center.y + dy);
   }
 }

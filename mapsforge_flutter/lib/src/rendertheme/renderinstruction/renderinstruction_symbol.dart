@@ -2,7 +2,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
-import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -10,6 +9,7 @@ import '../nodeproperties.dart';
 import '../noderenderinfo.dart';
 import '../rendercontext.dart';
 import '../wayproperties.dart';
+import '../wayrenderinfo.dart';
 import '../xml/rulebuilder.dart';
 
 ///
@@ -22,8 +22,7 @@ class RenderinstructionSymbol extends RenderInstruction {
   final SymbolFinder symbolFinder;
 
   RenderinstructionSymbol(this.symbolFinder, int level, [ShapeSymbol? base]) {
-    this.base = base ?? ShapeSymbol.base()
-      ..level = level;
+    this.base = base ?? ShapeSymbol.base(level);
   }
 
   @override
@@ -70,22 +69,26 @@ class RenderinstructionSymbol extends RenderInstruction {
   @override
   void renderNode(
       final RenderContext renderContext, NodeProperties nodeProperties) {
-    if (base.id != null)
-      symbolFinder.add(base.id!, renderContext.job.tile.zoomLevel, base);
+    if (base.id != null) {
+      symbolFinder.add(base.id!, renderContext.upperLeft.zoomLevel, base);
 
-    renderContext.labels.add(NodeRenderInfo(nodeProperties, base));
+      renderContext.labels.add(NodeRenderInfo(nodeProperties, base));
+    }
   }
 
   @override
   void renderWay(
       final RenderContext renderContext, WayProperties wayProperties) {
+    if (base.bitmapSrc == null) return;
+
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 
-    if (base.id != null)
-      symbolFinder.add(base.id!, renderContext.job.tile.zoomLevel, base);
+    if (base.id != null) {
+      symbolFinder.add(base.id!, renderContext.upperLeft.zoomLevel, base);
 
-    renderContext.addToClashDrawingLayer(
-        base.level, WayRenderInfo(wayProperties, base));
+      renderContext.addToClashDrawingLayer(
+          base.level, WayRenderInfo(wayProperties, base));
+    }
   }
 }

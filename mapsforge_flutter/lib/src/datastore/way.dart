@@ -1,6 +1,8 @@
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../model/tag.dart';
+import '../renderer/minmaxdouble.dart';
 
 /// An immutable container for all data associated with a single way or area (closed way).
 class Way {
@@ -34,6 +36,14 @@ class Way {
       latLongs.hashCode ^
       layer.hashCode ^
       tags.hashCode;
+
+  MapRectangle getBoundary() {
+    MinMaxDouble minMaxMappoint = MinMaxDouble.empty();
+    latLongs.forEach((List<ILatLong> lls) {
+      minMaxMappoint.extendLatLong(lls);
+    });
+    return minMaxMappoint.getBoundary();
+  }
 
   @override
   String toString() {

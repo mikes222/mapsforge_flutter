@@ -1,17 +1,20 @@
+import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 
 import '../../core.dart';
-import '../layer/job/job.dart';
 
 /// A RenderContext contains all the information and data to render a map area, it is passed between
 /// calls in order to avoid local data stored in the DatabaseRenderer.
 class RenderContext {
   static final int MAX_DRAWING_LAYERS = 11;
 
-  final Job job;
+  final Tile upperLeft;
 
-  final RenderTheme renderTheme;
+  final int tileSize;
+
+  final int maxLevels;
 
   // The current drawing layer is the layer defined by the poi/way.
   late LayerPaintContainer currentDrawingLayer;
@@ -28,11 +31,11 @@ class RenderContext {
 
   final PixelProjection projection;
 
-  RenderContext(this.job, this.renderTheme)
-      : projection = PixelProjection(job.tile.zoomLevel, job.tileSize) {
+  RenderContext(this.upperLeft, this.tileSize, this.maxLevels)
+      : projection = PixelProjection(upperLeft.zoomLevel, tileSize) {
     this.drawingLayers = _createWayLists();
     currentDrawingLayer = drawingLayers[0];
-    clashDrawingLayer = LayerPaintContainer(renderTheme.getLevels());
+    clashDrawingLayer = LayerPaintContainer(maxLevels);
   }
 
   void setDrawingLayers(int layer) {
@@ -82,20 +85,66 @@ class RenderContext {
 
   List<LayerPaintContainer> _createWayLists() {
     List<LayerPaintContainer> result = [];
-    int levels = this.renderTheme.getLevels();
     //print("LAYERS: $LAYERS, levels: $levels");
 
     for (int i = 0; i < MAX_DRAWING_LAYERS; ++i) {
-      result.add(LayerPaintContainer(levels));
+      result.add(LayerPaintContainer(maxLevels));
     }
     return result;
   }
 
   void disposeLabels() {
-    labels.forEach((element) {
-      //element.dispose();
-    });
     labels.clear();
+  }
+
+  void reduce() {
+    int idx = 0;
+    List.of(drawingLayers).forEach((LayerPaintContainer layerPaintContainer) {
+      layerPaintContainer.reduce();
+      if (layerPaintContainer.ways.length == 0) {
+        drawingLayers.removeAt(idx);
+      } else {
+        ++idx;
+      }
+    });
+    clashDrawingLayer.reduce();
+  }
+
+  void statistics() {
+    int nullLabels = 0;
+    Map<String, int> statLabels = {};
+    labels.forEach((RenderInfo renderInfo) {
+      if (renderInfo.caption == null) {
+        if (renderInfo.shape is ShapeSymbol) {
+          ShapeSymbol shapeSymbol = renderInfo.shape as ShapeSymbol;
+          statLabels["ID: ${shapeSymbol.bitmapSrc}"] =
+              (statLabels["ID: ${shapeSymbol.bitmapSrc}"] ?? 0) + 1;
+        } else {
+          ++nullLabels;
+        }
+        return;
+      }
+      if (statLabels.containsKey(renderInfo.caption))
+        statLabels[renderInfo.caption!] = statLabels[renderInfo.caption!]! + 1;
+      else
+        statLabels[renderInfo.caption!] = 1;
+    });
+    print("Labels: ${labels.length}");
+    if (nullLabels > 0) print("Label <null>: $nullLabels");
+    statLabels.forEach((String key, int value) {
+      print("Label ${key} : ${value}");
+    });
+    drawingLayers
+        .forEachIndexed((int idx, LayerPaintContainer layerPaintContainer) {
+      print("DrawingLayer $idx: ${layerPaintContainer.ways.length} levels");
+      layerPaintContainer.ways
+          .forEachIndexed((int idx, List<RenderInfo> renderInfos) {
+        print("  Level $idx: ${renderInfos.length} renderInfos");
+        renderInfos.forEach((RenderInfo renderInfo) {
+          print("    RenderInfo ${renderInfo.toString()}");
+        });
+      });
+    });
   }
 }
 
@@ -117,5 +166,16 @@ class LayerPaintContainer {
   void add(int level, RenderInfo element) {
     //_log.info("Adding level $level to layer with ${drawingLayers.length} levels");
     this.ways[level].add(element);
+  }
+
+  void reduce() {
+    int idx = 0;
+    List.of(ways).forEach((List<RenderInfo> renderInfos) {
+      if (renderInfos.length == 0) {
+        ways.removeAt(idx);
+      } else {
+        ++idx;
+      }
+    });
   }
 }

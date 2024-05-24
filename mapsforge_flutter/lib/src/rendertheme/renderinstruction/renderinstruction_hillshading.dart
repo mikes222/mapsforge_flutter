@@ -9,8 +9,8 @@ import '../../layer/hills/hillsrenderconfig.dart';
 import '../../model/mappoint.dart';
 import '../../model/maprectangle.dart';
 import '../../model/tile.dart';
-import '../shape/shape_hillshading.dart';
 import '../rendercontext.dart';
+import '../shape/shape_hillshading.dart';
 
 /**
  * Represents hillshading on a painter algorithm layer/level in the parsed rendertheme
@@ -33,7 +33,7 @@ class RenderinstructionHillshading {
             max(0, this.magnitude * hillsRenderConfig.getMaginuteScaleFactor()),
             255) /
         255;
-    Tile tile = renderContext.job.tile;
+    Tile tile = renderContext.upperLeft;
     int zoomLevel = tile.zoomLevel;
     PixelProjection projection = renderContext.projection;
     Mappoint origin = projection.getLeftUpper(tile);
@@ -41,14 +41,14 @@ class RenderinstructionHillshading {
     double maptileLeftLng = projection.pixelXToLongitude(origin.x);
 
     double maptileBottomLat =
-        projection.pixelYToLatitude(origin.y + renderContext.job.tileSize);
+        projection.pixelYToLatitude(origin.y + renderContext.tileSize);
     double maptileRightLng =
-        projection.pixelXToLongitude(origin.x + renderContext.job.tileSize);
+        projection.pixelXToLongitude(origin.x + renderContext.tileSize);
 
     double mapTileLatDegrees = maptileTopLat - maptileBottomLat;
     double mapTileLngDegrees = maptileRightLng - maptileLeftLng;
-    double pxPerLat = (renderContext.job.tileSize / mapTileLatDegrees);
-    double pxPerLng = (renderContext.job.tileSize / mapTileLngDegrees);
+    double pxPerLat = (renderContext.tileSize / mapTileLatDegrees);
+    double pxPerLng = (renderContext.tileSize / mapTileLngDegrees);
 
     if (maptileRightLng < maptileLeftLng) maptileRightLng += projection.mapsize;
 
@@ -97,8 +97,8 @@ class RenderinstructionHillshading {
         // map tile subset if it fully fits inside shading tile
         double maptileSubrectLeft = 0;
         double maptileSubrectTop = 0;
-        double maptileSubrectRight = renderContext.job.tileSize.toDouble();
-        double maptileSubrectBottom = renderContext.job.tileSize.toDouble();
+        double maptileSubrectRight = renderContext.tileSize.toDouble();
+        double maptileSubrectBottom = renderContext.tileSize.toDouble();
 
         // find the intersection between map tile and shading tile in earth coordinates and determine the pixel
         if (shadingTopLat > maptileTopLat) {
@@ -150,7 +150,7 @@ class RenderinstructionHillshading {
                 shadingSubrectRight, shadingSubrectBottom);
         MapRectangle maptileRect = new MapRectangle(maptileSubrectLeft,
             maptileSubrectTop, maptileSubrectRight, maptileSubrectBottom);
-        Shape hillShape = new ShapeHillshading.base();
+        Shape hillShape = new ShapeHillshading.base(level);
         //shadingTile, effectiveMagnitude, hillsRect, maptileRect);
 
         renderContext.setDrawingLayers(layer);

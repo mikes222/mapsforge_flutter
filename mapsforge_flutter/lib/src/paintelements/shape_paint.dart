@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
@@ -20,8 +21,9 @@ abstract class ShapePaint<T extends Shape> {
 
   const ShapePaint(this.shape);
 
-  /// Returns the boundary of the underlying shape. This can be used if the boundary
-  /// of the shape is dependent on other parameters like the caption in renderInfo
+  /// Returns the boundary of the underlying shape in pixels relative to the center of the
+  //   /// corresponding node or way. This can be used if the boundary
+  /// of the shape is dependent on other parameters like for example a caption.
   MapRectangle calculateBoundary() {
     return shape.calculateBoundary();
   }
@@ -83,16 +85,12 @@ abstract class ShapePaint<T extends Shape> {
     MapPath _path = GraphicFactory().createPath();
 
     for (List<Mappoint> outerList in coordinatesRelativeToTile) {
-      List<Mappoint> points = outerList;
-      //print("Drawing ShapePaintPolyline $minMaxMappoint with $paint");
-      Mappoint point = points[0];
-      _path.moveTo(point.x, point.y);
-      //print("path moveTo $point");
-      for (int i = 1; i < points.length; i++) {
-        point = points[i];
-        _path.lineTo(point.x, point.y);
-        //print("path lineTo $point");
-      }
+      outerList.forEachIndexed((int idx, Mappoint point) {
+        if (idx == 0)
+          _path.moveToMappoint(point);
+        else
+          _path.lineToMappoint(point);
+      });
     }
     return _path;
   }

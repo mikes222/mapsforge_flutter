@@ -54,7 +54,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
           item: item,
           latLong: latLong,
         ) {
-    base = ShapeSymbol.base();
+    base = ShapeSymbol.base(0);
     setLatLong(latLong);
     base.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
     base.bitmapSrc = src;

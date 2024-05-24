@@ -10,11 +10,11 @@ class ShapeHillshading extends Shape {
 
   WayProperties? container;
 
-  ShapeHillshading.base()
+  ShapeHillshading.base(int level)
       : magnitude = 0,
         hillsRect = null,
         tileRect = null,
-        super.base();
+        super.base(level: level);
 
   ShapeHillshading.scale(ShapeHillshading base, int zoomLevel)
       : magnitude = 0,

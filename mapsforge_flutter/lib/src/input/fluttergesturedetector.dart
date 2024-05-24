@@ -60,6 +60,8 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
   _ScaleEvent? _scaleEvent;
 
+  int _lastMoveTimestamp = 0;
+
   @override
   FlutterGestureDetector get widget => super.widget;
 
@@ -231,6 +233,11 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         if (_scaleEvent == null) return;
         if (details.scale == 1) {
           // move around
+          // if (_lastMoveTimestamp >
+          //     DateTime.now().millisecondsSinceEpoch - 100) {
+          //   return;
+          // }
+          // _lastMoveTimestamp = DateTime.now().millisecondsSinceEpoch;
           _updateLocalFocalPoint = details.localFocalPoint;
           if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
             // user tapped down, then waited. He does not want to move the map, he wants to move something around
@@ -266,8 +273,12 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
             // print(
             //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
           }
+          // if (_lastMoveTimestamp <
+          //     DateTime.now().millisecondsSinceEpoch - 300) {
+          //_lastMoveTimestamp = DateTime.now().millisecondsSinceEpoch;
           widget.viewModel.setCenter(_scaleEvent!.startCenter.x - diffX,
               _scaleEvent!.startCenter.y - diffY);
+//          }
         } else {
           // zoom
           _scaleEvent!.scaleUpdate(doLog, widget.viewModel, details);

@@ -23,38 +23,36 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
 
   late final ParagraphEntry back;
 
-  LineString? fullPath;
+  late LineString fullPath;
 
   final String caption;
 
-  ShapePaintPathtext(ShapePathtext shapeSymbol, this.caption)
-      : super(shapeSymbol) {
-    if (!shapeSymbol.isFillTransparent())
-      paintFront = createPaint(style: Style.FILL, color: shapeSymbol.fillColor);
-    if (!shapeSymbol.isStrokeTransparent())
+  ShapePaintPathtext(
+      ShapePathtext shapePathtext, this.caption, LineString stringPath)
+      : super(shapePathtext) {
+    if (!shapePathtext.isFillTransparent())
+      paintFront =
+          createPaint(style: Style.FILL, color: shapePathtext.fillColor);
+    if (!shapePathtext.isStrokeTransparent())
       paintBack = createPaint(
           style: Style.STROKE,
-          color: shapeSymbol.strokeColor,
-          strokeWidth: shapeSymbol.strokeWidth,
-          cap: shapeSymbol.strokeCap,
-          join: shapeSymbol.strokeJoin,
-          strokeDashArray: shapeSymbol.strokeDashArray);
+          color: shapePathtext.strokeColor,
+          strokeWidth: shapePathtext.strokeWidth,
+          cap: shapePathtext.strokeCap,
+          join: shapePathtext.strokeJoin,
+          strokeDashArray: shapePathtext.strokeDashArray);
     mapTextPaint = createTextPaint(
-        fontFamily: shapeSymbol.fontFamily,
-        fontStyle: shapeSymbol.fontStyle,
-        fontSize: shapeSymbol.fontSize);
+        fontFamily: shapePathtext.fontFamily,
+        fontStyle: shapePathtext.fontStyle,
+        fontSize: shapePathtext.fontSize);
+    back = ParagraphCache()
+        .getEntry(caption, mapTextPaint, paintBack!, shape.maxTextWidth);
+    fullPath = WayDecorator.reducePathForText(stringPath, back.getWidth());
   }
 
   @override
   Future<void> init(SymbolCache symbolCache) {
     return Future.value();
-  }
-
-  void paragraph(String text) {
-    // front = ParagraphCache()
-    //     .getEntry(text, mapTextPaint, paintFront!, shapeSymbol.maxTextWidth);
-    back = ParagraphCache()
-        .getEntry(text, mapTextPaint, paintBack!, shape.maxTextWidth);
   }
 
   calculateBoundaryAbsolute() {
@@ -70,20 +68,14 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
       PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
-    if (fullPath == null) {
-      paragraph(caption);
+    if (fullPath.segments.isEmpty) return;
 
-      fullPath = wayProperties.calculateStringPath(projection, shape.dy);
-      if (fullPath == null || fullPath!.segments.isEmpty) return;
-
-      fullPath = WayDecorator.reducePathForText(fullPath!, back.getWidth());
-    }
-    if (fullPath!.segments.isEmpty) return;
-
-    canvas.drawPathText(caption, fullPath!, leftUpper,
-        this.paintBack!, mapTextPaint, shape.maxTextWidth);
-    canvas.drawPathText(caption, fullPath!, leftUpper,
-        this.paintFront!, mapTextPaint, shape.maxTextWidth);
+    if (paintBack != null)
+      canvas.drawPathText(caption, fullPath, leftUpper, this.paintBack!,
+          mapTextPaint, shape.maxTextWidth);
+    if (paintFront != null)
+      canvas.drawPathText(caption, fullPath, leftUpper, this.paintFront!,
+          mapTextPaint, shape.maxTextWidth);
   }
 
   @override

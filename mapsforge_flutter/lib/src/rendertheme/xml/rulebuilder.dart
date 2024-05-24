@@ -7,9 +7,9 @@ import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstru
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_caption.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_circle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_hillshading.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_line.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_linesymbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_pathtext.dart';
+import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_polyline.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_symbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/ruleoptimizer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';

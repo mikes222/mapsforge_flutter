@@ -13,8 +13,10 @@ import '../rendertheme/wayproperties.dart';
 class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   late final MapPaint? stroke;
 
+  //final bool debug = true;
+
   ShapePaintPolyline(ShapePolyline shapeSymbol) : super(shapeSymbol) {
-    if (!shapeSymbol.isStrokeTransparent()) {
+    if (!shapeSymbol.isStrokeTransparent())
       stroke = createPaint(
           style: Style.STROKE,
           color: shapeSymbol.strokeColor,
@@ -22,7 +24,6 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
           cap: shapeSymbol.strokeCap,
           join: shapeSymbol.strokeJoin,
           strokeDashArray: shapeSymbol.strokeDashArray);
-    }
   }
 
   @override
@@ -35,6 +36,7 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
           bitmapHeight: shape.getBitmapHeight());
       if (bitmap != null) {
         if (shape.isStrokeTransparent()) {
+          // for bitmaps set the stroke color so that the bitmap is drawn
           stroke!.setColor(Colors.black);
         }
         stroke!.setBitmapShader(bitmap);
@@ -47,11 +49,19 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
       PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
-    if (shape.isStrokeTransparent()) return;
-
     MapPath path = calculatePath(wayProperties
         .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
     canvas.drawPath(path, stroke!);
+
+    // if (debug) {
+    //   Mappoint point =
+    //       wayProperties.getCenterRelativeToLeftUpper(projection, leftUpper, 0);
+    //   MapTextPaint mapTextPaint = FlutterTextPaint()..setTextSize(50);
+    //   MapPaint mapPaint = GraphicFactory().createPaint()
+    //     ..setColor(Colors.black);
+    //   canvas.drawText(
+    //       "${shape.level}", point.x, point.y, mapPaint, mapTextPaint, 300);
+    // }
   }
 
   @override

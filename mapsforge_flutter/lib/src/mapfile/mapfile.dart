@@ -456,8 +456,9 @@ class MapFile extends MapDataStore {
     await lateOpen();
     Projection projection =
         MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
-    assert(supportsTile(upperLeft, projection));
-    assert(supportsTile(lowerRight, projection));
+    // may happen that upperLeft and lowerRight does not support the tiles but inbetween do
+    //assert(supportsTile(upperLeft, projection));
+    //assert(supportsTile(lowerRight, projection));
     assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
     int timer = DateTime.now().millisecondsSinceEpoch;
     if (upperLeft.tileX > lowerRight.tileX ||
@@ -465,7 +466,6 @@ class MapFile extends MapDataStore {
       throw Exception(
           "upperLeft tile must be above and left of lowerRight tile");
     }
-
     QueryParameters queryParameters = new QueryParameters();
     queryParameters.queryZoomLevel =
         this._mapFileHeader.getQueryZoomLevel(upperLeft.zoomLevel);
@@ -477,14 +477,12 @@ class MapFile extends MapDataStore {
       throw Exception(
           "no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
     }
-
     queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
     queryParameters.calculateBlocks(subFileParameter);
     int diff = DateTime.now().millisecondsSinceEpoch - timer;
     if (diff > 100)
       _log.info(
           "  readMapDataComplete took $diff ms up to create query $queryParameters");
-
     DatastoreReadResult? result = await processBlocks(
         readBufferSource!,
         queryParameters,

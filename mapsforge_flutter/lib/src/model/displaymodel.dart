@@ -34,6 +34,9 @@ class DisplayModel {
   /// and this property.
   final double fontScaleFactor;
 
+  /// The maximum width of a text is dependent on the tile size. We calculate neighbors of
+  /// a tile to draw remaining text. If the text is larger than one tile it may span
+  /// more than one neighbor which lead to truncated texts.
   final double maxTextWidthFactor;
 
   int backgroundColor;
@@ -64,7 +67,7 @@ class DisplayModel {
     //this.tileSize = DEFAULT_TILE_SIZE,
     this.deviceScaleFactor = 1.0,
     this.userScaleFactor = 1.0,
-    this.maxTextWidthFactor = 0.7,
+    this.maxTextWidthFactor = 0.9,
     this.fontScaleFactor = 1.0,
     this.backgroundColor = 0xffeeeeee,
   })  : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),

@@ -69,6 +69,7 @@ class RenderTheme {
         r.dispose();
       }
     }
+    zoomLevelRulesList.clear();
   }
 
   /**

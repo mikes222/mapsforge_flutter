@@ -24,13 +24,11 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
   @override
   Future<void> init(SymbolCache symbolCache) async {
-    if (shape.bitmapSrc != null) {
-      bitmap = await createBitmap(
-          symbolCache: symbolCache,
-          bitmapSrc: shape.bitmapSrc!,
-          bitmapWidth: shape.getBitmapWidth(),
-          bitmapHeight: shape.getBitmapHeight());
-    }
+    bitmap = await createBitmap(
+        symbolCache: symbolCache,
+        bitmapSrc: shape.bitmapSrc!,
+        bitmapWidth: shape.getBitmapWidth(),
+        bitmapHeight: shape.getBitmapHeight());
   }
 
   @override

@@ -58,7 +58,6 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
         shapePaint?.calculateBoundary() ?? shape.calculateBoundary();
     Mappoint mappoint = nodeProperties.getCoordinatesAbsolute(projection);
     boundaryAbsolute = boundary.shift(mappoint);
-    //print("   boundAbs: ${boundaryAbsolute} ($boundary)");
     return boundaryAbsolute!;
   }
 }

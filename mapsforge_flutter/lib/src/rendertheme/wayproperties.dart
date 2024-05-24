@@ -9,7 +9,7 @@ import '../model/linesegment.dart';
 import '../model/linestring.dart';
 import '../model/tag.dart';
 import '../renderer/geometryutils.dart';
-import '../renderer/minmaxmappoint.dart';
+import '../renderer/minmaxdouble.dart';
 import '../renderer/rendererutils.dart';
 import '../utils/reducehelper.dart';
 
@@ -21,7 +21,8 @@ import '../utils/reducehelper.dart';
 ///```
 ///
 /// Properties for one Way as read from the datastore. Note that the properties are
-/// dependent on the zoomLevel and pixelsize of the device.
+/// dependent on the zoomLevel and pixelsize of the device. . However one instance
+// /// of WayProperties is used for one zoomlevel only.
 class WayProperties implements NodeWayProperties {
   final double maxGap = 5;
 
@@ -31,10 +32,14 @@ class WayProperties implements NodeWayProperties {
 
   final bool isClosedWay;
 
+  /// cache for the center of the way
   Mappoint? center;
 
+  /// cache for absolute coordinates
   List<List<Mappoint>>? coordinatesAbsolute;
 
+  // remove this security feature after 2025/01
+  @deprecated
   int _lastZoomLevel = -1;
 
   WayProperties(this.way)
@@ -42,19 +47,19 @@ class WayProperties implements NodeWayProperties {
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
 
   List<List<Mappoint>> getCoordinatesAbsolute(PixelProjection projection) {
-    // deferred evaluation as some PolyLineContainers will never be drawn. However,
-    // to save memory, after computing the absolute coordinates, the way is released.
-    if (projection.scalefactor.zoomlevel != _lastZoomLevel)
-      coordinatesAbsolute = null;
+    // remove this security feature after 2025/01
+    if (_lastZoomLevel != -1 &&
+        projection.scalefactor.zoomlevel != _lastZoomLevel)
+      throw UnimplementedError("Invalid zoomlevel");
     if (coordinatesAbsolute == null) {
       coordinatesAbsolute = [];
-      way.latLongs.forEach((outerList) {
+      way.latLongs.forEach((List<ILatLong> outerList) {
         List<Mappoint> mp1 = outerList
-            .map((position) => projection.latLonToPixel(position))
+            .map((ILatLong position) => projection.latLonToPixel(position))
             .toList();
         mp1 = ReduceHelper.reduce(mp1, maxGap);
         // check if the area to draw is too small. This saves 100ms for complex structures
-        MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);
+        MinMaxDouble minMaxMappoint = MinMaxDouble(mp1);
         if (minMaxMappoint.maxX - minMaxMappoint.minX > maxGap ||
             minMaxMappoint.maxY - minMaxMappoint.minY > maxGap) {
           coordinatesAbsolute!.add(mp1);
@@ -78,16 +83,22 @@ class WayProperties implements NodeWayProperties {
     return this.center!;
   }
 
-  Mappoint getCenterRelativeToLeftUpper(PixelProjection projection,
-      Mappoint leftUpper, double dy) {
+  Mappoint getCenterRelativeToLeftUpper(
+      PixelProjection projection, Mappoint leftUpper, double dy) {
     Mappoint center = getCenterAbsolute(projection);
     return center.offset(-leftUpper.x, -leftUpper.y + dy);
+  }
+
+  Mappoint getCenterRelativeToCenter(
+      PixelProjection projection, Mappoint center, double dy) {
+    Mappoint centerAbsolute = getCenterAbsolute(projection);
+    return centerAbsolute.offset(-center.x, -center.y + dy);
   }
 
   List<List<Mappoint>> getCoordinatesRelativeToLeftUpper(
       PixelProjection projection, Mappoint leftUpper, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
-    getCoordinatesAbsolute(projection);
+        getCoordinatesAbsolute(projection);
     List<List<Mappoint>> coordinatesRelativeToTile = [];
 
     coordinatesAbsolute.forEach((outerList) {
@@ -95,21 +106,33 @@ class WayProperties implements NodeWayProperties {
           .map((inner) => inner.offset(-leftUpper.x, -leftUpper.y + dy))
           .toList();
       coordinatesRelativeToTile.add(mp1);
-
-      // MinMaxMappoint minMaxMappoint = MinMaxMappoint(mp1);
-      // print(minMaxMappoint);
     });
     return coordinatesRelativeToTile;
   }
 
+  List<List<Mappoint>> getCoordinatesRelativeToCenter(
+      PixelProjection projection, Mappoint center, double dy) {
+    List<List<Mappoint>> coordinatesAbsolute =
+        getCoordinatesAbsolute(projection);
+    List<List<Mappoint>> coordinatesRelativeToCenter = [];
+
+    coordinatesAbsolute.forEach((outerList) {
+      List<Mappoint> mp1 = outerList
+          .map((inner) => inner.offset(-center.x, -center.y + dy))
+          .toList();
+      coordinatesRelativeToCenter.add(mp1);
+    });
+    return coordinatesRelativeToCenter;
+  }
+
   LineString? calculateStringPath(PixelProjection projection, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
-    getCoordinatesAbsolute(projection);
+        getCoordinatesAbsolute(projection);
 
-    if (coordinatesAbsolute.length == 0) {
+    if (coordinatesAbsolute.length == 0 || coordinatesAbsolute[0].length < 2) {
       return null;
     }
-    List<Mappoint>? c;
+    List<Mappoint> c;
     if (dy == 0) {
       c = coordinatesAbsolute[0];
     } else {
@@ -120,9 +143,9 @@ class WayProperties implements NodeWayProperties {
       return null;
     }
 
-    LineString fullPath = new LineString();
+    LineString fullPath = LineString();
     for (int i = 1; i < c.length; i++) {
-      LineSegment segment = new LineSegment(c[i - 1], c[i]);
+      LineSegment segment = LineSegment(c[i - 1], c[i]);
       fullPath.segments.add(segment);
     }
     return fullPath;

@@ -19,7 +19,7 @@ class TextSrcMixin {
   MapFontStyle _fontStyle = MapFontStyle.NORMAL;
 
   /// The maximum width of a text as defined in the displaymodel
-  double maxTextWidth = 200;
+  double maxTextWidth = 300;
 
   void textSrcMixinClone(TextSrcMixin base) {
     _textMinZoomLevel = base._textMinZoomLevel;
@@ -34,7 +34,7 @@ class TextSrcMixin {
     if (zoomLevel >= _textMinZoomLevel) {
       int zoomLevelDiff = zoomLevel - _textMinZoomLevel + 1;
       double scaleFactor =
-      pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+          pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       _fontSize = min(_fontSize * scaleFactor, _maxFontSize);
     }
   }

@@ -74,9 +74,14 @@ class LayerUtil {
   static bool haveSpace(
       RenderInfo item, List<RenderInfo> list, PixelProjection projection) {
     for (RenderInfo outputElement in list) {
-      if (outputElement.clashesWith(item, projection)) {
-        //print("$outputElement --------clashesWith-------- $item");
-        return false;
+      try {
+        if (outputElement.clashesWith(item, projection)) {
+          //print("$outputElement --------clashesWith-------- $item");
+          return false;
+        }
+      } catch (error) {
+        // seems we cannot find out if we clash, so just use it for now
+        return true;
       }
     }
     return true;

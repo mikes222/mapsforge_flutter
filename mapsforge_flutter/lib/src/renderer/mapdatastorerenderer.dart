@@ -17,7 +17,7 @@ import '../rendertheme/renderinfo.dart';
 import '../rendertheme/shape/shape.dart';
 import '../utils/timing.dart';
 import 'canvasrasterer.dart';
-import 'datastorereader.dart';
+import 'isolate_datastorereader.dart';
 
 ///
 /// This renderer renders the bitmap for the tiles by using the given [Datastore].
@@ -46,7 +46,7 @@ class MapDataStoreRenderer extends JobRenderer {
   /// is not blocked while the data are read.
   final bool useIsolate;
 
-  late DatastoreReader _datastoreReader;
+  late IsolateDatastoreReader _datastoreReader;
 
   MapDataStoreRenderer(
       this.datastore, this.renderTheme, this.symbolCache, this.renderLabels,
@@ -56,7 +56,7 @@ class MapDataStoreRenderer extends JobRenderer {
     } else {
       this.tileDependencies = null;
     }
-    _datastoreReader = DatastoreReader(useIsolate: useIsolate);
+    _datastoreReader = IsolateDatastoreReader(useIsolate: useIsolate);
   }
 
   @override
@@ -75,16 +75,17 @@ class MapDataStoreRenderer extends JobRenderer {
     Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderContext renderContext = RenderContext(job, renderTheme);
+    RenderContext renderContext =
+        RenderContext(job.tile, job.tileSize, renderTheme.levels);
     this.renderTheme.prepareScale(job.tile.zoomLevel);
 
     DatastoreReadResult? mapReadResult;
-    IsolateMapReplyParams params = await _datastoreReader.read(
-        datastore, job.tile, renderContext.projection, renderContext);
+    IsolateMapReplyParams params = await _datastoreReader.read(datastore,
+        job.tile, renderContext.projection, renderContext, renderTheme);
     mapReadResult = params.result;
     renderContext = params.renderContext;
     timing.lap(100,
-        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read for tile ${renderContext.job.tile}");
+        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read for tile ${renderContext.upperLeft}");
     if (mapReadResult == null) {
       TileBitmap bmp = await createNoDataBitmap(job.tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
@@ -95,14 +96,14 @@ class MapDataStoreRenderer extends JobRenderer {
     }
     await renderContext.initDrawingLayers(symbolCache);
     timing.lap(100,
-        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized for tile ${renderContext.job.tile}");
+        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized for tile ${renderContext.upperLeft}");
     CanvasRasterer canvasRasterer = CanvasRasterer(job.tileSize.toDouble(),
         job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
-    timing.lap(100, "startCanvasBitmap for tile ${renderContext.job.tile}");
+    timing.lap(100, "startCanvasBitmap for tile ${renderContext.upperLeft}");
     canvasRasterer.drawWays(renderContext);
     timing.lap(100,
-        "${renderContext.drawingLayers.length} way-layers for tile ${renderContext.job.tile}");
+        "${renderContext.drawingLayers.length} way-layers for tile ${renderContext.upperLeft}");
 
     int labelCount = 0;
     List<RenderInfo<Shape>>? renderInfos;
@@ -119,7 +120,7 @@ class MapDataStoreRenderer extends JobRenderer {
       // labelResult.labelsToDisposeAfterDrawing.forEach((element) {
       //   element.dispose();
       // });
-      timing.lap(100, "$labelCount labels for tile ${renderContext.job.tile}");
+      timing.lap(100, "$labelCount labels for tile ${renderContext.upperLeft}");
       // labelsToDraw.forEach((element) {
       //   _log.info(
       //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
@@ -130,7 +131,7 @@ class MapDataStoreRenderer extends JobRenderer {
           renderContext.labels, renderContext.projection);
       // this.labelStore.storeMapItems(
       //     job.tile, renderContext.labels, renderContext.projection);
-      timing.lap(100, "storeMapItems for tile ${renderContext.job.tile}");
+      timing.lap(100, "storeMapItems for tile ${renderContext.upperLeft}");
     }
 //    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
 //      // blank out all areas outside of map
@@ -146,7 +147,7 @@ class MapDataStoreRenderer extends JobRenderer {
     int actions = (canvasRasterer.canvas as FlutterCanvas).actions;
     canvasRasterer.destroy();
     timing.lap(100,
-        "$labelCount elements and labels, $actions actions in canvas for tile ${renderContext.job.tile}");
+        "$labelCount elements and labels, $actions actions in canvas for tile ${renderContext.upperLeft}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(bitmap, JOBRESULT.NORMAL, renderInfos);
@@ -157,16 +158,17 @@ class MapDataStoreRenderer extends JobRenderer {
     Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderContext renderContext = RenderContext(job, renderTheme);
+    RenderContext renderContext =
+        RenderContext(job.tile, job.tileSize, renderTheme.levels);
     this.renderTheme.prepareScale(job.tile.zoomLevel);
 
     DatastoreReadResult? mapReadResult;
-    IsolateMapReplyParams params = await _datastoreReader.readLabels(
-        datastore, job.tile, renderContext.projection, renderContext);
+    IsolateMapReplyParams params = await _datastoreReader.readLabels(datastore,
+        job.tile, renderContext.projection, renderContext, renderTheme);
     mapReadResult = params.result;
     renderContext = params.renderContext;
     timing.lap(100,
-        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois for labels for tile ${renderContext.job.tile}");
+        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois for labels for tile ${renderContext.upperLeft}");
     if (mapReadResult == null) {
       return JobResult(null, JOBRESULT.UNSUPPORTED);
     }
@@ -185,7 +187,7 @@ class MapDataStoreRenderer extends JobRenderer {
     // this.labelStore.storeMapItems(
     //     job.tile, renderContext.labels, renderContext.projection);
     timing.lap(100,
-        "${renderInfos.length} items from collisionFreeOrdered for labels for tile ${renderContext.job.tile}");
+        "${renderInfos.length} items from collisionFreeOrdered for labels for tile ${renderContext.upperLeft}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(null, JOBRESULT.NORMAL, renderInfos);
@@ -215,7 +217,7 @@ class MapDataStoreRenderer extends JobRenderer {
 
     // get the overlapping elements for the current tile which were found while rendering the neighbours
     Set<Dependency>? labelsFromNeighbours =
-        tileDependencies!.getOverlappingElements(renderContext.job.tile);
+        tileDependencies!.getOverlappingElements(renderContext.upperLeft);
     // if a neighbour has already been drawn, the elements drawn that overlap onto the
     // current neighbour should be in the neighbour dependencies, we add them to the labels that
     // need to be drawn onto this neighbour. For the multi-threaded renderer we also need to take
@@ -243,7 +245,7 @@ class MapDataStoreRenderer extends JobRenderer {
     // We need to get the labels from the adjacent tiles if they have already been drawn
     // as those overlapping items must also be drawn on the current neighbour. They must be drawn regardless
     // of priority clashes as a part of them has alread been drawn.
-    Set<Tile> neighbours = renderContext.job.tile.getNeighbours();
+    Set<Tile> neighbours = renderContext.upperLeft.getNeighbours();
     // update dependencies, add to the dependencies list all the elements that overlap to the
     // neighbouring tiles, first clearing out the cache for this relation.
     for (RenderInfo element in toDraw2) {

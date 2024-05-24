@@ -18,9 +18,8 @@ class RenderinstructionArea extends RenderInstruction {
 
   RenderinstructionArea(int level, [ShapeArea? base]) : super() {
     // do not scale bitmaps in areas. They look ugly
-    this.base = base ?? ShapeArea.base()
-      ..setBitmapMinZoomLevel(65535)
-      ..level = level;
+    this.base = base ?? ShapeArea.base(level)
+      ..setBitmapMinZoomLevel(65535);
   }
 
   @override

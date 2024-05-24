@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
-import 'package:logging/logging.dart';
 
 void main() {
   runApp(MyApp());
@@ -71,7 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
       'assets/render_themes/defaultrender.xml',
     );
     // Create the Renderer
-    final jobRenderer =
+    final jobRenderer = //DatastoreViewRenderer(
+        //datastore: mapFile, renderTheme: renderTheme, symbolCache: symbolCache);
         MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
     // Glue everything together into two models, the mapModel here and the viewModel below.

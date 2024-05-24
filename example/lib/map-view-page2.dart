@@ -96,6 +96,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
               ? MarkerdemoContextMenuBuilder()
               : const DefaultContextMenuBuilder(),
     );
+
     if (widget.mapFileData.indoorZoomOverlay)
       viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
           indoorLevels: widget.mapFileData.indoorLevels));
@@ -135,9 +136,13 @@ class MapViewPageState2 extends State<MapViewPage2> {
         await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    final JobRenderer jobRenderer = MapDataStoreRenderer(
-        widget.mapFile!, renderTheme, symbolCache, false,
-        useIsolate: false);
+    final JobRenderer jobRenderer =
+        // DatastoreViewRenderer(
+        //     datastore: widget.mapFile!,
+        //     renderTheme: renderTheme,
+        //     symbolCache: symbolCache);
+        MapDataStoreRenderer(widget.mapFile!, renderTheme, symbolCache, false,
+            useIsolate: false);
 
     /// and now it is similar to online rendering.
 
