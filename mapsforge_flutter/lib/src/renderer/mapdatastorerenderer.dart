@@ -94,6 +94,7 @@ class MapDataStoreRenderer extends JobRenderer {
       _log.warning(
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
+    renderContext.reduce();
     await renderContext.initDrawingLayers(symbolCache);
     timing.lap(100,
         "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized for tile ${renderContext.upperLeft}");
@@ -105,8 +106,18 @@ class MapDataStoreRenderer extends JobRenderer {
     timing.lap(100,
         "${renderContext.drawingLayers.length} way-layers for tile ${renderContext.upperLeft}");
 
+    List<RenderInfo> renderInfos = LayerUtil.collisionFreeOrdered(
+        renderContext.labels, renderContext.projection);
+    renderContext.labels.clear();
+    renderContext.labels.addAll(renderInfos);
+    for (List<RenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
+      List<RenderInfo> renderInfos =
+          LayerUtil.collisionFreeOrdered(wayList, renderContext.projection);
+      wayList.clear();
+      wayList.addAll(renderInfos);
+    }
+
     int labelCount = 0;
-    List<RenderInfo<Shape>>? renderInfos;
     if (this.renderLabels) {
       _LabelResult labelResult = _processLabels(renderContext);
       labelCount = labelResult.labelsToDisposeAfterDrawing.length +
@@ -126,9 +137,6 @@ class MapDataStoreRenderer extends JobRenderer {
       //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
       // });
     } else {
-      // store elements for this tile in the label cache
-      renderInfos = LayerUtil.collisionFreeOrdered(
-          renderContext.labels, renderContext.projection);
       // this.labelStore.storeMapItems(
       //     job.tile, renderContext.labels, renderContext.projection);
       timing.lap(100, "storeMapItems for tile ${renderContext.upperLeft}");
@@ -150,7 +158,7 @@ class MapDataStoreRenderer extends JobRenderer {
         "$labelCount elements and labels, $actions actions in canvas for tile ${renderContext.upperLeft}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
-    return JobResult(bitmap, JOBRESULT.NORMAL, renderInfos);
+    return JobResult(bitmap, JOBRESULT.NORMAL, renderContext.labels);
   }
 
   @override
@@ -210,11 +218,6 @@ class MapDataStoreRenderer extends JobRenderer {
 
     Set<RenderInfo> labelsForNeighbours = {};
 
-    // we sort the list of labels for this tile and
-    // remove those elements that clash in this list already.
-    List<RenderInfo> currentElementsOrdered = LayerUtil.collisionFreeOrdered(
-        renderContext.labels, renderContext.projection);
-
     // get the overlapping elements for the current tile which were found while rendering the neighbours
     Set<Dependency>? labelsFromNeighbours =
         tileDependencies!.getOverlappingElements(renderContext.upperLeft);
@@ -238,7 +241,7 @@ class MapDataStoreRenderer extends JobRenderer {
     // the elements on this neighbour that do not overlap onto a drawn neighbour.
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
     List<RenderInfo> toDraw2 = LayerUtil.removeCollisions(
-        currentElementsOrdered,
+        renderContext.labels,
         List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours),
         renderContext.projection);
 
