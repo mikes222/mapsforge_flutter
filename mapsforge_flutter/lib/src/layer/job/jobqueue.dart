@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:queue/queue.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../../maps.dart';
 import '../../graphics/tilebitmap.dart';
@@ -44,6 +45,10 @@ class JobQueue {
 
   final Map<Job, _JobQueueInfo> _renderLabelJobs = {};
 
+  Subject<JobSet> _injectJobset = BehaviorSubject();
+
+  Stream<JobSet> get observeJobset => _injectJobset.stream;
+
   JobQueue(this.displayModel, this.jobRenderer, this.tileBitmapCache,
       this.tileBitmapCache1stLevel)
       : labelStore = TileBasedLabelStore(1000);
@@ -54,6 +59,7 @@ class JobQueue {
     _renderJobs.clear();
     _renderLabelJobs.clear();
     _currentJobSet = null;
+    _injectJobset.close();
   }
 
   /// Let the queue process this jobset. A Jobset is a collection of jobs needed to render a whole view. It often consists of several tiles.
@@ -94,7 +100,7 @@ class JobQueue {
     Map<Job, TileBitmap> toRemove = {};
     jobSet.jobs.forEach((job) {
       TileBitmap? tileBitmap =
-      tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
+          tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
       if (tileBitmap != null) {
         toRemove[job] = tileBitmap;
       }
@@ -102,7 +108,7 @@ class JobQueue {
     jobSet.jobsFinished(toRemove);
 
     Map<Job, List<RenderInfo<Shape>>> items =
-    labelStore.getVisibleItems(jobSet.labelJobs);
+        labelStore.getVisibleItems(jobSet.labelJobs);
     jobSet.renderingJobsFinished(items);
   }
 
@@ -162,7 +168,7 @@ class JobQueue {
 
   Future<void> _donowDirect(Job job) async {
     TileBitmap? tileBitmap =
-    await tileBitmapCache?.getTileBitmapAsync(job.tile);
+        await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
       _JobQueueInfo? jobQueueInfo = _renderJobs[job];
@@ -177,7 +183,7 @@ class JobQueue {
       tileBitmapCache?.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     if (/*jobResult.result == JOBRESULT.ERROR ||*/
-    jobResult.result == JOBRESULT.UNSUPPORTED) {
+        jobResult.result == JOBRESULT.UNSUPPORTED) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
     }
     _JobQueueInfo? jobQueueInfo = _renderJobs[job];
@@ -189,8 +195,7 @@ class JobQueue {
     }
   }
 
-  JobSet? submitJobSet(ViewModel viewModel, MapViewPosition mapViewPosition,
-      JobQueue jobQueue) {
+  JobSet? submitJobSet(ViewModel viewModel, MapViewPosition mapViewPosition) {
     //_log.info("viewModel ${viewModel.viewDimension}");
     Timing timing = Timing(log: _log, active: true);
     TileBoundary? _boundary = _lastBoundary;
@@ -199,6 +204,7 @@ class JobQueue {
         (_lastJobset?.completed() ?? false) &&
         _lastIndoorLevel == tiles.first.indoorLevel) {
       /// The last jobset is completed and represents still the desired data so use it.
+      _injectJobset.add(_lastJobset!);
       return _lastJobset;
     }
     _lastJobset?.dispose();
@@ -211,9 +217,10 @@ class JobQueue {
     timing.lap(50, "${jobSet.jobs.length} missing tiles");
     //_log.info("JobSets created: ${jobSet.jobs.length}");
     if (jobSet.jobs.length > 0) {
-      jobQueue.processJobset(jobSet);
+      processJobset(jobSet);
       _lastJobset = jobSet;
       _lastIndoorLevel = tiles.first.indoorLevel;
+      _injectJobset.add(jobSet);
       return jobSet;
     }
     return null;
@@ -237,11 +244,11 @@ class JobQueue {
     // rising from 0 to 45, then falling to 0 at 90°
     int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
     int tileLeft =
-    mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
+        mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
     int tileRight = mapViewPosition.projection.pixelXToTileX(min(
         center.x + halfWidth, mapViewPosition.projection.mapsize.toDouble()));
     int tileTop =
-    mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
+        mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
     int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
         center.y + halfHeight, mapViewPosition.projection.mapsize.toDouble()));
     if (degreeDiff > 5) {
@@ -306,27 +313,21 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
   final _log = new Logger('JobQueueRender');
 
   Job job = isolateParam.job;
-  int time = DateTime
-      .now()
-      .millisecondsSinceEpoch;
+  int time = DateTime.now().millisecondsSinceEpoch;
   try {
     JobResult jobResult = await isolateParam.jobRenderer.executeJob(job);
     if (jobResult.bitmap != null) {
       //jobResult.bitmap!.incrementRefCount();
     }
-    int diff = DateTime
-        .now()
-        .millisecondsSinceEpoch - time;
+    int diff = DateTime.now().millisecondsSinceEpoch - time;
     if (diff >= 250)
       _log.info("Renderer needed $diff ms for job ${job.toString()}");
     return jobResult;
   } catch (error, stackTrace) {
     _log.warning(error.toString());
-    if (stackTrace
-        .toString()
-        .length > 0) _log.warning(stackTrace.toString());
+    if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
     TileBitmap bmp =
-    await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
+        await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
     //bmp.incrementRefCount();
     return JobResult(bmp, JOBRESULT.ERROR);
   }

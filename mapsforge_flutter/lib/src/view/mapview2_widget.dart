@@ -116,7 +116,7 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
             tileSize: widget.displayModel.tileSize,
             viewRenderer: _mapModel?.renderer as ViewRenderer,
           );
-          _labelLayer = TileLayerLabel(displayModel: widget.displayModel);
+          _labelLayer = TileLayerLabel();
           _log.info(
               "MapModel created with renderer key ${_mapModel?.renderer.getRenderKey()} in connectionState ${snapshot.connectionState.toString()}");
           return child();

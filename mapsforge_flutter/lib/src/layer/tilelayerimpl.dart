@@ -2,11 +2,9 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 
-import 'job/job.dart';
 import 'tilelayer.dart';
 
 ///
@@ -18,11 +16,9 @@ class TileLayerImpl extends TileLayer {
 
   _Statistics? _statistics; // = _Statistics();
 
-  TileLayerImpl({
-    required displayModel,
-  })  : assert(displayModel != null),
-        _paint = GraphicFactory().createPaint(),
-        super(displayModel) {
+  TileLayerImpl()
+      : _paint = GraphicFactory().createPaint(),
+        super() {
     _paint.setAntiAlias(true);
   }
 
@@ -49,8 +45,6 @@ class TileLayerImpl extends TileLayer {
 
     _statistics?.drawCount++;
 
-    // _TileLayerPainter _tileLayerPainter = _TileLayerPainter(jobSet,
-    //     mapViewPosition.projection, mapCanvas, _paint, leftUpper, _statistics);
     jobSet.bitmaps.forEach((Tile tile, JobResult jobResult) {
       if (jobResult.bitmap != null) {
         //_log.info("  $jobResult");
@@ -65,102 +59,6 @@ class TileLayerImpl extends TileLayer {
         );
       }
     });
-  }
-
-  /**
-   * Whether the tile is stale and should be refreshed.
-   * <p/>
-   * This method is called from {@link #draw(BoundingBox, byte, Canvas, Point)} to determine whether the tile needs to
-   * be refreshed. Subclasses must override this method and implement appropriate checks to determine when a tile is
-   * stale.
-   * <p/>
-   * Return {@code false} to use the cached copy without attempting to refresh it.
-   * <p/>
-   * Return {@code true} to cause the layer to attempt to obtain a fresh copy of the tile. The layer will first
-   * display the tile referenced by {@code bitmap} and attempt to obtain a fresh copy in the background. When a fresh
-   * copy becomes available, the layer will replace is and update the cache. If a fresh copy cannot be obtained (e.g.
-   * because the tile is obtained from an online source which cannot be reached), the stale tile will continue to be
-   * used until another {@code #draw(BoundingBox, byte, Canvas, Point)} operation requests it again.
-   *
-   * @param tile   A tile.
-   * @param bitmap The bitmap for {@code tile} currently held in the layer's cache.
-   */
-  bool isTileStale(Tile tile, TileBitmap bitmap) {
-    return false;
-  }
-
-  void retrieveLabelsOnly(Job job) {}
-
-  void drawParentTileBitmap(MapCanvas canvas, Mappoint point, Tile tile) {
-    Tile? cachedParentTile = getCachedParentTile(tile, 4);
-    if (cachedParentTile != null) {
-//      Bitmap bitmap = this.tileCache.getImmediately(
-//          createJob(cachedParentTile));
-//      if (bitmap != null) {
-//        int tileSize = this.displayModel.getTileSize();
-//        long translateX = tile.getShiftX(cachedParentTile) * tileSize;
-//        long translateY = tile.getShiftY(cachedParentTile) * tileSize;
-//        byte zoomLevelDiff = (byte)(
-//            tile.zoomLevel - cachedParentTile.zoomLevel);
-//        float scaleFactor = (float) Math.pow(2, zoomLevelDiff);
-//
-//        int x = (int) Math.round(point.x);
-//        int y = (int) Math.round(point.y);
-//
-//        if (Parameters.PARENT_TILES_RENDERING ==
-//            Parameters.ParentTilesRendering.SPEED) {
-//          bool antiAlias = canvas.isAntiAlias();
-//          bool filterBitmap = canvas.isFilterBitmap();
-//
-//          canvas.setAntiAlias(false);
-//          canvas.setFilterBitmap(false);
-//
-//          canvas.drawBitmap(
-//              bitmap,
-//              (int)(translateX / scaleFactor),
-//              (int)(translateY / scaleFactor),
-//              (int)((translateX + tileSize) / scaleFactor),
-//              (int)((translateY + tileSize) / scaleFactor),
-//              x,
-//              y,
-//              x + tileSize,
-//              y + tileSize,
-//              this.displayModel.getFilter());
-//
-//          canvas.setAntiAlias(antiAlias);
-//          canvas.setFilterBitmap(filterBitmap);
-//        } else {
-//          this.matrix.reset();
-//          this.matrix.translate(x - translateX, y - translateY);
-//          this.matrix.scale(scaleFactor, scaleFactor);
-//
-//          canvas.setClip(x, y, this.displayModel.getTileSize(),
-//              this.displayModel.getTileSize());
-//          canvas.drawBitmap(bitmap, this.matrix, this.displayModel.getFilter());
-//          canvas.resetClip();
-//        }
-//
-//        bitmap.decrementRefCount();
-//      }
-    }
-  }
-
-  /**
-   * @return the first parent object of the given object whose tileCacheBitmap is cached (may be null).
-   */
-  Tile? getCachedParentTile(Tile tile, int level) {
-    if (level == 0) {
-      return null;
-    }
-
-    Tile? parentTile = tile.getParent();
-    if (parentTile == null) {
-      return null;
-//    } else if (this.tileCache.containsKey(createJob(parentTile))) {
-//      return parentTile;
-    }
-
-    return getCachedParentTile(parentTile, level - 1);
   }
 }
 

@@ -26,6 +26,8 @@ class PoiMarker<T> extends BasicPointMarker<T> {
 
   final Position position;
 
+  int _lastZoomLevel = -1;
+
   PoiMarker({
     Display display = Display.ALWAYS,
     required String src,
@@ -124,6 +126,11 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     // }
     // print(
     //     "renderCaption $caption for $minZoomLevel and $maxZoomLevel at ${markerCallback.mapViewPosition.zoomLevel}");
+    if (_lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+      // zoomLevel changed, set _coordinatesAbsolute cache to null
+      nodeProperties.clearCache();
+    }
+    _lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
     shapePaint.renderNode(
       markerCallback.flutterCanvas,
       nodeProperties,

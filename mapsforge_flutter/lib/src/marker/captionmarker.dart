@@ -18,7 +18,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
 
   late ShapeCaption base;
 
-  int _lastZoom = -1;
+  int _lastZoomLevel = -1;
 
   ShapeCaption? scaled;
 
@@ -68,11 +68,15 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
 
   @override
   void renderBitmap(MarkerCallback markerCallback) {
+    if (_lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+      // zoomLevel changed, set _coordinatesAbsolute cache to null
+      nodeProperties.clearCache();
+    }
     if (scaled == null ||
-        _lastZoom != markerCallback.mapViewPosition.zoomLevel) {
+        _lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
       scaled =
           ShapeCaption.scale(base, markerCallback.mapViewPosition.zoomLevel);
-      _lastZoom = markerCallback.mapViewPosition.zoomLevel;
+      _lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
       shapePaint = ShapePaintCaption(scaled!,
           caption: caption, symbolBoundary: _symbolBoundary);
     }
@@ -90,7 +94,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
 
   void setDy(double dy) {
     base.setDy(dy);
-    _lastZoom = -1;
+    _lastZoomLevel = -1;
   }
 
   double getFontSize() => base.fontSize;

@@ -53,4 +53,9 @@ class NodeProperties implements NodeWayProperties {
     Mappoint absolute = getCoordinatesAbsolute(projection);
     return absolute.offset(-1.0 * center.x, -1.0 * center.y + dy);
   }
+
+  void clearCache() {
+    _lastZoomLevel = -1;
+    _coordinatesAbsolute = null;
+  }
 }

@@ -9,17 +9,12 @@ import '../layer/job/jobset.dart';
 class ZoomPainter extends CustomPainter {
   final TileLayer tileLayer;
 
-  final MapViewPosition mapViewPosition;
-
   final ViewModel viewModel;
 
   final JobSet jobSet;
 
   const ZoomPainter(
-      {required this.tileLayer,
-      required this.mapViewPosition,
-      required this.viewModel,
-      required this.jobSet})
+      {required this.tileLayer, required this.viewModel, required this.jobSet})
       : super(repaint: jobSet);
 
   /// The [size] is the size of the widget in screenpixels, take care that we
@@ -27,6 +22,9 @@ class ZoomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // print("zoomPainter paint $size");
+    if (viewModel.mapViewPosition == null) return;
+    MapViewPosition mapViewPosition = viewModel.mapViewPosition!;
+
     FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
     flutterCanvas.setClip(
         0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
@@ -53,6 +51,7 @@ class ZoomPainter extends CustomPainter {
       canvas.translate(-size.width * viewModel.viewScaleFactor / 2,
           -size.height * viewModel.viewScaleFactor / 2);
     }
+    // now do the drawing
     tileLayer.draw(viewModel, mapViewPosition, flutterCanvas, jobSet);
 
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
@@ -73,47 +72,7 @@ class ZoomPainter extends CustomPainter {
   bool shouldRepaint(covariant ZoomPainter oldDelegate) {
     // print(
     //     "zoomPainter shouldRepaint ${oldDelegate.mapViewPosition != mapViewPosition}");
-    if (oldDelegate.mapViewPosition != mapViewPosition) return true;
-    return false;
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class MultipleListenable extends ChangeNotifier implements Listenable {
-  final List<Listenable> listenables;
-
-  final Set<VoidCallback> listeners = {};
-
-  bool listen = false;
-
-  MultipleListenable(this.listenables);
-
-  @override
-  void addListener(VoidCallback listener) {
-    listeners.add(listener);
-    if (!listen) {
-      listen = true;
-      listenables.forEach((element) {
-        element.addListener(listenCallback);
-      });
-    }
-  }
-
-  @override
-  void removeListener(VoidCallback listener) {
-    listeners.remove(listener);
-    if (listeners.isEmpty) {
-      listen = false;
-      listenables.forEach((element) {
-        element.removeListener(listenCallback);
-      });
-    }
-  } //
-
-  void listenCallback() {
-    listeners.forEach((element) {
-      element.call();
-    });
+    //if (oldDelegate.mapViewPosition != mapViewPosition) return true;
+    return true;
   }
 }

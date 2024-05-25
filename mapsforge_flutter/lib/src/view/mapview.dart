@@ -46,7 +46,7 @@ class _FlutterMapState extends State<FlutterMapView> {
         widget.mapModel.renderer,
         widget.mapModel.tileBitmapCache,
         widget.mapModel.tileBitmapCacheFirstLevel);
-    _tileLayer = TileLayerImpl(displayModel: widget.mapModel.displayModel);
+    _tileLayer = TileLayerImpl();
   }
 
   @override
@@ -117,8 +117,8 @@ class _FlutterMapState extends State<FlutterMapView> {
       builder: (BuildContext context, BoxConstraints constraints) {
         widget.viewModel
             .setViewDimension(constraints.maxWidth, constraints.maxHeight);
-        JobSet? jobSet = _jobQueue.submitJobSet(
-            widget.viewModel, mapViewPosition, _jobQueue);
+        JobSet? jobSet =
+            _jobQueue.submitJobSet(widget.viewModel, mapViewPosition);
         if (jobSet == null) return const SizedBox();
         return FlutterGestureDetector(
           key: _keyView,
@@ -129,7 +129,6 @@ class _FlutterMapState extends State<FlutterMapView> {
               CustomPaint(
                 foregroundPainter: ZoomPainter(
                     tileLayer: _tileLayer,
-                    mapViewPosition: mapViewPosition,
                     viewModel: widget.viewModel,
                     jobSet: jobSet),
                 child: Container(),

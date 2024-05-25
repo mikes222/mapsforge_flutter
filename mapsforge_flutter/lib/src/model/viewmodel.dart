@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ViewModel {
-  Widget? noPositionView;
+  late Widget noPositionView;
   MapViewPosition? _mapViewPosition;
   final DisplayModel displayModel;
   ContextMenuBuilder? contextMenuBuilder;
@@ -73,9 +73,9 @@ class ViewModel {
   ViewModel(
       {this.contextMenuBuilder = const DefaultContextMenuBuilder(),
       required this.displayModel,
-      this.noPositionView,
+      Widget? noPositionView,
       this.overlays}) {
-    noPositionView ??= NoPositionView();
+    this.noPositionView = noPositionView ?? const NoPositionView();
     viewScaleFactor = displayModel.deviceScaleFactor;
     _mapDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
   }
