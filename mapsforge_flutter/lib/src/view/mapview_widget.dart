@@ -181,6 +181,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   Widget progress(String text) {
     return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 20),
