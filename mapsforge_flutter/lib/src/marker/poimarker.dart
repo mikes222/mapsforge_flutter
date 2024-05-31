@@ -143,6 +143,11 @@ class PoiMarker<T> extends BasicPointMarker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (_lastZoomLevel != tapEvent.projection.scalefactor.zoomlevel) {
+      // zoomLevel changed, set _coordinatesAbsolute cache to null
+      nodeProperties.clearCache();
+    }
+    _lastZoomLevel = tapEvent.projection.scalefactor.zoomlevel;
     Mappoint absolute =
         nodeProperties.getCoordinatesAbsolute(tapEvent.projection);
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
