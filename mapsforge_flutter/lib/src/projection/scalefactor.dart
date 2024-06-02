@@ -9,11 +9,11 @@ class Scalefactor {
   /// zoomLevel 0 means the whole world fits at 1 tile, 1 means the whole world fits at 2*2 tiles and so on
   final int zoomlevel;
 
-  static Scalefactor fromZoomlevel(int zoomlevel) {
+  factory Scalefactor.fromZoomlevel(int zoomlevel) {
     return Scalefactor._(zoomlevelToScalefactor(zoomlevel), zoomlevel);
   }
 
-  static Scalefactor fromScalefactor(double scalefactor) {
+  factory Scalefactor.fromScalefactor(double scalefactor) {
     return Scalefactor._(scalefactor, scalefactorToZoomlevel(scalefactor));
   }
 

@@ -63,8 +63,8 @@ class ViewZoomPainter extends CustomPainter {
       //_statistics?.drawLabelCount++;
       layerpaintContainer.ways.forEach((List<RenderInfo<Shape>> renderInfos) {
         renderInfos.forEach((RenderInfo<Shape> renderInfo) {
-          renderInfo.render(flutterCanvas, mapViewPosition.projection,
-              leftUpper, mapViewPosition.rotationRadian);
+          renderInfo.render(flutterCanvas, renderContext.projection, leftUpper,
+              mapViewPosition.rotationRadian);
         });
       });
     });
@@ -72,13 +72,13 @@ class ViewZoomPainter extends CustomPainter {
     renderContext.clashDrawingLayer.ways
         .forEach((List<RenderInfo<Shape>> renderInfos) {
       renderInfos.forEach((RenderInfo<Shape> renderInfo) {
-        renderInfo.render(flutterCanvas, mapViewPosition.projection, leftUpper,
+        renderInfo.render(flutterCanvas, renderContext.projection, leftUpper,
             mapViewPosition.rotationRadian);
       });
     });
     renderContext.labels.forEach((RenderInfo<Shape> renderInfo) {
       //_statistics?.drawLabelCount++;
-      renderInfo.render(flutterCanvas, mapViewPosition.projection, leftUpper,
+      renderInfo.render(flutterCanvas, renderContext.projection, leftUpper,
           mapViewPosition.rotationRadian);
     });
 

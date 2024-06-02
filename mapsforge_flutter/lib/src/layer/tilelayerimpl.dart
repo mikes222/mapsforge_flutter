@@ -28,9 +28,9 @@ class TileLayerImpl extends TileLayer {
   }
 
   @override
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition,
-      MapCanvas mapCanvas, JobSet jobSet) {
-    Mappoint leftUpper = mapViewPosition.getLeftUpper(viewModel.mapDimension);
+  void draw(ViewModel viewModel, MapCanvas mapCanvas, JobSet jobSet) {
+    Mappoint leftUpper =
+        jobSet.mapViewPosition.getLeftUpper(viewModel.mapDimension);
     //_log.info("tiles: ${tiles.toString()}");
 
     // In a rotation situation it is possible that drawParentTileBitmap sets the
@@ -49,7 +49,7 @@ class TileLayerImpl extends TileLayer {
       if (jobResult.bitmap != null) {
         //_log.info("  $jobResult");
         _statistics?.drawBitmapCount++;
-        Mappoint point = mapViewPosition.projection.getLeftUpper(tile);
+        Mappoint point = jobSet.mapViewPosition.projection.getLeftUpper(tile);
         //print("drawing ${point.x - leftUpper.x} / ${point.y - leftUpper.y}");
         mapCanvas.drawBitmap(
           bitmap: jobResult.bitmap!,

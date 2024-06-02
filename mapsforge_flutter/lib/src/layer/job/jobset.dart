@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
 
+import '../../../core.dart';
 import '../../rendertheme/renderinfo.dart';
 import '../../rendertheme/shape/shape.dart';
 
@@ -34,6 +34,10 @@ class JobSet extends ChangeNotifier {
   Set<Job> get labelJobs => _labelJobs;
 
   List<RenderInfo>? get renderInfos => _renderInfos;
+
+  MapViewPosition mapViewPosition;
+
+  JobSet({required this.mapViewPosition});
 
   void add(Job job) {
     assert(!_jobs.contains(job));

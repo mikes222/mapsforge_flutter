@@ -430,16 +430,6 @@ class ViewModel {
     overlays ??= [];
     overlays!.add(overlay);
   }
-
-  @override
-  void addListener(VoidCallback listener) {
-    // TODO: implement addListener
-  }
-
-  @override
-  void removeListener(VoidCallback listener) {
-    // TODO: implement removeListener
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

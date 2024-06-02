@@ -22,27 +22,16 @@ class TileLayerLabel extends TileLayer {
   }
 
   @override
-  void draw(ViewModel viewModel, MapViewPosition mapViewPosition,
-      MapCanvas mapCanvas, JobSet jobSet) {
-    Mappoint leftUpper = mapViewPosition.getLeftUpper(viewModel.mapDimension);
-    //_log.info("tiles: ${tiles.toString()}");
-
-    // In a rotation situation it is possible that drawParentTileBitmap sets the
-    // clipping bounds to portrait, while the device is just being rotated into
-    // landscape: the result is a partially painted screen that only goes away
-    // after zooming (which has the effect of resetting the clip bounds if drawParentTileBitmap
-    // is called again).
-    // Always resetting the clip bounds here seems to avoid the problem,
-    // I assume that this is a pretty cheap operation, otherwise it would be better
-    // to hook this into the onConfigurationChanged call chain.
-    //canvas.resetClip();
+  void draw(ViewModel viewModel, MapCanvas mapCanvas, JobSet jobSet) {
+    Mappoint leftUpper =
+        jobSet.mapViewPosition.getLeftUpper(viewModel.mapDimension);
 
     _statistics?.drawCount++;
 
     jobSet.renderInfos?.forEach((RenderInfo<Shape> renderInfo) {
       _statistics?.drawLabelCount++;
-      renderInfo.render(mapCanvas, mapViewPosition.projection, leftUpper,
-          mapViewPosition.rotationRadian);
+      renderInfo.render(mapCanvas, jobSet.mapViewPosition.projection, leftUpper,
+          jobSet.mapViewPosition.rotationRadian);
     });
   }
 }

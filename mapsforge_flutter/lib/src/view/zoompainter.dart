@@ -22,8 +22,7 @@ class ZoomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // print("zoomPainter paint $size");
-    if (viewModel.mapViewPosition == null) return;
-    MapViewPosition mapViewPosition = viewModel.mapViewPosition!;
+    MapViewPosition mapViewPosition = jobSet.mapViewPosition;
 
     FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
     flutterCanvas.setClip(
@@ -52,7 +51,7 @@ class ZoomPainter extends CustomPainter {
           -size.height * viewModel.viewScaleFactor / 2);
     }
     // now do the drawing
-    tileLayer.draw(viewModel, mapViewPosition, flutterCanvas, jobSet);
+    tileLayer.draw(viewModel, flutterCanvas, jobSet);
 
     if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
       //(canvas as FlutterCanvas).uiCanvas.drawCircle(Offset.zero, 20, Paint());

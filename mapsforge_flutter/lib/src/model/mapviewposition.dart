@@ -13,9 +13,6 @@ class MapViewPosition {
   /// The longitude of the center of the widget
   double? _longitude;
 
-  /// The size of a tile in pixel
-  final int tileSize;
-
   /// The current zoomLevel
   final int zoomLevel;
 
@@ -23,6 +20,11 @@ class MapViewPosition {
   final int indoorLevel;
 
   final double scale;
+
+  /// orientation of the map in clockwise direction 0-360°. 0° is north, 360° is excluded.
+  final double _rotation;
+
+  final double _rotationRadian;
 
   /// The focal point. Used when pinch-and-zoom to know the center of the zoom
   final Mappoint? focalPoint;
@@ -38,17 +40,12 @@ class MapViewPosition {
   /// needs to be recalculated if the map moves OR if the map zooms
   Mappoint? _center;
 
-  /// orientation of the map in clockwise direction 0-360°. 0° is north, 360° is excluded.
-  final double _rotation;
-
-  final double _rotationRadian;
-
   final PixelProjection _projection;
 
   Dimension? _lastMapDimension;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
-      this.indoorLevel, this.tileSize, this._rotation)
+      this.indoorLevel, int tileSize, this._rotation)
       : scale = 1,
         focalPoint = null,
         _rotationRadian = Projection.degToRadian(_rotation),
@@ -61,12 +58,12 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel + 1,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection = PixelProjection(old.zoomLevel + 1, old.tileSize),
+        _projection =
+            PixelProjection(old.zoomLevel + 1, old.projection.tileSize),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoomInAround(
@@ -75,12 +72,12 @@ class MapViewPosition {
         _longitude = longitude,
         zoomLevel = old.zoomLevel + 1,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection = PixelProjection(old.zoomLevel + 1, old.tileSize),
+        _projection =
+            PixelProjection(old.zoomLevel + 1, old.projection.tileSize),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoomOut(MapViewPosition old)
@@ -88,12 +85,12 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = max(old.zoomLevel - 1, 0),
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection = PixelProjection(max(old.zoomLevel - 1, 0), old.tileSize),
+        _projection =
+            PixelProjection(max(old.zoomLevel - 1, 0), old.projection.tileSize),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
@@ -101,12 +98,12 @@ class MapViewPosition {
         _longitude = old._longitude,
         this.zoomLevel = max(zoomLevel, 0),
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection = PixelProjection(max(zoomLevel, 0), old.tileSize),
+        _projection =
+            PixelProjection(max(zoomLevel, 0), old.projection.tileSize),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoomAround(
@@ -115,12 +112,12 @@ class MapViewPosition {
         _longitude = longitude,
         this.zoomLevel = max(zoomLevel, 0),
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection = PixelProjection(max(zoomLevel, 0), old.tileSize),
+        _projection =
+            PixelProjection(max(zoomLevel, 0), old.projection.tileSize),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.indoorLevelUp(MapViewPosition old)
@@ -128,7 +125,6 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel + 1,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         _projection = old._projection,
@@ -144,7 +140,6 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel - 1,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         _projection = old._projection,
@@ -160,7 +155,6 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel,
         this.indoorLevel = indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         _projection = old._projection,
@@ -184,7 +178,6 @@ class MapViewPosition {
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _center = old._center,
         _projection = old._projection,
         _lastMapDimension = old._lastMapDimension;
@@ -192,7 +185,6 @@ class MapViewPosition {
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         _projection = old._projection,
@@ -207,7 +199,6 @@ class MapViewPosition {
         _longitude = old._longitude,
         zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _projection = old._projection,
         scale = old.scale,
         focalPoint = old.focalPoint,
@@ -220,7 +211,6 @@ class MapViewPosition {
       MapViewPosition old, double left, double upper, Dimension mapDimension)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = old.scale,
@@ -243,7 +233,6 @@ class MapViewPosition {
   MapViewPosition.setCenter(MapViewPosition old, double x, double y)
       : zoomLevel = old.zoomLevel,
         indoorLevel = old.indoorLevel,
-        tileSize = old.tileSize,
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = old.scale,
@@ -340,6 +329,6 @@ class MapViewPosition {
 
   @override
   String toString() {
-    return 'MapViewPosition{_latitude: $_latitude, _longitude: $_longitude, _tileSize: $tileSize, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel, scale: $scale}';
+    return 'MapViewPosition{_latitude: $_latitude, _longitude: $_longitude, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel, scale: $scale}';
   }
 }

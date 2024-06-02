@@ -202,14 +202,17 @@ class JobQueue {
     List<Tile> tiles = _getTiles(viewModel, mapViewPosition);
     if (_boundary == _lastBoundary &&
         (_lastJobset?.completed() ?? false) &&
-        _lastIndoorLevel == tiles.first.indoorLevel) {
+        _lastIndoorLevel == tiles.first.indoorLevel &&
+        _lastJobset?.mapViewPosition.zoomLevel == mapViewPosition.zoomLevel) {
       /// The last jobset is completed and represents still the desired data so use it.
+      _lastJobset?.mapViewPosition = mapViewPosition;
       _injectJobset.add(_lastJobset!);
       return _lastJobset;
     }
     _lastJobset?.dispose();
     _lastJobset = null;
-    JobSet jobSet = JobSet();
+    JobSet jobSet = JobSet(mapViewPosition: mapViewPosition);
+
     tiles.forEach((Tile tile) {
       Job job = Job(tile, false, viewModel.displayModel.tileSize);
       jobSet.add(job);
