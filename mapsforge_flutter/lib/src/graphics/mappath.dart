@@ -1,7 +1,11 @@
+import 'dart:ui';
+
 import '../../core.dart';
 import 'fillrule.dart';
 
 abstract class MapPath {
+  final List<Offset> points = [];
+
   void clear();
 
   void close();

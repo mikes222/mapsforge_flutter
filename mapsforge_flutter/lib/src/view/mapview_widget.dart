@@ -236,8 +236,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             viewModel: _viewModel!,
             jobQueue: _jobQueue!,
             tileLayer: _labelLayer!),
-        if (_viewModel!.overlays != null)
-          for (Widget widget in _viewModel!.overlays!) widget,
         StreamBuilder<MapViewPosition>(
             stream: _viewModel!.observePosition,
             builder: (BuildContext context,
@@ -257,6 +255,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
                 ],
               );
             }),
+        if (_viewModel!.overlays != null)
+          for (Widget widget in _viewModel!.overlays!) widget,
       ],
     );
   }

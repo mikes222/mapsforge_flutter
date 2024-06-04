@@ -1,20 +1,23 @@
 import 'dart:ui' as ui;
+import 'dart:ui';
 
-import 'package:mapsforge_flutter/src/graphics/fillrule.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+
+import '../fillrule.dart';
 
 class FlutterPath implements MapPath {
   final ui.Path path;
 
-  FlutterPath(this.path);
+  @override
+  final List<Offset> points = [];
 
-  bool _empty = true;
+  FlutterPath(this.path);
 
   @override
   void clear() {
     path.reset();
-    _empty = true;
+    points.clear();
   }
 
   @override
@@ -24,19 +27,19 @@ class FlutterPath implements MapPath {
 
   @override
   bool isEmpty() {
-    return _empty;
+    return points.isEmpty;
   }
 
   @override
   void lineTo(double x, double y) {
     path.lineTo(x, y);
-    _empty = false;
+    points.add(Offset(x, y));
   }
 
   @override
   void moveTo(double x, double y) {
     path.moveTo(x, y);
-    _empty = false;
+    points.add(Offset(x, y));
   }
 
   @override
@@ -54,10 +57,12 @@ class FlutterPath implements MapPath {
   @override
   void lineToMappoint(Mappoint point) {
     path.lineTo(point.x, point.y);
+    points.add(Offset(point.x, point.y));
   }
 
   @override
   void moveToMappoint(Mappoint point) {
     path.moveTo(point.x, point.y);
+    points.add(Offset(point.x, point.y));
   }
 }

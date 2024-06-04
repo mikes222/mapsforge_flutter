@@ -141,8 +141,9 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
           _subscription = _viewModel!.observePosition
               .listen((MapViewPosition mapViewPosition) async {
             //print("MapView2Widget: new Position");
-            unawaited(
-                _jobQueue!.getBoundaryTiles(_viewModel!, mapViewPosition));
+            if (mapViewPosition.hasPosition())
+              unawaited(
+                  _jobQueue!.getBoundaryTiles(_viewModel!, mapViewPosition));
           });
           return child();
         });
@@ -226,27 +227,28 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
         //       if (snapshot.data == null) return _buildNoPositionView();
         //       return;
         //     }),
-        // if (_viewModel!.overlays != null)
-        //   for (Widget widget in _viewModel!.overlays!) widget,
-        // StreamBuilder<MapViewPosition>(
-        //     stream: _viewModel!.observePosition,
-        //     builder: (BuildContext context,
-        //         AsyncSnapshot<MapViewPosition> snapshot) {
-        //       if (snapshot.hasError) {
-        //         return ErrorhelperWidget(
-        //             error: snapshot.error!, stackTrace: snapshot.stackTrace);
-        //       }
-        //       if (snapshot.data == null) return const SizedBox();
-        //       MapViewPosition mapViewPosition = snapshot.data!;
-        //       return Stack(
-        //         children: [
-        //           for (Widget widget in _createMarkerWidgets(mapViewPosition))
-        //             widget,
-        //           if (_viewModel!.contextMenuBuilder != null)
-        //             _buildContextMenu(mapViewPosition),
-        //         ],
-        //       );
-        //     }),
+        StreamBuilder<MapViewPosition>(
+            stream: _viewModel!.observePosition,
+            builder: (BuildContext context,
+                AsyncSnapshot<MapViewPosition> snapshot) {
+              if (snapshot.hasError) {
+                return ErrorhelperWidget(
+                    error: snapshot.error!, stackTrace: snapshot.stackTrace);
+              }
+              if (snapshot.data == null) return const SizedBox();
+              MapViewPosition mapViewPosition = snapshot.data!;
+              if (!mapViewPosition.hasPosition()) return const SizedBox();
+              return Stack(
+                children: [
+                  for (Widget widget in _createMarkerWidgets(mapViewPosition))
+                    widget,
+                  if (_viewModel!.contextMenuBuilder != null)
+                    _buildContextMenu(mapViewPosition),
+                ],
+              );
+            }),
+        if (_viewModel!.overlays != null)
+          for (Widget widget in _viewModel!.overlays!) widget,
       ],
     );
   }

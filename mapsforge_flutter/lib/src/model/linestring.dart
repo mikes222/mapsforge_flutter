@@ -1,10 +1,10 @@
 import 'dart:math';
 
-import 'maprectangle.dart';
-
 import 'linesegment.dart';
 import 'mappoint.dart';
+import 'maprectangle.dart';
 
+/// A list of Linesegments which are segments in screen-pixels.
 class LineString {
   final List<LineSegment> segments = [];
 

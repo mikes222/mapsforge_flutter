@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
@@ -10,6 +11,7 @@ import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
+import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
@@ -138,11 +140,11 @@ class FlutterCanvas extends MapCanvas {
   @override
   void drawLine(double x1, double y1, double x2, double y2, MapPaint paint) {
     //_log.info("draw line at $x1 $y1 $x2 $y2 $paint}");
-    Path path = new Path()
+    FlutterPath path = FlutterPath(ui.Path())
       ..moveTo(x1, y1)
       ..lineTo(x2, y2);
 
-    drawPath(new FlutterPath(path), paint);
+    drawPath(path, paint);
   }
 
   @override
@@ -170,9 +172,19 @@ class FlutterCanvas extends MapCanvas {
       uiCanvas.drawPath(dashPath, (paint as FlutterPaint).paint);
       ++actions;
     } else {
+      if (paint.getStyle() == Style.FILL || paint.getBitmapShader() != null) {
+        uiCanvas.drawPath(
+            (path as FlutterPath).path, (paint as FlutterPaint).paint);
+      } else {
+        // https://github.com/flutter/flutter/issues/78543#issuecomment-885090581
+        path.points.forEachIndexed((int idx, Offset point) {
+          if (idx > 0) {
+            uiCanvas.drawLine(
+                path.points[idx - 1], point, (paint as FlutterPaint).paint);
+          }
+        });
+      }
       //_log.info("draw path at ${(path as FlutterPath).path.getBounds()}  $paint}");
-      uiCanvas.drawPath(
-          (path as FlutterPath).path, (paint as FlutterPaint).paint);
       ++actions;
     }
   }

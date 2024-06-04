@@ -57,7 +57,9 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
         .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
 
     if (fill != null) canvas.drawPath(path, fill!);
-    if (stroke != null) canvas.drawPath(path, stroke!);
+    if (stroke != null) {
+      canvas.drawPath(path, stroke!);
+    }
   }
 
   @override

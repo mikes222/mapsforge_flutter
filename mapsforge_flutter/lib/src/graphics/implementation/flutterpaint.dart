@@ -169,4 +169,14 @@ class FlutterPaint implements MapPaint {
   String toString() {
     return 'FlutterPaint{paint: $paint, _shaderBitmap: $_shaderBitmap, _strokeDasharray: $_strokeDasharray}';
   }
+
+  @override
+  Style getStyle() {
+    switch (paint.style) {
+      case ui.PaintingStyle.fill:
+        return Style.FILL;
+      case ui.PaintingStyle.stroke:
+        return Style.STROKE;
+    }
+  }
 }

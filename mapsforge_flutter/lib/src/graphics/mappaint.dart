@@ -50,6 +50,8 @@ abstract class MapPaint {
    */
   void setStyle(Style style);
 
+  Style getStyle();
+
   //void setTextAlign(Align align);
 
   void setStrokeDasharray(List<double>? strokeDasharray);

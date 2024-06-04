@@ -3,7 +3,7 @@ import 'dart:math';
 import 'mappoint.dart';
 
 /**
- * A directed line segment between two Points.
+ * A directed line segment between two Points in Screen pixels.
  */
 class LineSegment {
   static int INSIDE = 0; // 0000
@@ -15,6 +15,9 @@ class LineSegment {
   final Mappoint start;
   final Mappoint end;
 
+  /// the degree of this segment. 0 means vector to the right side -->
+  /// Since positive values in y-direction points towards the bottom of the screen
+  /// the angle runs clockwise.
   double? _angle;
 
   double? _theta;
