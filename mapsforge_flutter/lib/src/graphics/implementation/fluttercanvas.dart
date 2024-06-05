@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
@@ -140,7 +139,7 @@ class FlutterCanvas extends MapCanvas {
   @override
   void drawLine(double x1, double y1, double x2, double y2, MapPaint paint) {
     //_log.info("draw line at $x1 $y1 $x2 $y2 $paint}");
-    FlutterPath path = FlutterPath(ui.Path())
+    FlutterPath path = FlutterPath()
       ..moveTo(x1, y1)
       ..lineTo(x2, y2);
 
@@ -151,38 +150,14 @@ class FlutterCanvas extends MapCanvas {
   void drawPath(MapPath path, MapPaint paint) {
     List<double>? dasharray = paint.getStrokeDasharray();
     if (dasharray != null && dasharray.length >= 2) {
-      Path dashPath = Path();
-      PathMetrics pathMetrics = (path as FlutterPath).path.computeMetrics();
-      for (PathMetric pathMetric in pathMetrics) {
-        double distance = 0;
-        while (distance < pathMetric.length) {
-          for (int i = 0; i < dasharray.length; i += 2) {
-            double dashLength = dasharray[i];
-            double gapLength = dasharray[i + 1];
-            if (dashLength > 0) {
-              dashPath.addPath(
-                pathMetric.extractPath(distance, distance + dashLength),
-                Offset.zero,
-              );
-            }
-            distance += dashLength + gapLength;
-          }
-        }
-      }
-      uiCanvas.drawPath(dashPath, (paint as FlutterPaint).paint);
+      path.drawDash(paint, uiCanvas);
       ++actions;
     } else {
-      if (paint.getStyle() == Style.FILL || paint.getBitmapShader() != null) {
+      if (paint.getStyle() == Style.FILL) {
         uiCanvas.drawPath(
             (path as FlutterPath).path, (paint as FlutterPaint).paint);
       } else {
-        // https://github.com/flutter/flutter/issues/78543#issuecomment-885090581
-        path.points.forEachIndexed((int idx, Offset point) {
-          if (idx > 0) {
-            uiCanvas.drawLine(
-                path.points[idx - 1], point, (paint as FlutterPaint).paint);
-          }
-        });
+        path.drawLine(paint, uiCanvas);
       }
       //_log.info("draw path at ${(path as FlutterPath).path.getBounds()}  $paint}");
       ++actions;
@@ -195,13 +170,13 @@ class FlutterCanvas extends MapCanvas {
         rect.getRight() < 0 ||
         rect.getLeft() > size.width ||
         rect.getTop() > size.height) return;
-    Rect rt = (rect as FlutterRect).rect;
-    //FlutterPaint pt = (paint as FlutterPaint).paint;
     if (paint.getStrokeDasharray() != null &&
         paint.getStrokeDasharray()!.length >= 2) {
-      Path rectPath = Path()..addRect(rt);
-      drawPath(new FlutterPath(rectPath), paint);
+      FlutterPath rectPath = FlutterPath();
+      rectPath.addRect(rect);
+      drawPath(rectPath, paint);
     } else {
+      Rect rt = (rect as FlutterRect).rect;
       uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
       ++actions;
     }

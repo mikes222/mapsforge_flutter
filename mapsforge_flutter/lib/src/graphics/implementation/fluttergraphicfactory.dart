@@ -1,13 +1,13 @@
 import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertextpaint.dart';
 
 import 'fluttercanvas.dart';
 import 'fluttermatrix.dart';
@@ -86,7 +86,7 @@ class FlutterGraphicFactory implements GraphicFactory {
 
   @override
   MapPath createPath() {
-    return FlutterPath(ui.Path());
+    return FlutterPath();
   }
 
   @override

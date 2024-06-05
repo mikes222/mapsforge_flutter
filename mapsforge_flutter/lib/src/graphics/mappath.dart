@@ -1,11 +1,12 @@
 import 'dart:ui';
 
+import 'package:mapsforge_flutter/src/graphics/maprect.dart';
+
 import '../../core.dart';
+import '../../special.dart';
 import 'fillrule.dart';
 
 abstract class MapPath {
-  final List<Offset> points = [];
-
   void clear();
 
   void close();
@@ -21,4 +22,10 @@ abstract class MapPath {
   void moveToMappoint(Mappoint point);
 
   void setFillRule(FillRule fillRule);
+
+  void drawDash(MapPaint paint, Canvas uiCanvas);
+
+  void drawLine(MapPaint paint, Canvas uiCanvas);
+
+  void addRect(MapRect mapRect);
 }

@@ -688,7 +688,7 @@
         </rule>
         <rule e="way" k="highway" v="*" zoom-min="15">
             <rule e="way" k="access" v="destination">
-                <line src="jar:patterns/access-destination.png" stroke-width="1.0" />
+                <line src="jar:patterns/access-destination.png" stroke-width="8.0" />
             </rule>
             <rule e="way" k="access" v="private">
                 <line src="jar:patterns/access-private.png" stroke-width="1.0" />

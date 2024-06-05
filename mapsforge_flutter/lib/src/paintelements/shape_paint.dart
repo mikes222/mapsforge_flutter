@@ -84,14 +84,14 @@ abstract class ShapePaint<T extends Shape> {
   MapPath calculatePath(List<List<Mappoint>> coordinatesRelativeToTile) {
     MapPath _path = GraphicFactory().createPath();
 
-    for (List<Mappoint> outerList in coordinatesRelativeToTile) {
+    coordinatesRelativeToTile.forEach((List<Mappoint> outerList) {
       outerList.forEachIndexed((int idx, Mappoint point) {
         if (idx == 0)
           _path.moveToMappoint(point);
         else
           _path.lineToMappoint(point);
       });
-    }
+    });
     return _path;
   }
 }
