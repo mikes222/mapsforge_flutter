@@ -12,6 +12,7 @@ import 'package:mapsforge_flutter/src/view/view_zoom_painter.dart';
 import '../../core.dart';
 import '../layer/tilelayer.dart';
 import '../rendertheme/rendercontext.dart';
+import '../utils/timing.dart';
 import 'backgroundpainter.dart';
 import 'errorhelper_widget.dart';
 
@@ -203,6 +204,7 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
 
   Widget _buildMapView() {
     //print("_buildMapView $mapViewPosition");
+    Timing timing = Timing(log: _log, active: true);
     _statistics?.mapViewCount++;
     return Stack(
       children: [
@@ -215,18 +217,6 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
           viewModel: _viewModel!,
           viewJobqueue: _jobQueue!,
         ),
-        // StreamBuilder<RenderContext>(
-        //     stream: _jobQueue!.observeRenderContext,
-        //     builder:
-        //         (BuildContext context, AsyncSnapshot<RenderContext> snapshot) {
-        //       print("new Frame");
-        //       if (snapshot.hasError) {
-        //         return ErrorhelperWidget(
-        //             error: snapshot.error!, stackTrace: snapshot.stackTrace);
-        //       }
-        //       if (snapshot.data == null) return _buildNoPositionView();
-        //       return;
-        //     }),
         StreamBuilder<MapViewPosition>(
             stream: _viewModel!.observePosition,
             builder: (BuildContext context,

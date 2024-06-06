@@ -10,7 +10,6 @@ import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
-import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
@@ -148,20 +147,8 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawPath(MapPath path, MapPaint paint) {
-    List<double>? dasharray = paint.getStrokeDasharray();
-    if (dasharray != null && dasharray.length >= 2) {
-      path.drawDash(paint, uiCanvas);
-      ++actions;
-    } else {
-      if (paint.getStyle() == Style.FILL) {
-        uiCanvas.drawPath(
-            (path as FlutterPath).path, (paint as FlutterPaint).paint);
-      } else {
-        path.drawLine(paint, uiCanvas);
-      }
-      //_log.info("draw path at ${(path as FlutterPath).path.getBounds()}  $paint}");
-      ++actions;
-    }
+    path.drawPath(paint, uiCanvas);
+    ++actions;
   }
 
   @override
@@ -183,7 +170,7 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawPathText(String text, LineString lineString, Mappoint origin,
+  void drawPathText(String text, LineString lineString, Mappoint leftUpper,
       MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth) {
     if (text.trim().isEmpty) {
       return;
@@ -204,11 +191,12 @@ class FlutterCanvas extends MapCanvas {
         //start = segment.end.offset(-origin.x, -origin.y);
         start = segment
             .pointAlongLineSegment(diff + entry.getWidth())
-            .offset(-origin.x, -origin.y);
+            .offset(-leftUpper.x, -leftUpper.y);
       } else {
         //start = segment.start.offset(-origin.x, -origin.y);
-        start =
-            segment.pointAlongLineSegment(diff).offset(-origin.x, -origin.y);
+        start = segment
+            .pointAlongLineSegment(diff)
+            .offset(-leftUpper.x, -leftUpper.y);
       }
       // print(
       //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
@@ -272,5 +260,10 @@ class FlutterCanvas extends MapCanvas {
     // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.
     uiCanvas.scale(scale);
     ++actions;
+  }
+
+  @override
+  void translate(double dx, double dy) {
+    uiCanvas.translate(dx, dy);
   }
 }

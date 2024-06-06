@@ -107,8 +107,8 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
-    Mappoint point =
-        nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
+    Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
+    point = point.offset(-leftUpper.x, -leftUpper.y + shape.dy);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
@@ -145,8 +145,9 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
-    Mappoint point = wayProperties.getCenterRelativeToLeftUpper(
-        projection, leftUpper, shape.dy);
+    Mappoint point = wayProperties.getCenterAbsolute(projection);
+    point = point.offset(0, shape.dy);
+
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     // // uiCanvas.drawRect(

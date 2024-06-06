@@ -81,15 +81,15 @@ abstract class ShapePaint<T extends Shape> {
     return result;
   }
 
-  MapPath calculatePath(List<List<Mappoint>> coordinatesRelativeToTile) {
+  MapPath calculatePath(
+      List<List<Mappoint>> coordinatesAbsolute, Mappoint leftUpper, double dy) {
     MapPath _path = GraphicFactory().createPath();
-
-    coordinatesRelativeToTile.forEach((List<Mappoint> outerList) {
+    coordinatesAbsolute.forEach((List<Mappoint> outerList) {
       outerList.forEachIndexed((int idx, Mappoint point) {
         if (idx == 0)
-          _path.moveToMappoint(point);
+          _path.moveToMappoint(point.offset(-leftUpper.x, -leftUpper.y + dy));
         else
-          _path.lineToMappoint(point);
+          _path.lineToMappoint(point.offset(-leftUpper.x, -leftUpper.y + dy));
       });
     });
     return _path;

@@ -19,10 +19,8 @@ class CanvasRasterer {
     this.canvas.destroy();
   }
 
-  void drawWays(RenderContext renderContext) {
+  void drawWays(RenderContext renderContext, Mappoint leftUpper) {
     //print("drawing now ${renderContext.layerWays.length} layers");
-    Mappoint leftUpper =
-        renderContext.projection.getLeftUpper(renderContext.upperLeft);
     for (LayerPaintContainer layerPaintContainer
         in renderContext.drawingLayers) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");
@@ -45,9 +43,8 @@ class CanvasRasterer {
     }
   }
 
-  void drawMapElements(
-      Set<RenderInfo> elements, PixelProjection projection, Tile tile) {
-    Mappoint leftUpper = projection.getLeftUpper(tile);
+  void drawMapElements(Set<RenderInfo> elements, PixelProjection projection,
+      Mappoint leftUpper, Tile tile) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -66,37 +63,6 @@ class CanvasRasterer {
       this.canvas.fillColorFromNumber(color);
     }
   }
-
-  /**
-   * Fills the area outside the specificed rectangle with color. Use this method when
-   * overpainting with a transparent color as it sets the PorterDuff mode.
-   * This method is used to blank out areas that fall outside the map area.
-   *
-   * @param color      the fill color for the outside area
-   * @param insideArea the inside area on which not to draw
-   */
-  // void fillOutsideAreas(Color color, Rectangle insideArea) {
-  //   this
-  //       .canvas
-  //       .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
-  //   this.canvas.fillColor(color);
-  //   this.canvas.resetClip();
-  // }
-
-  /**
-   * Fills the area outside the specificed rectangle with color.
-   * This method is used to blank out areas that fall outside the map area.
-   *
-   * @param color      the fill color for the outside area
-   * @param insideArea the inside area on which not to draw
-   */
-  // void fillOutsideAreasFromNumber(int color, Rectangle insideArea) {
-  //   this
-  //       .canvas
-  //       .setClipDifference(insideArea.left.toInt(), insideArea.top.toInt(), insideArea.getWidth().toInt(), insideArea.getHeight().toInt());
-  //   this.canvas.fillColorFromNumber(color);
-  //   this.canvas.resetClip();
-  // }
 
   void startCanvasBitmap() {
     //this.canvas.setBitmap(bitmap);

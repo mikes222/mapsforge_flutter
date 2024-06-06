@@ -77,7 +77,6 @@ class FlutterPath implements MapPath {
     dashedPaths.clear();
   }
 
-  @override
   void drawDash(MapPaint paint, Canvas uiCanvas) {
     List<double> dasharray = paint.getStrokeDasharray()!;
     List<Offsets>? dashed = dashedPaths[dasharray.hashCode];
@@ -145,7 +144,18 @@ class FlutterPath implements MapPath {
   }
 
   @override
-  void drawLine(MapPaint paint, ui.Canvas uiCanvas) {
+  void drawPath(MapPaint paint, ui.Canvas uiCanvas) {
+    List<double>? dasharray = paint.getStrokeDasharray();
+    if (dasharray != null && dasharray.length >= 2) {
+      drawDash(paint, uiCanvas);
+      return;
+    } else {
+      if (paint.getStyle() == Style.FILL) {
+        uiCanvas.drawPath(path, (paint as FlutterPaint).paint);
+        return;
+      }
+    }
+
     // https://github.com/flutter/flutter/issues/78543#issuecomment-885090581
     points.forEachIndexed((int idx, Pointinfo point) {
       if (idx > 0 && !point.start) {

@@ -41,8 +41,8 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
       PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
-    Mappoint point =
-        nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
+    Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
+    point = point.offset(-leftUpper.x, -leftUpper.y);
     MapRectangle boundary = shape.calculateBoundary();
     //print("paint symbol boundar: $boundary");
     Matrix? matrix;
@@ -81,8 +81,8 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
       PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
-    Mappoint point =
-        wayProperties.getCenterRelativeToLeftUpper(projection, leftUpper, 0);
+    Mappoint point = wayProperties.getCenterAbsolute(projection);
+    point = point.offset(-leftUpper.x, -leftUpper.y);
     MapRectangle boundary = shape.calculateBoundary();
     Matrix? matrix;
     if (shape.theta != 0) {

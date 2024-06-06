@@ -44,24 +44,24 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
     int skipPixels = shape.repeatStart.round();
 
-    List<List<Mappoint>> coordinates = wayProperties
-        .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy);
+    List<List<Mappoint>> coordinatesAbsolute =
+        wayProperties.getCoordinatesAbsolute(projection);
 
-    List<Mappoint?> c = coordinates[0];
+    List<Mappoint?> outerList = coordinatesAbsolute[0];
 
     // get the first way point coordinates
-    double previousX = c[0]!.x;
-    double previousY = c[0]!.y;
+    double previousX = outerList[0]!.x;
+    double previousY = outerList[0]!.y;
 
     // draw the symbolContainer on each way segment
     int segmentLengthRemaining;
     double segmentSkipPercentage;
 
-    for (int i = 1; i < c.length; ++i) {
+    for (int i = 1; i < outerList.length; ++i) {
       double theta = 0;
       // get the current way point coordinates
-      double currentX = c[i]!.x;
-      double currentY = c[i]!.y;
+      double currentX = outerList[i]!.x;
+      double currentY = outerList[i]!.y;
 
       // calculate the length of the current segment (Euclidian distance)
       double diffX = currentX - previousX;
@@ -81,36 +81,37 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
           theta = atan2(currentY - previousY, currentX - previousX);
         }
 
-        Mappoint point = Mappoint(previousX, previousY);
+        Mappoint point = Mappoint(previousX, previousY)
+            .offset(-leftUpper.x, -leftUpper.y + shape.dy);
 
         MapRectangle boundary = shape.calculateBoundary();
 
-        if (point.x + boundary.left >= 0 &&
-            point.y + boundary.bottom >= 0 &&
-            point.x + boundary.right <= leftUpper.x &&
-            point.y + boundary.top <= leftUpper.y) {
-          Matrix? matrix;
-          if (theta != 0) {
-            matrix = GraphicFactory().createMatrix();
-            matrix.rotate(theta, pivotX: boundary.left, pivotY: boundary.top);
-          }
-
-          // print(
-          //     "drawing ${bitmap} at ${point.x + boundary.left} / ${point.y + boundary.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
-          //print(StackTrace.current);
-          canvas.drawBitmap(
-              bitmap: bitmap!,
-              matrix: matrix,
-              left: point.x + boundary.left,
-              top: point.y + boundary.top,
-              paint: fill);
-
-          // check if the symbolContainer should only be rendered once
-          if (!shape.repeat) {
-            //   bitmap.dispose();
-            return;
-          }
+        // if (point.x + boundary.left >= 0 &&
+        //     point.y + boundary.bottom >= 0 &&
+        //     point.x + boundary.right <= leftUpper.x &&
+        //     point.y + boundary.top <= leftUpper.y) {
+        Matrix? matrix;
+        if (theta != 0) {
+          matrix = GraphicFactory().createMatrix();
+          matrix.rotate(theta, pivotX: boundary.left, pivotY: boundary.top);
         }
+
+        // print(
+        //     "drawing ${bitmap} at ${point.x + boundary.left} / ${point.y + boundary.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
+        //print(StackTrace.current);
+        canvas.drawBitmap(
+            bitmap: bitmap!,
+            matrix: matrix,
+            left: point.x + boundary.left,
+            top: point.y + boundary.top,
+            paint: fill);
+
+        // check if the symbolContainer should only be rendered once
+        if (!shape.repeat) {
+          //   bitmap.dispose();
+          return;
+        }
+        //    }
 
         // recalculate the distances
         diffX = currentX - previousX;

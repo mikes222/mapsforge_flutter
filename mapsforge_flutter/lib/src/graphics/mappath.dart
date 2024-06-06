@@ -23,9 +23,7 @@ abstract class MapPath {
 
   void setFillRule(FillRule fillRule);
 
-  void drawDash(MapPaint paint, Canvas uiCanvas);
-
-  void drawLine(MapPaint paint, Canvas uiCanvas);
+  void drawPath(MapPaint paint, Canvas uiCanvas);
 
   void addRect(MapRect mapRect);
 }

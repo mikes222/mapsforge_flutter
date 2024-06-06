@@ -35,8 +35,8 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
       PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
-    Mappoint point =
-        nodeProperties.getCoordinateRelativeToLeftUpper(projection, leftUpper);
+    Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
+    point = point.offset(-leftUpper.x, -leftUpper.y + shape.dy);
     if (fill != null) canvas.drawCircle(point.x, point.y, shape.radius, fill!);
     if (stroke != null)
       canvas.drawCircle(point.x, point.y, shape.radius, stroke!);

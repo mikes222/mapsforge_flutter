@@ -49,8 +49,8 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
       PixelProjection projection, Mappoint leftUpper,
       [double rotationRadian = 0]) {
-    MapPath path = calculatePath(wayProperties
-        .getCoordinatesRelativeToLeftUpper(projection, leftUpper, shape.dy));
+    MapPath path = calculatePath(
+        wayProperties.getCoordinatesAbsolute(projection), leftUpper, shape.dy);
     canvas.drawPath(path, stroke!);
 
     // if (debug) {

@@ -101,8 +101,11 @@ class MapDataStoreRenderer extends JobRenderer {
     CanvasRasterer canvasRasterer = CanvasRasterer(job.tileSize.toDouble(),
         job.tileSize.toDouble(), "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
+    Mappoint leftUpper =
+        renderContext.projection.getLeftUpper(renderContext.upperLeft);
+    //canvasRasterer.canvas.translate(-leftUpper.x, -leftUpper.y);
     timing.lap(100, "startCanvasBitmap for tile ${renderContext.upperLeft}");
-    canvasRasterer.drawWays(renderContext);
+    canvasRasterer.drawWays(renderContext, leftUpper);
     timing.lap(100,
         "${renderContext.drawingLayers.length} way-layers for tile ${renderContext.upperLeft}");
 
@@ -124,10 +127,10 @@ class MapDataStoreRenderer extends JobRenderer {
           labelResult.labelsForNeighbours.length;
       //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
-      canvasRasterer.drawMapElements(
-          labelResult.labelsForNeighbours, renderContext.projection, job.tile);
+      canvasRasterer.drawMapElements(labelResult.labelsForNeighbours,
+          renderContext.projection, leftUpper, job.tile);
       canvasRasterer.drawMapElements(labelResult.labelsToDisposeAfterDrawing,
-          renderContext.projection, job.tile);
+          renderContext.projection, leftUpper, job.tile);
       // labelResult.labelsToDisposeAfterDrawing.forEach((element) {
       //   element.dispose();
       // });

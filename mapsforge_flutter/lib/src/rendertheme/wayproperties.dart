@@ -83,47 +83,20 @@ class WayProperties implements NodeWayProperties {
     return this.center!;
   }
 
-  Mappoint getCenterRelativeToLeftUpper(
-      PixelProjection projection, Mappoint leftUpper, double dy) {
-    Mappoint center = getCenterAbsolute(projection);
-    return center.offset(-leftUpper.x, -leftUpper.y + dy);
-  }
-
-  Mappoint getCenterRelativeToCenter(
-      PixelProjection projection, Mappoint center, double dy) {
-    Mappoint centerAbsolute = getCenterAbsolute(projection);
-    return centerAbsolute.offset(-center.x, -center.y + dy);
-  }
-
-  List<List<Mappoint>> getCoordinatesRelativeToLeftUpper(
-      PixelProjection projection, Mappoint leftUpper, double dy) {
-    List<List<Mappoint>> coordinatesAbsolute =
-        getCoordinatesAbsolute(projection);
-    List<List<Mappoint>> coordinatesRelativeToTile = [];
-
-    coordinatesAbsolute.forEach((outerList) {
-      List<Mappoint> mp1 = outerList
-          .map((inner) => inner.offset(-leftUpper.x, -leftUpper.y + dy))
-          .toList();
-      coordinatesRelativeToTile.add(mp1);
-    });
-    return coordinatesRelativeToTile;
-  }
-
-  List<List<Mappoint>> getCoordinatesRelativeToCenter(
-      PixelProjection projection, Mappoint center, double dy) {
-    List<List<Mappoint>> coordinatesAbsolute =
-        getCoordinatesAbsolute(projection);
-    List<List<Mappoint>> coordinatesRelativeToCenter = [];
-
-    coordinatesAbsolute.forEach((outerList) {
-      List<Mappoint> mp1 = outerList
-          .map((inner) => inner.offset(-center.x, -center.y + dy))
-          .toList();
-      coordinatesRelativeToCenter.add(mp1);
-    });
-    return coordinatesRelativeToCenter;
-  }
+  // List<List<Mappoint>> getCoordinatesRelativeToLeftUpper(
+  //     PixelProjection projection, Mappoint leftUpper, double dy) {
+  //   List<List<Mappoint>> coordinatesAbsolute =
+  //       getCoordinatesAbsolute(projection);
+  //   List<List<Mappoint>> coordinatesRelativeToTile = [];
+  //
+  //   coordinatesAbsolute.forEach((outerList) {
+  //     List<Mappoint> mp1 = outerList
+  //         .map((inner) => inner.offset(-leftUpper.x, -leftUpper.y + dy))
+  //         .toList();
+  //     coordinatesRelativeToTile.add(mp1);
+  //   });
+  //   return coordinatesRelativeToTile;
+  // }
 
   LineString? calculateStringPath(PixelProjection projection, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =

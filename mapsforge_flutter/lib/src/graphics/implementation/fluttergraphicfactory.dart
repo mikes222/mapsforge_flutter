@@ -39,36 +39,6 @@ class FlutterGraphicFactory implements GraphicFactory {
     return FlutterMatrix();
   }
 
-  // @override
-  // HillshadingBitmap createMonoBitmap(int width, int height, Uint8List buffer, int padding, BoundingBox area) {
-  //   // TODO: implement createMonoBitmap
-  //   return null;
-  // }
-
-  // @override
-  // ResourceBitmap createResourceBitmap(InputStream inputStream, double scaleFactor, int width, int height, int percent) {
-  //   // TODO: implement createResourceBitmap
-  //   return null;
-  // }
-
-  // @override
-  // TileBitmap createTileBitmap(double tileSize, bool isTransparent, {InputStream inputStream}) {
-  //   throw Exception("Cannot create a tileBitmap without bitmap");
-  //   return FlutterTileBitmap(null);
-  // }
-  //
-  // @override
-  // InputStream platformSpecificSources(String relativePathPrefix, String src) {
-  //   // TODO: implement platformSpecificSources
-  //   return null;
-  // }
-  //
-  // @override
-  // ResourceBitmap renderSvg(InputStream inputStream, double scaleFactor, int width, int height, int percent) {
-  //   // TODO: implement renderSvg
-  //   return null;
-  // }
-
   @override
   MapPaint createPaint() {
     return FlutterPaint(ui.Paint());
