@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.simplified_example">
+    package="com.mschwartz.mapsforge.simplified_example">
    <application
         android:label="simplified_example"
         android:name="${applicationName}"

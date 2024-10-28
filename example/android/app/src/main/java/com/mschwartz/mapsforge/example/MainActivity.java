@@ -1,4 +1,4 @@
-package com.mschwartz.example;
+package com.mschwartz.mapsforge.example;
 
 import io.flutter.embedding.android.FlutterActivity;
 

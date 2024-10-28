@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.mschwartz.example">
+    package="com.mschwartz.mapsforge.example">
 
     <!-- Necessary to access the internet -->
     <uses-permission android:name="android.permission.INTERNET" />
