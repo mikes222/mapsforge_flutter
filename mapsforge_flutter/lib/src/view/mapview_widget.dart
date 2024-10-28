@@ -294,13 +294,15 @@ class _MapviewWidgetState extends State<MapviewWidget> {
       ViewModel? tempViewModel = _viewModel;
       JobQueue? tempJobqueue = _jobQueue;
       MapModel? tempMapModel = _mapModel;
-      setState(() {
-        _viewModel = null;
-        _jobQueue = null;
-        _tileLayer = null;
-        _labelLayer = null;
-        _mapModel = null;
-      });
+      if (mounted) {
+        setState(() {
+          _viewModel = null;
+          _jobQueue = null;
+          _tileLayer = null;
+          _labelLayer = null;
+          _mapModel = null;
+        });
+      }
       Future.delayed(const Duration(milliseconds: 5000), () {
         // destroy the models AFTER they are not used anymore
         tempViewModel?.dispose();
