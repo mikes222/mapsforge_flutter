@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 import '../../../core.dart';
 
-class BitmapSrcMixin {
+mixin BitmapSrcMixin {
   /**
    * Default size is 20x20px (400px) at baseline mdpi (160dpi).
    */

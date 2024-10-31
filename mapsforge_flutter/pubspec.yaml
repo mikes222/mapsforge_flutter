@@ -8,8 +8,9 @@ repository: https://github.com/mikes222/mapsforge_flutter
 environment:
   # switched from 2.12 to 2.15 to support unawaited()
   # 2.17 needed for weakreference
+  # 3.0.0 for record feature (see flutterpath)
   # 4.0.0 for future dart versions
-  sdk: '>=2.17.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:

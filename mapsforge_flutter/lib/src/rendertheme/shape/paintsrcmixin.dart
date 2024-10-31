@@ -5,7 +5,7 @@ import '../../graphics/cap.dart';
 import '../../graphics/join.dart';
 import '../../renderer/paintmixin.dart';
 
-class PaintSrcMixin {
+mixin PaintSrcMixin {
   /// For texts the fillColor is the inner color, whereas the strokeColor is the surrounding "frame" of the text
   int fillColor = 0xff000000;
 

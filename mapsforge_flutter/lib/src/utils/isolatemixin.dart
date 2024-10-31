@@ -8,7 +8,7 @@ import 'package:rxdart/rxdart.dart';
 
 typedef Future<void> EntryPoint<T extends IsolateInitParams>(T initParams);
 
-class IsolateMixin<T extends IsolateInitParams> {
+mixin IsolateMixin<T extends IsolateInitParams> {
   final _log = Logger('IsolateMixin');
 
   SendPort? _sendPort;

@@ -115,6 +115,10 @@ class RenderThemeBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
           break;
+        case XmlNodeType.ENTITY:
+          break;
+        case XmlNodeType.NOTATION:
+          break;
       }
     }
     assert(foundRendertheme);
@@ -238,6 +242,10 @@ class RenderThemeBuilder {
         case XmlNodeType.DOCUMENT_TYPE:
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
+          break;
+        case XmlNodeType.ENTITY:
+          break;
+        case XmlNodeType.NOTATION:
           break;
       }
     }

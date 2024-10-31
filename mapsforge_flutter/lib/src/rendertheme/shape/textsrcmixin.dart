@@ -6,7 +6,7 @@ import '../../../core.dart';
 import '../../graphics/mapfontstyle.dart';
 import '../../renderer/paintmixin.dart';
 
-class TextSrcMixin {
+mixin TextSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
   int _textMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
 

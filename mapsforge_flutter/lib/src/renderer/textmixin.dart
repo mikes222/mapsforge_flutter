@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertextpaint.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
-class TextMixin {
+mixin TextMixin {
   late MapTextPaint _textPaint;
 
   final Map<int, MapTextPaint> _textPaints = {};

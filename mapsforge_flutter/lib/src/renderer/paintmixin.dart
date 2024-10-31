@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
 
-class PaintMixin {
+mixin PaintMixin {
   late MapPaint _stroke;
 
   final Map<int, MapPaint> _strokes = {};

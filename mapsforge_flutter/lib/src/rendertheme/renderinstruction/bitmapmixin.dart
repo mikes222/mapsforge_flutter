@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
 
-class BitmapMixin {
+mixin BitmapMixin {
   static final _log = new Logger('BitmapMixin');
 
   String? bitmapSrc;
