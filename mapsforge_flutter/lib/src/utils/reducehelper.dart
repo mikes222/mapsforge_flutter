@@ -36,7 +36,25 @@ class _Line {
 
   final Mappoint end;
 
-  _Line(this.start, this.end);
+  late double ka;
+
+  late double da;
+
+  late double kb;
+
+  _Line(this.start, this.end) {
+    double x1 = start.x;
+    double y1 = start.y;
+    double x2 = end.x;
+    double y2 = end.y;
+
+    // steigung der begrenzung
+    ka = (y2 - y1) / (x2 - x1);
+    // anfangswert der begrenzung (y=k*x+d)
+    da = y1 - ka * x1;
+    // steigung der orthogonale
+    kb = -1 / ka;
+  }
 
   List<Mappoint> asList() {
     return [start, end];
@@ -59,12 +77,6 @@ class _Line {
       xx = mappoint.x;
       yx = y1;
     } else {
-      // steigung der begrenzung
-      double ka = (y2 - y1) / (x2 - x1);
-      // anfangswert der begrenzung (y=k*x+d)
-      double da = y1 - ka * x1;
-      // steigung der orthogonale
-      double kb = -1 / ka;
       // anfangswert der orthogonale
       double db = mappoint.y - kb * mappoint.x;
 

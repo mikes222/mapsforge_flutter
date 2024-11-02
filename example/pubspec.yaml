@@ -17,7 +17,8 @@ version: 2.1.0
 
 environment:
  # set to 2.15 for unawaited()
-  sdk: '>=2.15.0 <3.0.0'
+ # 3.0.0 for records feature
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:

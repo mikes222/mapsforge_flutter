@@ -51,10 +51,7 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   @override
   MapRectangle getBoundaryAbsolute(PixelProjection projection) {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
-    List<List<Mappoint>> coordinates =
-        wayProperties.getCoordinatesAbsolute(projection);
-    MinMaxDouble minMax = MinMaxDouble(coordinates[0]);
-    boundaryAbsolute = minMax.getBoundary();
+    boundaryAbsolute = wayProperties.getBoundary(projection);
     return boundaryAbsolute!;
   }
 }

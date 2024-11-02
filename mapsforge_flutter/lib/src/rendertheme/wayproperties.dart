@@ -1,5 +1,9 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/flutterpath.dart';
+import 'package:mapsforge_flutter/src/graphics/maprect.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodewayproperties.dart';
 
 import '../../core.dart';
@@ -42,31 +46,34 @@ class WayProperties implements NodeWayProperties {
   @deprecated
   int _lastZoomLevel = -1;
 
+  MinMaxDouble? minMaxMappoint;
+
   WayProperties(this.way)
       : layer = max(0, way.layer),
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
 
   List<List<Mappoint>> getCoordinatesAbsolute(PixelProjection projection) {
     // remove this security feature after 2025/01
-    if (_lastZoomLevel != -1 &&
-        projection.scalefactor.zoomlevel != _lastZoomLevel)
-      throw UnimplementedError("Invalid zoomlevel");
-    if (coordinatesAbsolute == null) {
-      coordinatesAbsolute = [];
-      way.latLongs.forEach((List<ILatLong> outerList) {
-        List<Mappoint> mp1 = outerList
-            .map((ILatLong position) => projection.latLonToPixel(position))
-            .toList();
-        mp1 = ReduceHelper.reduce(mp1, maxGap);
-        // check if the area to draw is too small. This saves 100ms for complex structures
-        MinMaxDouble minMaxMappoint = MinMaxDouble(mp1);
-        if (minMaxMappoint.maxX - minMaxMappoint.minX > maxGap ||
-            minMaxMappoint.maxY - minMaxMappoint.minY > maxGap) {
-          coordinatesAbsolute!.add(mp1);
-        }
-      });
-      _lastZoomLevel = projection.scalefactor.zoomlevel;
+    assert (_lastZoomLevel == -1 ||
+        projection.scalefactor.zoomlevel == _lastZoomLevel);
+    if (coordinatesAbsolute != null) {
+      return coordinatesAbsolute!;
     }
+    coordinatesAbsolute = [];
+    way.latLongs.forEachIndexed((int idx, List<ILatLong> outerList) {
+      List<Mappoint> mp1 = outerList
+          .map((ILatLong position) => projection.latLonToPixel(position))
+          .toList();
+      MinMaxDouble minMaxMappoint = MinMaxDouble(mp1);
+      if (idx == 0) this.minMaxMappoint = minMaxMappoint;
+      if (minMaxMappoint.maxX - minMaxMappoint.minX > maxGap ||
+          minMaxMappoint.maxY - minMaxMappoint.minY > maxGap) {
+        if (mp1.length > 6) mp1 = ReduceHelper.reduce(mp1, maxGap);
+        // check if the area to draw is too small. This saves 100ms for complex structures
+        coordinatesAbsolute!.add(mp1);
+      }
+    });
+    _lastZoomLevel = projection.scalefactor.zoomlevel;
     return coordinatesAbsolute!;
   }
 
@@ -100,7 +107,7 @@ class WayProperties implements NodeWayProperties {
 
   LineString? calculateStringPath(PixelProjection projection, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
-        getCoordinatesAbsolute(projection);
+    getCoordinatesAbsolute(projection);
 
     if (coordinatesAbsolute.length == 0 || coordinatesAbsolute[0].length < 2) {
       return null;
@@ -131,4 +138,12 @@ class WayProperties implements NodeWayProperties {
   List<Tag> getTags() {
     return way.tags;
   }
+
+  MapRectangle getBoundary(PixelProjection projection) {
+    if (minMaxMappoint != null) return minMaxMappoint!.getBoundary();
+    List<List<Mappoint>> coordinates = getCoordinatesAbsolute(projection);
+    minMaxMappoint = MinMaxDouble(coordinates[0]);
+    return minMaxMappoint!.getBoundary();
+  }
+
 }
