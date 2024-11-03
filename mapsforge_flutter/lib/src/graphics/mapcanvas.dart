@@ -34,7 +34,7 @@ abstract class MapCanvas {
 
   void drawRect(MapRect rect, MapPaint paint);
 
-  void drawPathText(String text, LineString lineString, Mappoint leftUpper,
+  void drawPathText(String text, LineString lineString, Mappoint reference,
       MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth);
 
   void drawText(String text, double x, double y, MapPaint paint,

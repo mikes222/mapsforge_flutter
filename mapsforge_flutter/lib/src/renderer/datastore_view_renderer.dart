@@ -33,7 +33,7 @@ class DatastoreViewRenderer extends ViewRenderer {
   Future<ViewJobResult> executeViewJob(ViewJobRequest viewJobRequest) async {
     Timing timing = Timing(log: _log, active: true);
     RenderContext renderContext = RenderContext(
-        viewJobRequest.upperLeft, viewJobRequest.tileSize, renderTheme.levels);
+        viewJobRequest.upperLeft, renderTheme.levels);
     this.renderTheme.prepareScale(viewJobRequest.upperLeft.zoomLevel);
     await datastore.lateOpen();
     // if (!datastore.supportsTile(upperLeft, projection) &&

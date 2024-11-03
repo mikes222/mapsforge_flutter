@@ -8,6 +8,7 @@ import 'package:mapsforge_flutter/special.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/flutterrect.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 
 import '../fillrule.dart';
 import 'flutterpaint.dart';
@@ -67,14 +68,14 @@ class FlutterPath implements MapPath {
   }
 
   @override
-  void lineToMappoint(Mappoint point) {
+  void lineToMappoint(RelativeMappoint point) {
     path.lineTo(point.x, point.y);
     points.add(Pointinfo(false, point.x, point.y));
     dashedPaths.clear();
   }
 
   @override
-  void moveToMappoint(Mappoint point) {
+  void moveToMappoint(RelativeMappoint point) {
     path.moveTo(point.x, point.y);
     points.add(Pointinfo(true, point.x, point.y));
     dashedPaths.clear();

@@ -17,8 +17,6 @@ class ViewJobqueue with ChangeNotifier {
 
   final ViewRenderer viewRenderer;
 
-  final int tileSize;
-
   final Storage<ViewJobRequest, RenderContext> storage =
       WeakReferenceStorage<ViewJobRequest, RenderContext>();
 
@@ -32,7 +30,7 @@ class ViewJobqueue with ChangeNotifier {
 
   Stream<RenderContext> get observeRenderContext => _injectRenderContext.stream;
 
-  ViewJobqueue({required this.viewRenderer, required this.tileSize}) {
+  ViewJobqueue({required this.viewRenderer}) {
     _cache = new LruCache<ViewJobRequest, RenderContext>(
       storage: storage,
       capacity: 100,
@@ -54,7 +52,7 @@ class ViewJobqueue with ChangeNotifier {
     Timing timing = Timing(log: _log, active: true);
     List<Tile> tiles = _getTiles(viewModel, mapViewPosition);
     ViewJobRequest viewJobRequest = ViewJobRequest(
-        upperLeft: tiles[0], lowerRight: tiles[1], tileSize: tileSize);
+        upperLeft: tiles[0], lowerRight: tiles[1]);
     RenderContext? renderContext = _cache.get(viewJobRequest);
     timing.lap(50, "new request ${viewJobRequest.upperLeft}");
     if (renderContext != null) {
@@ -110,9 +108,6 @@ class ViewJobqueue with ChangeNotifier {
       tileBottom =
           min(tileBottom + 1, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
     }
-    // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
-    center = center.offset(-viewModel.displayModel.tileSize / 2,
-        -viewModel.displayModel.tileSize / 2);
     Tile upperLeft = Tile(tileLeft, tileTop, zoomLevel, indoorLevel);
     Tile lowerRight = Tile(tileRight, tileBottom, zoomLevel, indoorLevel);
     return [upperLeft, lowerRight];

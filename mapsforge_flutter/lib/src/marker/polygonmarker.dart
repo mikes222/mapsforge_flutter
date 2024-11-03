@@ -147,11 +147,8 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
       Mappoint leftUpper = markerCallback.mapViewPosition
           .getLeftUpper(markerCallback.viewModel.mapDimension);
       path.forEach((latLong) {
-        Mappoint mappoint = Mappoint(
-            markerCallback.mapViewPosition.projection
-                .longitudeToPixelX(latLong.longitude),
-            markerCallback.mapViewPosition.projection
-                .latitudeToPixelY(latLong.latitude));
+        Mappoint mappoint =
+            markerCallback.mapViewPosition.projection.latLonToPixel(latLong);
         double y = mappoint.y - leftUpper.y;
         double x = mappoint.x - leftUpper.x;
 

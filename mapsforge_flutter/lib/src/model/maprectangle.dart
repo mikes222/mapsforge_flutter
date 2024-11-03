@@ -1,7 +1,7 @@
 import 'mappoint.dart';
 
 /**
- * A Rectangle represents an immutable set of four double coordinates.
+ * A Rectangle represents an immutable set of four double coordinates in screenpixels.
  */
 class MapRectangle {
   final double bottom;

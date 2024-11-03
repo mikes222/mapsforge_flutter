@@ -41,7 +41,7 @@ main() async {
     Tile tile = new Tile(140486, 87975, zoomlevel, indoorLevel);
 
     ViewJobResult result = await renderer.executeViewJob(ViewJobRequest(
-        upperLeft: tile, lowerRight: tile, tileSize: displayModel.tileSize));
+        upperLeft: tile, lowerRight: tile));
     expect(result.renderContext.labels.length, 2);
     expect(result.renderContext.drawingLayers.length, 11);
     expect(result.renderContext.drawingLayers[0].ways.length, 92);

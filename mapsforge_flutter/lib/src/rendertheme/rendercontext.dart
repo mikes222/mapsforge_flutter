@@ -12,8 +12,6 @@ class RenderContext {
 
   final Tile upperLeft;
 
-  final int tileSize;
-
   final int maxLevels;
 
   // The current drawing layer is the layer defined by the poi/way.
@@ -31,8 +29,8 @@ class RenderContext {
 
   final PixelProjection projection;
 
-  RenderContext(this.upperLeft, this.tileSize, this.maxLevels)
-      : projection = PixelProjection(upperLeft.zoomLevel, tileSize) {
+  RenderContext(this.upperLeft, this.maxLevels)
+      : projection = PixelProjection(upperLeft.zoomLevel) {
     this.drawingLayers = _createWayLists();
     currentDrawingLayer = drawingLayers[0];
     clashDrawingLayer = LayerPaintContainer(maxLevels);

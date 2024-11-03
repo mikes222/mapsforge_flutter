@@ -19,7 +19,7 @@ class CanvasRasterer {
     this.canvas.destroy();
   }
 
-  void drawWays(RenderContext renderContext, Mappoint leftUpper) {
+  void drawWays(RenderContext renderContext, Mappoint center) {
     //print("drawing now ${renderContext.layerWays.length} layers");
     for (LayerPaintContainer layerPaintContainer
         in renderContext.drawingLayers) {
@@ -28,7 +28,7 @@ class CanvasRasterer {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
         for (RenderInfo element in wayList) {
           //print("         drawing now ${element}");
-          element.render(this.canvas, renderContext.projection, leftUpper);
+          element.render(this.canvas, renderContext.projection, center);
         }
       }
     }
@@ -38,13 +38,13 @@ class CanvasRasterer {
       //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
       for (RenderInfo element in renderInfos) {
         //print("         drawing now ${element}");
-        element.render(this.canvas, renderContext.projection, leftUpper);
+        element.render(this.canvas, renderContext.projection, center);
       }
     }
   }
 
   void drawMapElements(Set<RenderInfo> elements, PixelProjection projection,
-      Mappoint leftUpper, Tile tile) {
+      Mappoint center, Tile tile) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
@@ -54,7 +54,7 @@ class CanvasRasterer {
     for (RenderInfo element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
-      element.render(this.canvas, projection, leftUpper);
+      element.render(this.canvas, projection, center);
     }
   }
 

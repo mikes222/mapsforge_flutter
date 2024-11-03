@@ -114,8 +114,7 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
             return progress("Waiting for Map");
           _mapModel = snapshot.data;
           _jobQueue = ViewJobqueue(
-            tileSize: widget.displayModel.tileSize,
-            viewRenderer: _mapModel?.renderer as ViewRenderer,
+             viewRenderer: _mapModel?.renderer as ViewRenderer,
           );
           _labelLayer = TileLayerLabel();
           _log.info(
@@ -173,7 +172,7 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
   }
 
   Widget _buildNoPositionView() {
-    return _viewModel!.noPositionView!;
+    return _viewModel!.noPositionView;
   }
 
   Widget? _buildBackgroundView() {

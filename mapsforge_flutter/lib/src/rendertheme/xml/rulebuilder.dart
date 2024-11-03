@@ -248,9 +248,7 @@ class RuleBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
           break;
-        case XmlNodeType.ENTITY:
-          break;
-        case XmlNodeType.NOTATION:
+        default:
           break;
       }
     }

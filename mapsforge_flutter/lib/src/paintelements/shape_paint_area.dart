@@ -51,10 +51,10 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     MapPath path = calculatePath(
-        wayProperties.getCoordinatesAbsolute(projection), leftUpper, shape.dy);
+        wayProperties.getCoordinatesAbsolute(projection), reference, shape.dy);
 
     if (fill != null) canvas.drawPath(path, fill!);
     if (stroke != null) {
@@ -64,6 +64,6 @@ class ShapePaintArea extends ShapePaint<ShapeArea> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {}
 }

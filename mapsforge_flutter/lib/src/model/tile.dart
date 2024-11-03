@@ -1,5 +1,8 @@
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
+
 import '../../core.dart';
 import '../../maps.dart';
+import 'maprectangle.dart';
 
 /// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
 /// with their zoom level. The actual area that a tile covers on a map depends on the underlying map projection.
@@ -16,8 +19,17 @@ class Tile {
   /// The indoor level of this tile.
   final int indoorLevel;
 
-  /// The (cached) bounding box of this tile
+  /// The (cached) bounding box of this tile in lat/lon coordinates
   BoundingBox? _boundary;
+
+  /// The (cached) left uppter point of this tile is pixels
+  Mappoint? _leftUpper;
+
+  /// The (cached) center of this tile in pixels
+  Mappoint? _center;
+
+  /// The (cached) boundary of this tile in pixels
+  MapRectangle? _mapBoundary;
 
   /// @return the maximum valid tile number for the given zoom level, 2<sup>zoomLevel</sup> -1.
   static int getMaxTileNumber(int zoomLevel) {
@@ -233,6 +245,32 @@ class Tile {
     if (_boundary != null) return _boundary!;
     _boundary = projection.boundingBoxOfTile(this);
     return _boundary!;
+  }
+
+  Mappoint getLeftUpper() {
+    if (_leftUpper != null) return _leftUpper!;
+    _leftUpper = Mappoint(
+        (tileX * MapsforgeConstants().tileSize), (tileY * MapsforgeConstants().tileSize));
+    return _leftUpper!;
+  }
+
+  Mappoint getCenter() {
+    if (_center != null) return _center!;
+    double tileSize = MapsforgeConstants().tileSize;
+    _center = Mappoint(
+        (tileX * tileSize + tileSize / 2).toDouble(), (tileY * tileSize + tileSize / 2).toDouble());
+    return _center!;
+  }
+
+  MapRectangle getMapBoundary() {
+    if (_mapBoundary != null) return _mapBoundary!;
+    double tileSize = MapsforgeConstants().tileSize;
+    _mapBoundary = MapRectangle(
+        (tileX * tileSize),
+        (tileY * tileSize),
+        (tileX * tileSize + tileSize),
+        (tileY * tileSize + tileSize));
+    return _mapBoundary!;
   }
 
   @override

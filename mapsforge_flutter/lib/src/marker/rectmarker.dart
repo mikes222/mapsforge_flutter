@@ -115,15 +115,11 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
     if (mapRect == null ||
         lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
       // cache the rect in pixel-coordinates
-      mapRect = GraphicFactory().createRect(
-          markerCallback.mapViewPosition.projection
-              .longitudeToPixelX(minLatLon.longitude),
-          markerCallback.mapViewPosition.projection
-              .latitudeToPixelY(maxLatLon.latitude),
-          markerCallback.mapViewPosition.projection
-              .longitudeToPixelX(maxLatLon.longitude),
-          markerCallback.mapViewPosition.projection
-              .latitudeToPixelY(minLatLon.latitude));
+      Mappoint minmappoint =
+      markerCallback.mapViewPosition.projection.latLonToPixel(minLatLon);
+      Mappoint maxmappoint =
+      markerCallback.mapViewPosition.projection.latLonToPixel(maxLatLon);
+      mapRect = GraphicFactory().createRect(minmappoint.x,maxmappoint.y, maxmappoint.x, minmappoint.y);
       lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
     }
     Mappoint center = markerCallback.mapViewPosition.getCenter();

@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
+import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
@@ -38,11 +39,11 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
     Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
-    point = point.offset(-leftUpper.x, -leftUpper.y);
+    RelativeMappoint relative = point.offset(-reference.x, -reference.y);
     MapRectangle boundary = shape.calculateBoundary();
     //print("paint symbol boundar: $boundary");
     Matrix? matrix;
@@ -58,31 +59,31 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
 
     if (debug) {
       print(
-          "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${point.x + boundary.left} / ${point.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
+          "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${relative.x + boundary.left} / ${relative.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
       ui.Canvas? uiCanvas = (canvas).uiCanvas;
       uiCanvas.drawRect(
-          ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
+          ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
               boundary.getWidth(), boundary.getHeight()),
           ui.Paint()..color = Colors.red.withOpacity(0.5));
-      uiCanvas.drawCircle(ui.Offset(point.x, point.y), 10,
+      uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
           ui.Paint()..color = Colors.green.withOpacity(0.5));
     }
 
     canvas.drawBitmap(
         bitmap: bitmap!,
         matrix: matrix,
-        left: point.x + boundary.left,
-        top: point.y + boundary.top,
+        left: relative.x + boundary.left,
+        top: relative.y + boundary.top,
         paint: fill);
   }
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
     Mappoint point = wayProperties.getCenterAbsolute(projection);
-    point = point.offset(-leftUpper.x, -leftUpper.y);
+    RelativeMappoint relative = point.offset(-reference.x, -reference.y);
     MapRectangle boundary = shape.calculateBoundary();
     Matrix? matrix;
     if (shape.theta != 0) {
@@ -97,8 +98,8 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
     canvas.drawBitmap(
         bitmap: bitmap!,
         matrix: matrix,
-        left: point.x + boundary.left,
-        top: point.y + boundary.top,
+        left: relative.x + boundary.left,
+        top: relative.y + boundary.top,
         paint: fill);
   }
 }

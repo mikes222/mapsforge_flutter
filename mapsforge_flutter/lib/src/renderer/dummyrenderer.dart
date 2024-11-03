@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 ///
 /// The dummy renderer renders dummy bitmaps for each given job
@@ -17,14 +18,14 @@ class DummyRenderer extends JobRenderer {
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
     Random random = Random();
+    double tileSize = MapsforgeConstants().tileSize;
     paint.strokeWidth = (random.nextDouble() * 5) + 1;
     paint.color = ui.Color(0xff000000 + random.nextInt(0xffffff));
     paint.isAntiAlias = true;
 
-    canvas.drawLine(ui.Offset.zero,
-        ui.Offset(job.tileSize.toDouble(), job.tileSize.toDouble()), paint);
-    canvas.drawLine(ui.Offset(job.tileSize.toDouble(), 0),
-        ui.Offset(0, job.tileSize.toDouble()), paint);
+    canvas.drawLine(ui.Offset.zero, ui.Offset(tileSize, tileSize), paint);
+    canvas.drawLine(ui.Offset(tileSize, 0),
+        ui.Offset(0, tileSize), paint);
 
     ui.ParagraphBuilder builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
@@ -35,12 +36,11 @@ class DummyRenderer extends JobRenderer {
       ..addText("${job.tile}");
     canvas.drawParagraph(
         builder.build()
-          ..layout(ui.ParagraphConstraints(width: job.tileSize.toDouble())),
+          ..layout(ui.ParagraphConstraints(width: tileSize.toDouble())),
         const Offset(0, 0));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img =
-        await pic.toImage(job.tileSize.toInt(), job.tileSize.toInt());
+    ui.Image img = await pic.toImage(tileSize.round(), tileSize.round());
 //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
 

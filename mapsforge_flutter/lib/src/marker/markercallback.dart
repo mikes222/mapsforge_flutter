@@ -13,7 +13,7 @@ abstract class MarkerCallback {
 
   void renderPath(MapPath path, MapPaint paint);
 
-  void renderPathText(String caption, LineString lineString, Mappoint origin,
+  void renderPathText(String caption, LineString lineString, Mappoint center,
       MapPaint stroke, MapTextPaint textPaint, double maxTextWidth);
 
   MapViewPosition get mapViewPosition;

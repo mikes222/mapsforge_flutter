@@ -70,7 +70,7 @@ void main() {
       print(result);
       expect(result.pointOfInterests.length, greaterThan(0));
       print("Calculating tile0 ${tile0.toString()}");
-      Job mapGeneratorJob0 = new Job(tile0, false, displayModel.tileSize);
+      Job mapGeneratorJob0 = new Job(tile0, false);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
@@ -82,7 +82,7 @@ void main() {
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
 
       Tile tile1 = new Tile(x + 1, y, zoomlevel, l);
-      Job mapGeneratorJob1 = new Job(tile1, false, displayModel.tileSize);
+      Job mapGeneratorJob1 = new Job(tile1, false);
       JobResult jobResult1 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
       var img1 = (jobResult1.bitmap as FlutterTileBitmap).getClonedImage();

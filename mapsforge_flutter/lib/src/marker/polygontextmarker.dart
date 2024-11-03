@@ -87,40 +87,34 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
   @override
   void renderBitmap(MarkerCallback markerCallback) {
     if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
-      Mappoint leftUpper = markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension);
-      Mappoint origin = Mappoint(leftUpper.x, leftUpper.y);
+      Mappoint center = markerCallback.mapViewPosition
+          .getCenter();
       markerCallback.renderPathText(
           caption,
           _lineString!,
-          origin,
+          center,
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
           getTextPaint(markerCallback.mapViewPosition.zoomLevel),
           maxTextWidth);
       markerCallback.renderPathText(
           caption,
           _lineString!,
-          origin,
+          center,
           getFillPaint(markerCallback.mapViewPosition.zoomLevel),
           getTextPaint(markerCallback.mapViewPosition.zoomLevel),
           maxTextWidth);
     } else {
       _lineString = LineString();
-      double? prevX = null;
-      double? prevY = null;
+      Mappoint? prev = null;
       path.forEach((latLong) {
-        double y = markerCallback.mapViewPosition.projection
-            .latitudeToPixelY(latLong.latitude);
-        double x = markerCallback.mapViewPosition.projection
-            .longitudeToPixelX(latLong.longitude);
-
-        if (prevX != null && prevY != null) {
+        Mappoint newMappoint =
+        markerCallback.mapViewPosition.projection.latLonToPixel(latLong);
+        if (prev != null) {
           LineSegment segment =
-              LineSegment(Mappoint(prevX!, prevY!), Mappoint(x, y));
+              LineSegment(prev!, newMappoint);
           _lineString!.segments.add(segment);
         }
-        prevX = x;
-        prevY = y;
+        prev = newMappoint;
       });
 
       ParagraphEntry entry = ParagraphCache().getEntry(
@@ -135,20 +129,19 @@ class PolygonTextMarker<T> extends BasicMarker<T> with TextMixin, PaintMixin {
       //       "Segment ${element.end.x - element.start.x} / ${element.end.y - element.start.y} for textWidth $textWidth - $element $caption");
       // });
 
-      Mappoint leftUpper = markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension);
-      Mappoint origin = Mappoint(leftUpper.x, leftUpper.y);
+      Mappoint center = markerCallback.mapViewPosition
+          .getCenter();
       markerCallback.renderPathText(
           caption,
           _lineString!,
-          origin,
+          center,
           getStrokePaint(markerCallback.mapViewPosition.zoomLevel),
           getTextPaint(markerCallback.mapViewPosition.zoomLevel),
           maxTextWidth);
       markerCallback.renderPathText(
           caption,
           _lineString!,
-          origin,
+          center,
           getFillPaint(markerCallback.mapViewPosition.zoomLevel),
           getTextPaint(markerCallback.mapViewPosition.zoomLevel),
           maxTextWidth);

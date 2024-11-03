@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../testassetbundle.dart';
 
@@ -27,7 +28,6 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 16;
     int x = MercatorProjection.fromZoomlevel(zoomlevel)
@@ -48,7 +48,7 @@ void main() {
           TestAssetBundle().correctFilename("monaco.map"), 0, "en");
       Tile tile = new Tile(x, y, zoomlevel, l);
       print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      Job mapGeneratorJob = new Job(tile, false);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(mapDataStore, renderTheme, symbolCache, false);
 
@@ -85,7 +85,6 @@ void main() {
       maxZoomLevel: 15,
     );
 
-    int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 15;
     int x = MercatorProjection.fromZoomlevel(zoomlevel)
@@ -94,7 +93,7 @@ void main() {
         MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
 
     tester.binding.window.physicalSizeTestValue =
-        Size(tileSize * 9, tileSize * 9);
+        Size(MapsforgeConstants().tileSize * 9, MapsforgeConstants().tileSize * 9);
 // resets the screen to its orinal size after the test end
     addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -127,7 +126,7 @@ void main() {
       List imgs = [];
       for (Tile tile in tilesToLoad) {
         print("Calculating tile ${tile.toString()}");
-        Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+        Job mapGeneratorJob = new Job(tile, false);
         JobResult jobResult =
             (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
         expect(jobResult.bitmap, isNotNull);
@@ -147,8 +146,8 @@ void main() {
         theme: ThemeData(),
         home: Scaffold(
           body: SizedBox(
-            width: tileSize * 3,
-            height: tileSize * 3,
+            width: MapsforgeConstants().tileSize * 3,
+            height: MapsforgeConstants().tileSize * 3,
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[

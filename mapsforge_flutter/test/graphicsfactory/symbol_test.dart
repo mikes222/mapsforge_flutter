@@ -20,7 +20,6 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 16;
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
@@ -53,7 +52,7 @@ void main() {
       expect(result.ways.length, equals(0));
       expect(result.pointOfInterests.length, greaterThan(0));
       //print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      Job mapGeneratorJob = new Job(tile, false);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 

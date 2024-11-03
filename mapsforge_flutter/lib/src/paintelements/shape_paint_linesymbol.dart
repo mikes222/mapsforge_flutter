@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
+import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
 
@@ -33,12 +34,12 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {}
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
 
@@ -81,8 +82,8 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
           theta = atan2(currentY - previousY, currentX - previousX);
         }
 
-        Mappoint point = Mappoint(previousX, previousY)
-            .offset(-leftUpper.x, -leftUpper.y + shape.dy);
+        RelativeMappoint relative = Mappoint(previousX, previousY)
+            .offset(-reference.x, -reference.y + shape.dy);
 
         MapRectangle boundary = shape.calculateBoundary();
 
@@ -102,8 +103,8 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
         canvas.drawBitmap(
             bitmap: bitmap!,
             matrix: matrix,
-            left: point.x + boundary.left,
-            top: point.y + boundary.top,
+            left: relative.x + boundary.left,
+            top: relative.y + boundary.top,
             paint: fill);
 
         // check if the symbolContainer should only be rendered once

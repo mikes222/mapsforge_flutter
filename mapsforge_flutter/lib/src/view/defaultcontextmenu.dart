@@ -18,10 +18,11 @@ class DefaultContextMenu extends StatefulWidget {
   /// position also represents the CURRENT position and not the position when the tap event occured.
   final MapViewPosition mapViewPosition;
 
-  DefaultContextMenu({required this.screen,
-    required this.event,
-    required this.viewModel,
-    required this.mapViewPosition});
+  DefaultContextMenu(
+      {required this.screen,
+      required this.event,
+      required this.viewModel,
+      required this.mapViewPosition});
 
   @override
   State<StatefulWidget> createState() {
@@ -55,12 +56,10 @@ class DefaultContextMenuState extends State {
     Mappoint center = widget.mapViewPosition.getCenter();
 
     /// distance from the center
-    double diffX = widget.mapViewPosition.projection
-        .longitudeToPixelX(widget.event.longitude) -
-        center.x;
-    double diffY = widget.mapViewPosition.projection
-        .latitudeToPixelY(widget.event.latitude) -
-        center.y;
+    Mappoint mappoint =
+        widget.mapViewPosition.projection.latLonToPixel(widget.event);
+    double diffX = mappoint.x - center.x;
+    double diffY = mappoint.y - center.y;
 
     diffX = diffX / widget.viewModel.viewScaleFactor;
     diffY = diffY / widget.viewModel.viewScaleFactor;
@@ -91,13 +90,13 @@ class DefaultContextMenuState extends State {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
             topLeft:
-            diffX <= halfWidth && diffY <= halfHeight ? Radius.zero : outer,
+                diffX <= halfWidth && diffY <= halfHeight ? Radius.zero : outer,
             topRight:
-            diffX > halfWidth && diffY <= halfHeight ? Radius.zero : outer,
+                diffX > halfWidth && diffY <= halfHeight ? Radius.zero : outer,
             bottomLeft:
-            diffX <= halfWidth && diffY > halfHeight ? Radius.zero : outer,
+                diffX <= halfWidth && diffY > halfHeight ? Radius.zero : outer,
             bottomRight:
-            diffX > halfWidth && diffY > halfHeight ? Radius.zero : outer,
+                diffX > halfWidth && diffY > halfHeight ? Radius.zero : outer,
           ),
           color: backgroundColor,
           border: Border.all(color: borderColor, width: width),
@@ -106,8 +105,8 @@ class DefaultContextMenuState extends State {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: buildColumns(context)
-              .map((e) =>
-              Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: e))
+              .map((e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2), child: e))
               .toList(),
         ),
       ),
@@ -115,12 +114,8 @@ class DefaultContextMenuState extends State {
   }
 
   void setValues(BuildContext context) {
-    backgroundColor = Theme
-        .of(context)
-        .scaffoldBackgroundColor;
-    borderColor = Theme
-        .of(context)
-        .primaryColor;
+    backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    borderColor = Theme.of(context).primaryColor;
   }
 
   List<Widget> buildColumns(BuildContext context) {
@@ -130,8 +125,7 @@ class DefaultContextMenuState extends State {
         children: [
           InkWell(
             child: Text(
-              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event
-                  .longitude.toStringAsFixed(6)}",
+              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}",
               style: const TextStyle(fontSize: 14),
             ),
             onTap: () {
@@ -140,8 +134,7 @@ class DefaultContextMenuState extends State {
             onLongPress: () {
               Clipboard.setData(new ClipboardData(
                   text:
-                  "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event
-                      .longitude.toStringAsFixed(6)}"));
+                      "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}"));
             },
           ),
           //const Spacer(),

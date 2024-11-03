@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/hillsrenderconfig.dart';
@@ -35,20 +36,21 @@ class RenderinstructionHillshading {
         255;
     Tile tile = renderContext.upperLeft;
     int zoomLevel = tile.zoomLevel;
+    double tileSize = MapsforgeConstants().tileSize;
     PixelProjection projection = renderContext.projection;
     Mappoint origin = projection.getLeftUpper(tile);
     double maptileTopLat = projection.pixelYToLatitude(origin.y);
     double maptileLeftLng = projection.pixelXToLongitude(origin.x);
 
     double maptileBottomLat =
-        projection.pixelYToLatitude(origin.y + renderContext.tileSize);
+        projection.pixelYToLatitude(origin.y + tileSize);
     double maptileRightLng =
-        projection.pixelXToLongitude(origin.x + renderContext.tileSize);
+        projection.pixelXToLongitude(origin.x + tileSize);
 
     double mapTileLatDegrees = maptileTopLat - maptileBottomLat;
     double mapTileLngDegrees = maptileRightLng - maptileLeftLng;
-    double pxPerLat = (renderContext.tileSize / mapTileLatDegrees);
-    double pxPerLng = (renderContext.tileSize / mapTileLngDegrees);
+    double pxPerLat = (tileSize / mapTileLatDegrees);
+    double pxPerLng = (tileSize / mapTileLngDegrees);
 
     if (maptileRightLng < maptileLeftLng) maptileRightLng += projection.mapsize;
 
@@ -97,8 +99,8 @@ class RenderinstructionHillshading {
         // map tile subset if it fully fits inside shading tile
         double maptileSubrectLeft = 0;
         double maptileSubrectTop = 0;
-        double maptileSubrectRight = renderContext.tileSize.toDouble();
-        double maptileSubrectBottom = renderContext.tileSize.toDouble();
+        double maptileSubrectRight = tileSize.toDouble();
+        double maptileSubrectBottom = tileSize.toDouble();
 
         // find the intersection between map tile and shading tile in earth coordinates and determine the pixel
         if (shadingTopLat > maptileTopLat) {

@@ -27,15 +27,13 @@ class RotateHelper {
       //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
     }
     // lat/lon of the position where we double-clicked
-    double latitude = viewModel.mapViewPosition!.projection
-        .pixelYToLatitude(center.y + diffY);
-    double longitude = viewModel.mapViewPosition!.projection
-        .pixelXToLongitude(center.x + diffX);
+    ILatLong latLong = viewModel.mapViewPosition!.projection
+        .pixelToLatLong(center.x + diffX, center.y + diffY);
     return PositionInfo(
         dx: diffX,
         dy: diffY,
-        latitude: latitude,
-        longitude: longitude,
+        latitude: latLong.latitude,
+        longitude: latLong.longitude,
         center: center);
   }
 }

@@ -5,7 +5,6 @@ import '../../core.dart';
 import '../../maps.dart';
 import '../graphics/display.dart';
 import '../graphics/mapcanvas.dart';
-import '../renderer/minmaxdouble.dart';
 import 'shape/shape.dart';
 import 'wayproperties.dart';
 
@@ -22,10 +21,10 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   WayRenderInfo(this.wayProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     shapePaint!.renderWay(
-        canvas, wayProperties, projection, leftUpper, rotationRadian);
+        canvas, wayProperties, projection, reference, rotationRadian);
   }
 
   /// Returns if MapElementContainers clash with each other

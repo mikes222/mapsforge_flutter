@@ -28,7 +28,6 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 16;
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
@@ -71,7 +70,7 @@ void main() {
       expect(result.ways.length, greaterThan(0));
       expect(result.pointOfInterests.length, greaterThan(0));
       //print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      Job mapGeneratorJob = new Job(tile, false);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
@@ -111,7 +110,6 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 16;
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
@@ -145,7 +143,7 @@ void main() {
       print(result);
       expect(result.ways.length, greaterThan(0));
       print("Calculating tile ${tile.toString()}");
-      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      Job mapGeneratorJob = new Job(tile, false);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
@@ -186,7 +184,6 @@ void main() {
       maxZoomLevel: 14,
     );
 
-    int tileSize = displayModel.tileSize;
     int l = 0;
     int zoomlevel = 13;
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
@@ -223,7 +220,7 @@ void main() {
       expect(datastore.supportsTile(tile, projection), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, greaterThan(0));
-      Job mapGeneratorJob = new Job(tile, false, displayModel.tileSize);
+      Job mapGeneratorJob = new Job(tile, false);
       MapDataStoreRenderer _dataStoreRenderer =
           MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 

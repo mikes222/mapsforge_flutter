@@ -21,10 +21,10 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   NodeRenderInfo(this.nodeProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Mappoint leftUpper,
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint center,
       [double rotationRadian = 0]) {
     shapePaint!.renderNode(
-        canvas, nodeProperties, projection, leftUpper, rotationRadian);
+        canvas, nodeProperties, projection, center, rotationRadian);
   }
 
   /// Returns true if shapes clash with each other

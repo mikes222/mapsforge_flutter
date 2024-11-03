@@ -57,13 +57,13 @@ class ViewZoomPainter extends CustomPainter {
           -size.height * viewModel.viewScaleFactor / 2);
     }
     // now start drawing
-    Mappoint leftUpper = mapViewPosition.getLeftUpper(viewModel.mapDimension);
+    Mappoint center = mapViewPosition.getCenter();
     renderContext.drawingLayers
         .forEach((LayerPaintContainer layerpaintContainer) {
       //_statistics?.drawLabelCount++;
       layerpaintContainer.ways.forEach((List<RenderInfo<Shape>> renderInfos) {
         renderInfos.forEach((RenderInfo<Shape> renderInfo) {
-          renderInfo.render(flutterCanvas, renderContext.projection, leftUpper,
+          renderInfo.render(flutterCanvas, renderContext.projection, center,
               mapViewPosition.rotationRadian);
         });
       });
@@ -72,13 +72,13 @@ class ViewZoomPainter extends CustomPainter {
     renderContext.clashDrawingLayer.ways
         .forEach((List<RenderInfo<Shape>> renderInfos) {
       renderInfos.forEach((RenderInfo<Shape> renderInfo) {
-        renderInfo.render(flutterCanvas, renderContext.projection, leftUpper,
+        renderInfo.render(flutterCanvas, renderContext.projection, center,
             mapViewPosition.rotationRadian);
       });
     });
     renderContext.labels.forEach((RenderInfo<Shape> renderInfo) {
       //_statistics?.drawLabelCount++;
-      renderInfo.render(flutterCanvas, renderContext.projection, leftUpper,
+      renderInfo.render(flutterCanvas, renderContext.projection, center,
           mapViewPosition.rotationRadian);
     });
 

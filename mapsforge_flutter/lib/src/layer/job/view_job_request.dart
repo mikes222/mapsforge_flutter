@@ -5,13 +5,9 @@ class ViewJobRequest {
 
   final Tile lowerRight;
 
-  /// The size of the requested tile. Same as viewModel.displayModel.tileSize
-  final int tileSize;
-
   ViewJobRequest(
       {required this.upperLeft,
-      required this.lowerRight,
-      required this.tileSize})
+      required this.lowerRight})
       : assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
 
   @override
@@ -20,10 +16,9 @@ class ViewJobRequest {
       other is ViewJobRequest &&
           runtimeType == other.runtimeType &&
           upperLeft == other.upperLeft &&
-          lowerRight == other.lowerRight &&
-          tileSize == other.tileSize;
+          lowerRight == other.lowerRight ;
 
   @override
   int get hashCode =>
-      upperLeft.hashCode ^ lowerRight.hashCode ^ tileSize.hashCode;
+      upperLeft.hashCode ^ lowerRight.hashCode;
 }

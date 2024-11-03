@@ -13,6 +13,7 @@ import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
+import '../../model/relative_mappoint.dart';
 import 'flutterbitmap.dart';
 import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
@@ -25,7 +26,7 @@ class FlutterCanvas extends MapCanvas {
 
   late ui.Canvas uiCanvas;
 
-  ui.PictureRecorder? pictureRecorder;
+  ui.PictureRecorder? _pictureRecorder;
 
   /// The size of the canvas
   final ui.Size size;
@@ -37,20 +38,20 @@ class FlutterCanvas extends MapCanvas {
 
   int actions = 0;
 
-  FlutterCanvas(this.uiCanvas, this.size, [this.src]) : pictureRecorder = null;
+  FlutterCanvas(this.uiCanvas, this.size, [this.src]) : _pictureRecorder = null;
 
   FlutterCanvas.forRecorder(double width, double height, [this.src])
-      : pictureRecorder = ui.PictureRecorder(),
+      : _pictureRecorder = ui.PictureRecorder(),
         size = ui.Size(width, height),
         assert(width >= 0),
         assert(height >= 0) {
-    uiCanvas = ui.Canvas(pictureRecorder!);
+    uiCanvas = ui.Canvas(_pictureRecorder!);
     //uiCanvas.clipRect(Rect.fromLTWH(0, 0, width, height), doAntiAlias: true);
   }
 
   @override
   void destroy() {
-    if (pictureRecorder != null) pictureRecorder!.endRecording();
+    if (_pictureRecorder != null) _pictureRecorder!.endRecording();
   }
 
   @override
@@ -120,9 +121,9 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   Future<Bitmap> finalizeBitmap() async {
-    ui.Picture pic = pictureRecorder!.endRecording();
+    ui.Picture pic = _pictureRecorder!.endRecording();
     ui.Image img = await pic.toImage(size.width.ceil(), size.height.ceil());
-    pictureRecorder = null;
+    _pictureRecorder = null;
     pic.dispose();
 
     return FlutterTileBitmap(img, src);
@@ -170,7 +171,7 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawPathText(String text, LineString lineString, Mappoint leftUpper,
+  void drawPathText(String text, LineString lineString, Mappoint reference,
       MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth) {
     if (text.trim().isEmpty) {
       return;
@@ -185,18 +186,18 @@ class FlutterCanvas extends MapCanvas {
     lineString.segments.forEach((segment) {
       // So text isn't upside down
       bool doInvert = segment.end.x < segment.start.x;
-      Mappoint start;
+      RelativeMappoint start;
       double diff = (segment.length() - entry.getWidth()) / 2;
       if (doInvert) {
         //start = segment.end.offset(-origin.x, -origin.y);
         start = segment
             .pointAlongLineSegment(diff + entry.getWidth())
-            .offset(-leftUpper.x, -leftUpper.y);
+            .offset(-reference.x, -reference.y);
       } else {
         //start = segment.start.offset(-origin.x, -origin.y);
         start = segment
             .pointAlongLineSegment(diff)
-            .offset(-leftUpper.x, -leftUpper.y);
+            .offset(-reference.x, -reference.y);
       }
       // print(
       //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
@@ -205,7 +206,7 @@ class FlutterCanvas extends MapCanvas {
     });
   }
 
-  void _drawTextRotated(ui.Paragraph paragraph, double theta, Mappoint start) {
+  void _drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
     // since the text is rotated, use the textwidth as margin in all directions
     // if (start.x + textwidth < 0 ||
     //     start.y + textwidth < 0 ||
@@ -215,7 +216,7 @@ class FlutterCanvas extends MapCanvas {
 
     // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
     uiCanvas.save();
-    uiCanvas.translate(/*translateX +*/ start.x, /*translateY +*/ start.y);
+    uiCanvas.translate(/*translateX +*/ reference.x, /*translateY +*/ reference.y);
     uiCanvas.rotate(theta);
     uiCanvas.translate(0, -paragraph.height / 2);
     // uiCanvas.drawRect(

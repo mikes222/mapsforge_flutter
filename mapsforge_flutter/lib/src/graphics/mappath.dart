@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 
 import '../../core.dart';
 import '../../special.dart';
+import '../model/relative_mappoint.dart';
 import 'fillrule.dart';
 
 abstract class MapPath {
@@ -17,9 +18,9 @@ abstract class MapPath {
 
   void moveTo(double x, double y);
 
-  void lineToMappoint(Mappoint point);
+  void lineToMappoint(RelativeMappoint point);
 
-  void moveToMappoint(Mappoint point);
+  void moveToMappoint(RelativeMappoint point);
 
   void setFillRule(FillRule fillRule);
 

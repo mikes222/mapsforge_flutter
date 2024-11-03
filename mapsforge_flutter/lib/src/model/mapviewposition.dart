@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/model/dimension.dart';
 
 import '../../maps.dart';
@@ -33,7 +34,7 @@ class MapViewPosition {
   /// This property must be calculated if needed based on the current view
   BoundingBox? boundingBox;
 
-  // the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
+  /// the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
   Mappoint? _leftUpper;
 
   /// The center of the map in absolute pixel coordinates. Note that the center
@@ -45,13 +46,12 @@ class MapViewPosition {
   Dimension? _lastMapDimension;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
-      this.indoorLevel, int tileSize, this._rotation)
+      this.indoorLevel, this._rotation)
       : scale = 1,
         focalPoint = null,
         _rotationRadian = Projection.degToRadian(_rotation),
         assert(zoomLevel >= 0),
-        assert(tileSize > 0),
-        _projection = PixelProjection(zoomLevel, tileSize);
+        _projection = PixelProjection(zoomLevel);
 
   MapViewPosition.zoomIn(MapViewPosition old)
       : _latitude = old._latitude,
@@ -63,7 +63,7 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         _projection =
-            PixelProjection(old.zoomLevel + 1, old.projection.tileSize),
+            PixelProjection(old.zoomLevel + 1),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoomInAround(
@@ -77,7 +77,7 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         _projection =
-            PixelProjection(old.zoomLevel + 1, old.projection.tileSize),
+            PixelProjection(old.zoomLevel + 1),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoomOut(MapViewPosition old)
@@ -90,7 +90,7 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         _projection =
-            PixelProjection(max(old.zoomLevel - 1, 0), old.projection.tileSize),
+            PixelProjection(max(old.zoomLevel - 1, 0)),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
@@ -103,7 +103,7 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         _projection =
-            PixelProjection(max(zoomLevel, 0), old.projection.tileSize),
+            PixelProjection(max(zoomLevel, 0)),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.zoomAround(
@@ -117,7 +117,7 @@ class MapViewPosition {
         scale = 1,
         focalPoint = null,
         _projection =
-            PixelProjection(max(zoomLevel, 0), old.projection.tileSize),
+            PixelProjection(max(zoomLevel, 0)),
         _lastMapDimension = old._lastMapDimension;
 
   MapViewPosition.indoorLevelUp(MapViewPosition old)
@@ -224,10 +224,9 @@ class MapViewPosition {
         min(max(upper, -mapDimension.height / 2),
             _projection.mapsize - mapDimension.height / 2));
 
-    _latitude =
-        _projection.pixelYToLatitude(_leftUpper!.y + mapDimension.height / 2);
-    _longitude =
-        _projection.pixelXToLongitude(_leftUpper!.x + mapDimension.width / 2);
+    ILatLong latLong = _projection.pixelToLatLong(_leftUpper!.x + mapDimension.width / 2, _leftUpper!.y + mapDimension.height / 2);
+    _latitude = latLong.latitude;
+    _longitude = latLong.longitude;
   }
 
   MapViewPosition.setCenter(MapViewPosition old, double x, double y)
@@ -294,9 +293,7 @@ class MapViewPosition {
   /// Returns the center of the map in absolute mappixels
   Mappoint getCenter() {
     if (_center != null) return _center!;
-    double centerY = _projection.latitudeToPixelY(_latitude!);
-    double centerX = _projection.longitudeToPixelX(_longitude!);
-    _center = Mappoint(centerX, centerY);
+    _center = _projection.latLonToPixel(LatLong(_latitude!, _longitude!));
     return _center!;
   }
 

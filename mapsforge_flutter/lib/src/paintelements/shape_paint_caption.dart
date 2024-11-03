@@ -13,6 +13,7 @@ import '../graphics/implementation/fluttercanvas.dart';
 import '../graphics/implementation/paragraph_cache.dart';
 import '../graphics/maptextpaint.dart';
 import '../model/maprectangle.dart';
+import '../model/relative_mappoint.dart';
 import '../rendertheme/nodeproperties.dart';
 
 class ShapePaintCaption extends ShapePaint<ShapeCaption> {
@@ -102,13 +103,13 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
     Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
-    point = point.offset(-leftUpper.x, -leftUpper.y + shape.dy);
+    RelativeMappoint relative = point.offset(-reference.x, -reference.y + shape.dy);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
@@ -120,17 +121,17 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (rotationRadian != 0) {
       uiCanvas.save();
-      uiCanvas.translate(point.x, point.y);
+      uiCanvas.translate(relative.x, relative.y);
       // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
       uiCanvas.rotate(2 * pi - rotationRadian);
-      uiCanvas.translate(-point.x, -point.y);
+      uiCanvas.translate(-relative.x, -relative.y);
     }
     if (back != null)
       uiCanvas.drawParagraph(back!.paragraph,
-          ui.Offset(point.x + boundary.left, point.y + boundary.top));
+          ui.Offset(relative.x + boundary.left, relative.y + boundary.top));
     if (front != null)
       uiCanvas.drawParagraph(front!.paragraph,
-          ui.Offset(point.x + boundary.left, point.y + boundary.top));
+          ui.Offset(relative.x + boundary.left, relative.y + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
     if (rotationRadian != 0) {
@@ -140,13 +141,13 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
     Mappoint point = wayProperties.getCenterAbsolute(projection);
-    point = point.offset(0, shape.dy);
+    point = point.offsetAbsolute(0, shape.dy);
 
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");

@@ -66,20 +66,20 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     if (fullPath.segments.isEmpty) return;
 
     if (paintBack != null)
-      canvas.drawPathText(caption, fullPath, leftUpper, this.paintBack!,
+      canvas.drawPathText(caption, fullPath, reference, this.paintBack!,
           mapTextPaint, shape.maxTextWidth);
     if (paintFront != null)
-      canvas.drawPathText(caption, fullPath, leftUpper, this.paintFront!,
+      canvas.drawPathText(caption, fullPath, reference, this.paintFront!,
           mapTextPaint, shape.maxTextWidth);
   }
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {}
 }

@@ -52,7 +52,7 @@ main() async {
 
     //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
     Tile upperLeft = new Tile(x + dx, y + dy, zoomlevel, indoorLevel);
-    Job job = Job(upperLeft, false, displayModel.tileSize);
+    Job job = Job(upperLeft, false);
     JobResult result = await renderer!.executeJob(job);
     expect(result.bitmap, isNotNull);
     //print(mapFile.toString());

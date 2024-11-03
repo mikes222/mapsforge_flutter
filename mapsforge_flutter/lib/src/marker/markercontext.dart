@@ -26,10 +26,10 @@ class MarkerContext implements MarkerCallback {
       this.viewScaleFactor, this.viewModel);
 
   @override
-  void renderPathText(String caption, LineString lineString, Mappoint origin,
+  void renderPathText(String caption, LineString lineString, Mappoint reference,
       MapPaint stroke, MapTextPaint textPaint, double maxTextWidth) {
     flutterCanvas.drawPathText(
-        caption, lineString, origin, stroke, textPaint, maxTextWidth);
+        caption, lineString, reference, stroke, textPaint, maxTextWidth);
   }
 
   @override

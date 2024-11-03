@@ -29,11 +29,11 @@ abstract class ShapePaint<T extends Shape> {
   }
 
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]);
 
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]);
 
   Future<void> init(SymbolCache symbolCache);
@@ -82,14 +82,14 @@ abstract class ShapePaint<T extends Shape> {
   }
 
   MapPath calculatePath(
-      List<List<Mappoint>> coordinatesAbsolute, Mappoint leftUpper, double dy) {
+      List<List<Mappoint>> coordinatesAbsolute, Mappoint reference, double dy) {
     MapPath _path = GraphicFactory().createPath();
     coordinatesAbsolute.forEach((List<Mappoint> outerList) {
       outerList.forEachIndexed((int idx, Mappoint point) {
         if (idx == 0)
-          _path.moveToMappoint(point.offset(-leftUpper.x, -leftUpper.y + dy));
+          _path.moveToMappoint(point.offset(-reference.x, -reference.y + dy));
         else
-          _path.lineToMappoint(point.offset(-leftUpper.x, -leftUpper.y + dy));
+          _path.lineToMappoint(point.offset(-reference.x, -reference.y + dy));
       });
     });
     return _path;

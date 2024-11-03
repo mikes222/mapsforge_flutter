@@ -10,19 +10,19 @@ abstract class ViewRenderer implements JobRenderer {
   Future<ViewJobResult> executeViewJob(ViewJobRequest viewJobRequest);
 
   @override
-  Future<TileBitmap> createErrorBitmap(int tileSize, error) {
+  Future<TileBitmap> createErrorBitmap(double tileSize, error) {
     // TODO: implement createErrorBitmap
     throw UnimplementedError();
   }
 
   @override
-  Future<TileBitmap> createMissingBitmap(int tileSize) {
+  Future<TileBitmap> createMissingBitmap(double tileSize) {
     // TODO: implement createMissingBitmap
     throw UnimplementedError();
   }
 
   @override
-  Future<TileBitmap> createNoDataBitmap(int tileSize) {
+  Future<TileBitmap> createNoDataBitmap(double tileSize) {
     // TODO: implement createNoDataBitmap
     throw UnimplementedError();
   }

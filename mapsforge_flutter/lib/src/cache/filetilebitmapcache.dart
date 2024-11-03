@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 ///
 /// A file cache for the bitmaps of a [Tile]. The implementation can distinguish different sets of [Tile]s depending on the [renderkey].
@@ -25,7 +26,7 @@ class FileTileBitmapCache extends TileBitmapCache {
 
   late String _dir;
 
-  final int tileSize;
+  final double _tileSize;
 
   /// true if the images should be stored in PNG format, false for raw format which is faster but consumes more space.
   /// PNG: 470ms for 16 files, RAW: 400ms for the same 16 files
@@ -34,7 +35,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   static final Map<String, FileTileBitmapCache> _instances = Map();
 
   static Future<FileTileBitmapCache> create(String renderkey,
-      [png = true, tileSize = 256]) async {
+      [png = true]) async {
     FileTileBitmapCache? result = _instances[renderkey];
     if (result != null) {
       _log.info(
@@ -42,7 +43,7 @@ class FileTileBitmapCache extends TileBitmapCache {
       return result;
     }
 
-    result = FileTileBitmapCache(renderkey, png, tileSize);
+    result = FileTileBitmapCache(renderkey, png);
     // init before adding to the instances, otherwise purgeAll may find an uninitialized entry
     await result._init();
     _instances[renderkey] = result;
@@ -72,8 +73,8 @@ class FileTileBitmapCache extends TileBitmapCache {
     }
   }
 
-  FileTileBitmapCache(this.renderkey, this.png, this.tileSize)
-      : assert(!renderkey.contains("/"));
+  FileTileBitmapCache(this.renderkey, this.png)
+      : assert(!renderkey.contains("/")), _tileSize = MapsforgeConstants().tileSize;
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
@@ -127,7 +128,7 @@ class FileTileBitmapCache extends TileBitmapCache {
       final ImmutableBuffer buffer =
           await ImmutableBuffer.fromUint8List(content);
       ImageDescriptor descriptor = ImageDescriptor.raw(buffer,
-          width: tileSize, height: tileSize, pixelFormat: PixelFormat.rgba8888);
+          width: _tileSize.round(), height: _tileSize.round(), pixelFormat: PixelFormat.rgba8888);
       buffer.dispose();
       codec = await descriptor.instantiateCodec();
     }

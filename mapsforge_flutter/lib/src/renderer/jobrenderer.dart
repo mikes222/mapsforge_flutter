@@ -6,6 +6,8 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
+import '../utils/mapsforge_constants.dart';
+
 ///
 /// This abstract class provides the foundation to render a bitmap for the given tile.
 ///
@@ -40,7 +42,7 @@ abstract class JobRenderer {
   /// be replaced
   /// when the rendering finishes.
   ///
-  Future<TileBitmap> createMissingBitmap(int tileSize) async {
+  Future<TileBitmap> createMissingBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -77,7 +79,7 @@ abstract class JobRenderer {
   ///
   /// Creates a tilebitmap which denotes that there are no maps with any data found for the given tile.
   ///
-  Future<TileBitmap> createNoDataBitmap(int tileSize) async {
+  Future<TileBitmap> createNoDataBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -115,7 +117,7 @@ abstract class JobRenderer {
   ///
   /// creates a bitmap tile with the given errormessage
   ///
-  Future<TileBitmap> createErrorBitmap(int tileSize, dynamic error) async {
+  Future<TileBitmap> createErrorBitmap(double tileSize, dynamic error) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -143,7 +145,7 @@ abstract class JobRenderer {
         Offset(_margin, _margin));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img = await pic.toImage(tileSize, tileSize);
+    ui.Image img = await pic.toImage(tileSize.round(), tileSize.round());
 //    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 //    var buffer = byteData.buffer.asUint8List();
 

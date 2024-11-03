@@ -11,13 +11,10 @@ class Job {
   /// A tile.
   final Tile tile;
 
-  /// The size of the requested tile. Same as viewModel.displayModel.tileSize
-  final int tileSize;
+  const Job._(this.tile, this.hasAlpha);
 
-  const Job._(this.tile, this.hasAlpha, this.tileSize) : assert(tileSize > 0);
-
-  factory Job(Tile tile, bool alpha, int tileSize) {
-    Job job = Job._(tile, alpha, tileSize);
+  factory Job(Tile tile, bool alpha) {
+    Job job = Job._(tile, alpha);
     return job;
   }
 

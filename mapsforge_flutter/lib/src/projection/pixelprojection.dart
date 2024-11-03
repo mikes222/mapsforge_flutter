@@ -3,10 +3,13 @@ import 'dart:math';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
+
+import '../model/relative_mappoint.dart';
 
 class PixelProjection extends MercatorProjection {
   /// the size of a tile  in mappixel. Each tile has the same width and height.
-  final int tileSize;
+  final double tileSize;
 
   ///
   /// the size of the whole map in mappixel. At scalefactor 1 (or zoomLevel 0)
@@ -14,8 +17,8 @@ class PixelProjection extends MercatorProjection {
   ///
   late int _mapSize;
 
-  PixelProjection(int zoomLevel, this.tileSize)
-      : assert(tileSize > 0),
+  PixelProjection(int zoomLevel)
+      : tileSize = MapsforgeConstants().tileSize,
         super.fromZoomlevel(zoomLevel) {
     _mapSize = _mapSizeWithScaleFactor();
   }
@@ -118,7 +121,7 @@ class PixelProjection extends MercatorProjection {
   /// @param latLong the geographic position.
   /// @param tile    tile
   /// @return the relative pixel position to the origin values (e.g. for a tile)
-  Mappoint pixelRelativeToTile(ILatLong latLong, Tile tile) {
+  RelativeMappoint pixelRelativeToTile(ILatLong latLong, Tile tile) {
     Mappoint mappoint = latLonToPixel(latLong);
     Mappoint tilePoint = getLeftUpper(tile);
     return mappoint.offset(-tilePoint.x, -tilePoint.y);
@@ -129,7 +132,8 @@ class PixelProjection extends MercatorProjection {
   /// @param latLong the geographic position.
   /// @param tile    tile
   /// @return the relative pixel position to the origin values (e.g. for a tile)
-  Mappoint pixelRelativeToLeftUpper(ILatLong latLong, Mappoint leftUpper) {
+  RelativeMappoint pixelRelativeToLeftUpper(
+      ILatLong latLong, Mappoint leftUpper) {
     Mappoint mappoint = latLonToPixel(latLong);
     return mappoint.offset(-leftUpper.x, -leftUpper.y);
   }
@@ -139,18 +143,17 @@ class PixelProjection extends MercatorProjection {
    *
    * @return the top-left point
    */
-  //@override
   Mappoint getLeftUpper(Tile tile) {
-    return Mappoint(
-        (tile.tileX * tileSize).toDouble(), (tile.tileY * tileSize).toDouble());
+    return tile.getLeftUpper();
+  }
+
+  /// Returns the center point of the given [tile] in absolute pixel coordinates
+  Mappoint getCenter(Tile tile) {
+    return tile.getCenter();
   }
 
   MapRectangle boundaryAbsolute(Tile tile) {
-    return MapRectangle(
-        (tile.tileX * tileSize).toDouble(),
-        (tile.tileY * tileSize).toDouble(),
-        (tile.tileX * tileSize + tileSize).toDouble(),
-        (tile.tileY * tileSize + tileSize).toDouble());
+    return tile.getMapBoundary();
   }
 
   /// returns the meters per pixel at the current zoomlevel. Returns 0 at +/-90°
@@ -167,7 +170,6 @@ class PixelProjection extends MercatorProjection {
 
   @override
   String toString() {
-    return 'PixelProjection{tileSize: $tileSize, _mapSize: $_mapSize, zoomLevel: ${scalefactor
-        .zoomlevel}}';
+    return 'PixelProjection{_mapSize: $_mapSize, zoomLevel: ${scalefactor.zoomlevel}}';
   }
 }

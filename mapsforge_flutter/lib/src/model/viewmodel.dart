@@ -105,7 +105,6 @@ class ViewModel {
           longitude,
           _mapViewPosition!.zoomLevel,
           _mapViewPosition!.indoorLevel,
-          displayModel.tileSize,
           _mapViewPosition!.rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -115,7 +114,6 @@ class ViewModel {
           longitude,
           displayModel.DEFAULT_ZOOM,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -132,7 +130,6 @@ class ViewModel {
           longitude,
           _mapViewPosition!.zoomLevel,
           _mapViewPosition!.indoorLevel,
-          displayModel.tileSize,
           rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -142,7 +139,6 @@ class ViewModel {
           longitude,
           displayModel.DEFAULT_ZOOM,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -192,7 +188,6 @@ class ViewModel {
           null,
           zoomLevel,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -244,7 +239,6 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM,
           indoorLevel,
-          displayModel.tileSize,
           displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -296,7 +290,6 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           displayModel.DEFAULT_ROTATION);
       newPosition = MapViewPosition.scaleAround(newPosition, null, scale);
       _mapViewPosition = newPosition;
@@ -317,7 +310,6 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM - 1,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -336,7 +328,6 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM - 1,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -355,7 +346,6 @@ class ViewModel {
           null,
           displayModel.DEFAULT_ZOOM - 1,
           displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.tileSize,
           displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);

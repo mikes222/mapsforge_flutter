@@ -50,8 +50,7 @@ main() {
 
   test("PixelProjection", () {
     int zoomLevel = 4; // 1, 2, 4, 8, 16 tiles per zoomlevel
-    int tileSize = 256;
-    PixelProjection projection = PixelProjection(zoomLevel, tileSize);
+    PixelProjection projection = PixelProjection(zoomLevel);
 
     expect(projection.meterPerPixel(const LatLong(0, 0)), 9783.939620605468);
     expect(projection.meterPerPixel(const LatLong(60, 0)), 4891.969810302735);

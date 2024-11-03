@@ -9,6 +9,7 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 import 'package:mapsforge_flutter/src/utils/isolatemixin.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 //import 'package:image/image.dart' as IMG;
 
 ///
@@ -36,7 +37,7 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
       return result;
     }
 
-    result = IsolateFileTileBitmapCache(renderkey, png, tileSize);
+    result = IsolateFileTileBitmapCache(renderkey, png);
     _instances[renderkey] = result;
     await result._init();
     return result;
@@ -65,9 +66,9 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
     }
   }
 
-  IsolateFileTileBitmapCache(String renderkey, bool png, int tileSize)
+  IsolateFileTileBitmapCache(String renderkey, bool png)
       : assert(!renderkey.contains("/")),
-        super(renderkey, png, tileSize);
+        super(renderkey, png);
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
@@ -114,7 +115,7 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
     int timestamp = DateTime.now().millisecondsSinceEpoch;
     await startIsolateJob(IsolateInitParams(), entryPoint);
     IsolateFileReplyParams result =
-        await sendToIsolate(IsolateFileRequestParams(filename, png, tileSize));
+        await sendToIsolate(IsolateFileRequestParams(filename, png, MapsforgeConstants().tileSize.round()));
     int diff = DateTime.now().millisecondsSinceEpoch - timestamp;
     _log.info("Read image from file took $diff ms");
     return result.image!;

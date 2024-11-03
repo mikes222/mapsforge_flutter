@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/model/displaymodel.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 import 'package:xml/xml.dart';
 
 import '../../rendertheme/rule/rendertheme.dart';
@@ -56,7 +57,7 @@ class RenderThemeBuilder {
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     renderThemeBuilder.parseXml(displayModel, content);
     renderThemeBuilder.forHash =
-        "${displayModel.deviceScaleFactor}_${displayModel.fontScaleFactor}_${displayModel.tileSize}";
+        "${displayModel.deviceScaleFactor}_${displayModel.fontScaleFactor}_${MapsforgeConstants().tileSize}";
     RenderTheme renderTheme = renderThemeBuilder.build();
     return renderTheme;
   }
@@ -115,10 +116,7 @@ class RenderThemeBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
           break;
-        case XmlNodeType.ENTITY:
-          break;
-        case XmlNodeType.NOTATION:
-          break;
+        default: break;
       }
     }
     assert(foundRendertheme);
@@ -243,10 +241,7 @@ class RenderThemeBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
           break;
-        case XmlNodeType.ENTITY:
-          break;
-        case XmlNodeType.NOTATION:
-          break;
+        default: break;
       }
     }
     assert(foundElement);

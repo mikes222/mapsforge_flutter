@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
+
 import '../graphics/filter.dart';
 
 /// Encapsulates the display characteristics for a MapView, such as tile size and background color. The size of map tiles
@@ -48,7 +50,7 @@ class DisplayModel {
   /// The size of a tile in mappixel. The default is 256, but if
   /// deviceScaleFactor or userScaleFactor is not 1 the tileSize will be
   /// stretched accordingly.
-  late int tileSize;
+  //late int tileSize;
 
   /// maximum zoomlevel
   int maxZoomLevel;
@@ -119,9 +121,9 @@ class DisplayModel {
   /**
    * Width and height of a map tile in pixel after system and user scaling is applied.
    */
-  int getTileSize() {
-    return tileSize;
-  }
+  // int getTileSize() {
+  //   return tileSize;
+  // }
 
   /**
    * Returns the user scale factor.
@@ -149,10 +151,10 @@ class DisplayModel {
   }
 
   void _setMaxTextWidth() {
-    this.maxTextWidth = this.tileSize * maxTextWidthFactor;
+    this.maxTextWidth = MapsforgeConstants().tileSize * maxTextWidthFactor;
   }
 
   void _setTileSize() {
-    tileSize = (DEFAULT_TILE_SIZE * getScaleFactor()).ceil();
+    MapsforgeConstants().tileSize = (DEFAULT_TILE_SIZE * getScaleFactor());
   }
 }

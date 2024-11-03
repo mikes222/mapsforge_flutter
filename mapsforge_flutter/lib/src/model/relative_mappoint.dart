@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
+import '../../core.dart';
 
 /// A Point represents an immutable pair of double coordinates in screen pixels.
-class Mappoint {
+class RelativeMappoint {
   /// The x coordinate of this point in pixels. Positive values points towards
   /// the right side of the screen.
   final double x;
@@ -14,7 +14,7 @@ class Mappoint {
 
   /// @param x the x coordinate of this point.
   /// @param y the y coordinate of this point.
-  const Mappoint(this.x, this.y);
+  const RelativeMappoint(this.x, this.y);
 
   /// @return the euclidian distance from this point to the given point.
   double distance(Mappoint point) {
@@ -32,22 +32,15 @@ class Mappoint {
   @override
   int get hashCode => x.hashCode ^ y.hashCode;
 
-  Mappoint offsetAbsolute(double dx, double dy) {
-    if (0 == dx && 0 == dy) {
-      return this;
-    }
-    return Mappoint(this.x + dx, this.y + dy);
-  }
-
   RelativeMappoint offset(double dx, double dy) {
     if (0 == dx && 0 == dy) {
-      return RelativeMappoint(x, y);
+      return this;
     }
     return RelativeMappoint(this.x + dx, this.y + dy);
   }
 
   @override
   String toString() {
-    return 'Point{x: $x, y: $y}';
+    return 'RelativeMappoint{x: $x, y: $y}';
   }
 }

@@ -5,11 +5,13 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 import 'package:queue/queue.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../maps.dart';
 import '../../graphics/tilebitmap.dart';
+import '../../model/relative_mappoint.dart';
 import '../../rendertheme/renderinfo.dart';
 import '../../rendertheme/shape/shape.dart';
 import '../../utils/layerutil.dart';
@@ -214,7 +216,7 @@ class JobQueue {
     JobSet jobSet = JobSet(mapViewPosition: mapViewPosition);
 
     tiles.forEach((Tile tile) {
-      Job job = Job(tile, false, viewModel.displayModel.tileSize);
+      Job job = Job(tile, false);
       jobSet.add(job);
     });
     timing.lap(50, "${jobSet.jobs.length} missing tiles");
@@ -264,15 +266,15 @@ class JobQueue {
           min(tileBottom + 1, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
     }
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
-    center = center.offset(-viewModel.displayModel.tileSize / 2,
-        -viewModel.displayModel.tileSize / 2);
+    RelativeMappoint relative = center.offset(-MapsforgeConstants().tileSize / 2,
+        -MapsforgeConstants().tileSize / 2);
     Map<Tile, double> tileMap = Map<Tile, double>();
     for (int tileY = tileTop; tileY <= tileBottom; ++tileY) {
       for (int tileX = tileLeft; tileX <= tileRight; ++tileX) {
         Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
         Mappoint leftUpper = mapViewPosition.projection.getLeftUpper(tile);
         tileMap[tile] =
-            (pow(leftUpper.x - center.x, 2) + pow(leftUpper.y - center.y, 2))
+            (pow(leftUpper.x - relative.x, 2) + pow(leftUpper.y - relative.y, 2))
                 .toDouble();
       }
     }
@@ -330,7 +332,7 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
     _log.warning(error.toString());
     if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
     TileBitmap bmp =
-        await isolateParam.jobRenderer.createErrorBitmap(job.tileSize, error);
+        await isolateParam.jobRenderer.createErrorBitmap(MapsforgeConstants().tileSize, error);
     //bmp.incrementRefCount();
     return JobResult(bmp, JOBRESULT.ERROR);
   }

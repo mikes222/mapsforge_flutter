@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
+import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_circle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
@@ -33,17 +34,17 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
 
   @override
   void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
-    point = point.offset(-leftUpper.x, -leftUpper.y + shape.dy);
-    if (fill != null) canvas.drawCircle(point.x, point.y, shape.radius, fill!);
+    RelativeMappoint relative = point.offset(-reference.x, -reference.y + shape.dy);
+    if (fill != null) canvas.drawCircle(relative.x, relative.y, shape.radius, fill!);
     if (stroke != null)
-      canvas.drawCircle(point.x, point.y, shape.radius, stroke!);
+      canvas.drawCircle(relative.x, relative.y, shape.radius, stroke!);
   }
 
   @override
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint leftUpper,
+      PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {}
 }
