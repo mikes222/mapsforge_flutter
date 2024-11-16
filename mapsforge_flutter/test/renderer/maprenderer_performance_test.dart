@@ -54,7 +54,7 @@ main() async {
     Tile upperLeft = new Tile(x + dx, y + dy, zoomlevel, indoorLevel);
     Job job = Job(upperLeft, false);
     JobResult result = await renderer!.executeJob(job);
-    expect(result.bitmap, isNotNull);
+    expect(result.picture, isNotNull);
     //print(mapFile.toString());
     //mapFile.dispose();
   }

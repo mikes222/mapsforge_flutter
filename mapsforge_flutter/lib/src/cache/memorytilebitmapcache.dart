@@ -1,7 +1,7 @@
 import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 
 ///
 /// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.
@@ -10,9 +10,9 @@ import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 class MemoryTileBitmapCache extends TileBitmapCache {
   static final List<MemoryTileBitmapCache> _instances = [];
 
-  final Storage<Tile, TileBitmap> storage =
-      WeakReferenceStorage<Tile, TileBitmap>();
-  late LruCache<Tile, TileBitmap> _cache;
+  final Storage<Tile, TilePicture> storage =
+      WeakReferenceStorage<Tile, TilePicture>();
+  late LruCache<Tile, TilePicture> _cache;
 
   factory MemoryTileBitmapCache.create() {
     MemoryTileBitmapCache result = MemoryTileBitmapCache._();
@@ -33,7 +33,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   }
 
   MemoryTileBitmapCache._() {
-    _cache = new LruCache<Tile, TileBitmap>(
+    _cache = new LruCache<Tile, TilePicture>(
       storage: storage,
       capacity: 100,
     );
@@ -47,17 +47,17 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  TileBitmap? getTileBitmapSync(Tile tile) {
+  TilePicture? getTileBitmapSync(Tile tile) {
     return _cache.get(tile);
   }
 
   @override
-  Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
+  Future<TilePicture?> getTileBitmapAsync(Tile tile) async {
     return _cache.get(tile);
   }
 
   @override
-  void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
+  void addTileBitmap(Tile tile, TilePicture tileBitmap) {
     //tileBitmap.incrementRefCount();
     // TileBitmap bitmap = _bitmaps.get(tile);
     // if (bitmap != null) {

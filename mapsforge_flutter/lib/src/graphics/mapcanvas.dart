@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
+import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
@@ -15,7 +16,7 @@ abstract class MapCanvas {
 
   void destroy();
 
-  Future<Bitmap> finalizeBitmap();
+  Future<TilePicture> finalizeBitmap();
 
   void drawBitmap({
     required Bitmap bitmap,
@@ -23,6 +24,12 @@ abstract class MapCanvas {
     required double top,
     required MapPaint paint,
     Matrix? matrix,
+  });
+
+  void drawTilePicture({
+    required TilePicture picture,
+    required double left,
+    required double top,
   });
 
   /// Draws a circle whereas the center of the circle is denoted by [x] and [y]
@@ -47,4 +54,6 @@ abstract class MapCanvas {
   void scale(Mappoint focalPoint, double scale);
 
   void translate(double dx, double dy);
+
+  String debugAction();
 }

@@ -4,10 +4,11 @@ import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
+
+import '../graphics/implementation/fluttertilepicture.dart';
+import '../graphics/tilepicture.dart';
 
 ///
 /// A file cache for the bitmaps of a [Tile]. The implementation can distinguish different sets of [Tile]s depending on the [renderkey].
@@ -74,7 +75,8 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   FileTileBitmapCache(this.renderkey, this.png)
-      : assert(!renderkey.contains("/")), _tileSize = MapsforgeConstants().tileSize;
+      : assert(!renderkey.contains("/")),
+        _tileSize = MapsforgeConstants().tileSize;
 
   Future _init() async {
     _dir = await FileHelper.getTempDirectory("mapsforgetiles/" + renderkey);
@@ -108,12 +110,12 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
+  void addTileBitmap(Tile tile, TilePicture tileBitmap) {
     _storeFile(tile, tileBitmap);
   }
 
   @override
-  TileBitmap? getTileBitmapSync(Tile tile) {
+  TilePicture? getTileBitmapSync(Tile tile) {
     return null;
   }
 
@@ -128,7 +130,9 @@ class FileTileBitmapCache extends TileBitmapCache {
       final ImmutableBuffer buffer =
           await ImmutableBuffer.fromUint8List(content);
       ImageDescriptor descriptor = ImageDescriptor.raw(buffer,
-          width: _tileSize.round(), height: _tileSize.round(), pixelFormat: PixelFormat.rgba8888);
+          width: _tileSize.round(),
+          height: _tileSize.round(),
+          pixelFormat: PixelFormat.rgba8888);
       buffer.dispose();
       codec = await descriptor.instantiateCodec();
     }
@@ -142,7 +146,7 @@ class FileTileBitmapCache extends TileBitmapCache {
   }
 
   @override
-  Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
+  Future<TilePicture?> getTileBitmapAsync(Tile tile) async {
     String filename = _calculateFilename(tile);
     if (!_files.contains(filename)) {
       // not yet initialized or not in cache
@@ -151,8 +155,7 @@ class FileTileBitmapCache extends TileBitmapCache {
     File file = File(filename);
     try {
       Image image = await _readImageFromFile(filename);
-      TileBitmap tileBitmap =
-          FlutterTileBitmap(image, "FileTileBitmapCache ${tile.toString()}");
+      TilePicture tileBitmap = FlutterTilePicture.fromBitmap(image);
       return tileBitmap;
     } catch (e) {
       _log.warning(
@@ -167,10 +170,11 @@ class FileTileBitmapCache extends TileBitmapCache {
     return null;
   }
 
-  Future _storeFile(Tile tile, TileBitmap tileBitmap) async {
+  Future _storeFile(Tile tile, TilePicture tileBitmap) async {
     String filename = _calculateFilename(tile);
     if (_files.contains(filename)) return;
-    Image image = (tileBitmap as FlutterTileBitmap).getClonedImage();
+    Image? image = tileBitmap.getClonedImage();
+    image ??= await tileBitmap.convertToImage();
     ByteData? content = await (image.toByteData(
         format: png ? ImageByteFormat.png : ImageByteFormat.rawRgba));
     image.dispose();

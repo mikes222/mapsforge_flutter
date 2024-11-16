@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
@@ -76,7 +75,7 @@ void main() {
 
       JobResult jobResult0 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
-      var img0 = (jobResult0.bitmap as FlutterTileBitmap).getClonedImage();
+      var img0 = await jobResult0.picture!.convertToImage();
 
       _dataStoreRenderer.tileDependencies!.debug();
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
@@ -85,7 +84,7 @@ void main() {
       Job mapGeneratorJob1 = new Job(tile1, false);
       JobResult jobResult1 =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
-      var img1 = (jobResult1.bitmap as FlutterTileBitmap).getClonedImage();
+      var img1 = await jobResult1.picture!.convertToImage();
 
       //_dataStoreRenderer.labelStore.debug();
       //_dataStoreRenderer.tileDependencies!.debug();

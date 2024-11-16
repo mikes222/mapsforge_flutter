@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
@@ -14,6 +14,7 @@ import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
+import '../graphics/bitmap.dart';
 import '../rendertheme/renderinfo.dart';
 import '../rendertheme/shape/shape.dart';
 import '../utils/timing.dart';
@@ -86,7 +87,7 @@ class MapDataStoreRenderer extends JobRenderer {
     timing.lap(100,
         "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read");
     if (mapReadResult == null) {
-      TileBitmap bmp = await createNoDataBitmap(MapsforgeConstants().tileSize);
+      TilePicture bmp = await createNoDataBitmap(MapsforgeConstants().tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
     }
     if ((mapReadResult.ways.length) > 100000) {
@@ -98,8 +99,8 @@ class MapDataStoreRenderer extends JobRenderer {
     timing.lap(100,
         "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized");
     CanvasRasterer canvasRasterer = CanvasRasterer(
-        MapsforgeConstants().tileSize.toDouble(),
-        MapsforgeConstants().tileSize.toDouble(),
+        MapsforgeConstants().tileSize,
+        MapsforgeConstants().tileSize,
         "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
     Mappoint leftUpper =
@@ -154,15 +155,13 @@ class MapDataStoreRenderer extends JobRenderer {
 //        renderContext.canvasRasterer.fillOutsideAreas(Color.TRANSPARENT, insideArea);
 //      }
 //    }
-    TileBitmap? bitmap =
-        (await canvasRasterer.finalizeCanvasBitmap() as TileBitmap?);
-    int actions = (canvasRasterer.canvas as FlutterCanvas).actions;
+    TilePicture? picture = await canvasRasterer.finalizeCanvasBitmap();
     canvasRasterer.destroy();
     timing.lap(100,
-        "$labelCount elements and labels, $actions actions in canvas");
+        "${mapReadResult.ways.length} ways, ${mapReadResult.pointOfInterests.length} pois, $labelCount labels, ${canvasRasterer.canvas.debugAction()}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
-    return JobResult(bitmap, JOBRESULT.NORMAL, renderContext.labels);
+    return JobResult(picture, JOBRESULT.NORMAL, renderContext.labels);
   }
 
   @override

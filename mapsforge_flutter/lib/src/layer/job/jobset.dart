@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
 import '../../../core.dart';
+import '../../graphics/tilepicture.dart';
 import '../../rendertheme/renderinfo.dart';
 import '../../rendertheme/shape/shape.dart';
 
@@ -68,7 +68,7 @@ class JobSet extends ChangeNotifier {
     if (_disposed) return;
     _jobs.remove(job);
     //jobResult.bitmap?.incrementRefCount();
-    TileBitmap? old = _bitmaps[job.tile]?.bitmap;
+    TilePicture? old = _bitmaps[job.tile]?.picture;
     if (old != null) {
       //old.decrementRefCount();
     }
@@ -77,10 +77,10 @@ class JobSet extends ChangeNotifier {
     notifyListeners();
   }
 
-  void jobsFinished(Map<Job, TileBitmap> jobResults) {
-    jobResults.forEach((Job job, TileBitmap tileBitmap) {
+  void jobsFinished(Map<Job, TilePicture> jobResults) {
+    jobResults.forEach((Job job, TilePicture tileBitmap) {
       _jobs.remove(job);
-      TileBitmap? old = _bitmaps[job.tile]?.bitmap;
+      TilePicture? old = _bitmaps[job.tile]?.picture;
       if (old != null) {
         //old.decrementRefCount();
       }

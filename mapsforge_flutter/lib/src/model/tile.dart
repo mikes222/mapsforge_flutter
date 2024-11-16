@@ -275,6 +275,6 @@ class Tile {
 
   @override
   String toString() {
-    return 'Tile{tileX: $tileX, tileY: $tileY, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel}';
+    return 'Tile{$tileX/$tileY, $zoomLevel, $indoorLevel}';
   }
 }

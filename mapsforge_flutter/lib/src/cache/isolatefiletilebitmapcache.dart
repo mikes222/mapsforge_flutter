@@ -5,11 +5,12 @@ import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/utils/filehelper.dart';
 import 'package:mapsforge_flutter/src/utils/isolatemixin.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
+
+import '../graphics/implementation/fluttertilepicture.dart';
+import '../graphics/tilepicture.dart';
 //import 'package:image/image.dart' as IMG;
 
 ///
@@ -102,12 +103,12 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
   }
 
   @override
-  void addTileBitmap(Tile tile, TileBitmap tileBitmap) {
+  void addTileBitmap(Tile tile, TilePicture tileBitmap) {
     _storeFile(tile, tileBitmap);
   }
 
   @override
-  TileBitmap? getTileBitmapSync(Tile tile) {
+  TilePicture? getTileBitmapSync(Tile tile) {
     return null;
   }
 
@@ -122,7 +123,7 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
   }
 
   @override
-  Future<TileBitmap?> getTileBitmapAsync(Tile tile) async {
+  Future<TilePicture?> getTileBitmapAsync(Tile tile) async {
     String filename = _calculateFilename(tile);
     if (!_files.contains(filename)) {
       // not yet initialized or not in cache
@@ -131,8 +132,8 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
     File file = File(filename);
     try {
       Image image = await _readImageFromFile(filename);
-      TileBitmap tileBitmap =
-          FlutterTileBitmap(image, "FileTileBitmapCache ${tile.toString()}");
+      TilePicture tileBitmap =
+      FlutterTilePicture.fromBitmap(image);
       return tileBitmap;
     } catch (e, stacktrace) {
       _log.warning(
@@ -148,10 +149,11 @@ class IsolateFileTileBitmapCache extends FileTileBitmapCache
     return null;
   }
 
-  Future _storeFile(Tile tile, TileBitmap tileBitmap) async {
+  Future _storeFile(Tile tile, TilePicture tileBitmap) async {
     String filename = _calculateFilename(tile);
     if (_files.contains(filename)) return;
-    Image image = (tileBitmap as FlutterTileBitmap).getClonedImage();
+    Image? image = tileBitmap.getClonedImage();
+    image ??= await tileBitmap.convertToImage();
     ByteData? content = await (image.toByteData(
         format: png ? ImageByteFormat.png : ImageByteFormat.rawRgba));
     image.dispose();

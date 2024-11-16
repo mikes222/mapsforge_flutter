@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilepicture.dart';
+import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
@@ -44,7 +44,7 @@ class MapOnlineRenderer extends JobRenderer {
     var frame = await codec.getNextFrame();
     ui.Image img = frame.image;
 
-    TileBitmap result = FlutterTileBitmap(img);
+    TilePicture result = FlutterTilePicture.fromBitmap(img);
     return JobResult(result, JOBRESULT.NORMAL);
   }
 

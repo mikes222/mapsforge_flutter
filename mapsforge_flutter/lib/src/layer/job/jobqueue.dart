@@ -10,7 +10,7 @@ import 'package:queue/queue.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../maps.dart';
-import '../../graphics/tilebitmap.dart';
+import '../../graphics/tilepicture.dart';
 import '../../model/relative_mappoint.dart';
 import '../../rendertheme/renderinfo.dart';
 import '../../rendertheme/shape/shape.dart';
@@ -99,9 +99,9 @@ class JobQueue {
 
   // remove all jobs which can be fulfilled via the 1st level caches
   void _immedateProcessing(JobSet jobSet) {
-    Map<Job, TileBitmap> toRemove = {};
+    Map<Job, TilePicture> toRemove = {};
     jobSet.jobs.forEach((job) {
-      TileBitmap? tileBitmap =
+      TilePicture? tileBitmap =
           tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
       if (tileBitmap != null) {
         toRemove[job] = tileBitmap;
@@ -169,7 +169,7 @@ class JobQueue {
   }
 
   Future<void> _donowDirect(Job job) async {
-    TileBitmap? tileBitmap =
+    TilePicture? tileBitmap =
         await tileBitmapCache?.getTileBitmapAsync(job.tile);
     if (tileBitmap != null) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, tileBitmap);
@@ -181,12 +181,12 @@ class JobQueue {
     }
     JobResult jobResult = await renderDirect(IsolateParam(job, jobRenderer));
     if (jobResult.result == JOBRESULT.NORMAL) {
-      tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
-      tileBitmapCache?.addTileBitmap(job.tile, jobResult.bitmap!);
+      tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.picture!);
+      tileBitmapCache?.addTileBitmap(job.tile, jobResult.picture!);
     }
     if (/*jobResult.result == JOBRESULT.ERROR ||*/
         jobResult.result == JOBRESULT.UNSUPPORTED) {
-      tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.bitmap!);
+      tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.picture!);
     }
     _JobQueueInfo? jobQueueInfo = _renderJobs[job];
     jobQueueInfo?.jobSet?.jobFinished(job, jobResult);
@@ -321,7 +321,7 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
   int time = DateTime.now().millisecondsSinceEpoch;
   try {
     JobResult jobResult = await isolateParam.jobRenderer.executeJob(job);
-    if (jobResult.bitmap != null) {
+    if (jobResult.picture != null) {
       //jobResult.bitmap!.incrementRefCount();
     }
     int diff = DateTime.now().millisecondsSinceEpoch - time;
@@ -331,7 +331,7 @@ Future<JobResult> renderDirect(IsolateParam isolateParam) async {
   } catch (error, stackTrace) {
     _log.warning(error.toString());
     if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
-    TileBitmap bmp =
+    TilePicture bmp =
         await isolateParam.jobRenderer.createErrorBitmap(MapsforgeConstants().tileSize, error);
     //bmp.incrementRefCount();
     return JobResult(bmp, JOBRESULT.ERROR);

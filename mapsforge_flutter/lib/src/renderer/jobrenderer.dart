@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilepicture.dart';
+import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
@@ -42,7 +42,7 @@ abstract class JobRenderer {
   /// be replaced
   /// when the rendering finishes.
   ///
-  Future<TileBitmap> createMissingBitmap(double tileSize) async {
+  Future<TilePicture> createMissingBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -70,16 +70,13 @@ abstract class JobRenderer {
         Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
-//    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-//    var buffer = byteData.buffer.asUint8List();
-    return FlutterTileBitmap(img);
+    return FlutterTilePicture.fromPicture(pic);
   }
 
   ///
   /// Creates a tilebitmap which denotes that there are no maps with any data found for the given tile.
   ///
-  Future<TileBitmap> createNoDataBitmap(double tileSize) async {
+  Future<TilePicture> createNoDataBitmap(double tileSize) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -107,17 +104,14 @@ abstract class JobRenderer {
         Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
-//    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-//    var buffer = byteData.buffer.asUint8List();
-
-    return FlutterTileBitmap(img);
+//    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
+    return FlutterTilePicture.fromPicture(pic);
   }
 
   ///
   /// creates a bitmap tile with the given errormessage
   ///
-  Future<TileBitmap> createErrorBitmap(double tileSize, dynamic error) async {
+  Future<TilePicture> createErrorBitmap(double tileSize, dynamic error) async {
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
     var paint = ui.Paint();
@@ -145,11 +139,6 @@ abstract class JobRenderer {
         Offset(_margin, _margin));
 
     var pic = pictureRecorder.endRecording();
-    ui.Image img = await pic.toImage(tileSize.round(), tileSize.round());
-//    var byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-//    var buffer = byteData.buffer.asUint8List();
-
-    FlutterTileBitmap tileBitmap = FlutterTileBitmap(img);
-    return tileBitmap; //Future.value(tileBitmap);
+    return FlutterTilePicture.fromPicture(pic);
   }
 }

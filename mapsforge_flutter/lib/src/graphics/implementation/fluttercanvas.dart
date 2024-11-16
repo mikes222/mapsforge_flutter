@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilepicture.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
 import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
@@ -12,14 +13,15 @@ import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/model/linestring.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../../model/relative_mappoint.dart';
+import '../tilepicture.dart';
 import 'flutterbitmap.dart';
 import 'fluttermatrix.dart';
 import 'flutterpaint.dart';
 import 'flutterpath.dart';
 import 'flutterrect.dart';
-import 'fluttertilebitmap.dart';
 
 class FlutterCanvas extends MapCanvas {
   static final _log = new Logger('FlutterCanvas');
@@ -36,7 +38,13 @@ class FlutterCanvas extends MapCanvas {
   ///
   final String? src;
 
-  int actions = 0;
+  int _actions = 0;
+
+  int _bitmapCount = 0;
+
+  int _textCount = 0;
+
+  int _pathCount = 0;
 
   FlutterCanvas(this.uiCanvas, this.size, [this.src]) : _pictureRecorder = null;
 
@@ -85,7 +93,7 @@ class FlutterCanvas extends MapCanvas {
             image, ui.Offset.zero, (paint as FlutterPaint).paint);
         uiCanvas.restore();
         image.dispose();
-        ++actions;
+        ++_bitmapCount;
         return;
       }
     }
@@ -100,7 +108,30 @@ class FlutterCanvas extends MapCanvas {
     uiCanvas.drawImage(
         image, ui.Offset(left, top), (paint as FlutterPaint).paint);
     image.dispose();
-    ++actions;
+    ++_bitmapCount;
+  }
+
+  @override
+  void drawTilePicture({
+    required TilePicture picture,
+    required double left,
+    required double top,
+  }) {
+    if (picture.getPicture() != null) {
+      ui.Picture pic = picture.getPicture()!;
+      uiCanvas.save();
+      uiCanvas.translate(left, top);
+      double tileSize = MapsforgeConstants().tileSize;
+      uiCanvas.clipRect(ui.Rect.fromLTWH(0, 0, tileSize, tileSize));
+      uiCanvas.drawPicture(pic);
+      uiCanvas.restore();
+      //picture.dispose();
+    } else {
+      ui.Image image = picture.getClonedImage()!;
+      uiCanvas.drawImage(image, ui.Offset(left, top), ui.Paint());
+      image.dispose();
+    }
+    ++_bitmapCount;
   }
 
   @override
@@ -109,31 +140,32 @@ class FlutterCanvas extends MapCanvas {
     this
         .uiCanvas
         .drawRect(ui.Rect.fromLTWH(0, 0, size.width, size.height), paint);
-    ++actions;
+    ++_actions;
   }
 
   @override
   void setClip(double left, double top, double width, double height) {
     uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height),
         doAntiAlias: true);
-    ++actions;
   }
 
+  /// Stops the recording and returns a TilePicture object.
   @override
-  Future<Bitmap> finalizeBitmap() async {
+  Future<TilePicture> finalizeBitmap() async {
     ui.Picture pic = _pictureRecorder!.endRecording();
+    // unfortunately working with Picture is too slow because we have to render it each time
     ui.Image img = await pic.toImage(size.width.ceil(), size.height.ceil());
     _pictureRecorder = null;
     pic.dispose();
-
-    return FlutterTileBitmap(img, src);
+    return FlutterTilePicture.fromBitmap(img);
+    //return FlutterTilePicture.fromPicture(pic);
   }
 
   @override
   void drawCircle(double x, double y, double radius, MapPaint paint) {
     //_log.info("draw circle at $x $y $radius $paint at ${ui.Offset(x.toDouble(), y.toDouble())}");
     uiCanvas.drawCircle(ui.Offset(x, y), radius, (paint as FlutterPaint).paint);
-    ++actions;
+    ++_actions;
   }
 
   @override
@@ -149,7 +181,7 @@ class FlutterCanvas extends MapCanvas {
   @override
   void drawPath(MapPath path, MapPaint paint) {
     path.drawPath(paint, uiCanvas);
-    ++actions;
+    ++_pathCount;
   }
 
   @override
@@ -166,7 +198,7 @@ class FlutterCanvas extends MapCanvas {
     } else {
       Rect rt = (rect as FlutterRect).rect;
       uiCanvas.drawRect(rt, (paint as FlutterPaint).paint);
-      ++actions;
+      ++_actions;
     }
   }
 
@@ -206,7 +238,8 @@ class FlutterCanvas extends MapCanvas {
     });
   }
 
-  void _drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
+  void _drawTextRotated(
+      ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
     // since the text is rotated, use the textwidth as margin in all directions
     // if (start.x + textwidth < 0 ||
     //     start.y + textwidth < 0 ||
@@ -216,7 +249,10 @@ class FlutterCanvas extends MapCanvas {
 
     // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
     uiCanvas.save();
-    uiCanvas.translate(/*translateX +*/ reference.x, /*translateY +*/ reference.y);
+    uiCanvas.translate(
+        /*translateX +*/
+        reference.x,
+        /*translateY +*/ reference.y);
     uiCanvas.rotate(theta);
     uiCanvas.translate(0, -paragraph.height / 2);
     // uiCanvas.drawRect(
@@ -225,7 +261,7 @@ class FlutterCanvas extends MapCanvas {
     // uiCanvas.drawCircle(Offset.zero, 10, ui.Paint()..color = Colors.green);
     uiCanvas.drawParagraph(paragraph, Offset.zero);
     uiCanvas.restore();
-    ++actions;
+    ++_textCount;
   }
 
   /// draws the given [text] so that the center of the text in at the given x/y coordinates
@@ -249,7 +285,7 @@ class FlutterCanvas extends MapCanvas {
     uiCanvas.drawParagraph(
         entry.paragraph, Offset(x - textwidth / 2, y - textHeight / 2));
     // uiCanvas.drawCircle(ui.Offset(x, y), 5, ui.Paint()..color = Colors.blue);
-    ++actions;
+    ++_textCount;
   }
 
   @override
@@ -260,11 +296,15 @@ class FlutterCanvas extends MapCanvas {
         (-size.height / 2 + diffY) * (scale - 1));
     // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.
     uiCanvas.scale(scale);
-    ++actions;
   }
 
   @override
   void translate(double dx, double dy) {
     uiCanvas.translate(dx, dy);
+  }
+
+  @override
+  String debugAction() {
+    return 'FlutterCanvas{_actions: $_actions, _bitmapCount: $_bitmapCount, _textCount: $_textCount, _pathCount: $_pathCount}';
   }
 }

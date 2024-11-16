@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 
 import '../graphics/bitmap.dart';
@@ -68,11 +69,8 @@ class CanvasRasterer {
     //this.canvas.setBitmap(bitmap);
   }
 
-  Future<Bitmap> finalizeCanvasBitmap() async {
+  Future<TilePicture> finalizeCanvasBitmap() async {
     return await canvas.finalizeBitmap();
   }
 
-// void drawHillshading(HillshadingContainer container) {
-//   canvas.shadeBitmap(container.bitmap, container.hillsRect, container.tileRect, container.magnitude);
-// }
 }

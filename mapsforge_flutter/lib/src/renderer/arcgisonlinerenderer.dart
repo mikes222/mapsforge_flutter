@@ -3,11 +3,12 @@ import 'dart:ui' as ui;
 
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilepicture.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/renderer/jobrenderer.dart';
+
+import '../graphics/tilepicture.dart';
 
 ///
 /// This renderer fetches the desired bitmap from ArcGIS website. Since the bitmaps are 256 pixels in size the same size must be
@@ -44,7 +45,7 @@ class ArcGisOnlineRenderer extends JobRenderer {
     var frame = await codec.getNextFrame();
     ui.Image img = frame.image;
 
-    TileBitmap result = FlutterTileBitmap(img);
+    TilePicture result = FlutterTilePicture.fromBitmap(img);
     return JobResult(result, JOBRESULT.NORMAL);
   }
 

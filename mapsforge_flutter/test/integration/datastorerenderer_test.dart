@@ -4,7 +4,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilebitmap.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
@@ -54,8 +53,7 @@ void main() {
 
       JobResult jobResult =
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
-      var img = (jobResult.bitmap as FlutterTileBitmap).getClonedImage();
-      return img;
+      return await jobResult.picture!.convertToImage();
     }));
 
     assert(img != null);
@@ -129,9 +127,8 @@ void main() {
         Job mapGeneratorJob = new Job(tile, false);
         JobResult jobResult =
             (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
-        expect(jobResult.bitmap, isNotNull);
-        var img = (jobResult.bitmap as FlutterTileBitmap).getClonedImage();
-        imgs.add(img);
+        expect(jobResult.picture, isNotNull);
+        imgs.add( await jobResult.picture!.convertToImage());
       }
 
 //      ByteData bytes = await img.toByteData(format: ImageByteFormat.png);

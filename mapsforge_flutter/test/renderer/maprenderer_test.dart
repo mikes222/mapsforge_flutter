@@ -38,7 +38,7 @@ main() async {
     Job job = Job(tile, false);
     JobResult result = await renderer.executeJob(job);
     expect(result.result, JOBRESULT.UNSUPPORTED);
-    expect(result.bitmap, isNotNull);
+    expect(result.picture, isNotNull);
   });
 
   test("MapDatastore", () async {

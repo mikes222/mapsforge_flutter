@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/tilebitmap.dart';
+
+import '../graphics/tilepicture.dart';
 
 ///
 /// Implementations of this class provides caches for [Tile]s.
@@ -13,14 +14,14 @@ abstract class TileBitmapCache {
   ///
   /// Returns the requested bitmap for the given [Tile]
   ///
-  TileBitmap? getTileBitmapSync(Tile tile);
+  TilePicture? getTileBitmapSync(Tile tile);
 
-  Future<TileBitmap?> getTileBitmapAsync(Tile tile);
+  Future<TilePicture?> getTileBitmapAsync(Tile tile);
 
   ///
   /// Adds a bitmap to the cache
   ///
-  void addTileBitmap(Tile tile, TileBitmap tileBitmap);
+  void addTileBitmap(Tile tile, TilePicture tileBitmap);
 
   ///
   /// Purges the whole cache. The cache can be used afterwards but will not return any items

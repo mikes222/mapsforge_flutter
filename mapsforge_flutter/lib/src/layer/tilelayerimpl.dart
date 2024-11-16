@@ -46,17 +46,15 @@ class TileLayerImpl extends TileLayer {
     _statistics?.drawCount++;
 
     jobSet.bitmaps.forEach((Tile tile, JobResult jobResult) {
-      if (jobResult.bitmap != null) {
+      if (jobResult.picture != null) {
         //_log.info("  $jobResult");
         _statistics?.drawBitmapCount++;
         Mappoint point = jobSet.mapViewPosition.projection.getLeftUpper(tile);
         //print("drawing ${point.x - leftUpper.x} / ${point.y - leftUpper.y}");
-        mapCanvas.drawBitmap(
-          bitmap: jobResult.bitmap!,
-          left: point.x - leftUpper.x,
-          top: point.y - leftUpper.y,
-          paint: _paint,
-        );
+        mapCanvas.drawTilePicture(
+            picture: jobResult.picture!,
+            left: point.x - leftUpper.x,
+            top: point.y - leftUpper.y);
       }
     });
   }
