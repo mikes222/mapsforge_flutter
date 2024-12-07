@@ -186,10 +186,6 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawRect(MapRect rect, MapPaint paint) {
-    if (rect.getBottom() < 0 ||
-        rect.getRight() < 0 ||
-        rect.getLeft() > size.width ||
-        rect.getTop() > size.height) return;
     if (paint.getStrokeDasharray() != null &&
         paint.getStrokeDasharray()!.length >= 2) {
       FlutterPath rectPath = FlutterPath();
@@ -289,9 +285,9 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void scale(Mappoint focalPoint, double scale) {
-    double diffX = size.width / 2 - focalPoint.x;
-    double diffY = size.height / 2 - focalPoint.y;
+  void scale(Offset focalPoint, double scale) {
+    double diffX = size.width / 2 - focalPoint.dx;
+    double diffY = size.height / 2 - focalPoint.dy;
     uiCanvas.translate((-size.width / 2 + diffX) * (scale - 1),
         (-size.height / 2 + diffY) * (scale - 1));
     // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.

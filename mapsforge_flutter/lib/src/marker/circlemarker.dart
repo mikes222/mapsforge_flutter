@@ -5,6 +5,8 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
+import '../graphics/mapcanvas.dart';
+
 /// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
 class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
   late final double radius;
@@ -70,19 +72,17 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
-    Mappoint leftUpper = markerCallback.mapViewPosition
-        .getLeftUpper(markerCallback.viewModel.mapDimension);
-    markerCallback.flutterCanvas.drawCircle(
-        (mappoint.x - leftUpper.x),
-        (mappoint.y - leftUpper.y),
+  void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    flutterCanvas.drawCircle(
+        (mappoint.x - markerContext.mapCenter.x),
+        (mappoint.y - markerContext.mapCenter.y),
         radius,
-        getFillPaint(markerCallback.mapViewPosition.zoomLevel));
-    markerCallback.flutterCanvas.drawCircle(
-        (mappoint.x - leftUpper.x),
-        (mappoint.y - leftUpper.y),
+        getFillPaint(markerContext.zoomLevel));
+    flutterCanvas.drawCircle(
+        (mappoint.x - markerContext.mapCenter.x),
+        (mappoint.y - markerContext.mapCenter.y),
         radius,
-        getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+        getStrokePaint(markerContext.zoomLevel));
   }
 
   double getRadius(int zoomLevel) {

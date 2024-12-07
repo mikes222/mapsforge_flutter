@@ -32,10 +32,6 @@ Find many more examples in the subdirectory [../example/README.md](../example/RE
 - Drag'n'drop
 - Online-maps
 
-## Limitations and todo's
-
-- Increase performance
-
 ## Credits
 
 First and foremost to the author of mapsforge. He has done an outstanding job!
@@ -155,6 +151,18 @@ Help is appreciated...
 
 If you find some bug or make enhancements feel free to contribute via PullRequests. 
 Also feel free to create bug reports in github.
+
+## Recent changes
+
+Use ``MarkerContext`` instead of ``MarkerCallback`` for markers.
+
+Avoid using mapViewPosition.getLeftUpper(). Use mapViewPosition.getCenter() instead.
+In markers use ``markerContext.mapCenter``.
+This is because we do not redraw the map for every position-update but rather only if the position
+gets out of the boundary of the map. ``mapViewPosition.getCenter()`` returns the CURRENT center (=position)
+whereas ``markerContext.mapCenter`` returns the center of the map which may be different if the map moved since the 
+last redraw.
+
 
 ## Documentation
 

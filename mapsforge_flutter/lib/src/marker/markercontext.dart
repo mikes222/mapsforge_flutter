@@ -1,39 +1,26 @@
-import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
-import 'package:mapsforge_flutter/src/graphics/mappath.dart';
-import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
-import 'package:mapsforge_flutter/src/model/linestring.dart';
+import 'package:mapsforge_flutter/maps.dart';
 
 import '../../core.dart';
-import 'markercallback.dart';
 
-class MarkerContext implements MarkerCallback {
-  @override
-  final FlutterCanvas flutterCanvas;
+class MarkerContext {
+  /// The center of the map. Note that this may not be the same as the current mapViewposition because we shift the map on screen according to the position and
+  /// redraw the map only if we need to.
+  final Mappoint mapCenter;
 
-  @override
-  final MapViewPosition mapViewPosition;
+  final int zoomLevel;
 
-  /// The factor to scale down the map. With [DisplayModel.deviceScaleFactor] one can scale up the view and make it bigger. With this value
-  /// one can scale down the view and make the resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images
-  @override
-  final double viewScaleFactor;
+  final PixelProjection projection;
 
-  @override
-  final ViewModel viewModel;
+  final double rotationRadian;
 
-  const MarkerContext(this.flutterCanvas, this.mapViewPosition,
-      this.viewScaleFactor, this.viewModel);
+  /// The bounding box of the current map in lat/lon coordinates
+  final BoundingBox boundingBox;
 
-  @override
-  void renderPathText(String caption, LineString lineString, Mappoint reference,
-      MapPaint stroke, MapTextPaint textPaint, double maxTextWidth) {
-    flutterCanvas.drawPathText(
-        caption, lineString, reference, stroke, textPaint, maxTextWidth);
-  }
-
-  @override
-  void renderPath(MapPath path, MapPaint paint) {
-    flutterCanvas.drawPath(path, paint);
-  }
+  const MarkerContext(
+    this.mapCenter,
+    this.zoomLevel,
+    this.projection,
+    this.rotationRadian,
+    this.boundingBox,
+  );
 }

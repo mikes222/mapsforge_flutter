@@ -13,11 +13,6 @@ class ViewModel {
   /// Overlays to the map. Overlays can show things which do not move along with the map. Examples for overlays are zoombuttons.
   List<Widget>? overlays;
 
-  ///
-  /// The width and height of the visible view in mappixels. Note that this is NOT equal to device-independent screen-pixels since the
-  /// view will be scaled by [viewScaleFactor] in order to gain a better resolution of the tile-images
-  late Dimension _mapDimension;
-
   /// The factor to scale down the map. [DisplayModel.deviceScaleFactor] scales the size of the map up and make it bigger. With this value
   /// - which is equal to [DisplayModel.deviceScaleFactor] - the view will be scaled down again by the same ratio and hence makes the
   /// resolution of the map better. This comes with the cost of increased tile image sizes and thus increased time for creating the tile-images.
@@ -77,7 +72,7 @@ class ViewModel {
       this.overlays}) {
     this.noPositionView = noPositionView ?? const NoPositionView();
     viewScaleFactor = displayModel.deviceScaleFactor;
-    _mapDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
+    //_mapDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
   }
 
   void dispose() {
@@ -125,12 +120,8 @@ class ViewModel {
     if (_mapViewPosition != null) {
       if (_mapViewPosition!.latitude == latitude &&
           _mapViewPosition!.longitude == longitude) return;
-      MapViewPosition newPosition = MapViewPosition(
-          latitude,
-          longitude,
-          _mapViewPosition!.zoomLevel,
-          _mapViewPosition!.indoorLevel,
-          rotation);
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude,
+          _mapViewPosition!.zoomLevel, _mapViewPosition!.indoorLevel, rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -183,12 +174,8 @@ class ViewModel {
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(
-          null,
-          null,
-          zoomLevel,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.DEFAULT_ROTATION);
+      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel,
+          displayModel.DEFAULT_INDOOR_LEVEL, displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -255,7 +242,7 @@ class ViewModel {
   /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
   /// >1 means zoom-in.
   ///
-  MapViewPosition? setScaleAround(Mappoint focalPoint, double scale) {
+  MapViewPosition? setScaleAround(Offset focalPoint, double scale) {
     assert(scale > 0);
     // do not scale if the scale is too minor to do anything
     if ((scale - 1).abs() < 0.01) return _mapViewPosition;
@@ -316,28 +303,28 @@ class ViewModel {
     }
   }
 
-  void setLeftUpper(double left, double upper) {
-    if (_mapViewPosition != null) {
-      MapViewPosition newPosition = MapViewPosition.setLeftUpper(
-          _mapViewPosition!, left, upper, _mapDimension);
-      _mapViewPosition = newPosition;
-      _injectPosition.add(newPosition);
-    } else {
-      MapViewPosition newPosition = MapViewPosition(
-          null,
-          null,
-          displayModel.DEFAULT_ZOOM - 1,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.DEFAULT_ROTATION);
-      _mapViewPosition = newPosition;
-      _injectPosition.add(newPosition);
-    }
-  }
+  // void setLeftUpper(double left, double upper) {
+  //   if (_mapViewPosition != null) {
+  //     MapViewPosition newPosition = MapViewPosition.setLeftUpper(
+  //         _mapViewPosition!, left, upper);
+  //     _mapViewPosition = newPosition;
+  //     _injectPosition.add(newPosition);
+  //   } else {
+  //     MapViewPosition newPosition = MapViewPosition(
+  //         null,
+  //         null,
+  //         displayModel.DEFAULT_ZOOM - 1,
+  //         displayModel.DEFAULT_INDOOR_LEVEL,
+  //         displayModel.DEFAULT_ROTATION);
+  //     _mapViewPosition = newPosition;
+  //     _injectPosition.add(newPosition);
+  //   }
+  // }
 
-  void setCenter(double left, double upper) {
+  void setCenter(double x, double y) {
     if (_mapViewPosition != null) {
       MapViewPosition newPosition =
-          MapViewPosition.setCenter(_mapViewPosition!, left, upper);
+          MapViewPosition.setCenter(_mapViewPosition!, x, y);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
@@ -400,21 +387,21 @@ class ViewModel {
   /// equal to screen-pixels since the view will be scaled by [viewScaleFactor] in order
   /// to gain a better resolution of the tile-images.
   ///
-  Dimension get mapDimension => _mapDimension;
+  // Dimension get mapDimension => _mapDimension;
 
   // called if the size of the widget changes. Dimension of width and height are in device independent pixels as delivered by flutter
-  Dimension setViewDimension(double width, double height) {
-    assert(width >= 0);
-    assert(height >= 0);
-    if (_mapDimension.width == width * viewScaleFactor &&
-        _mapDimension.height == height * viewScaleFactor) return _mapDimension;
-    _mapDimension =
-        Dimension(width * viewScaleFactor, height * viewScaleFactor);
-    if (_mapViewPosition != null) {
-      _injectPosition.add(_mapViewPosition!);
-    }
-    return _mapDimension;
-  }
+  // Dimension setViewDimension(double width, double height) {
+  //   assert(width >= 0);
+  //   assert(height >= 0);
+  //   if (_mapDimension.width == width * viewScaleFactor &&
+  //       _mapDimension.height == height * viewScaleFactor) return _mapDimension;
+  //   _mapDimension =
+  //       Dimension(width * viewScaleFactor, height * viewScaleFactor);
+  //   if (_mapViewPosition != null) {
+  //     _injectPosition.add(_mapViewPosition!);
+  //   }
+  //   return _mapDimension;
+  // }
 
   void addOverlay(Widget overlay) {
     overlays ??= [];
@@ -436,6 +423,9 @@ class TapEvent implements ILatLong {
 
   final PixelProjection? _projection;
 
+  /// The point of the event in mappixels
+  final Mappoint mappoint;
+
   bool isCleared() {
     return _projection == null;
   }
@@ -445,13 +435,15 @@ class TapEvent implements ILatLong {
   const TapEvent(
       {required this.latitude,
       required this.longitude,
-      required PixelProjection projection})
+      required PixelProjection projection,
+      required this.mappoint})
       : _projection = projection;
 
   const TapEvent.clear()
       : latitude = 0,
         longitude = 0,
-        _projection = null;
+        _projection = null,
+        mappoint = const Mappoint(0, 0);
 
   @override
   String toString() {
@@ -467,7 +459,12 @@ class MoveAroundEvent extends TapEvent {
     required double latitude,
     required double longitude,
     required PixelProjection projection,
-  }) : super(latitude: latitude, longitude: longitude, projection: projection);
+    required Mappoint mappoint,
+  }) : super(
+            latitude: latitude,
+            longitude: longitude,
+            projection: projection,
+            mappoint: mappoint);
 }
 
 /////////////////////////////////////////////////////////////////////////////

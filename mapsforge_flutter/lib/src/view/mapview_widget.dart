@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobqueue.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayerimpl.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayerlabel.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
-import 'package:mapsforge_flutter/src/view/zoompainter.dart';
+import 'package:mapsforge_flutter/src/view/tile_painter.dart';
+import 'package:mapsforge_flutter/src/view/transform_widget.dart';
 
 import '../../core.dart';
 import '../layer/job/jobset.dart';
-import '../layer/tilelayer.dart';
 import 'backgroundpainter.dart';
 import 'errorhelper_widget.dart';
+import 'label_painter.dart';
 
 /// A Widget which provides the map. The widget asks for MapModel and ViewModel when
 /// needed and also destroys the models when not needed anymore. You cannot
@@ -52,11 +52,9 @@ class MapviewWidget extends StatefulWidget {
 class _MapviewWidgetState extends State<MapviewWidget> {
   static final _log = new Logger('_MapviewWidgetState');
 
-  TileLayer? _tileLayer;
-
-  TileLayer? _labelLayer;
-
   GlobalKey _keyView = GlobalKey();
+
+  final GlobalKey myKey = GlobalKey();
 
   JobQueue? _jobQueue;
 
@@ -66,8 +64,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
   _Statistics? _statistics; // = _Statistics();
 
-  StreamSubscription<MapViewPosition>? _subscription;
-
   @override
   void initState() {
     super.initState();
@@ -76,12 +72,9 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   @override
   void dispose() {
     _viewModel?.dispose();
-    _tileLayer?.dispose();
-    _labelLayer?.dispose();
     _jobQueue?.dispose();
     _mapModel?.dispose();
     //_jobSet?.dispose();
-    _subscription?.cancel();
 
     super.dispose();
     if (_statistics != null) _log.info(_statistics?.toString());
@@ -95,7 +88,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   Widget _createMapModel(Func child) {
     if (_mapModel != null) {
       assert(_jobQueue != null);
-      assert(_tileLayer != null);
       return child();
     }
 
@@ -113,13 +105,10 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             return progress("Waiting for Map");
           _mapModel = snapshot.data;
           _jobQueue = JobQueue(
-            widget.displayModel,
             _mapModel!.renderer,
             _mapModel!.tileBitmapCache,
             _mapModel!.tileBitmapCacheFirstLevel,
           );
-          _tileLayer = TileLayerImpl();
-          _labelLayer = TileLayerLabel();
           _log.info(
               "MapModel created with renderer key ${_mapModel?.renderer.getRenderKey()} in connectionState ${snapshot.connectionState.toString()}");
           return child();
@@ -141,12 +130,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
           }
           if (snapshot.data == null) return progress("Creating View");
           _viewModel = snapshot.data;
-          _subscription = _viewModel!.observePosition
-              .listen((MapViewPosition mapViewPosition) async {
-            //print("MapView2Widget: new Position");
-            if (mapViewPosition.hasPosition())
-              _jobQueue!.submitJobSet(_viewModel!, mapViewPosition);
-          });
           _log.info(
               "ViewModel created in connectionState ${snapshot.connectionState.toString()}");
           return child();
@@ -159,6 +142,10 @@ class _MapviewWidgetState extends State<MapviewWidget> {
       return StreamBuilder(
           stream: _viewModel!.observePosition,
           builder: (context, AsyncSnapshot<MapViewPosition> snapshot) {
+            if (snapshot.hasError) {
+              return ErrorhelperWidget(
+                  error: snapshot.error!, stackTrace: snapshot.stackTrace);
+            }
             if (snapshot.data?.hasPosition() ?? false) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 setState(() {});
@@ -170,11 +157,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
                 );
           });
     }
-    return LayoutBuilder(builder: (context, BoxConstraints boxConstraints) {
-      _viewModel!
-          .setViewDimension(boxConstraints.maxWidth, boxConstraints.maxHeight);
-      return _buildMapView();
-    });
+    return _buildMapView();
   }
 
   @protected
@@ -204,39 +187,53 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     return null;
   }
 
-  List<Widget> _createMarkerWidgets(MapViewPosition mapViewPosition) {
-    // now draw all markers
-    return _mapModel!.markerDataStores
-        .map((datastore) => CustomPaint(
-              foregroundPainter: MarkerPainter(
-                mapViewPosition: mapViewPosition,
-                dataStore: datastore,
-                viewModel: _viewModel!,
-              ),
-              child: const SizedBox.expand(),
-            ))
-        .toList();
-  }
-
   Widget _buildMapView() {
     _statistics?.mapViewCount++;
-    return Stack(
-      children: [
-        _buildBackgroundView() ?? const SizedBox(),
-        FlutterGestureDetector(
-          key: _keyView,
-          viewModel: _viewModel!,
-          child: const SizedBox.expand(),
-        ),
-        _LayerPainter(
-            viewModel: _viewModel!,
-            jobQueue: _jobQueue!,
-            tileLayer: _tileLayer!),
-        _LayerPainter(
-            viewModel: _viewModel!,
-            jobQueue: _jobQueue!,
-            tileLayer: _labelLayer!),
-        StreamBuilder<MapViewPosition>(
+    return SafeArea(
+      child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints boxConstraints) {
+        return Stack(
+          key: myKey,
+          children: [
+            _buildBackgroundView() ?? const SizedBox(),
+            FlutterGestureDetector(
+              key: _keyView,
+              viewModel: _viewModel!,
+              child: const SizedBox.expand(),
+              screensize: boxConstraints.biggest,
+            ),
+            _TileWidget(
+              mapModel: _mapModel!,
+              viewModel: _viewModel!,
+              jobQueue: _jobQueue!,
+              screensize: boxConstraints.biggest,
+            ),
+            _buildContextMenu(boxConstraints.biggest),
+            if (_viewModel!.overlays != null)
+              for (Widget widget in _viewModel!.overlays!) widget,
+          ],
+        );
+      }),
+    );
+  }
+
+  StreamBuilder<TapEvent> _buildContextMenu(Size screensize) {
+    return StreamBuilder<TapEvent>(
+      stream: _viewModel!.observeTap,
+      builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
+        // _log.info(
+        //     "observeTap ${snapshot.connectionState.toString()} ${snapshot.data}");
+        if (snapshot.hasError) {
+          return ErrorhelperWidget(
+              error: snapshot.error!, stackTrace: snapshot.stackTrace);
+        }
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const SizedBox();
+        if (!snapshot.hasData) return const SizedBox();
+        TapEvent event = snapshot.data!;
+        if (event.isCleared()) return const SizedBox();
+        // with every position-update this context menu is called after the first tap-event
+        return StreamBuilder<MapViewPosition>(
             stream: _viewModel!.observePosition,
             builder: (BuildContext context,
                 AsyncSnapshot<MapViewPosition> snapshot) {
@@ -246,42 +243,14 @@ class _MapviewWidgetState extends State<MapviewWidget> {
               }
               if (snapshot.data == null) return const SizedBox();
               MapViewPosition mapViewPosition = snapshot.data!;
-              return Stack(
-                children: [
-                  for (Widget widget in _createMarkerWidgets(mapViewPosition))
-                    widget,
-                  if (_viewModel!.contextMenuBuilder != null)
-                    _buildContextMenu(mapViewPosition),
-                ],
-              );
-            }),
-        if (_viewModel!.overlays != null)
-          for (Widget widget in _viewModel!.overlays!) widget,
-      ],
-    );
-  }
-
-  StreamBuilder<TapEvent> _buildContextMenu(MapViewPosition position) {
-    return StreamBuilder<TapEvent>(
-      stream: _viewModel!.observeTap,
-      builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
-        // _log.info(
-        //     "observeTap ${snapshot.connectionState.toString()} ${snapshot.data}");
-        if (snapshot.connectionState == ConnectionState.waiting)
-          return const SizedBox();
-        if (!snapshot.hasData) return const SizedBox();
-        TapEvent event = snapshot.data!;
-        if (event.isCleared()) return const SizedBox();
-        // with every position-update this context menu is called after the first tap-event
-        return _viewModel!.contextMenuBuilder!.buildContextMenu(
-            context,
-            _mapModel!,
-            _viewModel!,
-            position,
-            Dimension(
-                _viewModel!.mapDimension.width / _viewModel!.viewScaleFactor,
-                _viewModel!.mapDimension.height / _viewModel!.viewScaleFactor),
-            event);
+              return _viewModel!.contextMenuBuilder!.buildContextMenu(
+                  context,
+                  _mapModel!,
+                  _viewModel!,
+                  mapViewPosition,
+                  Dimension(screensize.width, screensize.height),
+                  event);
+            });
       },
     );
   }
@@ -298,8 +267,6 @@ class _MapviewWidgetState extends State<MapviewWidget> {
         setState(() {
           _viewModel = null;
           _jobQueue = null;
-          _tileLayer = null;
-          _labelLayer = null;
           _mapModel = null;
         });
       }
@@ -315,60 +282,104 @@ class _MapviewWidgetState extends State<MapviewWidget> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class _LayerPainter extends StatefulWidget {
+class _TileWidget extends StatelessWidget {
+  final MapModel mapModel;
+
   final ViewModel viewModel;
 
   final JobQueue jobQueue;
 
-  final TileLayer tileLayer;
+  final Size screensize;
 
-  _LayerPainter(
-      {required this.viewModel,
-      required this.jobQueue,
-      required this.tileLayer});
-
-  @override
-  State<StatefulWidget> createState() {
-    return _LayerState();
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class _LayerState extends State<_LayerPainter> {
-  StreamSubscription<JobSet>? _subscription;
-
-  JobSet? _jobSet;
-
-  @override
-  void initState() {
-    _subscription = widget.jobQueue.observeJobset.listen((JobSet jobSet) async {
-      setState(() {
-        _jobSet = jobSet;
-      });
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
+  _TileWidget({
+    required this.mapModel,
+    required this.viewModel,
+    required this.jobQueue,
+    required this.screensize,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_jobSet == null)
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    return CustomPaint(
-      foregroundPainter: ZoomPainter(
-          tileLayer: widget.tileLayer,
-          viewModel: widget.viewModel,
-          jobSet: _jobSet!),
-      child: const SizedBox.expand(),
+    return StreamBuilder<MapViewPosition>(
+        stream: viewModel.observePosition,
+        builder: (context, AsyncSnapshot<MapViewPosition> snapshot) {
+          if (snapshot.hasError) {
+            return ErrorhelperWidget(
+                error: snapshot.error!, stackTrace: snapshot.stackTrace);
+          }
+          if (snapshot.data == null) return const SizedBox();
+          MapViewPosition mapViewPosition = snapshot.data!;
+          if (!mapViewPosition.hasPosition()) return const SizedBox();
+          JobSet? jobSet = jobQueue.createJobSet(
+              viewModel,
+              mapViewPosition,
+              MapSize(
+                  width: screensize.width * viewModel.viewScaleFactor,
+                  height: screensize.height * viewModel.viewScaleFactor));
+          if (jobSet == null) return const SizedBox();
+          //print("${leftUpperTile.x - leftUpperPosition.x} - ${leftUpperTile.y - leftUpperPosition.y}");
+          return TransformWidget(
+            viewModel: viewModel,
+            mapViewPosition: mapViewPosition,
+            screensize: screensize,
+            centerTile: jobSet.getCenter(),
+            child: Stack(
+              children: [
+                RepaintBoundary(
+                  child: CustomPaint(
+                    foregroundPainter:
+                        TilePainter(viewModel: viewModel, jobSet: jobSet),
+                    size: screensize,
+                    //child: Container(),
+                  ),
+                ),
+                RepaintBoundary(
+                  child: CustomPaint(
+                    foregroundPainter: LabelPainter(
+                        viewModel: viewModel,
+                        jobSet: jobSet,
+                        rotationRadian: mapViewPosition.rotationRadian),
+                    size: screensize,
+                    //child: Container(),
+                  ),
+                ),
+                // RepaintBoundary(
+                //   child: CustomPaint(
+                //     foregroundPainter: DebugPainter(viewModel: viewModel),
+                //     size: screensize,
+                //     //child: Container(),
+                //   ),
+                // ),
+                for (Widget widget in _createMarkerWidgets(
+                    mapViewPosition, jobSet.boundingBox, jobSet.getCenter()))
+                  widget,
+              ],
+            ),
+          );
+        });
+  }
+
+  List<Widget> _createMarkerWidgets(MapViewPosition mapViewPosition,
+      BoundingBox boundingBox, Mappoint mapCenter) {
+    MarkerContext markerContext = MarkerContext(
+      mapCenter,
+      mapViewPosition.zoomLevel,
+      mapViewPosition.projection,
+      mapViewPosition.rotationRadian,
+      boundingBox,
     );
+    // now draw all markers
+    return mapModel.markerDataStores
+        .map((datastore) => RepaintBoundary(
+              child: CustomPaint(
+                foregroundPainter: MarkerPainter(
+                  dataStore: datastore,
+                  markerContext: markerContext,
+                ),
+                child: const SizedBox.expand(),
+              ),
+            ))
+        .toList();
   }
 }
 

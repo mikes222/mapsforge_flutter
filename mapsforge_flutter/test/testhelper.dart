@@ -12,7 +12,7 @@ class TestHelper {
       MaterialApp(
         theme: ThemeData(),
         home: Scaffold(
-          appBar: AppBar(title: Text(child.runtimeType.toString())),
+          appBar: AppBar(title: Text("CustomPaint")),
           body: Center(
             child: Container(
               key: key,

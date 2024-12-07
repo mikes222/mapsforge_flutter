@@ -58,64 +58,58 @@ class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay>
       //top: toolbarSpacing,
       // this widget has an unbound width
       // left: toolbarSpacing,
-      child: Padding(
-        padding: const EdgeInsets.only(
-            bottom: kBottomNavigationBarHeight),
-        child: FadeTransition(
-          opacity: _fadeAnimationController,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Flexible(
-                child: IndoorLevelBar(
-                  onChange: (int level) {
-                    widget.viewModel.setIndoorLevel(level);
+      child: FadeTransition(
+        opacity: _fadeAnimationController,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            IndoorLevelBar(
+              onChange: (int level) {
+                widget.viewModel.setIndoorLevel(level);
+              },
+              indoorLevels: widget.indoorLevels ??
+                  {
+                    5: null,
+                    4: null,
+                    3: null,
+                    2: "OG2",
+                    1: "OG1",
+                    0: "EG",
+                    -1: "UG1",
+                    -2: null,
+                    -3: null,
+                    -4: null,
+                    -5: null
                   },
-                  indoorLevels: widget.indoorLevels ??
-                      {
-                        5: null,
-                        4: null,
-                        3: null,
-                        2: "OG2",
-                        1: "OG1",
-                        0: "EG",
-                        -1: "UG1",
-                        -2: null,
-                        -3: null,
-                        -4: null,
-                        -5: null
-                      },
-                  width: 45,
-                  fillColor: Colors.white,
-                  elevation: 2.0,
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  initialLevel: widget.viewModel.getIndoorLevel(),
-                ),
-              ),
-              SizedBox(height: toolbarSpacing),
-              RawMaterialButton(
-                onPressed: () => widget.viewModel.zoomIn(),
-                elevation: 2.0,
-                fillColor: Colors.white,
-                child: const Icon(Icons.add),
-                padding: const EdgeInsets.all(10.0),
-                shape: const CircleBorder(),
-                constraints: const BoxConstraints(),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              SizedBox(height: toolbarSpacing),
-              RawMaterialButton(
-                onPressed: () => widget.viewModel.zoomOut(),
-                elevation: 2.0,
-                fillColor: Colors.white,
-                child: const Icon(Icons.remove),
-                padding: const EdgeInsets.all(10.0),
-                shape: const CircleBorder(),
-                constraints: const BoxConstraints(),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ],
-          ),
+              width: 45,
+              fillColor: Colors.white,
+              elevation: 2.0,
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
+              initialLevel: widget.viewModel.getIndoorLevel(),
+            ),
+            SizedBox(height: toolbarSpacing),
+            RawMaterialButton(
+              onPressed: () => widget.viewModel.zoomIn(),
+              elevation: 2.0,
+              fillColor: Colors.white,
+              child: const Icon(Icons.add),
+              padding: const EdgeInsets.all(10.0),
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints(),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            SizedBox(height: toolbarSpacing),
+            RawMaterialButton(
+              onPressed: () => widget.viewModel.zoomOut(),
+              elevation: 2.0,
+              fillColor: Colors.white,
+              child: const Icon(Icons.remove),
+              padding: const EdgeInsets.all(10.0),
+              shape: const CircleBorder(),
+              constraints: const BoxConstraints(),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ],
         ),
       ),
     );

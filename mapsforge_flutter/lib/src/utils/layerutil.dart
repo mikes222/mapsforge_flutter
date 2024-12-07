@@ -109,37 +109,3 @@ class LayerUtil {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
-class TileBoundary {
-  final int tileLeft;
-
-  final int tileRight;
-
-  final int tileBottom;
-
-  final int tileTop;
-
-  const TileBoundary(
-      {required this.tileLeft,
-      required this.tileRight,
-      required this.tileTop,
-      required this.tileBottom});
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is TileBoundary &&
-          runtimeType == other.runtimeType &&
-          tileLeft == other.tileLeft &&
-          tileRight == other.tileRight &&
-          tileBottom == other.tileBottom &&
-          tileTop == other.tileTop;
-
-  @override
-  int get hashCode =>
-      tileLeft.hashCode ^
-      tileRight.hashCode ^
-      tileBottom.hashCode ^
-      tileTop.hashCode;
-}

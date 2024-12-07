@@ -1,15 +1,15 @@
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../../datastore.dart';
 import '../../maps.dart';
+import '../graphics/mapcanvas.dart';
 import '../paintelements/shape_paint_symbol.dart';
 import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_symbol.dart';
-import 'basicmarker.dart';
-import 'markercallback.dart';
 
 class PoiMarker<T> extends BasicPointMarker<T> {
   late ShapePaintSymbol shapePaint;
@@ -115,7 +115,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext) {
     // if (scaled == null ||
     //     _lastZoom != markerCallback.mapViewPosition.zoomLevel) {
     //   scaled =
@@ -126,18 +126,17 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     // }
     // print(
     //     "renderCaption $caption for $minZoomLevel and $maxZoomLevel at ${markerCallback.mapViewPosition.zoomLevel}");
-    if (_lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+    if (_lastZoomLevel != markerContext.zoomLevel) {
       // zoomLevel changed, set _coordinatesAbsolute cache to null
       nodeProperties.clearCache();
     }
-    _lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
+    _lastZoomLevel = markerContext.zoomLevel;
     shapePaint.renderNode(
-      markerCallback.flutterCanvas,
+      flutterCanvas,
       nodeProperties,
-      markerCallback.mapViewPosition.projection,
-      markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension),
-      rotateWithMap ? markerCallback.mapViewPosition.rotationRadian : 0,
+      markerContext.projection,
+      markerContext.mapCenter,
+      rotateWithMap ? markerContext.rotationRadian : 0,
     );
   }
 

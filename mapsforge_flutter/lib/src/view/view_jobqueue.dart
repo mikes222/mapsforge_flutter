@@ -12,7 +12,7 @@ import '../../core.dart';
 import '../renderer/view_renderer.dart';
 import '../utils/timing.dart';
 
-class ViewJobqueue with ChangeNotifier {
+class ViewJobqueue extends ChangeNotifier {
   static final _log = new Logger('ViewJobqueue');
 
   final ViewRenderer viewRenderer;
@@ -24,11 +24,11 @@ class ViewJobqueue with ChangeNotifier {
 
   ViewJobRequest? _lastRequested;
 
-  RenderContext? _renderContext;
-
   Subject<RenderContext> _injectRenderContext = BehaviorSubject();
 
   Stream<RenderContext> get observeRenderContext => _injectRenderContext.stream;
+
+  RenderContext? renderContext;
 
   ViewJobqueue({required this.viewRenderer}) {
     _cache = new LruCache<ViewJobRequest, RenderContext>(
@@ -43,47 +43,44 @@ class ViewJobqueue with ChangeNotifier {
     _injectRenderContext.close();
   }
 
-  RenderContext? getRenderContext() {
-    return _renderContext;
-  }
-
   Future<RenderContext?> getBoundaryTiles(
-      ViewModel viewModel, MapViewPosition mapViewPosition) async {
+      ViewModel viewModel, MapViewPosition mapViewPosition, Size screensize) async {
     Timing timing = Timing(log: _log, active: true);
-    List<Tile> tiles = _getTiles(viewModel, mapViewPosition);
+    List<Tile> tiles = _getTiles(viewModel, mapViewPosition, screensize);
     ViewJobRequest viewJobRequest = ViewJobRequest(
         upperLeft: tiles[0], lowerRight: tiles[1]);
     RenderContext? renderContext = _cache.get(viewJobRequest);
-    timing.lap(50, "new request ${viewJobRequest.upperLeft}");
+    timing.lap(10, "new request ${viewJobRequest.upperLeft}-${viewJobRequest.lowerRight}");
     if (renderContext != null) {
+      if (renderContext == this.renderContext) return renderContext;
       _injectRenderContext.add(renderContext);
-      _renderContext = renderContext;
+      this.renderContext = renderContext;
       notifyListeners();
+      timing.lap(0, "after execute existing request ${viewJobRequest.upperLeft}-${viewJobRequest.lowerRight}");
       return renderContext;
     }
     if (_lastRequested == viewJobRequest) return null;
     _lastRequested = viewJobRequest;
-    timing.lap(50, "new request2 ${viewJobRequest.upperLeft}");
+    timing.lap(10, "Before execute new request ${viewJobRequest.upperLeft}-${viewJobRequest.lowerRight}");
     ViewJobResult jobResult = await viewRenderer.executeViewJob(viewJobRequest);
     _cache[viewJobRequest] = jobResult.renderContext;
     _lastRequested = null;
-    _renderContext = jobResult.renderContext;
     _injectRenderContext.add(jobResult.renderContext);
+    this.renderContext = jobResult.renderContext;
     notifyListeners();
-    timing.lap(50, "new request3 ${viewJobRequest.upperLeft}");
+    timing.lap(0, "after execute new request ${viewJobRequest.upperLeft}-${viewJobRequest.lowerRight}");
     return jobResult.renderContext;
   }
 
   ///
-  /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
-  /// the user (tile in the middle should be created first
+  /// Gets upper-left and lower-right tile for the given view
   ///
-  List<Tile> _getTiles(ViewModel viewModel, MapViewPosition mapViewPosition) {
+  List<Tile> _getTiles(ViewModel viewModel, MapViewPosition mapViewPosition, Size screensize) {
     Mappoint center = mapViewPosition.getCenter();
     int zoomLevel = mapViewPosition.zoomLevel;
     int indoorLevel = mapViewPosition.indoorLevel;
-    double halfWidth = viewModel.mapDimension.width / 2;
-    double halfHeight = viewModel.mapDimension.height / 2;
+    double halfWidth = screensize.width / 2;
+    double halfHeight = screensize.height / 2;
     if (mapViewPosition.rotation > 2) {
       // we rotate. Use the max side for both width and height
       halfWidth = max(halfWidth, halfHeight);

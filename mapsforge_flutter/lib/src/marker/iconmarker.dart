@@ -4,6 +4,12 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
+import '../graphics/implementation/fluttercanvas.dart';
+import '../graphics/mapcanvas.dart';
+
+/// A marker which uses flutter Icons. The size can be set with the [fontSize] parameter. Currently there is
+/// no way to set the position of the marker (to e.g. above the position) so an icon which is suitable for
+/// being centered should be used.
 class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
   final IconData icon;
   final Color? color;
@@ -36,13 +42,10 @@ class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
-    final leftUpper = markerCallback.mapViewPosition
-        .getLeftUpper(markerCallback.viewModel.mapDimension);
-
+  void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext) {
     final iconPosition = Offset(
-      (mappoint.x - leftUpper.x),
-      (mappoint.y - leftUpper.y),
+      (mappoint.x - markerContext.mapCenter.x),
+      (mappoint.y - markerContext.mapCenter.y),
     );
 
     TextPainter textPainter = TextPainter(
@@ -59,7 +62,7 @@ class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
     );
     textPainter.layout();
 
-    textPainter.paint(markerCallback.flutterCanvas.uiCanvas, iconPosition);
+    textPainter.paint((flutterCanvas as FlutterCanvas).uiCanvas, iconPosition);
   }
 
   @override

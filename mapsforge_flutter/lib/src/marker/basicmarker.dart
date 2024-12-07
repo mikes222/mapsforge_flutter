@@ -4,6 +4,8 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/marker/captionmarker.dart';
 
+import '../graphics/mapcanvas.dart';
+
 /// Abstract Marker class for further extensions. This class holds the position of a marker as [ILatLong] and implements the shouldPaint() method.
 abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
   ///
@@ -62,14 +64,12 @@ abstract class BasicPointMarker<T> extends BasicMarker<T> implements ILatLong {
   }
 
   @override
-  void render(MarkerCallback markerCallback) {
-    if (_mappoint == null ||
-        markerCallback.mapViewPosition.zoomLevel != _lastZoomLevel) {
-      _mappoint =
-          markerCallback.mapViewPosition.projection.latLonToPixel(latLong);
-      _lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
+  void render(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    if (_mappoint == null || markerContext.zoomLevel != _lastZoomLevel) {
+      _mappoint = markerContext.projection.latLonToPixel(latLong);
+      _lastZoomLevel = markerContext.zoomLevel;
     }
-    super.render(markerCallback);
+    super.render(flutterCanvas, markerContext);
   }
 }
 
@@ -114,15 +114,16 @@ abstract class BasicMarker<T> extends Marker<T> {
   /// Renders this object. Called by markerPointer -> markerRenderer
   ///
   @override
-  void render(MarkerCallback markerCallback) {
-    renderBitmap(markerCallback);
-    if (_markerCaption != null) _markerCaption!.renderCaption(markerCallback);
+  void render(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    renderBitmap(flutterCanvas, markerContext);
+    if (_markerCaption != null)
+      _markerCaption!.renderCaption(flutterCanvas, markerContext);
   }
 
   MarkerCaption? get markerCaption => _markerCaption;
 
   /// renders the bitmap portion of this marker. This method is called by [render()] which also call the render method for the caption
-  void renderBitmap(MarkerCallback markerCallback);
+  void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -161,10 +162,10 @@ class MarkerCaption extends CaptionMarker {
           strokeMinZoomLevel: strokeMinZoomLevel,
         ) {}
 
-  void renderCaption(MarkerCallback markerCallback) {
-    if (markerCallback.mapViewPosition.zoomLevel < minZoomLevel) return;
-    if (markerCallback.mapViewPosition.zoomLevel > maxZoomLevel) return;
-    renderBitmap(markerCallback);
+  void renderCaption(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    if (markerContext.zoomLevel < minZoomLevel) return;
+    if (markerContext.zoomLevel > maxZoomLevel) return;
+    renderBitmap(flutterCanvas, markerContext);
   }
 
   void set text(String text) {

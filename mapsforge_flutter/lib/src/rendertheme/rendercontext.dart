@@ -108,6 +108,12 @@ class RenderContext {
     clashDrawingLayer.reduce();
   }
 
+
+  @override
+  String toString() {
+    return 'RenderContext{maxLevels: $maxLevels, labels: ${labels.length}, drawingLayers: $drawingLayers, clashDrawingLayer: $clashDrawingLayer}';
+  }
+
   void statistics() {
     int nullLabels = 0;
     Map<String, int> statLabels = {};
@@ -175,5 +181,10 @@ class LayerPaintContainer {
         ++idx;
       }
     });
+  }
+
+  @override
+  String toString() {
+    return 'LayerPaintContainer{ways: ${ways.length} outer ways}';
   }
 }

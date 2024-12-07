@@ -62,7 +62,7 @@ class TileBasedLabelStore implements LabelStore {
   }
 
   @override
-  Map<Job, List<RenderInfo<Shape>>> getVisibleItems(Set<Job> jobs) {
+  Map<Job, List<RenderInfo<Shape>>> getVisibleItems(Iterable<Job> jobs) {
     Map<Job, List<RenderInfo<Shape>>> visibleItems = {};
     for (Job job in jobs) {
       if (_cache.containsKey(job.tile)) {

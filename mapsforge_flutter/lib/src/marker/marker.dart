@@ -23,7 +23,7 @@ class Marker<T> {
   ///
   /// Renders this object. Called by markerPointer -> markerRenderer
   ///
-  void render(MarkerCallback markerCallback) {}
+  void render(MapCanvas mapCanvas, MarkerContext markerContext) {}
 
   /// returns true if this marker is within the visible boundary and therefore should be painted. Since the initResources() is called
   /// only if shouldPoint() returns true, do not test for available resources here.

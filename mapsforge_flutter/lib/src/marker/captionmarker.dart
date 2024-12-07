@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_caption.dart';
 
 import '../../marker.dart';
+import '../graphics/mapcanvas.dart';
 
 class CaptionMarker<T> extends BasicPointMarker<T> {
   static final double DEFAULT_GAP = 2;
@@ -67,28 +68,25 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
-    if (_lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+  void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    if (_lastZoomLevel != markerContext.zoomLevel) {
       // zoomLevel changed, set _coordinatesAbsolute cache to null
       nodeProperties.clearCache();
     }
-    if (scaled == null ||
-        _lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
-      scaled =
-          ShapeCaption.scale(base, markerCallback.mapViewPosition.zoomLevel);
-      _lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
+    if (scaled == null || _lastZoomLevel != markerContext.zoomLevel) {
+      scaled = ShapeCaption.scale(base, markerContext.zoomLevel);
+      _lastZoomLevel = markerContext.zoomLevel;
       shapePaint = ShapePaintCaption(scaled!,
           caption: caption, symbolBoundary: _symbolBoundary);
     }
     // print(
     //     "renderCaption $caption for $minZoomLevel and $maxZoomLevel at ${markerCallback.mapViewPosition.zoomLevel}");
     shapePaint.renderNode(
-      markerCallback.flutterCanvas,
+      flutterCanvas,
       nodeProperties,
-      markerCallback.mapViewPosition.projection,
-      markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension),
-      markerCallback.mapViewPosition.rotationRadian,
+      markerContext.projection,
+      markerContext.mapCenter,
+      markerContext.rotationRadian,
     );
   }
 

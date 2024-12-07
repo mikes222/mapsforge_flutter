@@ -70,65 +70,61 @@ class _DistanceOverlayState extends State<DistanceOverlay>
       //right: toolbarSpacing,
       // this widget has an unbound width
       // left: toolbarSpacing,
-      child: Padding(
-        padding: const EdgeInsets.only(
-            bottom: kBottomNavigationBarHeight),
-        child: FadeTransition(
-          opacity: _fadeAnimationController,
-          child: StreamBuilder(
-            stream: widget.viewModel.observePosition,
-            builder:
-                (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
-                return const SizedBox();
-              if (snapshot.data == null) return const SizedBox();
-              MapViewPosition position = snapshot.data!;
-              if (position.zoomLevel != _lastZoomLevel) {
-                // zoomLevel has changed. Enable showing the new ruler
-                _lastDisplayed = null;
-                _timer?.cancel();
+      child: FadeTransition(
+        opacity: _fadeAnimationController,
+        child: StreamBuilder(
+          stream: widget.viewModel.observePosition,
+          builder:
+              (BuildContext context, AsyncSnapshot<MapViewPosition> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const SizedBox();
+            if (snapshot.data == null) return const SizedBox();
+            MapViewPosition position = snapshot.data!;
+            if (position.zoomLevel != _lastZoomLevel) {
+              // zoomLevel has changed. Enable showing the new ruler
+              _lastDisplayed = null;
+              _timer?.cancel();
+              _timer = null;
+              _fadeAnimationController.reset();
+              _lastZoomLevel = position.zoomLevel;
+              _recalc(position);
+            }
+            // if (_timer != null) {
+            //   // still showing, do not recalculate
+            //   return const SizedBox();
+            // }
+
+            if (_timer == null &&
+                (_lastDisplayed == null ||
+                    _lastDisplayed! <
+                        DateTime.now().millisecondsSinceEpoch - 30 * 1000)) {
+              _fadeAnimationController.forward();
+              _timer?.cancel();
+              _timer = Timer(const Duration(seconds: 10), () {
+                if (mounted) _fadeAnimationController.reverse();
                 _timer = null;
-                _fadeAnimationController.reset();
-                _lastZoomLevel = position.zoomLevel;
-                _recalc(position);
-              }
-              // if (_timer != null) {
-              //   // still showing, do not recalculate
-              //   return const SizedBox();
-              // }
+                _lastDisplayed = DateTime.now().millisecondsSinceEpoch;
+              });
+            }
 
-              if (_timer == null &&
-                  (_lastDisplayed == null ||
-                      _lastDisplayed! <
-                          DateTime.now().millisecondsSinceEpoch - 30 * 1000)) {
-                _fadeAnimationController.forward();
-                _timer?.cancel();
-                _timer = Timer(const Duration(seconds: 10), () {
-                  if (mounted) _fadeAnimationController.reverse();
-                  _timer = null;
-                  _lastDisplayed = DateTime.now().millisecondsSinceEpoch;
-                });
-              }
-
-              // we do not have any info, display nothing
-              if (_pixel <= 10) return const SizedBox();
-              // display the ruler and the corresponding text
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomPaint(
-                    size: Size(_pixel, 8),
-                    foregroundPainter: MeterPainter(
-                        pixel: _pixel,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ??
-                            Colors.black),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(_toDisplay, style: Theme.of(context).textTheme.bodyMedium),
-                ],
-              );
-            },
-          ),
+            // we do not have any info, display nothing
+            if (_pixel <= 10) return const SizedBox();
+            // display the ruler and the corresponding text
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomPaint(
+                  size: Size(_pixel, 8),
+                  foregroundPainter: MeterPainter(
+                      pixel: _pixel,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ??
+                          Colors.black),
+                ),
+                const SizedBox(height: 2),
+                Text(_toDisplay, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            );
+          },
         ),
       ),
     );

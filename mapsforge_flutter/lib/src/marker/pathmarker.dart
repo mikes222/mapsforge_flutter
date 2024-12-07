@@ -4,6 +4,8 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
+import '../graphics/implementation/fluttercanvas.dart';
+
 /// Draws an normally open path as marker. Note that isTapped() returns
 /// always false.
 class PathMarker<T> extends Marker<T> with PaintMixin {
@@ -55,27 +57,22 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
   }
 
   @override
-  void render(MarkerCallback markerCallback) {
-    if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
-      markerCallback.flutterCanvas.uiCanvas.save();
-      Mappoint leftUpper = markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension);
-      markerCallback.flutterCanvas.uiCanvas
-          .translate(_leftUpperX - leftUpper.x, _leftUpperY - leftUpper.y);
+  void render(MapCanvas mapCanvas, MarkerContext markerContext) {
+    if (_zoom == markerContext.zoomLevel) {
+      (mapCanvas as FlutterCanvas).uiCanvas.save();
+      mapCanvas.uiCanvas.translate(_leftUpperX - markerContext.mapCenter.x,
+          _leftUpperY - markerContext.mapCenter.y);
       //if (fill != null) markerCallback.renderPath(mapPath!, fill!);
-      markerCallback.renderPath(
-          mapPath!, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
-      markerCallback.flutterCanvas.uiCanvas.restore();
+      mapCanvas.drawPath(mapPath!, getStrokePaint(markerContext.zoomLevel));
+      mapCanvas.uiCanvas.restore();
     } else {
       mapPath?.clear();
       _points.clear();
-      _zoom = markerCallback.mapViewPosition.zoomLevel;
-      Mappoint leftUpper = markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      _zoom = markerContext.zoomLevel;
       path.forEach((latLong) {
-        Mappoint mappoint = markerCallback.mapViewPosition.projection.latLonToPixel(latLong);
-        double y = mappoint.y - leftUpper.y;
-        double x = mappoint.x - leftUpper.x;
+        Mappoint mappoint = markerContext.projection.latLonToPixel(latLong);
+        double y = mappoint.y - markerContext.mapCenter.y;
+        double x = mappoint.x - markerContext.mapCenter.x;
 
         _points.add(mappoint);
 
@@ -84,10 +81,9 @@ class PathMarker<T> extends Marker<T> with PaintMixin {
         else
           mapPath!.lineTo(x, y);
       });
-      _leftUpperX = leftUpper.x;
-      _leftUpperY = leftUpper.y;
-      markerCallback.renderPath(
-          mapPath!, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+      _leftUpperX = markerContext.mapCenter.x;
+      _leftUpperY = markerContext.mapCenter.y;
+      mapCanvas.drawPath(mapPath!, getStrokePaint(markerContext.zoomLevel));
     }
   }
 

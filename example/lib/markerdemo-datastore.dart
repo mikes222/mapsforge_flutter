@@ -59,13 +59,13 @@ class MarkerdemoDatastore extends MarkerByItemDataStore {
     if (count > 0) setRepaint();
   }
 
-  Future<CircleMarker<TapEvent>> _createMarker(TapEvent tapEvent) async {
+  Future<Marker<TapEvent>> _createMarker(TapEvent tapEvent) async {
     CircleMarker<TapEvent> marker = CircleMarker<TapEvent>(
       center: tapEvent,
       item: tapEvent,
+      displayModel: displayModel,
       radius: 20,
       strokeWidth: 5,
-      displayModel: displayModel,
     );
     return marker;
   }

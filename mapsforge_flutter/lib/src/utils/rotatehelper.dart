@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import '../../core.dart';
 
@@ -6,17 +7,18 @@ class RotateHelper {
   /// normalizes the given dx/dy coordinates in respect to the orientation.
   /// We rotate the given coordinates so that it behaves like there was NO
   /// rotation at all
-  static PositionInfo? normalize(ViewModel viewModel, double dx, double dy) {
-    Mappoint? leftUpper =
-        viewModel.mapViewPosition?.getLeftUpper(viewModel.mapDimension);
+  static PositionInfo? normalize(
+      ViewModel viewModel, ui.Size size, double dx, double dy) {
+    // Mappoint? leftUpper =
+    //     viewModel.mapViewPosition?.getLeftUpper(viewModel.mapDimension);
     Mappoint? center = viewModel.mapViewPosition?.getCenter();
-    if (center == null || leftUpper == null) {
+    if (center == null) {
       return null;
     }
 
     /// x/y relative from the center
-    double diffX = leftUpper.x - center.x + dx * viewModel.viewScaleFactor;
-    double diffY = leftUpper.y - center.y + dy * viewModel.viewScaleFactor;
+    double diffX = (dx - size.width / 2) * viewModel.viewScaleFactor;
+    double diffY = (dy - size.height / 2) * viewModel.viewScaleFactor;
     if (viewModel.mapViewPosition?.rotation != 0) {
       double hyp = sqrt(diffX * diffX + diffY * diffY);
       double rad = atan2(diffY, diffX);
@@ -34,7 +36,8 @@ class RotateHelper {
         dy: diffY,
         latitude: latLong.latitude,
         longitude: latLong.longitude,
-        center: center);
+        center: center,
+        mappoint: Mappoint(center.x + diffX, center.y + diffY));
   }
 }
 
@@ -60,10 +63,19 @@ class PositionInfo implements ILatLong {
   /// The center of the current view in mappixels
   final Mappoint center;
 
+  /// The point of the event in mappixels
+  final Mappoint mappoint;
+
   const PositionInfo(
       {required this.dx,
       required this.dy,
       required this.latitude,
       required this.longitude,
-      required this.center});
+      required this.center,
+      required this.mappoint});
+
+  @override
+  String toString() {
+    return 'PositionInfo{dx: $dx, dy: $dy, latitude: $latitude, longitude: $longitude, center: $center}';
+  }
 }

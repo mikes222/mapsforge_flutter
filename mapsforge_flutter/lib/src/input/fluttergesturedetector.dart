@@ -19,10 +19,13 @@ class FlutterGestureDetector extends StatefulWidget {
   /// stops.
   final double swipeAbsorption;
 
+  final Size screensize;
+
   const FlutterGestureDetector(
       {Key? key,
       required this.viewModel,
       required this.child,
+      required this.screensize,
       this.swipeAbsorption = 0.8})
       : assert(swipeAbsorption >= 0 && swipeAbsorption <= 1),
         super(key: key);
@@ -38,29 +41,9 @@ class FlutterGestureDetector extends StatefulWidget {
 class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   static final _log = new Logger('FlutterGestureDetectorState');
 
-  /// Minimum pixels per second (squared) to activate flinging
-  final double _swipeThresholdSquared = 20000;
+  _GestureTapEvent? _gestureTapEvent;
 
-  //final double _minDragThresholdSquared = 10;
-
-  final int _swipeSleepMs = 100; // milliseconds between swipes
-
-  /// The rate of the slowdown after each iteration
-  late final double _swipeAbsorption;
-
-  Offset? _updateLocalFocalPoint;
-
-  Offset? _doubleTapLocalPosition;
-
-  Timer? _swipeTimer;
-
-  Offset? _swipeOffset;
-
-  _TapDownEvent? _tapDownEvent;
-
-  _ScaleEvent? _scaleEvent;
-
-  int _lastMoveTimestamp = 0;
+  _GestureEvent? _gestureEvent;
 
   @override
   FlutterGestureDetector get widget => super.widget;
@@ -68,14 +51,14 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
   @override
   void initState() {
     super.initState();
-    _swipeAbsorption = widget.swipeAbsorption;
   }
 
   @override
   void dispose() {
-    _swipeTimer?.cancel();
-    _swipeTimer = null;
-    _swipeOffset = null;
+    _gestureEvent?.dispose();
+    _gestureEvent = null;
+    _gestureTapEvent?.dispose();
+    _gestureTapEvent = null;
     super.dispose();
   }
 
@@ -93,6 +76,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
     //
     // doubletap:
     // onDoubleTapDown
+    // onTapDown
     // onDoubleTap
     //
     // normal drag event:
@@ -120,13 +104,13 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
         if (doLog)
           _log.info(
               "onTapDown $details with localPosition ${details.localPosition}");
-        _swipeTimer?.cancel();
-        _swipeTimer = null;
-        _swipeOffset = null;
-        _tapDownEvent = _TapDownEvent(
+        _gestureEvent?.dispose();
+        _gestureEvent = null;
+        // only if we do not have already a double tap down event
+        _gestureTapEvent ??= _TapDownEvent(
             viewModel: widget.viewModel,
-            tapDownLocalPosition: details.localPosition);
-        _scaleEvent = null;
+            tapDownLocalPosition: details.localPosition,
+            size: widget.screensize);
       },
       // onLongPressDown: (LongPressDownDetails details) {
       //   if (doLog) _log.info("onLongPressDown $details");
@@ -136,244 +120,402 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       // },
       onTapUp: (TapUpDetails details) {
         if (doLog) _log.info("onTapUp $details");
-        if (_tapDownEvent == null) return;
-        if (_tapDownEvent!.longPressed) {
-          // tapped at least 500 ms, long tap
-          // we already reported a gestureMoveStartEvent, we should cancel it
-          PositionInfo? positionInfo = RotateHelper.normalize(
-              widget.viewModel,
-              _tapDownEvent!.tapDownLocalPosition.dx,
-              _tapDownEvent!.tapDownLocalPosition.dy);
-          if (positionInfo == null) return;
-
-          MoveAroundEvent event = MoveAroundEvent(
-            latitude: positionInfo.latitude,
-            longitude: positionInfo.longitude,
-            projection: widget.viewModel.mapViewPosition!.projection,
-          );
-
-          widget.viewModel.gestureMoveCancelEvent(event);
-          _tapDownEvent!.stop();
-          _tapDownEvent = null;
-
-          TapEvent tapEvent = TapEvent(
-              latitude: positionInfo.latitude,
-              longitude: positionInfo.longitude,
-              projection: widget.viewModel.mapViewPosition!.projection);
-          widget.viewModel.longTapEvent(tapEvent);
-          return;
-        } else {
-          _tapDownEvent!.stop();
-          _tapDownEvent = null;
-
-          PositionInfo? positionInfo = RotateHelper.normalize(widget.viewModel,
-              details.localPosition.dx, details.localPosition.dy);
-          if (positionInfo == null) return;
-
-          TapEvent event = TapEvent(
-              latitude: positionInfo.latitude,
-              longitude: positionInfo.longitude,
-              projection: widget.viewModel.mapViewPosition!.projection);
-
-          widget.viewModel.tapEvent(event);
-          return;
-        }
+        _gestureTapEvent?.tapUp(size: widget.screensize);
+        _gestureTapEvent = null;
+        _gestureEvent?.dispose();
+        _gestureEvent = null;
       },
       onDoubleTapDown: (TapDownDetails details) {
         if (doLog)
           _log.info(
               "onDoubleTapDown $details with localPosition ${details.localPosition}");
-        _doubleTapLocalPosition = details.localPosition;
+        _gestureTapEvent?.dispose();
+        _gestureTapEvent =
+            _DoubleTapEvent(viewModel: widget.viewModel, details: details);
       },
       onDoubleTap: () {
-        if (doLog)
-          _log.info(
-              "onDoubleTap with _doubleTapLocalPosition ${_doubleTapLocalPosition}");
-        // it should always non-null but just for safety do a null-check
-        if (_doubleTapLocalPosition == null) return;
-        PositionInfo? positionInfo = RotateHelper.normalize(widget.viewModel,
-            _doubleTapLocalPosition!.dx, _doubleTapLocalPosition!.dy);
-        if (positionInfo == null) return;
-
-        // interpolate the new center between the old center and where we
-        // pressed now. The new center is half-way between our double-pressed point and the old-center
-        widget.viewModel.zoomInAround(
-            (positionInfo.latitude -
-                        widget.viewModel.mapViewPosition!.latitude!) /
-                    2 +
-                widget.viewModel.mapViewPosition!.latitude!,
-            (positionInfo.longitude -
-                        widget.viewModel.mapViewPosition!.longitude!) /
-                    2 +
-                widget.viewModel.mapViewPosition!.longitude!);
-        _swipeTimer?.cancel();
-        _swipeTimer = null;
-        _swipeOffset = null;
-        _tapDownEvent?.stop();
-        _tapDownEvent = null;
+        if (doLog) _log.info("onDoubleTap");
+        print("Screensize: ${widget.screensize}");
+        _gestureTapEvent?.tapUp(size: widget.screensize);
+        _gestureTapEvent?.dispose();
+        _gestureTapEvent = null;
+        _gestureEvent?.dispose();
+        _gestureEvent = null;
       },
       onScaleStart: (ScaleStartDetails details) {
         if (doLog) _log.info("onScaleStart $details");
-        _scaleEvent = _ScaleEvent(
-            startLocalFocalPoint: details.localFocalPoint,
-            startCenter: widget.viewModel.mapViewPosition!.getCenter());
-        if (_tapDownEvent != null) {
-          if (_tapDownEvent!.longPressed) {
-            // tapped at least 500 ms, user wants to move something
-            return;
+        _gestureTapEvent?.dispose();
+        _gestureEvent?.dispose();
+        _gestureEvent = null;
+        if (_gestureTapEvent?.longPressed ?? false) {
+          _gestureEvent = _DragAroundEvent(viewModel: widget.viewModel);
+        } else {
+          if (details.pointerCount == 1) {
+            _gestureEvent ??= _MoveAroundEvent(
+                viewModel: widget.viewModel,
+                swipeAbsorption: widget.swipeAbsorption,
+                startLocalFocalPoint: details.localFocalPoint,
+                startCenter: widget.viewModel.mapViewPosition!.getCenter());
           } else {
-            // swipe event
-            _tapDownEvent?.stop();
+            _gestureEvent = _ScaleEvent(
+                viewModel: widget.viewModel,
+                startLocalFocalPoint: details.localFocalPoint,
+                startCenter: widget.viewModel.mapViewPosition!.getCenter());
           }
         }
+        _gestureTapEvent = null;
         widget.viewModel.gestureEvent();
       },
       onScaleUpdate: (ScaleUpdateDetails details) {
         if (doLog) _log.info("onScaleUpdate $details");
-        if (_scaleEvent == null) return;
-        if (details.scale == 1) {
-          // move around
-          // if (_lastMoveTimestamp >
-          //     DateTime.now().millisecondsSinceEpoch - 100) {
-          //   return;
-          // }
-          // _lastMoveTimestamp = DateTime.now().millisecondsSinceEpoch;
-          _updateLocalFocalPoint = details.localFocalPoint;
-          if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
-            // user tapped down, then waited. He does not want to move the map, he wants to move something around
-            PositionInfo? positionInfo = RotateHelper.normalize(
-                widget.viewModel,
-                details.localFocalPoint.dx,
-                details.localFocalPoint.dy);
-            if (positionInfo == null) return;
-
-            MoveAroundEvent event = MoveAroundEvent(
-              latitude: positionInfo.latitude,
-              longitude: positionInfo.longitude,
-              projection: widget.viewModel.mapViewPosition!.projection,
-            );
-
-            widget.viewModel.gestureMoveUpdateEvent(event);
-            return;
-          }
-          // move map around
-          double diffX = (details.localFocalPoint.dx -
-                  _scaleEvent!.startLocalFocalPoint.dx) *
-              widget.viewModel.viewScaleFactor;
-          double diffY = (details.localFocalPoint.dy -
-                  _scaleEvent!.startLocalFocalPoint.dy) *
-              widget.viewModel.viewScaleFactor;
-          if (widget.viewModel.mapViewPosition?.rotation != 0) {
-            double hyp = sqrt(diffX * diffX + diffY * diffY);
-            double rad = atan2(diffY, diffX);
-            double rot = widget.viewModel.mapViewPosition!.rotationRadian;
-            diffX = cos(-rot + rad) * hyp;
-            diffY = sin(-rot + rad) * hyp;
-
-            // print(
-            //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
-          }
-          // if (_lastMoveTimestamp <
-          //     DateTime.now().millisecondsSinceEpoch - 300) {
-          //_lastMoveTimestamp = DateTime.now().millisecondsSinceEpoch;
-          widget.viewModel.setCenter(_scaleEvent!.startCenter.x - diffX,
-              _scaleEvent!.startCenter.y - diffY);
-//          }
-        } else {
-          // zoom
-          _scaleEvent!.scaleUpdate(doLog, widget.viewModel, details);
-        }
+        _gestureEvent?.update(details: details, size: widget.screensize);
       },
       onScaleEnd: (ScaleEndDetails details) {
         if (doLog) _log.info("onScaleEnd $details");
-        // stop here if this was just a move-operation and NOT a scale-operation
-        if (_scaleEvent?.lastScale != null) {
-          _scaleEvent!.scaleEnd(doLog, widget.viewModel);
-          _swipeTimer?.cancel();
-          _swipeTimer = null;
-          _swipeOffset = null;
-        } else {
-          // there was no zoom , check for swipe
-          if (_tapDownEvent != null && _tapDownEvent!.longPressed) {
-            // user tapped down, then waited. He does not want to swipe, he wants to move something around
-            PositionInfo? positionInfo = RotateHelper.normalize(
-                widget.viewModel,
-                _updateLocalFocalPoint!.dx,
-                _updateLocalFocalPoint!.dy);
-            if (positionInfo == null) return;
-
-            MoveAroundEvent event = MoveAroundEvent(
-              latitude: positionInfo.latitude,
-              longitude: positionInfo.longitude,
-              projection: widget.viewModel.mapViewPosition!.projection,
-            );
-
-            widget.viewModel.gestureMoveEndEvent(event);
-            _tapDownEvent = null;
-            return;
-          }
-          _tapDownEvent?.stop();
-          _tapDownEvent = null;
-          if (doLog)
-            _log.info(
-                "Squared is ${details.velocity.pixelsPerSecond.distanceSquared}");
-          if (details.velocity.pixelsPerSecond.distanceSquared <
-              _swipeThresholdSquared) {
-            return;
-          }
-          if (_updateLocalFocalPoint != null &&
-              _scaleEvent?.startLocalFocalPoint != null) {
-            // check the direction of velocity. If velocity points to wrong direction do not swipe
-            if ((_updateLocalFocalPoint!.dx -
-                        _scaleEvent!.startLocalFocalPoint.dx)
-                    .sign !=
-                details.velocity.pixelsPerSecond.dx.sign) return;
-            if ((_updateLocalFocalPoint!.dy -
-                        _scaleEvent!.startLocalFocalPoint.dy)
-                    .sign !=
-                details.velocity.pixelsPerSecond.dy.sign) return;
-          }
-          // calculate the offset per iteration
-          _swipeOffset = details.velocity.pixelsPerSecond /
-              1000 *
-              _swipeSleepMs.toDouble();
-          if (widget.viewModel.mapViewPosition?.rotation != 0) {
-            double hyp = sqrt(_swipeOffset!.dx * _swipeOffset!.dx +
-                _swipeOffset!.dy * _swipeOffset!.dy);
-            double rad = atan2(_swipeOffset!.dy, _swipeOffset!.dx);
-            double rot = widget.viewModel.mapViewPosition!.rotationRadian;
-            _swipeOffset = Offset(cos(-rot + rad) * hyp, sin(-rot + rad) * hyp);
-            // print(
-            //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
-          }
-          // if there is still a timer running, stop it now
-          _swipeTimer?.cancel();
-          _swipeTimer =
-              Timer.periodic(Duration(milliseconds: _swipeSleepMs), (timer) {
-            _swipeTimerProcess(doLog);
-          });
-        }
+        _gestureTapEvent?.dispose();
+        _gestureTapEvent = null;
+        bool disposeAllowed =
+            _gestureEvent?.end(details: details, size: widget.screensize) ??
+                true;
+        if (disposeAllowed) _gestureEvent?.dispose();
+        _gestureEvent = null;
       },
       child: widget.child,
     );
   }
+}
 
-  void _swipeTimerProcess(final bool doLog) {
-    if (!mounted || _swipeOffset == null) {
-      // we should stop swiping
-      _swipeTimer?.cancel();
-      _swipeTimer = null;
-      _swipeOffset = null;
+/////////////////////////////////////////////////////////////////////////////
+
+abstract class _GestureEvent {
+  void dispose();
+
+  void update({required ScaleUpdateDetails details, required Size size});
+
+  /// return true if a dispose is allowed, otherwise false
+  bool end({required ScaleEndDetails details, required Size size});
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+abstract class _GestureTapEvent {
+  void dispose();
+
+  void tapUp({required Size size});
+
+  bool get longPressed;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _ScaleEvent implements _GestureEvent {
+  static final _log = new Logger('FlutterGestureDetectorState._ScaleEvent');
+
+  final ViewModel viewModel;
+
+  final Offset startLocalFocalPoint;
+
+  final Mappoint startCenter;
+
+  double? lastScale = null;
+
+  _ScaleEvent(
+      {required this.viewModel,
+      required this.startLocalFocalPoint,
+      required this.startCenter});
+
+  @override
+  void update({required ScaleUpdateDetails details, required Size size}) {
+    // do not send tiny changes
+    if (lastScale != null && ((details.scale / lastScale!) - 1).abs() < 0.01)
+      return;
+    // if (doLog)
+    //   _log.info(
+    //       "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}");
+    lastScale = details.scale;
+    /*MapViewPosition? newPost =*/
+    viewModel.setScaleAround(details.localFocalPoint, lastScale!);
+    // Mappoint(details.localFocalPoint.dx * viewModel.viewScaleFactor,
+    //     details.localFocalPoint.dy * viewModel.viewScaleFactor),
+    // lastScale!);
+  }
+
+  @override
+  bool end({required ScaleEndDetails details, required Size size}) {
+    // no zoom: 0, double zoom: 1, half zoom: -1
+    double zoomLevelOffset = log(lastScale!) / log(2);
+    int zoomLevelDiff = zoomLevelOffset.round();
+    if (zoomLevelDiff != 0) {
+      // Complete large zooms towards gesture direction
+      num mult = pow(2, zoomLevelDiff);
+      // if (doLog)
+      //   _log.info("onScaleEnd zooming now zoomLevelDiff $zoomLevelDiff");
+      PositionInfo? positionInfo = RotateHelper.normalize(
+          viewModel, size, startLocalFocalPoint.dx, startLocalFocalPoint.dy);
+      if (positionInfo == null) return true;
+      MapViewPosition newPost = viewModel.zoomAround(
+          positionInfo.latitude +
+              (viewModel.mapViewPosition!.latitude! - positionInfo.latitude) /
+                  mult,
+          positionInfo.longitude +
+              (viewModel.mapViewPosition!.longitude! - positionInfo.longitude) /
+                  mult,
+          viewModel.mapViewPosition!.zoomLevel + zoomLevelDiff);
+//      if (doLog) _log.info("onScaleEnd  resulting in ${newPost.toString()}");
+    } else if (lastScale != 1) {
+      // no significant zoom. Restore the old zoom
+      /*MapViewPosition newPost =*/ viewModel
+          .setZoomLevel((viewModel.mapViewPosition!.zoomLevel));
+      // if (doLog)
+      //   _log.info(
+      //       "onScaleEnd Restored zoom to ${viewModel.mapViewPosition!.zoomLevel}");
+    }
+    return true;
+  }
+
+  @override
+  void dispose() {}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _TapDownEvent implements _GestureTapEvent {
+  final ViewModel viewModel;
+
+  final Offset tapDownLocalPosition;
+
+  final int tapDownTime;
+
+  bool _stop = false;
+
+  bool _longPressed = false;
+
+  Timer? _timer;
+
+  _TapDownEvent(
+      {required this.viewModel,
+      required this.tapDownLocalPosition,
+      required Size size})
+      : tapDownTime = DateTime.now().millisecondsSinceEpoch {
+    _timer = Timer(const Duration(milliseconds: 500), () {
+      // tapped at least 500 ms, user wants to move something (or long-press, but the latter is reported at onTapUp)
+      if (_stop) return;
+      _longPressed = true;
+
+      PositionInfo? positionInfo = RotateHelper.normalize(
+          viewModel, size, tapDownLocalPosition.dx, tapDownLocalPosition.dy);
+      if (positionInfo == null) return;
+
+      MoveAroundEvent event = MoveAroundEvent(
+        latitude: positionInfo.latitude,
+        longitude: positionInfo.longitude,
+        projection: viewModel.mapViewPosition!.projection,
+        mappoint: positionInfo.mappoint,
+      );
+
+      viewModel.gestureMoveStartEvent(event);
+    });
+  }
+
+  @override
+  void dispose() {
+    _stop = true;
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void tapUp({required Size size}) {
+    _stop = true;
+    _timer?.cancel();
+    _timer = null;
+    PositionInfo? positionInfo = RotateHelper.normalize(
+        viewModel, size, tapDownLocalPosition.dx, tapDownLocalPosition.dy);
+    if (positionInfo == null) return;
+
+    if (longPressed) {
+      // tapped at least 500 ms, long tap
+      // we already reported a gestureMoveStartEvent, we should cancel it
+
+      MoveAroundEvent event = MoveAroundEvent(
+        latitude: positionInfo.latitude,
+        longitude: positionInfo.longitude,
+        projection: viewModel.mapViewPosition!.projection,
+        mappoint: positionInfo.mappoint,
+      );
+      viewModel.gestureMoveCancelEvent(event);
+
+      TapEvent tapEvent = TapEvent(
+        latitude: positionInfo.latitude,
+        longitude: positionInfo.longitude,
+        projection: viewModel.mapViewPosition!.projection,
+        mappoint: positionInfo.mappoint,
+      );
+      viewModel.longTapEvent(tapEvent);
+      return;
+    } else {
+      TapEvent event = TapEvent(
+        latitude: positionInfo.latitude,
+        longitude: positionInfo.longitude,
+        projection: viewModel.mapViewPosition!.projection,
+        mappoint: positionInfo.mappoint,
+      );
+      viewModel.tapEvent(event);
       return;
     }
-    if (doLog) _log.info("Swiping ${_swipeOffset!.distance}");
-    Mappoint? center = widget.viewModel.mapViewPosition?.getCenter();
+  }
+
+  @override
+  bool get longPressed => _longPressed;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _DoubleTapEvent extends _GestureTapEvent {
+  final ViewModel viewModel;
+
+  Offset? _doubleTapLocalPosition;
+
+  _DoubleTapEvent({required this.viewModel, required TapDownDetails details}) {
+    _doubleTapLocalPosition = details.localPosition;
+  }
+
+  @override
+  void dispose() {}
+
+  @override
+  void tapUp({TapUpDetails? details, required Size size}) {
+    //print("pos: $_doubleTapLocalPosition");
+    if (_doubleTapLocalPosition == null) return;
+    PositionInfo? positionInfo = RotateHelper.normalize(viewModel, size,
+        _doubleTapLocalPosition!.dx, _doubleTapLocalPosition!.dy);
+    if (positionInfo == null) return;
+    // interpolate the new center between the old center and where we
+    // pressed now. The new center is half-way between our double-pressed point and the old-center
+    viewModel.zoomInAround(
+        (positionInfo.latitude - viewModel.mapViewPosition!.latitude!) / 2 +
+            viewModel.mapViewPosition!.latitude!,
+        (positionInfo.longitude - viewModel.mapViewPosition!.longitude!) / 2 +
+            viewModel.mapViewPosition!.longitude!);
+  }
+
+  @override
+  bool get longPressed => false;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class _MoveAroundEvent implements _GestureEvent {
+  /// Minimum pixels per second (squared) to activate flinging
+  final double _swipeThresholdSquared = 20000;
+
+  final int _swipeSleepMs = 33; // milliseconds between swipes
+
+  final ViewModel viewModel;
+
+  final Offset startLocalFocalPoint;
+
+  final Mappoint startCenter;
+
+  Timer? _swipeTimer;
+
+  Offset? _swipeOffset;
+
+  /// The absorption factor of a swipe. The lower the factor the faster swiping
+  /// stops.
+  final double swipeAbsorption;
+
+  Offset? _updateLocalFocalPoint;
+
+  _MoveAroundEvent(
+      {required this.viewModel,
+      required this.swipeAbsorption,
+      required this.startLocalFocalPoint,
+      required this.startCenter});
+
+  @override
+  void dispose() {
+    _swipeTimer?.cancel();
+    _swipeTimer = null;
+    _swipeOffset = null;
+  }
+
+  @override
+  void update({required ScaleUpdateDetails details, required Size size}) {
+    _updateLocalFocalPoint = details.localFocalPoint;
+    // move map around
+    double diffX = (details.localFocalPoint.dx - startLocalFocalPoint.dx) *
+        viewModel.viewScaleFactor;
+    double diffY = (details.localFocalPoint.dy - startLocalFocalPoint.dy) *
+        viewModel.viewScaleFactor;
+    if (viewModel.mapViewPosition?.rotation != 0) {
+      double hyp = sqrt(diffX * diffX + diffY * diffY);
+      double rad = atan2(diffY, diffX);
+      double rot = viewModel.mapViewPosition!.rotationRadian;
+      diffX = cos(-rot + rad) * hyp;
+      diffY = sin(-rot + rad) * hyp;
+
+      // print(
+      //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+    }
+    // if (_lastMoveTimestamp <
+    //     DateTime.now().millisecondsSinceEpoch - 300) {
+    //_lastMoveTimestamp = DateTime.now().millisecondsSinceEpoch;
+    //_log.info("Move around ${_scaleEvent!.startCenter.x - diffX}/${_scaleEvent!.startCenter.y - diffY}");
+    viewModel.setCenter(startCenter.x - diffX, startCenter.y - diffY);
+//          }
+  }
+
+  @override
+  bool end({required ScaleEndDetails details, required Size size}) {
+    if (details.velocity.pixelsPerSecond.distanceSquared <
+        _swipeThresholdSquared) {
+      return true;
+    }
+    if (_updateLocalFocalPoint != null) {
+      // check the direction of velocity. If velocity points to wrong direction do not swipe
+      if ((_updateLocalFocalPoint!.dx - startLocalFocalPoint.dx).sign !=
+          details.velocity.pixelsPerSecond.dx.sign) return true;
+      if ((_updateLocalFocalPoint!.dy - startLocalFocalPoint.dy).sign !=
+          details.velocity.pixelsPerSecond.dy.sign) return true;
+    }
+    // calculate the offset per iteration
+    _swipeOffset =
+        details.velocity.pixelsPerSecond / 1000 * _swipeSleepMs.toDouble();
+    if (viewModel.mapViewPosition?.rotation != 0) {
+      double hyp = sqrt(_swipeOffset!.dx * _swipeOffset!.dx +
+          _swipeOffset!.dy * _swipeOffset!.dy);
+      double rad = atan2(_swipeOffset!.dy, _swipeOffset!.dx);
+      double rot = viewModel.mapViewPosition!.rotationRadian;
+      _swipeOffset = Offset(cos(-rot + rad) * hyp, sin(-rot + rad) * hyp);
+      // print(
+      //     "diff: $diffX/$diffY @ ${widget.viewModel.mapViewPosition!.rotation}($rad) from ${(details.localFocalPoint.dx - _startLocalFocalPoint!.dx) * widget.viewModel.viewScaleFactor}/${(details.localFocalPoint.dy - _startLocalFocalPoint!.dy) * widget.viewModel.viewScaleFactor}");
+    }
+    // if there is still a timer running, stop it now
+    _swipeTimer?.cancel();
+    _swipeTimer =
+        Timer.periodic(Duration(milliseconds: _swipeSleepMs), (timer) {
+      _swipeTimerProcess();
+    });
+    return false;
+  }
+
+  void _swipeTimerProcess() {
+    // if (!mounted || _swipeOffset == null) {
+    //   // we should stop swiping
+    //   _swipeTimer?.cancel();
+    //   _swipeTimer = null;
+    //   _swipeOffset = null;
+    //   return;
+    // }
+    //if (doLog) _log.info("Swiping ${_swipeOffset!.distance}");
+    Mappoint? center = viewModel.mapViewPosition?.getCenter();
     if (center != null) {
-      widget.viewModel
-          .setCenter(center.x - _swipeOffset!.dx, center.y - _swipeOffset!.dy);
+      viewModel.setCenter(
+          center.x - _swipeOffset!.dx, center.y - _swipeOffset!.dy);
     }
     // slow down after each iteration
-    _swipeOffset = _swipeOffset! * _swipeAbsorption;
+    _swipeOffset = _swipeOffset! * swipeAbsorption;
     if (_swipeOffset!.distanceSquared < 20) {
       // only 4 pixels for the next iteration, now lets stop swiping
       _swipeTimer?.cancel();
@@ -385,104 +527,48 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-class _ScaleEvent {
-  static final _log = new Logger('FlutterGestureDetectorState._ScaleEvent');
-
-  final Offset startLocalFocalPoint;
-
-  final Mappoint startCenter;
-
-  double? lastScale = null;
-
-  _ScaleEvent({required this.startLocalFocalPoint, required this.startCenter});
-
-  void scaleUpdate(
-      bool doLog, ViewModel viewModel, ScaleUpdateDetails details) {
-    // do not send tiny changes
-    if (lastScale != null && ((details.scale / lastScale!) - 1).abs() < 0.01)
-      return;
-    if (doLog)
-      _log.info(
-          "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}");
-    lastScale = details.scale;
-    /*MapViewPosition? newPost =*/
-    viewModel.setScaleAround(
-        Mappoint(details.localFocalPoint.dx * viewModel.viewScaleFactor,
-            details.localFocalPoint.dy * viewModel.viewScaleFactor),
-        lastScale!);
-  }
-
-  void scaleEnd(bool doLog, ViewModel viewModel) {
-    // no zoom: 0, double zoom: 1, half zoom: -1
-    double zoomLevelOffset = log(lastScale!) / log(2);
-    int zoomLevelDiff = zoomLevelOffset.round();
-    if (zoomLevelDiff != 0) {
-      // Complete large zooms towards gesture direction
-      num mult = pow(2, zoomLevelDiff);
-      if (doLog)
-        _log.info("onScaleEnd zooming now zoomLevelDiff $zoomLevelDiff");
-      PositionInfo? positionInfo = RotateHelper.normalize(
-          viewModel, startLocalFocalPoint.dx, startLocalFocalPoint.dy);
-      if (positionInfo == null) return;
-      MapViewPosition newPost = viewModel.zoomAround(
-          positionInfo.latitude +
-              (viewModel.mapViewPosition!.latitude! - positionInfo.latitude) /
-                  mult,
-          positionInfo.longitude +
-              (viewModel.mapViewPosition!.longitude! - positionInfo.longitude) /
-                  mult,
-          viewModel.mapViewPosition!.zoomLevel + zoomLevelDiff);
-      if (doLog) _log.info("onScaleEnd  resulting in ${newPost.toString()}");
-    } else if (lastScale != 1) {
-      // no significant zoom. Restore the old zoom
-      /*MapViewPosition newPost =*/ viewModel
-          .setZoomLevel((viewModel.mapViewPosition!.zoomLevel));
-      if (doLog)
-        _log.info(
-            "onScaleEnd Restored zoom to ${viewModel.mapViewPosition!.zoomLevel}");
-    }
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class _TapDownEvent {
+class _DragAroundEvent implements _GestureEvent {
   final ViewModel viewModel;
 
-  final Offset tapDownLocalPosition;
+  Offset? _updateLocalFocalPoint;
 
-  final int tapDownTime;
+  _DragAroundEvent({required this.viewModel});
 
-  bool _stop = false;
+  @override
+  void update({required ScaleUpdateDetails details, required Size size}) {
+    // user tapped down, then waited. He does not want to move the map, he wants to move something around
+    _updateLocalFocalPoint = details.localFocalPoint;
+    PositionInfo? positionInfo = RotateHelper.normalize(viewModel, size,
+        details.localFocalPoint.dx, details.localFocalPoint.dy);
+    if (positionInfo == null) return;
 
-  bool _longPressed = false;
+    MoveAroundEvent event = MoveAroundEvent(
+      latitude: positionInfo.latitude,
+      longitude: positionInfo.longitude,
+      projection: viewModel.mapViewPosition!.projection,
+      mappoint: positionInfo.mappoint,
+    );
 
-  _TapDownEvent({required this.viewModel, required this.tapDownLocalPosition})
-      : tapDownTime = DateTime.now().millisecondsSinceEpoch {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      // tapped at least 500 ms, user wants to move something (or long-press, but the latter is reported at onTapUp)
-      if (_stop) return;
-      _longPressed = true;
-
-      PositionInfo? positionInfo = RotateHelper.normalize(
-          viewModel, tapDownLocalPosition.dx, tapDownLocalPosition.dy);
-      if (positionInfo == null) return;
-
-      MoveAroundEvent event = MoveAroundEvent(
-        latitude: positionInfo.latitude,
-        longitude: positionInfo.longitude,
-        projection: viewModel.mapViewPosition!.projection,
-      );
-
-      viewModel.gestureMoveStartEvent(event);
-    });
+    viewModel.gestureMoveUpdateEvent(event);
   }
 
-  void processLongPress() {}
+  @override
+  bool end({required ScaleEndDetails details, required Size size}) {
+    PositionInfo? positionInfo = RotateHelper.normalize(viewModel, size,
+        _updateLocalFocalPoint!.dx, _updateLocalFocalPoint!.dy);
+    if (positionInfo == null) return true;
 
-  void stop() {
-    _stop = true;
+    MoveAroundEvent event = MoveAroundEvent(
+      latitude: positionInfo.latitude,
+      longitude: positionInfo.longitude,
+      projection: viewModel.mapViewPosition!.projection,
+      mappoint: positionInfo.mappoint,
+    );
+
+    viewModel.gestureMoveEndEvent(event);
+    return true;
   }
 
-  bool get longPressed => _longPressed;
+  @override
+  void dispose() {}
 }

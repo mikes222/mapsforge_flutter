@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/matrix.dart';
 import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
@@ -51,7 +53,7 @@ abstract class MapCanvas {
 
   void setClip(double left, double top, double width, double height);
 
-  void scale(Mappoint focalPoint, double scale);
+  void scale(Offset focalPoint, double scale);
 
   void translate(double dx, double dy);
 

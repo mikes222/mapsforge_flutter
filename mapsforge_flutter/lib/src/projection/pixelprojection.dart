@@ -166,6 +166,10 @@ class PixelProjection extends MercatorProjection {
         cos(latLong.latitude * pi180);
   }
 
+  ///
+  /// the size of the whole map in mappixel. At scalefactor 1 (or zoomLevel 0)
+  /// the _mapSize is equal to the tileSize.
+  ///
   int get mapsize => _mapSize;
 
   @override

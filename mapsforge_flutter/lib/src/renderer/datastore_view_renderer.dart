@@ -31,40 +31,32 @@ class DatastoreViewRenderer extends ViewRenderer {
 
   @override
   Future<ViewJobResult> executeViewJob(ViewJobRequest viewJobRequest) async {
-    Timing timing = Timing(log: _log, active: true);
-    RenderContext renderContext = RenderContext(
-        viewJobRequest.upperLeft, renderTheme.levels);
+    Timing timing = Timing(
+        log: _log,
+        active: true,
+        prefix: "${viewJobRequest.upperLeft}-${viewJobRequest.lowerRight} ");
+    RenderContext renderContext =
+        RenderContext(viewJobRequest.upperLeft, renderTheme.levels);
     this.renderTheme.prepareScale(viewJobRequest.upperLeft.zoomLevel);
     await datastore.lateOpen();
     // if (!datastore.supportsTile(upperLeft, projection) &&
     //     !datastore.supportsTile(lowerRight, projection)) {
     //   return DatastoreReadResult(pointOfInterests: [], ways: []);
     // }
-    DatastoreReadResult readResult = await datastore.readMapData(
+    DatastoreReadResult mapReadResult = await datastore.readMapData(
         viewJobRequest.upperLeft, viewJobRequest.lowerRight);
 
-    if ((readResult.ways.length) > 100000) {
+    if ((mapReadResult.ways.length) > 100000) {
       _log.warning(
-          "Many ways (${readResult.ways.length}) in this readResult, consider shrinking your mapfile.");
+          "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
     timing.lap(50,
-        "${readResult.ways.length} ways and ${readResult.pointOfInterests.length} pois initialized for tile ${renderContext.upperLeft}");
+        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized");
     // print(
     //     "pois: ${readResult.pointOfInterests.length}, way: ${readResult.ways.length} for ${viewJobRequest.upperLeft}");
     _datastoreReader.processMapReadResult(
-        renderContext, renderTheme, readResult);
+        renderContext, renderTheme, mapReadResult);
     renderContext.reduce();
-    // renderContext.drawingLayers.forEach((LayerPaintContainer layer) {
-    //   layer.ways.forEach((List<RenderInfo<Shape>> ways) {
-    //     ways.forEach((RenderInfo<Shape> renderInfo) {
-    //       MapRectangle rectangle =
-    //           renderInfo.getBoundaryAbsolute(renderContext.projection);
-    //       if (rectangle.getWidth() < 5 && rectangle.getHeight() < 5)
-    //         print(
-    //             "Way $renderInfo ${rectangle.getWidth()} * ${rectangle.getHeight()}");
-    //     });
-    //   });
-    // });
 
     await renderContext.initDrawingLayers(symbolCache);
 
@@ -79,7 +71,8 @@ class DatastoreViewRenderer extends ViewRenderer {
       wayList.addAll(renderInfos);
     }
 
-    timing.lap(50, "storeMapItems for tile ${renderContext.upperLeft}");
+    timing.lap(50,
+        "${mapReadResult.ways.length} ways, ${mapReadResult.pointOfInterests.length} pois, ${renderContext}");
     //renderContext.statistics();
     return ViewJobResult(renderContext: renderContext);
   }

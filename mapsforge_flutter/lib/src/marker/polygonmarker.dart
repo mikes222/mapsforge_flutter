@@ -1,5 +1,6 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
@@ -7,8 +8,7 @@ import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 
-import 'basicmarker.dart';
-import 'markercallback.dart';
+import '../graphics/implementation/fluttercanvas.dart';
 
 /// Draws a closed polygon. The optional text will be drawn in the middle
 /// of the polygon.
@@ -105,7 +105,7 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
         stroke!.setBitmapShader(bitmap!);
       }
     }
-    if (markerCaption != null && markerCaption!.latLong == null) {
+    if (markerCaption != null) {
       markerCaption!.latLong = GeometryUtils.calculateCenter(path);
     }
   }
@@ -119,18 +119,17 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MapCanvas mapCanvas, MarkerContext markerContext) {
     mapPath ??= GraphicFactory().createPath();
 
-    if (_zoom == markerCallback.mapViewPosition.zoomLevel) {
-      markerCallback.flutterCanvas.uiCanvas.save();
-      Mappoint leftUpper = markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension);
-      markerCallback.flutterCanvas.uiCanvas
-          .translate(_leftUpperX - leftUpper.x, _leftUpperY - leftUpper.y);
-      if (fill != null) markerCallback.renderPath(mapPath!, fill!);
-      if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);
-      markerCallback.flutterCanvas.uiCanvas.restore();
+    if (_zoom == markerContext.zoomLevel) {
+      (mapCanvas as FlutterCanvas).uiCanvas.save();
+      (mapCanvas as FlutterCanvas).uiCanvas.translate(
+          _leftUpperX - markerContext.mapCenter.x,
+          _leftUpperY - markerContext.mapCenter.y);
+      if (fill != null) mapCanvas.drawPath(mapPath!, fill!);
+      if (stroke != null) mapCanvas.drawPath(mapPath!, stroke!);
+      mapCanvas.uiCanvas.restore();
       return;
       // _points.forEach((mappoint) {
       //   double y = mappoint.y - markerCallback.mapViewPosition.leftUpper!.y;
@@ -143,14 +142,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
     } else {
       mapPath!.clear();
       _points.clear();
-      _zoom = markerCallback.mapViewPosition.zoomLevel;
-      Mappoint leftUpper = markerCallback.mapViewPosition
-          .getLeftUpper(markerCallback.viewModel.mapDimension);
+      _zoom = markerContext.zoomLevel;
       path.forEach((latLong) {
-        Mappoint mappoint =
-            markerCallback.mapViewPosition.projection.latLonToPixel(latLong);
-        double y = mappoint.y - leftUpper.y;
-        double x = mappoint.x - leftUpper.x;
+        Mappoint mappoint = markerContext.projection.latLonToPixel(latLong);
+        double y = mappoint.y - markerContext.mapCenter.y;
+        double x = mappoint.x - markerContext.mapCenter.x;
 
         _points.add(mappoint);
 
@@ -160,11 +156,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
           mapPath!.lineTo(x, y);
       });
       mapPath!.close();
-      _leftUpperX = leftUpper.x;
-      _leftUpperY = leftUpper.y;
+      _leftUpperX = markerContext.mapCenter.x;
+      _leftUpperY = markerContext.mapCenter.y;
     }
-    if (fill != null) markerCallback.renderPath(mapPath!, fill!);
-    if (stroke != null) markerCallback.renderPath(mapPath!, stroke!);
+    if (fill != null) mapCanvas.drawPath(mapPath!, fill!);
+    if (stroke != null) mapCanvas.drawPath(mapPath!, stroke!);
   }
 
   @override

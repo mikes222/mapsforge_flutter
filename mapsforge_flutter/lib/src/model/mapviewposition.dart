@@ -1,11 +1,9 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/dimension.dart';
 
 import '../../maps.dart';
-import 'boundingbox.dart';
-import 'mappoint.dart';
 
 class MapViewPosition {
   /// The latitude of the center of the widget
@@ -28,14 +26,11 @@ class MapViewPosition {
   final double _rotationRadian;
 
   /// The focal point. Used when pinch-and-zoom to know the center of the zoom
-  final Mappoint? focalPoint;
+  final Offset? focalPoint;
 
   /// the latitude/longitude boundaries of the current map view.
   /// This property must be calculated if needed based on the current view
-  BoundingBox? boundingBox;
-
-  /// the left/upper corner of the current mapview in pixels in relation to the current lat/lon.
-  Mappoint? _leftUpper;
+  //BoundingBox? boundingBox;
 
   /// The center of the map in absolute pixel coordinates. Note that the center
   /// needs to be recalculated if the map moves OR if the map zooms
@@ -43,7 +38,7 @@ class MapViewPosition {
 
   final PixelProjection _projection;
 
-  Dimension? _lastMapDimension;
+//  Dimension? _lastMapDimension;
 
   MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
       this.indoorLevel, this._rotation)
@@ -62,9 +57,7 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection =
-            PixelProjection(old.zoomLevel + 1),
-        _lastMapDimension = old._lastMapDimension;
+        _projection = PixelProjection(old.zoomLevel + 1);
 
   MapViewPosition.zoomInAround(
       MapViewPosition old, double latitude, double longitude)
@@ -76,9 +69,7 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection =
-            PixelProjection(old.zoomLevel + 1),
-        _lastMapDimension = old._lastMapDimension;
+        _projection = PixelProjection(old.zoomLevel + 1);
 
   MapViewPosition.zoomOut(MapViewPosition old)
       : _latitude = old._latitude,
@@ -89,9 +80,7 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection =
-            PixelProjection(max(old.zoomLevel - 1, 0)),
-        _lastMapDimension = old._lastMapDimension;
+        _projection = PixelProjection(max(old.zoomLevel - 1, 0));
 
   MapViewPosition.zoom(MapViewPosition old, int zoomLevel)
       : _latitude = old._latitude,
@@ -102,9 +91,7 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection =
-            PixelProjection(max(zoomLevel, 0)),
-        _lastMapDimension = old._lastMapDimension;
+        _projection = PixelProjection(max(zoomLevel, 0));
 
   MapViewPosition.zoomAround(
       MapViewPosition old, double latitude, double longitude, int zoomLevel)
@@ -116,9 +103,7 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         scale = 1,
         focalPoint = null,
-        _projection =
-            PixelProjection(max(zoomLevel, 0)),
-        _lastMapDimension = old._lastMapDimension;
+        _projection = PixelProjection(max(zoomLevel, 0));
 
   MapViewPosition.indoorLevelUp(MapViewPosition old)
       : _latitude = old._latitude,
@@ -130,10 +115,7 @@ class MapViewPosition {
         _projection = old._projection,
         scale = 1,
         focalPoint = null,
-        boundingBox = old.boundingBox,
-        _leftUpper = old._leftUpper,
-        _center = old._center,
-        _lastMapDimension = old._lastMapDimension;
+        _center = old._center;
 
   MapViewPosition.indoorLevelDown(MapViewPosition old)
       : _latitude = old._latitude,
@@ -145,10 +127,7 @@ class MapViewPosition {
         _projection = old._projection,
         scale = 1,
         focalPoint = null,
-        boundingBox = old.boundingBox,
-        _leftUpper = old._leftUpper,
-        _center = old._center,
-        _lastMapDimension = old._lastMapDimension;
+        _center = old._center;
 
   MapViewPosition.setIndoorLevel(MapViewPosition old, int indoorLevel)
       : _latitude = old._latitude,
@@ -160,10 +139,7 @@ class MapViewPosition {
         _projection = old._projection,
         scale = 1,
         focalPoint = null,
-        boundingBox = old.boundingBox,
-        _leftUpper = old._leftUpper,
-        _center = old._center,
-        _lastMapDimension = old._lastMapDimension;
+        _center = old._center;
 
   ///
   /// sets the new scale relative to the current zoomlevel. A scale of 1 means no action,
@@ -179,8 +155,7 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         indoorLevel = old.indoorLevel,
         _center = old._center,
-        _projection = old._projection,
-        _lastMapDimension = old._lastMapDimension;
+        _projection = old._projection;
 
   MapViewPosition.move(MapViewPosition old, this._latitude, this._longitude)
       : zoomLevel = old.zoomLevel,
@@ -189,10 +164,9 @@ class MapViewPosition {
         _rotationRadian = old._rotationRadian,
         _projection = old._projection,
         scale = old.scale,
-        focalPoint = old.focalPoint,
+        focalPoint = null,
         assert(_latitude == null),
-        assert(_longitude == null),
-        _lastMapDimension = old._lastMapDimension;
+        assert(_longitude == null);
 
   MapViewPosition.rotate(MapViewPosition old, this._rotation)
       : _latitude = old._latitude,
@@ -201,33 +175,31 @@ class MapViewPosition {
         indoorLevel = old.indoorLevel,
         _projection = old._projection,
         scale = old.scale,
-        focalPoint = old.focalPoint,
+        focalPoint = null,
         _rotationRadian = Projection.degToRadian(_rotation),
         _center = old._center,
-        assert(_rotation >= 0 && _rotation < 360),
-        _lastMapDimension = old._lastMapDimension;
+        assert(_rotation >= 0 && _rotation < 360);
 
-  MapViewPosition.setLeftUpper(
-      MapViewPosition old, double left, double upper, Dimension mapDimension)
-      : zoomLevel = old.zoomLevel,
-        indoorLevel = old.indoorLevel,
-        _rotation = old._rotation,
-        _rotationRadian = old._rotationRadian,
-        scale = old.scale,
-        focalPoint = old.focalPoint,
-        _projection = old._projection,
-        _lastMapDimension = mapDimension {
-    //calculateBoundingBox(tileSize, viewSize);
-    _leftUpper = Mappoint(
-        min(max(left, -mapDimension.width / 2),
-            _projection.mapsize - mapDimension.width / 2),
-        min(max(upper, -mapDimension.height / 2),
-            _projection.mapsize - mapDimension.height / 2));
-
-    ILatLong latLong = _projection.pixelToLatLong(_leftUpper!.x + mapDimension.width / 2, _leftUpper!.y + mapDimension.height / 2);
-    _latitude = latLong.latitude;
-    _longitude = latLong.longitude;
-  }
+  // MapViewPosition.setLeftUpper(
+  //     MapViewPosition old, double left, double upper)
+  //     : zoomLevel = old.zoomLevel,
+  //       indoorLevel = old.indoorLevel,
+  //       _rotation = old._rotation,
+  //       _rotationRadian = old._rotationRadian,
+  //       scale = old.scale,
+  //       focalPoint = old.focalPoint,
+  //       _projection = old._projection {
+  //   //calculateBoundingBox(tileSize, viewSize);
+  //   _leftUpper = Mappoint(
+  //       min(max(left, -mapDimension.width / 2),
+  //           _projection.mapsize - mapDimension.width / 2),
+  //       min(max(upper, -mapDimension.height / 2),
+  //           _projection.mapsize - mapDimension.height / 2));
+  //
+  //   ILatLong latLong = _projection.pixelToLatLong(_leftUpper!.x + mapDimension.width / 2, _leftUpper!.y + mapDimension.height / 2);
+  //   _latitude = latLong.latitude;
+  //   _longitude = latLong.longitude;
+  // }
 
   MapViewPosition.setCenter(MapViewPosition old, double x, double y)
       : zoomLevel = old.zoomLevel,
@@ -235,12 +207,10 @@ class MapViewPosition {
         _rotation = old._rotation,
         _rotationRadian = old._rotationRadian,
         scale = old.scale,
-        focalPoint = old.focalPoint,
-        _projection = old._projection,
-        _lastMapDimension = old._lastMapDimension {
+        focalPoint = null,
+        _projection = old._projection {
     _center = Mappoint(min(max(x, 0), _projection.mapsize + 0.0),
         min(max(y, 0), _projection.mapsize + 0.0));
-    _leftUpper = null;
 
     _latitude = _projection.pixelYToLatitude(y);
     _longitude = _projection.pixelXToLongitude(x);
@@ -251,38 +221,37 @@ class MapViewPosition {
   }
 
   /// Calculates the bounding box of the given dimensions of the view. Scaling or focalPoint are NOT considered.
-  BoundingBox calculateBoundingBox(Dimension mapDimension) {
-    if (boundingBox != null && _lastMapDimension == mapDimension)
-      return boundingBox!;
-    Mappoint center = getCenter();
-    double leftX = center.x - mapDimension.width / 2;
-    double rightX = center.x + mapDimension.width / 2;
-    double topY = center.y - mapDimension.height / 2;
-    double bottomY = center.y + mapDimension.height / 2;
-    boundingBox = BoundingBox(
-        _projection
-            .pixelYToLatitude(min(bottomY, _projection.mapsize.toDouble())),
-        _projection.pixelXToLongitude(max(leftX, 0)),
-        _projection.pixelYToLatitude(max(topY, 0)),
-        _projection
-            .pixelXToLongitude(min(rightX, _projection.mapsize.toDouble())));
-    _leftUpper = Mappoint(leftX, topY);
-    _lastMapDimension = mapDimension;
-    return boundingBox!;
-  }
+  // BoundingBox calculateBoundingBox(Dimension mapDimension) {
+  //   if (boundingBox != null && _lastMapDimension == mapDimension)
+  //     return boundingBox!;
+  //   Mappoint center = getCenter();
+  //   double leftX = center.x - mapDimension.width / 2;
+  //   double rightX = center.x + mapDimension.width / 2;
+  //   double topY = center.y - mapDimension.height / 2;
+  //   double bottomY = center.y + mapDimension.height / 2;
+  //   boundingBox = BoundingBox(
+  //       _projection
+  //           .pixelYToLatitude(min(bottomY, _projection.mapsize.toDouble())),
+  //       _projection.pixelXToLongitude(max(leftX, 0)),
+  //       _projection.pixelYToLatitude(max(topY, 0)),
+  //       _projection
+  //           .pixelXToLongitude(min(rightX, _projection.mapsize.toDouble())));
+  //   _leftUpper = Mappoint(leftX, topY);
+  //   return boundingBox!;
+  // }
 
   PixelProjection get projection => _projection;
 
   /// returns the absoulute pixel-coordinates of the left-upper point of the mapview.
   /// Since this is confusing while rotating the map we encourage you to use center()
   /// instead and calculate everything from there.
-  @Deprecated("Use getCenter() instead if possible")
-  Mappoint getLeftUpper(Dimension mapDimension) {
-    if (_leftUpper != null && _lastMapDimension == mapDimension)
-      return _leftUpper!;
-    calculateBoundingBox(mapDimension);
-    return _leftUpper!;
-  }
+  // @Deprecated("Use getCenter() instead if possible")
+  // Mappoint getLeftUpper(Dimension mapDimension) {
+  //   if (_leftUpper != null && _lastMapDimension == mapDimension)
+  //     return _leftUpper!;
+  //   calculateBoundingBox(mapDimension);
+  //   return _leftUpper!;
+  // }
 
   /// The latitude of the center of the widget
   double? get latitude => _latitude;

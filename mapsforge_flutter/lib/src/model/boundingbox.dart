@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 
-
 /// A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
 class BoundingBox {
   /**
@@ -110,16 +109,14 @@ class BoundingBox {
           maxLatitude == other.maxLatitude &&
           maxLongitude == other.maxLongitude &&
           minLatitude == other.minLatitude &&
-          minLongitude == other.minLongitude &&
-          intersectsArea == other.intersectsArea;
+          minLongitude == other.minLongitude;
 
   @override
   int get hashCode =>
       maxLatitude.hashCode ^
       maxLongitude.hashCode ^
       minLatitude.hashCode ^
-      minLongitude.hashCode ^
-      intersectsArea.hashCode;
+      minLongitude.hashCode;
 
   /**
    * @param boundingBox the BoundingBox which this BoundingBox should be extended if it is larger
@@ -220,12 +217,10 @@ class BoundingBox {
 //    return new BoundingBox(minLat, minLon, maxLat, maxLon);
 //  }
 
-  /**
-   * Creates a BoundingBox that is a fixed meter amount larger on all sides (but does not cross date line/poles).
-   *
-   * @param meters extension (must be >= 0)
-   * @return an extended BoundingBox or this (if meters == 0)
-   */
+  /// Creates a BoundingBox that is a fixed meter amount larger on all sides (but does not cross date line/poles).
+  ///
+  /// @param meters extension (must be >= 0)
+  /// @return an extended BoundingBox or this (if meters == 0)
   BoundingBox extendMeters(int meters) {
     assert(meters >= 0);
     if (meters == 0) {
@@ -245,7 +240,7 @@ class BoundingBox {
     double maxLon =
         min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
 
-    return new BoundingBox(minLat, minLon, maxLat, maxLon);
+    return BoundingBox(minLat, minLon, maxLat, maxLon);
   }
 
   /**

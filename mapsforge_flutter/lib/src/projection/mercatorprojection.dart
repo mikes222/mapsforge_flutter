@@ -143,6 +143,21 @@ class MercatorProjection implements Projection {
     }
     return BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
-//double get mapSize => _mapSize;
 
+  BoundingBox boundingBoxOfTileNumbers(
+      int top, int left, int bottom, int right) {
+    assert(top <= bottom);
+    assert(left <= right);
+    double minLatitude =
+        max(Projection.LATITUDE_MIN, tileYToLatitude(bottom + 1));
+    double minLongitude = max(Projection.LONGITUDE_MIN, tileXToLongitude(left));
+    double maxLatitude = min(Projection.LATITUDE_MAX, tileYToLatitude(top));
+    double maxLongitude =
+        min(Projection.LONGITUDE_MAX, tileXToLongitude(right + 1));
+    if (maxLongitude == -180) {
+      // fix for dateline crossing, where the right tile starts at -180 and causes an invalid bbox
+      maxLongitude = 180;
+    }
+    return BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+  }
 }

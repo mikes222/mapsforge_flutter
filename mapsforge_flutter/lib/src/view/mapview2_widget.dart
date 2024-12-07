@@ -4,14 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/input/fluttergesturedetector.dart';
-import 'package:mapsforge_flutter/src/layer/tilelayerlabel.dart';
 import 'package:mapsforge_flutter/src/marker/markerpainter.dart';
 import 'package:mapsforge_flutter/src/view/view_jobqueue.dart';
 import 'package:mapsforge_flutter/src/view/view_zoom_painter.dart';
 
 import '../../core.dart';
-import '../layer/tilelayer.dart';
-import '../rendertheme/rendercontext.dart';
+import '../../marker.dart';
 import '../utils/timing.dart';
 import 'backgroundpainter.dart';
 import 'errorhelper_widget.dart';
@@ -59,17 +57,13 @@ typedef Widget Func();
 class _Mapview2WidgetState extends State<Mapview2Widget> {
   static final _log = new Logger('_MapviewWidgetState');
 
-  TileLayer? _labelLayer;
-
   GlobalKey _keyView = GlobalKey();
 
-  ViewJobqueue? _jobQueue;
+  late ViewJobqueue _jobQueue;
 
   MapModel? _mapModel;
 
   ViewModel? _viewModel;
-
-  StreamSubscription<MapViewPosition>? _subscription;
 
   _Statistics? _statistics; // = _Statistics();
 
@@ -80,10 +74,8 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
 
   @override
   void dispose() {
-    _subscription?.cancel();
     _viewModel?.dispose();
-    _labelLayer?.dispose();
-    _jobQueue?.dispose();
+    _jobQueue.dispose();
     _mapModel?.dispose();
     //_jobSet?.dispose();
 
@@ -98,7 +90,6 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
 
   Widget _createMapModel(Func child) {
     if (_mapModel != null) {
-      assert(_jobQueue != null);
       return child();
     }
 
@@ -114,9 +105,8 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
             return progress("Waiting for Map");
           _mapModel = snapshot.data;
           _jobQueue = ViewJobqueue(
-             viewRenderer: _mapModel?.renderer as ViewRenderer,
+            viewRenderer: _mapModel?.renderer as ViewRenderer,
           );
-          _labelLayer = TileLayerLabel();
           _log.info(
               "MapModel created with renderer key ${_mapModel?.renderer.getRenderKey()} in connectionState ${snapshot.connectionState.toString()}");
           return child();
@@ -138,24 +128,13 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
           _viewModel = snapshot.data;
           _log.info(
               "ViewModel created in connectionState ${snapshot.connectionState.toString()}");
-          _subscription = _viewModel!.observePosition
-              .listen((MapViewPosition mapViewPosition) async {
-            //print("MapView2Widget: new Position");
-            if (mapViewPosition.hasPosition())
-              unawaited(
-                  _jobQueue!.getBoundaryTiles(_viewModel!, mapViewPosition));
-          });
           return child();
         });
   }
 
   Widget _buildView() {
     _statistics?.buildCount++;
-    return LayoutBuilder(builder: (context, BoxConstraints boxConstraints) {
-      _viewModel!
-          .setViewDimension(boxConstraints.maxWidth, boxConstraints.maxHeight);
-      return _buildMapView();
-    });
+    return _buildMapView();
   }
 
   @protected
@@ -187,14 +166,26 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
     return null;
   }
 
-  List<Widget> _createMarkerWidgets(MapViewPosition mapViewPosition) {
+  List<Widget> _createMarkerWidgets(
+      ViewModel viewModel,
+      MapViewPosition mapViewPosition,
+      BoundingBox boundingBox,
+      Mappoint mapCenter) {
     // now draw all markers
+    MarkerContext markerContext = MarkerContext(
+      //viewModel.viewScaleFactor,
+      //viewModel,
+      mapCenter,
+      mapViewPosition.zoomLevel,
+      mapViewPosition.projection,
+      mapViewPosition.rotationRadian,
+      boundingBox,
+    );
     return _mapModel!.markerDataStores
         .map((datastore) => CustomPaint(
               foregroundPainter: MarkerPainter(
-                mapViewPosition: mapViewPosition,
                 dataStore: datastore,
-                viewModel: _viewModel!,
+                markerContext: markerContext,
               ),
               child: const SizedBox.expand(),
             ))
@@ -205,41 +196,46 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
     //print("_buildMapView $mapViewPosition");
     Timing timing = Timing(log: _log, active: true);
     _statistics?.mapViewCount++;
-    return Stack(
-      children: [
-        _buildBackgroundView() ?? const SizedBox(),
-        FlutterGestureDetector(
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints boxConstraints) {
+      return Stack(
+        children: [
+          _buildBackgroundView() ?? const SizedBox(),
+          FlutterGestureDetector(
             key: _keyView,
             viewModel: _viewModel!,
-            child: const SizedBox.expand()),
-        _LayerPainter(
-          viewModel: _viewModel!,
-          viewJobqueue: _jobQueue!,
-        ),
-        StreamBuilder<MapViewPosition>(
-            stream: _viewModel!.observePosition,
-            builder: (BuildContext context,
-                AsyncSnapshot<MapViewPosition> snapshot) {
-              if (snapshot.hasError) {
-                return ErrorhelperWidget(
-                    error: snapshot.error!, stackTrace: snapshot.stackTrace);
-              }
-              if (snapshot.data == null) return const SizedBox();
-              MapViewPosition mapViewPosition = snapshot.data!;
-              if (!mapViewPosition.hasPosition()) return const SizedBox();
-              return Stack(
-                children: [
-                  for (Widget widget in _createMarkerWidgets(mapViewPosition))
-                    widget,
-                  if (_viewModel!.contextMenuBuilder != null)
-                    _buildContextMenu(mapViewPosition),
-                ],
-              );
-            }),
-        if (_viewModel!.overlays != null)
-          for (Widget widget in _viewModel!.overlays!) widget,
-      ],
-    );
+            child: const SizedBox.expand(),
+            screensize: boxConstraints.biggest,
+          ),
+          _LayerPainter(
+            viewModel: _viewModel!,
+            viewJobqueue: _jobQueue,
+          ),
+          // StreamBuilder<MapViewPosition>(
+          //     stream: _viewModel!.observePosition,
+          //     builder: (BuildContext context,
+          //         AsyncSnapshot<MapViewPosition> snapshot) {
+          //       if (snapshot.hasError) {
+          //         return ErrorhelperWidget(
+          //             error: snapshot.error!, stackTrace: snapshot.stackTrace);
+          //       }
+          //       if (snapshot.data == null) return const SizedBox();
+          //       MapViewPosition mapViewPosition = snapshot.data!;
+          //       if (!mapViewPosition.hasPosition()) return const SizedBox();
+          //       return Stack(
+          //         children: [
+          //           for (Widget widget in _createMarkerWidgets(mapViewPosition))
+          //             widget,
+          //           if (_viewModel!.contextMenuBuilder != null)
+          //             _buildContextMenu(mapViewPosition),
+          //         ],
+          //       );
+          //     }),
+          if (_viewModel!.overlays != null)
+            for (Widget widget in _viewModel!.overlays!) widget,
+        ],
+      );
+    });
   }
 
   StreamBuilder<TapEvent> _buildContextMenu(MapViewPosition position) {
@@ -263,9 +259,9 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
             _mapModel!,
             _viewModel!,
             position,
-            Dimension(
-                _viewModel!.mapDimension.width / _viewModel!.viewScaleFactor,
-                _viewModel!.mapDimension.height / _viewModel!.viewScaleFactor),
+            Dimension(0, 0),
+            // _viewModel!.mapDimension.width / _viewModel!.viewScaleFactor,
+            // _viewModel!.mapDimension.height / _viewModel!.viewScaleFactor),
             event);
       },
     );
@@ -277,16 +273,12 @@ class _Mapview2WidgetState extends State<Mapview2Widget> {
     if (widget.changeKey != oldWidget.changeKey) {
       //_log.info("didUpdate from ${oldWidget.changeKey} to ${widget.changeKey}");
       ViewModel? tempViewModel = _viewModel;
-      ViewJobqueue? tempJobqueue = _jobQueue;
       MapModel? tempMapModel = _mapModel;
       _viewModel = null;
-      _jobQueue = null;
-      _labelLayer = null;
       _mapModel = null;
       Future.delayed(const Duration(milliseconds: 5000), () {
         // destroy the models AFTER they are not used anymore
         tempViewModel?.dispose();
-        tempJobqueue?.dispose();
         tempMapModel?.dispose();
       });
     }
@@ -311,22 +303,17 @@ class _LayerPainter extends StatefulWidget {
 /////////////////////////////////////////////////////////////////////////////
 
 class _LayerState extends State<_LayerPainter> {
-  StreamSubscription<RenderContext>? _subscription;
+  StreamSubscription? _subscription;
 
-  RenderContext? _renderContext;
-
-  int _count = 0;
-
-  static int _globalCount = 0;
+  @override
+  _LayerPainter get widget => super.widget;
 
   @override
   void initState() {
-    _subscription = widget.viewJobqueue.observeRenderContext
-        .listen((RenderContext renderContext) async {
-      setState(() {
-        //print("_LayerState: rendercontext");
-        _renderContext = renderContext;
-      });
+    _subscription = widget.viewModel.observePosition
+        .listen((MapViewPosition mapViewPosition) {
+      // unawaited(widget.viewJobqueue
+      //     .getBoundaryTiles(widget.viewModel, mapViewPosition));
     });
     super.initState();
   }
@@ -339,14 +326,10 @@ class _LayerState extends State<_LayerPainter> {
 
   @override
   Widget build(BuildContext context) {
-    if (_renderContext == null) return const SizedBox();
-    ++_count;
-    ++_globalCount;
-    //return Text("$_count $_globalCount");
     return CustomPaint(
       foregroundPainter: ViewZoomPainter(
         viewModel: widget.viewModel,
-        renderContext: _renderContext!,
+        viewJobqueue: widget.viewJobqueue,
       ),
       child: const SizedBox.expand(),
     );

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/singlemarkerpainter.dart';
+import 'package:mapsforge_flutter/src/view/transform_widget.dart';
 
-import '../testassetbundle.dart';
 import '../testhelper.dart';
 
 ///
@@ -19,24 +19,35 @@ void main() {
       maxZoomLevel: 14,
     );
     ViewModel viewModel = ViewModel(displayModel: displayModel);
-    viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.mapDimension);
 
     CircleMarker circleMarker =
         CircleMarker(center: latLong, displayModel: displayModel);
 
+    MarkerContext markerContext = MarkerContext(
+      viewModel.mapViewPosition!.getCenter(),
+      viewModel.mapViewPosition!.zoomLevel,
+      viewModel.mapViewPosition!.projection,
+      viewModel.mapViewPosition!.rotationRadian,
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
+          latLong.latitude + 0.01, latLong.longitude + 0.01),
+    );
     SingleMarkerPainter painter = SingleMarkerPainter(
-        mapViewPosition: viewModel.mapViewPosition!,
-        displayModel: displayModel,
-        marker: circleMarker,
-        viewModel: viewModel);
+      markerContext: markerContext,
+      marker: circleMarker,
+    );
 
     await TestHelper.pumpWidget(
         tester: tester,
-        child: CustomPaint(
-          foregroundPainter: painter,
-          child: Container(),
+        child: TransformWidget(
+          viewModel: viewModel,
+          mapViewPosition: viewModel.mapViewPosition!,
+          screensize: Size(800, 600),
+          centerTile: viewModel.mapViewPosition!.getCenter(),
+          child: CustomPaint(
+            foregroundPainter: painter,
+            child: Container(),
+          ),
         ),
         goldenfile: 'circlemarker.png');
   });
@@ -48,9 +59,7 @@ void main() {
       maxZoomLevel: 14,
     );
     ViewModel viewModel = ViewModel(displayModel: displayModel);
-    viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.mapDimension);
 
     CircleMarker circleMarker = CircleMarker(
         center: latLong,
@@ -58,17 +67,30 @@ void main() {
         markerCaption:
             MarkerCaption(displayModel: displayModel, text: "Markercaption"));
 
+    MarkerContext markerContext = MarkerContext(
+      viewModel.mapViewPosition!.getCenter(),
+      viewModel.mapViewPosition!.zoomLevel,
+      viewModel.mapViewPosition!.projection,
+      viewModel.mapViewPosition!.rotationRadian,
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
+          latLong.latitude + 0.01, latLong.longitude + 0.01),
+    );
     SingleMarkerPainter painter = SingleMarkerPainter(
-        mapViewPosition: viewModel.mapViewPosition!,
-        displayModel: displayModel,
-        marker: circleMarker,
-        viewModel: viewModel);
+      markerContext: markerContext,
+      marker: circleMarker,
+    );
 
     await TestHelper.pumpWidget(
         tester: tester,
-        child: CustomPaint(
-          foregroundPainter: painter,
-          child: Container(),
+        child: TransformWidget(
+          viewModel: viewModel,
+          mapViewPosition: viewModel.mapViewPosition!,
+          screensize: Size(800, 600),
+          centerTile: viewModel.mapViewPosition!.getCenter(),
+          child: CustomPaint(
+            foregroundPainter: painter,
+            child: Container(),
+          ),
         ),
         goldenfile: 'circlemarker_text.png');
   });
@@ -80,12 +102,8 @@ void main() {
       maxZoomLevel: 14,
     );
     ViewModel viewModel = ViewModel(displayModel: displayModel);
-    viewModel.setViewDimension(800, 600);
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
-    viewModel.mapViewPosition!.calculateBoundingBox(viewModel.mapDimension);
 
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     CircleMarker circleMarker = CircleMarker(
         center: latLong,
         fillColor: 0xff00ff00,
@@ -93,18 +111,30 @@ void main() {
         strokeWidth: 4,
         displayModel: displayModel);
 
+    MarkerContext markerContext = MarkerContext(
+      viewModel.mapViewPosition!.getCenter(),
+      viewModel.mapViewPosition!.zoomLevel,
+      viewModel.mapViewPosition!.projection,
+      viewModel.mapViewPosition!.rotationRadian,
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
+          latLong.latitude + 0.01, latLong.longitude + 0.01),
+    );
     SingleMarkerPainter painter = SingleMarkerPainter(
-      mapViewPosition: viewModel.mapViewPosition!,
-      displayModel: displayModel,
+      markerContext: markerContext,
       marker: circleMarker,
-      viewModel: viewModel,
     );
 
     await TestHelper.pumpWidget(
         tester: tester,
-        child: CustomPaint(
-          foregroundPainter: painter,
-          child: Container(),
+        child: TransformWidget(
+          viewModel: viewModel,
+          mapViewPosition: viewModel.mapViewPosition!,
+          screensize: Size(800, 600),
+          centerTile: viewModel.mapViewPosition!.getCenter(),
+          child: CustomPaint(
+            foregroundPainter: painter,
+            child: Container(),
+          ),
         ),
         goldenfile: 'circlemarker_filled.png');
   });

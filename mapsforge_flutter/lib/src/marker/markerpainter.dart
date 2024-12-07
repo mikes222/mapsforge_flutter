@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
-import 'package:mapsforge_flutter/src/marker/markercontext.dart';
 import 'package:mapsforge_flutter/src/utils/timing.dart';
 
 ///
@@ -13,93 +11,53 @@ import 'package:mapsforge_flutter/src/utils/timing.dart';
 class MarkerPainter extends CustomPainter {
   static final _log = new Logger('MarkerPainter');
 
-  final MapViewPosition mapViewPosition;
-
   final IMarkerDataStore dataStore;
 
-  final ViewModel viewModel;
+  final MarkerContext markerContext;
 
   const MarkerPainter({
-    required this.mapViewPosition,
     required this.dataStore,
-    required this.viewModel,
+    required this.markerContext,
   }) : super(repaint: dataStore);
 
   @override
   void paint(Canvas canvas, Size size) {
     Timing timing = Timing(log: _log);
-    List<Marker> markers = [];
-    markers.addAll(dataStore.getMarkersToPaint(
-      mapViewPosition.calculateBoundingBox(viewModel.mapDimension),
-      mapViewPosition.zoomLevel,
-    ));
+    List<Marker> markers = dataStore.getMarkersToPaint(
+      markerContext.boundingBox,
+      markerContext.zoomLevel,
+    );
     timing.lap(50,
-        "retrieving ${markers.length} markers at zoomlevel ${mapViewPosition.zoomLevel} from $dataStore");
+        "retrieving ${markers.length} markers at zoomlevel ${markerContext.zoomLevel} from $dataStore for ${markerContext.boundingBox}");
 
     if (markers.length > 0) {
-      FlutterCanvas flutterCanvas = FlutterCanvas(
-          canvas,
-          Size(size.width * viewModel.viewScaleFactor,
-              size.height * viewModel.viewScaleFactor));
+      // print(
+      //     "MarkerPainter paint $size for ${markerContext.boundingBox} and ${markers.length} markers");
+      FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
+      // Size(size.width * viewModel.viewScaleFactor,
+      //     size.height * viewModel.viewScaleFactor));
       // print(
       //     "canvas size ${viewModel.mapDimension.width} / ${viewModel.mapDimension.height} and scaleFactor ${viewModel.viewScaleFactor}");
-      flutterCanvas.setClip(
-          0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
-      if (viewModel.viewScaleFactor != 1) {
-        (flutterCanvas).uiCanvas.save();
-        flutterCanvas.scale(
-            const Mappoint(/*viewModel.viewDimension.width / 2*/ 0,
-                /*viewModel.viewDimension.height / 2*/ 0),
-            1 / viewModel.viewScaleFactor);
-      }
-      if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
-        //_log.info("scaling to ${mapViewPosition.scale} around ${mapViewPosition.focalPoint}");
-        (flutterCanvas).uiCanvas.save();
-        flutterCanvas.scale(mapViewPosition.focalPoint!, mapViewPosition.scale);
-      }
-      if (mapViewPosition.rotationRadian != 0) {
-        canvas.save();
-        canvas.translate(size.width * viewModel.viewScaleFactor / 2,
-            size.height * viewModel.viewScaleFactor / 2);
-        canvas.rotate(mapViewPosition.rotationRadian);
-        canvas.translate(-size.width * viewModel.viewScaleFactor / 2,
-            -size.height * viewModel.viewScaleFactor / 2);
-      }
+      // flutterCanvas.setClip(
+      //     0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
 
-      MarkerContext context = MarkerContext(
-          flutterCanvas, mapViewPosition, viewModel.viewScaleFactor, viewModel);
       markers.forEach((element) {
-        element.render(context);
+        element.render(flutterCanvas, markerContext);
       });
-
-      if (mapViewPosition.scale != 1 && mapViewPosition.focalPoint != null) {
-        (flutterCanvas).uiCanvas.restore();
-      }
-      if (viewModel.viewScaleFactor != 1) {
-        (flutterCanvas).uiCanvas.restore();
-      }
-      if (mapViewPosition.rotationRadian != 0) {
-        canvas.restore();
-      }
     }
     timing.lap(50,
-        "retrieving and rendering ${markers.length} markers at zoomlevel ${mapViewPosition.zoomLevel} from $dataStore");
+        "retrieving and rendering ${markers.length} markers at zoomlevel ${markerContext.zoomLevel} from $dataStore");
   }
 
   @override
   bool shouldRepaint(MarkerPainter oldDelegate) {
-    if (oldDelegate.mapViewPosition != mapViewPosition) return true;
-    return false; //dataStore.needsRepaint;
-  }
-
-  @override
-  bool shouldRebuildSemantics(MarkerPainter oldDelegate) {
-    return false; //super.shouldRebuildSemantics(oldDelegate);
+    if (oldDelegate.markerContext.boundingBox != markerContext.boundingBox)
+      return true;
+    if (oldDelegate.markerContext.zoomLevel != markerContext.zoomLevel)
+      return true;
+    return false;
   }
 
   @override
   bool? hitTest(Offset position) => null;
-
-  @override
-  get semanticsBuilder => null;
 }

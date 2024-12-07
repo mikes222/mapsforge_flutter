@@ -22,6 +22,7 @@ class ErrorhelperWidget extends StatelessWidget {
 
   ErrorhelperWidget({required this.error, this.stackTrace}) {
     _log.warning(error.toString());
+    if (stackTrace != null)
     _log.warning(stackTrace.toString());
   }
 

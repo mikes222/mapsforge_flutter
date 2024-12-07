@@ -20,6 +20,7 @@ import '../datastore/poiwaybundle.dart';
 import '../datastore/way.dart';
 import '../projection/mercatorprojection.dart';
 import '../reader/queryparameters.dart';
+import '../utils/timing.dart';
 import 'indexcache.dart';
 import 'mapfileheader.dart';
 
@@ -460,7 +461,7 @@ class MapFile extends MapDataStore {
     //assert(supportsTile(upperLeft, projection));
     //assert(supportsTile(lowerRight, projection));
     assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
-    int timer = DateTime.now().millisecondsSinceEpoch;
+    Timing timing = Timing(log: _log, active: true, prefix: "${upperLeft}-${lowerRight} ");
     if (upperLeft.tileX > lowerRight.tileX ||
         upperLeft.tileY > lowerRight.tileY) {
       throw Exception(
@@ -479,19 +480,15 @@ class MapFile extends MapDataStore {
     }
     queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
     queryParameters.calculateBlocks(subFileParameter);
-    int diff = DateTime.now().millisecondsSinceEpoch - timer;
-    if (diff > 100)
-      _log.info(
-          "  readMapDataComplete took $diff ms up to create query $queryParameters");
+    timing.lap(100,
+          "readMapDataComplete for query $queryParameters");
     DatastoreReadResult? result = await processBlocks(
         readBufferSource!,
         queryParameters,
         subFileParameter,
         projection.boundingBoxOfTiles(upperLeft, lowerRight),
         selector);
-    diff = DateTime.now().millisecondsSinceEpoch - timer;
-    if (diff > 100)
-      _log.info("readMapDataComplete took $diff ms for $queryParameters");
+      timing.lap(100, "readMapDataComplete for $queryParameters");
     //readBufferMaster.close();
     return result;
   }

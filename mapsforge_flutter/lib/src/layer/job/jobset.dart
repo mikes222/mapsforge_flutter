@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 
 import '../../../core.dart';
 import '../../graphics/tilepicture.dart';
+import '../../model/tile_dimension.dart';
 import '../../rendertheme/renderinfo.dart';
 import '../../rendertheme/shape/shape.dart';
 
@@ -18,10 +19,10 @@ class JobSet extends ChangeNotifier {
   bool _disposed = false;
 
   /// The jobs to perform where we need images
-  final List<Job> _jobs = [];
+  final List<Job> _renderJobs;
 
   /// The jobs where we need labels
-  final Set<Job> _labelJobs = {};
+  final List<Job> _labelJobs;
 
   /// The resulting bitmaps after the jobs has been processed.
   Map<Tile, JobResult> _bitmaps = {};
@@ -29,23 +30,39 @@ class JobSet extends ChangeNotifier {
   /// All labels and rendering infos
   List<RenderInfo<Shape>> _renderInfos = [];
 
-  List<Job> get jobs => _jobs;
+  List<Job> get renderJobs => _renderJobs;
 
-  Set<Job> get labelJobs => _labelJobs;
+  List<Job> get labelJobs => _labelJobs;
 
   List<RenderInfo>? get renderInfos => _renderInfos;
 
-  MapViewPosition mapViewPosition;
+  final BoundingBox boundingBox;
 
-  JobSet({required this.mapViewPosition});
+  final TileDimension tileDimension;
 
-  void add(Job job) {
-    assert(!_jobs.contains(job));
-    _jobs.add(job);
-    _labelJobs.add(job);
+  final int indoorLevel;
+
+  final int zoomLevel;
+
+  final Mappoint _center;
+
+  JobSet(
+      {required this.boundingBox,
+      required List<Job> jobs,
+      required Mappoint center,
+      required this.tileDimension})
+      : assert(jobs.length > 0),
+        _renderJobs = jobs,
+        _labelJobs = []..addAll(jobs),
+        indoorLevel = jobs.first.tile.indoorLevel,
+        zoomLevel = jobs.first.tile.zoomLevel,
+        _center = center;
+
+  Mappoint getCenter() {
+    return _center;
   }
 
-  void renderingJobFinished(Job job, List<RenderInfo> renderInfos) {
+  void labelJobFinished(Job job, List<RenderInfo> renderInfos) {
     if (_disposed) return;
     if (_labelJobs.contains(job)) {
       _renderInfos.addAll(renderInfos);
@@ -54,7 +71,8 @@ class JobSet extends ChangeNotifier {
     }
   }
 
-  void renderingJobsFinished(Map<Job, List<RenderInfo<Shape>>> items) {
+  void labelJobsFinished(Map<Job, List<RenderInfo<Shape>>> items) {
+    if (_disposed) return;
     items.forEach((job, renderInfos) {
       if (_labelJobs.contains(job)) {
         _renderInfos.addAll(renderInfos);
@@ -64,38 +82,50 @@ class JobSet extends ChangeNotifier {
     notifyListeners();
   }
 
-  void jobFinished(Job job, JobResult jobResult) {
+  void renderJobFinished(Job job, JobResult jobResult) {
     if (_disposed) return;
-    _jobs.remove(job);
+    _renderJobs.remove(job);
+    //jobResult.bitmap?.incrementRefCount();
+    TilePicture? old = _bitmaps[job.tile]?.picture;
+    _bitmaps[job.tile] = jobResult;
+    if (jobResult.renderInfos != null && _labelJobs.contains(job)) {
+      _renderInfos.addAll(jobResult.renderInfos!);
+      _labelJobs.remove(job);
+    }
+    //print("jobSet job finished ${_bitmaps!.length}");
+    notifyListeners();
+  }
+
+  void renderJobFinishedPicture(Job job, TilePicture tilePicture) {
+    if (_disposed) return;
+    _renderJobs.remove(job);
     //jobResult.bitmap?.incrementRefCount();
     TilePicture? old = _bitmaps[job.tile]?.picture;
     if (old != null) {
       //old.decrementRefCount();
     }
-    _bitmaps[job.tile] = jobResult;
+    _bitmaps[job.tile] = JobResult(tilePicture, JOBRESULT.NORMAL);
+
     //print("jobSet job finished ${_bitmaps!.length}");
     notifyListeners();
   }
 
-  void jobsFinished(Map<Job, TilePicture> jobResults) {
-    jobResults.forEach((Job job, TilePicture tileBitmap) {
-      _jobs.remove(job);
+  void renderJobsFinishedPicture(Map<Job, TilePicture> jobResults) {
+    if (_disposed) return;
+    jobResults.forEach((Job job, TilePicture tilePicture) {
+      _renderJobs.remove(job);
       TilePicture? old = _bitmaps[job.tile]?.picture;
       if (old != null) {
         //old.decrementRefCount();
       }
-      _bitmaps[job.tile] = JobResult(tileBitmap, JOBRESULT.NORMAL);
+      _bitmaps[job.tile] = JobResult(tilePicture, JOBRESULT.NORMAL);
     });
     notifyListeners();
   }
 
-  // JobResult? getJobResult(Tile tile) {
-  //   return _bitmaps[tile];
-  // }
-
   bool completed() {
     if (_disposed) return false;
-    if (_jobs.isNotEmpty) return false;
+    if (_renderJobs.isNotEmpty) return false;
     if (_labelJobs.isNotEmpty) return false;
     return true;
   }
@@ -104,7 +134,7 @@ class JobSet extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    _jobs.clear();
+    _renderJobs.clear();
     _labelJobs.clear();
     _bitmaps.values.forEach((element) {
       //element.bitmap?.decrementRefCount();
@@ -126,7 +156,7 @@ class JobSet extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'JobSet{jobs: $_jobs, _bitmaps: $_bitmaps}';
+    return 'JobSet{jobs: $_renderJobs, _bitmaps: $_bitmaps}';
   }
 
   /// https://stackoverflow.com/questions/63884633/unhandled-exception-a-changenotifier-was-used-after-being-disposed
@@ -136,4 +166,15 @@ class JobSet extends ChangeNotifier {
       super.notifyListeners();
     }
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JobSet &&
+          runtimeType == other.runtimeType &&
+          boundingBox == other.boundingBox &&
+          indoorLevel == other.indoorLevel;
+
+  @override
+  int get hashCode => boundingBox.hashCode ^ indoorLevel.hashCode;
 }

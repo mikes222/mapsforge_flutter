@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/core.dart';
 
 class DefaultContextMenu extends StatefulWidget {
-  /// The dimensions of the map
+  /// The dimensions of the map as device-independent screen pixels
   final Dimension screen;
 
   /// The event when the context menu have been requested.
@@ -51,15 +51,15 @@ class DefaultContextMenuState extends State {
     // double x = widget.event.x;
     // double y = widget.event.y;
 
-    widget.mapViewPosition.calculateBoundingBox(widget.viewModel.mapDimension);
+    //widget.mapViewPosition.calculateBoundingBox(widget.screen);
 
     Mappoint center = widget.mapViewPosition.getCenter();
 
     /// distance from the center
-    Mappoint mappoint =
-        widget.mapViewPosition.projection.latLonToPixel(widget.event);
+    Mappoint mappoint = widget.event.mappoint;
     double diffX = mappoint.x - center.x;
     double diffY = mappoint.y - center.y;
+    //print("tap ${widget.event} $diffX / $diffY");
 
     diffX = diffX / widget.viewModel.viewScaleFactor;
     diffY = diffY / widget.viewModel.viewScaleFactor;
@@ -101,13 +101,17 @@ class DefaultContextMenuState extends State {
           color: backgroundColor,
           border: Border.all(color: borderColor, width: width),
         ),
-        padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: buildColumns(context)
-              .map((e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2), child: e))
-              .toList(),
+        //padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding),
+        child: IntrinsicWidth(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: buildColumns(context)
+                .map((e) => Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                    child: e))
+                .toList(),
+          ),
         ),
       ),
     );
@@ -120,33 +124,33 @@ class DefaultContextMenuState extends State {
 
   List<Widget> buildColumns(BuildContext context) {
     return [
-      Row(
-        //mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            child: Text(
-              "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}",
-              style: const TextStyle(fontSize: 14),
-            ),
-            onTap: () {
-              widget.viewModel.clearTapEvent();
-            },
-            onLongPress: () {
-              Clipboard.setData(new ClipboardData(
-                  text:
-                      "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}"));
-            },
+      InkWell(
+        onTap: () {
+          widget.viewModel.clearTapEvent();
+        },
+        onLongPress: () {
+          Clipboard.setData(new ClipboardData(
+              text:
+                  "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}"));
+        },
+        child: Container(
+          //decoration: BoxDecoration(border: Border.all()),
+          // make sure the tap-area is a bit larger
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          child: Row(
+            //mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "${widget.event.latitude.toStringAsFixed(6)} / ${widget.event.longitude.toStringAsFixed(6)}",
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(width: 10),
+              // todo move the close icon to the right side
+              const Icon(Icons.close, size: 20),
+            ],
           ),
-          //const Spacer(),
-          // todo move the close icon to the right side
-          IconButton(
-            padding: const EdgeInsets.all(0),
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: () {
-              widget.viewModel.clearTapEvent();
-            },
-          ),
-        ],
+        ),
       ),
     ];
   }

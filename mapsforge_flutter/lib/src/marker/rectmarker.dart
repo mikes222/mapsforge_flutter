@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
@@ -6,8 +7,7 @@ import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
 import '../../core.dart';
-import 'basicmarker.dart';
-import 'markercallback.dart';
+import '../graphics/mapcanvas.dart';
 
 /// A Marker which draws a rectangle specified by the min/max lat/lon attributes.
 class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
@@ -109,34 +109,26 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
   }
 
   @override
-  void renderBitmap(MarkerCallback markerCallback) {
+  void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext) {
     // prepareScalePaintMixin(zoomLevel);
     // prepareScaleBitmapSrcMixin(zoomLevel);
-    if (mapRect == null ||
-        lastZoomLevel != markerCallback.mapViewPosition.zoomLevel) {
+    if (mapRect == null || lastZoomLevel != markerContext.zoomLevel) {
       // cache the rect in pixel-coordinates
-      Mappoint minmappoint =
-      markerCallback.mapViewPosition.projection.latLonToPixel(minLatLon);
-      Mappoint maxmappoint =
-      markerCallback.mapViewPosition.projection.latLonToPixel(maxLatLon);
-      mapRect = GraphicFactory().createRect(minmappoint.x,maxmappoint.y, maxmappoint.x, minmappoint.y);
-      lastZoomLevel = markerCallback.mapViewPosition.zoomLevel;
+      Mappoint minmappoint = markerContext.projection.latLonToPixel(minLatLon);
+      Mappoint maxmappoint = markerContext.projection.latLonToPixel(maxLatLon);
+      mapRect = GraphicFactory().createRect(
+          minmappoint.x, maxmappoint.y, maxmappoint.x, minmappoint.y);
+      lastZoomLevel = markerContext.zoomLevel;
     }
-    Mappoint center = markerCallback.mapViewPosition.getCenter();
-    // Mappoint leftUpper = markerCallback.mapViewPosition
-    //     .getLeftUpper(markerCallback.viewModel.mapDimension);
-    MapRect mr = mapRect!.offset(
-        -center.x + markerCallback.viewModel.mapDimension.width / 2,
-        -center.y + markerCallback.viewModel.mapDimension.height / 2);
+    MapRect mr =
+        mapRect!.offset(-markerContext.mapCenter.x, -markerContext.mapCenter.y);
     // mr = GraphicFactory().createRect(mr.getLeft() * 2, mr.getTop() * 2,
     //     mr.getRight() * 2, mr.getBottom() * 2);
 
     if (!isFillTransparent())
-      markerCallback.flutterCanvas
-          .drawRect(mr, getFillPaint(markerCallback.mapViewPosition.zoomLevel));
+      flutterCanvas.drawRect(mr, getFillPaint(markerContext.zoomLevel));
     if (!isStrokeTransparent())
-      markerCallback.flutterCanvas.drawRect(
-          mr, getStrokePaint(markerCallback.mapViewPosition.zoomLevel));
+      flutterCanvas.drawRect(mr, getStrokePaint(markerContext.zoomLevel));
   }
 
   @override

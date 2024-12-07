@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttercanvas.dart';
+import 'package:mapsforge_flutter/src/view/view_jobqueue.dart';
 
 import '../../core.dart';
 import '../rendertheme/rendercontext.dart';
@@ -14,10 +15,10 @@ class ViewZoomPainter extends CustomPainter {
 
   final ViewModel viewModel;
 
-  final RenderContext renderContext;
+  final ViewJobqueue viewJobqueue;
 
-  ViewZoomPainter({required this.viewModel, required this.renderContext})
-      : super();
+  ViewZoomPainter({required this.viewModel, required this.viewJobqueue})
+      : super(repaint: viewJobqueue);
 
   /// The [size] is the size of the widget in screenpixels, take care that we
   /// often use mappixels which is off by some zoomFactors
@@ -27,18 +28,20 @@ class ViewZoomPainter extends CustomPainter {
     Timing timing = Timing(log: _log, active: true);
     //print("zoomPainter paint $size and position ${viewModel.mapViewPosition}");
     if (viewModel.mapViewPosition == null) return;
+    RenderContext? renderContext = viewJobqueue.renderContext;
+    if (renderContext == null) return;
     //print("    inViewZoomPainter ====");
 
     FlutterCanvas flutterCanvas = FlutterCanvas(canvas, size);
-    flutterCanvas.setClip(
-        0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
-    MapViewPosition mapViewPosition = viewModel.mapViewPosition!;
-    mapViewPosition.calculateBoundingBox(viewModel.mapDimension);
+    // flutterCanvas.setClip(
+    //     0, 0, viewModel.mapDimension.width, viewModel.mapDimension.height);
+     MapViewPosition mapViewPosition = viewModel.mapViewPosition!;
+    // mapViewPosition.calculateBoundingBox(viewModel.mapDimension);
 
     if (viewModel.viewScaleFactor != 1) {
       canvas.save();
       flutterCanvas.scale(
-          const Mappoint(/*viewModel.viewDimension.width / 2*/ 0,
+          const Offset(/*viewModel.viewDimension.width / 2*/ 0,
               /*viewModel.viewDimension.height / 2*/ 0),
           1 / viewModel.viewScaleFactor);
     }
@@ -102,7 +105,7 @@ class ViewZoomPainter extends CustomPainter {
     if (mapViewPosition.rotationRadian != 0) {
       canvas.restore();
     }
-    timing.lap(30, "ZoomPainter done");
+    timing.lap(0, "ZoomPainter done");
   }
 
   @override
@@ -110,6 +113,7 @@ class ViewZoomPainter extends CustomPainter {
     // print(
     //     "zoomPainter shouldRepaint ${oldDelegate.mapViewPosition != mapViewPosition}");
 //    if (oldDelegate.mapViewPosition != mapViewPosition) return true;
-    return true;
+    //if (oldDelegate.renderContext != renderContext) return true;
+    return false;
   }
 }

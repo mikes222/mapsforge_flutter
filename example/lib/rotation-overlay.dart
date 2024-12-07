@@ -28,9 +28,9 @@ class _RotationState extends State {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
+      top: 20,
+      left: 100,
+      right: 100,
       child: Slider(
         value: _rotation,
         min: 0,
