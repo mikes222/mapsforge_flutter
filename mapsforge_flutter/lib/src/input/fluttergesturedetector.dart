@@ -26,7 +26,7 @@ class FlutterGestureDetector extends StatefulWidget {
       required this.viewModel,
       required this.child,
       required this.screensize,
-      this.swipeAbsorption = 0.8})
+      this.swipeAbsorption = 0.9})
       : assert(swipeAbsorption >= 0 && swipeAbsorption <= 1),
         super(key: key);
 
@@ -473,16 +473,22 @@ class _MoveAroundEvent implements _GestureEvent {
 
   @override
   bool end({required ScaleEndDetails details, required Size size}) {
+    // print(
+    //     "distance: ${details.velocity.pixelsPerSecond.distanceSquared} <-> $_swipeThresholdSquared, upPoint $_updateLocalFocalPoint, startPoint $startLocalFocalPoint, pxPerSec ${details.velocity}");
     if (details.velocity.pixelsPerSecond.distanceSquared <
         _swipeThresholdSquared) {
       return true;
     }
     if (_updateLocalFocalPoint != null) {
       // check the direction of velocity. If velocity points to wrong direction do not swipe
-      if ((_updateLocalFocalPoint!.dx - startLocalFocalPoint.dx).sign !=
-          details.velocity.pixelsPerSecond.dx.sign) return true;
-      if ((_updateLocalFocalPoint!.dy - startLocalFocalPoint.dy).sign !=
-          details.velocity.pixelsPerSecond.dy.sign) return true;
+      if (details.velocity.pixelsPerSecond.dx.abs() >
+              details.velocity.pixelsPerSecond.dy.abs() &&
+          (_updateLocalFocalPoint!.dx - startLocalFocalPoint.dx).sign !=
+              details.velocity.pixelsPerSecond.dx.sign) return true;
+      if (details.velocity.pixelsPerSecond.dx.abs() <
+              details.velocity.pixelsPerSecond.dy.abs() &&
+          (_updateLocalFocalPoint!.dy - startLocalFocalPoint.dy).sign !=
+              details.velocity.pixelsPerSecond.dy.sign) return true;
     }
     // calculate the offset per iteration
     _swipeOffset =
@@ -521,8 +527,8 @@ class _MoveAroundEvent implements _GestureEvent {
     }
     // slow down after each iteration
     _swipeOffset = _swipeOffset! * swipeAbsorption;
-    if (_swipeOffset!.distanceSquared < 20) {
-      // only 4 pixels for the next iteration, now lets stop swiping
+    if (_swipeOffset!.distanceSquared < 5) {
+      // only 2 pixels for the next iteration, now lets stop swiping
       _swipeTimer?.cancel();
       _swipeTimer = null;
       _swipeOffset = null;

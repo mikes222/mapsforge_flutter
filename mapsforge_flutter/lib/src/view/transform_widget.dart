@@ -24,8 +24,8 @@ class TransformWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Mappoint centerPosition = mapViewPosition.getCenter();
-    print(
-        "center: ${mapCenter.x - centerPosition.x} / ${mapCenter.y - centerPosition.y}, scaleFactor ${viewModel.viewScaleFactor}, focal ${mapViewPosition.focalPoint}");
+    // print(
+    //     "center: ${mapCenter.x - centerPosition.x} / ${mapCenter.y - centerPosition.y}, scaleFactor ${viewModel.viewScaleFactor}, focal ${mapViewPosition.focalPoint}");
     return ClipRect(
       child: Transform.scale(
         scale: 1 / viewModel.viewScaleFactor,
