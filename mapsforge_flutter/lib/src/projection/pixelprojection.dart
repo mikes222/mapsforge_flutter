@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
+import 'package:mapsforge_flutter/src/projection/scalefactor.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../model/relative_mappoint.dart';
@@ -175,5 +177,27 @@ class PixelProjection extends MercatorProjection {
   @override
   String toString() {
     return 'PixelProjection{_mapSize: $_mapSize, zoomLevel: ${scalefactor.zoomlevel}}';
+  }
+
+  /// Find the maximum zoomLevel where the [boundary] fits in given the current screensize.
+  /// This is an expensive operations since we probe each zoomLevel until we find the correct one.
+  /// Use it sparingly.
+  static int calculateFittingZoomlevel(BoundingBox boundary, Size size) {
+    for (int zoomLevel = Scalefactor.MAXZOOMLEVEL;
+        zoomLevel >= 0;
+        --zoomLevel) {
+      PixelProjection projection = PixelProjection(zoomLevel);
+      Mappoint leftUpper = projection
+          .latLonToPixel(LatLong(boundary.maxLatitude, boundary.minLongitude));
+      Mappoint rightBottom = projection
+          .latLonToPixel(LatLong(boundary.minLatitude, boundary.maxLongitude));
+      assert(leftUpper.x < rightBottom.x);
+      assert(leftUpper.y < rightBottom.y);
+      if ((rightBottom.x - leftUpper.x) <= size.width &&
+          (rightBottom.y - leftUpper.y) <= size.height) {
+        return zoomLevel;
+      }
+    }
+    return 0;
   }
 }

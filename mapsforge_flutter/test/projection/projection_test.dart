@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -64,5 +65,14 @@ main() {
     expect(
         Projection.startBearing(const LatLong(35, 45), const LatLong(35, 135)),
         60.16243352168624);
+  });
+
+  test("calculateZoomlevel", () {
+    DisplayModel displayModel = DisplayModel();
+    BoundingBox boundingBox =
+        const BoundingBox(47.777222, 16.193332, 47.908852, 16.326537);
+    int zoomLevel =
+        PixelProjection.calculateFittingZoomlevel(boundingBox, Size(500, 800));
+    expect(zoomLevel, 12);
   });
 }
