@@ -322,7 +322,7 @@ class _TileWidget extends StatelessWidget {
             viewModel: viewModel,
             mapViewPosition: mapViewPosition,
             screensize: screensize,
-            centerTile: jobSet.getCenter(),
+            mapCenter: jobSet.getCenter(),
             child: Stack(
               children: [
                 RepaintBoundary(

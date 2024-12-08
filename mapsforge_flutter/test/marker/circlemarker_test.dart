@@ -43,7 +43,7 @@ void main() {
           viewModel: viewModel,
           mapViewPosition: viewModel.mapViewPosition!,
           screensize: Size(800, 600),
-          centerTile: viewModel.mapViewPosition!.getCenter(),
+          mapCenter: viewModel.mapViewPosition!.getCenter(),
           child: CustomPaint(
             foregroundPainter: painter,
             child: Container(),
@@ -86,7 +86,7 @@ void main() {
           viewModel: viewModel,
           mapViewPosition: viewModel.mapViewPosition!,
           screensize: Size(800, 600),
-          centerTile: viewModel.mapViewPosition!.getCenter(),
+          mapCenter: viewModel.mapViewPosition!.getCenter(),
           child: CustomPaint(
             foregroundPainter: painter,
             child: Container(),
@@ -130,7 +130,7 @@ void main() {
           viewModel: viewModel,
           mapViewPosition: viewModel.mapViewPosition!,
           screensize: Size(800, 600),
-          centerTile: viewModel.mapViewPosition!.getCenter(),
+          mapCenter: viewModel.mapViewPosition!.getCenter(),
           child: CustomPaint(
             foregroundPainter: painter,
             child: Container(),

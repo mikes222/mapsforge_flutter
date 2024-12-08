@@ -49,6 +49,7 @@ main() {
   });
 
   test("PixelProjection", () {
+    DisplayModel displayModel = DisplayModel();
     int zoomLevel = 4; // 1, 2, 4, 8, 16 tiles per zoomlevel
     PixelProjection projection = PixelProjection(zoomLevel);
 

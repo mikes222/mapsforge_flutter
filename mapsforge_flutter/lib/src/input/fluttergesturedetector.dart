@@ -135,7 +135,7 @@ class FlutterGestureDetectorState extends State<FlutterGestureDetector> {
       },
       onDoubleTap: () {
         if (doLog) _log.info("onDoubleTap");
-        print("Screensize: ${widget.screensize}");
+        //print("Screensize: ${widget.screensize}");
         _gestureTapEvent?.tapUp(size: widget.screensize);
         _gestureTapEvent?.dispose();
         _gestureTapEvent = null;
@@ -219,6 +219,8 @@ class _ScaleEvent implements _GestureEvent {
 
   double? lastScale = null;
 
+  Offset? lastFocalPoint;
+
   _ScaleEvent(
       {required this.viewModel,
       required this.startLocalFocalPoint,
@@ -227,14 +229,17 @@ class _ScaleEvent implements _GestureEvent {
   @override
   void update({required ScaleUpdateDetails details, required Size size}) {
     // do not send tiny changes
-    if (lastScale != null && ((details.scale / lastScale!) - 1).abs() < 0.01)
-      return;
-    // if (doLog)
-    //   _log.info(
-    //       "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}");
+    if (lastScale != null &&
+        ((details.scale / lastScale!) - 1).abs() < 0.01 &&
+        lastFocalPoint != null &&
+        (lastFocalPoint!.dx - details.focalPoint.dx).abs() < 5 &&
+        (lastFocalPoint!.dy - details.focalPoint.dy).abs() < 5) return;
+    // _log.info(
+    //     "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}, rotation ${details.rotation}, size $size");
     lastScale = details.scale;
+    lastFocalPoint = details.focalPoint;
     /*MapViewPosition? newPost =*/
-    viewModel.setScaleAround(details.localFocalPoint, lastScale!);
+    viewModel.setScaleAround(details.localFocalPoint, details.scale);
     // Mappoint(details.localFocalPoint.dx * viewModel.viewScaleFactor,
     //     details.localFocalPoint.dy * viewModel.viewScaleFactor),
     // lastScale!);

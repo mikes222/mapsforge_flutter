@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/layer/job/view_job_request.dart';
 import 'package:mapsforge_flutter/src/layer/job/view_job_result.dart';
-import 'package:mapsforge_flutter/src/renderer/datastore_view_renderer.dart';
 
 import '../testassetbundle.dart';
 
@@ -40,8 +39,8 @@ main() async {
 
     Tile tile = new Tile(140486, 87975, zoomlevel, indoorLevel);
 
-    ViewJobResult result = await renderer.executeViewJob(ViewJobRequest(
-        upperLeft: tile, lowerRight: tile));
+    ViewJobResult result = await renderer
+        .executeViewJob(ViewJobRequest(upperLeft: tile, lowerRight: tile));
     expect(result.renderContext.labels.length, 2);
     expect(result.renderContext.drawingLayers.length, 11);
     expect(result.renderContext.drawingLayers[0].ways.length, 92);

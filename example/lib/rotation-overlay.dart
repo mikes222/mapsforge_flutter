@@ -5,11 +5,10 @@ import 'package:mapsforge_flutter/core.dart';
 /// the map-rotation feature. In your case you would maybe call viewModel.rotate() with the
 /// bearing from the GPS receiver instead.
 class RotationOverlay extends StatefulWidget {
-
   final ViewModel viewModel;
 
-  RotationOverlay(this.viewModel);
-  
+  const RotationOverlay(this.viewModel);
+
   @override
   State<StatefulWidget> createState() {
     return _RotationState();
@@ -19,7 +18,6 @@ class RotationOverlay extends StatefulWidget {
 /////////////////////////////////////////////////////////////////////////////
 
 class _RotationState extends State {
-
   double _rotation = 0;
 
   @override
@@ -38,9 +36,7 @@ class _RotationState extends State {
         onChanged: (double value) {
           _rotation = value;
           widget.viewModel.rotate(_rotation);
-          setState(() {
-
-          });
+          setState(() {});
         },
       ),
     );

@@ -125,6 +125,7 @@ class JobQueue {
     Timing timing = Timing(log: _log, active: true);
     TileDimension tileDimension = _calculateTiles(
         mapViewPosition: mapViewPosition, screensize: screensize);
+    //print("Dimension: $tileDimension");
     if (tileDimension == _currentJobSet?.tileDimension &&
         mapViewPosition.indoorLevel == _currentJobSet?.indoorLevel) {
       return _currentJobSet;
@@ -160,8 +161,6 @@ class JobQueue {
       halfWidth = max(halfWidth, halfHeight);
       halfHeight = max(halfWidth, halfHeight);
     }
-    // rising from 0 to 45, then falling to 0 at 90°
-    int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
     int tileLeft =
         mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
     int tileRight = mapViewPosition.projection.pixelXToTileX(min(
@@ -170,6 +169,8 @@ class JobQueue {
         mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
     int tileBottom = mapViewPosition.projection.pixelYToTileY(min(
         center.y + halfHeight, mapViewPosition.projection.mapsize.toDouble()));
+    // rising from 0 to 45, then falling to 0 at 90°
+    int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
     if (degreeDiff > 5) {
       // the map is rotated. To avoid empty corners enhance each side by one tile
       tileLeft = max(tileLeft - 1, 0);

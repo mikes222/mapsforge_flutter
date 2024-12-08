@@ -32,6 +32,7 @@ class TilePainter extends CustomPainter {
     // now do the drawing
     Mappoint center = jobSet.getCenter();
     PixelProjection projection = PixelProjection(jobSet.zoomLevel);
+    //flutterCanvas.drawCircle(0, 0, 100, FlutterPaint(Paint()));
     jobSet.bitmaps.forEach((Tile tile, JobResult jobResult) {
       if (jobResult.picture != null) {
         Mappoint point = projection.getLeftUpper(tile);
