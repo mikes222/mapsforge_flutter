@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/core.dart';
 
 abstract class MapRect {
   double getLeft();
@@ -9,4 +10,6 @@ abstract class MapRect {
   double getBottom();
 
   MapRect offset(double x, double y);
+
+  Mappoint getCenter();
 }

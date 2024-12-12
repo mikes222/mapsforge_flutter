@@ -1,12 +1,10 @@
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
-import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 
 import '../../core.dart';
 import '../../maps.dart';
 import '../../special.dart';
 import '../graphics/implementation/paragraph_cache.dart';
-import '../graphics/mapcanvas.dart';
 import '../graphics/maptextpaint.dart';
 import '../model/linestring.dart';
 import '../rendertheme/shape/shape_pathtext.dart';
@@ -79,7 +77,7 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {}
 }

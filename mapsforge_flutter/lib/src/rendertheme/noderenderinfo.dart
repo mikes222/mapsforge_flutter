@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 import '../../core.dart';
 import '../../maps.dart';
 import '../graphics/display.dart';
-import '../graphics/mapcanvas.dart';
 import 'nodeproperties.dart';
 import 'shape/shape.dart';
 
@@ -21,10 +20,13 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   NodeRenderInfo(this.nodeProperties, T shape) : super(shape);
 
   @override
-  void render(MapCanvas canvas, PixelProjection projection, Mappoint center,
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
     shapePaint!.renderNode(
-        canvas, nodeProperties, projection, center, rotationRadian);
+        canvas,
+        nodeProperties.getCoordinatesAbsolute(projection),
+        reference,
+        rotationRadian);
   }
 
   /// Returns true if shapes clash with each other

@@ -6,8 +6,7 @@ import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 import '../graphics/implementation/fluttercanvas.dart';
 
-/// Draws an normally open path as marker. Note that isTapped() returns
-/// always false.
+/// Draws an normally open path as marker.
 class PathMarker<T> extends Marker<T> with PaintMixin {
   List<ILatLong> path = [];
 

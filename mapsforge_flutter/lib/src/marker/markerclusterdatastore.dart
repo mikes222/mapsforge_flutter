@@ -1,6 +1,7 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/marker/caption_mixin.dart';
 
 ///
 /// Holds a collection of markers. Marker can only be of type [BasicPointMarker] (e.g. restaurants)
@@ -80,14 +81,12 @@ class MarkerClusterDataStore extends IMarkerDataStore {
       strokeColor: 0xffffffff,
       fillColor: 0xaaff0000,
       displayModel: displayModel,
-      markerCaption: MarkerCaption(
-        text: "${markers.length}",
-        latLong: latLong,
+    )..addCaption(Caption(
+        caption: "${markers.length}",
+        displayModel: displayModel,
         fontSize: 18,
         fillColor: 0xffffffff,
-        displayModel: displayModel,
-      ),
-    );
+      ));
   }
 
   /// This method will be called if boundary or zoomlevel changes to give the implementation the chance to replace/retrieve markers for the new boundary/zoomlevel.
@@ -183,7 +182,6 @@ class _ClusterMarker extends CircleMarker {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     item,
-    MarkerCaption? markerCaption,
     required ILatLong center,
     double radius = 10,
     int? percent,
@@ -196,7 +194,6 @@ class _ClusterMarker extends CircleMarker {
             minZoomLevel: minZoomLevel,
             maxZoomLevel: maxZoomLevel,
             item: item,
-            markerCaption: markerCaption,
             center: center,
             radius: radius,
             percent: percent,

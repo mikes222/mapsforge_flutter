@@ -133,9 +133,8 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-      markerCaption: MarkerCaption(
-          text: "PoiMarker with text", displayModel: displayModel),
-    );
+    )..addCaption(
+        Caption(caption: "PoiMarker with text", displayModel: displayModel));
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -187,11 +186,10 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-      markerCaption: MarkerCaption(
-          text: "PoiMarker with text",
-          displayModel: displayModel,
-          position: Position.ABOVE),
-    );
+    )..addCaption(Caption(
+        caption: "PoiMarker with text",
+        displayModel: displayModel,
+        position: Position.ABOVE));
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -243,11 +241,10 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-      markerCaption: MarkerCaption(
-          text: "PoiMarker with text",
-          displayModel: displayModel,
-          position: Position.LEFT),
-    );
+    )..addCaption(Caption(
+        caption: "PoiMarker with text",
+        displayModel: displayModel,
+        position: Position.LEFT));
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -292,11 +289,11 @@ void main() {
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
 
     PoiMarker circleMarker = PoiMarker(
-        latLong: latLong,
-        displayModel: displayModel,
-        src: "jar:symbols/tourist/view_point.svg",
-        markerCaption:
-            MarkerCaption(displayModel: displayModel, text: "Markercaption"));
+      latLong: latLong,
+      displayModel: displayModel,
+      src: "jar:symbols/tourist/view_point.svg",
+    )..addCaption(
+        Caption(caption: "Markercaption", displayModel: displayModel));
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });

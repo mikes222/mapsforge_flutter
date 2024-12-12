@@ -62,10 +62,12 @@ void main() {
     viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
 
     CircleMarker circleMarker = CircleMarker(
-        center: latLong,
+      center: latLong,
+      displayModel: displayModel,
+    )..addCaption(Caption(
+        caption: 'Markercaption',
         displayModel: displayModel,
-        markerCaption:
-            MarkerCaption(displayModel: displayModel, text: "Markercaption"));
+      ));
 
     MarkerContext markerContext = MarkerContext(
       viewModel.mapViewPosition!.getCenter(),

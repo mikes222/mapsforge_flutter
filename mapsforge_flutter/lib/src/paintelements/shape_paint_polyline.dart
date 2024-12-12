@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
-import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
-import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_polyline.dart';
 
 import '../../core.dart';
@@ -65,7 +63,7 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {}
 }

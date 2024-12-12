@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
-import 'package:mapsforge_flutter/src/renderer/geometryutils.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
 
 import '../graphics/implementation/fluttercanvas.dart';
@@ -46,7 +46,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     T? item,
-    MarkerCaption? markerCaption,
     double bitmapWidth = 20,
     double bitmapHeight = 20,
     int bitmapPercent = 100,
@@ -66,7 +65,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
           item: item,
-          markerCaption: markerCaption,
         ) {
     this.bitmapWidth = bitmapWidth * displayModel.getScaleFactor();
     this.bitmapHeight = bitmapHeight * displayModel.getScaleFactor();
@@ -104,9 +102,6 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
         if (stroke!.isTransparent()) stroke!.setColorFromNumber(0xff000000);
         stroke!.setBitmapShader(bitmap!);
       }
-    }
-    if (markerCaption != null) {
-      markerCaption!.latLong = GeometryUtils.calculateCenter(path);
     }
   }
 
@@ -167,5 +162,11 @@ class PolygonMarker<T> extends BasicMarker<T> with BitmapMixin {
   bool isTapped(TapEvent tapEvent) {
     //print("Testing ${latLong.toString()} against ${title}");
     return LatLongUtils.contains(path, tapEvent);
+  }
+
+  @override
+  MapRectangle getSymbolBoundary() {
+    // TODO: implement getSymbolBoundary
+    throw UnimplementedError();
   }
 }

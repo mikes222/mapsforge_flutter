@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 import '../../core.dart';
 import '../../maps.dart';
 import '../graphics/display.dart';
-import '../graphics/mapcanvas.dart';
 import 'shape/shape.dart';
 import 'wayproperties.dart';
 

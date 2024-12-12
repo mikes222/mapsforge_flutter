@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_caption.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
@@ -14,7 +13,6 @@ import '../graphics/implementation/paragraph_cache.dart';
 import '../graphics/maptextpaint.dart';
 import '../model/maprectangle.dart';
 import '../model/relative_mappoint.dart';
-import '../rendertheme/nodeproperties.dart';
 
 class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   // this is the stroke, normally white and represents the "surrounding of the text"
@@ -102,14 +100,14 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 
     //print("paint caption boundar: $boundary $front $back");
-    Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
-    RelativeMappoint relative = point.offset(-reference.x, -reference.y + shape.dy);
+    RelativeMappoint relative =
+        coordinatesAbsolute.offset(-reference.x, -reference.y + shape.dy);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;

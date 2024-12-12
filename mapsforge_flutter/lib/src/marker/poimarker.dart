@@ -6,12 +6,11 @@ import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
 import '../../datastore.dart';
 import '../../maps.dart';
-import '../graphics/mapcanvas.dart';
 import '../paintelements/shape_paint_symbol.dart';
 import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_symbol.dart';
 
-class PoiMarker<T> extends BasicPointMarker<T> {
+class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
   late ShapePaintSymbol shapePaint;
 
   late NodeProperties nodeProperties;
@@ -39,17 +38,16 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     int bitmapColor = 0xff000000,
     double rotation = 0,
     T? item,
-    MarkerCaption? markerCaption,
     required DisplayModel displayModel,
     this.position = Position.CENTER,
     this.rotateWithMap = true,
+    @Deprecated("use addCaption() instead") Caption? caption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation >= 0 && rotation <= 360),
         assert(width > 0),
         assert(height > 0),
         super(
-          markerCaption: markerCaption,
           display: display,
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
@@ -66,13 +64,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     base.setBitmapWidth(width.round());
     base.setBitmapHeight(height.round());
     base.position = position;
-//    setBitmapColorFromNumber(bitmapColor);
-    if (markerCaption != null) {
-      markerCaption.latLong = latLong;
-    }
-    if (markerCaption != null) {
-      markerCaption.setSymbolBoundary(base.calculateBoundary());
-    }
+    if (caption != null) addCaption(caption);
   }
 
   @override
@@ -90,14 +82,6 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     }
   }
 
-  @override
-  void setMarkerCaption(MarkerCaption? markerCaption) {
-    super.setMarkerCaption(markerCaption);
-    // if (markerCaption != null) {
-    //   markerCaption.setSymbolBoundary(base.calculateBoundary());
-    // }
-  }
-
   void set rotation(double rotation) {
     base.theta = Projection.degToRadian(rotation);
     if (scaled != null) scaled!.theta = Projection.degToRadian(rotation);
@@ -112,6 +96,20 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     base.bitmapSrc = bitmapSrc;
     scaled = null;
     await initResources(symbolCache);
+  }
+
+  ///
+  /// Renders this object. Called by markerPainter
+  ///
+  @override
+  void render(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    super.render(flutterCanvas, markerContext);
+    renderMarker(
+        flutterCanvas: flutterCanvas,
+        markerContext: markerContext,
+        coordinatesAbsolute:
+            nodeProperties.getCoordinatesAbsolute(markerContext.projection),
+        symbolBoundary: getSymbolBoundary());
   }
 
   @override
@@ -133,8 +131,7 @@ class PoiMarker<T> extends BasicPointMarker<T> {
     _lastZoomLevel = markerContext.zoomLevel;
     shapePaint.renderNode(
       flutterCanvas,
-      nodeProperties,
-      markerContext.projection,
+      nodeProperties.getCoordinatesAbsolute(markerContext.projection),
       markerContext.mapCenter,
       rotateWithMap ? markerContext.rotationRadian : 0,
     );
@@ -173,5 +170,10 @@ class PoiMarker<T> extends BasicPointMarker<T> {
   void set latLong(ILatLong latLong) {
     super.latLong = latLong;
     nodeProperties = NodeProperties(PointOfInterest(0, [], latLong));
+  }
+
+  @override
+  MapRectangle getSymbolBoundary() {
+    return base.calculateBoundary();
   }
 }

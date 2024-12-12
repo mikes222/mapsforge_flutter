@@ -21,7 +21,7 @@ class Marker<T> {
       this.item});
 
   ///
-  /// Renders this object. Called by markerPointer -> markerRenderer
+  /// Renders this object. Called by markerPainter
   ///
   void render(MapCanvas mapCanvas, MarkerContext markerContext) {}
 

@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
@@ -14,7 +13,6 @@ import '../graphics/implementation/fluttercanvas.dart';
 import '../graphics/matrix.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
-import '../rendertheme/nodeproperties.dart';
 //import 'dart:ui' as ui;
 
 class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
@@ -38,12 +36,12 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
-    Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
-    RelativeMappoint relative = point.offset(-reference.x, -reference.y);
+    RelativeMappoint relative =
+        coordinatesAbsolute.offset(-reference.x, -reference.y);
     MapRectangle boundary = shape.calculateBoundary();
     //print("paint symbol boundar: $boundary");
     Matrix? matrix;
@@ -62,8 +60,11 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
           "drawing ${bitmap} ${fill.getColorAsNumber().toRadixString(16)} at ${relative.x + boundary.left} / ${relative.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${shape.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}"); //bitmap.debugGetOpenHandleStackTraces();
       ui.Canvas? uiCanvas = (canvas).uiCanvas;
       uiCanvas.drawRect(
-          ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
-              boundary.getWidth(), boundary.getHeight()),
+          ui.Rect.fromLTWH(
+              relative.x + boundary.left,
+              relative.y + boundary.top,
+              boundary.getWidth(),
+              boundary.getHeight()),
           ui.Paint()..color = Colors.red.withOpacity(0.5));
       uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
           ui.Paint()..color = Colors.green.withOpacity(0.5));

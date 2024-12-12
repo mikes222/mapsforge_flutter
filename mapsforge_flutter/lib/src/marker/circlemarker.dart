@@ -5,10 +5,9 @@ import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
-import '../graphics/mapcanvas.dart';
-
 /// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
-class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
+class CircleMarker<T> extends BasicPointMarker<T>
+    with PaintMixin, CaptionMixin {
   late final double radius;
 
   final int? percent;
@@ -18,7 +17,6 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
     int minZoomLevel = 0,
     int maxZoomLevel = 65535,
     T? item,
-    MarkerCaption? markerCaption,
     required ILatLong center,
     double radius = 10,
     this.percent,
@@ -36,7 +34,6 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
           item: item,
-          markerCaption: markerCaption,
           latLong: center,
         ) {
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL);
@@ -47,16 +44,6 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
     setStrokeColorFromNumber(strokeColor);
     setStrokeWidth(strokeWidth * displayModel.getScaleFactor());
     this.radius = radius * displayModel.getScaleFactor();
-
-    if (markerCaption != null) {
-      markerCaption.latLong = latLong;
-    }
-    if (markerCaption != null) {
-      // markerCaption
-      //     .setDy(radius + strokeWidth + markerCaption.getFontSize() / 2);
-      markerCaption
-          .setSymbolBoundary(MapRectangle(-radius, -radius, radius, radius));
-    }
   }
 
   @override
@@ -69,6 +56,19 @@ class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin {
     return minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
         boundary.contains(latLong.latitude, latLong.longitude);
+  }
+
+  ///
+  /// Renders this object. Called by markerPainter
+  ///
+  @override
+  void render(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    super.render(flutterCanvas, markerContext);
+    renderMarker(
+        flutterCanvas: flutterCanvas,
+        markerContext: markerContext,
+        coordinatesAbsolute: mappoint,
+        symbolBoundary: MapRectangle(-radius, -radius, radius, radius));
   }
 
   @override

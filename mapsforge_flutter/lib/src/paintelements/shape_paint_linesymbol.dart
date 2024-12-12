@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
@@ -11,7 +10,6 @@ import '../../special.dart';
 import '../graphics/matrix.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
-import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_linesymbol.dart';
 
 class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
@@ -33,8 +31,8 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {}
 
   @override

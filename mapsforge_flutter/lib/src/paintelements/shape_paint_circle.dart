@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_circle.dart';
@@ -7,7 +6,6 @@ import 'package:mapsforge_flutter/src/rendertheme/wayproperties.dart';
 
 import '../../maps.dart';
 import '../../special.dart';
-import '../rendertheme/nodeproperties.dart';
 
 class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   late final MapPaint? fill;
@@ -33,12 +31,13 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
   }
 
   @override
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {
-    Mappoint point = nodeProperties.getCoordinatesAbsolute(projection);
-    RelativeMappoint relative = point.offset(-reference.x, -reference.y + shape.dy);
-    if (fill != null) canvas.drawCircle(relative.x, relative.y, shape.radius, fill!);
+    RelativeMappoint relative =
+        coordinatesAbsolute.offset(-reference.x, -reference.y + shape.dy);
+    if (fill != null)
+      canvas.drawCircle(relative.x, relative.y, shape.radius, fill!);
     if (stroke != null)
       canvas.drawCircle(relative.x, relative.y, shape.radius, stroke!);
   }

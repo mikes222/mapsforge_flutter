@@ -3,14 +3,15 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/graphics/resourcebitmap.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
 import '../../core.dart';
-import '../graphics/mapcanvas.dart';
 
 /// A Marker which draws a rectangle specified by the min/max lat/lon attributes.
-class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
+class RectMarker<T> extends BasicMarker<T>
+    with BitmapSrcMixin, PaintMixin, CaptionMixin {
   final ILatLong minLatLon;
 
   final ILatLong maxLatLon;
@@ -30,7 +31,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
     int maxZoomLevel = 65535,
     T? item,
     String? bitmapSrc,
-    MarkerCaption? markerCaption,
     int? fillColor,
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
@@ -50,7 +50,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
           minZoomLevel: minZoomLevel,
           maxZoomLevel: maxZoomLevel,
           item: item,
-          markerCaption: markerCaption,
         ) {
     //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
@@ -80,25 +79,6 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
       setFillBitmapShader(bitmap!);
       bitmap!.dispose();
     }
-    if (markerCaption != null) {
-      markerCaption!.latLong = LatLong(
-          minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
-          minLatLon.longitude +
-              (maxLatLon.longitude - minLatLon.longitude) /
-                  2); //GeometryUtils.calculateCenter(path);
-    }
-  }
-
-  @override
-  void setMarkerCaption(MarkerCaption? markerCaption) {
-    if (markerCaption != null) {
-      markerCaption.latLong = LatLong(
-          minLatLon.latitude + (maxLatLon.latitude - minLatLon.latitude) / 2,
-          minLatLon.longitude +
-              (maxLatLon.longitude - minLatLon.longitude) /
-                  2); //GeometryUtils.calculateCenter(path);
-    }
-    super.setMarkerCaption(markerCaption);
   }
 
   @override
@@ -106,6 +86,19 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
     return minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
         boundary.intersects(boundingBox);
+  }
+
+  ///
+  /// Renders this object. Called by markerPainter
+  ///
+  @override
+  void render(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    super.render(flutterCanvas, markerContext);
+    renderMarker(
+        flutterCanvas: flutterCanvas,
+        markerContext: markerContext,
+        coordinatesAbsolute: mapRect!.getCenter(),
+        symbolBoundary: getSymbolBoundary());
   }
 
   @override
@@ -137,5 +130,11 @@ class RectMarker<T> extends BasicMarker<T> with BitmapSrcMixin, PaintMixin {
         tapEvent.latitude < maxLatLon.latitude &&
         tapEvent.longitude > minLatLon.longitude &&
         tapEvent.longitude < maxLatLon.longitude;
+  }
+
+  @override
+  MapRectangle getSymbolBoundary() {
+    return MapRectangle(mapRect!.getLeft(), mapRect!.getTop(),
+        mapRect!.getRight(), mapRect!.getBottom());
   }
 }

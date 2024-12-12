@@ -163,6 +163,23 @@ gets out of the boundary of the map. ``mapViewPosition.getCenter()`` returns the
 whereas ``markerContext.mapCenter`` returns the center of the map which may be different if the map moved since the 
 last redraw.
 
+instead of 
+
+    xxxMarker(
+        markerCaption: MarkerCaption(
+            text: "abc",
+        ...
+        ),
+    )
+
+use
+
+    xxxxMarker(
+        ...
+    )..addCaption(
+        caption: "abc",
+        ...
+    );
 
 ## Documentation
 

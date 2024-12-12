@@ -1,6 +1,7 @@
 library mapsforge_flutter;
 
 export 'src/marker/basicmarker.dart';
+export 'src/marker/caption_mixin.dart';
 export 'src/marker/circlemarker.dart';
 export 'src/marker/iconmarker.dart';
 export 'src/marker/imarkerdatastore.dart';

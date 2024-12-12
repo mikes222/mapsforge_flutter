@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
 
 import '../graphics/implementation/fluttercanvas.dart';
-import '../graphics/mapcanvas.dart';
 
 /// A marker which uses flutter Icons. The size can be set with the [fontSize] parameter. Currently there is
 /// no way to set the position of the marker (to e.g. above the position) so an icon which is suitable for
 /// being centered should be used.
-class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
+class IconMarker<T> extends BasicPointMarker<T> with PaintMixin, CaptionMixin {
   final IconData icon;
   final Color? color;
   final double fontSize;
@@ -25,7 +25,6 @@ class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
     this.shadows,
     this.fontSize = 26,
     super.item,
-    super.markerCaption,
     required ILatLong center,
     required DisplayModel displayModel,
   })  : assert(minZoomLevel >= 0),
@@ -39,6 +38,19 @@ class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
     return minZoomLevel <= zoomLevel &&
         maxZoomLevel >= zoomLevel &&
         boundary.contains(latLong.latitude, latLong.longitude);
+  }
+
+  ///
+  /// Renders this object. Called by markerPainter
+  ///
+  @override
+  void render(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    super.render(flutterCanvas, markerContext);
+    renderMarker(
+        flutterCanvas: flutterCanvas,
+        markerContext: markerContext,
+        coordinatesAbsolute: mappoint,
+        symbolBoundary: getSymbolBoundary());
   }
 
   @override
@@ -71,5 +83,10 @@ class IconMarker<T> extends BasicPointMarker<T> with PaintMixin {
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
 
     return p2.distance(tapped) <= fontSize;
+  }
+
+  MapRectangle getSymbolBoundary() {
+    return MapRectangle(
+        -fontSize / 2, -fontSize / 2, fontSize / 2, fontSize / 2);
   }
 }

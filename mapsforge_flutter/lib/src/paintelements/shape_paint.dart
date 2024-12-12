@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:mapsforge_flutter/src/graphics/mapcanvas.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 
@@ -11,7 +10,6 @@ import '../graphics/join.dart';
 import '../graphics/maptextpaint.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
-import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape.dart';
 import '../rendertheme/wayproperties.dart';
 
@@ -28,8 +26,8 @@ abstract class ShapePaint<T extends Shape> {
     return shape.calculateBoundary();
   }
 
-  void renderNode(MapCanvas canvas, NodeProperties nodeProperties,
-      PixelProjection projection, Mappoint reference,
+  void renderNode(
+      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]);
 
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
