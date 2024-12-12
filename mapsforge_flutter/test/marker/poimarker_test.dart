@@ -325,4 +325,65 @@ void main() {
         ),
         goldenfile: 'poimarker_text.png');
   });
+
+  testWidgets('Renders a poimarker with multiple captions',
+      (WidgetTester tester) async {
+    ILatLong latLong = const LatLong(46, 18);
+    SymbolCache symbolCache = FileSymbolCache(
+        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+
+    final DisplayModel displayModel = DisplayModel(
+      maxZoomLevel: 14,
+    );
+    ViewModel viewModel = ViewModel(displayModel: displayModel);
+    viewModel.setMapViewPosition(latLong.latitude, latLong.longitude);
+
+    PoiMarker circleMarker = PoiMarker(
+      latLong: latLong,
+      displayModel: displayModel,
+      src: "jar:symbols/tourist/view_point.svg",
+    )
+      ..addCaption(
+          Caption(caption: "Markercaption", displayModel: displayModel))
+      ..addCaption(Caption(
+          caption: "Markercaption",
+          displayModel: displayModel,
+          fontSize: 16,
+          position: Position.ABOVE))
+      ..addCaption(Caption(
+          caption: "Markercaption",
+          displayModel: displayModel,
+          fontSize: 8,
+          position: Position.RIGHT));
+    await tester.runAsync(() async {
+      await circleMarker.initResources(symbolCache);
+    });
+
+    MarkerContext markerContext = MarkerContext(
+      viewModel.mapViewPosition!.getCenter(),
+      viewModel.mapViewPosition!.zoomLevel,
+      viewModel.mapViewPosition!.projection,
+      viewModel.mapViewPosition!.rotationRadian,
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
+          latLong.latitude + 0.01, latLong.longitude + 0.01),
+    );
+    SingleMarkerPainter painter = SingleMarkerPainter(
+      markerContext: markerContext,
+      marker: circleMarker,
+    );
+
+    await TestHelper.pumpWidget(
+        tester: tester,
+        child: TransformWidget(
+          viewModel: viewModel,
+          mapViewPosition: viewModel.mapViewPosition!,
+          screensize: Size(800, 600),
+          mapCenter: viewModel.mapViewPosition!.getCenter(),
+          child: CustomPaint(
+            foregroundPainter: painter,
+            child: Container(),
+          ),
+        ),
+        goldenfile: 'poimarker_multiple_captions.png');
+  });
 }
