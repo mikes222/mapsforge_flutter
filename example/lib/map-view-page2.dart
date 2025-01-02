@@ -31,7 +31,7 @@ class MapViewPage2 extends StatefulWidget {
 
 /// The [State] of the [MapViewPage] Widget.
 class MapViewPageState2 extends State<MapViewPage2> {
-  final DisplayModel displayModel = DisplayModel(deviceScaleFactor: 2);
+  late DisplayModel displayModel;
 
   late SymbolCache symbolCache;
 
@@ -40,6 +40,18 @@ class MapViewPageState2 extends State<MapViewPage2> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.mapFileData.mapType == MAPTYPE.OFFLINE) {
+      // create tiles (=bitmaps) twice the normal size (=256*256 pixels) and scale
+      // it down by half when viewing them. This increases the resolution of the tiles.
+      // Also consider to use MediaQuery.of(context).devicePixelRatio for an even
+      // better resolution.
+      displayModel = DisplayModel(deviceScaleFactor: 2);
+    } else {
+      // all online tiles are in 256*256 pixels size. So we set the tilesize to accordingly
+      displayModel =
+          DisplayModel(deviceScaleFactor: 2, tilesize: (256 / 2).round());
+    }
 
     /// For the offline-maps we need a cache for all the tiny symbols in the map
     symbolCache = widget.mapFileData.relativePathPrefix != null

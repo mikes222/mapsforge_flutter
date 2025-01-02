@@ -9,7 +9,7 @@ import '../graphics/filter.dart';
 /// cater for user needs or application development (maybe a small map and large map, or to prevent upscaling for
 /// downloaded tiles that do not scale well).
 class DisplayModel {
-  /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 4 tiles to fit on it and so on.
+  /// the tile size. At zoomLevel 0 the whole world fits onto 1 tile, zoomLevel 1 needs 2*2=4 tiles to fit on it and so on.
   static const int DEFAULT_TILE_SIZE = 256;
 
   /// start to thicken the strokes at this zoomlevel
@@ -72,9 +72,11 @@ class DisplayModel {
     this.maxTextWidthFactor = 0.9,
     this.fontScaleFactor = 1.0,
     this.backgroundColor = 0xffeeeeee,
+    int tilesize = DEFAULT_TILE_SIZE,
   })  : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
-        assert(maxTextWidthFactor > 0) {
-    this._setTileSize();
+        assert(maxTextWidthFactor > 0),
+        assert(tilesize > 0) {
+    this._setTileSize(tilesize);
     _setMaxTextWidth();
   }
 
@@ -154,7 +156,7 @@ class DisplayModel {
     this.maxTextWidth = MapsforgeConstants().tileSize * maxTextWidthFactor;
   }
 
-  void _setTileSize() {
-    MapsforgeConstants().tileSize = (DEFAULT_TILE_SIZE * getScaleFactor());
+  void _setTileSize(int tilesize) {
+    MapsforgeConstants().tileSize = (tilesize * getScaleFactor());
   }
 }

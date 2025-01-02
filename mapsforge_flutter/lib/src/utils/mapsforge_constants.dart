@@ -1,5 +1,4 @@
 class MapsforgeConstants {
-
   static MapsforgeConstants? _instance;
 
   /// The size of a tile in mappixel. The default is 256, but if
@@ -15,16 +14,19 @@ class MapsforgeConstants {
 
   MapsforgeConstants._();
 
-  double get tileSize  {
-    if (_tileSize == 0) throw Exception("Tilesize not set, init Displaymodel first");
+  double get tileSize {
+    if (_tileSize == 0)
+      throw Exception("Tilesize not set, init Displaymodel first");
     return _tileSize;
   }
 
+  /// Called by Displaymodel to provide easy access to the tilesize. Make sure that all maps are
+  /// disposed() before setting a new tilesize. Rendering tiles with changing tilesizes could
+  /// cause unexpected behavior.
   void set tileSize(double tileSize) {
-    if (_tileSize != 0 && _tileSize != tileSize) {
-      throw Exception("tilesize already set to $_tileSize, it must be the same");
-    }
+    // if (_tileSize != 0 && _tileSize != tileSize) {
+    //   throw Exception("tilesize already set to $_tileSize, it must be the same");
+    // }
     _tileSize = tileSize;
   }
-
 }
