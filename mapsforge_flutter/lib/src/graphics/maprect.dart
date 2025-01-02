@@ -12,4 +12,8 @@ abstract class MapRect {
   MapRect offset(double x, double y);
 
   Mappoint getCenter();
+
+  double getWidth();
+
+  double getHeight();
 }

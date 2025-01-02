@@ -172,7 +172,6 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     nodeProperties = NodeProperties(PointOfInterest(0, [], latLong));
   }
 
-  @override
   MapRectangle getSymbolBoundary() {
     return base.calculateBoundary();
   }

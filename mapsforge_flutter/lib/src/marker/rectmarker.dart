@@ -132,9 +132,8 @@ class RectMarker<T> extends BasicMarker<T>
         tapEvent.longitude < maxLatLon.longitude;
   }
 
-  @override
   MapRectangle getSymbolBoundary() {
-    return MapRectangle(mapRect!.getLeft(), mapRect!.getTop(),
-        mapRect!.getRight(), mapRect!.getBottom());
+    return MapRectangle(-mapRect!.getWidth() / 2, -mapRect!.getHeight() / 2,
+        mapRect!.getWidth() / 2, mapRect!.getHeight() / 2);
   }
 }

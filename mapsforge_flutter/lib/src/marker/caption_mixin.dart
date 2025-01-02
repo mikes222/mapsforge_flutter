@@ -111,7 +111,7 @@ class Caption {
           caption: _caption, symbolBoundary: symbolBoundary);
     }
     // print(
-    //     "renderCaption $caption for $minZoomLevel and $maxZoomLevel at ${markerCallback.mapViewPosition.zoomLevel}");
+    //     "renderCaption $_caption for $minZoomLevel and $maxZoomLevel at ${markerContext.zoomLevel} $coordinatesAbsolute ${markerContext.mapCenter}");
     shapePaint.renderNode(
       flutterCanvas,
       coordinatesAbsolute,

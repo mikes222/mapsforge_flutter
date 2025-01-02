@@ -105,18 +105,12 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 
-    //print("paint caption boundar: $boundary $front $back");
+    //print("paint caption boundar: $boundary $front $back $shape");
     RelativeMappoint relative =
         coordinatesAbsolute.offset(-reference.x, -reference.y + shape.dy);
     // print(
     //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
-    // uiCanvas.drawRect(
-    //     ui.Rect.fromLTWH(point.x + boundary.left, point.y + boundary.top,
-    //         boundary.getWidth(), boundary.getHeight()),
-    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    // uiCanvas.drawCircle(ui.Offset(point.x, point.y), 10,
-    //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (rotationRadian != 0) {
       uiCanvas.save();
       uiCanvas.translate(relative.x, relative.y);
@@ -124,14 +118,18 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
       uiCanvas.rotate(2 * pi - rotationRadian);
       uiCanvas.translate(-relative.x, -relative.y);
     }
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
+    //         boundary.getWidth(), boundary.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
     if (back != null)
       uiCanvas.drawParagraph(back!.paragraph,
           ui.Offset(relative.x + boundary.left, relative.y + boundary.top));
     if (front != null)
       uiCanvas.drawParagraph(front!.paragraph,
           ui.Offset(relative.x + boundary.left, relative.y + boundary.top));
-    // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
-    //     5, ui.Paint()..color = Colors.blue);
+    // uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
+    //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (rotationRadian != 0) {
       uiCanvas.restore();
     }

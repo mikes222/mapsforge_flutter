@@ -46,11 +46,10 @@ class JobSet extends ChangeNotifier {
 
   final Mappoint _center;
 
-  JobSet(
-      {required this.boundingBox,
-      required List<Job> jobs,
-      required Mappoint center,
-      required this.tileDimension})
+  JobSet({required this.boundingBox,
+    required List<Job> jobs,
+    required Mappoint center,
+    required this.tileDimension})
       : assert(jobs.length > 0),
         _renderJobs = jobs,
         _labelJobs = []..addAll(jobs),
@@ -170,10 +169,11 @@ class JobSet extends ChangeNotifier {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is JobSet &&
-          runtimeType == other.runtimeType &&
-          boundingBox == other.boundingBox &&
-          indoorLevel == other.indoorLevel;
+          other is JobSet &&
+              runtimeType == other.runtimeType &&
+              boundingBox == other.boundingBox &&
+              indoorLevel == other.indoorLevel &&
+              zoomLevel == other.zoomLevel;
 
   @override
   int get hashCode => boundingBox.hashCode ^ indoorLevel.hashCode;

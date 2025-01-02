@@ -9,7 +9,9 @@ class FlutterRect implements MapRect {
   Mappoint? _center;
 
   FlutterRect(double left, double top, double right, double bottom)
-      : rect = ui.Rect.fromLTRB(left, top, right, bottom);
+      : assert(bottom >= top),
+        assert(right >= left),
+        rect = ui.Rect.fromLTRB(left, top, right, bottom);
 
   @override
   double getLeft() => rect.left;
@@ -35,5 +37,15 @@ class FlutterRect implements MapRect {
     _center =
         Mappoint((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
     return _center!;
+  }
+
+  @override
+  double getHeight() {
+    return rect.bottom - rect.top;
+  }
+
+  @override
+  double getWidth() {
+    return rect.right - rect.left;
   }
 }

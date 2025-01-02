@@ -1,7 +1,6 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/marker/caption_mixin.dart';
 
 ///
 /// Holds a collection of markers. Marker can only be of type [BasicPointMarker] (e.g. restaurants)
@@ -26,15 +25,29 @@ class MarkerClusterDataStore extends IMarkerDataStore {
 
   final DisplayModel displayModel;
 
-  MarkerClusterDataStore(
-      {this.extendMeters = 1000,
-      this.minClusterItems = 3,
-      required this.displayModel})
-      : assert(minClusterItems >= 2);
+  final int minZoomLevel;
+
+  final int maxZoomLevel;
+
+  MarkerClusterDataStore({
+    this.extendMeters = 1000,
+    this.minClusterItems = 3,
+    required this.displayModel,
+    this.minZoomLevel = 0,
+    this.maxZoomLevel = 65535,
+  })  : assert(minClusterItems >= 2),
+        assert(minZoomLevel <= maxZoomLevel);
 
   /// returns the markers to draw for the given [boundary]. If this method needs more time return an empty list and call [setRepaint()] when finished.
   @override
   List<Marker> getMarkersToPaint(BoundingBox boundary, int zoomLevel) {
+    if (zoomLevel < minZoomLevel || zoomLevel > maxZoomLevel) {
+      // clear cache to avoid false positives at [isTapped]
+      _previousMarkers = [];
+      _previousZoomLevel = -1;
+      _previousBoundingBox = null;
+      return [];
+    }
     BoundingBox extended = boundary.extendMeters(extendMeters);
     if (_previousBoundingBox != null &&
         _previousBoundingBox!.containsBoundingBox(boundary) &&

@@ -74,6 +74,7 @@ class PixelProjection extends MercatorProjection {
   /// @return the latitude value of the pixel Y coordinate.
   /// @throws IllegalArgumentException if the given pixelY coordinate is invalid.
   double pixelYToLatitude(double pixelY) {
+    pixelY = min(max(0, pixelY), _mapSize.toDouble());
     assert(pixelY >= 0);
     assert(pixelY <= _mapSize);
     const double pi2 = 2 * pi;
@@ -103,6 +104,7 @@ class PixelProjection extends MercatorProjection {
   /// @return the longitude value of the pixel X coordinate.
   /// @throws IllegalArgumentException if the given pixelX coordinate is invalid.
   double pixelXToLongitude(double pixelX) {
+    pixelX = min(max(0, pixelX), _mapSize.toDouble());
     assert(pixelX >= 0);
     assert(pixelX <= _mapSize);
     return 360 * ((pixelX / _mapSize) - 0.5);
