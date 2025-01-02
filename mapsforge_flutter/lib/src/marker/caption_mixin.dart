@@ -121,7 +121,7 @@ class Caption {
   }
 
   void set caption(String caption) {
-    this.caption = caption;
+    this._caption = caption;
     if (scaled != null) shapePaint.setCaption(caption);
   }
 
