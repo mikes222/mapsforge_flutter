@@ -56,32 +56,32 @@ class GraphicUtils {
    * @param height      requested height (0: no change)
    * @param percent     requested scale percent (100: no change)
    */
-  static List<double> imageSize(double picWidth, double picHeight,
-      double scaleFactor, int width, int height, int percent) {
-    double bitmapWidth = picWidth * scaleFactor;
-    double bitmapHeight = picHeight * scaleFactor;
-
-    double aspectRatio = picWidth / picHeight;
-
-    if (width != 0 && height != 0) {
-// both width and height set, override any other setting
-      bitmapWidth = width.toDouble();
-      bitmapHeight = height.toDouble();
-    } else if (width == 0 && height != 0) {
-// only width set, calculate from aspect ratio
-      bitmapWidth = height * aspectRatio;
-      bitmapHeight = height.toDouble();
-    } else if (width != 0 && height == 0) {
-// only height set, calculate from aspect ratio
-      bitmapHeight = width / aspectRatio;
-      bitmapWidth = width.toDouble();
-    }
-
-    if (percent != 100) {
-      bitmapWidth *= percent / 100;
-      bitmapHeight *= percent / 100;
-    }
-
-    return []; //{bitmapWidth, bitmapHeight};
-  }
+//   static List<double> imageSize(double picWidth, double picHeight,
+//       double scaleFactor, int width, int height, int percent) {
+//     double bitmapWidth = picWidth * scaleFactor;
+//     double bitmapHeight = picHeight * scaleFactor;
+//
+//     double aspectRatio = picWidth / picHeight;
+//
+//     if (width != 0 && height != 0) {
+// // both width and height set, override any other setting
+//       bitmapWidth = width.toDouble();
+//       bitmapHeight = height.toDouble();
+//     } else if (width == 0 && height != 0) {
+// // only width set, calculate from aspect ratio
+//       bitmapWidth = height * aspectRatio;
+//       bitmapHeight = height.toDouble();
+//     } else if (width != 0 && height == 0) {
+// // only height set, calculate from aspect ratio
+//       bitmapHeight = width / aspectRatio;
+//       bitmapWidth = width.toDouble();
+//     }
+//
+//     if (percent != 100) {
+//       bitmapWidth *= percent / 100;
+//       bitmapHeight *= percent / 100;
+//     }
+//
+//     return []; //{bitmapWidth, bitmapHeight};
+//   }
 }

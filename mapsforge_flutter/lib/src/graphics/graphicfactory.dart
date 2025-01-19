@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttergraphicfactory.dart';
+import 'package:mapsforge_flutter/src/graphics/maptextpaint.dart';
 
 import 'mapcanvas.dart';
 import 'mappaint.dart';
@@ -15,8 +15,6 @@ abstract class GraphicFactory {
     _instance = const FlutterGraphicFactory();
     return _instance!;
   }
-
-  const GraphicFactory._();
 
   //Bitmap createBitmap(int width, int height, bool isTransparent);
 

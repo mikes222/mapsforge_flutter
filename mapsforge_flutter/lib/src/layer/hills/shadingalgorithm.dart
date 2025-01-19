@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import '../../graphics/hillshadingbitmap.dart';
-
 import 'hgtcache.dart';
 
 abstract class ShadingAlgorithm {
@@ -20,10 +18,11 @@ abstract class ShadingAlgorithm {
  * could run on any height model source (e.g. on an android content provider for
  * data sharing between apps) as long as they understand the format of the stream
  */
-abstract class RawHillTileSource {
+abstract class RawHillTileSource2 {
   int getSize();
 
-  File getFile();
+  // violates WASM compatibility
+  //File getFile();
 
 /* for overlap */
   HillshadingBitmap getFinishedConverted();

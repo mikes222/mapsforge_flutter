@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:mapsforge_flutter/src/graphics/graphicfactory.dart';
@@ -10,7 +9,8 @@ import 'package:mapsforge_flutter/src/model/boundingbox.dart';
  * immutably configured, does the work for {@link MemoryCachingHgtReaderTileSource}
  */
 class HgtCache {
-  final File demFolder;
+  // do not use FILE otherwise WASM is not supported
+  //final File demFolder;
   final bool interpolatorOverlap;
   final ShadingAlgorithm algorithm;
   final int mainCacheSize;
@@ -28,8 +28,8 @@ class HgtCache {
 //
 //  List<String> problems =  [];
 //
-  HgtCache(this.demFolder, this.interpolatorOverlap, this.graphicsFactory,
-      this.algorithm, this.mainCacheSize, this.neighborCacheSize) {
+  HgtCache(this.interpolatorOverlap, this.graphicsFactory, this.algorithm,
+      this.mainCacheSize, this.neighborCacheSize) {
 //    mainLru = new Lru(this.mainCacheSize);
 //    secondaryLru = (interpolatorOverlap ? new Lru(neighborCacheSize) : null);
 //
@@ -297,15 +297,15 @@ class Lru {
 /////////////////////////////////////////////////////////////////////////////
 
 class HgtFileInfo extends BoundingBox {
-  // , , ShadingAlgorithm.RawHillTileSource {
-  final File file;
+  // File does not support WASM compatibility
+  //final File file;
 
 //  WeakReference<Future<HillshadingBitmap>> weakRef = null;
 //
 //  final long size;
 //
-  HgtFileInfo(this.file, double minLatitude, double minLongitude,
-      double maxLatitude, double maxLongitude)
+  HgtFileInfo(double minLatitude, double minLongitude, double maxLatitude,
+      double maxLongitude)
       : super(minLatitude, minLongitude, maxLatitude, maxLongitude);
 //    this.file = file;
 //    size = file.length();

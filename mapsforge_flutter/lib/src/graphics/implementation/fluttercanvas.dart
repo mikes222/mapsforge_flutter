@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/graphics/bitmap.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/fluttertilepicture.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/paragraph_cache.dart';
@@ -24,8 +23,6 @@ import 'flutterpath.dart';
 import 'flutterrect.dart';
 
 class FlutterCanvas extends MapCanvas {
-  static final _log = new Logger('FlutterCanvas');
-
   late ui.Canvas uiCanvas;
 
   ui.PictureRecorder? _pictureRecorder;

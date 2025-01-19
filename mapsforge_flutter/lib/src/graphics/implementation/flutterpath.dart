@@ -7,7 +7,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/special.dart';
 import 'package:mapsforge_flutter/src/graphics/implementation/flutterrect.dart';
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
 import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 
 import '../fillrule.dart';
@@ -135,8 +134,7 @@ class FlutterPath implements MapPath {
             dashLength = remainingLength;
           } else {
             ++dashIdx;
-            if (dashIdx == dasharray.length)
-              dashIdx = 0;
+            if (dashIdx == dasharray.length) dashIdx = 0;
             dashLength = dasharray[dashIdx];
           }
         }
