@@ -4,7 +4,6 @@ import '../../graphics/graphicfactory.dart';
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/shadetilesource.dart';
 import '../../layer/hills/shadingalgorithm.dart';
-
 import 'hgtcache.dart';
 
 /**
@@ -45,7 +44,7 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
         enableInterpolationOverlap != this.currentCache!.interpolatorOverlap ||
         mainCacheSize != this.currentCache!.mainCacheSize ||
         neighborCacheSize != this.currentCache!.neighborCacheSize ||
-        demFolder != this.currentCache!.demFolder ||
+        //demFolder != this.currentCache!.demFolder ||
         algorithm != this.currentCache!.algorithm) {
 //      ret = new HgtCache(demFolder, enableInterpolationOverlap, graphicsFactory,
 //          algorithm, mainCacheSize, neighborCacheSize);

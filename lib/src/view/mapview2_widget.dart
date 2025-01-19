@@ -24,7 +24,7 @@ typedef Future<ViewModel> CreateViewModel();
 /// the lifecycle of the objects is due. Suggested method to access the objects
 /// is by attaching
 /// an Overlay to the viewModel. See [ZoomOverlay] for an example.
-class MapviewWidget extends StatefulWidget {
+class Mapview2Widget extends StatefulWidget {
   final DisplayModel displayModel;
 
   final CreateMapModel createMapModel;
@@ -32,11 +32,11 @@ class MapviewWidget extends StatefulWidget {
   final CreateViewModel createViewModel;
 
   /// A key to recognize changes. If for example the rendering should change also change that key.
-  /// Suggestion is to use renderer.getRenderKey() for this value. If the key changes the whole
+  /// Suggestion is to use [renderer.getRenderKey()] for this value. If the key changes the whole
   /// view will be rebuilt and the MapModel and ViewModel will be asked to recreate.
   final String? changeKey;
 
-  const MapviewWidget({
+  const Mapview2Widget({
     Key? key,
     required this.displayModel,
     required this.createMapModel,
@@ -46,7 +46,7 @@ class MapviewWidget extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _MapviewWidgetState();
+    return _Mapview2WidgetState();
   }
 }
 
@@ -54,7 +54,7 @@ class MapviewWidget extends StatefulWidget {
 
 typedef Widget Func();
 
-class _MapviewWidgetState extends State<MapviewWidget> {
+class _Mapview2WidgetState extends State<Mapview2Widget> {
   static final _log = new Logger('_MapviewWidgetState');
 
   GlobalKey _keyView = GlobalKey();
@@ -268,7 +268,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
   }
 
   @override
-  void didUpdateWidget(covariant MapviewWidget oldWidget) {
+  void didUpdateWidget(covariant Mapview2Widget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.changeKey != oldWidget.changeKey) {
       //_log.info("didUpdate from ${oldWidget.changeKey} to ${widget.changeKey}");
