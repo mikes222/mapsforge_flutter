@@ -17,10 +17,10 @@ class FlutterTilePicture extends TilePicture {
     return _picture;
   }
 
-  @override
-  ui.Image? getImage() {
-    return _bitmap;
-  }
+  // @override
+  // ui.Image? getImage() {
+  //   return _bitmap;
+  // }
 
   @override
   ui.Image? getClonedImage() {
@@ -30,7 +30,8 @@ class FlutterTilePicture extends TilePicture {
   @override
   Future<ui.Image> convertToImage() async {
     if (_bitmap != null) return _bitmap!;
-    return await _picture!.toImage(MapsforgeConstants().tileSize.round(), MapsforgeConstants().tileSize.round());
+    return await _picture!.toImage(MapsforgeConstants().tileSize.round(),
+        MapsforgeConstants().tileSize.round());
   }
 
   @override
@@ -38,5 +39,4 @@ class FlutterTilePicture extends TilePicture {
     _picture?.dispose();
     _bitmap?.dispose();
   }
-
 }

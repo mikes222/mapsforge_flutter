@@ -1,10 +1,9 @@
-import 'dart:io';
+//import 'dart:io';
 
 import '../../graphics/graphicfactory.dart';
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/shadetilesource.dart';
 import '../../layer/hills/shadingalgorithm.dart';
-
 import 'memorycachinghgtreadertilesource.dart';
 
 /**
@@ -21,13 +20,12 @@ class HillsRenderConfig {
 //    this.tileSource = tileSource;
 //  }
 
-  HillsRenderConfig(File demFolder, GraphicFactory graphicsFactory,
-      ShadeTileSource tileSource, ShadingAlgorithm algorithm) {
+  HillsRenderConfig(GraphicFactory graphicsFactory, ShadeTileSource? tileSource,
+      ShadingAlgorithm algorithm) {
     this.tileSource = (tileSource == null)
-        ? new MemoryCachingHgtReaderTileSource(
-            demFolder, algorithm, graphicsFactory)
+        ? new MemoryCachingHgtReaderTileSource(algorithm, graphicsFactory)
         : tileSource;
-    this.tileSource!.setDemFolder(demFolder);
+    //this.tileSource!.setDemFolder(demFolder);
     this.tileSource!.setShadingAlgorithm(algorithm);
   }
 

@@ -1,5 +1,3 @@
-library mapsforge_flutter;
-
 export 'src/labels/tilebasedlabelstore.dart';
 export 'src/mapfile/mapfile.dart';
 export 'src/projection/mercatorprojection.dart';

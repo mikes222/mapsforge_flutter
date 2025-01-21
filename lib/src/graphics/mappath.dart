@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 
-import '../../core.dart';
 import '../../special.dart';
 import '../model/relative_mappoint.dart';
 import 'fillrule.dart';

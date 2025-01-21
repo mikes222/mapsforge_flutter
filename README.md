@@ -46,7 +46,7 @@ Also to the university of chemnitz which implements indoor map support
 include the library in your ``pubspec.yaml``:
 
 ```yaml
-  mapsforge_flutter: ^2.1.0
+  mapsforge_flutter: ^3.0.0
 ```
 
 Note: For development purposes consider to include the github repository directly.

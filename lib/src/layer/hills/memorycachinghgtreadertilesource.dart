@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import '../../graphics/graphicfactory.dart';
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/shadetilesource.dart';
@@ -15,13 +13,13 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
   int mainCacheSize = 4;
   int neighborCacheSize = 4;
   bool enableInterpolationOverlap = true;
-  File? demFolder;
+  //File? demFolder;
   ShadingAlgorithm? algorithm;
   bool configurationChangePending = true;
 
   MemoryCachingHgtReaderTileSource(
-      File demFolder, ShadingAlgorithm algorithm, this.graphicsFactory) {
-    this.demFolder = demFolder;
+      ShadingAlgorithm algorithm, this.graphicsFactory) {
+    //this.demFolder = demFolder;
     this.algorithm = algorithm;
   }
 
@@ -36,7 +34,7 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
   HgtCache? latestCache() {
     HgtCache? ret = this.currentCache;
     if (ret != null && !configurationChangePending) return ret;
-    if (demFolder == null || algorithm == null) {
+    if (algorithm == null) {
       this.currentCache = null;
       return null;
     }
@@ -73,10 +71,10 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
     this.algorithm = algorithm;
   }
 
-  @override
-  void setDemFolder(File demFolder) {
-    this.demFolder = demFolder;
-  }
+  // @override
+  // void setDemFolder(File demFolder) {
+  //   this.demFolder = demFolder;
+  // }
 
   /**
    * @param mainCacheSize number of recently used shading tiles (whole numer latitude/longitude grid) that are kept in memory (default: 4)
@@ -112,9 +110,9 @@ class MemoryCachingHgtReaderTileSource implements ShadeTileSource {
     return enableInterpolationOverlap;
   }
 
-  File? getDemFolder() {
-    return demFolder;
-  }
+  // File? getDemFolder() {
+  //   return demFolder;
+  // }
 
   ShadingAlgorithm? getAlgorithm() {
     return algorithm;

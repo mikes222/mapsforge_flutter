@@ -1,5 +1,12 @@
 ## next
 
+## 3.0.0 - 2024-01-20
+
+* Improved performance
+* Moved code to root according to flutter standards
+* Bugfixes
+* Multiple captions for markers
+
 ## 2.0.3 - 2023-11-18
 
 * Add Alignment property to BasicPointMarker + use Alignment when painting PoiMarker. Default is Alignment.bottomCenter.

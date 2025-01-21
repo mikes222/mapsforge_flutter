@@ -1,6 +1,3 @@
-/// datastore/mapstore files. These files are used to read map data.
-library mapsforge_flutter;
-
 export 'src/datastore/datastore.dart';
 export 'src/datastore/datastorereadresult.dart';
 export 'src/datastore/mapdatastore.dart';

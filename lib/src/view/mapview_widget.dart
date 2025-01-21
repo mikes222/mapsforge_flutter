@@ -30,7 +30,7 @@ class MapviewWidget extends StatefulWidget {
   final CreateViewModel createViewModel;
 
   /// A key to recognize changes. If for example the rendering should change also change that key.
-  /// Suggestion is to use [renderer.getRenderKey()] for this value. If the key changes the whole
+  /// Suggestion is to use renderer.getRenderKey() for this value. If the key changes the whole
   /// view will be rebuilt and the MapModel and ViewModel will be asked to recreate.
   final String? changeKey;
 
@@ -209,7 +209,9 @@ class _MapviewWidgetState extends State<MapviewWidget> {
               jobQueue: _jobQueue!,
               screensize: boxConstraints.biggest,
             ),
-            _buildContextMenu(boxConstraints.biggest),
+            if (_viewModel?.contextMenuBuilder != null)
+              _buildContextMenu(
+                  boxConstraints.biggest, _viewModel!.contextMenuBuilder!),
             if (_viewModel!.overlays != null)
               for (Widget widget in _viewModel!.overlays!) widget,
           ],
@@ -218,7 +220,8 @@ class _MapviewWidgetState extends State<MapviewWidget> {
     );
   }
 
-  StreamBuilder<TapEvent> _buildContextMenu(Size screensize) {
+  StreamBuilder<TapEvent> _buildContextMenu(
+      Size screensize, ContextMenuBuilder contextMenuBuilder) {
     return StreamBuilder<TapEvent>(
       stream: _viewModel!.observeTap,
       builder: (BuildContext context, AsyncSnapshot<TapEvent> snapshot) {
@@ -244,7 +247,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
               }
               if (snapshot.data == null) return const SizedBox();
               MapViewPosition mapViewPosition = snapshot.data!;
-              return _viewModel!.contextMenuBuilder!.buildContextMenu(
+              return contextMenuBuilder.buildContextMenu(
                   context,
                   _mapModel!,
                   _viewModel!,

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import '../../graphics/hillshadingbitmap.dart';
 import '../../layer/hills/shadingalgorithm.dart';
 
@@ -22,5 +20,5 @@ abstract class ShadeTileSource {
 
   void setShadingAlgorithm(ShadingAlgorithm algorithm);
 
-  void setDemFolder(File demFolder);
+  //void setDemFolder(File demFolder);
 }

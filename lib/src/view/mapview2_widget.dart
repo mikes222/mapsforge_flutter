@@ -32,7 +32,7 @@ class Mapview2Widget extends StatefulWidget {
   final CreateViewModel createViewModel;
 
   /// A key to recognize changes. If for example the rendering should change also change that key.
-  /// Suggestion is to use [renderer.getRenderKey()] for this value. If the key changes the whole
+  /// Suggestion is to use renderer.getRenderKey() for this value. If the key changes the whole
   /// view will be rebuilt and the MapModel and ViewModel will be asked to recreate.
   final String? changeKey;
 
