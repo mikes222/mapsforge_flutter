@@ -321,7 +321,8 @@ class _TileWidget extends StatelessWidget {
                   width: screensize.width * viewModel.viewScaleFactor,
                   height: screensize.height * viewModel.viewScaleFactor));
           if (jobSet == null) return const SizedBox();
-          //print("${leftUpperTile.x - leftUpperPosition.x} - ${leftUpperTile.y - leftUpperPosition.y}");
+          // print(
+          //     "${jobSet.indoorLevel} ${jobSet.renderJobs.firstOrNull?.tile.indoorLevel}");
           return TransformWidget(
             viewModel: viewModel,
             mapViewPosition: mapViewPosition,
