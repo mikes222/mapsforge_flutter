@@ -95,6 +95,8 @@ class Caption {
 
   int _lastZoomLevel = -1;
 
+  final SymbolFinder symbolFinder;
+
   Caption({
     required String caption,
     double strokeWidth = 2.0,
@@ -107,13 +109,13 @@ class Caption {
     double dy = 0,
     int strokeMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT,
     required DisplayModel displayModel,
-    required SymbolFinder symbolFinder,
+    required this.symbolFinder,
   })  : assert(strokeWidth >= 0),
         assert(minZoomLevel >= 0),
         assert(minZoomLevel <= maxZoomLevel),
         _caption = caption /*assert(text.length > 0)*/
   {
-    base = ShapeCaption.base(0, symbolFinder);
+    base = ShapeCaption.base(0);
     base.setStrokeWidth(strokeWidth * displayModel.getFontScaleFactor());
     base.setStrokeColorFromNumber(strokeColor);
     base.setFillColorFromNumber(fillColor);
@@ -134,7 +136,7 @@ class Caption {
     if (markerContext.zoomLevel > maxZoomLevel) return;
 
     if (scaled == null || _lastZoomLevel != markerContext.zoomLevel) {
-      scaled = ShapeCaption.scale(base, markerContext.zoomLevel);
+      scaled = ShapeCaption.scale(base, markerContext.zoomLevel, symbolFinder);
       _lastZoomLevel = markerContext.zoomLevel;
       shapePaint = ShapePaintCaption(scaled!, caption: _caption);
     }
@@ -175,17 +177,17 @@ class _SpecialSymbolFinder extends SymbolFinder {
   _SpecialSymbolFinder(super.parentSymbolFinder);
 
   @override
-  void add(String symbolId, int zoomLevel, ShapeSymbol shapeSymbol) {
+  void add(String symbolId, ShapeSymbol shapeSymbol) {
     _symbolHolder.shapeSymbol = shapeSymbol;
   }
 
   @override
-  SymbolHolder? search(String symbolId, int zoomLevel) {
+  SymbolHolder? search(String symbolId) {
     return _symbolHolder;
   }
 
   @override
-  SymbolHolder findSymbolHolder(String symbolId, int zoomLevel) {
+  SymbolHolder findSymbolHolder(String symbolId) {
     return _symbolHolder;
   }
 }

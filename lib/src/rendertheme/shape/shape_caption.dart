@@ -26,17 +26,15 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   SymbolHolder? symbolHolder;
 
-  final SymbolFinder symbolFinder;
-
   TextKey? textKey;
 
   double dy = 0;
 
-  ShapeCaption.base(int level, this.symbolFinder) : super.base(level: level);
+  ShapeCaption.base(int level) : super.base(level: level);
 
-  ShapeCaption.scale(ShapeCaption base, int zoomLevel)
-      : symbolFinder = base.symbolFinder,
-        super.scale(base, zoomLevel) {
+  ShapeCaption.scale(
+      ShapeCaption base, int zoomLevel, SymbolFinder symbolFinder)
+      : super.scale(base, zoomLevel) {
     paintSrcMixinScale(base, zoomLevel);
     textSrcMixinScale(base, zoomLevel);
     gap = base.gap;
@@ -53,6 +51,9 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
           pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       gap = gap * scaleFactor;
       dy = dy * scaleFactor;
+    }
+    if (symbolId != null) {
+      symbolHolder = symbolFinder.findSymbolHolder(symbolId!);
     }
   }
 
@@ -76,8 +77,8 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   MapRectangle calculateBoundaryWithSymbol(
       double fontWidth, double fontHeight) {
-    print(
-        "shapeCaption in calculateOffsets pos $position, symbolFinder: ${symbolFinder}, symbolHolder: $symbolHolder, captionBoundary: $fontWidth, $fontHeight");
+    // print(
+    //     "shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $fontWidth, $fontHeight");
 
     MapRectangle? symbolBoundary =
         symbolHolder?.shapeSymbol?.calculateBoundary();
@@ -175,17 +176,13 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
       return;
     }
 
-    if (symbolId != null) {
-      // This caption belongs to a symbol. Try to find it and connect both
-      symbolHolder = symbolFinder.findSymbolHolder(
-          symbolId!, renderContext.upperLeft.zoomLevel);
-    }
     //print("Rendering caption $caption for $nodeProperties");
     renderContext.labels
         .add(NodeRenderInfo(nodeProperties, this)..caption = caption);
   }
 
-  renderWay(RenderContext renderContext, WayProperties wayProperties) {
+  @override
+  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
     String? caption = textKey!.getValue(wayProperties.getTags());
     if (caption == null) {
       return;
@@ -193,12 +190,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
-
-    if (symbolId != null) {
-      // This caption belongs to a symbol. Try to find it and connect both
-      symbolHolder = symbolFinder.findSymbolHolder(
-          symbolId!, renderContext.upperLeft.zoomLevel);
-    }
 
     renderContext.labels
         .add(WayRenderInfo(wayProperties, this)..caption = caption);

@@ -66,7 +66,7 @@ class RuleBuilder {
   /// a finder for symbols. See for example "bus-stop" in the defaultrender.xml. Each
   /// finder has a nullable parent-symbolFinder attached which in fact represents
   /// the tree-structure of the xml-file or this rules.
-  final SymbolFinder symbolFinder;
+  final ZoomlevelSymbolFinder zoomlevelSymbolFinder;
 
   List<RenderinstructionHillshading> hillShadings =
       []; // NOPMD specific interface for trimToSize
@@ -102,8 +102,8 @@ class RuleBuilder {
     return RuleOptimizer.optimizeElementMatcher(result, this.ruleBuilderStack);
   }
 
-  RuleBuilder(
-      DisplayModel displayModel, SymbolFinder? parentSymbolFinder, this.level)
+  RuleBuilder(DisplayModel displayModel,
+      ZoomlevelSymbolFinder? parentSymbolFinder, this.level)
       : ruleBuilderStack = [],
         renderInstructionNodes = [],
         renderInstructionOpenWays = [],
@@ -111,7 +111,7 @@ class RuleBuilder {
         this.zoomMin = 0,
         this.zoomMax = displayModel.maxZoomLevel,
         maxLevel = level,
-        this.symbolFinder = SymbolFinder(parentSymbolFinder) {
+        this.zoomlevelSymbolFinder = ZoomlevelSymbolFinder(parentSymbolFinder) {
     this.closed = Closed.ANY;
     this.element = Element.ANY;
   }
@@ -283,7 +283,7 @@ class RuleBuilder {
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
       RuleBuilder ruleBuilder =
-          RuleBuilder(displayModel, symbolFinder, ++level);
+          RuleBuilder(displayModel, zoomlevelSymbolFinder, ++level);
       if (ruleBuilder.zoomMin < zoomMin) ruleBuilder.zoomMin = zoomMin;
       if (ruleBuilder.zoomMax > zoomMax) ruleBuilder.zoomMax = zoomMax;
 
@@ -301,7 +301,7 @@ class RuleBuilder {
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderinstructionCaption caption =
-          new RenderinstructionCaption(symbolFinder, level);
+          new RenderinstructionCaption(zoomlevelSymbolFinder, level);
       caption.parse(displayModel, rootElement);
       if (isVisible(caption)) {
         this.addRenderingInstructionNode(caption);
@@ -360,7 +360,7 @@ class RuleBuilder {
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderinstructionSymbol symbol =
-          new RenderinstructionSymbol(symbolFinder, level);
+          new RenderinstructionSymbol(zoomlevelSymbolFinder, level);
       symbol.parse(displayModel, rootElement);
       if (isVisible(symbol)) {
         this.addRenderingInstructionNode(symbol);

@@ -33,10 +33,10 @@ class ShapeLinesymbol extends ShapeSymbol {
 
   int lineSymbolMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
 
-  ShapeLinesymbol.base(int level) : super.base(level, SymbolFinder(null));
+  ShapeLinesymbol.base(int level) : super.base(level);
 
   ShapeLinesymbol.scale(ShapeLinesymbol base, int zoomLevel)
-      : super.scale(base, zoomLevel) {
+      : super.scale(base, zoomLevel, SymbolFinder(null)) {
     //paintSrcMixinScale(base, zoomLevel);
     //bitmapSrcMixinScale(base, zoomLevel);
     dy = base.dy;

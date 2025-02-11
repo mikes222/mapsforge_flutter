@@ -17,14 +17,17 @@ class RenderinstructionSymbol
     implements RenderInstructionNode, RenderInstructionWay {
   late final ShapeSymbol base;
 
-  RenderinstructionSymbol(SymbolFinder symbolFinder, int level,
+  final ZoomlevelSymbolFinder zoomlevelSymbolFinder;
+
+  RenderinstructionSymbol(this.zoomlevelSymbolFinder, int level,
       [ShapeSymbol? base]) {
-    this.base = base ?? ShapeSymbol.base(level, symbolFinder);
+    this.base = base ?? ShapeSymbol.base(level);
   }
 
   @override
   ShapeSymbol? prepareScale(int zoomLevel) {
-    ShapeSymbol newShape = ShapeSymbol.scale(base, zoomLevel);
+    SymbolFinder symbolFinder = zoomlevelSymbolFinder.find(zoomLevel);
+    ShapeSymbol newShape = ShapeSymbol.scale(base, zoomLevel, symbolFinder);
     if (newShape.display == Display.NEVER) return null;
     return newShape;
   }

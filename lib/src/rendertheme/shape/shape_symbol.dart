@@ -16,17 +16,17 @@ class ShapeSymbol extends Shape with BitmapSrcMixin {
 
   String? id;
 
-  final SymbolFinder symbolFinder;
+  ShapeSymbol.base(int level) : super.base(level: level);
 
-  ShapeSymbol.base(int level, this.symbolFinder) : super.base(level: level);
-
-  ShapeSymbol.scale(ShapeSymbol base, int zoomLevel)
-      : symbolFinder = base.symbolFinder,
-        super.scale(base, zoomLevel) {
+  ShapeSymbol.scale(ShapeSymbol base, int zoomLevel, SymbolFinder symbolFinder)
+      : super.scale(base, zoomLevel) {
     bitmapSrcMixinScale(base, zoomLevel);
     position = base.position;
     theta = base.theta;
     id = base.id;
+    if (id != null) {
+      symbolFinder.add(id!, this);
+    }
   }
 
   @override
@@ -82,7 +82,7 @@ class ShapeSymbol extends Shape with BitmapSrcMixin {
 
   @override
   String toString() {
-    return 'SymbolContainer{theta: $theta, super ${super.toString()}';
+    return 'ShapeSymbol{position: $position, theta: $theta, id: $id}';
   }
 
   @override
@@ -93,10 +93,7 @@ class ShapeSymbol extends Shape with BitmapSrcMixin {
   @override
   void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
     if (bitmapSrc == null) return;
-    if (id != null) {
-      symbolFinder.add(id!, renderContext.upperLeft.zoomLevel, this);
-      renderContext.labels.add(NodeRenderInfo(nodeProperties, this));
-    }
+    renderContext.labels.add(NodeRenderInfo(nodeProperties, this));
   }
 
   @override
@@ -107,10 +104,7 @@ class ShapeSymbol extends Shape with BitmapSrcMixin {
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return;
 
-    if (id != null) {
-      symbolFinder.add(id!, renderContext.upperLeft.zoomLevel, this);
-      renderContext.addToClashDrawingLayer(
-          level, WayRenderInfo(wayProperties, this));
-    }
+    renderContext.addToClashDrawingLayer(
+        level, WayRenderInfo(wayProperties, this));
   }
 }

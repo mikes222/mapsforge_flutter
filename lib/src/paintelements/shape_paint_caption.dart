@@ -84,7 +84,7 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     _fontWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
     _fontHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
     boundary = shape.calculateBoundaryWithSymbol(_fontWidth, _fontHeight);
-    print("Boundary for $caption is $boundary and ${shape.position}");
+    //print("Boundary for $caption is $boundary and ${shape.position}");
   }
 
   @override

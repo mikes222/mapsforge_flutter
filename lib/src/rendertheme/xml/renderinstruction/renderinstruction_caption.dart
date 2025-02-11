@@ -24,14 +24,17 @@ class RenderinstructionCaption
 
   late final ShapeCaption base;
 
-  RenderinstructionCaption(SymbolFinder symbolFinder, int level,
+  final ZoomlevelSymbolFinder zoomlevelSymbolFinder;
+
+  RenderinstructionCaption(this.zoomlevelSymbolFinder, int level,
       [ShapeCaption? base]) {
-    this.base = base ?? ShapeCaption.base(level, symbolFinder);
+    this.base = base ?? ShapeCaption.base(level);
   }
 
   @override
   ShapeCaption? prepareScale(int zoomLevel) {
-    ShapeCaption newShape = ShapeCaption.scale(base, zoomLevel);
+    SymbolFinder symbolFinder = zoomlevelSymbolFinder.find(zoomLevel);
+    ShapeCaption newShape = ShapeCaption.scale(base, zoomLevel, symbolFinder);
     if (newShape.display == Display.NEVER) return null;
     return newShape;
   }

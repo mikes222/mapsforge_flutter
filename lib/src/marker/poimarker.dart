@@ -8,7 +8,6 @@ import '../../datastore.dart';
 import '../../maps.dart';
 import '../paintelements/shape_paint_symbol.dart';
 import '../rendertheme/shape/shape_symbol.dart';
-import '../rendertheme/xml/symbol_finder.dart';
 
 class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
   late ShapePaintSymbol shapePaint;
@@ -53,7 +52,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
           item: item,
           latLong: latLong,
         ) {
-    base = ShapeSymbol.base(0, SymbolFinder(null));
+    base = ShapeSymbol.base(0);
     setLatLong(latLong);
     base.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
     base.bitmapSrc = src;
@@ -64,7 +63,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     base.setBitmapHeight(height.round());
     base.position = position;
     base.id = "poi";
-    symbolFinder.add("poi", 0, base);
+    symbolFinder.add("poi", base);
   }
 
   @override
@@ -75,7 +74,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
 
   Future<void> initResources(SymbolCache symbolCache) async {
     if (scaled == null) {
-      scaled = ShapeSymbol.scale(base, 0);
+      scaled = ShapeSymbol.scale(base, 0, symbolFinder);
       _lastZoom = 0;
       shapePaint = ShapePaintSymbol(scaled!);
       await shapePaint.init(symbolCache);
