@@ -4,6 +4,9 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 
 import '../../model/maprectangle.dart';
 import '../../renderer/paintmixin.dart';
+import '../nodeproperties.dart';
+import '../noderenderinfo.dart';
+import '../rendercontext.dart';
 import 'paintsrcmixin.dart';
 
 class ShapeCircle extends Shape with PaintSrcMixin {
@@ -43,5 +46,11 @@ class ShapeCircle extends Shape with PaintSrcMixin {
   @override
   String getShapeType() {
     return "Circle";
+  }
+
+  @override
+  renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+    renderContext.addToCurrentDrawingLayer(
+        level, NodeRenderInfo<ShapeCircle>(nodeProperties, this));
   }
 }

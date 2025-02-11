@@ -22,7 +22,7 @@ class WayRenderInfo<T extends Shape> extends RenderInfo<T> {
   @override
   void render(MapCanvas canvas, PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
-    shapePaint!.renderWay(
+    shapePaint?.renderWay(
         canvas, wayProperties, projection, reference, rotationRadian);
   }
 

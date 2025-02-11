@@ -23,6 +23,8 @@ class ShapePaintCircle extends ShapePaint<ShapeCircle> {
           cap: shapeSymbol.strokeCap,
           join: shapeSymbol.strokeJoin,
           strokeDashArray: shapeSymbol.strokeDashArray);
+    else
+      stroke = null;
   }
 
   @override

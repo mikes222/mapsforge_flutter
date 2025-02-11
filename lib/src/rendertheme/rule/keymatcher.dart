@@ -1,28 +1,22 @@
-import '../../model/tag.dart';
 import 'package:collection/collection.dart';
+
+import '../../model/tag.dart';
 import 'attributematcher.dart';
 
 class KeyMatcher implements AttributeMatcher {
   final List<String> keys;
 
-  List<Tag>? _tags;
-
-  KeyMatcher(this.keys);
+  const KeyMatcher(this.keys);
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {
     if (attributeMatcher == this) {
       return true;
     }
-
-    if (_tags == null) {
-      List<Tag> tags = [];
-      keys.forEach((element) {
-        tags.add(Tag(element, null));
-      });
-      _tags = tags;
-    }
-    return attributeMatcher.matchesTagList(_tags!);
+    String? missing = (attributeMatcher as KeyMatcher)
+        .keys
+        .firstWhereOrNull((test) => !keys.contains(test));
+    return missing == null;
   }
 
   @override

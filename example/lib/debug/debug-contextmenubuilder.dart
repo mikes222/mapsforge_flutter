@@ -3,6 +3,7 @@ import 'package:mapsforge_example/debug/debug-datastore.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
+import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
 
 class DebugContextMenuBuilder extends ContextMenuBuilder {
@@ -63,82 +64,105 @@ class _DebugContextMenuState extends DefaultContextMenuState {
 
   late DebugDatastore debugDatastore;
 
+  late RenderTheme renderTheme;
+
   @override
   void initState() {
     super.initState();
     debugDatastore = widget.mapModel.markerDataStores
         .firstWhere((element) => element is DebugDatastore) as DebugDatastore;
+    renderTheme =
+        (widget.mapModel.renderer as MapDataStoreRenderer).renderTheme;
   }
 
   @override
   List<Widget> buildColumns(BuildContext context) {
-    int tileY = widget.viewModel.mapViewPosition!.projection.latitudeToTileY(widget.event.latitude);
-    int tileX = widget.viewModel.mapViewPosition!.projection.longitudeToTileX(widget.event.longitude);
+    int tileY = widget.viewModel.mapViewPosition!.projection
+        .latitudeToTileY(widget.event.latitude);
+    int tileX = widget.viewModel.mapViewPosition!.projection
+        .longitudeToTileX(widget.event.longitude);
     Tile tile = Tile(tileX, tileY, widget.viewModel.mapViewPosition!.zoomLevel,
         widget.viewModel.mapViewPosition!.indoorLevel);
 
     List<Widget> result = super.buildColumns(context);
-    if (debugDatastore.tile == null || debugDatastore.tile != tile)
+    result.add(TextButton(
+        onPressed: () {
+          debugDatastore.setInfos(null, null);
+          widget.viewModel.clearTapEvent();
+        },
+        child: const Text("Clear")));
+    result.add(LabeltextCustom(
+      label: "ZoomLevel",
+      value: "${tile.zoomLevel}",
+    ));
+    result.add(LabeltextCustom(
+      label: "IndoorLevel",
+      value: "${tile.indoorLevel}",
+    ));
+    if (debugDatastore.tile == null || debugDatastore.tile != tile) {
       result.add(FutureBuilder<DatastoreReadResult?>(
           future: _buildTile(tile),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.data == null) return const Text("wait...");
-            DatastoreReadResult result = snapshot.data;
-            // will throw an execption if the datastore is not available. This is ok since it is only for debug purposes
-            debugDatastore.setInfos(tile, result);
-            return const SizedBox();
+            List<Widget> inner = [];
+            addInfos(inner, tile);
+            return Column(
+              children: inner,
+              crossAxisAlignment: CrossAxisAlignment.start,
+            );
           }));
-    if (debugDatastore.tile != null) {
-      result.add(TextButton(
-          onPressed: () {
-            debugDatastore.setInfos(null, null);
-            widget.viewModel.clearTapEvent();
-          },
-          child: const Text("Clear")));
-      result.add(LabeltextCustom(
-        label: "ZoomLevel",
-        value: "${tile.zoomLevel}",
-      ));
-      result.add(LabeltextCustom(
-        label: "IndoorLevel",
-        value: "${tile.indoorLevel}",
-      ));
-    }
-    if (debugDatastore.readResult != null) {
-      for (Marker marker in debugDatastore.isTapped(widget.event)) {
-        if (marker.item is PointOfInterest) {
-          PointOfInterest poi = marker.item;
-          result.add(_buildPoiInfo(poi));
-        } else {
-          Way way = marker.item;
-          result.add(_buildWayInfo(way));
-        }
-      }
+    } else {
+      addInfos(result, tile);
     }
     return result;
   }
 
-  Widget _buildPoiInfo(PointOfInterest poi) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Container(
-        decoration: BoxDecoration(border: Border.all(color: Colors.orange)),
-        child: Row(
-          children: [
-            const Text("Poi"),
-            const SizedBox(width: 4),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children:
-                  poi.tags.map((e) => Text("${e.key} = ${e.value}")).toList(),
-            ),
-          ],
+  void addInfos(List<Widget> result, Tile tile) {
+    if (debugDatastore.readResult != null) {
+      for (Marker marker in debugDatastore.isTapped(widget.event)) {
+        if (marker.item is PointOfInterest) {
+          PointOfInterest poi = marker.item;
+          result.add(_buildPoiInfo(poi, tile));
+        } else {
+          Way way = marker.item;
+          result.add(_buildWayInfo(way, tile));
+        }
+      }
+    }
+  }
+
+  Widget _buildPoiInfo(PointOfInterest poi, Tile tile) {
+    return InkWell(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Container(
+          decoration: BoxDecoration(border: Border.all(color: Colors.orange)),
+          child: Row(
+            children: [
+              const Icon(Icons.location_on),
+              const SizedBox(width: 4),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: poi.tags
+                    .map((e) => Text("${e.key} = ${e.value}",
+                        style: const TextStyle(fontSize: 10)))
+                    .toList(),
+              ),
+            ],
+          ),
         ),
       ),
+      onTap: () {
+        RenderthemeLevel renderthemeLevel =
+            renderTheme.prepareZoomlevel(tile.zoomLevel);
+        List<Shape> shapes =
+            renderthemeLevel.matchNode(tile, NodeProperties(poi));
+        shapes.forEach((shape) => print(shape.toString()));
+      },
     );
   }
 
-  Widget _buildWayInfo(Way way) {
+  Widget _buildWayInfo(Way way, Tile tile) {
     return InkWell(
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8.0),
@@ -151,14 +175,18 @@ class _DebugContextMenuState extends DefaultContextMenuState {
           child: Row(
             children: [
               if (LatLongUtils.isClosedWay(way.latLongs[0]))
-                Text("Closed Way ${way.layer}"),
+                const Icon(Icons.rectangle_outlined),
               if (!LatLongUtils.isClosedWay(way.latLongs[0]))
-                Text("Open Way ${way.layer}"),
+                const Icon(Icons.polyline_rounded),
+              const SizedBox(width: 4),
+              Text("Layer ${way.layer}"),
               const SizedBox(width: 4),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children:
-                    way.tags.map((e) => Text("${e.key} = ${e.value}")).toList(),
+                children: way.tags
+                    .map((e) => Text("${e.key} = ${e.value}",
+                        style: const TextStyle(fontSize: 10)))
+                    .toList(),
               ),
             ],
           ),
@@ -166,13 +194,25 @@ class _DebugContextMenuState extends DefaultContextMenuState {
       ),
       onTap: () {
         debugDatastore.createWayMarker(way);
+
+        RenderthemeLevel renderthemeLevel =
+            renderTheme.prepareZoomlevel(tile.zoomLevel);
+        if (LatLongUtils.isClosedWay(way.latLongs[0])) {
+          List<Shape> shapes = renderthemeLevel.matchClosedWay(tile, way);
+          shapes.forEach((shape) => print(shape.toString()));
+        } else {
+          List<Shape> shapes = renderthemeLevel.matchLinearWay(tile, way);
+          shapes.forEach((shape) => print(shape.toString()));
+        }
       },
     );
   }
 
   Future<DatastoreReadResult?> _buildTile(Tile tile) async {
-    DatastoreReadResult? result =
+    DatastoreReadResult? datastoreReadResult =
         await widget.datastore.readMapDataSingle(tile);
-    return result;
+    // will throw an execption if the datastore is not available. This is ok since it is only for debug purposes
+    await debugDatastore.setInfos(tile, datastoreReadResult);
+    return datastoreReadResult;
   }
 }

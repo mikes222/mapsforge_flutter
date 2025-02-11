@@ -1,5 +1,4 @@
 import '../../model/tag.dart';
-
 import 'attributematcher.dart';
 import 'closed.dart';
 import 'closedmatcher.dart';
@@ -7,8 +6,6 @@ import 'element.dart';
 import 'elementmatcher.dart';
 
 class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
-  static final AnyMatcher INSTANCE = const AnyMatcher();
-
   const AnyMatcher();
 
   @override
@@ -17,12 +14,12 @@ class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
   }
 
   @override
-  bool isCoveredByClosedMatcher(ClosedMatcher? closedMatcher) {
+  bool isCoveredByClosedMatcher(ClosedMatcher closedMatcher) {
     return closedMatcher == this;
   }
 
   @override
-  bool isCoveredByElementMatcher(ElementMatcher? elementMatcher) {
+  bool isCoveredByElementMatcher(ElementMatcher elementMatcher) {
     return elementMatcher == this;
   }
 
@@ -39,5 +36,10 @@ class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
   @override
   bool matchesTagList(List<Tag?>? tags) {
     return true;
+  }
+
+  @override
+  String toString() {
+    return 'AnyMatcher{}';
   }
 }

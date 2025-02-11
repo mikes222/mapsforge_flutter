@@ -5,16 +5,9 @@ import '../../datastore.dart';
 import '../../maps.dart';
 import '../model/tag.dart';
 
-///
-/// In the terminal window run
-///
-///```
-/// flutter packages pub run build_runner build --delete-conflicting-outputs
-///```
-///
 /// Properties for one Node (PointOfInterest) read from the datastore. Note that the properties are
-/// dependent on the zoomLevel and pixelsize of the device. However one instance
-/// of NodeProperties is used for one zoomlevel only.
+/// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
+/// of NodeProperties can be used for one zoomlevel only.
 class NodeProperties implements NodeWayProperties {
   final PointOfInterest pointOfInterest;
 
@@ -27,23 +20,18 @@ class NodeProperties implements NodeWayProperties {
   /// a cache for absolute coordinates
   Mappoint? _coordinatesAbsolute;
 
-  // remove this security feature after 2025/01
-  @deprecated
-  int _lastZoomLevel = -1;
-
   /// Returns the absolute coordinates in pixel of this node
   Mappoint getCoordinatesAbsolute(PixelProjection projection) {
-    // remove this security feature after 2025/01
-    if (_lastZoomLevel != -1 &&
-        projection.scalefactor.zoomlevel != _lastZoomLevel)
-      throw UnimplementedError("Invalid zoomlevel");
     _coordinatesAbsolute ??= projection.latLonToPixel(pointOfInterest.position);
-    _lastZoomLevel = projection.scalefactor.zoomlevel;
     return _coordinatesAbsolute!;
   }
 
   void clearCache() {
-    _lastZoomLevel = -1;
     _coordinatesAbsolute = null;
+  }
+
+  @override
+  String toString() {
+    return 'NodeProperties{pointOfInterest: $pointOfInterest, _coordinatesAbsolute: $_coordinatesAbsolute}';
   }
 }

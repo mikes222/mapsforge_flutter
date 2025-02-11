@@ -63,7 +63,9 @@ class TagsCountPage extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               _PoiCount _poiCount = pois.elementAt(index);
               NodeProperties nodeProperties = NodeProperties(_poiCount.poi);
-              List renderers = renderTheme.matchNode(tile, nodeProperties);
+              RenderthemeLevel renderthemeLevel =
+                  renderTheme.prepareZoomlevel(tile.zoomLevel);
+              List renderers = renderthemeLevel.matchNode(tile, nodeProperties);
               return Card(
                   child: Row(
                 children: [
@@ -102,13 +104,15 @@ class TagsCountPage extends StatelessWidget {
             itemCount: ways.length,
             itemBuilder: (BuildContext context, int index) {
               _WayCount _wayCount = ways.elementAt(index);
+              RenderthemeLevel renderthemeLevel =
+                  renderTheme.prepareZoomlevel(tile.zoomLevel);
               List renderers = _wayCount.isClosedWay
-                  ? renderTheme.matchClosedWay(tile, _wayCount.way)
-                  : renderTheme.matchLinearWay(tile, _wayCount.way);
+                  ? renderthemeLevel.matchClosedWay(tile, _wayCount.way)
+                  : renderthemeLevel.matchLinearWay(tile, _wayCount.way);
               if (renderers.length == 0)
                 renderers = _wayCount.isClosedWay
-                    ? renderTheme.matchClosedWay(tileMax, _wayCount.way)
-                    : renderTheme.matchLinearWay(tileMax, _wayCount.way);
+                    ? renderthemeLevel.matchClosedWay(tileMax, _wayCount.way)
+                    : renderthemeLevel.matchLinearWay(tileMax, _wayCount.way);
               return Card(
                   child: Row(
                 children: [

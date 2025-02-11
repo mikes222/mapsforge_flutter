@@ -2,8 +2,6 @@ import 'closed.dart';
 import 'closedmatcher.dart';
 
 class LinearWayMatcher implements ClosedMatcher {
-  static final LinearWayMatcher INSTANCE = const LinearWayMatcher();
-
   const LinearWayMatcher();
 
   @override
@@ -14,5 +12,10 @@ class LinearWayMatcher implements ClosedMatcher {
   @override
   bool matchesClosed(Closed closed) {
     return closed == Closed.NO;
+  }
+
+  @override
+  String toString() {
+    return 'LinearWayMatcher{}';
   }
 }

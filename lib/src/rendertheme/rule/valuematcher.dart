@@ -1,13 +1,12 @@
-import '../../model/tag.dart';
 import 'package:collection/collection.dart';
+
+import '../../model/tag.dart';
 import 'attributematcher.dart';
 
 class ValueMatcher implements AttributeMatcher {
   final List<String> values;
 
-  List<Tag>? _tags;
-
-  ValueMatcher(this.values);
+  const ValueMatcher(this.values);
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {
@@ -15,14 +14,10 @@ class ValueMatcher implements AttributeMatcher {
       return true;
     }
 
-    if (_tags == null) {
-      List<Tag> tags = [];
-      values.forEach((element) {
-        tags.add(Tag(null, element));
-      });
-      _tags = tags;
-    }
-    return attributeMatcher.matchesTagList(_tags!);
+    String? missing = (attributeMatcher as ValueMatcher)
+        .values
+        .firstWhereOrNull((test) => !values.contains(test));
+    return missing == null;
   }
 
   @override

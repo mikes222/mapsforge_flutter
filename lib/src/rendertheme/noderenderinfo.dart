@@ -4,16 +4,7 @@ import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 import '../../core.dart';
 import '../../maps.dart';
 import '../graphics/display.dart';
-import 'nodeproperties.dart';
-import 'shape/shape.dart';
 
-///
-/// In the terminal window run
-///
-///```
-/// flutter packages pub run build_runner build --delete-conflicting-outputs
-///```
-///
 class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   final NodeProperties nodeProperties;
 
@@ -22,7 +13,7 @@ class NodeRenderInfo<T extends Shape> extends RenderInfo<T> {
   @override
   void render(MapCanvas canvas, PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
-    shapePaint!.renderNode(
+    shapePaint?.renderNode(
         canvas,
         nodeProperties.getCoordinatesAbsolute(projection),
         reference,

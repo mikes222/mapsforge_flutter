@@ -1,4 +1,3 @@
-import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_area.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_caption.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_circle.dart';
@@ -9,7 +8,6 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 
 import '../../../core.dart';
 import '../../../maps.dart';
-import '../graphics/mapcanvas.dart';
 import '../model/linestring.dart';
 import '../model/maprectangle.dart';
 import '../paintelements/shape_paint.dart';
@@ -70,15 +68,14 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
 
   Future<void> createShapePaint(SymbolCache symbolCache) async {
     if (shapePaint != null) return;
+    if (shape.shapePaint != null) {
+      shapePaint = shape.shapePaint! as ShapePaint<T>?;
+    }
     switch (shape.getShapeType()) {
       case "Area":
-        if (shape.shapePaint != null) {
-          shapePaint = shape.shapePaint! as ShapePaint<T>?;
-        } else {
-          shapePaint = ShapePaintArea(shape as ShapeArea) as ShapePaint<T>;
-          await shapePaint!.init(symbolCache);
-          shape.shapePaint = shapePaint;
-        }
+        shapePaint = ShapePaintArea(shape as ShapeArea) as ShapePaint<T>;
+        await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         break;
       case "Caption":
 
@@ -87,53 +84,39 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         /// calculate the width/height of the caption.
         shapePaint = ShapePaintCaption(shape as ShapeCaption, caption: caption!)
             as ShapePaint<T>;
+        // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
         break;
       case "Circle":
-        if (shape.shapePaint != null) {
-          shapePaint = shape.shapePaint! as ShapePaint<T>?;
-        } else {
-          shapePaint = ShapePaintCircle(shape as ShapeCircle) as ShapePaint<T>;
-          shape.shapePaint = shapePaint;
-        }
+        shapePaint = ShapePaintCircle(shape as ShapeCircle) as ShapePaint<T>;
+        shape.shapePaint = shapePaint;
         break;
       // case "Hillshading":
       //   shapePaint = ShapePaintHillshading(shape as ShapeHillshading) as ShapePaint<T>;
       //   break;
       case "Linesymbol":
-        if (shape.shapePaint != null) {
-          shapePaint = shape.shapePaint! as ShapePaint<T>?;
-        } else {
-          shapePaint =
-              ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
-          await shapePaint!.init(symbolCache);
-          shape.shapePaint = shapePaint;
-        }
+        shapePaint =
+            ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
+        await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         break;
       case "Pathtext":
         shapePaint =
             ShapePaintPathtext(shape as ShapePathtext, caption!, stringPath!)
                 as ShapePaint<T>;
         await shapePaint!.init(symbolCache);
+        // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
         break;
       case "Polyline":
         // same as area but for open ways
-        if (shape.shapePaint != null) {
-          shapePaint = shape.shapePaint! as ShapePaint<T>?;
-        } else {
-          shapePaint =
-              ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
-          await shapePaint!.init(symbolCache);
-          shape.shapePaint = shapePaint;
-        }
+        shapePaint =
+            ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
+        await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         break;
       case "Symbol":
-        if (shape.shapePaint != null) {
-          shapePaint = shape.shapePaint! as ShapePaint<T>?;
-        } else {
-          shapePaint = ShapePaintSymbol(shape as ShapeSymbol) as ShapePaint<T>;
-          await shapePaint!.init(symbolCache);
-          shape.shapePaint = shapePaint;
-        }
+        shapePaint = ShapePaintSymbol(shape as ShapeSymbol) as ShapePaint<T>;
+        await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         break;
       default:
         print(

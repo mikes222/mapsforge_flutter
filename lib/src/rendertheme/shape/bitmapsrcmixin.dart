@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/paintsrcmixin.dart';
 
 import '../../../core.dart';
 
@@ -21,7 +22,7 @@ mixin BitmapSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
   int _bitmapMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL;
 
-  int color = 0xff000000;
+  int color = PaintSrcMixin.transparent();
 
   void bitmapSrcMixinClone(BitmapSrcMixin base) {
     bitmapSrc = base.bitmapSrc;
@@ -79,5 +80,9 @@ mixin BitmapSrcMixin {
 
   void setBitmapMinZoomLevel(int bitmapMinZoomLevel) {
     _bitmapMinZoomLevel = bitmapMinZoomLevel;
+  }
+
+  String bitmapSrcMixinToString() {
+    return 'BitmapSrcMixin{bitmapSrc: $bitmapSrc, _bitmapWidth: $_bitmapWidth, _bitmapHeight: $_bitmapHeight, _bitmapPercent: $_bitmapPercent, _bitmapMinZoomLevel: $_bitmapMinZoomLevel, color: 0x${color.toRadixString(16)}}';
   }
 }

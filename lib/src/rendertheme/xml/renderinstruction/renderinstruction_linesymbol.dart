@@ -1,17 +1,15 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
-import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
+import 'package:mapsforge_flutter/src/model/scale.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction_way.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../nodeproperties.dart';
-import '../rendercontext.dart';
-import '../shape/shape_linesymbol.dart';
-import '../wayproperties.dart';
+import '../../shape/shape_linesymbol.dart';
 import 'renderinstruction.dart';
 
 /// Represents an icon along a polyline on the map.
-class RenderinstructionLinesymbol extends RenderInstruction {
+class RenderinstructionLinesymbol extends RenderInstructionWay {
   static final double REPEAT_GAP_DEFAULT = 200;
   static final double REPEAT_START_DEFAULT = 30;
 
@@ -22,10 +20,10 @@ class RenderinstructionLinesymbol extends RenderInstruction {
   }
 
   @override
-  RenderinstructionLinesymbol? prepareScale(int zoomLevel) {
+  ShapeLinesymbol? prepareScale(int zoomLevel) {
     ShapeLinesymbol newShape = ShapeLinesymbol.scale(base, zoomLevel);
     if (newShape.display == Display.NEVER) return null;
-    return RenderinstructionLinesymbol(base.level, newShape);
+    return newShape;
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -44,7 +42,7 @@ class RenderinstructionLinesymbol extends RenderInstruction {
       } else if (RenderInstruction.ALIGN_CENTER == name) {
         base.alignCenter = "true" == (value);
       } else if (RenderInstruction.CAT == name) {
-        this.category = value;
+        base.category = value;
       } else if (RenderInstruction.DISPLAY == name) {
         base.display = Display.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value));
@@ -66,7 +64,7 @@ class RenderinstructionLinesymbol extends RenderInstruction {
       } else if (RenderInstruction.ROTATE == name) {
         base.rotate = "true" == (value);
       } else if (RenderInstruction.SCALE == name) {
-        base.scale = scaleFromValue(value);
+        base.setScaleFromValue(value);
         if (base.scale == Scale.NONE) {
           base.setBitmapMinZoomLevel(65535);
         }
@@ -83,24 +81,5 @@ class RenderinstructionLinesymbol extends RenderInstruction {
         throw Exception("LineSymbol probs: unknown '$name'");
       }
     });
-  }
-
-  @override
-  void renderNode(
-      final RenderContext renderContext, NodeProperties nodeProperties) {
-    return;
-    // do nothing
-  }
-
-  @override
-  void renderWay(
-      final RenderContext renderContext, WayProperties wayProperties) {
-    if (base.bitmapSrc == null) return;
-    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
-        0) return;
-
-    //renderContext.labels.add(WayRenderInfo(wayProperties, shape));
-    renderContext.addToClashDrawingLayer(
-        base.level, WayRenderInfo(wayProperties, base));
   }
 }

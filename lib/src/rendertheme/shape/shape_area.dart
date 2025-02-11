@@ -1,6 +1,9 @@
+import 'package:mapsforge_flutter/src/model/scale.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 
-import '../renderinstruction/renderinstruction.dart';
+import '../rendercontext.dart';
+import '../wayproperties.dart';
+import '../wayrenderinfo.dart';
 import 'bitmapsrcmixin.dart';
 import 'paintsrcmixin.dart';
 
@@ -32,5 +35,23 @@ class ShapeArea extends Shape with PaintSrcMixin, BitmapSrcMixin {
   @override
   String getShapeType() {
     return "Area";
+  }
+
+  void setScaleFromValue(String value) {
+    if (value.contains("ALL")) {
+      scale = Scale.ALL;
+    } else if (value.contains("NONE")) {
+      scale = Scale.NONE;
+    }
+    scale = Scale.STROKE;
+  }
+
+  @override
+  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
+        0) return;
+
+    renderContext.addToCurrentDrawingLayer(
+        level, WayRenderInfo<ShapeArea>(wayProperties, this));
   }
 }

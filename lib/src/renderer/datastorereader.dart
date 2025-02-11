@@ -1,9 +1,9 @@
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
+
 import '../../core.dart';
 import '../../datastore.dart';
 import '../../maps.dart';
-import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/rendercontext.dart';
-import '../rendertheme/renderinstruction/renderinstruction.dart';
 import '../rendertheme/wayproperties.dart';
 
 /// Reads the content of a datastore - e.g. MapFile - either via isolate or direct
@@ -16,7 +16,7 @@ class DatastoreReader {
       Tile tile,
       PixelProjection projection,
       RenderContext renderContext,
-      RenderTheme renderTheme) async {
+      RenderthemeLevel renderthemeLevel) async {
     // read the mapdata directly in this thread
     await datastore.lateOpen();
     if (!datastore.supportsTile(tile, projection)) {
@@ -25,20 +25,37 @@ class DatastoreReader {
     DatastoreReadResult? mapReadResult =
         await datastore.readMapDataSingle(tile);
     if (mapReadResult != null)
-      processMapReadResult(renderContext, renderTheme, mapReadResult);
+      processMapReadResult(
+          renderContext, tile, renderthemeLevel, mapReadResult);
+    return mapReadResult;
+  }
+
+  Future<DatastoreReadResult?> readLabels(
+      Datastore datastore,
+      Tile tile,
+      PixelProjection projection,
+      RenderContext renderContext,
+      RenderthemeLevel renderthemeLevel) async {
+    await datastore.lateOpen();
+    if (!datastore.supportsTile(tile, projection)) {
+      return null;
+    }
+    DatastoreReadResult? mapReadResult = await datastore.readLabelsSingle(tile);
+    if (mapReadResult != null)
+      processMapReadResult(
+          renderContext, tile, renderthemeLevel, mapReadResult);
     return mapReadResult;
   }
 
   /// Creates rendering instructions based on the given ways and nodes and the defined rendertheme
-  void processMapReadResult(final RenderContext renderContext,
-      RenderTheme renderTheme, DatastoreReadResult mapReadResult) {
+  void processMapReadResult(final RenderContext renderContext, Tile tile,
+      RenderthemeLevel renderthemeLevel, DatastoreReadResult mapReadResult) {
     for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
       NodeProperties nodeProperties = NodeProperties(pointOfInterest);
-      List<RenderInstruction> renderInstructions =
-          _retrieveRenderInstructionsForPoi(
-              renderContext, renderTheme, nodeProperties);
-      for (RenderInstruction renderInstruction in renderInstructions) {
-        renderInstruction.renderNode(renderContext, nodeProperties);
+      List<Shape> shapes = _retrieveShapesForPoi(
+          renderContext, tile, renderthemeLevel, nodeProperties);
+      for (Shape shape in shapes) {
+        shape.renderNode(renderContext, nodeProperties);
       }
     }
 
@@ -46,11 +63,14 @@ class DatastoreReader {
 //    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
     for (Way way in mapReadResult.ways) {
       WayProperties wayProperties = WayProperties(way);
-      List<RenderInstruction> renderInstructions =
-          _retrieveRenderInstructionsForWay(
-              renderContext, renderTheme, wayProperties);
-      for (RenderInstruction renderInstruction in renderInstructions) {
-        renderInstruction.renderWay(renderContext, wayProperties);
+      MapRectangle rectangle =
+          wayProperties.getBoundary(renderContext.projection);
+      // filter small ways
+      if (rectangle.getWidth() < 5 && rectangle.getHeight() < 5) continue;
+      List<Shape> shapes = _retrieveShapesForWay(
+          renderContext, tile, renderthemeLevel, wayProperties);
+      for (Shape shape in shapes) {
+        shape.renderWay(renderContext, wayProperties);
       }
     }
     if (mapReadResult.isWater) {
@@ -58,31 +78,32 @@ class DatastoreReader {
     }
   }
 
-  List<RenderInstruction> _retrieveRenderInstructionsForPoi(
+  List<Shape> _retrieveShapesForPoi(
       final RenderContext renderContext,
-      RenderTheme renderTheme,
+      Tile tile,
+      RenderthemeLevel renderthemeLevel,
       NodeProperties nodeProperties) {
     renderContext.setDrawingLayers(nodeProperties.layer);
-    List<RenderInstruction> renderInstructions =
-        renderTheme.matchNode(renderContext.upperLeft, nodeProperties);
-    return renderInstructions;
+    List<Shape> shapes = renderthemeLevel.matchNode(tile, nodeProperties);
+    return shapes;
   }
 
-  List<RenderInstruction> _retrieveRenderInstructionsForWay(
+  List<Shape> _retrieveShapesForWay(
       final RenderContext renderContext,
-      RenderTheme renderTheme,
+      Tile tile,
+      RenderthemeLevel renderthemeLevel,
       WayProperties wayProperties) {
     if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
         0) return [];
     renderContext.setDrawingLayers(wayProperties.getLayer());
     if (wayProperties.isClosedWay) {
-      List<RenderInstruction> renderInstructions = renderTheme.matchClosedWay(
-          renderContext.upperLeft, wayProperties.way);
-      return renderInstructions;
+      List<Shape> shapes =
+          renderthemeLevel.matchClosedWay(tile, wayProperties.way);
+      return shapes;
     } else {
-      List<RenderInstruction> renderInstructions = renderTheme.matchLinearWay(
-          renderContext.upperLeft, wayProperties.way);
-      return renderInstructions;
+      List<Shape> shapes =
+          renderthemeLevel.matchLinearWay(tile, wayProperties.way);
+      return shapes;
     }
   }
 

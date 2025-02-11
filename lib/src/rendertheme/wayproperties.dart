@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:mapsforge_flutter/src/graphics/implementation/flutterpath.dart';
-import 'package:mapsforge_flutter/src/graphics/maprect.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodewayproperties.dart';
 
@@ -17,16 +15,9 @@ import '../renderer/minmaxdouble.dart';
 import '../renderer/rendererutils.dart';
 import '../utils/reducehelper.dart';
 
-///
-/// In the terminal window run
-///
-///```
-/// flutter packages pub run build_runner build --delete-conflicting-outputs
-///```
-///
 /// Properties for one Way as read from the datastore. Note that the properties are
-/// dependent on the zoomLevel and pixelsize of the device. . However one instance
-// /// of WayProperties is used for one zoomlevel only.
+/// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
+/// of WayProperties can be used for one zoomlevel only.
 class WayProperties implements NodeWayProperties {
   final double maxGap = 5;
 
@@ -36,16 +27,13 @@ class WayProperties implements NodeWayProperties {
 
   final bool isClosedWay;
 
-  /// cache for the center of the way
+  /// cache for the absolute center of the way in mappixels
   Mappoint? center;
 
   /// cache for absolute coordinates
   List<List<Mappoint>>? coordinatesAbsolute;
 
-  // remove this security feature after 2025/01
-  @deprecated
-  int _lastZoomLevel = -1;
-
+  /// cache for the boundary of the way
   MinMaxDouble? minMaxMappoint;
 
   WayProperties(this.way)
@@ -53,9 +41,6 @@ class WayProperties implements NodeWayProperties {
         isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
 
   List<List<Mappoint>> getCoordinatesAbsolute(PixelProjection projection) {
-    // remove this security feature after 2025/01
-    assert (_lastZoomLevel == -1 ||
-        projection.scalefactor.zoomlevel == _lastZoomLevel);
     if (coordinatesAbsolute != null) {
       return coordinatesAbsolute!;
     }
@@ -73,7 +58,6 @@ class WayProperties implements NodeWayProperties {
         coordinatesAbsolute!.add(mp1);
       }
     });
-    _lastZoomLevel = projection.scalefactor.zoomlevel;
     return coordinatesAbsolute!;
   }
 
@@ -90,24 +74,9 @@ class WayProperties implements NodeWayProperties {
     return this.center!;
   }
 
-  // List<List<Mappoint>> getCoordinatesRelativeToLeftUpper(
-  //     PixelProjection projection, Mappoint leftUpper, double dy) {
-  //   List<List<Mappoint>> coordinatesAbsolute =
-  //       getCoordinatesAbsolute(projection);
-  //   List<List<Mappoint>> coordinatesRelativeToTile = [];
-  //
-  //   coordinatesAbsolute.forEach((outerList) {
-  //     List<Mappoint> mp1 = outerList
-  //         .map((inner) => inner.offset(-leftUpper.x, -leftUpper.y + dy))
-  //         .toList();
-  //     coordinatesRelativeToTile.add(mp1);
-  //   });
-  //   return coordinatesRelativeToTile;
-  // }
-
   LineString? calculateStringPath(PixelProjection projection, double dy) {
     List<List<Mappoint>> coordinatesAbsolute =
-    getCoordinatesAbsolute(projection);
+        getCoordinatesAbsolute(projection);
 
     if (coordinatesAbsolute.length == 0 || coordinatesAbsolute[0].length < 2) {
       return null;
@@ -142,8 +111,8 @@ class WayProperties implements NodeWayProperties {
   MapRectangle getBoundary(PixelProjection projection) {
     if (minMaxMappoint != null) return minMaxMappoint!.getBoundary();
     List<List<Mappoint>> coordinates = getCoordinatesAbsolute(projection);
+    if (coordinates.isEmpty) return const MapRectangle.zero();
     minMaxMappoint = MinMaxDouble(coordinates[0]);
     return minMaxMappoint!.getBoundary();
   }
-
 }

@@ -29,6 +29,7 @@ export 'src/model/mapsize.dart';
 export 'src/model/mapviewposition.dart';
 export 'src/model/tile.dart';
 export 'src/model/viewmodel.dart';
+export 'src/rendertheme/shape/shape.dart';
 export 'src/utils/latlongutils.dart';
 export 'src/view/contextmenubuilder.dart';
 export 'src/view/defaultcontextmenu.dart';

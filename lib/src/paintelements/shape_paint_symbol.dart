@@ -40,6 +40,7 @@ class ShapePaintSymbol extends ShapePaint<ShapeSymbol> {
       MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {
     if (bitmap == null) return;
+    //print("paint symbol: $shape ${shape.bitmapSrc}");
     RelativeMappoint relative =
         coordinatesAbsolute.offset(-reference.x, -reference.y);
     MapRectangle boundary = shape.calculateBoundary();

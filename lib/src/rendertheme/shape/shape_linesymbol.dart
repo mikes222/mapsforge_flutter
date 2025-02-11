@@ -1,9 +1,13 @@
 import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/model/scale.dart';
 
 import '../../renderer/paintmixin.dart';
-import '../renderinstruction/renderinstruction.dart';
+import '../rendercontext.dart';
+import '../wayproperties.dart';
+import '../wayrenderinfo.dart';
+import '../xml/symbol_finder.dart';
 import 'shape_symbol.dart';
 
 /// A PolylineContainer encapsulates the way data retrieved from a map file.
@@ -29,7 +33,7 @@ class ShapeLinesymbol extends ShapeSymbol {
 
   int lineSymbolMinZoomLevel = DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT;
 
-  ShapeLinesymbol.base(int level) : super.base(level);
+  ShapeLinesymbol.base(int level) : super.base(level, SymbolFinder(null));
 
   ShapeLinesymbol.scale(ShapeLinesymbol base, int zoomLevel)
       : super.scale(base, zoomLevel) {
@@ -69,8 +73,29 @@ class ShapeLinesymbol extends ShapeSymbol {
     this.lineSymbolMinZoomLevel = lineSymbolMinZoomLevel;
   }
 
+  void setScaleFromValue(String value) {
+    if (value.contains("ALL")) {
+      scale = Scale.ALL;
+    } else if (value.contains("NONE")) {
+      scale = Scale.NONE;
+    }
+    scale = Scale.STROKE;
+  }
+
   @override
   String getShapeType() {
     return "Linesymbol";
+  }
+
+  @override
+  void renderWay(
+      final RenderContext renderContext, WayProperties wayProperties) {
+    if (bitmapSrc == null) return;
+    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
+        0) return;
+
+    //renderContext.labels.add(WayRenderInfo(wayProperties, shape));
+    renderContext.addToClashDrawingLayer(
+        level, WayRenderInfo(wayProperties, this));
   }
 }

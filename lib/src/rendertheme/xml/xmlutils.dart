@@ -1,8 +1,6 @@
-
 import 'package:logging/logging.dart';
 
 import '../../graphics/graphicfactory.dart';
-import '../../rendertheme/renderinstruction/renderinstruction.dart';
 
 class XmlUtils {
   static final _log = new Logger('XmlUtils');
@@ -36,14 +34,14 @@ class XmlUtils {
   /**
    * Supported formats are {@code #RRGGBB} and {@code #AARRGGBB}.
    */
-  static int getColor(String colorString, RenderInstruction origin) {
+  static int getColor(String colorString) {
     if (colorString.isEmpty || !colorString.startsWith("#")) {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     } else if (colorString.length == 7) {
-      return getColorAlpha(GraphicFactory(), colorString, 255, 1, origin);
+      return getColorAlpha(GraphicFactory(), colorString, 255, 1);
     } else if (colorString.length == 9) {
       return getColorAlpha(GraphicFactory(), colorString,
-          int.parse(colorString.substring(1, 3), radix: 16), 3, origin);
+          int.parse(colorString.substring(1, 3), radix: 16), 3);
     } else {
       throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     }
@@ -117,7 +115,7 @@ class XmlUtils {
   }
 
   static int getColorAlpha(GraphicFactory graphicFactory, String colorString,
-      int alpha, int rgbStartIndex, RenderInstruction origin) {
+      int alpha, int rgbStartIndex) {
     int red = int.parse(colorString.substring(rgbStartIndex, rgbStartIndex + 2),
         radix: 16);
     int green = int.parse(

@@ -5864,7 +5864,7 @@ Please have a look at read_me_elevate.txt for reuse and licenses of resources us
 
 	<!-- traffic barriers -->
 	<rule cat="barriers" e="any" k="*" v="*" zoom-min="9">
-		<rule e="any" k="highway|ford" v="ford|fd_yes" zoom-min="15">
+		<rule e="any" k="highway|ford" v="ford|fd_yes" zoom-min="12">
 			<rule e="any" k="*" v="*" zoom-max="12">
 				<symbol id="s_ford" src="s_ford_small.svg" symbol-height="16" />
 			</rule>

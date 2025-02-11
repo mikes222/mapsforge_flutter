@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
@@ -8,7 +9,6 @@ import 'closedmatcher.dart';
 import 'elementmatcher.dart';
 import 'keymatcher.dart';
 import 'negativematcher.dart';
-import 'positiverule.dart';
 
 // TODO implement RuleOptimizer again
 class RuleOptimizer {
@@ -33,33 +33,27 @@ class RuleOptimizer {
       return closedMatcher;
     }
 
-    for (int i = 0, n = ruleStack.length; i < n; ++i) {
-      if (ruleStack
-          .elementAt(i)
-          .closedMatcher!
-          .isCoveredByClosedMatcher(closedMatcher)) {
-        return AnyMatcher.INSTANCE;
-      } else if (!closedMatcher
-          .isCoveredByClosedMatcher(ruleStack.elementAt(i).closedMatcher!)) {
+    for (RuleBuilder rule in ruleStack) {
+      if (rule.getClosedMatcher().isCoveredByClosedMatcher(closedMatcher)) {
+        return const AnyMatcher();
+      } else if (!closedMatcher.isCoveredByClosedMatcher(closedMatcher)) {
         _log.warning("unreachable rule (closed)");
       }
     }
-
     return closedMatcher;
   }
 
   static ElementMatcher optimizeElementMatcher(
-      ElementMatcher elementMatcher, List<RuleBuilder> ruleStack) {
+      ElementMatcher elementMatcher, List<RuleBuilder> ruleBuilderStack) {
     if (elementMatcher is AnyMatcher) {
       return elementMatcher;
     }
 
-    for (int i = 0, n = ruleStack.length; i < n; ++i) {
-      RuleBuilder rule = ruleStack.elementAt(i);
-      if (rule.elementMatcher!.isCoveredByElementMatcher(elementMatcher)) {
-        return AnyMatcher.INSTANCE;
+    for (RuleBuilder rule in ruleBuilderStack) {
+      if (rule.getElementMatcher().isCoveredByElementMatcher(elementMatcher)) {
+        return const AnyMatcher();
       } else if (!elementMatcher
-          .isCoveredByElementMatcher(rule.elementMatcher)) {
+          .isCoveredByElementMatcher(rule.getElementMatcher())) {
         _log.warning("unreachable rule (e)");
       }
     }
@@ -68,32 +62,28 @@ class RuleOptimizer {
   }
 
   static AttributeMatcher optimizeKeyMatcher(
-      AttributeMatcher attributeMatcher, List<RuleBuilder> ruleStack) {
-    for (int i = 0, n = ruleStack.length; i < n; ++i) {
-      if (ruleStack.elementAt(i) is PositiveRule) {
-        PositiveRule positiveRule = ruleStack.elementAt(i) as PositiveRule;
-        if (positiveRule.keyMatcher
-            .isCoveredByAttributeMatcher(attributeMatcher)) {
-          return AnyMatcher.INSTANCE;
-        }
-      }
+      KeyMatcher keyMatcher, List<RuleBuilder> ruleBuilderStack) {
+    AttributeMatcher? result = ruleBuilderStack
+        .where((test) => test.negativeMatcher == null)
+        .map((element) => element.keyMatcher)
+        .firstWhereOrNull(
+            (test) => test.isCoveredByAttributeMatcher(keyMatcher));
+    if (result != null) {
+      return const AnyMatcher();
     }
-
-    return attributeMatcher;
+    return keyMatcher;
   }
 
   static AttributeMatcher optimizeValueMatcher(
-      AttributeMatcher attributeMatcher, List<RuleBuilder> ruleStack) {
-    for (int i = 0, n = ruleStack.length; i < n; ++i) {
-      if (ruleStack.elementAt(i) is PositiveRule) {
-        PositiveRule positiveRule = ruleStack.elementAt(i) as PositiveRule;
-        if (positiveRule.valueMatcher
-            .isCoveredByAttributeMatcher(attributeMatcher)) {
-          return AnyMatcher.INSTANCE;
-        }
-      }
+      AttributeMatcher attributeMatcher, List<RuleBuilder> ruleBuilderStack) {
+    AttributeMatcher? result = ruleBuilderStack
+        .where((test) => test.negativeMatcher == null)
+        .map((element) => element.valueMatcher)
+        .firstWhereOrNull(
+            (test) => test.isCoveredByAttributeMatcher(attributeMatcher));
+    if (result != null) {
+      return const AnyMatcher();
     }
-
     return attributeMatcher;
   }
 }

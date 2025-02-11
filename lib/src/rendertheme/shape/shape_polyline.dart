@@ -1,6 +1,9 @@
+import 'package:mapsforge_flutter/src/model/scale.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 
-import '../renderinstruction/renderinstruction.dart';
+import '../rendercontext.dart';
+import '../wayproperties.dart';
+import '../wayrenderinfo.dart';
 import 'bitmapsrcmixin.dart';
 import 'paintsrcmixin.dart';
 
@@ -29,8 +32,33 @@ class ShapePolyline extends Shape with PaintSrcMixin, BitmapSrcMixin {
     this.dy = dy;
   }
 
+  void setScaleFromValue(String value) {
+    if (value.contains("ALL")) {
+      scale = Scale.ALL;
+    } else if (value.contains("NONE")) {
+      scale = Scale.NONE;
+    }
+    scale = Scale.STROKE;
+  }
+
   @override
   String getShapeType() {
     return "Polyline";
+  }
+
+  @override
+  void renderWay(
+      final RenderContext renderContext, WayProperties wayProperties) {
+    if (bitmapSrc == null && isStrokeTransparent()) return;
+    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
+        0) return;
+
+    renderContext.addToCurrentDrawingLayer(
+        level, WayRenderInfo<ShapePolyline>(wayProperties, this));
+  }
+
+  @override
+  String toString() {
+    return 'ShapePolyline{scale: $scale, super: ${super.toString()}, ${paintSrcMixinToString()}, ${bitmapSrcMixinToString()}}';
   }
 }

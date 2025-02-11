@@ -5,13 +5,12 @@ import 'package:mapsforge_flutter/src/projection/pixelprojection.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
-import '../../graphics/hillshadingbitmap.dart';
-import '../../layer/hills/hillsrenderconfig.dart';
-import '../../model/mappoint.dart';
-import '../../model/maprectangle.dart';
-import '../../model/tile.dart';
-import '../rendercontext.dart';
-import '../shape/shape_hillshading.dart';
+import '../../../../core.dart';
+import '../../../graphics/hillshadingbitmap.dart';
+import '../../../layer/hills/hillsrenderconfig.dart';
+import '../../../model/maprectangle.dart';
+import '../../rendercontext.dart';
+import '../../shape/shape_hillshading.dart';
 
 /**
  * Represents hillshading on a painter algorithm layer/level in the parsed rendertheme
@@ -42,10 +41,8 @@ class RenderinstructionHillshading {
     double maptileTopLat = projection.pixelYToLatitude(origin.y);
     double maptileLeftLng = projection.pixelXToLongitude(origin.x);
 
-    double maptileBottomLat =
-        projection.pixelYToLatitude(origin.y + tileSize);
-    double maptileRightLng =
-        projection.pixelXToLongitude(origin.x + tileSize);
+    double maptileBottomLat = projection.pixelYToLatitude(origin.y + tileSize);
+    double maptileRightLng = projection.pixelXToLongitude(origin.x + tileSize);
 
     double mapTileLatDegrees = maptileTopLat - maptileBottomLat;
     double mapTileLngDegrees = maptileRightLng - maptileLeftLng;

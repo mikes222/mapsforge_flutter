@@ -9,6 +9,8 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
+import 'debug/debug-contextmenubuilder.dart';
+import 'debug/debug-datastore.dart';
 import 'map-file-data.dart';
 
 /// The [StatefulWidget] displaying the interactive map page. This is a demo
@@ -36,6 +38,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
   late SymbolCache symbolCache;
 
   late MarkerdemoDatastore markerdemoDatastore;
+
+  // Shows additional infos about nodes and ways, may be confusing and slow
+  final debug = true;
 
   @override
   void initState() {
@@ -103,8 +108,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
     // in this demo we use the markers only for offline databases.
     ViewModel viewModel = ViewModel(
       displayModel: displayModel,
-      contextMenuBuilder: //DebugContextMenuBuilder(datastore: widget.mapFile!),
-          widget.mapFileData.mapType == MAPTYPE.OFFLINE
+      contextMenuBuilder: debug
+          ? DebugContextMenuBuilder(datastore: widget.mapFile!)
+          : widget.mapFileData.mapType == MAPTYPE.OFFLINE
               ? MarkerdemoContextMenuBuilder()
               : const DefaultContextMenuBuilder(),
     );
@@ -148,13 +154,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
         await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
 
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    final JobRenderer jobRenderer =
-        // DatastoreViewRenderer(
-        //     datastore: widget.mapFile!,
-        //     renderTheme: renderTheme,
-        //     symbolCache: symbolCache);
-        MapDataStoreRenderer(widget.mapFile!, renderTheme, symbolCache, false,
-            useIsolate: false);
+    final JobRenderer jobRenderer = MapDataStoreRenderer(
+        widget.mapFile!, renderTheme, symbolCache, false,
+        useIsolate: false);
 
     /// and now it is similar to online rendering.
 
@@ -176,8 +178,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
       symbolCache: symbolCache,
     );
     mapModel.markerDataStores.add(markerdemoDatastore);
-    // mapModel.markerDataStores.add(
-    //     DebugDatastore(symbolCache: symbolCache, displayModel: displayModel));
+    if (debug)
+      mapModel.markerDataStores.add(
+          DebugDatastore(symbolCache: symbolCache, displayModel: displayModel));
 
     return mapModel;
   }

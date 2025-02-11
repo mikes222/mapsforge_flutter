@@ -1,23 +1,19 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
-import 'package:mapsforge_flutter/src/model/linestring.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction_way.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../../graphics/mapfontfamily.dart';
-import '../nodeproperties.dart';
-import '../rendercontext.dart';
-import '../shape/shape_pathtext.dart';
-import '../wayproperties.dart';
-import '../wayrenderinfo.dart';
+import '../../../graphics/mapfontfamily.dart';
+import '../../shape/shape_pathtext.dart';
+import '../../textkey.dart';
 import 'renderinstruction.dart';
-import 'textkey.dart';
 
 /**
  * Represents a text along a polyline on the map.
  */
-class RenderinstructionPathtext extends RenderInstruction {
+class RenderinstructionPathtext extends RenderInstructionWay {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
 
@@ -32,10 +28,10 @@ class RenderinstructionPathtext extends RenderInstruction {
   }
 
   @override
-  RenderinstructionPathtext? prepareScale(int zoomLevel) {
+  ShapePathtext? prepareScale(int zoomLevel) {
     ShapePathtext newShape = ShapePathtext.scale(base, zoomLevel);
     if (newShape.display == Display.NEVER) return null;
-    return RenderinstructionPathtext(base.level, newShape);
+    return newShape;
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -51,14 +47,14 @@ class RenderinstructionPathtext extends RenderInstruction {
       if (RenderInstruction.K == name) {
         base.textKey = TextKey(value);
       } else if (RenderInstruction.CAT == name) {
-        this.category = value;
+        base.category = value;
       } else if (RenderInstruction.DISPLAY == name) {
         base.display = Display.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value));
       } else if (RenderInstruction.DY == name) {
         base.setDy(double.parse(value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.FILL == name) {
-        base.setFillColorFromNumber(XmlUtils.getColor(value, this));
+        base.setFillColorFromNumber(XmlUtils.getColor(value));
       } else if (RenderInstruction.FONT_FAMILY == name) {
         base.setFontFamily(MapFontFamily.values
             .firstWhere((v) => v.toString().toLowerCase().contains(value)));
@@ -81,9 +77,9 @@ class RenderinstructionPathtext extends RenderInstruction {
       } else if (RenderInstruction.PRIORITY == name) {
         base.priority = int.parse(value);
       } else if (RenderInstruction.SCALE == name) {
-        base.scale = scaleFromValue(value);
+        base.setScaleFromValue(value);
       } else if (RenderInstruction.STROKE == name) {
-        base.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
+        base.setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
         base.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
             displayModel.getFontScaleFactor());
@@ -94,33 +90,5 @@ class RenderinstructionPathtext extends RenderInstruction {
 
     XmlUtils.checkMandatoryAttribute(
         rootElement.name.toString(), RenderInstruction.K, base.textKey);
-  }
-
-  @override
-  void renderNode(final RenderContext renderContext, NodeProperties container) {
-    // do nothing
-    return;
-  }
-
-  @override
-  void renderWay(
-      final RenderContext renderContext, WayProperties wayProperties) {
-    String? caption = base.textKey!.getValue(wayProperties.getTags());
-    if (caption == null) {
-      return;
-    }
-
-    LineString? stringPath =
-        wayProperties.calculateStringPath(renderContext.projection, base.dy);
-    if (stringPath == null || stringPath.segments.isEmpty) {
-      return;
-    }
-
-    renderContext.addToClashDrawingLayer(
-        base.level,
-        WayRenderInfo(wayProperties, base)
-          ..caption = caption
-          ..stringPath = stringPath);
-    return;
   }
 }

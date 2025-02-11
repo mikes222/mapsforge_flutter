@@ -5,16 +5,17 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 
 import '../../graphics/position.dart';
 import '../../renderer/paintmixin.dart';
-import '../renderinstruction/textkey.dart';
-import '../xml/rulebuilder.dart';
+import '../nodeproperties.dart';
+import '../noderenderinfo.dart';
+import '../rendercontext.dart';
+import '../textkey.dart';
+import '../wayproperties.dart';
+import '../wayrenderinfo.dart';
+import '../xml/symbol_finder.dart';
 import 'paintsrcmixin.dart';
 import 'textsrcmixin.dart';
 
 class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
-  double _horizontalOffset = 0;
-
-  double _verticalOffset = 0;
-
   late double gap = 0;
 
   /// The position of this caption relative to the corresponding symbol. If the symbol is not set
@@ -25,18 +26,19 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   SymbolHolder? symbolHolder;
 
+  final SymbolFinder symbolFinder;
+
   TextKey? textKey;
 
   double dy = 0;
 
-  ShapeCaption.base(int level) : super.base(level: level);
+  ShapeCaption.base(int level, this.symbolFinder) : super.base(level: level);
 
   ShapeCaption.scale(ShapeCaption base, int zoomLevel)
-      : super.scale(base, zoomLevel) {
+      : symbolFinder = base.symbolFinder,
+        super.scale(base, zoomLevel) {
     paintSrcMixinScale(base, zoomLevel);
     textSrcMixinScale(base, zoomLevel);
-    _horizontalOffset = base._horizontalOffset;
-    _verticalOffset = base._verticalOffset;
     gap = base.gap;
     position = base.position;
     priority = base.priority;
@@ -72,67 +74,88 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     //return boundary!;
   }
 
-  void calculateOffsets(double fontWidth, double fontHeight,
-      [MapRectangle? symbolBoundary]) {
-    _verticalOffset = 0;
-    _horizontalOffset = 0;
-    // print(
-    //     "shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $_boxWidth, $_boxHeight");
+  MapRectangle calculateBoundaryWithSymbol(
+      double fontWidth, double fontHeight) {
+    print(
+        "shapeCaption in calculateOffsets pos $position, symbolFinder: ${symbolFinder}, symbolHolder: $symbolHolder, captionBoundary: $fontWidth, $fontHeight");
+
+    MapRectangle? symbolBoundary =
+        symbolHolder?.shapeSymbol?.calculateBoundary();
+    if (position == Position.CENTER && symbolBoundary != null) {
+      // sensible defaults: below if symbolContainer is present, center if not
+      position = Position.BELOW;
+    }
 
     if (symbolBoundary == null) {
-      if (position == Position.CENTER &&
-          symbolHolder?.shapeSymbol?.bitmapSrc != null) {
-        // sensible defaults: below if symbolContainer is present, center if not
-        position = Position.BELOW;
-      }
-      symbolBoundary = symbolHolder?.shapeSymbol?.calculateBoundary();
-      if (symbolBoundary == null) {
-        position = Position.CENTER;
-        return;
-      }
+      // symbol not available, draw the text at the center
+      position = Position.CENTER;
+      symbolBoundary = const MapRectangle(0, 0, 0, 0);
     }
 
+    double halfWidth = fontWidth / 2;
+    double halfHeight = fontHeight / 2;
+
     switch (position) {
+      case Position.AUTO:
       case Position.CENTER:
+        this.boundary =
+            MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
         break;
       case Position.BELOW:
-        _verticalOffset +=
-            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
-        break;
-      case Position.ABOVE:
-        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap + dy;
+        this.boundary = MapRectangle(
+            -halfWidth,
+            symbolBoundary.bottom + 0 + this.gap + dy,
+            halfWidth,
+            symbolBoundary.bottom + fontHeight + this.gap + dy);
         break;
       case Position.BELOW_LEFT:
-        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
-        _verticalOffset +=
-            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
-        break;
-      case Position.ABOVE_LEFT:
-        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
-        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap + dy;
-        break;
-      case Position.LEFT:
-        _horizontalOffset += symbolBoundary.left - fontWidth / 2 - this.gap;
-        _verticalOffset +=
-            symbolBoundary.top + symbolBoundary.getHeight() / 2 + dy;
+        this.boundary = MapRectangle(
+            symbolBoundary.left - fontWidth - this.gap,
+            symbolBoundary.bottom + 0 + this.gap + dy,
+            symbolBoundary.left - 0 - this.gap,
+            symbolBoundary.bottom + fontHeight + this.gap + dy);
         break;
       case Position.BELOW_RIGHT:
-        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
-        _verticalOffset +=
-            symbolBoundary.bottom + fontHeight / 2 + this.gap + dy;
+        this.boundary = MapRectangle(
+            symbolBoundary.right + 0 + this.gap,
+            symbolBoundary.bottom + 0 + this.gap + dy,
+            symbolBoundary.right + fontWidth + this.gap,
+            symbolBoundary.bottom + fontHeight + this.gap + dy);
+        break;
+      case Position.ABOVE:
+        this.boundary = MapRectangle(
+            -halfWidth,
+            symbolBoundary.top - fontHeight - this.gap + dy,
+            halfWidth,
+            symbolBoundary.top - 0 - this.gap + dy);
+        break;
+      case Position.ABOVE_LEFT:
+        this.boundary = MapRectangle(
+            symbolBoundary.left - fontWidth - this.gap,
+            symbolBoundary.top - fontHeight - this.gap + dy,
+            symbolBoundary.left - 0 - this.gap,
+            symbolBoundary.top + 0 - this.gap + dy);
         break;
       case Position.ABOVE_RIGHT:
-        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
-        _verticalOffset += symbolBoundary.top - fontHeight / 2 - this.gap + dy;
+        this.boundary = MapRectangle(
+            symbolBoundary.right + 0 + this.gap,
+            symbolBoundary.top - fontHeight - this.gap + dy,
+            symbolBoundary.right + fontWidth + this.gap,
+            symbolBoundary.top + 0 - this.gap + dy);
+        break;
+      case Position.LEFT:
+        this.boundary = MapRectangle(symbolBoundary.left - fontWidth - this.gap,
+            -halfHeight, symbolBoundary.left - 0 - this.gap, halfHeight);
         break;
       case Position.RIGHT:
-        _horizontalOffset += symbolBoundary.right + fontWidth / 2 + this.gap;
-        _verticalOffset +=
-            symbolBoundary.top + symbolBoundary.getHeight() / 2 + dy;
+        this.boundary = MapRectangle(
+            symbolBoundary.right + 0 + this.gap,
+            -halfHeight,
+            symbolBoundary.right + fontHeight + this.gap,
+            halfHeight);
         break;
-      default:
-        throw new Exception("Position invalid");
     }
+    return boundary!;
   }
 
   @override
@@ -140,12 +163,44 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     return "Caption";
   }
 
-  double get horizontalOffset => _horizontalOffset;
-
-  double get verticalOffset => _verticalOffset;
-
   @override
   String toString() {
-    return 'ShapeCaption{_horizontalOffset: $_horizontalOffset, _verticalOffset: $_verticalOffset, level: $level, gap: $gap, position: $position, symbolId: $symbolId, symbolHolder: $symbolHolder, textKey: $textKey, dy: $dy}';
+    return 'ShapeCaption{level: $level, gap: $gap, position: $position, symbolId: $symbolId, symbolHolder: $symbolHolder, textKey: $textKey, dy: $dy}';
+  }
+
+  @override
+  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+    String? caption = textKey!.getValue(nodeProperties.tags);
+    if (caption == null) {
+      return;
+    }
+
+    if (symbolId != null) {
+      // This caption belongs to a symbol. Try to find it and connect both
+      symbolHolder = symbolFinder.findSymbolHolder(
+          symbolId!, renderContext.upperLeft.zoomLevel);
+    }
+    //print("Rendering caption $caption for $nodeProperties");
+    renderContext.labels
+        .add(NodeRenderInfo(nodeProperties, this)..caption = caption);
+  }
+
+  renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    String? caption = textKey!.getValue(wayProperties.getTags());
+    if (caption == null) {
+      return;
+    }
+
+    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
+        0) return;
+
+    if (symbolId != null) {
+      // This caption belongs to a symbol. Try to find it and connect both
+      symbolHolder = symbolFinder.findSymbolHolder(
+          symbolId!, renderContext.upperLeft.zoomLevel);
+    }
+
+    renderContext.labels
+        .add(WayRenderInfo(wayProperties, this)..caption = caption);
   }
 }

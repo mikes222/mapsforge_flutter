@@ -1,4 +1,5 @@
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/symbol_finder.dart';
 
 import '../../marker.dart';
 
@@ -28,6 +29,7 @@ class CaptionMarker<T> extends BasicPointMarker<T> {
           fillColor: fillColor,
           fontSize: fontSize * displayModel.getFontScaleFactor(),
           dy: dy,
+          symbolFinder: SymbolFinder(null),
         ),
         super(
             latLong: latLong,

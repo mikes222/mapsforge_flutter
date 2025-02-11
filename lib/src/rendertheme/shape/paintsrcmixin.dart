@@ -7,9 +7,9 @@ import '../../renderer/paintmixin.dart';
 
 mixin PaintSrcMixin {
   /// For texts the fillColor is the inner color, whereas the strokeColor is the surrounding "frame" of the text
-  int fillColor = 0xff000000;
+  int fillColor = transparent();
 
-  int strokeColor = 0xff000000;
+  int strokeColor = transparent();
 
   double _strokeWidth = 0;
 
@@ -72,11 +72,11 @@ mixin PaintSrcMixin {
   }
 
   bool isFillTransparent() {
-    return fillColor == 0x00000000;
+    return fillColor == transparent();
   }
 
   bool isStrokeTransparent() {
-    return strokeColor == 0x00000000;
+    return strokeColor == transparent();
   }
 
   static int transparent() => 0x00000000;
@@ -95,5 +95,9 @@ mixin PaintSrcMixin {
 
   void setStrokeMinZoomLevel(int strokeMinZoomLevel) {
     this._strokeMinZoomLevel = strokeMinZoomLevel;
+  }
+
+  String paintSrcMixinToString() {
+    return 'PaintSrcMixin{fillColor: 0x${fillColor.toRadixString(16)}, strokeColor: 0x${strokeColor.toRadixString(16)}, _strokeWidth: $_strokeWidth, _strokeCap: $_strokeCap, _strokeJoin: $_strokeJoin, _strokeDashArray: $_strokeDashArray, _strokeMinZoomLevel: $_strokeMinZoomLevel}';
   }
 }

@@ -7,8 +7,8 @@ import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import '../../datastore.dart';
 import '../../maps.dart';
 import '../paintelements/shape_paint_symbol.dart';
-import '../rendertheme/nodeproperties.dart';
 import '../rendertheme/shape/shape_symbol.dart';
+import '../rendertheme/xml/symbol_finder.dart';
 
 class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
   late ShapePaintSymbol shapePaint;
@@ -41,7 +41,6 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     required DisplayModel displayModel,
     this.position = Position.CENTER,
     this.rotateWithMap = true,
-    @Deprecated("use addCaption() instead") Caption? caption,
   })  : assert(minZoomLevel >= 0),
         assert(maxZoomLevel <= 65535),
         assert(rotation >= 0 && rotation <= 360),
@@ -54,7 +53,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
           item: item,
           latLong: latLong,
         ) {
-    base = ShapeSymbol.base(0);
+    base = ShapeSymbol.base(0, SymbolFinder(null));
     setLatLong(latLong);
     base.setBitmapPercent(100 * displayModel.getFontScaleFactor().round());
     base.bitmapSrc = src;
@@ -64,7 +63,8 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     base.setBitmapWidth(width.round());
     base.setBitmapHeight(height.round());
     base.position = position;
-    if (caption != null) addCaption(caption);
+    base.id = "poi";
+    symbolFinder.add("poi", 0, base);
   }
 
   @override

@@ -1,6 +1,9 @@
 import '../../graphics/display.dart';
 import '../../model/maprectangle.dart';
 import '../../paintelements/shape_paint.dart';
+import '../nodeproperties.dart';
+import '../rendercontext.dart';
+import '../wayproperties.dart';
 
 /// These subclasses defines the zoomlevel-dependent properties of the shapes. It will
 /// be created by the renderinstructions and used to define how to draw a shape.
@@ -8,12 +11,14 @@ import '../../paintelements/shape_paint.dart';
 /// ui-dependent classes here hence the [ShapePaint] classes which will created
 /// by [RenderInfo] later.
 class Shape implements Comparable<Shape> {
+  String? category;
+
   Display display = Display.IFSPACE;
 
   int priority = 0;
 
   /// The boundary of this object in pixels relative to the center of the
-  /// corresponding node or way
+  /// corresponding node or way. This is a cache and will be calculated by asking.
   MapRectangle? boundary = null;
 
   /// A cache for paint objects. Note that not every painter can be reused. Painters which
@@ -48,5 +53,26 @@ class Shape implements Comparable<Shape> {
 
   String getShapeType() {
     return "Unknown";
+  }
+
+  /// @param renderCallback a reference to the receiver of all render callbacks.
+  /// @param renderContext
+  /// @param poi
+  void renderNode(
+      final RenderContext renderContext, NodeProperties nodeProperties) {
+    throw UnimplementedError();
+  }
+
+  /// @param renderCallback a reference to the receiver of all render callbacks.
+  /// @param renderContext
+  /// @param poi
+  void renderWay(
+      final RenderContext renderContext, WayProperties wayProperties) {
+    throw UnimplementedError();
+  }
+
+  @override
+  String toString() {
+    return 'Shape{category: $category, display: $display, priority: $priority, level: $level}';
   }
 }

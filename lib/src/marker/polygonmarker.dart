@@ -6,7 +6,7 @@ import 'package:mapsforge_flutter/src/graphics/mappaint.dart';
 import 'package:mapsforge_flutter/src/graphics/mappath.dart';
 import 'package:mapsforge_flutter/src/graphics/style.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/bitmapmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/bitmapmixin.dart';
 
 import '../graphics/implementation/fluttercanvas.dart';
 

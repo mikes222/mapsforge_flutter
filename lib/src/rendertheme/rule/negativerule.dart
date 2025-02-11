@@ -1,8 +1,8 @@
 import 'package:mapsforge_flutter/src/indoor/indoornotationmatcher.dart';
+import 'package:mapsforge_flutter/src/rendertheme/rule/shape_instructions.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
 import '../../model/tag.dart';
-import '../renderinstruction/renderinstruction.dart';
 import 'attributematcher.dart';
 import 'closed.dart';
 import 'element.dart';
@@ -16,14 +16,14 @@ class NegativeRule extends Rule {
 
   /// Creates a ruleset which is a subset of the current rules
   NegativeRule.create(NegativeRule oldRule, List<Rule> subs,
-      List<RenderInstruction> renderInstructions)
+      ShapeInstructions shapeInstructions)
       : attributeMatcher = oldRule.attributeMatcher,
-        super.create(oldRule, subs, renderInstructions);
+        super.create(oldRule, subs, shapeInstructions);
 
   @override
   NegativeRule createRule(
-      List<Rule> subs, List<RenderInstruction> renderInstructions) {
-    NegativeRule result = NegativeRule.create(this, subs, renderInstructions);
+      List<Rule> subs, ShapeInstructions shapeInstructions) {
+    NegativeRule result = NegativeRule.create(this, subs, shapeInstructions);
     return result;
   }
 
@@ -36,16 +36,32 @@ class NegativeRule extends Rule {
   bool matchesNode(List<Tag> tags, int indoorLevel) {
     return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
             tags, indoorLevel) &&
-        this.elementMatcher!.matchesElement(Element.NODE) &&
+        this.elementMatcher.matchesElement(Element.NODE) &&
         this.attributeMatcher.matchesTagList(tags);
   }
 
   @override
-  bool matchesWay(List<Tag> tags, int indoorLevel, Closed closed) {
+  bool matchesOpenWay(List<Tag> tags, int indoorLevel) {
     return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
             tags, indoorLevel) &&
-        this.elementMatcher!.matchesElement(Element.WAY) &&
-        this.closedMatcher!.matchesClosed(closed) &&
+        this.elementMatcher.matchesElement(Element.WAY) &&
+        this.closedMatcher!.matchesClosed(Closed.NO) &&
+        this.attributeMatcher.matchesTagList(tags);
+  }
+
+  @override
+  bool matchesClosedWay(List<Tag> tags, int indoorLevel) {
+    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
+            tags, indoorLevel) &&
+        this.elementMatcher.matchesElement(Element.WAY) &&
+        this.closedMatcher!.matchesClosed(Closed.YES) &&
+        this.attributeMatcher.matchesTagList(tags);
+  }
+
+  @override
+  bool matches(List<Tag> tags, int indoorLevel) {
+    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
+            tags, indoorLevel) &&
         this.attributeMatcher.matchesTagList(tags);
   }
 

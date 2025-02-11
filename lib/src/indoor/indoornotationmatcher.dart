@@ -1,6 +1,8 @@
 import 'dart:math';
-import '../model/tag.dart';
+
 import 'package:collection/collection.dart' show IterableExtension;
+
+import '../model/tag.dart';
 
 class IndoorNotationMatcher {
   // match single value : 1 or -1.5
@@ -143,12 +145,9 @@ class IndoorNotationMatcher {
     return levelRefTag?.value;
   }
 
-  /*
-   * Returns true if either the given level matches the given tags
-   * or the given tags do not contain any indoor level key
-   * or the given indoor level is null
-   * otherwise false
-   */
+  /// Returns true if either the given level matches the given tags
+  /// or the given tags do not contain any indoor level key
+  /// otherwise false
   static bool isOutdoorOrMatchesIndoorLevel(List<Tag> tags, int level) {
     String? levelValue = getLevelValue(tags);
     // return true if no level tag exists

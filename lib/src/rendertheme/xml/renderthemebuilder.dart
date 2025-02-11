@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/model/displaymodel.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 import 'package:xml/xml.dart';
@@ -116,7 +116,8 @@ class RenderThemeBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
           break;
-        default: break;
+        default:
+          break;
       }
     }
     assert(foundRendertheme);
@@ -172,7 +173,7 @@ class RenderThemeBuilder {
             XmlElement element = node as XmlElement;
             foundElement = true;
             if (element.name.toString() == "rule") {
-              RuleBuilder ruleBuilder = RuleBuilder(null, _level);
+              RuleBuilder ruleBuilder = RuleBuilder(displayModel, null, _level);
               ruleBuilder.parse(displayModel, element);
               ruleBuilderStack.add(ruleBuilder);
               foundRule = true;
@@ -213,8 +214,9 @@ class RenderThemeBuilder {
                 }
               });
 
-              RenderinstructionHillshading hillshading = RenderinstructionHillshading(
-                  minZoom, maxZoom, magnitude, layer, always, _level);
+              RenderinstructionHillshading hillshading =
+                  RenderinstructionHillshading(
+                      minZoom, maxZoom, magnitude, layer, always, _level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
               //hillShadings.add(hillshading);
@@ -241,7 +243,8 @@ class RenderThemeBuilder {
           throw Exception("Invalid node ${node.nodeType.toString()}");
         case XmlNodeType.DECLARATION:
           break;
-        default: break;
+        default:
+          break;
       }
     }
     assert(foundElement);

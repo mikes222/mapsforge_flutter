@@ -1,7 +1,3 @@
-import '../nodeproperties.dart';
-import '../rendercontext.dart';
-import '../wayproperties.dart';
-
 /// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
 /// instructions from an xml file. It can be seen like a CSS-file for html.
 abstract class RenderInstruction {
@@ -39,38 +35,5 @@ abstract class RenderInstruction {
   static final String SYMBOL_SCALING = "symbol-scaling";
   static final String SYMBOL_WIDTH = "symbol-width";
 
-  String? category;
-
-  RenderInstruction();
-
-  String? getCategory() {
-    return this.category;
-  }
-
-  /// @param renderCallback a reference to the receiver of all render callbacks.
-  /// @param renderContext
-  /// @param poi
-  void renderNode(final RenderContext renderContext, NodeProperties container);
-
-  /// @param renderCallback a reference to the receiver of all render callbacks.
-  /// @param renderContext
-  /// @param way
-  void renderWay(final RenderContext renderContext, WayProperties way);
-
-  Scale scaleFromValue(String value) {
-    if (value == (ALL)) {
-      return Scale.ALL;
-    } else if (value == (NONE)) {
-      return Scale.NONE;
-    }
-    return Scale.STROKE;
-  }
-
-  /// prepares the renderinstruction for the given zoomLevel. Returns the
-  /// new RenderInstruction or NULL if it would never draw anything
-  RenderInstruction? prepareScale(int zoomLevel);
+  RenderInstruction._();
 }
-
-/////////////////////////////////////////////////////////////////////////////
-
-enum Scale { ALL, NONE, STROKE }

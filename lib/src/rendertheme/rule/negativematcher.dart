@@ -1,12 +1,13 @@
-import '../../model/tag.dart';
 import 'package:collection/collection.dart';
+
+import '../../model/tag.dart';
 import 'attributematcher.dart';
 
 class NegativeMatcher implements AttributeMatcher {
-  final List<String> keyList;
-  final List<String> valueList;
+  final List<String> keys;
+  final List<String> values;
 
-  const NegativeMatcher(this.keyList, this.valueList);
+  const NegativeMatcher(this.keys, this.values);
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {
@@ -20,18 +21,17 @@ class NegativeMatcher implements AttributeMatcher {
     }
 
     Tag? tag =
-        tags.firstWhereOrNull((element) => valueList.contains(element.value));
+        tags.firstWhereOrNull((element) => values.contains(element.value));
     return tag != null;
   }
 
   bool keyListDoesNotContainKeys(List<Tag> tags) {
-    Tag? tag =
-        tags.firstWhereOrNull((element) => keyList.contains(element.key));
+    Tag? tag = tags.firstWhereOrNull((element) => keys.contains(element.key));
     return tag == null;
   }
 
   @override
   String toString() {
-    return 'NegativeMatcher{keyList: $keyList, valueList: $valueList}';
+    return 'NegativeMatcher{keyList: $keys, valueList: $values}';
   }
 }

@@ -13,6 +13,8 @@ class MapRectangle {
       : assert(left <= right),
         assert(bottom >= top);
 
+  const MapRectangle.zero() : this(0, 0, 0, 0);
+
   /**
    * @return true if this Rectangle contains the given point, false otherwise.
    */

@@ -5,7 +5,6 @@ import '../../core.dart';
 import '../../maps.dart';
 import '../layer/job/jobset.dart';
 import '../rendertheme/renderinfo.dart';
-import '../rendertheme/shape/shape.dart';
 
 /// zooms and rotates the canvas when needed before painting the map
 class LabelPainter extends CustomPainter {
@@ -35,6 +34,7 @@ class LabelPainter extends CustomPainter {
     Mappoint center = jobSet.getCenter();
     PixelProjection projection = PixelProjection(jobSet.zoomLevel);
     jobSet.renderInfos?.forEach((RenderInfo<Shape> renderInfo) {
+      //print("LabelPainter renderInfo: $renderInfo");
       renderInfo.render(flutterCanvas, projection, center, rotationRadian);
     });
   }

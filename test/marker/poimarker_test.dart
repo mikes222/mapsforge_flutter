@@ -133,8 +133,7 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-    )..addCaption(
-        Caption(caption: "PoiMarker with text", displayModel: displayModel));
+    )..addCaption(caption: "PoiMarker with text", displayModel: displayModel);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -186,10 +185,10 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-    )..addCaption(Caption(
+    )..addCaption(
         caption: "PoiMarker with text",
         displayModel: displayModel,
-        position: Position.ABOVE));
+        position: Position.ABOVE);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -241,10 +240,10 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-    )..addCaption(Caption(
+    )..addCaption(
         caption: "PoiMarker with text",
         displayModel: displayModel,
-        position: Position.LEFT));
+        position: Position.LEFT);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -292,8 +291,7 @@ void main() {
       latLong: latLong,
       displayModel: displayModel,
       src: "jar:symbols/tourist/view_point.svg",
-    )..addCaption(
-        Caption(caption: "Markercaption", displayModel: displayModel));
+    )..addCaption(caption: "Markercaption", displayModel: displayModel);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -343,18 +341,17 @@ void main() {
       displayModel: displayModel,
       src: "jar:symbols/tourist/view_point.svg",
     )
+      ..addCaption(caption: "Markercaption", displayModel: displayModel)
       ..addCaption(
-          Caption(caption: "Markercaption", displayModel: displayModel))
-      ..addCaption(Caption(
           caption: "Markercaption",
           displayModel: displayModel,
           fontSize: 16,
-          position: Position.ABOVE))
-      ..addCaption(Caption(
+          position: Position.ABOVE)
+      ..addCaption(
           caption: "Markercaption",
           displayModel: displayModel,
           fontSize: 8,
-          position: Position.RIGHT));
+          position: Position.RIGHT);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });

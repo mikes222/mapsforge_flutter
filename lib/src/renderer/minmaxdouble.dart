@@ -18,6 +18,12 @@ class MinMaxDouble {
 
   MinMaxDouble.empty() {}
 
+  MinMaxDouble.zero()
+      : minX = 0,
+        minY = 0,
+        maxX = 0,
+        maxY = 0;
+
   void extendLatLong(List<ILatLong> mp1) {
     mp1.forEach((element) {
       if (minX > element.longitude) minX = element.longitude;

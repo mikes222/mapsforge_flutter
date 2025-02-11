@@ -1,10 +1,14 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter/src/model/scale.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape.dart';
 
+import '../../model/linestring.dart';
 import '../../renderer/paintmixin.dart';
-import '../renderinstruction/renderinstruction.dart';
-import '../renderinstruction/textkey.dart';
+import '../rendercontext.dart';
+import '../textkey.dart';
+import '../wayproperties.dart';
+import '../wayrenderinfo.dart';
 import 'paintsrcmixin.dart';
 import 'textsrcmixin.dart';
 
@@ -52,8 +56,44 @@ class ShapePathtext extends Shape with PaintSrcMixin, TextSrcMixin {
     this.dy = dy;
   }
 
+  void setScaleFromValue(String value) {
+    if (value.contains("ALL")) {
+      scale = Scale.ALL;
+    } else if (value.contains("NONE")) {
+      scale = Scale.NONE;
+    }
+    scale = Scale.STROKE;
+  }
+
   @override
   String getShapeType() {
     return "Pathtext";
+  }
+
+  @override
+  void renderWay(
+      final RenderContext renderContext, WayProperties wayProperties) {
+    String? caption = textKey!.getValue(wayProperties.getTags());
+    if (caption == null) {
+      return;
+    }
+
+    LineString? stringPath =
+        wayProperties.calculateStringPath(renderContext.projection, dy);
+    if (stringPath == null || stringPath.segments.isEmpty) {
+      return;
+    }
+
+    renderContext.addToClashDrawingLayer(
+        level,
+        WayRenderInfo(wayProperties, this)
+          ..caption = caption
+          ..stringPath = stringPath);
+    return;
+  }
+
+  @override
+  String toString() {
+    return 'ShapePathtext{textKey: $textKey}';
   }
 }

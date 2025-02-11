@@ -1,32 +1,29 @@
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/graphics/cap.dart';
+import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/graphics/join.dart';
-import 'package:mapsforge_flutter/src/rendertheme/renderinstruction/renderinstruction.dart';
+import 'package:mapsforge_flutter/src/model/scale.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_polyline.dart';
-import 'package:mapsforge_flutter/src/rendertheme/wayrenderinfo.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction.dart';
+import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction_way.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-import '../../graphics/display.dart';
-import '../nodeproperties.dart';
-import '../rendercontext.dart';
-import '../wayproperties.dart';
-
 /// Represents an open polyline on the map.
-class RenderinstructionLine extends RenderInstruction {
+class RenderinstructionPolyline extends RenderInstructionWay {
   //static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
   late final ShapePolyline base;
 
-  RenderinstructionLine(int level, [ShapePolyline? base]) {
+  RenderinstructionPolyline(int level, [ShapePolyline? base]) {
     this.base = base ?? ShapePolyline.base(level);
   }
 
   @override
-  RenderinstructionLine? prepareScale(int zoomLevel) {
+  ShapePolyline? prepareScale(int zoomLevel) {
     ShapePolyline newShape = ShapePolyline.scale(base, zoomLevel);
     if (newShape.display == Display.NEVER) return null;
-    return RenderinstructionLine(base.level, newShape);
+    return newShape;
   }
 
   void parse(DisplayModel displayModel, XmlElement rootElement) {
@@ -43,16 +40,16 @@ class RenderinstructionLine extends RenderInstruction {
       if (RenderInstruction.SRC == name) {
         base.bitmapSrc = value;
       } else if (RenderInstruction.CAT == name) {
-        this.category = value;
+        base.category = value;
       } else if (RenderInstruction.DY == name) {
         base.setDy(double.parse(value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SCALE == name) {
-        base.scale = scaleFromValue(value);
+        base.setScaleFromValue(value);
         if (base.scale == Scale.NONE) {
           base.setBitmapMinZoomLevel(65535);
         }
       } else if (RenderInstruction.STROKE == name) {
-        base.setStrokeColorFromNumber(XmlUtils.getColor(value, this));
+        base.setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (RenderInstruction.STROKE_DASHARRAY == name) {
         List<double> dashArray = parseFloatArray(name, value);
         if (displayModel.getScaleFactor() != 1)
@@ -94,23 +91,5 @@ class RenderinstructionLine extends RenderInstruction {
     //   dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
     // }
     return dashIntervals;
-  }
-
-  @override
-  void renderNode(
-      final RenderContext renderContext, NodeProperties nodeProperties) {
-    // do nothing
-    return;
-  }
-
-  @override
-  void renderWay(
-      final RenderContext renderContext, WayProperties wayProperties) {
-    if (base.bitmapSrc == null && base.isStrokeTransparent()) return;
-    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
-        0) return;
-
-    renderContext.addToCurrentDrawingLayer(
-        base.level, WayRenderInfo<ShapePolyline>(wayProperties, base));
   }
 }

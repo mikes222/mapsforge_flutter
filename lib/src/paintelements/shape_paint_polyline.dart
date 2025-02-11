@@ -13,15 +13,15 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
 
   //final bool debug = true;
 
-  ShapePaintPolyline(ShapePolyline shapeSymbol) : super(shapeSymbol) {
-    if (!shapeSymbol.isStrokeTransparent())
+  ShapePaintPolyline(ShapePolyline shapePolyline) : super(shapePolyline) {
+    if (!shapePolyline.isStrokeTransparent() || shapePolyline.bitmapSrc != null)
       stroke = createPaint(
           style: Style.STROKE,
-          color: shapeSymbol.strokeColor,
-          strokeWidth: shapeSymbol.strokeWidth,
-          cap: shapeSymbol.strokeCap,
-          join: shapeSymbol.strokeJoin,
-          strokeDashArray: shapeSymbol.strokeDashArray);
+          color: shapePolyline.strokeColor,
+          strokeWidth: shapePolyline.strokeWidth,
+          cap: shapePolyline.strokeCap,
+          join: shapePolyline.strokeJoin,
+          strokeDashArray: shapePolyline.strokeDashArray);
   }
 
   @override
@@ -47,6 +47,7 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   void renderWay(MapCanvas canvas, WayProperties wayProperties,
       PixelProjection projection, Mappoint reference,
       [double rotationRadian = 0]) {
+    if (stroke == null) return;
     MapPath path = calculatePath(
         wayProperties.getCoordinatesAbsolute(projection), reference, shape.dy);
     canvas.drawPath(path, stroke!);

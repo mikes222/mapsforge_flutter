@@ -4,18 +4,15 @@ Pure offline maps for flutter. This is a port of mapsforge for
 java/android [https://github.com/mapsforge/mapsforge]
 
 The main feature of this library is to read *mapfiles* stored locally at the user's device and
-render the mapfiles on the user's device without internet connection.
-
-> If your users are online while viewing the maps do not use that library. 
-> While it is possible to show online-maps there are much simpler libs available out there to perform this task.
+render the mapfiles on the user's device without any internet connection.
 
 ## Screenshots
 
-![Austria offline](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
-![Austria Satellite](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
-![Indoor navigation](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
-![Contour](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
-![City](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
+![Austria offline](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
+![Austria Satellite](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
+![Indoor navigation](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
+![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
+![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
 ## Examples
 
@@ -183,6 +180,9 @@ use
     );
 
 ## Documentation
+
+> If your users are online while viewing the maps do not use that library.
+> While it is possible to show online-maps there are much simpler libs available out there to perform this task.
 
 See [doc/usage.md](doc/usage.md)
 

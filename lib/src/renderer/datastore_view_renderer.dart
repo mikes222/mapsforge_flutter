@@ -37,12 +37,10 @@ class DatastoreViewRenderer extends ViewRenderer {
         prefix: "${viewJobRequest.upperLeft}-${viewJobRequest.lowerRight} ");
     RenderContext renderContext =
         RenderContext(viewJobRequest.upperLeft, renderTheme.levels);
-    this.renderTheme.prepareScale(viewJobRequest.upperLeft.zoomLevel);
+    RenderthemeLevel renderthemeLevel =
+        this.renderTheme.prepareZoomlevel(viewJobRequest.upperLeft.zoomLevel);
     await datastore.lateOpen();
-    // if (!datastore.supportsTile(upperLeft, projection) &&
-    //     !datastore.supportsTile(lowerRight, projection)) {
-    //   return DatastoreReadResult(pointOfInterests: [], ways: []);
-    // }
+
     DatastoreReadResult mapReadResult = await datastore.readMapData(
         viewJobRequest.upperLeft, viewJobRequest.lowerRight);
 
@@ -54,8 +52,8 @@ class DatastoreViewRenderer extends ViewRenderer {
         "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized");
     // print(
     //     "pois: ${readResult.pointOfInterests.length}, way: ${readResult.ways.length} for ${viewJobRequest.upperLeft}");
-    _datastoreReader.processMapReadResult(
-        renderContext, renderTheme, mapReadResult);
+    _datastoreReader.processMapReadResult(renderContext,
+        viewJobRequest.upperLeft, renderthemeLevel, mapReadResult);
     renderContext.reduce();
 
     await renderContext.initDrawingLayers(symbolCache);

@@ -9,7 +9,9 @@ import 'package:mapsforge_flutter/src/rendertheme/shape/bitmapsrcmixin.dart';
 
 import '../../core.dart';
 
-/// A Marker which draws a rectangle specified by the min/max lat/lon attributes.
+/// A Marker which draws a rectangle specified by the min/max lat/lon attributes. Currently there is
+// no way to set the position of the marker (to e.g. above the position) so an icon which is suitable for
+// being centered should be used.
 class RectMarker<T> extends BasicMarker<T>
     with BitmapSrcMixin, PaintMixin, CaptionMixin {
   final ILatLong minLatLon;

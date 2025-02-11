@@ -36,13 +36,12 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   double _fontHeight = 0;
 
   /// The boundary of this object in pixels relative to the center of the
-  /// corresponding node or way
+  /// corresponding node or way. This is a cached value.
   MapRectangle? boundary = null;
 
-  ShapePaintCaption(ShapeCaption shape,
-      {required String caption, MapRectangle? symbolBoundary})
+  ShapePaintCaption(ShapeCaption shape, {required String caption})
       : super(shape) {
-    reinit(caption, symbolBoundary);
+    reinit(caption);
   }
 
   @override
@@ -50,7 +49,7 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
     return Future.value();
   }
 
-  void reinit(String caption, [MapRectangle? symbolBoundary]) {
+  void reinit(String caption) {
     paintFront = null;
     paintBack = null;
     front = null;
@@ -72,10 +71,10 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
         fontFamily: shape.fontFamily,
         fontStyle: shape.fontStyle,
         fontSize: shape.fontSize);
-    setCaption(caption, symbolBoundary);
+    setCaption(caption);
   }
 
-  setCaption(String caption, [MapRectangle? symbolBoundary]) {
+  void setCaption(String caption) {
     if (paintFront != null)
       front = ParagraphCache()
           .getEntry(caption, mapTextPaint, paintFront!, shape.maxTextWidth);
@@ -84,18 +83,13 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
           .getEntry(caption, mapTextPaint, paintBack!, shape.maxTextWidth);
     _fontWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
     _fontHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
-    shape.calculateOffsets(_fontWidth, _fontHeight, symbolBoundary);
+    boundary = shape.calculateBoundaryWithSymbol(_fontWidth, _fontHeight);
+    print("Boundary for $caption is $boundary and ${shape.position}");
   }
 
   @override
   MapRectangle calculateBoundary() {
     if (boundary != null) return boundary!;
-    boundary = MapRectangle(
-        -_fontWidth / 2 + shape.horizontalOffset,
-        -_fontHeight / 2 + shape.verticalOffset,
-        _fontWidth / 2 + shape.horizontalOffset,
-        _fontHeight / 2 + shape.verticalOffset);
-
     return boundary!;
   }
 
@@ -103,13 +97,11 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
   void renderNode(
       MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
       [double rotationRadian = 0]) {
+    //print("paint caption: $front $back $shape");
     MapRectangle boundary = calculateBoundary();
 
-    //print("paint caption boundar: $boundary $front $back $shape");
     RelativeMappoint relative =
         coordinatesAbsolute.offset(-reference.x, -reference.y + shape.dy);
-    // print(
-    //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
     if (rotationRadian != 0) {
       uiCanvas.save();

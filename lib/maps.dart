@@ -11,5 +11,7 @@ export 'src/renderer/mapdatastorerenderer.dart';
 export 'src/renderer/maponlinerenderer.dart';
 export 'src/renderer/maponlinerendererweb.dart';
 export 'src/renderer/view_renderer.dart';
+export 'src/rendertheme/nodeproperties.dart';
 export 'src/rendertheme/rule/rendertheme.dart';
+export 'src/rendertheme/rule/rendertheme_level.dart';
 export 'src/rendertheme/xml/renderthemebuilder.dart';

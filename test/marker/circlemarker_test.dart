@@ -64,10 +64,10 @@ void main() {
     CircleMarker circleMarker = CircleMarker(
       center: latLong,
       displayModel: displayModel,
-    )..addCaption(Caption(
+    )..addCaption(
         caption: 'Markercaption',
         displayModel: displayModel,
-      ));
+      );
 
     MarkerContext markerContext = MarkerContext(
       viewModel.mapViewPosition!.getCenter(),

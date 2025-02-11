@@ -443,21 +443,23 @@
         <rule e="way" k="aeroway" v="terminal">
             <area fill="#F3D6B6" stroke="#6A5A8E" stroke-width="0.2" />
         </rule>
-        <!-- runways casings -->
         <rule closed="no" e="way" k="aeroway" v="runway">
             <line stroke="#000000" stroke-linecap="butt" stroke-width="4" />
         </rule>
         <rule e="way" k="aeroway" v="taxiway">
             <line stroke="#000000" stroke-linecap="butt" stroke-width="2" />
         </rule>
-    </rule>
-    <rule e="node" k="aeroway" v="*">
-        <rule e="node" k="aeroway" v="gate">
-            <caption fill="#FFD900" font-size="12" font-style="bold" k="name" stroke="#000000"
-                stroke-width="2" />
-            <caption fill="#FFD900" font-size="12" font-style="bold" k="ref" stroke="#000000"
-                stroke-width="2" />
+        <rule closed="no" e="way" k="aeroway" v="runway">
+            <line stroke="#D4DCBD" stroke-linecap="butt" stroke-width="3.5" />
         </rule>
+        <rule closed="yes" e="way" k="aeroway" v="runway">
+            <area fill="#D4DCBD" />
+            <line stroke="#000000" stroke-linecap="butt" stroke-width="0.5" />
+        </rule>
+        <rule e="way" k="aeroway" v="taxiway">
+            <line stroke="#D4DCBD" stroke-linecap="butt" stroke-width="1.8" />
+        </rule>
+
     </rule>
 
     <!-- bridges -->
@@ -688,7 +690,7 @@
         </rule>
         <rule e="way" k="highway" v="*" zoom-min="15">
             <rule e="way" k="access" v="destination">
-                <line src="jar:patterns/access-destination.png" stroke-width="8.0" />
+                <line src="jar:patterns/access-destination.png" stroke-width="1.0" />
             </rule>
             <rule e="way" k="access" v="private">
                 <line src="jar:patterns/access-private.png" stroke-width="1.0" />
@@ -702,18 +704,13 @@
 
     <!-- other transportation ways -->
     <!-- aeroway runways cores -->
-    <rule closed="no" e="way" k="aeroway" v="runway">
-        <line stroke="#D4DCBD" stroke-linecap="butt" stroke-width="3.5" />
-    </rule>
-    <rule closed="yes" e="way" k="aeroway" v="runway">
-        <area fill="#D4DCBD" />
-        <line stroke="#000000" stroke-linecap="butt" stroke-width="0.5" />
-    </rule>
-    <rule e="way" k="aeroway" v="taxiway">
-        <line stroke="#D4DCBD" stroke-linecap="butt" stroke-width="1.8" />
-    </rule>
-
     <!-- aeroway symbols and captions -->
+    <rule e="node" k="aeroway" v="gate">
+        <caption fill="#FFD900" font-size="12" font-style="bold" k="name" stroke="#000000"
+            stroke-width="2" />
+        <caption fill="#FFD900" font-size="12" font-style="bold" k="ref" stroke="#000000"
+            stroke-width="2" />
+    </rule>
     <rule e="node" k="aeroway" v="helipad" zoom-min="14">
         <rule e="any" k="*" v="*" zoom-min="17">
             <caption fill="#0092DA" font-size="12" font-style="bold" k="name" position="above"
@@ -736,7 +733,7 @@
     </rule>
 
     <!-- piste areas -->
-    <rule e="any" k="*" v="*">
+    <rule e="way" k="*" v="*">
         <rule closed="yes" e="way" k="piste:type" v="downhill" zoom-min="13">
             <rule e="way" k="piste:difficulty" v="novice">
                 <area fill="#5540ff40" />
@@ -857,7 +854,7 @@
 
     <!-- POI -->
     <!-- place -->
-    <rule e="any" k="*" v="*">
+    <rule e="any" k="place" v="*">
         <rule e="any" k="place" v="locality" zoom-min="14">
             <rule e="any" k="mountain_pass|natural|tourism" v="~">
                 <caption fill="#202020" font-family="serif" font-size="12" font-style="italic"
@@ -1507,5 +1504,4 @@
                 stroke="#FFFFFF" stroke-width="2.0" />
         </rule>
     </rule>
-
 </rendertheme>

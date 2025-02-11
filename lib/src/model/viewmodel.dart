@@ -197,7 +197,6 @@ class ViewModel {
 
   void indoorLevelUp() {
     if (_mapViewPosition == null) return;
-    if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
     MapViewPosition newPosition =
         MapViewPosition.indoorLevelUp(_mapViewPosition!);
     _mapViewPosition = newPosition;

@@ -94,12 +94,12 @@ class MarkerClusterDataStore extends IMarkerDataStore {
       strokeColor: 0xffffffff,
       fillColor: 0xaaff0000,
       displayModel: displayModel,
-    )..addCaption(Caption(
+    )..addCaption(
         caption: "${markers.length}",
         displayModel: displayModel,
         fontSize: 18,
         fillColor: 0xffffffff,
-      ));
+      );
   }
 
   /// This method will be called if boundary or zoomlevel changes to give the implementation the chance to replace/retrieve markers for the new boundary/zoomlevel.
