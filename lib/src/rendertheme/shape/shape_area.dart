@@ -54,4 +54,9 @@ class ShapeArea extends Shape with PaintSrcMixin, BitmapSrcMixin {
     renderContext.addToCurrentDrawingLayer(
         level, WayRenderInfo<ShapeArea>(wayProperties, this));
   }
+
+  @override
+  String toString() {
+    return 'ShapeArea{level: $level, scale: $scale, dy: $dy, ${paintSrcMixinToString()}}';
+  }
 }

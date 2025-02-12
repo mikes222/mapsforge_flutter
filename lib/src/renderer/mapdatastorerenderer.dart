@@ -91,10 +91,10 @@ class MapDataStoreRenderer extends JobRenderer {
       _log.warning(
           "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
     }
-    renderContext.reduce();
     await renderContext.initDrawingLayers(symbolCache);
     timing.lap(100,
         "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized");
+    //renderContext.statistics();
     CanvasRasterer canvasRasterer = CanvasRasterer(
         MapsforgeConstants().tileSize,
         MapsforgeConstants().tileSize,

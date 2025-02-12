@@ -109,6 +109,7 @@ class _MapviewWidgetState extends State<MapviewWidget> {
             _mapModel!.renderer,
             _mapModel!.tileBitmapCache,
             _mapModel!.tileBitmapCacheFirstLevel,
+            _mapModel!.parallelJobs,
           );
           _log.info(
               "MapModel created with renderer key ${_mapModel?.renderer.getRenderKey()} in connectionState ${snapshot.connectionState.toString()}");

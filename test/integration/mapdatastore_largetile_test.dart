@@ -52,7 +52,6 @@ main() async {
           (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       return await jobResult.picture!.convertToImage();
     }));
-    print(img);
 
     assert(img != null);
 

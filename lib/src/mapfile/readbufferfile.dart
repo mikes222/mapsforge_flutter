@@ -6,7 +6,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
-import 'package:queue/queue.dart';
 
 import '../utils/timing.dart';
 
@@ -14,8 +13,11 @@ import '../utils/timing.dart';
 class ReadbufferFile implements ReadbufferSource {
   static final _log = new Logger('ReadbufferFile');
 
-  /// The Random access file handle to the underlying file
-  RandomAccessFile? _raf;
+  /// ressource for consecutive reads
+  _ReadBufferFileResource? _resource;
+
+  /// ressource for random access
+  List<_ReadBufferFileResource> _resourceAts = [];
 
   /// The filename of the underlying file
   final String filename;
@@ -27,18 +29,19 @@ class ReadbufferFile implements ReadbufferSource {
 
   late LruCache<String, Readbuffer> _cache;
 
-  Queue queue = Queue();
+  int _position = 0;
 
   ReadbufferFile(this.filename) {
     _cache = LruCache(storage: _storage, capacity: 500);
   }
 
   @override
-  Future<Uint8List> readDirect(
-      int indexBlockPosition, int indexBlockSize) async {
-    Readbuffer buffer =
-        await readFromFile(length: indexBlockSize, offset: indexBlockPosition);
-    return buffer.getBuffer(0, indexBlockSize);
+  void dispose() {
+    _resource?.close();
+    _resource = null;
+    _resourceAts.forEach((action) => action.close());
+    _resourceAts.clear();
+    _cache.clear();
   }
 
   /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
@@ -48,76 +51,103 @@ class ReadbufferFile implements ReadbufferSource {
   /// @return true if the whole data was read successfully, false otherwise.
   /// @throws IOException if an error occurs while reading the file.
   @override
-  Future<Readbuffer> readFromFile({int? offset, required int length}) async {
+  Future<Readbuffer> readFromFile(int length) async {
     assert(length > 0);
     // ensure that the read buffer is large enough
     assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
 
-    String cacheKey = "$offset-$length";
-
-    Readbuffer? result = _cache.get(cacheKey);
-    if (result != null) {
-      // return a new copy so that the new buffer can work independently from the old one
-      return Readbuffer.from(result);
-    }
+    String cacheKey = "$_position-$length";
 
     Timing timing = Timing(log: _log);
-    Readbuffer readbuffer = await queue.add(() async {
-      /// now try the cache again, it may be already here
-      Readbuffer? result = _cache.get(cacheKey);
-      if (result != null) {
-        // return a new copy so that the new buffer can work independently from the old one
-        return Readbuffer.from(result);
-      }
-      await _openRaf();
-      if (offset != null) {
-        assert(offset >= 0);
-        await this._raf!.setPosition(offset);
-      }
-      Uint8List _bufferData = await _raf!.read(length);
+    Readbuffer readbuffer =
+        await _cache.getOrProduce(cacheKey, (String key) async {
+      _resource ??= _ReadBufferFileResource(filename);
+      Uint8List _bufferData = await _resource!.read(length);
       assert(_bufferData.length == length);
-      result = Readbuffer(_bufferData, offset);
-      _cache[cacheKey] = result;
+      _position += length;
+      Readbuffer result = Readbuffer(_bufferData, _position);
       return result;
     });
-    timing.lap(100, "readFromFile offset: $offset, length: $length");
-    return readbuffer;
+    timing.lap(100, "readFromFile position: $_position, length: $length");
+    return Readbuffer.from(readbuffer);
   }
 
   @override
-  void close() {
-    _raf?.close();
-    _raf = null;
-    _log.info("Statistics for ReadBufferFile: ${_storage.toString()}");
-    _cache.clear();
-  }
+  Future<Readbuffer> readFromFileAt(int position, int length) async {
+    assert(length > 0);
+    assert(position >= 0);
+    // ensure that the read buffer is large enough
+    assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
 
-  Future<RandomAccessFile?> _openRaf() async {
-    if (_raf != null) {
-      return Future.value(_raf);
-    }
-    File file = File(filename);
-    // bool ok = await file.exists();
-    // if (!ok) {
-    //   throw FileNotFoundException(filename);
-    // }
-    _raf = await file.open();
-    return _raf;
+    String cacheKey = "$position-$length";
+
+    Timing timing = Timing(log: _log);
+    Readbuffer result = await _cache.getOrProduce(cacheKey, (String key) async {
+      _ReadBufferFileResource _ressourceAt = _resourceAts.isNotEmpty
+          ? _resourceAts.removeLast()
+          : _ReadBufferFileResource(filename);
+      await _ressourceAt.setPosition(position);
+      Uint8List _bufferData = await _ressourceAt.read(length);
+      assert(_bufferData.length == length);
+      _resourceAts.add(_ressourceAt);
+      Readbuffer result = Readbuffer(_bufferData, position);
+      return result;
+    });
+    timing.lap(100, "readFromFile position: $position, length: $length");
+    return Readbuffer.from(result);
   }
 
   @override
   Future<int> length() async {
     if (_length != null) return _length!;
-    //int time = DateTime.now().millisecondsSinceEpoch;
-    await _openRaf();
-    _length = await _raf!.length();
-    assert(_length != null && _length! >= 0);
+    _ReadBufferFileResource _ressourceAt = _resourceAts.isNotEmpty
+        ? _resourceAts.removeLast()
+        : _ReadBufferFileResource(filename);
+    _length = await _ressourceAt.length();
+    assert(_length! >= 0);
+    _resourceAts.add(_ressourceAt);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return _length!;
   }
 
   @override
   String toString() {
-    return 'ReadbufferFile{_raf: $_raf, filename: $filename, _length: $_length}';
+    return 'ReadbufferFile{filename: $filename, _length: $_length}';
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _ReadBufferFileResource {
+  static final _log = new Logger('_ReadBufferFileResource');
+
+  /// The Random access file handle to the underlying file
+  RandomAccessFile _raf;
+
+  static int _increment = 0;
+
+  final int _id = ++_increment;
+
+  _ReadBufferFileResource(String filename) : _raf = File(filename).openSync();
+
+  void close() {
+    _raf.close();
+  }
+
+  Future<void> setPosition(int position) async {
+    //_log.info("setPosition $position start ${_id}");
+    await _raf.setPosition(position);
+    //_log.info("setPosition $position end ${_id}");
+  }
+
+  Future<Uint8List> read(int length) async {
+    //_log.info("read $length start ${_id}");
+    Uint8List result = await _raf.read(length);
+    //_log.info("read $length end ${_id}");
+    return result;
+  }
+
+  Future<int> length() async {
+    return await _raf.length();
   }
 }

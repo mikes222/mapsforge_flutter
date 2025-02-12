@@ -1,9 +1,9 @@
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 
-import 'mapfileinfobuilder.dart';
 import '../model/boundingbox.dart';
 import '../model/tag.dart';
 import '../utils/latlongutils.dart';
+import 'mapfileinfobuilder.dart';
 import 'readbuffer.dart';
 
 class RequiredFields {
@@ -75,12 +75,12 @@ class RequiredFields {
   }
 
   static Future<Readbuffer> readMagicByte(
-      ReadbufferSource readBufferMaster) async {
+      ReadbufferSource readBufferSource) async {
     // read the the magic byte and the file header size into the buffer
     int magicByteLength = BINARY_OSM_MAGIC_BYTE.length;
 
-    Readbuffer readBuffer = (await (readBufferMaster.readFromFile(
-        length: magicByteLength + 4, offset: 0)));
+    Readbuffer readBuffer =
+        await (readBufferSource.readFromFile(magicByteLength + 4));
 
     // get and check the magic byte
     String magicByte = readBuffer.readUTF8EncodedString2(magicByteLength);

@@ -2,13 +2,13 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 
 import '../datastore/deserializer.dart';
 import 'indexcacheentrykey.dart';
 import 'subfileparameter.dart';
 import 'subfileparameterbuilder.dart';
-import 'package:logging/logging.dart';
 
 ///
 /// A cache for database index blocks with a fixed size and LRU policy.
@@ -53,7 +53,7 @@ class IndexCache {
    * @throws IOException if an I/O error occurs during reading.
    */
   Future<int> getIndexEntry(SubFileParameter subFileParameter, int blockNumber,
-      ReadbufferSource readBufferMaster) async {
+      ReadbufferSource readBufferSource) async {
     // check if the block number is out of bounds
     assert(blockNumber < subFileParameter.numberOfBlocks);
 
@@ -62,7 +62,7 @@ class IndexCache {
 
     // create the cache entry key for this request
     IndexCacheEntryKey indexCacheEntryKey =
-        new IndexCacheEntryKey(subFileParameter, indexBlockNumber);
+        IndexCacheEntryKey(subFileParameter, indexBlockNumber);
 
     // check for cached index block
     Uint8List? indexBlock = this._cache[indexCacheEntryKey];
@@ -76,8 +76,11 @@ class IndexCache {
       int indexBlockSize = min(SIZE_OF_INDEX_BLOCK, remainingIndexSize);
 
       //ReadBufferMaster _readBufferMaster = ReadBufferMaster(filename);
-      indexBlock =
-          await readBufferMaster.readDirect(indexBlockPosition, indexBlockSize);
+      indexBlock = (await readBufferSource.readFromFileAt(
+              indexBlockPosition, indexBlockSize))
+          .getBuffer(0, indexBlockSize);
+      // indexBlock =
+      //     await readBufferMaster.readDirect(indexBlockPosition, indexBlockSize);
       //_readBufferMaster.close();
 
       // put the index block in the map

@@ -54,40 +54,31 @@ class RenderContext {
   }
 
   Future<void> initDrawingLayers(SymbolCache symbolCache) async {
+    List<Future> futures = [];
+
     for (LayerPaintContainer layerPaintContainer in drawingLayers) {
       for (List<RenderInfo> wayList in layerPaintContainer.ways) {
         for (RenderInfo renderInfo in wayList) {
-          await renderInfo.createShapePaint(symbolCache);
+          futures.add(renderInfo.createShapePaint(symbolCache));
         }
       }
     }
     for (List<RenderInfo> wayList in clashDrawingLayer.ways) {
       for (RenderInfo renderInfo in wayList) {
-        await renderInfo.createShapePaint(symbolCache);
+        futures.add(renderInfo.createShapePaint(symbolCache));
       }
     }
     for (RenderInfo renderInfo in labels) {
-      await renderInfo.createShapePaint(symbolCache);
+      futures.add(renderInfo.createShapePaint(symbolCache));
     }
+
+    await Future.wait(futures);
+//    print("created: ${RenderInfo.created}");
   }
 
-  /**
-   * Just a way of generating a hash key for a tile if only the RendererJob is known.
-   *
-   * @param tile the tile that changes
-   * @return a RendererJob based on the current one, only tile changes
-   */
-  // Job otherTile(Tile tile) {
-  //   return Job(tile, this.job.hasAlpha, this.job.textScale);
-  // }
-
   List<LayerPaintContainer> _createWayLists() {
-    List<LayerPaintContainer> result = [];
-    //print("LAYERS: $LAYERS, levels: $levels");
-
-    for (int i = 0; i < MAX_DRAWING_LAYERS; ++i) {
-      result.add(LayerPaintContainer(maxLevels));
-    }
+    List<LayerPaintContainer> result = List.generate(
+        MAX_DRAWING_LAYERS, (int idx) => LayerPaintContainer(maxLevels));
     return result;
   }
 
@@ -96,18 +87,20 @@ class RenderContext {
   }
 
   void reduce() {
-    int idx = 0;
-    List.of(drawingLayers).forEach((LayerPaintContainer layerPaintContainer) {
-      layerPaintContainer.reduce();
-      if (layerPaintContainer.ways.length == 0) {
-        drawingLayers.removeAt(idx);
-      } else {
-        ++idx;
-      }
-    });
+    drawingLayers
+        .forEach((layerPaintContainer) => layerPaintContainer.reduce());
+    drawingLayers.removeWhere((test) => test.ways.isEmpty);
+    // int idx = 0;
+    // List.of(drawingLayers).forEach((LayerPaintContainer layerPaintContainer) {
+    //   layerPaintContainer.reduce();
+    //   if (layerPaintContainer.ways.length == 0) {
+    //     drawingLayers.removeAt(idx);
+    //   } else {
+    //     ++idx;
+    //   }
+    // });
     clashDrawingLayer.reduce();
   }
-
 
   @override
   String toString() {
@@ -144,9 +137,29 @@ class RenderContext {
       layerPaintContainer.ways
           .forEachIndexed((int idx, List<RenderInfo> renderInfos) {
         print("  Level $idx: ${renderInfos.length} renderInfos");
+        Map<String, int> types = {};
         renderInfos.forEach((RenderInfo renderInfo) {
-          print("    RenderInfo ${renderInfo.toString()}");
+          int count = types[renderInfo.getShapeType()] ?? 0;
+          ++count;
+          types[renderInfo.getShapeType()] = count;
         });
+        types.forEach((String key, int value) {
+          print("    $key: $value");
+        });
+      });
+    });
+    print("ClashDrawingLayer: ${clashDrawingLayer.ways.length} levels");
+    clashDrawingLayer.ways
+        .forEachIndexed((int idx, List<RenderInfo> renderInfos) {
+      print("  Level $idx: ${renderInfos.length} renderInfos");
+      Map<String, int> types = {};
+      renderInfos.forEach((RenderInfo renderInfo) {
+        int count = types[renderInfo.getShapeType()] ?? 0;
+        ++count;
+        types[renderInfo.getShapeType()] = count;
+      });
+      types.forEach((String key, int value) {
+        print("    $key: $value");
       });
     });
   }
@@ -174,13 +187,14 @@ class LayerPaintContainer {
 
   void reduce() {
     int idx = 0;
-    List.of(ways).forEach((List<RenderInfo> renderInfos) {
-      if (renderInfos.length == 0) {
-        ways.removeAt(idx);
-      } else {
-        ++idx;
-      }
-    });
+    ways.removeWhere((test) => test.isEmpty);
+    // List.of(ways).forEach((List<RenderInfo> renderInfos) {
+    //   if (renderInfos.length == 0) {
+    //     ways.removeAt(idx);
+    //   } else {
+    //     ++idx;
+    //   }
+    // });
   }
 
   @override

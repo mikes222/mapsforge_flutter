@@ -13,7 +13,6 @@ import '../../graphics/tilepicture.dart';
 import '../../model/relative_mappoint.dart';
 import '../../model/tile_dimension.dart';
 import '../../rendertheme/renderinfo.dart';
-import '../../rendertheme/shape/shape.dart';
 import '../../utils/timing.dart';
 import 'job.dart';
 
@@ -33,10 +32,12 @@ class JobQueue {
 
   final TileBasedLabelStore labelStore;
 
-  final Queue _executionQueue = Queue();
+  final Queue _executionQueue;
 
-  JobQueue(this.jobRenderer, this.tileBitmapCache, this.tileBitmapCache1stLevel)
-      : labelStore = TileBasedLabelStore(1000);
+  JobQueue(this.jobRenderer, this.tileBitmapCache, this.tileBitmapCache1stLevel,
+      [int parallelJobs = 4])
+      : labelStore = TileBasedLabelStore(1000),
+        _executionQueue = Queue(parallel: parallelJobs);
 
   //@override
   void dispose() {

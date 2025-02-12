@@ -11,7 +11,7 @@ class ParagraphCache {
   LruCache<String, ParagraphEntry> _cache =
       new LruCache<String, ParagraphEntry>(
     storage: WeakReferenceStorage<String, ParagraphEntry>(),
-    capacity: 500,
+    capacity: 1000,
   );
 
   factory ParagraphCache() {
@@ -25,7 +25,7 @@ class ParagraphCache {
   ParagraphEntry getEntry(String text, MapTextPaint mapTextPaint,
       MapPaint paint, double maxTextWidth) {
     String key =
-        "$text-${mapTextPaint.getFontFamily()}-${mapTextPaint.getTextSize()}-${mapTextPaint.getFontStyle().name}-${paint.getStrokeWidth()}-$maxTextWidth";
+        "$text-${mapTextPaint.getFontFamily()}-${mapTextPaint.getTextSize()}-${mapTextPaint.getFontStyle().name}-${paint.getStrokeWidth()}-${paint.getColorAsNumber()}-$maxTextWidth";
     ParagraphEntry? result = _cache.get(key);
     if (result != null) return result;
     result = ParagraphEntry(text, paint, mapTextPaint, maxTextWidth);

@@ -97,12 +97,12 @@ class MultiMapDataStore extends MapDataStore {
   /// @param tile A tile.
   /// @return the timestamp of the data used to render the tile
   @override
-  int? getDataTimestamp(Tile tile) {
+  Future<int?> getDataTimestamp(Tile tile) async {
     Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(tile, projection)) {
+          if ((await mdb.supportsTile(tile, projection))) {
             return mdb.getDataTimestamp(tile);
           }
         }
@@ -111,8 +111,8 @@ class MultiMapDataStore extends MapDataStore {
       case DataPolicy.DEDUPLICATE:
         int result = 0;
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(tile, projection)) {
-            result = max(result, mdb.getDataTimestamp(tile)!);
+          if ((await mdb.supportsTile(tile, projection))) {
+            result = max(result, (await mdb.getDataTimestamp(tile))!);
           }
         }
         return result;
@@ -127,7 +127,7 @@ class MultiMapDataStore extends MapDataStore {
         Projection projection =
             MercatorProjection.fromZoomlevel(tile.zoomLevel);
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(tile, projection)) {
+          if ((await mdb.supportsTile(tile, projection))) {
             return mdb.readLabelsSingle(tile);
           }
         }
@@ -146,7 +146,7 @@ class MultiMapDataStore extends MapDataStore {
     DatastoreReadResult mapReadResult =
         DatastoreReadResult(pointOfInterests: [], ways: []);
     for (MapDataStore mdb in mapDatabases) {
-      if (mdb.supportsTile(tile, projection)) {
+      if ((await mdb.supportsTile(tile, projection))) {
         //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
         DatastoreReadResult? result = await mdb.readLabelsSingle(tile);
         if (result == null) {
@@ -168,7 +168,7 @@ class MultiMapDataStore extends MapDataStore {
         Projection projection =
             MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(upperLeft, projection)) {
+          if ((await mdb.supportsTile(upperLeft, projection))) {
             return mdb.readLabels(upperLeft, lowerRight);
           }
         }
@@ -188,7 +188,7 @@ class MultiMapDataStore extends MapDataStore {
     Projection projection =
         MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     for (MapDataStore mdb in mapDatabases) {
-      if (mdb.supportsTile(upperLeft, projection)) {
+      if ((await mdb.supportsTile(upperLeft, projection))) {
         DatastoreReadResult? result =
             await mdb.readLabels(upperLeft, lowerRight);
         if (result == null) {
@@ -209,7 +209,7 @@ class MultiMapDataStore extends MapDataStore {
         Projection projection =
             MercatorProjection.fromZoomlevel(tile.zoomLevel);
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(tile, projection)) {
+          if ((await mdb.supportsTile(tile, projection))) {
             return mdb.readMapDataSingle(tile);
           }
         }
@@ -228,7 +228,7 @@ class MultiMapDataStore extends MapDataStore {
     bool found = false;
     Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     for (MapDataStore mdb in List.of(mapDatabases)) {
-      if (mdb.supportsTile(tile, projection)) {
+      if ((await mdb.supportsTile(tile, projection))) {
         //_log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
         try {
           DatastoreReadResult? result = await mdb.readMapDataSingle(tile);
@@ -257,7 +257,7 @@ class MultiMapDataStore extends MapDataStore {
         Projection projection =
             MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(upperLeft, projection)) {
+          if ((await mdb.supportsTile(upperLeft, projection))) {
             return mdb.readMapData(upperLeft, lowerRight);
           }
         }
@@ -278,7 +278,7 @@ class MultiMapDataStore extends MapDataStore {
     Projection projection =
         MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     for (MapDataStore mdb in mapDatabases) {
-      if (mdb.supportsTile(upperLeft, projection)) {
+      if ((await mdb.supportsTile(upperLeft, projection))) {
         //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
         DatastoreReadResult result =
             await mdb.readMapData(upperLeft, lowerRight);
@@ -299,7 +299,7 @@ class MultiMapDataStore extends MapDataStore {
         Projection projection =
             MercatorProjection.fromZoomlevel(tile.zoomLevel);
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(tile, projection)) {
+          if ((await mdb.supportsTile(tile, projection))) {
             return mdb.readPoiDataSingle(tile);
           }
         }
@@ -317,7 +317,7 @@ class MultiMapDataStore extends MapDataStore {
         new DatastoreReadResult(pointOfInterests: [], ways: []);
     Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     for (MapDataStore mdb in mapDatabases) {
-      if (mdb.supportsTile(tile, projection)) {
+      if ((await mdb.supportsTile(tile, projection))) {
         DatastoreReadResult? result = await mdb.readPoiDataSingle(tile);
         if (result == null) {
           continue;
@@ -338,7 +338,7 @@ class MultiMapDataStore extends MapDataStore {
         Projection projection =
             MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
         for (MapDataStore mdb in mapDatabases) {
-          if (mdb.supportsTile(upperLeft, projection)) {
+          if ((await mdb.supportsTile(upperLeft, projection))) {
             return mdb.readPoiData(upperLeft, lowerRight);
           }
         }
@@ -358,7 +358,7 @@ class MultiMapDataStore extends MapDataStore {
     Projection projection =
         MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     for (MapDataStore mdb in mapDatabases) {
-      if (mdb.supportsTile(upperLeft, projection)) {
+      if ((await mdb.supportsTile(upperLeft, projection))) {
         DatastoreReadResult? result =
             await mdb.readPoiData(upperLeft, lowerRight);
         if (result == null) {
@@ -381,9 +381,9 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  bool supportsTile(Tile tile, Projection projection) {
+  Future<bool> supportsTile(Tile tile, Projection projection) async {
     for (MapDataStore mdb in mapDatabases) {
-      if (mdb.supportsTile(tile, projection)) {
+      if ((await mdb.supportsTile(tile, projection))) {
         return true;
       }
     }

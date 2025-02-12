@@ -136,7 +136,7 @@ class MapfileHelper {
         // reset position to next way
         break;
       }
-      int pos = readBuffer.bufferPosition;
+      int pos = readBuffer.getBufferPosition();
       try {
         if (queryParameters.useTileBitmask) {
           // get the way tile bitmask (2 bytes)
@@ -251,7 +251,7 @@ class MapfileHelper {
         print(e.toString());
         if (e is Error) print(e.stackTrace);
         // reset position to next way
-        readBuffer.bufferPosition = pos + wayDataSize;
+        readBuffer.setBufferPosition(pos + wayDataSize);
       }
     }
 

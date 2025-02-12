@@ -11,7 +11,9 @@ class ReadbufferMemory extends ReadbufferSource {
   ReadbufferMemory(this.content);
 
   @override
-  void close() {}
+  void dispose() {
+    content.clear();
+  }
 
   @override
   Future<int> length() {
@@ -19,18 +21,19 @@ class ReadbufferMemory extends ReadbufferSource {
   }
 
   @override
-  Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize) {
-    return Future.value(content.sublist(
-        indexBlockPosition, indexBlockPosition + indexBlockSize));
+  Future<Readbuffer> readFromFileAt(
+      int indexBlockPosition, int indexBlockSize) {
+    Uint8List c = content.sublist(
+        indexBlockPosition, indexBlockPosition + indexBlockSize);
+    return Future.value(Readbuffer(c, indexBlockPosition));
   }
 
   @override
-  Future<Readbuffer> readFromFile({int? offset, required int length}) {
-    Uint8List cont = content.sublist(
-        offset ?? _lastOffset, (offset ?? _lastOffset) + length);
+  Future<Readbuffer> readFromFile(int length) {
+    Uint8List cont = content.sublist(_lastOffset, _lastOffset + length);
     assert(cont.length == length);
-    Readbuffer result = Readbuffer(cont, offset ?? _lastOffset);
-    _lastOffset = (offset ?? _lastOffset) + length;
+    Readbuffer result = Readbuffer(cont, _lastOffset);
+    _lastOffset += length;
     return Future.value(result);
   }
 }

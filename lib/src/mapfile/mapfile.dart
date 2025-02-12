@@ -62,7 +62,7 @@ class MapFile extends MapDataStore {
 
   late final IndexCache _databaseIndexCache;
 
-  int _fileSize = 0;
+  int _fileSize = -1;
 
   late final MapFileHeader _mapFileHeader;
   final int? timestamp;
@@ -133,7 +133,7 @@ class MapFile extends MapDataStore {
   @mustCallSuper
   void dispose() {
     this._databaseIndexCache.dispose();
-    readBufferSource?.close();
+    readBufferSource?.dispose();
     readBufferSource = null;
   }
 
@@ -149,8 +149,8 @@ class MapFile extends MapDataStore {
    * @return the creation timestamp inside the map file.
    */
   @override
-  int? getDataTimestamp(Tile tile) {
-    return this.timestamp;
+  Future<int?> getDataTimestamp(Tile tile) {
+    return Future.value(this.timestamp);
   }
 
   /**
@@ -204,7 +204,7 @@ class MapFile extends MapDataStore {
     }
 
     // add the current buffer position to the relative first way offset
-    firstWayOffset += readBuffer.bufferPosition;
+    firstWayOffset += readBuffer.getBufferPosition();
     if (firstWayOffset > readBuffer.getBufferSize()) {
       throw Exception(INVALID_FIRST_WAY_OFFSET + "$firstWayOffset");
     }
@@ -365,9 +365,9 @@ class MapFile extends MapDataStore {
         // seek to the current block in the map file
         // read the current block into the buffer
         //ReadBuffer readBuffer = new ReadBuffer(inputChannel);
-        Readbuffer readBuffer = await readBufferSource.readFromFile(
-            length: currentBlockSize,
-            offset: subFileParameter.startAddress + currentBlockPointer);
+        Readbuffer readBuffer = await readBufferSource.readFromFileAt(
+            subFileParameter.startAddress + currentBlockPointer,
+            currentBlockSize);
 
         // calculate the top-left coordinates of the underlying tile
         double tileLatitude = projection
@@ -446,6 +446,7 @@ class MapFile extends MapDataStore {
 
   @override
   Future<void> lateOpen() async {
+    if (_fileSize > 0) return;
     // late reading of header. Necessary for isolates because we cannot transfer a non-null RandomAccessFile descriptor to the isolate.
     this._fileSize = await readBufferSource!.length();
     assert(_fileSize > 0);
@@ -461,7 +462,8 @@ class MapFile extends MapDataStore {
     //assert(supportsTile(upperLeft, projection));
     //assert(supportsTile(lowerRight, projection));
     assert(upperLeft.zoomLevel == lowerRight.zoomLevel);
-    Timing timing = Timing(log: _log, active: true, prefix: "${upperLeft}-${lowerRight} ");
+    Timing timing =
+        Timing(log: _log, active: true, prefix: "${upperLeft}-${lowerRight} ");
     if (upperLeft.tileX > lowerRight.tileX ||
         upperLeft.tileY > lowerRight.tileY) {
       throw Exception(
@@ -480,15 +482,14 @@ class MapFile extends MapDataStore {
     }
     queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
     queryParameters.calculateBlocks(subFileParameter);
-    timing.lap(100,
-          "readMapDataComplete for query $queryParameters");
+    timing.lap(100, "readMapDataComplete for query $queryParameters");
     DatastoreReadResult? result = await processBlocks(
         readBufferSource!,
         queryParameters,
         subFileParameter,
         projection.boundingBoxOfTiles(upperLeft, lowerRight),
         selector);
-      timing.lap(100, "readMapDataComplete for $queryParameters");
+    timing.lap(100, "readMapDataComplete for $queryParameters");
     //readBufferMaster.close();
     return result;
   }
@@ -575,9 +576,10 @@ class MapFile extends MapDataStore {
   }
 
   @override
-  bool supportsTile(Tile tile, Projection projection) {
+  Future<bool> supportsTile(Tile tile, Projection projection) async {
     if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax)
       return false;
+    await lateOpen();
     return tile
         .getBoundingBox(projection)
         .intersects(getMapFileInfo().boundingBox);

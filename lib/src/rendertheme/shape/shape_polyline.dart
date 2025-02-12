@@ -59,6 +59,6 @@ class ShapePolyline extends Shape with PaintSrcMixin, BitmapSrcMixin {
 
   @override
   String toString() {
-    return 'ShapePolyline{scale: $scale, super: ${super.toString()}, ${paintSrcMixinToString()}, ${bitmapSrcMixinToString()}}';
+    return 'ShapePolyline{level: $level, scale: $scale, super: ${super.toString()}, ${paintSrcMixinToString()}, ${bitmapSrcMixinToString()}}';
   }
 }

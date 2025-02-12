@@ -19,17 +19,17 @@ class Readbuffer {
   final int? _offset;
 
   /// The current position of the read pointer in the [_bufferData]. The position cannot exceed the amount of bytes in [_bufferData]
-  int bufferPosition;
+  int _bufferPosition;
 
   ///
   /// Default constructor to open a buffer for reading a mapfile
   ///
-  Readbuffer(this._bufferData, this._offset) : bufferPosition = 0;
+  Readbuffer(this._bufferData, this._offset) : _bufferPosition = 0;
 
   Readbuffer.from(Readbuffer other)
       : _bufferData = other._bufferData,
         _offset = other._offset,
-        bufferPosition = 0;
+        _bufferPosition = 0;
 
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
@@ -42,7 +42,7 @@ class Readbuffer {
   /// @return the byte value.
   int readByte() {
     ByteData bdata = ByteData(1);
-    bdata.setInt8(0, this._bufferData[this.bufferPosition++]);
+    bdata.setInt8(0, this._bufferData[this._bufferPosition++]);
     return bdata.getInt8(0);
   }
 
@@ -64,8 +64,8 @@ class Readbuffer {
   ///
   /// @return the int value.
   int readInt() {
-    this.bufferPosition += 4;
-    return Deserializer.getInt(this._bufferData, this.bufferPosition - 4);
+    this._bufferPosition += 4;
+    return Deserializer.getInt(this._bufferData, this._bufferPosition - 4);
   }
 
   /// Converts eight bytes from the read buffer to a signed long.
@@ -74,8 +74,8 @@ class Readbuffer {
   ///
   /// @return the long value.
   int readLong() {
-    this.bufferPosition += 8;
-    return Deserializer.getLong(this._bufferData, this.bufferPosition - 8);
+    this._bufferPosition += 8;
+    return Deserializer.getLong(this._bufferData, this._bufferPosition - 8);
   }
 
   /// Converts two bytes from the read buffer to a signed int.
@@ -84,9 +84,9 @@ class Readbuffer {
   ///
   /// @return the int value.
   int readShort() {
-    assert(bufferPosition < _bufferData.length);
-    this.bufferPosition += 2;
-    return Deserializer.getShort(this._bufferData, this.bufferPosition - 2);
+    assert(_bufferPosition < _bufferData.length);
+    this._bufferPosition += 2;
+    return Deserializer.getShort(this._bufferData, this._bufferPosition - 2);
   }
 
   List<Tag> readTags(List<Tag> tagsArray, int numberOfTags) {
@@ -99,7 +99,7 @@ class Readbuffer {
       int tagId = readUnsignedInt();
       if (tagId < 0 || tagId >= maxTag) {
         _log.warning(
-            "invalid tag ID: $tagId for index $tagIndex, it should be between 0 and $maxTag, checked at offset $_offset + $bufferPosition");
+            "invalid tag ID: $tagId for index $tagIndex, it should be between 0 and $maxTag, checked at offset $_offset + $_bufferPosition");
         //return null;
       } else {
         tagIds.add(tagId);
@@ -141,23 +141,23 @@ class Readbuffer {
   ///
   /// @return the int value.
   int readUnsignedInt() {
-    assert(bufferPosition <= _bufferData.length);
+    assert(_bufferPosition <= _bufferData.length);
     int variableByteDecode = 0;
     int variableByteShift = 0;
 
     // check if the continuation bit is set
-    while ((this._bufferData[this.bufferPosition] & 0x80) != 0) {
+    while ((this._bufferData[this._bufferPosition] & 0x80) != 0) {
       variableByteDecode |=
-          (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+          (this._bufferData[this._bufferPosition] & 0x7f) << variableByteShift;
       variableByteShift += 7;
-      ++bufferPosition;
+      ++_bufferPosition;
     }
 
     // read the seven data bits from the last byte
     variableByteDecode |=
-        (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+        (this._bufferData[this._bufferPosition] & 0x7f) << variableByteShift;
     variableByteShift += 7;
-    ++bufferPosition;
+    ++_bufferPosition;
     return variableByteDecode;
   }
 
@@ -172,25 +172,25 @@ class Readbuffer {
     int variableByteShift = 0;
 
     // check if the continuation bit is set
-    while ((this._bufferData[this.bufferPosition] & 0x80) != 0) {
+    while ((this._bufferData[this._bufferPosition] & 0x80) != 0) {
       variableByteDecode |=
-          (this._bufferData[this.bufferPosition] & 0x7f) << variableByteShift;
+          (this._bufferData[this._bufferPosition] & 0x7f) << variableByteShift;
       variableByteShift += 7;
-      ++bufferPosition;
+      ++_bufferPosition;
     }
 
     variableByteDecode |=
-        (this._bufferData[this.bufferPosition] & 0x3f) << variableByteShift;
+        (this._bufferData[this._bufferPosition] & 0x3f) << variableByteShift;
     variableByteShift += 6;
 
     // read the six data bits from the last byte
-    if ((this._bufferData[this.bufferPosition] & 0x40) != 0) {
+    if ((this._bufferData[this._bufferPosition] & 0x40) != 0) {
       // negative
-      ++bufferPosition;
+      ++_bufferPosition;
       return -1 * variableByteDecode;
     }
     // positive
-    ++bufferPosition;
+    ++_bufferPosition;
     return variableByteDecode;
   }
 
@@ -208,21 +208,21 @@ class Readbuffer {
   String readUTF8EncodedString2(int stringLength) {
     assert(stringLength >= 0);
     if (stringLength > 0 &&
-        this.bufferPosition + stringLength <= this._bufferData.length) {
-      this.bufferPosition += stringLength;
+        this._bufferPosition + stringLength <= this._bufferData.length) {
+      this._bufferPosition += stringLength;
       //_log.info("Reading utf8 $stringLength bytes");
-      String result = utf8.decoder
-          .convert(_bufferData, bufferPosition - stringLength, bufferPosition);
+      String result = utf8.decoder.convert(
+          _bufferData, _bufferPosition - stringLength, _bufferPosition);
       //_log.info("String found $result");
       return result;
     }
     throw Exception(
-        "Cannot read utf8 string with $stringLength length at position $bufferPosition of data with ${_bufferData.length} bytes");
+        "Cannot read utf8 string with $stringLength length at position $_bufferPosition of data with ${_bufferData.length} bytes");
   }
 
   /// @return the current buffer position.
   int getBufferPosition() {
-    return this.bufferPosition;
+    return this._bufferPosition;
   }
 
   /// @return the current size of the read buffer.
@@ -238,14 +238,15 @@ class Readbuffer {
     //   _log.warning("Cannot set bufferPosition $bufferPosition because we have only ${_bufferData.length} bytes available");
     // }
     assert(bufferPosition >= 0 && bufferPosition < _bufferData.length);
-    this.bufferPosition = bufferPosition;
+    this._bufferPosition = bufferPosition;
   }
 
   /// Skips the given number of bytes in the read buffer.
   ///
   /// @param bytes the number of bytes to skip.
   void skipBytes(int bytes) {
-    assert(bufferPosition >= 0 && bufferPosition + bytes <= _bufferData.length);
-    this.bufferPosition += bytes;
+    assert(
+        _bufferPosition >= 0 && _bufferPosition + bytes <= _bufferData.length);
+    this._bufferPosition += bytes;
   }
 }

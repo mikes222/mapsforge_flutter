@@ -40,7 +40,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
   late MarkerdemoDatastore markerdemoDatastore;
 
   // Shows additional infos about nodes and ways, may be confusing and slow
-  final debug = true;
+  final debug = false;
 
   @override
   void initState() {

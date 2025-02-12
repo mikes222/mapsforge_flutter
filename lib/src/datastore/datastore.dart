@@ -64,7 +64,7 @@ abstract class Datastore {
   ///
   /// @param tile tile to be rendered.
   /// @return true if tile is part of database.
-  bool supportsTile(Tile tile, Projection projection);
+  Future<bool> supportsTile(Tile tile, Projection projection);
 
   /// Open file descriptors
   Future<void> lateOpen();

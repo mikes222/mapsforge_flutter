@@ -60,9 +60,9 @@ class MemoryDatastore extends Datastore {
   }
 
   @override
-  bool supportsTile(Tile tile, Projection projection) {
+  Future<bool> supportsTile(Tile tile, Projection projection) {
     // you may want to show neighbouring tiles too in order to display labels.
-    return true;
+    return Future.value(true);
     // Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     // for (PointOfInterest poi in pointOfInterests) {
     //   if (projection.boundingBoxOfTile(tile).containsLatLong(poi.position)) return true;

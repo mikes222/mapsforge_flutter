@@ -133,38 +133,30 @@ class ShapePaintCaption extends ShapePaint<ShapeCaption> {
       [double rotationRadian = 0]) {
     MapRectangle boundary = calculateBoundary();
 
-    //print("paint caption boundar: $boundary $front $back");
-    Mappoint point = wayProperties.getCenterAbsolute(projection);
-    point = point.offsetAbsolute(0, shape.dy);
+    Mappoint relative = wayProperties.getCenterAbsolute(projection);
+    relative = relative.offsetAbsolute(-reference.x, -reference.y + shape.dy);
+    //print("paint caption boundar: $boundary $relative ${shape}");
 
-    // print(
-    //     "drawing ${renderInfo.caption} with fontsize ${shapeContainer.fontSize} and width ${shapeContainer.strokeWidth}");
-    // // uiCanvas.drawRect(
-    //     ui.Rect.fromLTWH(
-    //         this.xy.x - origin.x + boundary!.left,
-    //         this.xy.y - origin.y + boundary!.top,
-    //         front.getWidth(),
-    //         front.getHeight()),
-    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    // uiCanvas.drawCircle(
-    //     ui.Offset(this.xy.x - origin.x + boundary!.left,
-    //         this.xy.y - origin.y + boundary!.top),
-    //     10,
-    //     ui.Paint()..color = Colors.green);
     ui.Canvas? uiCanvas = (canvas as FlutterCanvas).uiCanvas;
     if (rotationRadian != 0) {
       uiCanvas.save();
-      uiCanvas.translate(point.x, point.y);
+      uiCanvas.translate(relative.x, relative.y);
       // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
       uiCanvas.rotate(2 * pi - rotationRadian);
-      uiCanvas.translate(-point.x, -point.y);
+      uiCanvas.translate(-relative.x, -relative.y);
     }
+
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
+    //         boundary.getWidth(), boundary.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
+
     if (back != null)
       uiCanvas.drawParagraph(back!.paragraph,
-          ui.Offset(point.x + boundary.left, point.y + boundary.top));
+          ui.Offset(relative.x + boundary.left, relative.y + boundary.top));
     if (front != null)
       uiCanvas.drawParagraph(front!.paragraph,
-          ui.Offset(point.x + boundary.left, point.y + boundary.top));
+          ui.Offset(relative.x + boundary.left, relative.y + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
     if (rotationRadian != 0) {

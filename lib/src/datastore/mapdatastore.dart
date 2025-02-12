@@ -72,7 +72,7 @@ abstract class MapDataStore extends Datastore {
   ///
   /// @param tile A tile.
   /// @return the timestamp of the data used to render the tile
-  int? getDataTimestamp(Tile tile);
+  Future<int?> getDataTimestamp(Tile tile);
 
   /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
   /// It is permissible for the MapDataStore to return more data.

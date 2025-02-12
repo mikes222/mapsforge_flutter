@@ -76,13 +76,13 @@ class ShapeSymbol extends Shape with BitmapSrcMixin {
         break;
     }
 
-    print("boundary: $boundary $id $bitmapSrc");
+    //print("boundary: $boundary $id $bitmapSrc");
     return boundary!;
   }
 
   @override
   String toString() {
-    return 'ShapeSymbol{position: $position, theta: $theta, id: $id}';
+    return 'ShapeSymbol{level: $level, position: $position, theta: $theta, id: $id}';
   }
 
   @override

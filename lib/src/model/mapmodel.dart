@@ -11,12 +11,16 @@ class MapModel {
   final TileBitmapCache tileBitmapCacheFirstLevel;
   final SymbolCache? symbolCache;
 
+  /// number of concurrent jobs which can be executed to render the tiles.
+  final int parallelJobs;
+
   MapModel({
     required this.displayModel,
     required this.renderer,
     this.tileBitmapCache,
     this.symbolCache,
     TileBitmapCache? tileBitmapCacheFirstLevel,
+    this.parallelJobs = 4,
   }) : tileBitmapCacheFirstLevel =
             tileBitmapCacheFirstLevel ?? MemoryTileBitmapCache.create();
 

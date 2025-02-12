@@ -304,7 +304,7 @@ class RuleBuilder {
           new RenderinstructionCaption(zoomlevelSymbolFinder, level);
       caption.parse(displayModel, rootElement);
       if (isVisible(caption)) {
-        this.addRenderingInstructionNode(caption);
+        if (element != Element.WAY) this.addRenderingInstructionNode(caption);
         if (closed != Closed.NO) this.addRenderingInstructionClosedWay(caption);
 //        maxLevel = max(maxLevel, level);
       }
@@ -316,7 +316,7 @@ class RuleBuilder {
       RenderinstructionCircle circle = new RenderinstructionCircle(level);
       circle.parse(displayModel, rootElement);
       if (isVisible(circle)) {
-        this.addRenderingInstructionNode(circle);
+        if (element != Element.WAY) this.addRenderingInstructionNode(circle);
         maxLevel = max(maxLevel, level);
       }
     } else if ("line" == qName) {
@@ -363,7 +363,7 @@ class RuleBuilder {
           new RenderinstructionSymbol(zoomlevelSymbolFinder, level);
       symbol.parse(displayModel, rootElement);
       if (isVisible(symbol)) {
-        this.addRenderingInstructionNode(symbol);
+        if (element != Element.WAY) this.addRenderingInstructionNode(symbol);
         if (closed != Closed.NO) this.addRenderingInstructionClosedWay(symbol);
         //maxLevel = max(maxLevel, level);
       }

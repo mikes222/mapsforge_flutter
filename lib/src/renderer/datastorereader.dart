@@ -19,7 +19,7 @@ class DatastoreReader {
       RenderthemeLevel renderthemeLevel) async {
     // read the mapdata directly in this thread
     await datastore.lateOpen();
-    if (!datastore.supportsTile(tile, projection)) {
+    if (!(await datastore.supportsTile(tile, projection))) {
       return null;
     }
     DatastoreReadResult? mapReadResult =
@@ -37,7 +37,7 @@ class DatastoreReader {
       RenderContext renderContext,
       RenderthemeLevel renderthemeLevel) async {
     await datastore.lateOpen();
-    if (!datastore.supportsTile(tile, projection)) {
+    if (!(await datastore.supportsTile(tile, projection))) {
       return null;
     }
     DatastoreReadResult? mapReadResult = await datastore.readLabelsSingle(tile);
@@ -52,8 +52,9 @@ class DatastoreReader {
       RenderthemeLevel renderthemeLevel, DatastoreReadResult mapReadResult) {
     for (PointOfInterest pointOfInterest in mapReadResult.pointOfInterests) {
       NodeProperties nodeProperties = NodeProperties(pointOfInterest);
-      List<Shape> shapes = _retrieveShapesForPoi(
-          renderContext, tile, renderthemeLevel, nodeProperties);
+      List<Shape> shapes =
+          _retrieveShapesForPoi(tile, renderthemeLevel, nodeProperties);
+      renderContext.setDrawingLayers(nodeProperties.layer);
       for (Shape shape in shapes) {
         shape.renderNode(renderContext, nodeProperties);
       }
@@ -67,44 +68,47 @@ class DatastoreReader {
           wayProperties.getBoundary(renderContext.projection);
       // filter small ways
       if (rectangle.getWidth() < 5 && rectangle.getHeight() < 5) continue;
-      List<Shape> shapes = _retrieveShapesForWay(
-          renderContext, tile, renderthemeLevel, wayProperties);
-      for (Shape shape in shapes) {
-        shape.renderWay(renderContext, wayProperties);
+      if (wayProperties
+          .getCoordinatesAbsolute(renderContext.projection)
+          .isNotEmpty) {
+        List<Shape> shapes;
+        if (wayProperties.isClosedWay) {
+          shapes = _retrieveShapesForClosedWay(
+              tile, renderthemeLevel, wayProperties);
+        } else {
+          shapes =
+              _retrieveShapesForOpenWay(tile, renderthemeLevel, wayProperties);
+        }
+        renderContext.setDrawingLayers(wayProperties.getLayer());
+        for (Shape shape in shapes) {
+          shape.renderWay(renderContext, wayProperties);
+        }
       }
     }
     if (mapReadResult.isWater) {
       _renderWaterBackground(renderContext);
     }
+    renderContext.reduce();
   }
 
-  List<Shape> _retrieveShapesForPoi(
-      final RenderContext renderContext,
-      Tile tile,
-      RenderthemeLevel renderthemeLevel,
-      NodeProperties nodeProperties) {
-    renderContext.setDrawingLayers(nodeProperties.layer);
+  List<Shape> _retrieveShapesForPoi(Tile tile,
+      RenderthemeLevel renderthemeLevel, NodeProperties nodeProperties) {
     List<Shape> shapes = renderthemeLevel.matchNode(tile, nodeProperties);
     return shapes;
   }
 
-  List<Shape> _retrieveShapesForWay(
-      final RenderContext renderContext,
-      Tile tile,
-      RenderthemeLevel renderthemeLevel,
-      WayProperties wayProperties) {
-    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
-        0) return [];
-    renderContext.setDrawingLayers(wayProperties.getLayer());
-    if (wayProperties.isClosedWay) {
-      List<Shape> shapes =
-          renderthemeLevel.matchClosedWay(tile, wayProperties.way);
-      return shapes;
-    } else {
-      List<Shape> shapes =
-          renderthemeLevel.matchLinearWay(tile, wayProperties.way);
-      return shapes;
-    }
+  List<Shape> _retrieveShapesForClosedWay(Tile tile,
+      RenderthemeLevel renderthemeLevel, WayProperties wayProperties) {
+    List<Shape> shapes =
+        renderthemeLevel.matchClosedWay(tile, wayProperties.way);
+    return shapes;
+  }
+
+  List<Shape> _retrieveShapesForOpenWay(Tile tile,
+      RenderthemeLevel renderthemeLevel, WayProperties wayProperties) {
+    List<Shape> shapes =
+        renderthemeLevel.matchLinearWay(tile, wayProperties.way);
+    return shapes;
   }
 
   void _renderWaterBackground(final RenderContext renderContext) {

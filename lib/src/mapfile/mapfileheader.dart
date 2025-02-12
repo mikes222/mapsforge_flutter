@@ -48,7 +48,8 @@ class MapFileHeader {
    */
   MapFileInfo getMapFileInfo() {
     // execute the init() method before using mapfiles
-    assert(mapFileInfo != null);
+    assert(
+        mapFileInfo != null, "execute the init() method before using mapfiles");
     return this.mapFileInfo!;
   }
 
@@ -75,10 +76,10 @@ class MapFileHeader {
   /// @param fileSize   the size of the map file in bytes.
   /// @throws IOException if an error occurs while reading the file.
   Future<void> readHeader(
-      ReadbufferSource readBufferMaster, int fileSize) async {
+      ReadbufferSource readBufferSource, int fileSize) async {
     if (mapFileInfo != null) return;
     Readbuffer? readBuffer =
-        await RequiredFields.readMagicByte(readBufferMaster);
+        await RequiredFields.readMagicByte(readBufferSource);
 
     // get and check the size of the remaining file header (4 bytes)
     int remainingHeaderSize = readBuffer.readInt();
@@ -89,8 +90,7 @@ class MapFileHeader {
     }
 
 // read the header data into the buffer
-    readBuffer =
-        await (readBufferMaster.readFromFile(length: remainingHeaderSize));
+    readBuffer = await readBufferSource.readFromFile(remainingHeaderSize);
 
     MapFileInfoBuilder mapFileInfoBuilder = MapFileInfoBuilder();
 

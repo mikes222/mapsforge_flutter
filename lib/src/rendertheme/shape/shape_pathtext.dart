@@ -94,6 +94,6 @@ class ShapePathtext extends Shape with PaintSrcMixin, TextSrcMixin {
 
   @override
   String toString() {
-    return 'ShapePathtext{textKey: $textKey}';
+    return 'ShapePathtext{level: $level, textKey: $textKey}';
   }
 }

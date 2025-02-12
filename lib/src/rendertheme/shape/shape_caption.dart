@@ -188,9 +188,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
       return;
     }
 
-    if (wayProperties.getCoordinatesAbsolute(renderContext.projection).length ==
-        0) return;
-
+    //print("caption $caption");
     renderContext.labels
         .add(WayRenderInfo(wayProperties, this)..caption = caption);
   }
