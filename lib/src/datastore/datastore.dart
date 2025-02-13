@@ -8,6 +8,8 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 abstract class Datastore {
   const Datastore();
 
+  void dispose();
+
   /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
   /// It is permissible for the MapDataStore to return more data.
   /// This default implementation returns all map data, which is inefficient, but works.
@@ -67,5 +69,5 @@ abstract class Datastore {
   Future<bool> supportsTile(Tile tile, Projection projection);
 
   /// Open file descriptors
-  Future<void> lateOpen();
+//  Future<void> lateOpen();
 }

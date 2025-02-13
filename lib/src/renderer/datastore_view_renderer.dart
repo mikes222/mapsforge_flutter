@@ -39,7 +39,6 @@ class DatastoreViewRenderer extends ViewRenderer {
         RenderContext(viewJobRequest.upperLeft, renderTheme.levels);
     RenderthemeLevel renderthemeLevel =
         this.renderTheme.prepareZoomlevel(viewJobRequest.upperLeft.zoomLevel);
-    await datastore.lateOpen();
 
     DatastoreReadResult mapReadResult = await datastore.readMapData(
         viewJobRequest.upperLeft, viewJobRequest.lowerRight);

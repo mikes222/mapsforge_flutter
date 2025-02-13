@@ -3,7 +3,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastore.dart';
-import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
@@ -14,6 +13,7 @@ import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../rendertheme/renderinfo.dart';
+import '../utils/flutter_isolate.dart';
 import '../utils/timing.dart';
 import 'canvasrasterer.dart';
 import 'datastorereader.dart';
@@ -75,25 +75,27 @@ class MapDataStoreRenderer extends JobRenderer {
         Timing(log: _log, active: true, prefix: "${job.tile.toString()} ");
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderContext renderContext = RenderContext(job.tile, renderTheme.levels);
     RenderthemeLevel renderthemeLevel =
         this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    DatastoreReadResult? mapReadResult = await _datastoreReader.read(datastore,
-        job.tile, renderContext.projection, renderContext, renderthemeLevel);
-    timing.lap(100,
-        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois read");
-    if (mapReadResult == null) {
+    RenderContext? renderContext;
+    if (useIsolate) {
+      renderContext = await FlutterIsolateInstance.isolateCompute(
+          DatastoreReaderIsolate.read,
+          DatastoreReaderIsolateRequest(
+              datastore, job.tile, renderthemeLevel, renderTheme.levels));
+    } else {
+      renderContext = await _datastoreReader.read(
+          datastore, job.tile, renderthemeLevel, renderTheme.levels);
+    }
+
+    timing.lap(100, "RenderContext ${renderContext} created");
+    if (renderContext == null) {
       TilePicture bmp = await createNoDataBitmap(MapsforgeConstants().tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
     }
-    if ((mapReadResult.ways.length) > 100000) {
-      _log.warning(
-          "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
-    }
     await renderContext.initDrawingLayers(symbolCache);
-    timing.lap(100,
-        "${mapReadResult.ways.length} ways and ${mapReadResult.pointOfInterests.length} pois initialized");
+    timing.lap(100, "RenderContext ${renderContext}  initialized");
     //renderContext.statistics();
     CanvasRasterer canvasRasterer = CanvasRasterer(
         MapsforgeConstants().tileSize,
@@ -154,7 +156,7 @@ class MapDataStoreRenderer extends JobRenderer {
     TilePicture? picture = await canvasRasterer.finalizeCanvasBitmap();
     canvasRasterer.destroy();
     timing.lap(100,
-        "${mapReadResult.ways.length} ways, ${mapReadResult.pointOfInterests.length} pois, $labelCount labels, ${canvasRasterer.canvas.debugAction()}");
+        "RenderContext ${renderContext} , $labelCount labels, ${canvasRasterer.canvas.debugAction()}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(picture, JOBRESULT.NORMAL, renderContext.labels);
@@ -165,24 +167,24 @@ class MapDataStoreRenderer extends JobRenderer {
     Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderContext renderContext = RenderContext(job.tile, renderTheme.levels);
     RenderthemeLevel renderthemeLevel =
         this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    DatastoreReadResult? mapReadResult = await _datastoreReader.readLabels(
-        datastore,
-        job.tile,
-        renderContext.projection,
-        renderContext,
-        renderthemeLevel);
-    timing.lap(100,
-        "${mapReadResult?.ways.length} ways and ${mapReadResult?.pointOfInterests.length} pois for labels for tile ${renderContext.upperLeft}");
-    if (mapReadResult == null) {
-      return JobResult(null, JOBRESULT.UNSUPPORTED);
+    RenderContext? renderContext;
+    if (useIsolate) {
+      renderContext = await FlutterIsolateInstance.isolateCompute(
+          DatastoreReaderIsolate.readLabels,
+          DatastoreReaderIsolateRequest(
+              datastore, job.tile, renderthemeLevel, renderTheme.levels));
+    } else {
+      renderContext = await _datastoreReader.readLabels(
+          datastore, job.tile, renderthemeLevel, renderTheme.levels);
     }
-    if ((mapReadResult.ways.length) > 100000) {
-      _log.warning(
-          "Many ways (${mapReadResult.ways.length}) in this readResult, consider shrinking your mapfile.");
+
+    timing.lap(100,
+        "RenderContext ${renderContext}  for labels for tile ${renderContext?.upperLeft}");
+    if (renderContext == null) {
+      return JobResult(null, JOBRESULT.UNSUPPORTED);
     }
 
     // unfortunately we need the painter for captions in order to determine the size of the caption. In isolates however we cannot access

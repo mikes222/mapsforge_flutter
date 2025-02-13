@@ -13,6 +13,12 @@ class MemoryDatastore extends Datastore {
   final List<Way> ways = [];
 
   @override
+  void dispose() {
+    pointOfInterests.clear();
+    ways.clear();
+  }
+
+  @override
   Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readLabels
     throw UnimplementedError();
@@ -88,10 +94,5 @@ class MemoryDatastore extends Datastore {
   @override
   String toString() {
     return 'MemoryDatastore{pointOfInterests: $pointOfInterests, ways: $ways}';
-  }
-
-  @override
-  Future<void> lateOpen() {
-    return Future.value(null);
   }
 }

@@ -35,6 +35,11 @@ class MultiMapDataStore extends MapDataStore {
       : mapDatabases = [],
         super(null);
 
+  @override
+  void dispose() {
+    mapDatabases.forEach((db) => db.dispose());
+  }
+
   /// adds another mapDataStore
   ///
   /// @param mapDataStore      the mapDataStore to add
@@ -388,13 +393,6 @@ class MultiMapDataStore extends MapDataStore {
       }
     }
     return false;
-  }
-
-  @override
-  Future<void> lateOpen() async {
-    for (MapDataStore mdb in mapDatabases) {
-      await mdb.lateOpen();
-    }
   }
 
   @override

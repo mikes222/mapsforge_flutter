@@ -58,7 +58,7 @@ class MapList extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (BuildContext context) =>
-                      MapViewPage2(mapFileData: element, mapFile: null),
+                      MapViewPage2(mapFileData: element, datastore: null),
                 ),
               );
             } else {

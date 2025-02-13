@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/map-view-page2.dart';
 import 'package:mapsforge_example/pathhandler.dart';
+import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 
 import 'map-file-data.dart';
@@ -101,8 +102,8 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
     if (await pathHandler.exists(fileName)) {
       // file already exists locally, start now
-      final MapFile mapFile =
-          await MapFile.from(pathHandler.getPath(fileName), null, null);
+      final Datastore mapFile = IsolateMapfile(pathHandler.getPath(fileName));
+      //await MapFile.from(pathHandler.getPath(fileName), null, null);
       await _startMap(mapFile);
     } else {
       bool ok = await FileMgr().downloadToFile2(
@@ -131,11 +132,11 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     }
   }
 
-  Future<void> _startMap(MapFile mapFile) async {
+  Future<void> _startMap(Datastore mapFile) async {
     await Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (BuildContext context) =>
-            MapViewPage2(mapFileData: widget.mapFileData, mapFile: mapFile),
+            MapViewPage2(mapFileData: widget.mapFileData, datastore: mapFile),
       ),
     );
     mapFile.dispose();
@@ -148,6 +149,5 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     //     print("not gced: ${element.toYaml("  ")}");
     //   });
     // });
-
   }
 }

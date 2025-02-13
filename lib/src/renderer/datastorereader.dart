@@ -6,45 +6,69 @@ import '../../maps.dart';
 import '../rendertheme/rendercontext.dart';
 import '../rendertheme/wayproperties.dart';
 
+class DatastoreReaderIsolate {
+  static DatastoreReader? _reader;
+
+  @pragma('vm:entry-point')
+  static Future<RenderContext?> read(
+      DatastoreReaderIsolateRequest request) async {
+    _reader ??= DatastoreReader();
+    return _reader!.read(request.datastore, request.tile,
+        request.renderthemeLevel, request.maxLevels);
+  }
+
+  @pragma('vm:entry-point')
+  static Future<RenderContext?> readLabels(
+      DatastoreReaderIsolateRequest request) async {
+    _reader ??= DatastoreReader();
+    return _reader!.readLabels(request.datastore, request.tile,
+        request.renderthemeLevel, request.maxLevels);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class DatastoreReaderIsolateRequest {
+  final Datastore datastore;
+  final Tile tile;
+  final RenderthemeLevel renderthemeLevel;
+  final int maxLevels;
+
+  DatastoreReaderIsolateRequest(
+      this.datastore, this.tile, this.renderthemeLevel, this.maxLevels);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 /// Reads the content of a datastore - e.g. MapFile - either via isolate or direct
 /// in the main thread.
 class DatastoreReader {
   DatastoreReader();
 
-  Future<DatastoreReadResult?> read(
-      Datastore datastore,
-      Tile tile,
-      PixelProjection projection,
-      RenderContext renderContext,
-      RenderthemeLevel renderthemeLevel) async {
+  Future<RenderContext?> read(Datastore datastore, Tile tile,
+      RenderthemeLevel renderthemeLevel, int maxLevels) async {
     // read the mapdata directly in this thread
-    await datastore.lateOpen();
-    if (!(await datastore.supportsTile(tile, projection))) {
+    RenderContext renderContext = RenderContext(tile, maxLevels);
+    if (!(await datastore.supportsTile(tile, renderContext.projection))) {
       return null;
     }
     DatastoreReadResult? mapReadResult =
         await datastore.readMapDataSingle(tile);
-    if (mapReadResult != null)
-      processMapReadResult(
-          renderContext, tile, renderthemeLevel, mapReadResult);
-    return mapReadResult;
+    if (mapReadResult == null) return null;
+    processMapReadResult(renderContext, tile, renderthemeLevel, mapReadResult);
+    return renderContext;
   }
 
-  Future<DatastoreReadResult?> readLabels(
-      Datastore datastore,
-      Tile tile,
-      PixelProjection projection,
-      RenderContext renderContext,
-      RenderthemeLevel renderthemeLevel) async {
-    await datastore.lateOpen();
-    if (!(await datastore.supportsTile(tile, projection))) {
+  Future<RenderContext?> readLabels(Datastore datastore, Tile tile,
+      RenderthemeLevel renderthemeLevel, int maxLevels) async {
+    RenderContext renderContext = RenderContext(tile, maxLevels);
+    if (!(await datastore.supportsTile(tile, renderContext.projection))) {
       return null;
     }
     DatastoreReadResult? mapReadResult = await datastore.readLabelsSingle(tile);
-    if (mapReadResult != null)
-      processMapReadResult(
-          renderContext, tile, renderthemeLevel, mapReadResult);
-    return mapReadResult;
+    if (mapReadResult == null) return null;
+    processMapReadResult(renderContext, tile, renderthemeLevel, mapReadResult);
+    return renderContext;
   }
 
   /// Creates rendering instructions based on the given ways and nodes and the defined rendertheme

@@ -19,10 +19,10 @@ import 'map-file-data.dart';
 class MapViewPage2 extends StatefulWidget {
   final MapFileData mapFileData;
 
-  final MapDataStore? mapFile;
+  final Datastore? datastore;
 
   const MapViewPage2(
-      {Key? key, required this.mapFileData, required this.mapFile})
+      {Key? key, required this.mapFileData, required this.datastore})
       : super(key: key);
 
   @override
@@ -109,7 +109,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     ViewModel viewModel = ViewModel(
       displayModel: displayModel,
       contextMenuBuilder: debug
-          ? DebugContextMenuBuilder(datastore: widget.mapFile!)
+          ? DebugContextMenuBuilder(datastore: widget.datastore!)
           : widget.mapFileData.mapType == MAPTYPE.OFFLINE
               ? MarkerdemoContextMenuBuilder()
               : const DefaultContextMenuBuilder(),
@@ -153,10 +153,9 @@ class MapViewPageState2 extends State<MapViewPage2> {
     RenderTheme renderTheme =
         await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
 
-    /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
+    /// instantiate the job renderer. This renderer is the core of the system and renders the tile-bitmaps
     final JobRenderer jobRenderer = MapDataStoreRenderer(
-        widget.mapFile!, renderTheme, symbolCache, false,
-        useIsolate: false);
+        widget.datastore!, renderTheme, symbolCache, false);
 
     /// and now it is similar to online rendering.
 

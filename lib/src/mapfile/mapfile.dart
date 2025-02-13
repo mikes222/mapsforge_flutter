@@ -13,16 +13,122 @@ import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 
-import '../datastore/datastorereadresult.dart';
-import '../datastore/mapdatastore.dart';
-import '../datastore/pointofinterest.dart';
+import '../../datastore.dart';
 import '../datastore/poiwaybundle.dart';
-import '../datastore/way.dart';
 import '../projection/mercatorprojection.dart';
 import '../reader/queryparameters.dart';
+import '../utils/flutter_isolate.dart';
 import '../utils/timing.dart';
 import 'indexcache.dart';
 import 'mapfileheader.dart';
+
+class IsolateMapfile implements Datastore {
+  /// The instance of the mapfile in the isolate
+  static MapFile? mapFile;
+
+  /// The parameter needed to create a mapfile in the isolate
+  final String filename;
+
+  /// a long-running instance of an isolate
+  FlutterIsolateInstancePool isolateInstancePool = FlutterIsolateInstancePool();
+
+  IsolateMapfile(this.filename);
+
+  @override
+  void dispose() {
+    mapFile?.dispose();
+    isolateInstancePool.dispose();
+  }
+
+  @override
+  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) {
+    // TODO: implement readLabels
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<DatastoreReadResult?> readLabelsSingle(Tile tile) async {
+    DatastoreReadResult? result = await isolateInstancePool.compute(
+        readLabelsSingleStatic, MapfileReadSingleRequest(filename, tile));
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  static Future<DatastoreReadResult?> readLabelsSingleStatic(
+      MapfileReadSingleRequest request) async {
+    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    return mapFile!.readLabelsSingle(request.tile);
+  }
+
+  @override
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) {
+    // TODO: implement readMapData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<DatastoreReadResult?> readMapDataSingle(Tile tile) async {
+    DatastoreReadResult? result = await isolateInstancePool.compute(
+        readMapDataSingleStatic, MapfileReadSingleRequest(filename, tile));
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  static Future<DatastoreReadResult?> readMapDataSingleStatic(
+      MapfileReadSingleRequest request) async {
+    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    return mapFile!.readMapDataSingle(request.tile);
+  }
+
+  @override
+  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) {
+    // TODO: implement readPoiData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<DatastoreReadResult?> readPoiDataSingle(Tile tile) {
+    // TODO: implement readPoiDataSingle
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> supportsTile(Tile tile, Projection projection) async {
+    bool result = await isolateInstancePool.compute(supportsTileStatic,
+        MapfileSupportsTileRequest(filename, tile, projection));
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  static Future<bool> supportsTileStatic(
+      MapfileSupportsTileRequest request) async {
+    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    return mapFile!.supportsTile(request.tile, request.projection);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class MapfileReadSingleRequest {
+  final String filename;
+
+  final Tile tile;
+
+  MapfileReadSingleRequest(this.filename, this.tile);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class MapfileSupportsTileRequest {
+  final String filename;
+
+  final Tile tile;
+
+  final Projection projection;
+
+  MapfileSupportsTileRequest(this.filename, this.tile, this.projection);
+}
+//////////////////////////////////////////////////////////////////////////////
 
 /// A class for reading binary map files.
 /// The mapFile should be disposed if not needed anymore
@@ -441,11 +547,11 @@ class MapFile extends MapDataStore {
   @override
   Future<DatastoreReadResult> readMapData(
       Tile upperLeft, Tile lowerRight) async {
+    await _lateOpen();
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.ALL);
   }
 
-  @override
-  Future<void> lateOpen() async {
+  Future<void> _lateOpen() async {
     if (_fileSize > 0) return;
     // late reading of header. Necessary for isolates because we cannot transfer a non-null RandomAccessFile descriptor to the isolate.
     this._fileSize = await readBufferSource!.length();
@@ -455,7 +561,7 @@ class MapFile extends MapDataStore {
 
   Future<DatastoreReadResult> _readMapDataComplete(
       Tile upperLeft, Tile lowerRight, MapfileSelector selector) async {
-    await lateOpen();
+    await _lateOpen();
     Projection projection =
         MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     // may happen that upperLeft and lowerRight does not support the tiles but inbetween do
@@ -559,7 +665,7 @@ class MapFile extends MapDataStore {
    */
   @override
   Future<LatLong?> getStartPosition() async {
-    await lateOpen();
+    await _lateOpen();
     if (null != getMapFileInfo().startPosition) {
       return getMapFileInfo().startPosition;
     }
@@ -568,7 +674,7 @@ class MapFile extends MapDataStore {
 
   @override
   Future<int?> getStartZoomLevel() async {
-    await lateOpen();
+    await _lateOpen();
     if (null != getMapFileInfo().startZoomLevel) {
       return getMapFileInfo().startZoomLevel;
     }
@@ -579,7 +685,7 @@ class MapFile extends MapDataStore {
   Future<bool> supportsTile(Tile tile, Projection projection) async {
     if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax)
       return false;
-    await lateOpen();
+    await _lateOpen();
     return tile
         .getBoundingBox(projection)
         .intersects(getMapFileInfo().boundingBox);
