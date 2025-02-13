@@ -29,6 +29,9 @@ abstract class Projection {
 
   static final double LONGITUDE_MIN = -LONGITUDE_MAX;
 
+  static final BoundingBox BOUNDINGBOX_MAX =
+      BoundingBox(LATITUDE_MIN, LONGITUDE_MIN, LATITUDE_MAX, LONGITUDE_MAX);
+
   /// The flattening factor of the earth's ellipsoid is required for distance computation.
   static final double INVERSE_FLATTENING = 298.257223563;
 

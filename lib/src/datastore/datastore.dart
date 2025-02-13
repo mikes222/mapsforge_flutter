@@ -1,6 +1,7 @@
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
-import 'package:mapsforge_flutter/src/model/tile.dart';
+
+import '../../core.dart';
 
 ///
 /// abstract class for a datastore
@@ -68,6 +69,8 @@ abstract class Datastore {
   /// @return true if tile is part of database.
   Future<bool> supportsTile(Tile tile, Projection projection);
 
-  /// Open file descriptors
-//  Future<void> lateOpen();
+  /// Returns the area for which data is supplied.
+  ///
+  /// @return bounding box of area.
+  Future<BoundingBox?> getBoundingBox();
 }

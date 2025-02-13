@@ -2,7 +2,6 @@ import 'dart:core';
 
 import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 
-import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
 import '../model/tile.dart';
@@ -56,11 +55,6 @@ abstract class MapDataStore extends Datastore {
   ///
   /// @param language the preferred language or null if default language is used.
   const MapDataStore(String? language) : preferredLanguage = language;
-
-  /// Returns the area for which data is supplied.
-  ///
-  /// @return bounding box of area.
-  BoundingBox? get boundingBox;
 
   /// Extracts substring of preferred language from multilingual string using
   /// the preferredLanguage setting.

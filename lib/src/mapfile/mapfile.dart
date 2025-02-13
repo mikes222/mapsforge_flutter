@@ -105,6 +105,28 @@ class IsolateMapfile implements Datastore {
     mapFile ??= await MapFile.from(request.filename, 0, "en");
     return mapFile!.supportsTile(request.tile, request.projection);
   }
+
+  @override
+  Future<BoundingBox?> getBoundingBox() async {
+    BoundingBox? result = await isolateInstancePool.compute(
+        getBoundingBoxStatic, MapfileBoundingBoxRequest(filename));
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  static Future<BoundingBox?> getBoundingBoxStatic(
+      MapfileBoundingBoxRequest request) async {
+    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    return mapFile!.getBoundingBox();
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class MapfileBoundingBoxRequest {
+  final String filename;
+
+  MapfileBoundingBoxRequest(this.filename);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -236,16 +258,12 @@ class MapFile extends MapDataStore {
     return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileHeader, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, readBufferSource: $readBufferSource}';
   }
 
+  @override
   @mustCallSuper
   void dispose() {
     this._databaseIndexCache.dispose();
     readBufferSource?.dispose();
     readBufferSource = null;
-  }
-
-  @override
-  BoundingBox get boundingBox {
-    return getMapFileInfo().boundingBox;
   }
 
   /**
@@ -689,6 +707,12 @@ class MapFile extends MapDataStore {
     return tile
         .getBoundingBox(projection)
         .intersects(getMapFileInfo().boundingBox);
+  }
+
+  @override
+  Future<BoundingBox?> getBoundingBox() async {
+    await _lateOpen();
+    return getMapFileInfo().boundingBox;
   }
 }
 

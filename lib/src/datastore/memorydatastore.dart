@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/datastore/datastorereadresult.dart';
 import 'package:mapsforge_flutter/src/datastore/pointofinterest.dart';
 import 'package:mapsforge_flutter/src/datastore/way.dart';
+import 'package:mapsforge_flutter/src/model/boundingbox.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 class MemoryDatastore extends Datastore {
@@ -94,5 +95,10 @@ class MemoryDatastore extends Datastore {
   @override
   String toString() {
     return 'MemoryDatastore{pointOfInterests: $pointOfInterests, ways: $ways}';
+  }
+
+  @override
+  Future<BoundingBox?> getBoundingBox() {
+    return Future.value(Projection.BOUNDINGBOX_MAX);
   }
 }
