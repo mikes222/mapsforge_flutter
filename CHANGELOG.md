@@ -1,5 +1,10 @@
 ## next
 
+## 3.0.1 - 2025-02-14
+
+* Support for mapfiles running in isolates
+* Multiple concurrent generations of tiles
+
 ## 3.0.0 - 2024-01-20
 
 * Improved performance
