@@ -43,7 +43,7 @@ Also to the university of chemnitz which implements indoor map support
 include the library in your ``pubspec.yaml``:
 
 ```yaml
-  mapsforge_flutter: ^3.0.0
+  mapsforge_flutter: ^3.0.1
 ```
 
 Note: For development purposes consider to include the github repository directly.
@@ -57,7 +57,7 @@ include a list of all used assets in your ``pubspec.yaml`` (see pubspec file fro
         - packages/mapsforge_flutter/assets/patterns/coniferous.svg
         - packages/mapsforge_flutter/assets/patterns/coniferous_and_deciduous.svg
         - packages/mapsforge_flutter/assets/patterns/deciduous.svg
-      ...
+      # and more
 ```
 
 ### Initializing mapsforge
@@ -66,17 +66,22 @@ Load the mapfile which holds the openstreetmap &reg; data
 
 > Mapfiles are files specifically designed for mobile use and provide the information about an area in condensed form. Please visit the original project for more information about how to download/generate them.
 
-    MapFile mapFile = await MapFile.from(filename, null, null);
+    Datastore datastore = IsolateMapfile(filename);
 
 or
 
-    MapFile mapFile = await MapFile.using(content, null, null);
+    Datastore datastore = await MapFile.using(content, null, null);
+
+The former is used to read mapfiles from the filesystem whereas the latter is used to read mapfiles from memory. 
+If you do not want to use Isolates you can also use the Mapfile directly like so:
+
+    Datastore datastore = await MapFile.from(filename, null, null);
 
 Note: Destroy the mapfile by calling ``dispose()`` if not needed anymore
 
 Create the cache for assets
 
-> assets are mostly small images to display in the map, for example parking signs, bus stop signs and so on
+> Assets are mostly small images to display in the map, for example parking signs, bus stop signs and so on
 
     SymbolCache symbolCache = FileSymbolCache();
 
@@ -95,7 +100,9 @@ Create the render theme which specifies how to render the informations from the 
 
 Create the Renderer.
 
-> The renderer is the rendering engine for the mapfiles. This code does the main work to render the contents of a mapfile together with the design guides from the rendertheme into bitmap tiles. bitmap tiles are png files with a fixed width/height. Multiple tiles together form the mapview.
+> The renderer is the rendering engine for the mapfiles. This code does the main work to render the contents 
+> of a mapfile together with the design guides from the rendertheme into bitmap tiles. 
+> Bitmap tiles are png files with a fixed width/height. Multiple tiles together forms the map.
 
     JobRenderer jobRenderer = MapDataStoreRenderer(mapFile, renderTheme, symbolCache, true);
 
@@ -110,7 +117,9 @@ fill the disk space.
 
     TileBitmapCache bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
 
-Note: If storing tiles at the filesystem is not desired one can also use MemoryTileBitmapCache
+or
+
+    TileBitmapCache bitmapCache = await MemoryTileBitmapCache.create();
 
 Glue everything together into two models.
 
@@ -127,17 +136,33 @@ Glue everything together into two models.
 
 Include the mapView in the ``build()`` method of your APP:
 
-    FlutterMapView(mapModel: mapModel, viewModel: viewModel );
+    Scaffold(
+        body: 
+            MapviewWidget(
+                displayModel: displayModel,
+                createMapModel: () async {
+                    return mapModel();
+                },
+                createViewModel: () async {
+                    return viewModel();
+                },
+            ),
+    );
 
 Voilà you are done. 
 
 ---
 
-In order to change the position in the map programmatically call the viewModel with the new position
+In order to change the position in the map programmatically call the viewModel with the new position:
 
     viewModel.setMapViewPosition(48.0901926 , 16.308939);
 
-Similar methods exists for zooming.
+Similar methods exists for zooming and rotation.
+
+---
+
+First take a look at the simplified example to understand how everything works together. 
+Check the examples for many more features like markers, context menus and rotation. 
 
 ## License
 
@@ -152,14 +177,29 @@ Also feel free to create bug reports in github.
 
 ## Recent changes
 
+### IsolateMapfile
+
+The system now supports mapfiles running in isolates. Instead of using ``Mapfile.from()`` just use ``IsolateMapfile()``
+
+### Marker Context
+
 Use ``MarkerContext`` instead of ``MarkerCallback`` for markers.
 
-Avoid using mapViewPosition.getLeftUpper(). Use mapViewPosition.getCenter() instead.
+### leftUpper()
+
+Avoid using ``mapViewPosition.getLeftUpper()``. Use ``mapViewPosition.getCenter()`` instead.
+
+### Changes for markers
+
 In markers use ``markerContext.mapCenter``.
+
 This is because we do not redraw the map for every position-update but rather only if the position
-gets out of the boundary of the map. ``mapViewPosition.getCenter()`` returns the CURRENT center (=position)
+gets out of the boundary of the map. 
+``mapViewPosition.getCenter()`` returns the CURRENT center (=position)
 whereas ``markerContext.mapCenter`` returns the center of the map which may be different if the map moved since the 
 last redraw.
+
+### Marker captions
 
 instead of 
 
@@ -178,6 +218,7 @@ use
         caption: "abc",
         ...
     );
+
 
 ## Documentation
 
