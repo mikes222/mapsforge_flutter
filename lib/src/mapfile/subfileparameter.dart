@@ -1,77 +1,55 @@
+import '../../maps.dart';
+
 /// Holds all parameters of a sub-file. A subfile is a portion of a map. It is not necessarily dependent on a mapFILE.
 class SubFileParameter {
   /// The id of this class. We have several SubFileParameters and one SubFileParameter may be responsible for several zoomLevels. To
-  /// distinuish between the different parameters we need this id
+  /// distinguish between the different parameters we need this id
   final int id;
-  /**
-   * Base zoom level of the sub-file, which equals to one block.
-   */
+
+  /// Base zoom level of the sub-file, which equals to one block.
   final int baseZoomLevel;
 
-  /**
-   * Vertical amount of blocks in the grid.
-   */
+  /// Vertical amount of blocks in the grid.
   final int blocksHeight;
 
-  /**
-   * Horizontal amount of blocks in the grid.
-   */
+  /// Horizontal amount of blocks in the grid.
   final int blocksWidth;
 
-  /**
-   * Y number of the tile at the bottom boundary in the grid.
-   */
+  /// Y number of the tile at the bottom boundary in the grid.
   final int boundaryTileBottom;
 
-  /**
-   * X number of the tile at the left boundary in the grid.
-   */
+  /// X number of the tile at the left boundary in the grid.
   final int boundaryTileLeft;
 
-  /**
-   * X number of the tile at the right boundary in the grid.
-   */
+  /// X number of the tile at the right boundary in the grid.
   final int boundaryTileRight;
 
-  /**
-   * Y number of the tile at the top boundary in the grid.
-   */
+  /// Y number of the tile at the top boundary in the grid.
   final int boundaryTileTop;
 
-  /**
-   * Absolute end address of the index in the enclosing file.
-   */
+  /// Absolute end address of the index in the enclosing file.
   final int indexEndAddress;
 
-  /**
-   * Absolute start address of the index in the enclosing file.
-   */
-  final int? indexStartAddress;
+  /// Absolute start address of the index in the enclosing file.
+  final int indexStartAddress;
 
-  /**
-   * Total number of blocks in the grid.
-   */
+  /// Total number of blocks in the grid.
   final int numberOfBlocks;
 
-  /**
-   * Absolute start address of the sub-file in the enclosing file.
-   */
+  /// Absolute start address of the sub-file in the enclosing file.
   final int startAddress;
 
-  /**
-   * Size of the sub-file in bytes.
-   */
-  final int? subFileSize;
+  /// Size of the sub-file in bytes.
+  final int subFileSize;
 
-  /**
-   * Maximum zoom level for which the block entries tables are made.
-   */
+  /// Maximum zoom level for which the block entries tables are made.
   final int zoomLevelMax;
 
-  /**
-   * Minimum zoom level for which the block entries tables are made.
-   */
+  /// Minimum zoom level for which the block entries tables are made.
   final int zoomLevelMin;
+
+  /// A cache for the projection for [baseZoomLevel].
+  final MercatorProjection projection;
 
   SubFileParameter(
     this.id,
@@ -89,6 +67,7 @@ class SubFileParameter {
     this.subFileSize,
     this.zoomLevelMax,
     this.zoomLevelMin,
+    this.projection,
   );
 
   @override

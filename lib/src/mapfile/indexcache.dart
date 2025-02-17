@@ -68,7 +68,7 @@ class IndexCache {
     Uint8List? indexBlock = this._cache[indexCacheEntryKey];
     if (indexBlock == null) {
       // cache miss, seek to the correct index block in the file and read it
-      int indexBlockPosition = subFileParameter.indexStartAddress! +
+      int indexBlockPosition = subFileParameter.indexStartAddress +
           indexBlockNumber * SIZE_OF_INDEX_BLOCK;
 
       int remainingIndexSize =

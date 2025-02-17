@@ -15,9 +15,7 @@ class LatLongUtils {
   /// Polar radius of earth is required for distance computation.
   static final double POLAR_RADIUS = 6356752.3142;
 
-  /**
-   * Conversion factor from degrees to microdegrees.
-   */
+  /// Conversion factor from degrees to microdegrees and vice versa.
   static final double CONVERSION_FACTOR = 1000000.0;
 
   static final String DELIMITER = ",";
@@ -92,14 +90,20 @@ class LatLongUtils {
         0.000000001;
   }
 
-  /**
-   * Converts a coordinate from microdegrees (degrees * 10^6) to degrees. No validation is performed.
-   *
-   * @param coordinate the coordinate in microdegrees (degrees * 10^6).
-   * @return the coordinate in degrees.
-   */
+  /// Converts a coordinate from microdegrees (degrees * 10^6) to degrees. No validation is performed.
+  ///
+  /// @param coordinate the coordinate in microdegrees (degrees * 10^6).
+  /// @return the coordinate in degrees.
   static double microdegreesToDegrees(int coordinate) {
     return coordinate / CONVERSION_FACTOR;
+  }
+
+  /// Converts a coordinate from degrees to microdegrees (degrees * 10^6). No validation is performed.
+  ///
+  /// @param coordinate the coordinate in microdegrees (degrees * 10^6).
+  /// @return the coordinate in degrees.
+  static int degreesToMicrodegrees(double coordinate) {
+    return (coordinate * CONVERSION_FACTOR).round();
   }
 
   /**

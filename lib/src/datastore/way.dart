@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/core.dart';
 
 import '../model/tag.dart';
@@ -42,6 +43,14 @@ class Way {
   //   });
   //   return minMaxMappoint.getBoundary();
   // }
+
+  bool hasTag(String key) {
+    return tags.firstWhereOrNull((test) => test.key == key) != null;
+  }
+
+  String? getTag(String key) {
+    return tags.firstWhereOrNull((test) => test.key == key)?.value;
+  }
 
   @override
   String toString() {

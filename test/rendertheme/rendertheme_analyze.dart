@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -32,13 +33,13 @@ main() async {
     DisplayModel displayModel = DisplayModel();
 
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
-    String content = await TestAssetBundle().loadString("defaultrender.xml");
+    String content = await TestAssetBundle().loadString("lightrender.xml");
     renderThemeBuilder.parseXml(displayModel, content);
     RenderTheme renderTheme = renderThemeBuilder.build();
     int zoomLevel = 18;
     RenderthemeLevel renderthemeLevel = renderTheme.prepareZoomlevel(zoomLevel);
     RuleVisitorImpl ruleVisitorImpl = RuleVisitorImpl();
-    for (Rule rule in renderthemeLevel.rulesList) {
+    for (Rule rule in renderTheme.rulesList) {
       ruleVisitorImpl.apply(rule);
     }
 
@@ -47,46 +48,35 @@ main() async {
     ruleVisitorImpl.keys.forEach((key) => print("  $key"));
     print("================================================================");
     print("Nodes:");
-    for (MapEntry<String, ValueInfo> entry
-        in ruleVisitorImpl.nodes.matchers.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(ruleVisitorImpl.nodes.matchers);
     print(".......... Negation rules");
-    for (MapEntry<String, ValueInfo> entry
-        in ruleVisitorImpl.nodes.negativeMatchers.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(ruleVisitorImpl.nodes.negativeMatchers);
     print("================================================================");
     print("Openways:");
-    for (MapEntry<String, ValueInfo> entry
-        in ruleVisitorImpl.openWays.matchers.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(ruleVisitorImpl.openWays.matchers);
     print(".......... Negation rules");
-    for (MapEntry<String, ValueInfo> entry
-        in ruleVisitorImpl.openWays.negativeMatchers.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(ruleVisitorImpl.openWays.negativeMatchers);
     print("================================================================");
     print("Closedways:");
-    for (MapEntry<String, ValueInfo> entry
-        in ruleVisitorImpl.closedWays.matchers.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(ruleVisitorImpl.closedWays.matchers);
     print(".......... Negation rules");
-    for (MapEntry<String, ValueInfo> entry
-        in ruleVisitorImpl.closedWays.negativeMatchers.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(ruleVisitorImpl.closedWays.negativeMatchers);
     print("================================================================");
     print("Overall summary:");
     Map<String, ValueInfo> values = createSummary(ruleVisitorImpl);
-    for (MapEntry<String, ValueInfo> entry in values.entries) {
-      print("  ${entry.key}: ${entry.value.values}");
-    }
+    printValueInfos(values);
     print(".......... Keys only");
-    print("${values.keys.toSet()}");
+    print("${values.keys.toSet().sorted().join(",")}");
+    print("  You should also keep: layer,type");
+    print(".......... Keys in renderInstructions");
+    print("${ruleVisitorImpl.keys.join(",")}");
   });
+}
+
+void printValueInfos(Map<String, ValueInfo> values) {
+  for (MapEntry<String, ValueInfo> entry in values.entries) {
+    print("  ${entry.key}=${entry.value.values.join(",")}");
+  }
 }
 
 ValueInfo append(Map<String, ValueInfo> values, String key) {
@@ -100,10 +90,11 @@ ValueInfo append(Map<String, ValueInfo> values, String key) {
 
 Map<String, ValueInfo> createSummary(RuleVisitorImpl ruleVisitorImpl) {
   Map<String, ValueInfo> values = {};
-  ruleVisitorImpl.keys.forEach((key) {
-    ValueInfo? valueInfo = append(values, key);
-    valueInfo.values.add("*");
-  });
+  // do not add keys since they are from instructions and not from rules
+  // ruleVisitorImpl.keys.forEach((key) {
+  //   ValueInfo? valueInfo = append(values, key);
+  //   valueInfo.values.add("*");
+  // });
   for (MapEntry<String, ValueInfo> entry
       in ruleVisitorImpl.nodes.matchers.entries) {
     ValueInfo? valueInfo = append(values, entry.key);
@@ -148,11 +139,11 @@ class RuleVisitorImpl extends RuleVisitor {
 
   @override
   void apply(Rule rule) {
-    printRule(rule, 0);
+    analyzeRule(rule, 0);
     //    super.apply(rule);
   }
 
-  void printRule(Rule rule, int level) {
+  void analyzeRule(Rule rule, int level) {
     if (rule.elementMatcher is ElementWayMatcher) {
       if (rule.closedMatcher is ClosedWayMatcher) {
         addClosedWay(rule);
@@ -269,7 +260,7 @@ class RuleVisitorImpl extends RuleVisitor {
       }
     }
     for (Rule subRule in rule.subRules) {
-      printRule(subRule, level + 2);
+      analyzeRule(subRule, level + 2);
     }
   }
 

@@ -273,7 +273,7 @@ class RuleBuilder {
 
     if (this.zoomMin > this.zoomMax) {
       throw new Exception(
-          "ZoomMin $zoomMin > ZoomMax $zoomMax for rule with $keys and $values");
+          "ZoomMin $zoomMin > ZoomMax $zoomMax for rule with $keys and $values and childs ${ruleBuilderStack.toString()}");
     }
   }
 

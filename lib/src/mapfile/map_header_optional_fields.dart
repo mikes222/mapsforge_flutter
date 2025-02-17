@@ -1,51 +1,28 @@
-import 'mapfileinfobuilder.dart';
-import 'readbuffer.dart';
 import '../model/latlong.dart';
 import '../utils/latlongutils.dart';
+import 'readbuffer.dart';
 
-class OptionalFields {
-  /**
-   * Bitmask for the comment field in the file header.
-   */
+class MapHeaderOptionalFields {
+  /// Bitmask for the comment field in the file header.
   static final int HEADER_BITMASK_COMMENT = 0x08;
 
-  /**
-   * Bitmask for the created by field in the file header.
-   */
+  /// Bitmask for the created by field in the file header.
   static final int HEADER_BITMASK_CREATED_BY = 0x04;
 
-  /**
-   * Bitmask for the debug flag in the file header.
-   */
+  /// Bitmask for the debug flag in the file header.
   static final int HEADER_BITMASK_DEBUG = 0x80;
 
-  /**
-   * Bitmask for the language(s) preference field in the file header.
-   */
+  /// Bitmask for the language(s) preference field in the file header.
   static final int HEADER_BITMASK_LANGUAGES_PREFERENCE = 0x10;
 
-  /**
-   * Bitmask for the start position field in the file header.
-   */
+  /// Bitmask for the start position field in the file header.
   static final int HEADER_BITMASK_START_POSITION = 0x40;
 
-  /**
-   * Bitmask for the start zoom level field in the file header.
-   */
+  /// Bitmask for the start zoom level field in the file header.
   static final int HEADER_BITMASK_START_ZOOM_LEVEL = 0x20;
 
-  /**
-   * Maximum valid start zoom level.
-   */
-  static final int START_ZOOM_LEVEL_MAX = 22;
-
-  static void readOptionalFieldsStatic(
-      Readbuffer readBuffer, MapFileInfoBuilder mapFileInfoBuilder) {
-    OptionalFields optionalFields = new OptionalFields(readBuffer.readByte());
-    mapFileInfoBuilder.optionalFields = optionalFields;
-
-    optionalFields.readOptionalFields(readBuffer);
-  }
+  /// Maximum valid start zoom level.
+  final int START_ZOOM_LEVEL_MAX = 22;
 
   String? comment;
   String? createdBy;
@@ -59,7 +36,7 @@ class OptionalFields {
   LatLong? startPosition;
   int? startZoomLevel;
 
-  OptionalFields(int flags) {
+  MapHeaderOptionalFields(int flags) {
     this.isDebugFile = (flags & HEADER_BITMASK_DEBUG) != 0;
     this.hasStartPosition = (flags & HEADER_BITMASK_START_POSITION) != 0;
     this.hasStartZoomLevel = (flags & HEADER_BITMASK_START_ZOOM_LEVEL) != 0;
@@ -81,7 +58,7 @@ class OptionalFields {
           LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
       double mapStartLongitude =
           LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
-      this.startPosition = new LatLong(mapStartLatitude, mapStartLongitude);
+      this.startPosition = LatLong(mapStartLatitude, mapStartLongitude);
     }
   }
 

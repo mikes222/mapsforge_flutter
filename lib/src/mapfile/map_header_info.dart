@@ -5,7 +5,7 @@ import '../model/tag.dart';
 /// Contains the immutable metadata of a map file.
 ///
 /// @see org.mapsforge.map.reader.MapFile#getMapFileInfo()
-class MapFileInfo {
+class MapHeaderInfo {
   /**
    * The bounding box of the map file.
    */
@@ -74,7 +74,7 @@ class MapFileInfo {
   /**
    * The size of the tiles in pixels.
    */
-  final int? tilePixelSize;
+  final int tilePixelSize;
 
   /**
    * The way tags.
@@ -84,7 +84,7 @@ class MapFileInfo {
   final int? zoomLevelMin;
   final int? zoomLevelMax;
 
-  const MapFileInfo(
+  const MapHeaderInfo(
       this.boundingBox,
       this.comment,
       this.createdBy,
@@ -105,6 +105,6 @@ class MapFileInfo {
 
   @override
   String toString() {
-    return 'MapFileInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
+    return 'MapHeaderInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
   }
 }

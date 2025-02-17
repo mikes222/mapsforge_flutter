@@ -2,7 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
-import 'package:mapsforge_flutter/src/mapfile/mapfileheader.dart';
+import 'package:mapsforge_flutter/src/mapfile/mapfile_info.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
@@ -84,7 +84,7 @@ class MapfileHelper {
 
   static int wayFilterDistance = 20;
 
-  final MapFileHeader _mapFileHeader;
+  final MapfileInfo _mapFileHeader;
 
   /// the preferred language when extracting labels from this data store. The actual
   /// implementation is up to the concrete implementation, which can also simply ignore
@@ -101,9 +101,10 @@ class MapfileHelper {
       double tileLatitude,
       double tileLongitude,
       MapfileSelector selector,
-      Readbuffer readBuffer) {
+      Readbuffer readBuffer,
+      MapDataStore mapDataStore) {
     List<Way> ways = [];
-    List<Tag> wayTags = this._mapFileHeader.getMapFileInfo().wayTags;
+    List<Tag> wayTags = this._mapFileHeader.getMapHeaderInfo().wayTags;
 
     BoundingBox wayFilterBbox = boundingBox.extendMeters(
         queryParameters.queryZoomLevel > 20
@@ -113,7 +114,7 @@ class MapfileHelper {
     for (int elementCounter = numberOfWays;
         elementCounter != 0;
         --elementCounter) {
-      if (this._mapFileHeader.getMapFileInfo().debugFile) {
+      if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
         // get and check the way signature
         String signatureWay =
             readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
@@ -129,10 +130,9 @@ class MapfileHelper {
         if (wayDataSize < 0) {
           throw Exception("invalid way data size: $wayDataSize");
         }
-      } catch (e) {
-        Error error = e as Error;
-        print(e.toString());
-        print(error.stackTrace);
+      } catch (error, stacktrace) {
+        print(error);
+        print(stacktrace);
         // reset position to next way
         break;
       }
@@ -181,8 +181,10 @@ class MapfileHelper {
         // check if the way has a name
         if (featureName) {
           try {
-            tags.add(new Tag(TAG_KEY_NAME,
-                extractLocalized(readBuffer.readUTF8EncodedString())));
+            tags.add(new Tag(
+                TAG_KEY_NAME,
+                mapDataStore
+                    .extractLocalized(readBuffer.readUTF8EncodedString())));
           } catch (e) {
             _log.warning(e.toString());
             //tags.add(Tag(TAG_KEY_NAME, "unknown"));
@@ -247,9 +249,9 @@ class MapfileHelper {
             ways.add(Way(layer, tags, wayNodes, labelLatLong));
           }
         }
-      } catch (e) {
-        print(e.toString());
-        if (e is Error) print(e.stackTrace);
+      } catch (error, stacktrace) {
+        print(error);
+        print(stacktrace);
         // reset position to next way
         readBuffer.setBufferPosition(pos + wayDataSize);
       }
@@ -401,14 +403,15 @@ class MapfileHelper {
       int numberOfPois,
       BoundingBox boundingBox,
       bool filterRequired,
-      Readbuffer readBuffer) {
+      Readbuffer readBuffer,
+      MapDataStore mapDataStore) {
     List<PointOfInterest> pois = [];
-    List<Tag> poiTags = this._mapFileHeader.getMapFileInfo().poiTags;
+    List<Tag> poiTags = this._mapFileHeader.getMapHeaderInfo().poiTags;
 
     for (int elementCounter = numberOfPois;
         elementCounter != 0;
         --elementCounter) {
-      if (this._mapFileHeader.getMapFileInfo().debugFile) {
+      if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
         // get and check the POI signature
         String signaturePoi =
             readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
@@ -447,7 +450,7 @@ class MapfileHelper {
       // check if the POI has a name
       if (featureName) {
         tags.add(new Tag(TAG_KEY_NAME,
-            extractLocalized(readBuffer.readUTF8EncodedString())));
+            mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
       }
 
       // check if the POI has a house number
@@ -503,11 +506,5 @@ class MapfileHelper {
   /// @return true if the way should be included in the result set
   bool wayAsLabelTagFilter(List<Tag> tags) {
     return false;
-  }
-
-  /// Extracts substring of preferred language from multilingual string using
-  /// the preferredLanguage setting.
-  String? extractLocalized(String s) {
-    return MapDataStore.extract(s, preferredLanguage);
   }
 }

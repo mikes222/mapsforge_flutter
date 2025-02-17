@@ -74,3 +74,4 @@ build/
 **/failures/*.png
 *.lock
 *.flutter-plugins-dependencies
+example/android/app/.cxx/
