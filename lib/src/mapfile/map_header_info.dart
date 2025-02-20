@@ -85,26 +85,26 @@ class MapHeaderInfo {
   final int? zoomLevelMax;
 
   const MapHeaderInfo(
-      this.boundingBox,
+      {required this.boundingBox,
       this.comment,
       this.createdBy,
-      this.debugFile,
+      this.debugFile = false,
       this.fileSize,
       this.fileVersion,
       this.languagesPreference,
       this.mapDate,
       this.numberOfSubFiles,
-      this.poiTags,
+      required this.poiTags,
       this.projectionName,
       this.startPosition,
       this.startZoomLevel,
-      this.tilePixelSize,
-      this.wayTags,
+      required this.tilePixelSize,
+      required this.wayTags,
       this.zoomLevelMin,
-      this.zoomLevelMax);
+      this.zoomLevelMax});
 
   @override
   String toString() {
-    return 'MapHeaderInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, tilePixelSize: $tilePixelSize, wayTags-length: ${wayTags.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
+    return 'MapHeaderInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, wayTags-length: ${wayTags.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
   }
 }

@@ -43,8 +43,7 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     indoorLevels: {2: '2', 1: '1', 0: '0', -1: '-1', -2: '-2', -3: '-3'},
   ),
   const MapFileData(
-    url:
-        "https://dailyflightbuddy.com/mapsforge_examples/ile-de-france.map",
+    url: "https://dailyflightbuddy.com/mapsforge_examples/ile-de-france.map",
     fileName: "ile-de-france.map",
     displayedName: "ile-de-france",
     initialPositionLat: 48.86085,
@@ -144,6 +143,15 @@ final List<MapFileData> MAP_FILE_DATA_LIST = [
     initialPositionLong: 13.38982,
     initialZoomLevel: 17,
   ),
+  // const MapFileData(
+  //   url: "assets/test.map",
+  //   fileName: "test.map",
+  //   displayedName: "Test map",
+  //   theme: "assets/render_themes/mapsforge_default.xml",
+  //   initialPositionLat: 43.7399,
+  //   initialPositionLong: 7.4262,
+  //   initialZoomLevel: 15,
+  // ),
 ];
 
 void main() {

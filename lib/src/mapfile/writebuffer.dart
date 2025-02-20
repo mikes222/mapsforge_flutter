@@ -1,10 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'mapfile_writer.dart';
 
 class Writebuffer {
   /// A chunk of data read from the underlying file
   final List<int> _bufferData = [];
 
   int _bufferPosition = 0;
+
+  void writeToSink(MapfileSink sink) {
+    sink.add(_bufferData);
+  }
 
   void appendInt1(int value) {
     _bufferData.add(value & 0xff);
@@ -83,9 +90,18 @@ class Writebuffer {
     }
   }
 
+  void appendUint8(List<int> values) {
+    _bufferData.addAll(values);
+  }
+
   void appendString(String value) {
     var utf8List = utf8.encoder.convert(value);
     appendUnsignedInt(utf8List.length);
+    _bufferData.addAll(utf8List);
+  }
+
+  void appendStringWithoutLength(String value) {
+    var utf8List = utf8.encoder.convert(value);
     _bufferData.addAll(utf8List);
   }
 
@@ -117,6 +133,15 @@ class Writebuffer {
       value = value >> 7;
     }
     _bufferData.add(value | sign);
+  }
+
+  void appendWritebuffer(Writebuffer other) {
+    _bufferData.addAll(other._bufferData);
+  }
+
+  Future<void> writeIntoAt(int position, RandomAccessFile raf) async {
+    await raf.setPosition(position);
+    await raf.writeFrom(_bufferData);
   }
 
   int get length => _bufferData.length;

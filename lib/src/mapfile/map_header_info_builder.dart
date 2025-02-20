@@ -28,24 +28,24 @@ class MapHeaderInfoBuilder {
   int? zoomLevelMax;
 
   MapHeaderInfo build() {
-    return new MapHeaderInfo(
-        boundingBox!,
-        optionalFields?.comment,
-        optionalFields?.createdBy,
-        optionalFields?.isDebugFile ?? false,
-        fileSize,
-        fileVersion,
-        optionalFields?.languagesPreference,
-        mapDate,
-        numberOfSubFiles,
-        poiTags!,
-        projectionName,
-        optionalFields?.startPosition,
-        optionalFields?.startZoomLevel,
-        tilePixelSize!,
-        wayTags!,
-        zoomLevelMin,
-        zoomLevelMax);
+    return MapHeaderInfo(
+        boundingBox: boundingBox!,
+        fileSize: fileSize,
+        fileVersion: fileVersion,
+        mapDate: mapDate,
+        numberOfSubFiles: numberOfSubFiles,
+        poiTags: poiTags!,
+        projectionName: projectionName,
+        wayTags: wayTags!,
+        zoomLevelMin: zoomLevelMin,
+        zoomLevelMax: zoomLevelMax,
+        comment: optionalFields?.comment,
+        createdBy: optionalFields?.createdBy,
+        debugFile: optionalFields?.isDebugFile ?? false,
+        tilePixelSize: tilePixelSize ?? 256,
+        languagesPreference: optionalFields?.languagesPreference,
+        startPosition: optionalFields?.startPosition,
+        startZoomLevel: optionalFields?.startZoomLevel);
   }
 
   void read(Readbuffer readbuffer, int fileSize) {

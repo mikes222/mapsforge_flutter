@@ -98,7 +98,7 @@ class MemoryDatastore extends Datastore {
   }
 
   @override
-  Future<BoundingBox?> getBoundingBox() {
+  Future<BoundingBox> getBoundingBox() {
     return Future.value(Projection.BOUNDINGBOX_MAX);
   }
 }

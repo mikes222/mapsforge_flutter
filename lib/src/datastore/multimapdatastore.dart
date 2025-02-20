@@ -405,18 +405,17 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<BoundingBox?> getBoundingBox() async {
+  Future<BoundingBox> getBoundingBox() async {
     if (boundingBox != null) return boundingBox!;
     for (Datastore datastore in List.from(mapDatabases)) {
       BoundingBox? boundingBox = await datastore.getBoundingBox();
-      if (boundingBox == null) continue;
       if (null == this.boundingBox) {
         this.boundingBox = boundingBox;
       } else {
         this.boundingBox = this.boundingBox!.extendBoundingBox(boundingBox);
       }
     }
-    return boundingBox;
+    return boundingBox!;
   }
 }
 

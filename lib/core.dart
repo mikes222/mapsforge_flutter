@@ -26,6 +26,7 @@ export 'src/model/mapmodel.dart';
 export 'src/model/mappoint.dart';
 export 'src/model/mapsize.dart';
 export 'src/model/mapviewposition.dart';
+export 'src/model/tag.dart';
 export 'src/model/tile.dart';
 export 'src/model/viewmodel.dart';
 export 'src/rendertheme/shape/shape.dart';

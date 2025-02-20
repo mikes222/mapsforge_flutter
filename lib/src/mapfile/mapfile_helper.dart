@@ -4,7 +4,6 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile_info.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
-import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
 
 class MapfileHelper {
@@ -114,149 +113,161 @@ class MapfileHelper {
     for (int elementCounter = numberOfWays;
         elementCounter != 0;
         --elementCounter) {
-      if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
-        // get and check the way signature
-        String signatureWay =
-            readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
-        if (!signatureWay.startsWith("---WayStart")) {
-          throw Exception("invalid way signature: " + signatureWay);
-        }
-      }
-
-      int wayDataSize;
       try {
-        // get the size of the way (VBE-U)
-        wayDataSize = readBuffer.readUnsignedInt();
-        if (wayDataSize < 0) {
-          throw Exception("invalid way data size: $wayDataSize");
-        }
+        ways.addAll(read1Way(
+            readBuffer,
+            queryParameters,
+            tileLatitude,
+            tileLongitude,
+            mapDataStore,
+            wayTags,
+            filterRequired,
+            wayFilterBbox,
+            selector));
       } catch (error, stacktrace) {
         print(error);
         print(stacktrace);
         // reset position to next way
-        break;
-      }
-      int pos = readBuffer.getBufferPosition();
-      try {
-        if (queryParameters.useTileBitmask) {
-          // get the way tile bitmask (2 bytes)
-          int tileBitmask = readBuffer.readShort();
-          // check if the way is inside the requested tile
-          if ((queryParameters.queryTileBitmask! & tileBitmask) == 0) {
-            // skip the rest of the way and continue with the next way
-            readBuffer.skipBytes(wayDataSize - 2);
-            continue;
-          }
-        } else {
-          // ignore the way tile bitmask (2 bytes)
-          readBuffer.skipBytes(2);
-        }
-
-        // get the special int which encodes multiple flags
-        int specialByte = readBuffer.readByte();
-
-        // bit 1-4 represent the layer
-        int layer = ((specialByte & WAY_LAYER_BITMASK) >> WAY_LAYER_SHIFT);
-        // bit 5-8 represent the number of tag IDs
-        int numberOfTags = (specialByte & WAY_NUMBER_OF_TAGS_BITMASK);
-
-        // get the tags from IDs (VBE-U)
-        List<Tag> tags = readBuffer.readTags(wayTags, numberOfTags);
-        //_log.info("processWays for ${wayTags.toString()} and numberofTags: $numberOfTags returned ${tags.length} items");
-
-        // get the feature bitmask (1 byte)
-        int featureByte = readBuffer.readByte();
-
-        // bit 1-6 enable optional features
-        bool featureName = (featureByte & WAY_FEATURE_NAME) != 0;
-        bool featureHouseNumber = (featureByte & WAY_FEATURE_HOUSE_NUMBER) != 0;
-        bool featureRef = (featureByte & WAY_FEATURE_REF) != 0;
-        bool featureLabelPosition =
-            (featureByte & WAY_FEATURE_LABEL_POSITION) != 0;
-        bool featureWayDataBlocksByte =
-            (featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0;
-        bool featureWayDoubleDeltaEncoding =
-            (featureByte & WAY_FEATURE_DOUBLE_DELTA_ENCODING) != 0;
-
-        // check if the way has a name
-        if (featureName) {
-          try {
-            tags.add(new Tag(
-                TAG_KEY_NAME,
-                mapDataStore
-                    .extractLocalized(readBuffer.readUTF8EncodedString())));
-          } catch (e) {
-            _log.warning(e.toString());
-            //tags.add(Tag(TAG_KEY_NAME, "unknown"));
-          }
-        }
-
-        // check if the way has a house number
-        if (featureHouseNumber) {
-          try {
-            tags.add(new Tag(
-                TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
-          } catch (e) {
-            _log.warning(e.toString());
-            //tags.add(Tag(TAG_KEY_NAME, "unknown"));
-          }
-        }
-
-        // check if the way has a reference
-        if (featureRef) {
-          try {
-            tags.add(new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
-          } catch (e) {
-            _log.warning(e.toString());
-            //tags.add(Tag(TAG_KEY_NAME, "unknown"));
-          }
-        }
-
-        List<int>? labelPosition;
-        if (featureLabelPosition) {
-          labelPosition = _readOptionalLabelPosition(readBuffer);
-        }
-
-        int wayDataBlocks = _readOptionalWayDataBlocksByte(
-            featureWayDataBlocksByte, readBuffer);
-        if (wayDataBlocks < 1) {
-          throw Exception("invalid number of way data blocks: $wayDataBlocks");
-        }
-
-        for (int wayDataBlock = 0;
-            wayDataBlock < wayDataBlocks;
-            ++wayDataBlock) {
-          List<List<LatLong>> wayNodes = _processWayDataBlock(tileLatitude,
-              tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
-          if (filterRequired &&
-              wayFilterEnabled &&
-              !wayFilterBbox.intersectsArea(wayNodes)) {
-            continue;
-          }
-          if (MapfileSelector.ALL == selector ||
-              featureName ||
-              featureHouseNumber ||
-              featureRef ||
-              wayAsLabelTagFilter(tags)) {
-            LatLong? labelLatLong;
-            if (labelPosition != null) {
-              labelLatLong = LatLong(
-                  wayNodes[0][0].latitude +
-                      LatLongUtils.microdegreesToDegrees(labelPosition[1]),
-                  wayNodes[0][0].longitude +
-                      LatLongUtils.microdegreesToDegrees(labelPosition[0]));
-            }
-            ways.add(Way(layer, tags, wayNodes, labelLatLong));
-          }
-        }
-      } catch (error, stacktrace) {
-        print(error);
-        print(stacktrace);
-        // reset position to next way
-        readBuffer.setBufferPosition(pos + wayDataSize);
+        //readBuffer.setBufferPosition(pos + wayDataSize);
       }
     }
 
+    return ways;
+  }
+
+  List<Way> read1Way(
+      Readbuffer readBuffer,
+      QueryParameters queryParameters,
+      double tileLatitude,
+      double tileLongitude,
+      MapDataStore mapDataStore,
+      List<Tag> wayTags,
+      bool filterRequired,
+      BoundingBox wayFilterBbox,
+      MapfileSelector selector) {
+    List<Way> ways = [];
+    if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
+      // get and check the way signature
+      String signatureWay =
+          readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
+      if (!signatureWay.startsWith("---WayStart")) {
+        throw Exception("invalid way signature: " + signatureWay);
+      }
+    }
+
+    // get the size of the way (VBE-U)
+    int wayDataSize = readBuffer.readUnsignedInt();
+    if (wayDataSize < 0) {
+      throw Exception("invalid way data size: $wayDataSize");
+    }
+
+    int pos = readBuffer.getBufferPosition();
+    if (queryParameters.useTileBitmask) {
+      // get the way tile bitmask (2 bytes)
+      int tileBitmask = readBuffer.readShort();
+      // check if the way is inside the requested tile
+      if ((queryParameters.queryTileBitmask! & tileBitmask) == 0) {
+        // skip the rest of the way and continue with the next way
+        readBuffer.skipBytes(wayDataSize - 2);
+        return ways;
+      }
+    } else {
+      // ignore the way tile bitmask (2 bytes)
+      readBuffer.skipBytes(2);
+    }
+
+    // get the special int which encodes multiple flags
+    int specialByte = readBuffer.readByte();
+
+    // bit 1-4 represent the layer
+    int layer = ((specialByte & WAY_LAYER_BITMASK) >> WAY_LAYER_SHIFT);
+    // bit 5-8 represent the number of tag IDs
+    int numberOfTags = (specialByte & WAY_NUMBER_OF_TAGS_BITMASK);
+
+    // get the tags from IDs (VBE-U)
+    List<Tag> tags = readBuffer.readTags(wayTags, numberOfTags);
+    //_log.info("processWays for ${wayTags.toString()} and numberofTags: $numberOfTags returned ${tags.length} items");
+
+    // get the feature bitmask (1 byte)
+    int featureByte = readBuffer.readByte();
+
+    // bit 1-6 enable optional features
+    bool featureName = (featureByte & WAY_FEATURE_NAME) != 0;
+    bool featureHouseNumber = (featureByte & WAY_FEATURE_HOUSE_NUMBER) != 0;
+    bool featureRef = (featureByte & WAY_FEATURE_REF) != 0;
+    bool featureLabelPosition = (featureByte & WAY_FEATURE_LABEL_POSITION) != 0;
+    bool featureWayDataBlocksByte =
+        (featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0;
+    bool featureWayDoubleDeltaEncoding =
+        (featureByte & WAY_FEATURE_DOUBLE_DELTA_ENCODING) != 0;
+
+    // check if the way has a name
+    if (featureName) {
+      try {
+        tags.add(new Tag(TAG_KEY_NAME,
+            mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
+      } catch (e) {
+        _log.warning(e.toString());
+        //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+      }
+    }
+
+    // check if the way has a house number
+    if (featureHouseNumber) {
+      try {
+        tags.add(
+            new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+      } catch (e) {
+        _log.warning(e.toString());
+        //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+      }
+    }
+
+    // check if the way has a reference
+    if (featureRef) {
+      try {
+        tags.add(new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
+      } catch (e) {
+        _log.warning(e.toString());
+        //tags.add(Tag(TAG_KEY_NAME, "unknown"));
+      }
+    }
+
+    List<int>? labelPosition;
+    if (featureLabelPosition) {
+      labelPosition = _readOptionalLabelPosition(readBuffer);
+    }
+
+    int wayDataBlocks =
+        _readOptionalWayDataBlocksByte(featureWayDataBlocksByte, readBuffer);
+    if (wayDataBlocks < 1) {
+      throw Exception("invalid number of way data blocks: $wayDataBlocks");
+    }
+
+    for (int wayDataBlock = 0; wayDataBlock < wayDataBlocks; ++wayDataBlock) {
+      List<List<LatLong>> wayNodes = _processWayDataBlock(tileLatitude,
+          tileLongitude, featureWayDoubleDeltaEncoding, readBuffer);
+      if (filterRequired &&
+          wayFilterEnabled &&
+          !wayFilterBbox.intersectsArea(wayNodes)) {
+        continue;
+      }
+      if (MapfileSelector.ALL == selector ||
+          featureName ||
+          featureHouseNumber ||
+          featureRef ||
+          wayAsLabelTagFilter(tags)) {
+        LatLong? labelLatLong;
+        if (labelPosition != null) {
+          labelLatLong = LatLong(
+              wayNodes[0][0].latitude +
+                  LatLongUtils.microdegreesToDegrees(labelPosition[1]),
+              wayNodes[0][0].longitude +
+                  LatLongUtils.microdegreesToDegrees(labelPosition[0]));
+        }
+        ways.add(Way(layer, tags, wayNodes, labelLatLong));
+      }
+    }
     return ways;
   }
 
@@ -411,68 +422,77 @@ class MapfileHelper {
     for (int elementCounter = numberOfPois;
         elementCounter != 0;
         --elementCounter) {
-      if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
-        // get and check the POI signature
-        String signaturePoi =
-            readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
-        if (!signaturePoi.startsWith("***POIStart")) {
-          throw Exception("invalid POI signature: " + signaturePoi);
-        }
-      }
+      PointOfInterest pointOfInterest = read1Poi(
+          readBuffer, tileLatitude, tileLongitude, mapDataStore, poiTags);
 
-      // get the POI latitude offset (VBE-S)
-      double latitude = tileLatitude +
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-      // get the POI longitude offset (VBE-S)
-      double longitude = tileLongitude +
-          LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
-
-      // get the special int which encodes multiple flags
-      int specialByte = readBuffer.readByte();
-
-      // bit 1-4 represent the layer
-      int layer = ((specialByte & POI_LAYER_BITMASK) >> POI_LAYER_SHIFT);
-      // bit 5-8 represent the number of tag IDs
-      int numberOfTags = (specialByte & POI_NUMBER_OF_TAGS_BITMASK);
-
-      // get the tags from IDs (VBE-U)
-      List<Tag> tags = readBuffer.readTags(poiTags, numberOfTags);
-
-      // get the feature bitmask (1 byte)
-      int featureByte = readBuffer.readByte();
-
-      // bit 1-3 enable optional features
-      bool featureName = (featureByte & POI_FEATURE_NAME) != 0;
-      bool featureHouseNumber = (featureByte & POI_FEATURE_HOUSE_NUMBER) != 0;
-      bool featureElevation = (featureByte & POI_FEATURE_ELEVATION) != 0;
-
-      // check if the POI has a name
-      if (featureName) {
-        tags.add(new Tag(TAG_KEY_NAME,
-            mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
-      }
-
-      // check if the POI has a house number
-      if (featureHouseNumber) {
-        tags.add(
-            new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
-      }
-
-      // check if the POI has an elevation
-      if (featureElevation) {
-        tags.add(new Tag(TAG_KEY_ELE, readBuffer.readSignedInt().toString()));
-      }
-
-      LatLong position = new LatLong(latitude, longitude);
       // depending on the zoom level configuration the poi can lie outside
       // the tile requested, we filter them out here
-      if (!filterRequired || boundingBox.containsLatLong(position)) {
-        pois.add(PointOfInterest(layer, tags, position));
+      if (!filterRequired ||
+          boundingBox.containsLatLong(pointOfInterest.position)) {
+        pois.add(pointOfInterest);
       }
     }
 
     return pois;
+  }
+
+  PointOfInterest read1Poi(Readbuffer readBuffer, double tileLatitude,
+      double tileLongitude, MapDataStore mapDataStore, List<Tag> poiTags) {
+    if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
+      // get and check the POI signature
+      String signaturePoi =
+          readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
+      if (!signaturePoi.startsWith("***POIStart")) {
+        throw Exception("invalid POI signature: " + signaturePoi);
+      }
+    }
+
+    // get the POI latitude offset (VBE-S)
+    double latitude = tileLatitude +
+        LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+
+    // get the POI longitude offset (VBE-S)
+    double longitude = tileLongitude +
+        LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
+
+    // get the special int which encodes multiple flags
+    int specialByte = readBuffer.readByte();
+
+    // bit 1-4 represent the layer
+    int layer = ((specialByte & POI_LAYER_BITMASK) >> POI_LAYER_SHIFT);
+    // bit 5-8 represent the number of tag IDs
+    int numberOfTags = (specialByte & POI_NUMBER_OF_TAGS_BITMASK);
+
+    // get the tags from IDs (VBE-U)
+    List<Tag> tags = readBuffer.readTags(poiTags, numberOfTags);
+
+    // get the feature bitmask (1 byte)
+    int featureByte = readBuffer.readByte();
+
+    // bit 1-3 enable optional features
+    bool featureName = (featureByte & POI_FEATURE_NAME) != 0;
+    bool featureHouseNumber = (featureByte & POI_FEATURE_HOUSE_NUMBER) != 0;
+    bool featureElevation = (featureByte & POI_FEATURE_ELEVATION) != 0;
+
+    // check if the POI has a name
+    if (featureName) {
+      tags.add(new Tag(TAG_KEY_NAME,
+          mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
+    }
+
+    // check if the POI has a house number
+    if (featureHouseNumber) {
+      tags.add(
+          new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+    }
+
+    // check if the POI has an elevation
+    if (featureElevation) {
+      tags.add(new Tag(TAG_KEY_ELE, readBuffer.readSignedInt().toString()));
+    }
+
+    LatLong position = LatLong(latitude, longitude);
+    return PointOfInterest(layer, tags, position);
   }
 
   ///

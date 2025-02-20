@@ -54,7 +54,9 @@ class DatastoreReader {
     }
     DatastoreReadResult? mapReadResult =
         await datastore.readMapDataSingle(tile);
-    if (mapReadResult == null) return null;
+    if (mapReadResult == null) {
+      return null;
+    }
     processMapReadResult(renderContext, tile, renderthemeLevel, mapReadResult);
     return renderContext;
   }

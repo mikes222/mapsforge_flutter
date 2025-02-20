@@ -88,7 +88,8 @@ class ReadbufferFile implements ReadbufferSource {
           : _ReadBufferFileResource(filename);
       await _ressourceAt.setPosition(position);
       Uint8List _bufferData = await _ressourceAt.read(length);
-      assert(_bufferData.length == length);
+      assert(_bufferData.length == length,
+          "${_bufferData.length} == ${length} at position 0x${position.toRadixString(16)} with resource ${_ressourceAt._id}");
       _resourceAts.add(_ressourceAt);
       Readbuffer result = Readbuffer(_bufferData, position);
       return result;
@@ -144,6 +145,7 @@ class _ReadBufferFileResource {
     //_log.info("read $length start ${_id}");
     Uint8List result = await _raf.read(length);
     //_log.info("read $length end ${_id}");
+    //assert(result.length == length, "${result.length} == ${length}");
     return result;
   }
 

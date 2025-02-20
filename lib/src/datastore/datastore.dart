@@ -72,5 +72,5 @@ abstract class Datastore {
   /// Returns the area for which data is supplied.
   ///
   /// @return bounding box of area.
-  Future<BoundingBox?> getBoundingBox();
+  Future<BoundingBox> getBoundingBox();
 }

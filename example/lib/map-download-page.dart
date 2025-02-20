@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'package:leak_tracker/devtools_integration.dart';
 // import 'package:leak_tracker/leak_tracker.dart';
 import 'package:mapsforge_example/filemgr.dart';
@@ -105,13 +107,20 @@ class MapDownloadPageState extends State<MapDownloadPage> {
       final Datastore mapFile = IsolateMapfile(pathHandler.getPath(fileName));
       //await MapFile.from(pathHandler.getPath(fileName), null, null);
       await _startMap(mapFile);
-    } else {
+    } else if (widget.mapFileData.url.startsWith("http")) {
       bool ok = await FileMgr().downloadToFile2(
           widget.mapFileData.url, pathHandler.getPath(fileName));
       if (!ok) {
         error = "Error while putting the downloadrequest in the queue";
         if (mounted) setState(() {});
       }
+    } else {
+      ByteData data = await rootBundle.load(widget.mapFileData.url);
+      List<int> bytes =
+          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      await File(pathHandler.getPath(fileName)).writeAsBytes(bytes);
+      final Datastore mapFile = IsolateMapfile(pathHandler.getPath(fileName));
+      await _startMap(mapFile);
     }
   }
 

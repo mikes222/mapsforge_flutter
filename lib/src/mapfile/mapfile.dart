@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
 import 'package:mapsforge_flutter/src/mapfile/mapfile_helper.dart';
+import 'package:mapsforge_flutter/src/mapfile/mapfile_info_builder.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
@@ -12,6 +13,7 @@ import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
+import 'package:queue/queue.dart';
 
 import '../../datastore.dart';
 import '../datastore/poiwaybundle.dart';
@@ -114,15 +116,14 @@ class IsolateMapfile implements Datastore {
   }
 
   @override
-  Future<BoundingBox?> getBoundingBox() async {
-    BoundingBox? result = await isolateInstancePool.compute(
-        getBoundingBoxStatic,
+  Future<BoundingBox> getBoundingBox() async {
+    BoundingBox result = await isolateInstancePool.compute(getBoundingBoxStatic,
         _MapfileBoundingBoxRequest(filename, preferredLanguage));
     return result;
   }
 
   @pragma('vm:entry-point')
-  static Future<BoundingBox?> getBoundingBoxStatic(
+  static Future<BoundingBox> getBoundingBoxStatic(
       _MapfileBoundingBoxRequest request) async {
     mapFile ??= await MapFile.from(request.filename, 0, "en");
     return mapFile!.getBoundingBox();
@@ -207,13 +208,15 @@ class MapFile extends MapDataStore {
 
   int _fileSize = -1;
 
-  late final MapfileInfo _mapFileInfo;
   final int? timestamp;
 
   int zoomLevelMin = 0;
   int zoomLevelMax = 30;
 
+  late final MapfileInfo _mapFileInfo;
   late final MapfileHelper _helper;
+
+  final Queue _queue = Queue();
 
   /// just to see if we should create a cache for blocks
   //final Set<int> _blockSet = Set();
@@ -253,21 +256,12 @@ class MapFile extends MapDataStore {
   Future<MapFile> _init(ReadbufferSource source) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = source;
-    _mapFileInfo = MapfileInfo();
-    // we will send this structure to the isolate later on. Unfortunately we cannot send the io library status to the isolate so we need to close and nullify it for now.
-    // readBufferSource!.close();
-    // readBufferSource = null;
-    _helper = MapfileHelper(_mapFileInfo, preferredLanguage);
-    //await lateOpen();
     return this;
   }
 
   Future<MapFile> _initContent(Uint8List content) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = ReadbufferMemory(content);
-    _mapFileInfo = MapfileInfo();
-    // we will send this structure to the isolate later on. Unfortunately we cannot send the io library status to the isolate so we need to close and nullify it for now.
-    _helper = MapfileHelper(_mapFileInfo, preferredLanguage);
     return this;
   }
 
@@ -458,8 +452,8 @@ class MapFile extends MapDataStore {
         int currentBlockPointer = currentBlockIndexEntry & BITMASK_INDEX_OFFSET;
         if (currentBlockPointer < 1 ||
             currentBlockPointer > subFileParameter.subFileSize) {
-          _log.warning("invalid current block pointer: $currentBlockPointer");
-          _log.warning("subFileSize: ${subFileParameter.subFileSize}");
+          _log.warning(
+              "invalid current block pointer: 0x${currentBlockPointer.toRadixString(16)} with subFileSize: 0x${subFileParameter.subFileSize.toRadixString(16)} for blocknumber $blockNumber");
           return mapFileReadResult;
         }
 
@@ -587,10 +581,19 @@ class MapFile extends MapDataStore {
 
   Future<void> _lateOpen() async {
     if (_fileSize > 0) return;
-    // late reading of header. Necessary for isolates because we cannot transfer a non-null RandomAccessFile descriptor to the isolate.
-    this._fileSize = await readBufferSource!.length();
-    assert(_fileSize > 0);
-    await this._mapFileInfo.readHeader(readBufferSource!, this._fileSize);
+    return _queue.add(() async {
+      if (_fileSize > 0) return;
+      // late reading of header. Necessary for isolates because we cannot transfer a non-null RandomAccessFile descriptor to the isolate.
+      int fileSize = await readBufferSource!.length();
+      assert(fileSize > 0);
+      MapfileInfoBuilder mapfileInfoBuilder = MapfileInfoBuilder();
+      await mapfileInfoBuilder.readHeader(readBufferSource!, fileSize);
+      this._mapFileInfo = mapfileInfoBuilder.build();
+      _helper = MapfileHelper(_mapFileInfo, preferredLanguage);
+      zoomLevelMin = _mapFileInfo.zoomLevelMinimum;
+      zoomLevelMax = _mapFileInfo.zoomLevelMaximum;
+      this._fileSize = fileSize;
+    });
   }
 
   Future<DatastoreReadResult> _readMapDataComplete(
@@ -726,9 +729,15 @@ class MapFile extends MapDataStore {
   }
 
   @override
-  Future<BoundingBox?> getBoundingBox() async {
+  Future<BoundingBox> getBoundingBox() async {
     await _lateOpen();
     return getMapHeaderInfo().boundingBox;
+  }
+
+  /// For debugging purposes only
+  //@visibleForTesting
+  MapfileHelper getMapfileHelper() {
+    return _helper;
   }
 }
 

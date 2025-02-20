@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:mapsforge_flutter/src/mapfile/mapfile_info.dart';
+import 'package:mapsforge_flutter/src/mapfile/mapfile_info_builder.dart';
 import 'package:mapsforge_flutter/src/mapfile/writebuffer.dart';
 
 import '../../core.dart';
@@ -13,17 +11,12 @@ class MapfileHeaderWriter {
 
   MapfileHeaderWriter(this.mapHeaderInfo);
 
-  void write(IOSink sink) {
-    _writeMagicByte(sink);
+  Writebuffer write(int tagSubfileSize) {
     Writebuffer writebuffer = Writebuffer();
-    // 4 byte header size
-    // todo find header size
-    int headerSize = 0;
-    writebuffer.appendInt4(headerSize);
     _writeFileVersion(writebuffer);
     int fileSize = 0;
-    // todo find file size
-    writebuffer.appendInt4(fileSize);
+    // Placeholder for file size, will be set in close() method via RandomAccessFile
+    writebuffer.appendInt8(fileSize);
     _writeMapDate(writebuffer);
     _writeBoundingBox(writebuffer);
     _writeTilePixelSize(writebuffer);
@@ -36,10 +29,19 @@ class MapfileHeaderWriter {
     _writeOptionalLanguagesPreference(writebuffer);
     _writeOptionalComment(writebuffer);
     _writeOptionalCreatedBy(writebuffer);
+
+    Writebuffer writebuffer2 = Writebuffer();
+    _writeMagicByte(writebuffer2);
+    // 4 byte header size
+    writebuffer2.appendInt4(tagSubfileSize + writebuffer.length + 4);
+
+    writebuffer2.appendWritebuffer(writebuffer);
+    return writebuffer2;
   }
 
-  void _writeMagicByte(IOSink sink) {
-    sink.add(MapfileInfo.BINARY_OSM_MAGIC_BYTE.codeUnits);
+  void _writeMagicByte(Writebuffer writebuffer) {
+    writebuffer
+        .appendStringWithoutLength(MapfileInfoBuilder.BINARY_OSM_MAGIC_BYTE);
   }
 
   void _writeFileVersion(Writebuffer writebuffer) {
@@ -47,7 +49,8 @@ class MapfileHeaderWriter {
   }
 
   void _writeMapDate(Writebuffer writebuffer) {
-    writebuffer.appendInt8(DateTime.now().millisecondsSinceEpoch);
+    writebuffer.appendInt8(
+        mapHeaderInfo.mapDate ?? DateTime.now().millisecondsSinceEpoch);
   }
 
   void _writeBoundingBox(Writebuffer writebuffer) {

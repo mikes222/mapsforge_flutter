@@ -37,7 +37,7 @@ dependencies:
   flutter_archive: ^6.0.3
 
  # BSD License
-  intl: ^0.20.1
+  intl: ^0.20.2
 
   #leak_tracker: ^9.0.6
 
@@ -66,6 +66,7 @@ flutter:
   assets:
    - assets/render_themes/
    - assets/icons/
+   - assets/test.map
    - packages/mapsforge_flutter/assets/patterns/dark_farmland.svg
    - packages/mapsforge_flutter/assets/patterns/dark_military.png
    - packages/mapsforge_flutter/assets/patterns/coniferous.svg

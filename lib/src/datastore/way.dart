@@ -1,7 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 
-import '../model/tag.dart';
+import '../renderer/minmaxdouble.dart';
 
 /// An immutable container for all data associated with a single way or area (closed way).
 class Way {
@@ -50,6 +51,15 @@ class Way {
 
   String? getTag(String key) {
     return tags.firstWhereOrNull((test) => test.key == key)?.value;
+  }
+
+  /// Only for debugging purposes. MapRectangle is not meant for lat/lon, use BoundaryBox instead
+  MapRectangle calculateBoundary() {
+    MinMaxDouble minMaxMappoint = MinMaxDouble.empty();
+    latLongs.forEach((List<ILatLong> lls) {
+      minMaxMappoint.extendLatLong(lls);
+    });
+    return minMaxMappoint.getBoundary();
   }
 
   @override

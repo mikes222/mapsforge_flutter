@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/mapfileanalyze/blockpage.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
-import 'package:mapsforge_example/mapfileanalyze/tagcountpage.dart';
+import 'package:mapsforge_example/mapfileanalyze/poi_way_list_page.dart';
+import 'package:mapsforge_example/mapfileanalyze/tileindex_page.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 
@@ -60,37 +61,66 @@ class SubfileParamsPage extends StatelessWidget {
                     Wrap(
                       children: <Widget>[
                         LabeltextCustom(
-                            label: "boundaryTileVertical",
-                            value:
-                                "${e.boundaryTileTop} - ${e.boundaryTileBottom}"),
-                        LabeltextCustom(
-                            label: ", boundaryTileHorizontal",
+                            label: "boundaryTileHorizontal",
                             value:
                                 "${e.boundaryTileLeft} - ${e.boundaryTileRight}"),
+                        LabeltextCustom(
+                            label: ", boundaryTileVertical",
+                            value:
+                                "${e.boundaryTileTop} - ${e.boundaryTileBottom}"),
                       ],
                     ),
                     Wrap(
                       children: <Widget>[
                         LabeltextCustom(
-                            label: "blocksHeight", value: "${e.blocksHeight}"),
+                            label: "blocksWidth", value: "${e.blocksWidth}"),
                         LabeltextCustom(
-                            label: ", blocksWidth", value: "${e.blocksWidth}"),
+                            label: ", blocksHeight",
+                            value: "${e.blocksHeight}"),
                         LabeltextCustom(
-                            label: "numberOfBlocks",
+                            label: ", numberOfBlocks",
                             value: "${e.numberOfBlocks}"),
                       ],
                     ),
                     Wrap(
                       children: <Widget>[
                         LabeltextCustom(
-                            label: "Index Start - End",
-                            value:
-                                "${e.indexStartAddress} - ${e.indexEndAddress}"),
+                            label: "startAddress",
+                            value: "0x${e.startAddress.toRadixString(16)}"),
                         LabeltextCustom(
-                            label: ", startAddress",
-                            value: "${e.startAddress}"),
-                        LabeltextCustom(
-                            label: ", subFileSize", value: "${e.subFileSize}"),
+                          label: ", subFileSize",
+                          value: "0x${e.subFileSize.toRadixString(16)}",
+                          fontColor: e.startAddress + e.subFileSize >
+                                  (mapFile.getMapHeaderInfo().fileSize ?? 0) - 1
+                              ? Colors.red
+                              : null,
+                        ),
+                      ],
+                    ),
+                    Wrap(
+                      children: <Widget>[
+                        InkWell(
+                          child: Row(
+                            children: <Widget>[
+                              LabeltextCustom(
+                                  label: "Tile index Start - End",
+                                  value:
+                                      "0x${e.indexStartAddress.toRadixString(16)} - 0x${e.indexEndAddress.toRadixString(16)}"),
+                              const Icon(Icons.more_horiz),
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    TileindexPage(
+                                  mapFile: mapFile,
+                                  subFileParameter: e,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                     InkWell(
@@ -114,14 +144,14 @@ class SubfileParamsPage extends StatelessWidget {
                     InkWell(
                       child: const Row(
                         children: <Widget>[
-                          Text("Count tags"),
+                          Text("Pois and ways"),
                           Icon(Icons.more_horiz),
                         ],
                       ),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (BuildContext context) => TagsCountPage(
+                            builder: (BuildContext context) => PoiWayListPage(
                               mapFile: mapFile,
                               subFileParameter: e,
                               renderTheme: renderTheme,

@@ -1,9 +1,9 @@
+import 'package:mapsforge_flutter/src/mapfile/mapfile_info_builder.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/projection/mercatorprojection.dart';
 
 import '../exceptions/mapfileexception.dart';
 import '../model/boundingbox.dart';
-import 'mapfile_info.dart';
 import 'subfileparameter.dart';
 
 class SubFileParameterBuilder {
@@ -60,7 +60,7 @@ class SubFileParameterBuilder {
 
     // get and check the start address of the sub-file (8 bytes)
     int startAddress = readbuffer.readLong();
-    if (startAddress < MapfileInfo.HEADER_SIZE_MIN ||
+    if (startAddress < MapfileInfoBuilder.HEADER_SIZE_MIN ||
         startAddress >= fileSize) {
       throw new Exception("invalid start address: $startAddress");
     }

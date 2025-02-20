@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
 import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
 import 'package:mapsforge_example/markerdemo-datastore.dart';
 import 'package:mapsforge_example/rotation-overlay.dart';
@@ -86,7 +87,35 @@ class MapViewPageState2 extends State<MapViewPage2> {
   Widget _buildHead(BuildContext context) {
     return AppBar(
       title: Text(widget.mapFileData.displayedName),
+      actions: <Widget>[
+        PopupMenuButton<String>(
+          offset: const Offset(0, 50),
+          onSelected: (choice) => _handleMenuItemSelect(choice),
+          itemBuilder: (BuildContext context) => [
+            const PopupMenuItem<String>(
+              value: "Debug",
+              child: Text("Debug"),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  /// Executes the selected action of the popup menu.
+  Future<void> _handleMenuItemSelect(String value) async {
+    RenderTheme renderTheme =
+        await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
+    switch (value) {
+      case 'Debug':
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) =>
+                MapHeaderPage(widget.mapFileData, renderTheme),
+          ),
+        );
+        break;
+    }
   }
 
   /// Constructs the body ([FlutterMapView]) of the [MapViewPage].

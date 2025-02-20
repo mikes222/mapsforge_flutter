@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:mapsforge_example/filemgr.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
 import 'package:mapsforge_example/mapfileanalyze/subfileparamspage.dart';
+import 'package:mapsforge_example/mapfileanalyze/tagspage.dart';
 import 'package:mapsforge_example/pathhandler.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
@@ -38,155 +39,194 @@ class MapHeaderPage extends StatelessWidget {
         MapFile mapFile = snapshot.data;
         return ListView(
           children: <Widget>[
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    "General Properties",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      //LabeltextCustom(label: "Filename", value: mapFile.filename),
-                      // _fileSize is private but only used to verify header and to check if read beyond file
-                      LabeltextCustom(
-                          label: "Zoomlevel",
-                          value:
-                              "${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}"),
-                      LabeltextCustom(
-                          label: "Timestamp",
-                          value: formatMsToDatetimeMs(mapFile.timestamp)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    "Map fileheader Properties",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      LabeltextCustom(
-                          label: "Zoomlevel",
-                          value:
-                              "${mapFile.getMapFileInfo().zoomLevelMinimum} - ${mapFile.getMapFileInfo().zoomLevelMaximum}"),
-                      InkWell(
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text("SubfileParams: "),
-                            Icon(Icons.more_horiz),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  SubfileParamsPage(
-                                mapFile: mapFile,
-                                subFileParameters: mapFile
-                                    .getMapFileInfo()
-                                    .subFileParameters
-                                    .values
-                                    .toList(),
-                                renderTheme: renderTheme,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      // subFileParameters
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    "Map Fileinfo Properties",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      LabeltextCustom(
-                          label: "Comment",
-                          value: mapFile.getMapHeaderInfo().comment),
-                      LabeltextCustom(
-                          label: "CreatedBy",
-                          value: mapFile.getMapHeaderInfo().createdBy),
-                      LabeltextCustom(
-                          label: "IncludeDebug",
-                          value: "${mapFile.getMapHeaderInfo().debugFile}"),
-                      LabeltextCustom(
-                          label: "FileSize",
-                          value: "${mapFile.getMapHeaderInfo().fileSize}"),
-                      LabeltextCustom(
-                          label: "FileVersion",
-                          value: "${mapFile.getMapHeaderInfo().fileVersion}"),
-                      LabeltextCustom(
-                          label: "LanguagesPreferences",
-                          value:
-                              mapFile.getMapHeaderInfo().languagesPreference),
-                      LabeltextCustom(
-                          label: "MapTimestamp",
-                          value: formatMsToDatetimeMs(
-                              mapFile.getMapHeaderInfo().mapDate)),
-                      LabeltextCustom(
-                          label: "ProjectionName",
-                          value: mapFile.getMapHeaderInfo().projectionName),
-                      LabeltextCustom(
-                          label: "StartZoomLevel",
-                          value:
-                              "${mapFile.getMapHeaderInfo().startZoomLevel}"),
-                      LabeltextCustom(
-                          label: "StartPosition",
-                          value:
-                              "${formatLatLong(mapFile.getMapHeaderInfo().startPosition)}"),
-                      LabeltextCustom(
-                          label: "TilePixelSize",
-                          value: "${mapFile.getMapHeaderInfo().tilePixelSize}"),
-                      LabeltextCustom(
-                          label: "Zoomlevel",
-                          value:
-                              "${mapFile.getMapHeaderInfo().zoomLevelMin} - ${mapFile.getMapHeaderInfo().zoomLevelMax}"),
-                      LabeltextCustom(
-                          label: "Boundingbox",
-                          value:
-                              "${formatBoundingbox(mapFile.getMapHeaderInfo().boundingBox)}"),
-                      LabeltextCustom(
-                          label: "PoiTags",
-                          value:
-                              "${mapFile.getMapHeaderInfo().poiTags.length}"),
-                      LabeltextCustom(
-                          label: "WayTags",
-                          value:
-                              "${mapFile.getMapHeaderInfo().wayTags.length}"),
-                      LabeltextCustom(
-                          label: "numberOfSubFiles",
-                          value:
-                              "${mapFile.getMapHeaderInfo().numberOfSubFiles}"),
-                      // poiTags
-                      // wayTags
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            _buildGeneralCard(mapFile),
+            _buildFileinfoCard(mapFile, context),
+            _buildFileheaderCard(context, mapFile),
           ],
         );
       },
+    );
+  }
+
+  Card _buildFileinfoCard(MapFile mapFile, BuildContext context) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Text(
+            "Map fileinfo Properties",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              LabeltextCustom(
+                  label: "Zoomlevel",
+                  value:
+                      "${mapFile.getMapFileInfo().zoomLevelMinimum} - ${mapFile.getMapFileInfo().zoomLevelMaximum}"),
+              InkWell(
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text("SubfileParams: "),
+                    Icon(Icons.more_horiz),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => SubfileParamsPage(
+                        mapFile: mapFile,
+                        subFileParameters: mapFile
+                            .getMapFileInfo()
+                            .subFileParameters
+                            .values
+                            .toList(),
+                        renderTheme: renderTheme,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // subFileParameters
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Card _buildGeneralCard(MapFile mapFile) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Text(
+            "Mapfile General Properties",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              //LabeltextCustom(label: "Filename", value: mapFile.filename),
+              // _fileSize is private but only used to verify header and to check if read beyond file
+              LabeltextCustom(
+                  label: "Zoomlevel",
+                  value: "${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}"),
+              LabeltextCustom(
+                  label: "Timestamp",
+                  value: formatMsToDatetimeMs(mapFile.timestamp)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Card _buildFileheaderCard(BuildContext context, MapFile mapFile) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Text(
+            "Map fileheader Properties",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              LabeltextCustom(
+                  label: "Comment", value: mapFile.getMapHeaderInfo().comment),
+              LabeltextCustom(
+                  label: "CreatedBy",
+                  value: mapFile.getMapHeaderInfo().createdBy),
+              LabeltextCustom(
+                  label: "debugFile",
+                  value: "${mapFile.getMapHeaderInfo().debugFile}"),
+              LabeltextCustom(
+                  label: "FileSize",
+                  value: "${mapFile.getMapHeaderInfo().fileSize}"),
+              LabeltextCustom(
+                  label: "FileVersion",
+                  value: "${mapFile.getMapHeaderInfo().fileVersion}"),
+              LabeltextCustom(
+                  label: "LanguagesPreferences",
+                  value: mapFile.getMapHeaderInfo().languagesPreference),
+              LabeltextCustom(
+                  label: "MapTimestamp",
+                  value:
+                      formatMsToDatetimeMs(mapFile.getMapHeaderInfo().mapDate)),
+              LabeltextCustom(
+                  label: "ProjectionName",
+                  value: mapFile.getMapHeaderInfo().projectionName),
+              LabeltextCustom(
+                  label: "StartZoomLevel",
+                  value: "${mapFile.getMapHeaderInfo().startZoomLevel}"),
+              LabeltextCustom(
+                  label: "StartPosition",
+                  value:
+                      "${formatLatLong(mapFile.getMapHeaderInfo().startPosition)}"),
+              LabeltextCustom(
+                  label: "TilePixelSize",
+                  value: "${mapFile.getMapHeaderInfo().tilePixelSize}"),
+              LabeltextCustom(
+                  label: "Zoomlevel",
+                  value:
+                      "${mapFile.getMapHeaderInfo().zoomLevelMin} - ${mapFile.getMapHeaderInfo().zoomLevelMax}"),
+              LabeltextCustom(
+                  label: "Boundingbox",
+                  value:
+                      "${formatBoundingbox(mapFile.getMapHeaderInfo().boundingBox)}"),
+              InkWell(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    LabeltextCustom(
+                        label: "PoiTags",
+                        value: "${mapFile.getMapHeaderInfo().poiTags.length}"),
+                    const Icon(Icons.more_horiz),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => TagsPage(
+                        tags: mapFile.getMapHeaderInfo().poiTags,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              InkWell(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    LabeltextCustom(
+                        label: "WayTags",
+                        value: "${mapFile.getMapHeaderInfo().wayTags.length}"),
+                    const Icon(Icons.more_horiz),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => TagsPage(
+                        tags: mapFile.getMapHeaderInfo().wayTags,
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              LabeltextCustom(
+                  label: "numberOfSubFiles",
+                  value: "${mapFile.getMapHeaderInfo().numberOfSubFiles}"),
+              // poiTags
+              // wayTags
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -194,6 +234,8 @@ class MapHeaderPage extends StatelessWidget {
     PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
     MapFile mapFile = await MapFile.from(
         pathHandler.getPath(mapFileData.fileName), null, null);
+    // to open the mapfile
+    await mapFile.getBoundingBox();
     return mapFile;
   }
 

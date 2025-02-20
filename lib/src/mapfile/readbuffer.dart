@@ -206,11 +206,10 @@ class Readbuffer {
   /// @param stringLength the length of the string in bytes.
   /// @return the UTF-8 decoded string (may be null).
   String readUTF8EncodedString2(int stringLength) {
-    assert(stringLength >= 0);
-    if (stringLength > 0 &&
-        this._bufferPosition + stringLength <= this._bufferData.length) {
+    assert(stringLength > 0);
+    if (this._bufferPosition + stringLength <= this._bufferData.length) {
       this._bufferPosition += stringLength;
-      //_log.info("Reading utf8 $stringLength bytes");
+      //_log.info("Reading utf8 $stringLength bytes ending at $_bufferPosition");
       String result = utf8.decoder.convert(
           _bufferData, _bufferPosition - stringLength, _bufferPosition);
       //_log.info("String found $result");

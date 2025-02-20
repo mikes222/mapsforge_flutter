@@ -8,18 +8,16 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
-import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/reader/queryparameters.dart';
-import 'package:mapsforge_flutter/src/rendertheme/nodeproperties.dart';
 
-class TagsCountPage extends StatelessWidget {
+class PoiWayListPage extends StatelessWidget {
   final MapFile mapFile;
 
   final SubFileParameter subFileParameter;
 
   final RenderTheme renderTheme;
 
-  const TagsCountPage(
+  const PoiWayListPage(
       {Key? key,
       required this.mapFile,
       required this.subFileParameter,
