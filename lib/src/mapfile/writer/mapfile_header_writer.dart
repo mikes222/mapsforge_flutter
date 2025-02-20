@@ -1,10 +1,10 @@
 import 'package:mapsforge_flutter/src/mapfile/mapfile_info_builder.dart';
-import 'package:mapsforge_flutter/src/mapfile/writebuffer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
-import '../../core.dart';
-import 'map_header_info.dart';
-import 'map_header_info_builder.dart';
-import 'map_header_optional_fields.dart';
+import '../../../core.dart';
+import '../map_header_info.dart';
+import '../map_header_info_builder.dart';
+import '../map_header_optional_fields.dart';
 
 class MapfileHeaderWriter {
   final MapHeaderInfo mapHeaderInfo;

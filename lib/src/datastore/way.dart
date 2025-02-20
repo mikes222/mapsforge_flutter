@@ -1,8 +1,6 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/model/maprectangle.dart';
-
-import '../renderer/minmaxdouble.dart';
 
 /// An immutable container for all data associated with a single way or area (closed way).
 class Way {
@@ -26,9 +24,9 @@ class Way {
       other is Way &&
           runtimeType == other.runtimeType &&
           labelPosition == other.labelPosition &&
-          latLongs == other.latLongs &&
+          listEquals(latLongs[0], other.latLongs[0]) &&
           layer == other.layer &&
-          tags == other.tags;
+          listEquals(tags, other.tags);
 
   @override
   int get hashCode =>
@@ -53,17 +51,12 @@ class Way {
     return tags.firstWhereOrNull((test) => test.key == key)?.value;
   }
 
-  /// Only for debugging purposes. MapRectangle is not meant for lat/lon, use BoundaryBox instead
-  MapRectangle calculateBoundary() {
-    MinMaxDouble minMaxMappoint = MinMaxDouble.empty();
-    latLongs.forEach((List<ILatLong> lls) {
-      minMaxMappoint.extendLatLong(lls);
-    });
-    return minMaxMappoint.getBoundary();
+  BoundingBox getBoundingBox() {
+    return BoundingBox.fromLatLongs(latLongs[0]);
   }
 
   @override
   String toString() {
-    return 'Way{labelPosition: $labelPosition, latLongs: $latLongs, layer: $layer, tags: $tags}';
+    return 'Way{labelPosition: $labelPosition, latLongs: $latLongs, layer: $layer, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
   }
 }

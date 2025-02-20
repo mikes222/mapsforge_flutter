@@ -5,9 +5,9 @@ import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
-import 'package:mapsforge_flutter/src/mapfile/mapfile_header_writer.dart';
-import 'package:mapsforge_flutter/src/mapfile/subfile_creator.dart';
-import 'package:mapsforge_flutter/src/mapfile/writebuffer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_header_writer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
 /// see https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md
 class MapfileWriter {
@@ -100,14 +100,14 @@ class MapfileWriter {
     }
   }
 
-  void preparePoidata(SubfileCreator subfileCreator, Tile basetile,
-      int zoomlevel, List<PointOfInterest> pois) {
-    subfileCreator.addPoidata(basetile, zoomlevel, pois, poiTags);
+  void preparePoidata(SubfileCreator subfileCreator, int zoomlevel,
+      List<PointOfInterest> pois) {
+    subfileCreator.addPoidata(zoomlevel, pois, poiTags);
   }
 
-  void prepareWays(SubfileCreator subfileCreator, Tile basetile, int zooomlevel,
-      List<Way> ways) {
-    subfileCreator.addWaydata(basetile, zooomlevel, ways, wayTags);
+  void prepareWays(
+      SubfileCreator subfileCreator, int zooomlevel, List<Way> ways) {
+    subfileCreator.addWaydata(zooomlevel, ways, wayTags);
   }
 }
 

@@ -1,10 +1,9 @@
 import 'package:collection/collection.dart';
-import 'package:mapsforge_flutter/src/mapfile/writebuffer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
-import '../../core.dart';
-import '../../datastore.dart';
-import '../model/tag.dart';
-import 'mapfile_helper.dart';
+import '../../../core.dart';
+import '../../../datastore.dart';
+import '../mapfile_helper.dart';
 import 'mapfile_writer.dart';
 
 /// Holds one way and its tags
@@ -23,8 +22,10 @@ class Wayholder {
 
   String? featureRef;
 
+  int tileBitmask = 0xffff;
+
   Wayholder(this.debugFile, this.way, List<Tagholder> tagholders) {
-    tagholders = _analyzeTags(way.tags, tagholders);
+    this.tagholders = _analyzeTags(way.tags, tagholders);
   }
 
   List<Tagholder> _analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
@@ -89,7 +90,6 @@ class Wayholder {
     // for each sub tile (row-wise, left to right):
     // 1 bit that represents a flag whether the way is relevant for the sub tile
     // Special case: coastline ways must always have all 16 bits set.
-    int tileBitmask = 0;
     writebuffer.appendInt2(tileBitmask);
 
     int specialByte = 0;
@@ -115,7 +115,11 @@ class Wayholder {
       featureByte |= MapfileHelper.WAY_FEATURE_LABEL_POSITION;
     // number of way data blocks or false if we have only 1
     bool featureWayDataBlocksByte = false; //way.latLongs.length > 1;
-    bool featureWayDoubleDeltaEncoding = true;
+    if (featureWayDataBlocksByte)
+      featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
+    bool featureWayDoubleDeltaEncoding = false;
+    if (featureWayDoubleDeltaEncoding)
+      featureByte |= MapfileHelper.WAY_FEATURE_DOUBLE_DELTA_ENCODING;
 
     writebuffer.appendInt1(featureByte);
 
@@ -157,25 +161,30 @@ class Wayholder {
       double tileLatitude, double tileLongitude) {
     writebuffer.appendUnsignedInt(way.latLongs.length);
     for (List<ILatLong> waySegment in way.latLongs) {
-      // way coordinate block
       writebuffer.appendUnsignedInt(waySegment.length);
       bool first = true;
-      double previousDeltaLatitude = 0;
-      double previousDeltaLongitude = 0;
+      double previousLatitude = 0;
+      double previousLongitude = 0;
       for (ILatLong coordinate in waySegment) {
         if (first) {
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.latitude - tileLatitude));
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.longitude - tileLongitude));
-          previousDeltaLatitude = coordinate.latitude - tileLatitude;
-          previousDeltaLongitude = coordinate.longitude - tileLongitude;
+          previousLatitude = coordinate.latitude - tileLatitude;
+          previousLongitude = coordinate.longitude - tileLongitude;
+          writebuffer.appendSignedInt(
+              LatLongUtils.degreesToMicrodegrees(previousLatitude));
+          writebuffer.appendSignedInt(
+              LatLongUtils.degreesToMicrodegrees(previousLongitude));
           first = false;
         } else {
+          double currentLatitude = coordinate.latitude - tileLatitude;
+          double currentLongitude = coordinate.longitude - tileLongitude;
+
           writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.latitude - previousDeltaLatitude));
+              currentLatitude - previousLatitude));
           writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.longitude - previousDeltaLongitude));
+              currentLongitude - previousLongitude));
+
+          previousLatitude = currentLatitude;
+          previousLongitude = currentLongitude;
         }
       }
     }
@@ -188,22 +197,36 @@ class Wayholder {
     for (List<ILatLong> waySegment in way.latLongs) {
       writebuffer.appendUnsignedInt(waySegment.length);
       bool first = true;
-      double previousDeltaLatitude = 0;
-      double previousDeltaLongitude = 0;
+      double previousLatitude = 0;
+      double previousLongitude = 0;
+      double previousLatitudeDelta = 0;
+      double previousLongitudeDelta = 0;
       for (ILatLong coordinate in waySegment) {
         if (first) {
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.latitude - tileLatitude));
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.longitude - tileLongitude));
-          previousDeltaLatitude = coordinate.latitude - tileLatitude;
-          previousDeltaLongitude = coordinate.longitude - tileLongitude;
+          previousLatitude = coordinate.latitude - tileLatitude;
+          previousLongitude = coordinate.longitude - tileLongitude;
+          writebuffer.appendSignedInt(
+              LatLongUtils.degreesToMicrodegrees(previousLatitude));
+          writebuffer.appendSignedInt(
+              LatLongUtils.degreesToMicrodegrees(previousLongitude));
           first = false;
         } else {
+          double currentLatitude = coordinate.latitude - tileLatitude;
+          double currentLongitude = coordinate.longitude - tileLongitude;
+
+          double deltaLatitude = currentLatitude - previousLatitude;
+          double deltaLongitude = currentLongitude - previousLongitude;
+
           writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.latitude - previousDeltaLatitude));
+              deltaLatitude - previousLatitudeDelta));
           writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
-              coordinate.longitude - previousDeltaLongitude));
+              deltaLongitude - previousLongitudeDelta));
+
+          previousLatitude = currentLatitude;
+          previousLongitude = currentLongitude;
+
+          previousLatitudeDelta = deltaLatitude;
+          previousLongitudeDelta = deltaLongitude;
         }
       }
     }

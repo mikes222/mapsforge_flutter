@@ -1,6 +1,5 @@
 import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 
 ///
@@ -74,8 +73,7 @@ class MemoryTileBitmapCache extends TileBitmapCache {
   @override
   void purgeByBoundary(BoundingBox boundingBox) {
     storage.keys.where((Tile tile) {
-      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-      if (tile.getBoundingBox(projection).intersects(boundingBox)) {
+      if (tile.getBoundingBox().intersects(boundingBox)) {
         return true;
       }
       return false;

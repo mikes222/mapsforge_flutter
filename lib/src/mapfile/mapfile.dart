@@ -100,11 +100,9 @@ class IsolateMapfile implements Datastore {
   }
 
   @override
-  Future<bool> supportsTile(Tile tile, Projection projection) async {
-    bool result = await isolateInstancePool.compute(
-        supportsTileStatic,
-        _MapfileSupportsTileRequest(
-            filename, preferredLanguage, tile, projection));
+  Future<bool> supportsTile(Tile tile) async {
+    bool result = await isolateInstancePool.compute(supportsTileStatic,
+        _MapfileSupportsTileRequest(filename, preferredLanguage, tile));
     return result;
   }
 
@@ -112,7 +110,7 @@ class IsolateMapfile implements Datastore {
   static Future<bool> supportsTileStatic(
       _MapfileSupportsTileRequest request) async {
     mapFile ??= await MapFile.from(request.filename, 0, "en");
-    return mapFile!.supportsTile(request.tile, request.projection);
+    return mapFile!.supportsTile(request.tile);
   }
 
   @override
@@ -161,10 +159,7 @@ class _MapfileSupportsTileRequest {
 
   final Tile tile;
 
-  final Projection projection;
-
-  _MapfileSupportsTileRequest(
-      this.filename, this.preferredLanguage, this.tile, this.projection);
+  _MapfileSupportsTileRequest(this.filename, this.preferredLanguage, this.tile);
 }
 //////////////////////////////////////////////////////////////////////////////
 
@@ -719,13 +714,11 @@ class MapFile extends MapDataStore {
   }
 
   @override
-  Future<bool> supportsTile(Tile tile, Projection projection) async {
+  Future<bool> supportsTile(Tile tile) async {
     if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax)
       return false;
     await _lateOpen();
-    return tile
-        .getBoundingBox(projection)
-        .intersects(getMapHeaderInfo().boundingBox);
+    return tile.getBoundingBox().intersects(getMapHeaderInfo().boundingBox);
   }
 
   @override

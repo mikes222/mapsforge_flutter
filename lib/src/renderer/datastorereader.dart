@@ -49,7 +49,7 @@ class DatastoreReader {
       RenderthemeLevel renderthemeLevel, int maxLevels) async {
     // read the mapdata directly in this thread
     RenderContext renderContext = RenderContext(tile, maxLevels);
-    if (!(await datastore.supportsTile(tile, renderContext.projection))) {
+    if (!(await datastore.supportsTile(tile))) {
       return null;
     }
     DatastoreReadResult? mapReadResult =
@@ -64,7 +64,7 @@ class DatastoreReader {
   Future<RenderContext?> readLabels(Datastore datastore, Tile tile,
       RenderthemeLevel renderthemeLevel, int maxLevels) async {
     RenderContext renderContext = RenderContext(tile, maxLevels);
-    if (!(await datastore.supportsTile(tile, renderContext.projection))) {
+    if (!(await datastore.supportsTile(tile))) {
       return null;
     }
     DatastoreReadResult? mapReadResult = await datastore.readLabelsSingle(tile);

@@ -1,10 +1,9 @@
 import 'package:collection/collection.dart';
-import 'package:mapsforge_flutter/src/mapfile/writebuffer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
-import '../../core.dart';
-import '../../datastore.dart';
-import '../model/tag.dart';
-import 'mapfile_helper.dart';
+import '../../../core.dart';
+import '../../../datastore.dart';
+import '../mapfile_helper.dart';
 import 'mapfile_writer.dart';
 
 /// Holds one poi and its tags
@@ -22,7 +21,7 @@ class Poiholder {
   int? featureElevation;
 
   Poiholder(this.debugFile, this.poi, List<Tagholder> tagholders) {
-    tagholders = _analyzeTags(poi.tags, tagholders);
+    this.tagholders = _analyzeTags(poi.tags, tagholders);
   }
 
   List<Tagholder> _analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {

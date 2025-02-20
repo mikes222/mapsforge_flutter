@@ -126,67 +126,82 @@ class TileindexPage extends StatelessWidget {
     if (mapFile.getMapHeaderInfo().debugFile)
       readBuffer.readUTF8EncodedString2(32);
     List<_Zoomtable> zoomtable = _readZoomtable(readBuffer);
-    int poiCount = 0;
-    int wayCount = 0;
+    Map<int, int> poiCounts = {};
+    Map<int, int> wayCounts = {};
     zoomtable.forEach((inner) {
       res.add(Text(
           "Zoomlevel: ${inner.zoomlevel}: Pois: ${inner.poiCount}, Ways: ${inner.wayCount}"));
-      poiCount += inner.poiCount;
-      wayCount += inner.wayCount;
+      poiCounts[inner.zoomlevel] = inner.poiCount;
+      wayCounts[inner.zoomlevel] = inner.wayCount;
     });
     int offsetToFirstWay = readBuffer.readUnsignedInt();
     res.add(
         Text("Offset to first way: 0x${offsetToFirstWay.toRadixString(16)}"));
-    for (int i = 0; i < poiCount; ++i) {
-      PointOfInterest pointOfInterest = mapFile.getMapfileHelper().read1Poi(
-          readBuffer,
-          tileLatitude,
-          tileLongitude,
-          mapFile,
-          mapFile.getMapHeaderInfo().poiTags);
-      res.add(Wrap(spacing: 10, children: [
-        Text(
-            "POI: Layer: ${pointOfInterest.layer}, tags: ${pointOfInterest.tags}"),
-        Text(
-            "${pointOfInterest.position.latitude}/${pointOfInterest.position.longitude}",
-            style: TextStyle(fontSize: 10),
-            maxLines: 5),
-      ]));
+    int taglessPois = 0;
+    poiCounts.forEach((zoomlevel, poicount) {
+      for (int i = 0; i < poicount; ++i) {
+        PointOfInterest pointOfInterest = mapFile.getMapfileHelper().read1Poi(
+            readBuffer,
+            tileLatitude,
+            tileLongitude,
+            mapFile,
+            mapFile.getMapHeaderInfo().poiTags);
+        if (pointOfInterest.tags.isEmpty) {
+          ++taglessPois;
+        } else {
+          res.add(Wrap(spacing: 10, children: [
+            Text(
+                "Zoomlelel: $zoomlevel, POI: Layer: ${pointOfInterest.layer}, tags: ${pointOfInterest.tags}"),
+            Text(
+                "${pointOfInterest.position.latitude}/${pointOfInterest.position.longitude}",
+                style: TextStyle(fontSize: 10),
+                maxLines: 5),
+          ]));
+        }
+      }
+    });
+    if (taglessPois > 0) {
+      res.add(Text("Pois without tags: $taglessPois"));
     }
     // if (offsetToFirstWay > 0) {
     //   readBuffer.skipBytes(offsetToFirstWay);
     // }
-    List<Way> ways = [];
-    for (int i = 0; i < wayCount; ++i) {
-      ways.addAll(mapFile.getMapfileHelper().read1Way(
-          readBuffer,
-          QueryParameters(),
-          tileLatitude,
-          tileLongitude,
-          mapFile,
-          mapFile.getMapHeaderInfo().wayTags,
-          false,
-          BoundingBox(0, 0, 0, 0),
-          MapfileSelector.ALL));
-    }
     int taglessWays = 0;
-    for (Way way in ways) {
-      if (way.tags.isEmpty) {
-        ++taglessWays;
-        continue;
+    wayCounts.forEach((zoomlevel, waycount) {
+      for (int i = 0; i < waycount; ++i) {
+        List<Way> newWays = mapFile.getMapfileHelper().read1Way(
+            readBuffer,
+            QueryParameters(),
+            tileLatitude,
+            tileLongitude,
+            mapFile,
+            mapFile.getMapHeaderInfo().wayTags,
+            false,
+            BoundingBox(0, 0, 0, 0),
+            MapfileSelector.ALL);
+
+        for (Way way in newWays) {
+          if (way.tags.isEmpty) {
+            ++taglessWays;
+            continue;
+          } else {
+            res.add(Wrap(
+              spacing: 10,
+              children: [
+                Text(
+                    "Zoomlelel: $zoomlevel, Way: Layer: ${way.layer}, tags: ${way.tags}",
+                    maxLines: 5),
+                Text(
+                  "${way.getBoundingBox()}",
+                  style: TextStyle(fontSize: 10),
+                  maxLines: 5,
+                ),
+              ],
+            ));
+          }
+        }
       }
-      res.add(Wrap(
-        spacing: 10,
-        children: [
-          Text("Way: Layer: ${way.layer}, tags: ${way.tags}", maxLines: 5),
-          Text(
-            "${way.calculateBoundary()}",
-            style: TextStyle(fontSize: 10),
-            maxLines: 5,
-          ),
-        ],
-      ));
-    }
+    });
     if (taglessWays > 0) {
       res.add(Text("Ways without tags: $taglessWays"));
     }

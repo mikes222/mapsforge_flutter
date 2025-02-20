@@ -1,11 +1,12 @@
-import 'package:mapsforge_flutter/src/mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter/src/mapfile/poiholder.dart';
-import 'package:mapsforge_flutter/src/mapfile/wayholder.dart';
-import 'package:mapsforge_flutter/src/mapfile/writebuffer.dart';
+import 'package:collection/collection.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_writer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/poiholder.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
-import '../../core.dart';
-import '../../datastore.dart';
-import '../../maps.dart';
+import '../../../core.dart';
+import '../../../datastore.dart';
+import '../../../maps.dart';
 
 /// Each subfile consists of:
 /// tile index header
@@ -75,16 +76,25 @@ class SubfileCreator {
     }
   }
 
-  void addPoidata(Tile tile, int zoomlevel, List<PointOfInterest> pois,
-      List<Tagholder> tagholders) {
-    Zoominfo zoominfo = tiledata[tile]!;
-    zoominfo.addPoidata(zoomlevel, pois, tagholders);
+  void addPoidata(
+      int zoomlevel, List<PointOfInterest> pois, List<Tagholder> tagholders) {
+    for (PointOfInterest pointOfInterest in pois) {
+      tiledata.forEach((tile, zoominfo) {
+        if (tile.getBoundingBox().containsLatLong(pointOfInterest.position)) {
+          zoominfo.addPoidata(zoomlevel, pointOfInterest, tagholders);
+        }
+      });
+    }
   }
 
-  void addWaydata(
-      Tile tile, int zoomlevel, List<Way> ways, List<Tagholder> tagholders) {
-    Zoominfo zoominfo = tiledata[tile]!;
-    zoominfo.addWaydata(zoomlevel, ways, tagholders);
+  void addWaydata(int zoomlevel, List<Way> ways, List<Tagholder> tagholders) {
+    for (Way way in ways) {
+      tiledata.forEach((tile, zoominfo) {
+        if (tile.getBoundingBox().intersects(way.getBoundingBox())) {
+          zoominfo.addWaydata(zoomlevel, way, tagholders);
+        }
+      });
+    }
   }
 
   void _writeIndexHeaderSignature(Writebuffer writebuffer) {
@@ -177,14 +187,26 @@ class Zoominfo {
   }
 
   void addPoidata(
-      int zoomlevel, List<PointOfInterest> pois, List<Tagholder> tagholders) {
+      int zoomlevel, PointOfInterest poi, List<Tagholder> tagholders) {
+    for (int zl = zoomLevelMin; zl < zoomlevel; ++zl) {
+      // if it is already defined for lower zoomlevel, ignore it
+      if (poiinfos[zl]!.contains(poi)) return;
+    }
     Poiinfo poiinfo = poiinfos[zoomlevel]!;
-    poiinfo.setPoidata(pois, tagholders);
+    poiinfo.setPoidata(poi, tagholders);
   }
 
-  void addWaydata(int zoomlevel, List<Way> ways, List<Tagholder> tagholders) {
+  void addWaydata(int zoomlevel, Way way, List<Tagholder> tagholders) {
+    for (int zl = zoomLevelMin; zl < zoomlevel; ++zl) {
+      // if it is already defined for lower zoomlevel, ignore it
+      if (wayinfos[zl]!.contains(way)) {
+        return;
+      }
+    }
+    // if (way.getTag("name") == "place du casino")
+    //   print("Adding $way to $zoomlevel at $tileLatitude/$tileLongitude");
     Wayinfo wayinfo = wayinfos[zoomlevel]!;
-    wayinfo.setWaydata(ways, tagholders);
+    wayinfo.setWaydata(way, tagholders);
   }
 
   Writebuffer writeTile(Tile tile) {
@@ -252,12 +274,14 @@ class Poiinfo {
 
   Poiinfo(this.debugFile);
 
-  void setPoidata(List<PointOfInterest> pois, List<Tagholder> tagholders) {
-    for (PointOfInterest poi in pois) {
-      Poiholder poiholder = Poiholder(debugFile, poi, tagholders);
-      poiholders.add(poiholder);
-    }
-    count = poiholders.length;
+  void setPoidata(PointOfInterest poi, List<Tagholder> tagholders) {
+    Poiholder poiholder = Poiholder(debugFile, poi, tagholders);
+    poiholders.add(poiholder);
+    ++count;
+  }
+
+  bool contains(PointOfInterest poi) {
+    return poiholders.firstWhereOrNull((test) => test.poi == poi) != null;
   }
 
   Writebuffer writePoidata(double tileLatitude, double tileLongitude) {
@@ -285,12 +309,14 @@ class Wayinfo {
 
   Wayinfo(this.debugFile);
 
-  void setWaydata(List<Way> ways, List<Tagholder> tagholders) {
-    for (Way way in ways) {
-      Wayholder wayholder = Wayholder(debugFile, way, tagholders);
-      wayholders.add(wayholder);
-    }
-    count = wayholders.length;
+  void setWaydata(Way way, List<Tagholder> tagholders) {
+    Wayholder wayholder = Wayholder(debugFile, way, tagholders);
+    wayholders.add(wayholder);
+    ++count;
+  }
+
+  bool contains(Way way) {
+    return wayholders.firstWhereOrNull((test) => test.way == way) != null;
   }
 
   Writebuffer writeWaydata(double tileLatitude, double tileLongitude) {

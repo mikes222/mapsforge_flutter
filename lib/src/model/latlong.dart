@@ -174,7 +174,7 @@ class LatLong implements ILatLong {
 
   @override
   String toString() {
-    return 'LatLong{latitude: $latitude, longitude: $longitude}';
+    return 'LatLong{$latitude/$longitude}';
   }
 
 /**

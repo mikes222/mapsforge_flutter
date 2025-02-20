@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter/datastore.dart';
-import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/model/tile.dart';
 
 ///
@@ -15,8 +14,7 @@ main() async {
     int indoorLevel = 0; // indoor level
 
     Tile tile = new Tile(140486, 87975, zoomlevel, indoorLevel);
-    Projection projection = MercatorProjection.fromZoomlevel(zoomlevel);
 
-    expect(dataStore.supportsTile(tile, projection), false);
+    expect(dataStore.supportsTile(tile), false);
   });
 }

@@ -4,8 +4,8 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
-import 'package:mapsforge_flutter/src/mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter/src/mapfile/subfile_creator.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_writer.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
 
 import '../testassetbundle.dart';
 
@@ -30,7 +30,7 @@ main() async {
       poiTags: [],
       tilePixelSize: 256,
       wayTags: [],
-      debugFile: true,
+      debugFile: false,
       mapDate: mapFile.getMapHeaderInfo().mapDate,
       startPosition: mapFile.getMapHeaderInfo().startPosition,
       startZoomLevel: mapFile.getMapHeaderInfo().startZoomLevel,
@@ -84,24 +84,24 @@ main() async {
 
 Future<void> processSubfile(MapFile mapfile, MapfileWriter mapfileWriter,
     SubfileCreator subfileparameterCreator, BoundingBox boundingBox) async {
-  MercatorProjection projection =
-      MercatorProjection.fromZoomlevel(subfileparameterCreator.baseZoomLevel);
-  print(
-      "${projection.longitudeToTileX(boundingBox.minLongitude)} to ${projection.longitudeToTileX(boundingBox.maxLongitude)}, ${projection.latitudeToTileY(boundingBox.maxLatitude)} to ${projection.latitudeToTileY(boundingBox.minLatitude)}");
-  for (int tileX = projection.longitudeToTileX(boundingBox.minLongitude);
-      tileX <= projection.longitudeToTileX(boundingBox.maxLongitude);
-      ++tileX) {
-    for (int tileY = projection.latitudeToTileY(boundingBox.maxLatitude);
-        tileY <= projection.latitudeToTileY(boundingBox.minLatitude);
-        ++tileY) {
-      Tile tile =
-          new Tile(tileX, tileY, subfileparameterCreator.baseZoomLevel, 0);
-      DatastoreReadResult mapReadResult = await mapfile.readMapDataSingle(tile);
-      mapfileWriter.preparePoidata(subfileparameterCreator, tile,
-          tile.zoomLevel, mapReadResult.pointOfInterests);
-      mapfileWriter.prepareWays(
-          subfileparameterCreator, tile, tile.zoomLevel, mapReadResult.ways);
-    }
+  for (int zoomLevel = subfileparameterCreator.zoomLevelMin;
+      zoomLevel <= subfileparameterCreator.zoomLevelMax;
+      zoomLevel++) {
+    MercatorProjection projection = MercatorProjection.fromZoomlevel(zoomLevel);
+    int minTileX = projection.longitudeToTileX(boundingBox.minLongitude);
+    int maxTileX = projection.longitudeToTileX(boundingBox.maxLatitude);
+    int minTileY = projection.latitudeToTileY(boundingBox.maxLatitude);
+    int maxTileY = projection.latitudeToTileY(boundingBox.minLatitude);
+    Tile upperLeft = new Tile(minTileX, minTileY, zoomLevel, 0);
+    Tile lowerRight = new Tile(maxTileX, maxTileY, zoomLevel, 0);
+    DatastoreReadResult mapReadResult =
+        await mapfile.readMapData(upperLeft, lowerRight);
+    mapfileWriter.preparePoidata(
+        subfileparameterCreator, zoomLevel, mapReadResult.pointOfInterests);
+    mapfileWriter.prepareWays(
+        subfileparameterCreator, zoomLevel, mapReadResult.ways);
+    // print(
+    //     "${projection.longitudeToTileX(boundingBox.minLongitude)} to ${projection.longitudeToTileX(boundingBox.maxLongitude)}, ${projection.latitudeToTileY(boundingBox.maxLatitude)} to ${projection.latitudeToTileY(boundingBox.minLatitude)}");
   }
 }
 

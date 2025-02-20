@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mapsforge_flutter/core.dart';
-
-import '../model/tag.dart';
 
 /// An immutable container for all data associated with a single point of interest node (POI).
 class PointOfInterest {
@@ -23,7 +22,7 @@ class PointOfInterest {
           runtimeType == other.runtimeType &&
           layer == other.layer &&
           position == other.position &&
-          tags == other.tags;
+          listEquals(tags, other.tags);
 
   @override
   int get hashCode => layer.hashCode ^ position.hashCode ^ tags.hashCode;
@@ -38,6 +37,6 @@ class PointOfInterest {
 
   @override
   String toString() {
-    return 'PointOfInterest{layer: $layer, position: $position, tags: $tags}';
+    return 'PointOfInterest{layer: $layer, position: $position, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}}';
   }
 }

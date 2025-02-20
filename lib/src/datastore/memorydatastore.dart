@@ -39,14 +39,12 @@ class MemoryDatastore extends Datastore {
 
   @override
   Future<DatastoreReadResult> readMapDataSingle(Tile tile) {
-    Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     List<PointOfInterest> poiResults = pointOfInterests
-        .where((poi) =>
-            tile.getBoundingBox(projection).containsLatLong(poi.position))
+        .where((poi) => tile.getBoundingBox().containsLatLong(poi.position))
         .toList();
     List<Way> wayResults = [];
     for (Way way in ways) {
-      if (tile.getBoundingBox(projection).intersectsArea(way.latLongs)) {
+      if (tile.getBoundingBox().intersectsArea(way.latLongs)) {
         wayResults.add(way);
       }
     }
@@ -67,7 +65,7 @@ class MemoryDatastore extends Datastore {
   }
 
   @override
-  Future<bool> supportsTile(Tile tile, Projection projection) {
+  Future<bool> supportsTile(Tile tile) {
     // you may want to show neighbouring tiles too in order to display labels.
     return Future.value(true);
     // Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);

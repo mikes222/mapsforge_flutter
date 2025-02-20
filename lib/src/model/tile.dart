@@ -49,14 +49,10 @@ class Tile {
       : assert(tileX >= 0),
         assert(tileY >= 0),
         assert(zoomLevel >= 0) {
-    int maxTileNumber = getMaxTileNumber(zoomLevel);
-    if (tileX > maxTileNumber) {
-      throw new Exception(
-          "invalid tileX number on zoom level $zoomLevel: $tileX");
-    } else if (tileY > maxTileNumber) {
-      throw new Exception(
-          "invalid tileY number on zoom level $zoomLevel: $tileY (max is $maxTileNumber)");
-    }
+    assert(tileX <= getMaxTileNumber(zoomLevel),
+        "$tileX > ${getMaxTileNumber(zoomLevel)}");
+    assert(tileY <= getMaxTileNumber(zoomLevel),
+        "$tileY > ${getMaxTileNumber(zoomLevel)}");
   }
 
   void dispose() {}
@@ -241,35 +237,33 @@ class Tile {
     return this.tileY % 2 + 2 * getParent()!.getShiftY(otherTile);
   }
 
-  BoundingBox getBoundingBox(Projection projection) {
+  BoundingBox getBoundingBox() {
     if (_boundary != null) return _boundary!;
+    Projection projection = MercatorProjection.fromZoomlevel(zoomLevel);
     _boundary = projection.boundingBoxOfTile(this);
     return _boundary!;
   }
 
   Mappoint getLeftUpper() {
     if (_leftUpper != null) return _leftUpper!;
-    _leftUpper = Mappoint(
-        (tileX * MapsforgeConstants().tileSize), (tileY * MapsforgeConstants().tileSize));
+    _leftUpper = Mappoint((tileX * MapsforgeConstants().tileSize),
+        (tileY * MapsforgeConstants().tileSize));
     return _leftUpper!;
   }
 
   Mappoint getCenter() {
     if (_center != null) return _center!;
     double tileSize = MapsforgeConstants().tileSize;
-    _center = Mappoint(
-        (tileX * tileSize + tileSize / 2).toDouble(), (tileY * tileSize + tileSize / 2).toDouble());
+    _center = Mappoint((tileX * tileSize + tileSize / 2).toDouble(),
+        (tileY * tileSize + tileSize / 2).toDouble());
     return _center!;
   }
 
   MapRectangle getMapBoundary() {
     if (_mapBoundary != null) return _mapBoundary!;
     double tileSize = MapsforgeConstants().tileSize;
-    _mapBoundary = MapRectangle(
-        (tileX * tileSize),
-        (tileY * tileSize),
-        (tileX * tileSize + tileSize),
-        (tileY * tileSize + tileSize));
+    _mapBoundary = MapRectangle((tileX * tileSize), (tileY * tileSize),
+        (tileX * tileSize + tileSize), (tileY * tileSize + tileSize));
     return _mapBoundary!;
   }
 

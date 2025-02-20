@@ -6,7 +6,6 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tag.dart';
 
 import '../testassetbundle.dart';
 
@@ -55,8 +54,7 @@ void main() {
       //                         stroke-width="0.8" />
 
       Tile tile = new Tile(x, y, zoomlevel, l);
-      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-      expect(datastore.supportsTile(tile, projection), true);
+      expect(datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, equals(1));
       Job mapGeneratorJob = new Job(tile, false);
@@ -94,7 +92,6 @@ void main() {
         find.byType(RawImage), matchesGoldenFile('dashedline.png'));
   });
 
-
   testWidgets('Tunnel lines (tunnel)', (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -118,9 +115,17 @@ void main() {
       // <line stroke="#66320D" stroke-dasharray="20,5,8,5" stroke-linecap="butt" stroke-width="1.2" />
       datastore.addWay(const Way(
           0,
-          [Tag('highway', 'primary'), Tag('tunnel', 'yes'), Tag('oneway', 'yes')],
           [
-            [LatLong(45.96, 17.953), LatLong(46.0006, 18.0006), LatLong(45.991, 17.958)]
+            Tag('highway', 'primary'),
+            Tag('tunnel', 'yes'),
+            Tag('oneway', 'yes')
+          ],
+          [
+            [
+              LatLong(45.96, 17.953),
+              LatLong(46.0006, 18.0006),
+              LatLong(45.991, 17.958)
+            ]
           ],
           null));
 
@@ -130,16 +135,15 @@ void main() {
       //                 stroke-width="1.5" />
 
       Tile tile = new Tile(x, y, zoomlevel, l);
-      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-      expect(datastore.supportsTile(tile, projection), true);
+      expect(datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, equals(1));
       Job mapGeneratorJob = new Job(tile, false);
       MapDataStoreRenderer _dataStoreRenderer =
-      MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
       JobResult jobResult =
-      (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertToImage();
     }));

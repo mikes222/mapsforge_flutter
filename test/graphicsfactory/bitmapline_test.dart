@@ -6,7 +6,6 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tag.dart';
 
 import '../testassetbundle.dart';
 
@@ -51,8 +50,7 @@ void main() {
           ],
           null));
       Tile tile = new Tile(x, y, zoomlevel, l);
-      Projection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
-      expect(datastore.supportsTile(tile, projection), true);
+      expect(datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, equals(1));
       Job mapGeneratorJob = new Job(tile, false);

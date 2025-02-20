@@ -194,6 +194,7 @@ class _DebugContextMenuState extends DefaultContextMenuState {
       ),
       onTap: () {
         debugDatastore.createWayMarker(way);
+        print("Way: $way");
 
         RenderthemeLevel renderthemeLevel =
             renderTheme.prepareZoomlevel(tile.zoomLevel);

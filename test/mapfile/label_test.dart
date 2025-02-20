@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tag.dart';
 
 import '../testassetbundle.dart';
 import '../testhelper.dart';
@@ -63,8 +62,7 @@ void main() {
           LatLong(45.99997, 18.00007)));
 
       Tile tile0 = new Tile(x, y, zoomlevel, l);
-      Projection projection = MercatorProjection.fromZoomlevel(tile0.zoomLevel);
-      expect(datastore.supportsTile(tile0, projection), true);
+      expect(datastore.supportsTile(tile0), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile0);
       print(result);
       expect(result.pointOfInterests.length, greaterThan(0));
