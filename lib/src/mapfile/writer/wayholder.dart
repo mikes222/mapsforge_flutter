@@ -1,4 +1,4 @@
-import 'package:collection/collection.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/tagholer_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
 import '../../../core.dart';
@@ -7,71 +7,39 @@ import '../mapfile_helper.dart';
 import 'mapfile_writer.dart';
 
 /// Holds one way and its tags
-class Wayholder {
-  final bool debugFile;
-
+class Wayholder with TagholderMixin {
   final Way way;
-
-  List<Tagholder> tagholders = [];
-
-  String? featureName;
-
-  String? featureHouseNumber;
-
-  int? featureElevation;
-
-  String? featureRef;
 
   int tileBitmask = 0xffff;
 
-  Wayholder(this.debugFile, this.way, List<Tagholder> tagholders) {
-    this.tagholders = _analyzeTags(way.tags, tagholders);
+  int otherZoomlevel = -1;
+
+  Wayholder(this.way, List<Tagholder> tagholders) {
+    this.tagholders = analyzeTags(way.tags, tagholders);
   }
 
-  List<Tagholder> _analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
-    List<Tagholder> tagholders = [];
-    for (Tag tag in tags) {
-      if (tag.key == MapfileHelper.TAG_KEY_NAME) {
-        featureName = tag.value;
-        continue;
-      }
-      if (tag.key == MapfileHelper.TAG_KEY_HOUSE_NUMBER) {
-        featureHouseNumber = tag.value;
-        continue;
-      }
-      if (tag.key == MapfileHelper.TAG_KEY_ELE) {
-        featureElevation = int.parse(tag.value!);
-        continue;
-      }
-      // only for ways:
-      if (tag.key == MapfileHelper.TAG_KEY_REF) {
-        featureRef = tag.value;
-        continue;
-      }
-      Tagholder? tagholder = tagsArray.firstWhereOrNull(
-          (test) => test.tag.key == tag.key && test.tag.value == tag.value);
-      if (tagholder == null) {
-        tagholder = Tagholder(tag);
-        tagsArray.add(tagholder);
-      } else {
-        tagholder.count++;
-      }
-      tagholders.add(tagholder);
-    }
-    return tagholders;
+  void setSubTileBitmap(int idx) {
+    tileBitmask |= 1 << idx;
+    //print("setSubTileBitmap $idx 0x${tileBitmask.toRadixString(16)} for $way");
   }
 
-  void _writeWaySignature(Writebuffer writebuffer) {
+  void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
       writebuffer.appendStringWithoutLength("---WayStart${way.hashCode}---"
           .padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
     }
   }
 
+  void usedFor(int otherZoomlevel) {
+    if (this.otherZoomlevel < otherZoomlevel)
+      this.otherZoomlevel = otherZoomlevel;
+  }
+
   /// can be done when the tags are sorted
-  Writebuffer writeWaydata(double tileLatitude, double tileLongitude) {
+  Writebuffer writeWaydata(
+      bool debugFile, double tileLatitude, double tileLongitude) {
     Writebuffer writebuffer3 = Writebuffer();
-    _writeWaySignature(writebuffer3);
+    _writeWaySignature(debugFile, writebuffer3);
     Writebuffer writebuffer =
         _writeWayPropertyAndWayData(way, tileLatitude, tileLongitude);
     // get the size of the way (VBE-U)
@@ -85,6 +53,11 @@ class Wayholder {
     assert(way.latLongs.isNotEmpty);
 
     Writebuffer writebuffer = Writebuffer();
+
+    if (otherZoomlevel >= 0) {
+      // todo not working for an unknown reason. I miss the ways for most zoomlevels.
+      tileBitmask = 0xffff;
+    }
 
     /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2
     // for each sub tile (row-wise, left to right):
@@ -100,8 +73,7 @@ class Wayholder {
     specialByte |=
         (tagholders.length & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
     writebuffer.appendInt1(specialByte);
-    tagholders.forEach(
-        (tagholder) => writebuffer.appendUnsignedInt(tagholder.index!));
+    writeTags(writebuffer);
 
     // get the feature bitmask (1 byte)
     int featureByte = 0;
@@ -117,7 +89,13 @@ class Wayholder {
     bool featureWayDataBlocksByte = false; //way.latLongs.length > 1;
     if (featureWayDataBlocksByte)
       featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
-    bool featureWayDoubleDeltaEncoding = false;
+
+    Writebuffer singleWritebuffer =
+        _writeSingleDeltaEncoding(way, tileLatitude, tileLongitude);
+    Writebuffer doubleWritebuffer =
+        _writeDoubleDeltaEncoding(way, tileLatitude, tileLongitude);
+    bool featureWayDoubleDeltaEncoding =
+        doubleWritebuffer.length < singleWritebuffer.length;
     if (featureWayDoubleDeltaEncoding)
       featureByte |= MapfileHelper.WAY_FEATURE_DOUBLE_DELTA_ENCODING;
 
@@ -150,15 +128,16 @@ class Wayholder {
     }
 
     if (featureWayDoubleDeltaEncoding)
-      _writeDoubleDeltaEncoding(writebuffer, way, tileLatitude, tileLongitude);
+      writebuffer.appendWritebuffer(doubleWritebuffer);
     else
-      _writeSingleDeltaEncoding(writebuffer, way, tileLatitude, tileLongitude);
+      writebuffer.appendWritebuffer(singleWritebuffer);
     return writebuffer;
   }
 
   /// Way data block
-  void _writeSingleDeltaEncoding(Writebuffer writebuffer, Way way,
-      double tileLatitude, double tileLongitude) {
+  Writebuffer _writeSingleDeltaEncoding(
+      Way way, double tileLatitude, double tileLongitude) {
+    Writebuffer writebuffer = Writebuffer();
     writebuffer.appendUnsignedInt(way.latLongs.length);
     for (List<ILatLong> waySegment in way.latLongs) {
       writebuffer.appendUnsignedInt(waySegment.length);
@@ -188,11 +167,13 @@ class Wayholder {
         }
       }
     }
+    return writebuffer;
   }
 
   /// Way data block
-  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, Way way,
-      double tileLatitude, double tileLongitude) {
+  Writebuffer _writeDoubleDeltaEncoding(
+      Way way, double tileLatitude, double tileLongitude) {
+    Writebuffer writebuffer = Writebuffer();
     writebuffer.appendUnsignedInt(way.latLongs.length);
     for (List<ILatLong> waySegment in way.latLongs) {
       writebuffer.appendUnsignedInt(waySegment.length);
@@ -230,5 +211,6 @@ class Wayholder {
         }
       }
     }
+    return writebuffer;
   }
 }

@@ -33,12 +33,17 @@ class Tile {
 
   /// @return the maximum valid tile number for the given zoom level, 2<sup>zoomLevel</sup> -1.
   static int getMaxTileNumber(int zoomLevel) {
-    if (zoomLevel < 0) {
-      throw new Exception("zoomLevel must not be negative: $zoomLevel");
-    } else if (zoomLevel == 0) {
-      return 0;
+    assert(zoomLevel >= 0, "zoomLevel must not be negative: $zoomLevel");
+    switch (zoomLevel) {
+      case 0:
+        return 0;
+      case 1:
+        return 1;
+      case 2:
+        return 3;
+      default:
+        return (2 << zoomLevel) - 1;
     }
-    return (2 << zoomLevel - 1) - 1;
   }
 
   /// @param tileX     the X number of the tile.
@@ -50,9 +55,9 @@ class Tile {
         assert(tileY >= 0),
         assert(zoomLevel >= 0) {
     assert(tileX <= getMaxTileNumber(zoomLevel),
-        "$tileX > ${getMaxTileNumber(zoomLevel)}");
+        "$tileX > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
     assert(tileY <= getMaxTileNumber(zoomLevel),
-        "$tileY > ${getMaxTileNumber(zoomLevel)}");
+        "$tileY > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
   }
 
   void dispose() {}
@@ -217,8 +222,46 @@ class Tile {
       return null;
     }
 
-    return Tile((this.tileX / 2).round(), (this.tileY / 2).round(),
+    return Tile((this.tileX / 2).floor(), (this.tileY / 2).floor(),
         (this.zoomLevel - 1), this.indoorLevel);
+  }
+
+  /// Returns the childs of this tile. The first two items are the upper row from left to right, the next two items are the lower row.
+  List<Tile> getChilds() {
+    int x = tileX * 2;
+    int y = tileY * 2;
+    List<Tile> childs = [];
+    childs.add(Tile(x, y, zoomLevel + 1, indoorLevel));
+    childs.add(Tile(x + 1, y, zoomLevel + 1, indoorLevel));
+    childs.add(Tile(x, y + 1, zoomLevel + 1, indoorLevel));
+    childs.add(Tile(x + 1, y + 1, zoomLevel + 1, indoorLevel));
+    return childs;
+  }
+
+  /// Returns the grandchild-tiles. The tiles are ordered by row, then column
+  /// meaning the first 4 tiles are the upper row from left to right.
+  List<Tile> getGrandchilds() {
+    List<Tile> childs = getChilds();
+    List<Tile> result = [];
+    for (int i = 0; i < 2; ++i) {
+      List<Tile> result0 = [];
+      List<Tile> result1 = [];
+      List<Tile> grand = childs[i * 2].getChilds();
+      result0.add(grand[0]);
+      result0.add(grand[1]);
+      result1.add(grand[2]);
+      result1.add(grand[3]);
+      grand = childs[i * 2 + 1].getChilds();
+      result0.add(grand[0]);
+      result0.add(grand[1]);
+      result1.add(grand[2]);
+      result1.add(grand[3]);
+
+      result.addAll(result0);
+      result.addAll(result1);
+    }
+    assert(result.length == 16);
+    return result;
   }
 
   int getShiftX(Tile otherTile) {

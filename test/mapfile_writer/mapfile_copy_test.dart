@@ -5,7 +5,6 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_writer.dart';
-import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
 
 import '../testassetbundle.dart';
 
@@ -42,50 +41,33 @@ main() async {
       //print("Key: $key, value: $value");
     });
 
-    MapfileWriter mapfileWriter =
-        MapfileWriter(filename: "test.map", mapHeaderInfo: mapHeaderInfo);
+    MapfileWriter mapfileWriter = MapfileWriter(
+        filename: "test.map", mapHeaderInfo: mapHeaderInfo, zoomlevelMax: 21);
 
-    List<SubfileCreator> subfileParameters = [];
-    SubfileCreator subfileparameterCreator = SubfileCreator(
-        baseZoomLevel: 5,
-        zoomLevelMax: 7,
-        zoomLevelMin: 0,
-        debugFile: mapHeaderInfo.debugFile,
-        boundingBox: boundingBox);
-    subfileParameters.add(subfileparameterCreator);
-    await processSubfile(
-        mapFile, mapfileWriter, subfileparameterCreator, boundingBox);
+    // baseZoomLevel: 5,
+    // zoomLevelMax: 7,
+    // zoomLevelMin: 0,
 
-    subfileparameterCreator = SubfileCreator(
-        baseZoomLevel: 10,
-        zoomLevelMax: 11,
-        zoomLevelMin: 8,
-        debugFile: mapHeaderInfo.debugFile,
-        boundingBox: boundingBox);
-    subfileParameters.add(subfileparameterCreator);
-    await processSubfile(
-        mapFile, mapfileWriter, subfileparameterCreator, boundingBox);
+    // baseZoomLevel: 10,
+    // zoomLevelMax: 11,
+    // zoomLevelMin: 8,
 
-    subfileparameterCreator = SubfileCreator(
-        baseZoomLevel: 14,
-        zoomLevelMax: 21,
-        zoomLevelMin: 12,
-        debugFile: mapHeaderInfo.debugFile,
-        boundingBox: boundingBox);
-    subfileParameters.add(subfileparameterCreator);
-    await processSubfile(
-        mapFile, mapfileWriter, subfileparameterCreator, boundingBox);
+    // baseZoomLevel: 14,
+    // zoomLevelMax: 21,
+    // zoomLevelMin: 12,
+
+    await processSubfile(mapFile, mapfileWriter, boundingBox);
 
     // now start with writing the actual file
-    mapfileWriter.write(subfileParameters);
+    mapfileWriter.write();
     await mapfileWriter.close();
   });
 }
 
 Future<void> processSubfile(MapFile mapfile, MapfileWriter mapfileWriter,
-    SubfileCreator subfileparameterCreator, BoundingBox boundingBox) async {
-  for (int zoomLevel = subfileparameterCreator.zoomLevelMin;
-      zoomLevel <= subfileparameterCreator.zoomLevelMax;
+    BoundingBox boundingBox) async {
+  for (int zoomLevel = mapfileWriter.zoomlevelMin;
+      zoomLevel <= mapfileWriter.zoomlevelMax;
       zoomLevel++) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(zoomLevel);
     int minTileX = projection.longitudeToTileX(boundingBox.minLongitude);
@@ -96,10 +78,10 @@ Future<void> processSubfile(MapFile mapfile, MapfileWriter mapfileWriter,
     Tile lowerRight = new Tile(maxTileX, maxTileY, zoomLevel, 0);
     DatastoreReadResult mapReadResult =
         await mapfile.readMapData(upperLeft, lowerRight);
-    mapfileWriter.preparePoidata(
-        subfileparameterCreator, zoomLevel, mapReadResult.pointOfInterests);
-    mapfileWriter.prepareWays(
-        subfileparameterCreator, zoomLevel, mapReadResult.ways);
+    print(
+        "Processing Zoomlevel $zoomLevel, pois: ${mapReadResult.pointOfInterests.length}, ways: ${mapReadResult.ways.length}");
+    mapfileWriter.preparePoidata(zoomLevel, mapReadResult.pointOfInterests);
+    mapfileWriter.prepareWays(zoomLevel, mapReadResult.ways);
     // print(
     //     "${projection.longitudeToTileX(boundingBox.minLongitude)} to ${projection.longitudeToTileX(boundingBox.maxLongitude)}, ${projection.latitudeToTileY(boundingBox.maxLatitude)} to ${projection.latitudeToTileY(boundingBox.minLatitude)}");
   }

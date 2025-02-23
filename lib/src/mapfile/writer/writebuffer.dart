@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'mapfile_writer.dart';
 
@@ -51,6 +52,23 @@ class Writebuffer {
       _bufferData.add((value >> 8) & 0xff);
       _bufferData.add((value) & 0xff);
     }
+  }
+
+  /// Converts four bytes from the read buffer to a float.
+  /// <p/>
+  /// The byte order is big-endian.
+  ///
+  /// @return the float value.
+  void appendFloat4(double value) {
+    // https://stackoverflow.com/questions/55355482/parsing-integer-bit-patterns-as-ieee-754-floats-in-dart
+    // var bdata = ByteData(4);
+    // bdata.setInt32(0, readInt());
+    // return bdata.getFloat32(0);
+
+    var bdata = ByteData(4);
+    bdata.setFloat32(0, value);
+    int result = bdata.getInt32(0);
+    appendInt4(result);
   }
 
   void appendInt5(int value) {

@@ -1,4 +1,4 @@
-import 'package:collection/collection.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/tagholer_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
 import '../../../core.dart';
@@ -7,52 +7,16 @@ import '../mapfile_helper.dart';
 import 'mapfile_writer.dart';
 
 /// Holds one poi and its tags
-class Poiholder {
-  final bool debugFile;
-
+class Poiholder with TagholderMixin {
   final PointOfInterest poi;
 
   List<Tagholder> tagholders = [];
 
-  String? featureName;
-
-  String? featureHouseNumber;
-
-  int? featureElevation;
-
-  Poiholder(this.debugFile, this.poi, List<Tagholder> tagholders) {
-    this.tagholders = _analyzeTags(poi.tags, tagholders);
+  Poiholder(this.poi, List<Tagholder> tagholders) {
+    this.tagholders = analyzeTags(poi.tags, tagholders);
   }
 
-  List<Tagholder> _analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
-    List<Tagholder> tagholders = [];
-    for (Tag tag in tags) {
-      if (tag.key == MapfileHelper.TAG_KEY_NAME) {
-        featureName = tag.value;
-        continue;
-      }
-      if (tag.key == MapfileHelper.TAG_KEY_HOUSE_NUMBER) {
-        featureHouseNumber = tag.value;
-        continue;
-      }
-      if (tag.key == MapfileHelper.TAG_KEY_ELE) {
-        featureElevation = int.parse(tag.value!);
-        continue;
-      }
-      Tagholder? tagholder = tagsArray.firstWhereOrNull(
-          (test) => test.tag.key == tag.key && test.tag.value == tag.value);
-      if (tagholder == null) {
-        tagholder = Tagholder(tag);
-        tagsArray.add(tagholder);
-      } else {
-        tagholder.count++;
-      }
-      tagholders.add(tagholder);
-    }
-    return tagholders;
-  }
-
-  void _writePoiSignature(Writebuffer writebuffer) {
+  void _writePoiSignature(bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
       writebuffer.appendStringWithoutLength("***POIStart${poi.hashCode}***"
           .padRight(MapfileHelper.SIGNATURE_LENGTH_POI, " "));
@@ -60,9 +24,10 @@ class Poiholder {
   }
 
   /// can be done when the tags are sorted
-  Writebuffer writePoidata(double tileLatitude, double tileLongitude) {
+  Writebuffer writePoidata(
+      bool debugFile, double tileLatitude, double tileLongitude) {
     Writebuffer writebuffer = Writebuffer();
-    _writePoiSignature(writebuffer);
+    _writePoiSignature(debugFile, writebuffer);
     writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
         poi.position.latitude - tileLatitude));
     writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(
@@ -76,8 +41,7 @@ class Poiholder {
     specialByte |=
         (tagholders.length & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
     writebuffer.appendInt1(specialByte);
-    tagholders.forEach(
-        (tagholder) => writebuffer.appendUnsignedInt(tagholder.index!));
+    writeTags(writebuffer);
 
     // get the feature bitmask (1 byte)
     int featureByte = 0;

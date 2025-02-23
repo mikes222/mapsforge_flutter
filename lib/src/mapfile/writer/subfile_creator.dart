@@ -28,50 +28,34 @@ class SubfileCreator {
   /// Minimum zoom level for which the block entries tables are made.
   final int zoomLevelMin;
 
-  final bool debugFile;
-
   final BoundingBox boundingBox;
 
-  /// Size of the sub-file in bytes. Consists of
-  /// - tile index header (16 byte if debug is on)
-  /// - tile index entries (5 byte per tile of baseZoomLevel)
-  /// - for each tile:
-  ///   - tile header
-  ///   - poi data
-  ///   - way data
-  // int getSubFileSize() {
-  //   int result = 0;
-  //   tiledata.forEach((tile, zoominfo) {
-  //     if (debugFile) result += 16;
-  //     result += 5 * (zoomLevelMax - zoomLevelMin + 1);
-  //     result += zoominfo.tileheader!.length;
-  //     // result += zoominfo.poiinfo.writebuffer.length;
-  //     // result += zoominfo.wayinfo.writebuffer.length;
-  //   });
-  //   return result;
-  // }
+  final Map<int, Zoominfo> basetiledata = {};
 
-  final Map<Tile, Zoominfo> tiledata = {};
+  late final int minX;
+
+  late final int minY;
+
+  late final int maxX;
+
+  late final int maxY;
 
   SubfileCreator(
       {required this.baseZoomLevel,
       required this.zoomLevelMax,
       required this.zoomLevelMin,
-      required this.debugFile,
       required this.boundingBox}) {
     MercatorProjection projection =
         MercatorProjection.fromZoomlevel(baseZoomLevel);
-    for (int tileX = projection.longitudeToTileX(boundingBox.minLongitude);
-        tileX <= projection.longitudeToTileX(boundingBox.maxLongitude);
-        ++tileX) {
-      for (int tileY = projection.latitudeToTileY(boundingBox.maxLatitude);
-          tileY <= projection.latitudeToTileY(boundingBox.minLatitude);
-          ++tileY) {
+    minX = projection.longitudeToTileX(boundingBox.minLongitude);
+    maxX = projection.longitudeToTileX(boundingBox.maxLongitude);
+    minY = projection.latitudeToTileY(boundingBox.maxLatitude);
+    maxY = projection.latitudeToTileY(boundingBox.minLatitude);
+    for (int tileY = minY; tileY <= maxY; ++tileY) {
+      for (int tileX = minX; tileX <= maxX; ++tileX) {
         Tile tile = new Tile(tileX, tileY, baseZoomLevel, 0);
-        double tileLatitude = projection.tileYToLatitude(tile.tileY);
-        double tileLongitude = projection.tileXToLongitude(tile.tileX);
-        tiledata[tile] = Zoominfo(
-            debugFile, zoomLevelMin, zoomLevelMax, tileLatitude, tileLongitude);
+        basetiledata[tileY * (maxX - minX) + tileX] =
+            Zoominfo(zoomLevelMin, zoomLevelMax, tile);
       }
     }
   }
@@ -79,8 +63,10 @@ class SubfileCreator {
   void addPoidata(
       int zoomlevel, List<PointOfInterest> pois, List<Tagholder> tagholders) {
     for (PointOfInterest pointOfInterest in pois) {
-      tiledata.forEach((tile, zoominfo) {
-        if (tile.getBoundingBox().containsLatLong(pointOfInterest.position)) {
+      basetiledata.forEach((idx, zoominfo) {
+        if (zoominfo.tile
+            .getBoundingBox()
+            .containsLatLong(pointOfInterest.position)) {
           zoominfo.addPoidata(zoomlevel, pointOfInterest, tagholders);
         }
       });
@@ -89,43 +75,42 @@ class SubfileCreator {
 
   void addWaydata(int zoomlevel, List<Way> ways, List<Tagholder> tagholders) {
     for (Way way in ways) {
-      tiledata.forEach((tile, zoominfo) {
-        if (tile.getBoundingBox().intersects(way.getBoundingBox())) {
+      basetiledata.forEach((idx, zoominfo) {
+        if (zoominfo.tile.getBoundingBox().intersects(way.getBoundingBox()) ||
+            zoominfo.tile
+                .getBoundingBox()
+                .containsBoundingBox(way.getBoundingBox())) {
           zoominfo.addWaydata(zoomlevel, way, tagholders);
         }
       });
     }
   }
 
-  void _writeIndexHeaderSignature(Writebuffer writebuffer) {
+  void _writeIndexHeaderSignature(bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
       writebuffer.appendStringWithoutLength("+++IndexStart+++");
     }
   }
 
-  Writebuffer writeTileIndex() {
+  Writebuffer writeTileIndex(bool debugFile) {
     Writebuffer writebuffer = Writebuffer();
-    _writeIndexHeaderSignature(writebuffer);
+    _writeIndexHeaderSignature(debugFile, writebuffer);
     // todo find out how to do this
     bool coveredByWater = false;
-    int offset = writebuffer.length + 5 * tiledata.length;
-
-    MercatorProjection projection =
-        MercatorProjection.fromZoomlevel(baseZoomLevel);
-    for (int tileX = projection.longitudeToTileX(boundingBox.minLongitude);
-        tileX <= projection.longitudeToTileX(boundingBox.maxLongitude);
-        ++tileX) {
-      for (int tileY = projection.latitudeToTileY(boundingBox.maxLatitude);
-          tileY <= projection.latitudeToTileY(boundingBox.minLatitude);
-          ++tileY) {
+    int offset = writebuffer.length + 5 * (maxX - minX + 1) * (maxY - minY + 1);
+    int firstOffset = offset;
+    for (int tileY = minY; tileY <= maxY; ++tileY) {
+      for (int tileX = minX; tileX <= maxX; ++tileX) {
         _writeTileIndexEntry(writebuffer, coveredByWater, offset);
         // now calculate this tilesize and add it to the offset for the next tile
-        Tile tile = new Tile(tileX, tileY, baseZoomLevel, 0);
-        Zoominfo zoominfo = tiledata[tile]!;
-        zoominfo.writeTile(tile);
+        Zoominfo zoominfo = basetiledata[tileY * (maxX - minX) + tileX]!;
+        zoominfo.writeTile(debugFile);
         offset += zoominfo.writebuffer!.length;
       }
     }
+    assert(firstOffset == writebuffer.length,
+        "$firstOffset != ${writebuffer.length} with debug=$debugFile and baseZoomLevel=$baseZoomLevel, ${basetiledata.length}, $minX, $minY, $maxX, $maxY");
+
     return writebuffer;
   }
 
@@ -141,19 +126,12 @@ class SubfileCreator {
     writebuffer.appendInt5(indexEntry);
   }
 
-  Writebuffer writeTiles() {
+  Writebuffer writeTiles(bool debugFile) {
     final Writebuffer writebuffer = Writebuffer();
-    MercatorProjection projection =
-        MercatorProjection.fromZoomlevel(baseZoomLevel);
-    for (int tileX = projection.longitudeToTileX(boundingBox.minLongitude);
-        tileX <= projection.longitudeToTileX(boundingBox.maxLongitude);
-        ++tileX) {
-      for (int tileY = projection.latitudeToTileY(boundingBox.maxLatitude);
-          tileY <= projection.latitudeToTileY(boundingBox.minLatitude);
-          ++tileY) {
-        Tile tile = new Tile(tileX, tileY, baseZoomLevel, 0);
-        Zoominfo zoominfo = tiledata[tile]!;
-        writebuffer.appendWritebuffer(zoominfo.writeTile(tile));
+    for (int tileY = minY; tileY <= maxY; ++tileY) {
+      for (int tileX = minX; tileX <= maxX; ++tileX) {
+        Zoominfo zoominfo = basetiledata[tileY * (maxX - minX) + tileX]!;
+        writebuffer.appendWritebuffer(zoominfo.writeTile(debugFile));
       }
     }
     return writebuffer;
@@ -163,14 +141,11 @@ class SubfileCreator {
 //////////////////////////////////////////////////////////////////////////////
 
 class Zoominfo {
-  final bool debugFile;
-
   Map<int, Poiinfo> poiinfos = {};
 
   Map<int, Wayinfo> wayinfos = {};
 
-  double tileLatitude;
-  double tileLongitude;
+  final Tile tile;
 
   final int zoomLevelMin;
 
@@ -178,11 +153,12 @@ class Zoominfo {
 
   Writebuffer? writebuffer;
 
-  Zoominfo(this.debugFile, this.zoomLevelMin, this.zoomLevelMax,
-      this.tileLatitude, this.tileLongitude) {
+  //final Map<int, List<Tile>> grandchilds = {};
+
+  Zoominfo(this.zoomLevelMin, this.zoomLevelMax, this.tile) {
     for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
-      poiinfos[zoomlevel] = Poiinfo(debugFile);
-      wayinfos[zoomlevel] = Wayinfo(debugFile);
+      poiinfos[zoomlevel] = Poiinfo();
+      wayinfos[zoomlevel] = Wayinfo();
     }
   }
 
@@ -198,29 +174,37 @@ class Zoominfo {
 
   void addWaydata(int zoomlevel, Way way, List<Tagholder> tagholders) {
     for (int zl = zoomLevelMin; zl < zoomlevel; ++zl) {
-      // if it is already defined for lower zoomlevel, ignore it
-      if (wayinfos[zl]!.contains(way)) {
+      Wayholder? wayholder = wayinfos[zl]?.searchWayholder(way);
+      if (wayholder != null) {
+        //if (zoomlevel == zoomLevelMin + 2) {
+        wayholder.usedFor(zoomlevel);
+        //}
         return;
       }
     }
     // if (way.getTag("name") == "place du casino")
-    //   print("Adding $way to $zoomlevel at $tileLatitude/$tileLongitude");
+    //print("Adding $way to $zoomlevel at $tile");
     Wayinfo wayinfo = wayinfos[zoomlevel]!;
     wayinfo.setWaydata(way, tagholders);
   }
 
-  Writebuffer writeTile(Tile tile) {
+  Writebuffer writeTile(bool debugFile) {
     if (writebuffer != null) return writebuffer!;
     writebuffer = Writebuffer();
-    _writeTileHeaderSignature(tile, writebuffer!);
+    _writeTileHeaderSignature(debugFile, tile, writebuffer!);
 
     _writeZoomtable(tile, writebuffer!);
+
+    MercatorProjection projection =
+        MercatorProjection.fromZoomlevel(tile.zoomLevel);
+    double tileLatitude = projection.tileYToLatitude(tile.tileY);
+    double tileLongitude = projection.tileXToLongitude(tile.tileX);
 
     // the offset to the first way in the block
     int firstWayOffset = 0;
     for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
       Poiinfo poiinfo = poiinfos[zoomlevel]!;
-      poiinfo.writePoidata(tileLatitude, tileLongitude);
+      poiinfo.writePoidata(debugFile, tileLatitude, tileLongitude);
       firstWayOffset += poiinfo.writebuffer!.length;
     }
     writebuffer!.appendUnsignedInt(firstWayOffset);
@@ -230,7 +214,7 @@ class Zoominfo {
     }
     for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
       Wayinfo wayinfo = wayinfos[zoomlevel]!;
-      wayinfo.writeWaydata(tileLatitude, tileLongitude);
+      wayinfo.writeWaydata(debugFile, tileLatitude, tileLongitude);
       writebuffer!.appendWritebuffer(wayinfo.writebuffer!);
     }
     return writebuffer!;
@@ -239,7 +223,8 @@ class Zoominfo {
   /// Processes the block signature, if present.
   ///
   /// @return true if the block signature could be processed successfully, false otherwise.
-  void _writeTileHeaderSignature(Tile tile, Writebuffer writebuffer) {
+  void _writeTileHeaderSignature(
+      bool debugFile, Tile tile, Writebuffer writebuffer) {
     if (debugFile) {
       writebuffer.appendStringWithoutLength(
           "###TileStart${tile.tileX},${tile.tileY}###"
@@ -264,18 +249,16 @@ class Zoominfo {
 //////////////////////////////////////////////////////////////////////////////
 
 class Poiinfo {
-  final bool debugFile;
-
   List<Poiholder> poiholders = [];
 
   Writebuffer? writebuffer;
 
   int count = 0;
 
-  Poiinfo(this.debugFile);
+  Poiinfo();
 
   void setPoidata(PointOfInterest poi, List<Tagholder> tagholders) {
-    Poiholder poiholder = Poiholder(debugFile, poi, tagholders);
+    Poiholder poiholder = Poiholder(poi, tagholders);
     poiholders.add(poiholder);
     ++count;
   }
@@ -284,12 +267,13 @@ class Poiinfo {
     return poiholders.firstWhereOrNull((test) => test.poi == poi) != null;
   }
 
-  Writebuffer writePoidata(double tileLatitude, double tileLongitude) {
+  Writebuffer writePoidata(
+      bool debugFile, double tileLatitude, double tileLongitude) {
     if (writebuffer != null) return writebuffer!;
     writebuffer = Writebuffer();
     for (Poiholder poiholder in poiholders) {
       writebuffer!.appendWritebuffer(
-          poiholder.writePoidata(tileLatitude, tileLongitude));
+          poiholder.writePoidata(debugFile, tileLatitude, tileLongitude));
     }
     poiholders.clear();
     return writebuffer!;
@@ -299,32 +283,37 @@ class Poiinfo {
 //////////////////////////////////////////////////////////////////////////////
 
 class Wayinfo {
-  final bool debugFile;
-
   List<Wayholder> wayholders = [];
 
   Writebuffer? writebuffer;
 
   int count = 0;
 
-  Wayinfo(this.debugFile);
+  Wayinfo();
 
   void setWaydata(Way way, List<Tagholder> tagholders) {
-    Wayholder wayholder = Wayholder(debugFile, way, tagholders);
+    Wayholder wayholder = Wayholder(way, tagholders);
     wayholders.add(wayholder);
     ++count;
   }
 
-  bool contains(Way way) {
-    return wayholders.firstWhereOrNull((test) => test.way == way) != null;
+  Wayholder? searchWayholder(Way way) {
+    return wayholders.firstWhereOrNull((test) => test.way == way);
   }
 
-  Writebuffer writeWaydata(double tileLatitude, double tileLongitude) {
+  void setSubTileBitmap(Way way, int idx) {
+    wayholders
+        .firstWhereOrNull((test) => test.way == way)!
+        .setSubTileBitmap(idx);
+  }
+
+  Writebuffer writeWaydata(
+      bool debugFile, double tileLatitude, double tileLongitude) {
     if (writebuffer != null) return writebuffer!;
     writebuffer = Writebuffer();
     for (Wayholder wayholder in wayholders) {
       writebuffer!.appendWritebuffer(
-          wayholder.writeWaydata(tileLatitude, tileLongitude));
+          wayholder.writeWaydata(debugFile, tileLatitude, tileLongitude));
     }
     wayholders.clear();
     return writebuffer!;
