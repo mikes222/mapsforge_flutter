@@ -1,6 +1,7 @@
 import '../model/boundingbox.dart';
 import '../model/latlong.dart';
 import '../model/tag.dart';
+import '../model/zoomlevel_range.dart';
 
 /// Contains the immutable metadata of a map file.
 ///
@@ -81,30 +82,29 @@ class MapHeaderInfo {
    */
   final List<Tag> wayTags;
 
-  final int? zoomLevelMin;
-  final int? zoomLevelMax;
+  final ZoomlevelRange zoomlevelRange;
 
-  const MapHeaderInfo(
-      {required this.boundingBox,
-      this.comment,
-      this.createdBy,
-      this.debugFile = false,
-      this.fileSize,
-      this.fileVersion,
-      this.languagesPreference,
-      this.mapDate,
-      this.numberOfSubFiles,
-      required this.poiTags,
-      this.projectionName,
-      this.startPosition,
-      this.startZoomLevel,
-      required this.tilePixelSize,
-      required this.wayTags,
-      this.zoomLevelMin,
-      this.zoomLevelMax});
+  const MapHeaderInfo({
+    required this.boundingBox,
+    this.comment,
+    this.createdBy,
+    this.debugFile = false,
+    this.fileSize,
+    this.fileVersion,
+    this.languagesPreference,
+    this.mapDate,
+    this.numberOfSubFiles,
+    this.poiTags = const [],
+    this.projectionName,
+    this.startPosition,
+    this.startZoomLevel,
+    this.tilePixelSize = 256,
+    this.wayTags = const [],
+    required this.zoomlevelRange,
+  });
 
   @override
   String toString() {
-    return 'MapHeaderInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, wayTags-length: ${wayTags.length}, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax}';
+    return 'MapHeaderInfo{boundingBox: $boundingBox, comment: $comment, createdBy: $createdBy, debugFile: $debugFile, fileSize: $fileSize, fileVersion: $fileVersion, languagesPreference: $languagesPreference, mapDate: $mapDate, numberOfSubFiles: $numberOfSubFiles, poiTags-length: ${poiTags.length}, projectionName: $projectionName, startPosition: $startPosition, startZoomLevel: $startZoomLevel, wayTags-length: ${wayTags.length}, zoomlevelRange: $zoomlevelRange}';
   }
 }

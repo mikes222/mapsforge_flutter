@@ -4,8 +4,6 @@ import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
 import '../../model/tag.dart';
 import 'attributematcher.dart';
-import 'closed.dart';
-import 'element.dart';
 import 'rule.dart';
 
 class PositiveRule extends Rule {
@@ -30,43 +28,21 @@ class PositiveRule extends Rule {
   }
 
   @override
-  bool matchesForZoomLevel(int zoomLevel) {
-    return zoomMin <= zoomLevel && zoomMax >= zoomLevel;
+  bool matchesForZoomLevel(int zoomlevel) {
+    return zoomlevelRange.matches(zoomlevel);
   }
 
   @override
-  bool matchesNode(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
-            tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.NODE) &&
-        this.keyMatcher.matchesTagList(tags) &&
-        this.valueMatcher.matchesTagList(tags);
-  }
-
-  @override
-  bool matchesOpenWay(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
-            tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.WAY) &&
-        this.closedMatcher!.matchesClosed(Closed.NO) &&
-        this.keyMatcher.matchesTagList(tags) &&
-        this.valueMatcher.matchesTagList(tags);
-  }
-
-  @override
-  bool matchesClosedWay(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
-            tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.WAY) &&
-        this.closedMatcher!.matchesClosed(Closed.YES) &&
-        this.keyMatcher.matchesTagList(tags) &&
-        this.valueMatcher.matchesTagList(tags);
-  }
-
   bool matches(List<Tag> tags, int indoorLevel) {
     return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
             tags, indoorLevel) &&
         this.keyMatcher.matchesTagList(tags) &&
+        this.valueMatcher.matchesTagList(tags);
+  }
+
+  @override
+  bool matchesForZoomlevelRange(List<Tag> tags) {
+    return this.keyMatcher.matchesTagList(tags) &&
         this.valueMatcher.matchesTagList(tags);
   }
 

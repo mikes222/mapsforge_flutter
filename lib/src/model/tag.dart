@@ -27,6 +27,14 @@ class Tag implements Comparable<Tag> {
       : key = tag.substring(0, tag.indexOf(KEY_VALUE_SEPARATOR)),
         value = tag.substring(tag.indexOf(KEY_VALUE_SEPARATOR) + 1);
 
+  static List<Tag> from(Map<String, String> tags) {
+    List<Tag> list = [];
+    tags.forEach((key, value) {
+      list.add(Tag(key, value));
+    });
+    return list;
+  }
+
   /**
    * Compares this tag to the specified tag.
    * The tag comparison is based on a comparison of key and value in that order.

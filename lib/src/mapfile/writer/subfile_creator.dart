@@ -1,8 +1,12 @@
+import 'dart:math' as Math;
+
 import 'package:collection/collection.dart';
+import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_writer.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/poiholder.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 
 import '../../../core.dart';
 import '../../../datastore.dart';
@@ -22,15 +26,11 @@ class SubfileCreator {
   /// Base zoom level of the sub-file, which equals to one block.
   final int baseZoomLevel;
 
-  /// Maximum zoom level for which the block entries tables are made.
-  final int zoomLevelMax;
-
-  /// Minimum zoom level for which the block entries tables are made.
-  final int zoomLevelMin;
+  final ZoomlevelRange zoomlevelRange;
 
   final BoundingBox boundingBox;
 
-  final Map<int, Zoominfo> basetiledata = {};
+  final List<Zoominfo> basetiledata = [];
 
   late final int minX;
 
@@ -40,11 +40,13 @@ class SubfileCreator {
 
   late final int maxY;
 
+  final MapHeaderInfo mapHeaderInfo;
+
   SubfileCreator(
       {required this.baseZoomLevel,
-      required this.zoomLevelMax,
-      required this.zoomLevelMin,
-      required this.boundingBox}) {
+      required this.zoomlevelRange,
+      required this.boundingBox,
+      required this.mapHeaderInfo}) {
     MercatorProjection projection =
         MercatorProjection.fromZoomlevel(baseZoomLevel);
     minX = projection.longitudeToTileX(boundingBox.minLongitude);
@@ -54,33 +56,46 @@ class SubfileCreator {
     for (int tileY = minY; tileY <= maxY; ++tileY) {
       for (int tileX = minX; tileX <= maxX; ++tileX) {
         Tile tile = new Tile(tileX, tileY, baseZoomLevel, 0);
-        basetiledata[tileY * (maxX - minX) + tileX] =
-            Zoominfo(zoomLevelMin, zoomLevelMax, tile);
+        basetiledata.add(
+            Zoominfo(zoomlevelRange, tile, mapHeaderInfo.languagesPreference));
       }
     }
   }
 
-  void addPoidata(
-      int zoomlevel, List<PointOfInterest> pois, List<Tagholder> tagholders) {
+  int index(int tileX, int tileY) {
+    return (tileY - minY) * (maxX - minX + 1) + (tileX - minX);
+  }
+
+  void addPoidata(ZoomlevelRange zoomlevelRange, List<PointOfInterest> pois,
+      List<Tagholder> tagholders) {
+    if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
+    if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
     for (PointOfInterest pointOfInterest in pois) {
-      basetiledata.forEach((idx, zoominfo) {
+      bool found = false;
+      for (Zoominfo zoominfo in basetiledata) {
         if (zoominfo.tile
             .getBoundingBox()
             .containsLatLong(pointOfInterest.position)) {
-          zoominfo.addPoidata(zoomlevel, pointOfInterest, tagholders);
+          zoominfo.addPoidata(zoomlevelRange, pointOfInterest, tagholders);
+          found = true;
+          break;
         }
-      });
+      }
+      //if (!found) print("Not found: $pointOfInterest");
     }
   }
 
-  void addWaydata(int zoomlevel, List<Way> ways, List<Tagholder> tagholders) {
+  void addWaydata(ZoomlevelRange zoomlevelRange, List<Way> ways,
+      List<Tagholder> tagholders) {
+    if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
+    if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
     for (Way way in ways) {
-      basetiledata.forEach((idx, zoominfo) {
+      basetiledata.forEach((zoominfo) {
         if (zoominfo.tile.getBoundingBox().intersects(way.getBoundingBox()) ||
             zoominfo.tile
                 .getBoundingBox()
                 .containsBoundingBox(way.getBoundingBox())) {
-          zoominfo.addWaydata(zoomlevel, way, tagholders);
+          zoominfo.addWaydata(zoomlevelRange, way, tagholders);
         }
       });
     }
@@ -103,7 +118,7 @@ class SubfileCreator {
       for (int tileX = minX; tileX <= maxX; ++tileX) {
         _writeTileIndexEntry(writebuffer, coveredByWater, offset);
         // now calculate this tilesize and add it to the offset for the next tile
-        Zoominfo zoominfo = basetiledata[tileY * (maxX - minX) + tileX]!;
+        Zoominfo zoominfo = basetiledata[index(tileX, tileY)];
         zoominfo.writeTile(debugFile);
         offset += zoominfo.writebuffer!.length;
       }
@@ -130,7 +145,7 @@ class SubfileCreator {
     final Writebuffer writebuffer = Writebuffer();
     for (int tileY = minY; tileY <= maxY; ++tileY) {
       for (int tileX = minX; tileX <= maxX; ++tileX) {
-        Zoominfo zoominfo = basetiledata[tileY * (maxX - minX) + tileX]!;
+        Zoominfo zoominfo = basetiledata[index(tileX, tileY)];
         writebuffer.appendWritebuffer(zoominfo.writeTile(debugFile));
       }
     }
@@ -147,45 +162,33 @@ class Zoominfo {
 
   final Tile tile;
 
-  final int zoomLevelMin;
-
-  final int zoomLevelMax;
+  final ZoomlevelRange zoomlevelRange;
 
   Writebuffer? writebuffer;
 
-  //final Map<int, List<Tile>> grandchilds = {};
+  String? languagesPreference;
 
-  Zoominfo(this.zoomLevelMin, this.zoomLevelMax, this.tile) {
-    for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
-      poiinfos[zoomlevel] = Poiinfo();
-      wayinfos[zoomlevel] = Wayinfo();
+  Zoominfo(this.zoomlevelRange, this.tile, this.languagesPreference) {
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin;
+        zoomlevel <= zoomlevelRange.zoomlevelMax;
+        ++zoomlevel) {
+      poiinfos[zoomlevel] = Poiinfo(languagesPreference);
+      wayinfos[zoomlevel] = Wayinfo(languagesPreference);
     }
   }
 
-  void addPoidata(
-      int zoomlevel, PointOfInterest poi, List<Tagholder> tagholders) {
-    for (int zl = zoomLevelMin; zl < zoomlevel; ++zl) {
-      // if it is already defined for lower zoomlevel, ignore it
-      if (poiinfos[zl]!.contains(poi)) return;
-    }
-    Poiinfo poiinfo = poiinfos[zoomlevel]!;
-    poiinfo.setPoidata(poi, tagholders);
+  void addPoidata(ZoomlevelRange zoomlevelRange, PointOfInterest poi,
+      List<Tagholder> tagholders) {
+    poiinfos[Math.max(
+            this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!
+        .setPoidata(poi, tagholders);
   }
 
-  void addWaydata(int zoomlevel, Way way, List<Tagholder> tagholders) {
-    for (int zl = zoomLevelMin; zl < zoomlevel; ++zl) {
-      Wayholder? wayholder = wayinfos[zl]?.searchWayholder(way);
-      if (wayholder != null) {
-        //if (zoomlevel == zoomLevelMin + 2) {
-        wayholder.usedFor(zoomlevel);
-        //}
-        return;
-      }
-    }
-    // if (way.getTag("name") == "place du casino")
-    //print("Adding $way to $zoomlevel at $tile");
-    Wayinfo wayinfo = wayinfos[zoomlevel]!;
-    wayinfo.setWaydata(way, tagholders);
+  void addWaydata(
+      ZoomlevelRange zoomlevelRange, Way way, List<Tagholder> tagholders) {
+    wayinfos[Math.max(
+            this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!
+        .setWaydata(way, tagholders);
   }
 
   Writebuffer writeTile(bool debugFile) {
@@ -202,19 +205,25 @@ class Zoominfo {
 
     // the offset to the first way in the block
     int firstWayOffset = 0;
-    for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin;
+        zoomlevel <= zoomlevelRange.zoomlevelMax;
+        ++zoomlevel) {
       Poiinfo poiinfo = poiinfos[zoomlevel]!;
       poiinfo.writePoidata(debugFile, tileLatitude, tileLongitude);
       firstWayOffset += poiinfo.writebuffer!.length;
     }
     writebuffer!.appendUnsignedInt(firstWayOffset);
-    for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin;
+        zoomlevel <= zoomlevelRange.zoomlevelMax;
+        ++zoomlevel) {
       Poiinfo poiinfo = poiinfos[zoomlevel]!;
       writebuffer!.appendWritebuffer(poiinfo.writebuffer!);
     }
-    for (int zoomlevel = zoomLevelMin; zoomlevel <= zoomLevelMax; ++zoomlevel) {
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin;
+        zoomlevel <= zoomlevelRange.zoomlevelMax;
+        ++zoomlevel) {
       Wayinfo wayinfo = wayinfos[zoomlevel]!;
-      wayinfo.writeWaydata(debugFile, tileLatitude, tileLongitude);
+      wayinfo.writeWaydata(debugFile, tile, tileLatitude, tileLongitude);
       writebuffer!.appendWritebuffer(wayinfo.writebuffer!);
     }
     return writebuffer!;
@@ -233,8 +242,8 @@ class Zoominfo {
   }
 
   void _writeZoomtable(Tile tile, Writebuffer writebuffer) {
-    for (int queryZoomLevel = zoomLevelMin;
-        queryZoomLevel <= zoomLevelMax;
+    for (int queryZoomLevel = zoomlevelRange.zoomlevelMin;
+        queryZoomLevel <= zoomlevelRange.zoomlevelMax;
         queryZoomLevel++) {
       Poiinfo poiinfo = poiinfos[queryZoomLevel]!;
       Wayinfo wayinfo = wayinfos[queryZoomLevel]!;
@@ -255,10 +264,12 @@ class Poiinfo {
 
   int count = 0;
 
-  Poiinfo();
+  final String? languagesPreference;
+
+  Poiinfo(this.languagesPreference);
 
   void setPoidata(PointOfInterest poi, List<Tagholder> tagholders) {
-    Poiholder poiholder = Poiholder(poi, tagholders);
+    Poiholder poiholder = Poiholder(poi, tagholders, languagesPreference);
     poiholders.add(poiholder);
     ++count;
   }
@@ -289,10 +300,12 @@ class Wayinfo {
 
   int count = 0;
 
-  Wayinfo();
+  String? languagesPreference;
+
+  Wayinfo(this.languagesPreference);
 
   void setWaydata(Way way, List<Tagholder> tagholders) {
-    Wayholder wayholder = Wayholder(way, tagholders);
+    Wayholder wayholder = Wayholder(way, tagholders, languagesPreference);
     wayholders.add(wayholder);
     ++count;
   }
@@ -301,19 +314,13 @@ class Wayinfo {
     return wayholders.firstWhereOrNull((test) => test.way == way);
   }
 
-  void setSubTileBitmap(Way way, int idx) {
-    wayholders
-        .firstWhereOrNull((test) => test.way == way)!
-        .setSubTileBitmap(idx);
-  }
-
   Writebuffer writeWaydata(
-      bool debugFile, double tileLatitude, double tileLongitude) {
+      bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
     if (writebuffer != null) return writebuffer!;
     writebuffer = Writebuffer();
     for (Wayholder wayholder in wayholders) {
       writebuffer!.appendWritebuffer(
-          wayholder.writeWaydata(debugFile, tileLatitude, tileLongitude));
+          wayholder.writeWaydata(debugFile, tile, tileLatitude, tileLongitude));
     }
     wayholders.clear();
     return writebuffer!;

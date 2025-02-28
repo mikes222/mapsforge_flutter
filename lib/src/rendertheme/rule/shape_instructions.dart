@@ -18,4 +18,19 @@ class ShapeInstructions implements Instructions {
         shapeOpenWays.isEmpty &&
         shapeClosedWays.isEmpty;
   }
+
+  @override
+  bool hasInstructionsClosedWays() {
+    return false;
+  }
+
+  @override
+  bool hasInstructionsNodes() {
+    return false;
+  }
+
+  @override
+  bool hasInstructionsOpenWays() {
+    return false;
+  }
 }

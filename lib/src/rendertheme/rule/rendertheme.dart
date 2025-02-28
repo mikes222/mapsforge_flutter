@@ -1,6 +1,7 @@
-import 'package:mapsforge_flutter/src/rendertheme/rule/rendertheme_level.dart';
-import 'package:mapsforge_flutter/src/rendertheme/xml/renderthemebuilder.dart';
-
+import '../../../core.dart';
+import '../../../datastore.dart';
+import '../../../maps.dart';
+import '../../model/zoomlevel_range.dart';
 import '../../rendertheme/rule/rule.dart';
 import '../xml/renderinstruction/renderinstruction_hillshading.dart';
 
@@ -129,7 +130,40 @@ class RenderTheme {
     });
   }
 
-//  void matchHillShadings(StandardRenderer renderer, RenderContext renderContext) {
-//    for (Hillshading hillShading in hillShadings) hillShading.render(renderContext, renderer.hillsRenderConfig);
-//  }
+  /// Returns the widest possible zoomrange which may accept the given argument.
+  /// Returns null if if the argument will never accepted.
+  ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
+    ZoomlevelRange? result;
+    rulesList.forEach((rule) {
+      ZoomlevelRange? range = rule.getZoomlevelRangeNode(pointOfInterest);
+      if (range != null) {
+        if (result == null) {
+          result = range;
+        } else {
+          result = result!.widenTo(range);
+        }
+      }
+    });
+    return result;
+  }
+
+  /// Returns the widest possible zoomrange which may accept the given argument.
+  /// Returns null if if the argument will never accepted.
+  ZoomlevelRange? getZoomlevelRangeWay(Way way) {
+    bool isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
+    ZoomlevelRange? result;
+    rulesList.forEach((rule) {
+      ZoomlevelRange? range = isClosedWay
+          ? rule.getZoomlevelRangeClosedWay(way)
+          : rule.getZoomlevelRangeOpenWay(way);
+      if (range != null) {
+        if (result == null) {
+          result = range;
+        } else {
+          result = result!.widenTo(range);
+        }
+      }
+    });
+    return result;
+  }
 }

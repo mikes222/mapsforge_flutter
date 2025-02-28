@@ -272,6 +272,10 @@ class MapfileHelper {
     return ways;
   }
 
+  /// reads all data blocks of a way. Each datablock consists of a number of way nodes
+  /// which comprises one way, e.g. the outer way of a pond or one of several outer ways.
+  /// See https://wiki.openstreetmap.org/wiki/Relation:multipolygon for a detailed
+  /// explanation.
   List<List<LatLong>> _processWayDataBlock(double tileLatitude,
       double tileLongitude, bool doubleDeltaEncoding, Readbuffer readBuffer) {
     // get and check the number of way coordinate blocks (VBE-U)
@@ -315,6 +319,7 @@ class MapfileHelper {
     return wayCoordinates;
   }
 
+  /// decodes the coordinates of a way which was encoded with double encoding algorithm
   List<LatLong> _decodeWayNodesDoubleDelta(int numberOfWayNodes,
       double tileLatitude, double tileLongitude, Readbuffer readBuffer) {
     // get the first way node latitude offset (VBE-S)
@@ -369,6 +374,7 @@ class MapfileHelper {
     return waySegment;
   }
 
+  /// decodes the coordinates of a way which was encoded with single encoding algorithm
   List<LatLong> _decodeWayNodesSingleDelta(int numberOfWayNodes,
       double tileLatitude, double tileLongitude, Readbuffer readBuffer) {
     // get the first way node latitude single-delta offset (VBE-S)

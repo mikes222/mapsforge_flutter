@@ -11,6 +11,7 @@ import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 import 'package:mapsforge_flutter/src/parameters.dart';
 import 'package:mapsforge_flutter/src/projection/projection.dart';
 import 'package:queue/queue.dart';
@@ -205,8 +206,7 @@ class MapFile extends MapDataStore {
 
   final int? timestamp;
 
-  int zoomLevelMin = 0;
-  int zoomLevelMax = 30;
+  ZoomlevelRange zoomlevelRange = const ZoomlevelRange.standard();
 
   late final MapfileInfo _mapFileInfo;
   late final MapfileHelper _helper;
@@ -262,7 +262,7 @@ class MapFile extends MapDataStore {
 
   @override
   String toString() {
-    return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileInfo, timestamp: $timestamp, zoomLevelMin: $zoomLevelMin, zoomLevelMax: $zoomLevelMax, readBufferSource: $readBufferSource}';
+    return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileInfo, timestamp: $timestamp, zoomlevelRange: $zoomlevelRange, readBufferSource: $readBufferSource}';
   }
 
   @override
@@ -585,8 +585,7 @@ class MapFile extends MapDataStore {
       await mapfileInfoBuilder.readHeader(readBufferSource!, fileSize);
       this._mapFileInfo = mapfileInfoBuilder.build();
       _helper = MapfileHelper(_mapFileInfo, preferredLanguage);
-      zoomLevelMin = _mapFileInfo.zoomLevelMinimum;
-      zoomLevelMax = _mapFileInfo.zoomLevelMaximum;
+      zoomlevelRange = _mapFileInfo.zoomlevelRange;
       this._fileSize = fileSize;
     });
   }
@@ -687,8 +686,7 @@ class MapFile extends MapDataStore {
    * @param maxZoom maximum zoom level supported
    */
   void restrictToZoomRange(int minZoom, int maxZoom) {
-    this.zoomLevelMax = maxZoom;
-    this.zoomLevelMin = minZoom;
+    this.zoomlevelRange = ZoomlevelRange(minZoom, maxZoom);
   }
 
   /**
@@ -715,8 +713,7 @@ class MapFile extends MapDataStore {
 
   @override
   Future<bool> supportsTile(Tile tile) async {
-    if (tile.zoomLevel < zoomLevelMin || tile.zoomLevel > zoomLevelMax)
-      return false;
+    if (!zoomlevelRange.matches(tile.zoomLevel)) return false;
     await _lateOpen();
     return tile.getBoundingBox().intersects(getMapHeaderInfo().boundingBox);
   }

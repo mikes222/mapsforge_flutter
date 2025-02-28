@@ -89,10 +89,10 @@ class Writebuffer {
     this._bufferPosition += 8;
     if (value >= 0) {
       _bufferData.add((value >> 56) & 0x7f);
-      _bufferData.add((value >> 48) & 0x7f);
-      _bufferData.add((value >> 40) & 0x7f);
-      _bufferData.add((value >> 32) & 0x7f);
-      _bufferData.add((value >> 24) & 0x7f);
+      _bufferData.add((value >> 48) & 0xff);
+      _bufferData.add((value >> 40) & 0xff);
+      _bufferData.add((value >> 32) & 0xff);
+      _bufferData.add((value >> 24) & 0xff);
       _bufferData.add((value >> 16) & 0xff);
       _bufferData.add((value >> 8) & 0xff);
       _bufferData.add((value) & 0xff);

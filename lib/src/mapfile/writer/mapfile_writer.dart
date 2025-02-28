@@ -10,6 +10,7 @@ import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_header_writer.dart'
 import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/zoomlevel_creator.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 
 /// see https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md
 class MapfileWriter {
@@ -23,28 +24,18 @@ class MapfileWriter {
 
   final MapHeaderInfo mapHeaderInfo;
 
-  /// Minimum zoom level for which the block entries tables are made.
-  final int zoomlevelMin;
-
-  /// Maximum zoom level for which the block entries tables are made.
-  final int zoomlevelMax;
+  final ZoomlevelRange zoomlevelRange;
 
   final Map<int, ZoomlevelCreator> zoomlevelCreators = {};
 
-  final List<SubfileSimulator> subfileSimulators = [];
-
   final List<SubfileCreator> subfileCreators = [];
 
-  MapfileWriter(
-      {required this.filename,
-      required this.mapHeaderInfo,
-      this.zoomlevelMin = 0,
-      this.zoomlevelMax = 19})
-      : assert(zoomlevelMin <= zoomlevelMax),
-        assert(zoomlevelMin >= 0),
-        assert(zoomlevelMax <= 30),
-        sink = MapfileSink(File(filename).openWrite()) {
-    for (int zoomlevel = zoomlevelMin; zoomlevel <= zoomlevelMax; ++zoomlevel) {
+  MapfileWriter({required this.filename, required this.mapHeaderInfo})
+      : sink = MapfileSink(File(filename).openWrite()),
+        zoomlevelRange = mapHeaderInfo.zoomlevelRange {
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin;
+        zoomlevel <= zoomlevelRange.zoomlevelMax;
+        ++zoomlevel) {
       zoomlevelCreators[zoomlevel] = ZoomlevelCreator(
           zoomlevel: zoomlevel, parent: zoomlevelCreators[zoomlevel - 1]);
     }
@@ -69,7 +60,9 @@ class MapfileWriter {
     });
 
     int wayCount = zoomlevelCreators.values.last.wayCount;
-    int countSubfiles = ((zoomlevelMax - zoomlevelMin) / 3).floor();
+    int countSubfiles =
+        ((zoomlevelRange.zoomlevelMax - zoomlevelRange.zoomlevelMin) / 3)
+            .floor();
     if (countSubfiles > 3)
       countSubfiles = 3;
     else if (countSubfiles < 1) countSubfiles = 1;
@@ -77,10 +70,13 @@ class MapfileWriter {
     print(
         "We will write $countSubfiles subfiles with $wayCountPerSubfile for the largest subfile");
 
-    int zoomLevelMax = this.zoomlevelMax;
+    final List<SubfileSimulator> subfileSimulators = [];
+
+    int zoomLevelMax = this.zoomlevelRange.zoomlevelMax;
     for (int i = 0; i < countSubfiles; ++i) {
-      int zoomLevelMin = Math.max(this.zoomlevelMin, zoomLevelMax - 2);
-      while (zoomLevelMin > this.zoomlevelMin &&
+      int zoomLevelMin =
+          Math.max(this.zoomlevelRange.zoomlevelMin, zoomLevelMax - 2);
+      while (zoomLevelMin > this.zoomlevelRange.zoomlevelMin &&
           zoomlevelCreators[zoomLevelMin]!.wayCount > wayCountPerSubfile) {
         --zoomLevelMin;
       }
@@ -114,37 +110,35 @@ class MapfileWriter {
       print(subfileSimulator);
     }
 
-    for (SubfileSimulator subfileSimulator in subfileSimulators) {
-      SubfileCreator subfileCreator = SubfileCreator(
-          baseZoomLevel: subfileSimulator.baseZoomlevel,
-          zoomLevelMax: subfileSimulator.zoomLevelMax,
-          zoomLevelMin: subfileSimulator.zoomLevelMin,
-          boundingBox: mapHeaderInfo.boundingBox);
-      for (int zoomlevel = subfileSimulator.zoomLevelMin;
-          zoomlevel <= subfileSimulator.zoomLevelMax;
-          ++zoomlevel) {
-        subfileCreator.addPoidata(
-            zoomlevel,
-            subfileSimulator.zoomSimulators[zoomlevel]!.poiholders
-                .map((toElement) => toElement)
-                .toList(),
-            poiTags);
-        subfileCreator.addWaydata(
-            zoomlevel,
-            subfileSimulator.zoomSimulators[zoomlevel]!.wayholders
-                .map((toElement) => toElement)
-                .toList(),
-            wayTags);
-      }
-      subfileCreators.add(subfileCreator);
-    }
+    // for (SubfileSimulator subfileSimulator in subfileSimulators) {
+    //   SubfileCreator subfileCreator = SubfileCreator(
+    //       baseZoomLevel: subfileSimulator.baseZoomlevel,
+    //       zoomlevelRange: ZoomlevelRange(
+    //           subfileSimulator.zoomLevelMin, subfileSimulator.zoomLevelMax),
+    //       boundingBox: mapHeaderInfo.boundingBox);
+    //   for (int zoomlevel = subfileSimulator.zoomLevelMin;
+    //       zoomlevel <= subfileSimulator.zoomLevelMax;
+    //       ++zoomlevel) {
+    //     subfileCreator.addPoidata(subfileSimulator
+    //         subfileSimulator.zoomSimulators[zoomlevel]!.poiholders
+    //             .map((toElement) => toElement)
+    //             .toList(),
+    //         poiTags);
+    //     subfileCreator.addWaydata(
+    //         subfileSimulator.zoomSimulators[zoomlevel]!.wayholders
+    //             .map((toElement) => toElement)
+    //             .toList(),
+    //         wayTags);
+    //   }
+    //   subfileCreators.add(subfileCreator);
+    // }
   }
 
   void write() {
-    createSubfiles();
+    //createSubfiles();
 
     assert(subfileCreators.isNotEmpty);
-    assert(poiTags.isNotEmpty || wayTags.isNotEmpty);
+//    assert(poiTags.isNotEmpty || wayTags.isNotEmpty);
 
     Writebuffer writebuffer = Writebuffer();
     _writeTags(writebuffer, poiTags);
@@ -181,8 +175,8 @@ class MapfileWriter {
     int startAddress = headersize;
     subfileCreators.forEach((SubfileCreator subFileParameter) {
       writebuffer.appendInt1(subFileParameter.baseZoomLevel);
-      writebuffer.appendInt1(subFileParameter.zoomLevelMin);
-      writebuffer.appendInt1(subFileParameter.zoomLevelMax);
+      writebuffer.appendInt1(subFileParameter.zoomlevelRange.zoomlevelMin);
+      writebuffer.appendInt1(subFileParameter.zoomlevelRange.zoomlevelMax);
       // 8 byte start address
       writebuffer.appendInt8(startAddress);
       Writebuffer writebufferIndex =

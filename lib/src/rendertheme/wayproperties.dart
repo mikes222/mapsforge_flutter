@@ -9,7 +9,6 @@ import '../../datastore.dart';
 import '../../maps.dart';
 import '../model/linesegment.dart';
 import '../model/linestring.dart';
-import '../model/tag.dart';
 import '../renderer/geometryutils.dart';
 import '../renderer/minmaxdouble.dart';
 import '../renderer/rendererutils.dart';
@@ -53,7 +52,7 @@ class WayProperties implements NodeWayProperties {
       if (idx == 0) this.minMaxMappoint = minMaxMappoint;
       if (minMaxMappoint.maxX - minMaxMappoint.minX > maxGap ||
           minMaxMappoint.maxY - minMaxMappoint.minY > maxGap) {
-        if (mp1.length > 6) mp1 = ReduceHelper.reduce(mp1, maxGap);
+        if (mp1.length > 6) mp1 = ReduceHelper.reduceMappoint(mp1, maxGap);
         // check if the area to draw is too small. This saves 100ms for complex structures
         coordinatesAbsolute!.add(mp1);
       }

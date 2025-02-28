@@ -36,13 +36,14 @@ main() async {
       languagesPreference: mapFile.getMapHeaderInfo().languagesPreference,
       comment: mapFile.getMapHeaderInfo().comment,
       createdBy: mapFile.getMapHeaderInfo().createdBy,
+      zoomlevelRange: mapFile.getMapHeaderInfo().zoomlevelRange,
     );
     mapFile.getMapFileInfo().subFileParameters.forEach((key, value) {
       //print("Key: $key, value: $value");
     });
 
-    MapfileWriter mapfileWriter = MapfileWriter(
-        filename: "test.map", mapHeaderInfo: mapHeaderInfo, zoomlevelMax: 21);
+    MapfileWriter mapfileWriter =
+        MapfileWriter(filename: "test.map", mapHeaderInfo: mapHeaderInfo);
 
     // baseZoomLevel: 5,
     // zoomLevelMax: 7,
@@ -66,8 +67,8 @@ main() async {
 
 Future<void> processSubfile(MapFile mapfile, MapfileWriter mapfileWriter,
     BoundingBox boundingBox) async {
-  for (int zoomLevel = mapfileWriter.zoomlevelMin;
-      zoomLevel <= mapfileWriter.zoomlevelMax;
+  for (int zoomLevel = mapfileWriter.zoomlevelRange.zoomlevelMin;
+      zoomLevel <= mapfileWriter.zoomlevelRange.zoomlevelMax;
       zoomLevel++) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(zoomLevel);
     int minTileX = projection.longitudeToTileX(boundingBox.minLongitude);

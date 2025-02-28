@@ -46,4 +46,19 @@ class InstructionInstructions implements Instructions {
         shapeOpenWays: shapeOpenWays,
         shapeClosedWays: shapeClosedWays);
   }
+
+  @override
+  bool hasInstructionsNodes() {
+    return renderInstructionNodes.isNotEmpty;
+  }
+
+  @override
+  bool hasInstructionsOpenWays() {
+    return renderInstructionOpenWays.isNotEmpty;
+  }
+
+  @override
+  bool hasInstructionsClosedWays() {
+    return renderInstructionClosedWays.isNotEmpty;
+  }
 }

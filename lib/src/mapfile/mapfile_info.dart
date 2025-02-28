@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 
 import 'map_header_info.dart';
 import 'subfileparameter.dart';
@@ -16,12 +17,9 @@ class MapfileInfo {
 
   final Map<int, SubFileParameter> subFileParameters;
 
-  final int zoomLevelMinimum;
+  final ZoomlevelRange zoomlevelRange;
 
-  final int zoomLevelMaximum;
-
-  MapfileInfo(this.mapHeaderInfo, this.subFileParameters, this.zoomLevelMinimum,
-      this.zoomLevelMaximum);
+  MapfileInfo(this.mapHeaderInfo, this.subFileParameters, this.zoomlevelRange);
 
   /**
    * @return a MapFileInfo containing the header data. [readHeader] must be
@@ -34,13 +32,8 @@ class MapfileInfo {
 
   /// @param zoomLevel the originally requested zoom level.
   /// @return the closest possible zoom level which is covered by a sub-file.
-  int getQueryZoomLevel(int zoomLevel) {
-    if (zoomLevel > this.zoomLevelMaximum) {
-      return this.zoomLevelMaximum;
-    } else if (zoomLevel < this.zoomLevelMinimum) {
-      return this.zoomLevelMinimum;
-    }
-    return zoomLevel;
+  int getQueryZoomLevel(int zoomlevel) {
+    return zoomlevelRange.ensureBounds(zoomlevel);
   }
 
   /// @param queryZoomLevel the zoom level for which the sub-file parameters are needed.
@@ -54,11 +47,11 @@ class MapfileInfo {
         DateTime.fromMillisecondsSinceEpoch(mapHeaderInfo.mapDate!, isUtc: true)
             .toIso8601String());
     _log.info(mapHeaderInfo.toString());
-    _log.info("zoomLevel: $zoomLevelMinimum - $zoomLevelMaximum");
+    _log.info("zoomLevel: $zoomlevelRange");
   }
 
   @override
   String toString() {
-    return 'MapFileHeader{mapFileInfo: $mapHeaderInfo, subFileParameters: $subFileParameters, zoomLevelMinimum: $zoomLevelMinimum, zoomLevelMaximum: $zoomLevelMaximum}';
+    return 'MapFileHeader{mapFileInfo: $mapHeaderInfo, subFileParameters: $subFileParameters, zoomlevelRange: $zoomlevelRange}';
   }
 }

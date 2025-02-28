@@ -1,4 +1,4 @@
-import 'package:mapsforge_flutter/src/mapfile/writer/tagholer_mixin.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/tagholder_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
 import '../../../core.dart';
@@ -10,10 +10,10 @@ import 'mapfile_writer.dart';
 class Poiholder with TagholderMixin {
   final PointOfInterest poi;
 
-  List<Tagholder> tagholders = [];
-
-  Poiholder(this.poi, List<Tagholder> tagholders) {
-    this.tagholders = analyzeTags(poi.tags, tagholders);
+  Poiholder(this.poi, List<Tagholder> tagholders, String? languagesPreference) {
+    if (languagesPreference != null)
+      super.languagesPreference.addAll(languagesPreference.split(","));
+    analyzeTags(poi.tags, tagholders);
   }
 
   void _writePoiSignature(bool debugFile, Writebuffer writebuffer) {

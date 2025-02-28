@@ -72,6 +72,17 @@ class ReadbufferFile implements ReadbufferSource {
     return Readbuffer.from(readbuffer);
   }
 
+  Future<void> setPosition(int position) async {
+    String cacheKey = "$_position--1";
+    _cache.remove(cacheKey);
+    await _cache.getOrProduce(cacheKey, (String key) async {
+      _resource ??= _ReadBufferFileResource(filename);
+      await _resource!.setPosition(position);
+      _position = position;
+      return Readbuffer(Uint8List(0), 0);
+    });
+  }
+
   @override
   Future<Readbuffer> readFromFileAt(int position, int length) async {
     assert(length > 0);
@@ -114,6 +125,11 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   String toString() {
     return 'ReadbufferFile{filename: $filename, _length: $_length}';
+  }
+
+  @override
+  int getPosition() {
+    return _position;
   }
 }
 

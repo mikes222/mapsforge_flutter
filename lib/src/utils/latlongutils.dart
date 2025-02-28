@@ -3,8 +3,6 @@ import 'dart:math';
 import 'package:mapsforge_flutter/src/model/ilatlong.dart';
 import 'package:mapsforge_flutter/src/model/mappoint.dart';
 
-import '../model/latlong.dart';
-
 class LatLongUtils {
   /**
    * The equatorial radius as defined by the <a href="http://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
@@ -84,9 +82,8 @@ class LatLongUtils {
    *
    * @return true if this way is closed, false otherwise.
    */
-  static bool isClosedWay(List<ILatLong?> latLongs) {
-    return euclideanDistance(
-            latLongs[0] as LatLong, latLongs[latLongs.length - 1] as LatLong) <
+  static bool isClosedWay(List<ILatLong> latLongs) {
+    return euclideanDistance(latLongs[0], latLongs[latLongs.length - 1]) <
         0.000000001;
   }
 

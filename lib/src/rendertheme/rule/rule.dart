@@ -1,10 +1,10 @@
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/datastore/way.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/instruction_instructions.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/shape_instructions.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
-import '../../model/tag.dart';
+import '../../../datastore.dart';
 import '../nodeproperties.dart';
 import 'closedmatcher.dart';
 import 'elementmatcher.dart';
@@ -15,15 +15,13 @@ abstract class Rule {
   final String? cat;
   final ClosedMatcher? closedMatcher;
   final ElementMatcher elementMatcher;
-  final int zoomMax;
-  final int zoomMin;
+  final ZoomlevelRange zoomlevelRange;
   final List<Rule> subRules;
 
   Rule(RuleBuilder ruleBuilder)
       : closedMatcher = ruleBuilder.getClosedMatcher(),
         elementMatcher = ruleBuilder.getElementMatcher(),
-        zoomMax = ruleBuilder.zoomMax,
-        zoomMin = ruleBuilder.zoomMin,
+        zoomlevelRange = ruleBuilder.zoomlevelRange,
         instructions = InstructionInstructions(
             renderInstructionNodes: ruleBuilder.renderInstructionNodes,
             renderInstructionOpenWays: ruleBuilder.renderInstructionOpenWays,
@@ -44,8 +42,7 @@ abstract class Rule {
         elementMatcher = oldRule.elementMatcher,
         instructions = shapeInstructions,
         subRules = subs,
-        zoomMin = oldRule.zoomMin,
-        zoomMax = oldRule.zoomMax;
+        zoomlevelRange = oldRule.zoomlevelRange;
 
   Rule createRule(List<Rule> subs, ShapeInstructions shapeInstructions);
 
@@ -87,21 +84,17 @@ abstract class Rule {
     return rule;
   }
 
-  bool matchesNode(List<Tag> tags, int indoorLevel);
-
-  bool matchesOpenWay(List<Tag> tags, int indoorLevel);
-
-  bool matchesClosedWay(List<Tag> tags, int indoorLevel);
-
   bool matches(List<Tag> tags, int indoorLevel);
 
+  bool matchesForZoomlevelRange(List<Tag> tags);
+
   /// finds all Shapes for a given node but does NOT check if the rul
-  void matchNode(
-      final Tile tile, List<Shape> matchingList, NodeProperties container) {
-    if (matches(container.tags, tile.indoorLevel)) {
+  void matchNode(final Tile tile, List<Shape> matchingList,
+      NodeProperties nodeProperties) {
+    if (matches(nodeProperties.tags, tile.indoorLevel)) {
       matchingList.addAll((instructions as ShapeInstructions).shapeNodes);
       subRules.forEach((element) {
-        element.matchNode(tile, matchingList, container);
+        element.matchNode(tile, matchingList, nodeProperties);
       });
     }
   }
@@ -124,9 +117,79 @@ abstract class Rule {
     }
   }
 
+  /// Returns the widest possible zoomrange which may accept the given argument.
+  /// Returns null if if the argument will never accepted.
+  ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
+    if (matchesForZoomlevelRange(pointOfInterest.tags)) {
+      bool supported = instructions.hasInstructionsNodes();
+      // this rule supports the argument. Return this subrule which is the
+      // widest subrule which supports the argument
+      if (supported) return zoomlevelRange;
+      ZoomlevelRange? result;
+      subRules.forEach((element) {
+        ZoomlevelRange? range = element.getZoomlevelRangeNode(pointOfInterest);
+        if (range != null) {
+          if (result == null) {
+            result = range;
+          } else {
+            result = result!.widenTo(range);
+          }
+        }
+      });
+      return result;
+    }
+    return null;
+  }
+
+  /// Returns the widest possible zoomrange which may accept the given argument.
+  /// Returns null if if the argument will never accepted.
+  ZoomlevelRange? getZoomlevelRangeOpenWay(Way way) {
+    if (matchesForZoomlevelRange(way.tags)) {
+      bool supported = instructions.hasInstructionsOpenWays();
+      // this rule supports the argument. Return this subrule which is the
+      // widest subrule which supports the argument
+      if (supported) return zoomlevelRange;
+      ZoomlevelRange? result;
+      subRules.forEach((element) {
+        ZoomlevelRange? range = element.getZoomlevelRangeOpenWay(way);
+        if (range != null) {
+          if (result == null) {
+            result = range;
+          } else {
+            result = result!.widenTo(range);
+          }
+        }
+      });
+      return result;
+    }
+    return null;
+  }
+
+  /// Returns the widest possible zoomrange which may accept the given argument.
+  /// Returns null if if the argument will never accepted.
+  ZoomlevelRange? getZoomlevelRangeClosedWay(Way way) {
+    if (matchesForZoomlevelRange(way.tags)) {
+      bool supported = instructions.hasInstructionsClosedWays();
+      // this rule supports the argument. Return this subrule which is the
+      // widest subrule which supports the argument
+      if (supported) return zoomlevelRange;
+      ZoomlevelRange? result;
+      subRules.forEach((element) {
+        ZoomlevelRange? range = element.getZoomlevelRangeClosedWay(way);
+        if (range != null) {
+          if (result == null) {
+            result = range;
+          } else {
+            result = result!.widenTo(range);
+          }
+        }
+      });
+      return result;
+    }
+    return null;
+  }
+
   void onComplete() {
-//    this.renderInstructions.trimToSize();
-//    this.subRules.trimToSize();
     for (int i = 0, n = this.subRules.length; i < n; ++i) {
       this.subRules.elementAt(i).onComplete();
     }

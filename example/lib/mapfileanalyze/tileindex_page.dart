@@ -19,7 +19,9 @@ class TileindexPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text("Tile Index"),
+      ),
       body: _buildContent(context),
     );
   }
@@ -31,7 +33,10 @@ class TileindexPage extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasError || snapshot.error != null) {
               return Center(
-                child: Text(snapshot.error.toString()),
+                child: Text(
+                  snapshot.error.toString(),
+                  style: const TextStyle(fontSize: 12, color: Colors.red),
+                ),
               );
             }
             if (snapshot.data == null)
@@ -62,9 +67,9 @@ class TileindexPage extends StatelessWidget {
                                         snapshot.error != null) {
                                       print(snapshot.error);
                                       print(snapshot.stackTrace);
-                                      return Text(snapshot.error
-                                          .toString()
-                                          .substring(0, 50));
+                                      return Text(snapshot.error.toString(),
+                                          style: const TextStyle(
+                                              fontSize: 12, color: Colors.red));
                                     }
                                     if (snapshot.data == null)
                                       return const Center(

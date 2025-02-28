@@ -1,5 +1,5 @@
 import '../../core.dart';
-import '../model/tag.dart';
+import '../model/zoomlevel_range.dart';
 import 'map_header_info.dart';
 import 'map_header_optional_fields.dart';
 import 'readbuffer.dart';
@@ -24,8 +24,8 @@ class MapHeaderInfoBuilder {
   String? projectionName;
   int? tilePixelSize;
   List<Tag>? wayTags;
-  int? zoomLevelMin;
-  int? zoomLevelMax;
+  int? zoomlevelMin;
+  int? zoomlevelMax;
 
   MapHeaderInfo build() {
     return MapHeaderInfo(
@@ -37,8 +37,9 @@ class MapHeaderInfoBuilder {
         poiTags: poiTags!,
         projectionName: projectionName,
         wayTags: wayTags!,
-        zoomLevelMin: zoomLevelMin,
-        zoomLevelMax: zoomLevelMax,
+        zoomlevelRange: zoomlevelMin == null || zoomlevelMax == null
+            ? const ZoomlevelRange.standard()
+            : ZoomlevelRange(zoomlevelMin!, zoomlevelMax!),
         comment: optionalFields?.comment,
         createdBy: optionalFields?.createdBy,
         debugFile: optionalFields?.isDebugFile ?? false,

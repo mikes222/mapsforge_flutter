@@ -18,6 +18,8 @@ abstract class ReadbufferSource {
 
   Future<Readbuffer> readFromFileAt(int position, int length);
 
-  /// Reads the bytes from the underlying file starting at [indexBlockPosition].
-  //Future<Uint8List> readDirect(int indexBlockPosition, int indexBlockSize);
+  /// Returns the current position in the readbuffer source
+  int getPosition();
+
+  Future<void> setPosition(int position);
 }

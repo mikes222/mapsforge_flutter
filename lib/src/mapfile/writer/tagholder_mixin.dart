@@ -16,17 +16,40 @@ mixin TagholderMixin {
 
   String? featureRef;
 
+  /**
+   * The preferred language(s) separated with ',' for names as defined in ISO 639-1 or ISO 639-2 (may be null).
+   */
+  List<String> languagesPreference = [];
+
   Writebuffer writebufferTagvalues = Writebuffer();
 
   /// do not normalize these tags. admin_level for example has only a handful
   /// distinct values so it is a waste of time and space to normalize it
   static Set<String> DO_NOT_NORMALIZE = {"admin_level"};
 
-  List<Tagholder> analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
-    List<Tagholder> tagholders = [];
+  void analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
+    Set<String> names = {};
+    String? original;
+    String? fallback;
     for (Tag tag in tags) {
       if (tag.key == MapfileHelper.TAG_KEY_NAME) {
-        featureName = tag.value;
+        if (tag.value != null && tag.value!.isNotEmpty) original = tag.value;
+        continue;
+      }
+      if (tag.key == "loc_name") {
+        if (tag.value != null && tag.value!.isNotEmpty) fallback = tag.value;
+        continue;
+      }
+      if (tag.key == "int_name") {
+        if (tag.value != null && tag.value!.isNotEmpty) fallback = tag.value;
+        continue;
+      }
+      if (tag.key?.startsWith("name:") ?? false) {
+        String language = tag.key!.substring(5);
+        if (languagesPreference.isNotEmpty &&
+            !languagesPreference.contains(language)) continue;
+        if (tag.value != null && tag.value!.isNotEmpty)
+          names.add("${language}\b${tag.value!}");
         continue;
       }
       if (tag.key == MapfileHelper.TAG_KEY_HOUSE_NUMBER) {
@@ -62,7 +85,20 @@ mixin TagholderMixin {
       }
       tagholders.add(tagholder);
     }
-    return tagholders;
+
+    // originalname should be at first position, fallbackname only used if originalname is null
+    featureName = original ?? fallback;
+    if (names.isNotEmpty) {
+      if (featureName != null) {
+        featureName = featureName! + "\r" + names.join("\r");
+      } else {
+        featureName = names.join("\r");
+      }
+    }
+    if (tagholders.length > 15) {
+      tagholders.forEach((test) => print("${test.tag.key}=${test.tag.value}"));
+      throw Exception("more than 15 tags are not supported");
+    }
   }
 
   void writeTags(Writebuffer writebuffer) {

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/ruleoptimizer.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction_area.dart';
 import 'package:mapsforge_flutter/src/rendertheme/xml/renderinstruction/renderinstruction_caption.dart';
@@ -51,8 +52,8 @@ class RuleBuilder {
   int maxLevel;
 
   String? cat;
-  int zoomMax;
-  int zoomMin;
+  ZoomlevelRange zoomlevelRange;
+
   Closed closed = Closed.ANY;
   Element element = Element.ANY;
   String? keys;
@@ -104,12 +105,11 @@ class RuleBuilder {
 
   RuleBuilder(DisplayModel displayModel,
       ZoomlevelSymbolFinder? parentSymbolFinder, this.level)
-      : ruleBuilderStack = [],
+      : zoomlevelRange = ZoomlevelRange(0, displayModel.maxZoomLevel),
+        ruleBuilderStack = [],
         renderInstructionNodes = [],
         renderInstructionOpenWays = [],
         renderInstructionClosedWays = [],
-        this.zoomMin = 0,
-        this.zoomMax = displayModel.maxZoomLevel,
         maxLevel = level,
         this.zoomlevelSymbolFinder = ZoomlevelSymbolFinder(parentSymbolFinder) {
     this.closed = Closed.ANY;
@@ -134,13 +134,15 @@ class RuleBuilder {
         _log.warning(
             "Impossible SubRule which has closed yes (${ruleBuilder}) whereas the parent has closed no ($this)");
       }
-      if (zoomMax < ruleBuilder.zoomMin) {
+      if (zoomlevelRange.zoomlevelMax <
+          ruleBuilder.zoomlevelRange.zoomlevelMin) {
         _log.warning(
-            "Impossible SubZoomMin ${ruleBuilder.zoomMin} whereas the parent has zoomMax $zoomMax");
+            "Impossible SubZoomMin ${ruleBuilder.zoomlevelRange.zoomlevelMin} whereas the parent has zoomMax ${zoomlevelRange.zoomlevelMax}");
       }
-      if (zoomMin > ruleBuilder.zoomMax) {
+      if (zoomlevelRange.zoomlevelMin >
+          ruleBuilder.zoomlevelRange.zoomlevelMax) {
         _log.warning(
-            "Impossible SubZoomMax ${ruleBuilder.zoomMax} whereas the parent has zoomMin $zoomMin");
+            "Impossible SubZoomMax ${ruleBuilder.zoomlevelRange.zoomlevelMax} whereas the parent has zoomMin ${zoomlevelRange.zoomlevelMin}");
       }
     }
     // this is allowed: A rule "node" could have a "caption" which is both used for nodes and for ways
@@ -211,9 +213,11 @@ class RuleBuilder {
         this.closed = Closed.values
             .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (ZOOM_MIN == name) {
-        this.zoomMin = XmlUtils.parseNonNegativeByte(name, value);
+        zoomlevelRange = zoomlevelRange
+            .restrictToMin(XmlUtils.parseNonNegativeByte(name, value));
       } else if (ZOOM_MAX == name) {
-        this.zoomMax = XmlUtils.parseNonNegativeByte(name, value);
+        zoomlevelRange = zoomlevelRange
+            .restrictToMax(XmlUtils.parseNonNegativeByte(name, value));
       } else {
         throw Exception("Invalid $name = $value in rule");
       }
@@ -271,9 +275,9 @@ class RuleBuilder {
 
     XmlUtils.checkMandatoryAttribute(elementName, V, this.values);
 
-    if (this.zoomMin > this.zoomMax) {
+    if (zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) {
       throw new Exception(
-          "ZoomMin $zoomMin > ZoomMax $zoomMax for rule with $keys and $values and childs ${ruleBuilderStack.toString()}");
+          "ZoomMin ${zoomlevelRange.zoomlevelMin} > ZoomMax ${zoomlevelRange.zoomlevelMax} for rule with $keys and $values and childs ${ruleBuilderStack.toString()}");
     }
   }
 
@@ -284,8 +288,7 @@ class RuleBuilder {
       checkState(qName, XmlElementType.RULE);
       RuleBuilder ruleBuilder =
           RuleBuilder(displayModel, zoomlevelSymbolFinder, ++level);
-      if (ruleBuilder.zoomMin < zoomMin) ruleBuilder.zoomMin = zoomMin;
-      if (ruleBuilder.zoomMax > zoomMax) ruleBuilder.zoomMax = zoomMax;
+      ruleBuilder.zoomlevelRange = zoomlevelRange;
 
       ruleBuilder.parse(displayModel, rootElement);
       ruleBuilderStack.add(ruleBuilder);
@@ -480,7 +483,7 @@ class RuleBuilder {
 
   @override
   String toString() {
-    return 'RuleBuilder{zoomMax: $zoomMax, zoomMin: $zoomMin, element: $element, keys: $keys, renderInstructionNodes: $renderInstructionNodes, values: $values}';
+    return 'RuleBuilder{zoomlevelRange: $zoomlevelRange, element: $element, keys: $keys, renderInstructionNodes: $renderInstructionNodes, values: $values}';
   }
 }
 

@@ -32,6 +32,15 @@ dependencies:
   # execution_queue: ^1.2.0
   #  path: ../../execution_queue.dart
 
+  # for reading pbf files
+  # A fixed-width 32- and 64- bit integer library for Dart.
+  # BSD-3
+  fixnum: ^1.0.0
+
+  # for reading pbf files
+  # BSD-3
+  protobuf: ^3.1.0
+
   # BSD License
   flutter_svg: ^2.0.17
 
@@ -54,6 +63,7 @@ dependencies:
 
   # MIT License
   provider: ^6.1.2
+
 
   # MIT License
   xml: ^6.5.0

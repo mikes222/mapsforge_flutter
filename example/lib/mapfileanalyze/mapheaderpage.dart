@@ -63,7 +63,7 @@ class MapHeaderPage extends StatelessWidget {
               LabeltextCustom(
                   label: "Zoomlevel",
                   value:
-                      "${mapFile.getMapFileInfo().zoomLevelMinimum} - ${mapFile.getMapFileInfo().zoomLevelMaximum}"),
+                      "${mapFile.getMapFileInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapFileInfo().zoomlevelRange.zoomlevelMin}"),
               InkWell(
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -111,8 +111,7 @@ class MapHeaderPage extends StatelessWidget {
               //LabeltextCustom(label: "Filename", value: mapFile.filename),
               // _fileSize is private but only used to verify header and to check if read beyond file
               LabeltextCustom(
-                  label: "Zoomlevel",
-                  value: "${mapFile.zoomLevelMin} - ${mapFile.zoomLevelMax}"),
+                  label: "Zoomlevel", value: "${mapFile.zoomlevelRange}"),
               LabeltextCustom(
                   label: "Timestamp",
                   value: formatMsToDatetimeMs(mapFile.timestamp)),
@@ -172,7 +171,7 @@ class MapHeaderPage extends StatelessWidget {
               LabeltextCustom(
                   label: "Zoomlevel",
                   value:
-                      "${mapFile.getMapHeaderInfo().zoomLevelMin} - ${mapFile.getMapHeaderInfo().zoomLevelMax}"),
+                      "${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMax}"),
               LabeltextCustom(
                   label: "Boundingbox",
                   value:

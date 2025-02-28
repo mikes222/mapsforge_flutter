@@ -4,8 +4,6 @@ import 'package:mapsforge_flutter/src/rendertheme/xml/rulebuilder.dart';
 
 import '../../model/tag.dart';
 import 'attributematcher.dart';
-import 'closed.dart';
-import 'element.dart';
 import 'rule.dart';
 
 class NegativeRule extends Rule {
@@ -28,34 +26,8 @@ class NegativeRule extends Rule {
   }
 
   @override
-  bool matchesForZoomLevel(int zoomLevel) {
-    return this.zoomMin <= zoomLevel && this.zoomMax >= zoomLevel;
-  }
-
-  @override
-  bool matchesNode(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
-            tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.NODE) &&
-        this.attributeMatcher.matchesTagList(tags);
-  }
-
-  @override
-  bool matchesOpenWay(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
-            tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.WAY) &&
-        this.closedMatcher!.matchesClosed(Closed.NO) &&
-        this.attributeMatcher.matchesTagList(tags);
-  }
-
-  @override
-  bool matchesClosedWay(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
-            tags, indoorLevel) &&
-        this.elementMatcher.matchesElement(Element.WAY) &&
-        this.closedMatcher!.matchesClosed(Closed.YES) &&
-        this.attributeMatcher.matchesTagList(tags);
+  bool matchesForZoomLevel(int zoomlevel) {
+    return zoomlevelRange.matches(zoomlevel);
   }
 
   @override
@@ -63,6 +35,11 @@ class NegativeRule extends Rule {
     return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(
             tags, indoorLevel) &&
         this.attributeMatcher.matchesTagList(tags);
+  }
+
+  @override
+  bool matchesForZoomlevelRange(List<Tag> tags) {
+    return this.attributeMatcher.matchesTagList(tags);
   }
 
   @override

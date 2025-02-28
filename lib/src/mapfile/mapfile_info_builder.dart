@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameterbuilder.dart';
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 
 import 'map_header_info_builder.dart';
 
@@ -26,8 +27,8 @@ class MapfileInfoBuilder {
   MapHeaderInfo? mapHeaderInfo;
 
   MapfileInfo build() {
-    return MapfileInfo(
-        mapHeaderInfo!, subFileParameters, zoomLevelMinimum, zoomLevelMaximum);
+    return MapfileInfo(mapHeaderInfo!, subFileParameters,
+        ZoomlevelRange(zoomLevelMinimum, zoomLevelMaximum));
   }
 
   /// Reads and validates the header block from the map file.
@@ -108,11 +109,11 @@ class MapfileInfoBuilder {
       // update the global minimum and maximum zoom level information
       if (this.zoomLevelMinimum > subFileParameter.zoomLevelMin) {
         this.zoomLevelMinimum = subFileParameter.zoomLevelMin;
-        mapHeaderInfoBuilder.zoomLevelMin = this.zoomLevelMinimum;
+        mapHeaderInfoBuilder.zoomlevelMin = this.zoomLevelMinimum;
       }
       if (this.zoomLevelMaximum < subFileParameter.zoomLevelMax) {
         this.zoomLevelMaximum = subFileParameter.zoomLevelMax;
-        mapHeaderInfoBuilder.zoomLevelMax = this.zoomLevelMaximum;
+        mapHeaderInfoBuilder.zoomlevelMax = this.zoomLevelMaximum;
       }
     }
 

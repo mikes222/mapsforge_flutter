@@ -36,4 +36,14 @@ class ReadbufferMemory extends ReadbufferSource {
     _lastOffset += length;
     return Future.value(result);
   }
+
+  int getPosition() {
+    return _lastOffset;
+  }
+
+  @override
+  Future<void> setPosition(int position) {
+    _lastOffset = position;
+    return Future.value();
+  }
 }

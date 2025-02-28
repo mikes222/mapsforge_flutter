@@ -1,4 +1,4 @@
-import 'package:mapsforge_flutter/src/mapfile/writer/tagholer_mixin.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/tagholder_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
 import '../../../core.dart';
@@ -12,16 +12,16 @@ class Wayholder with TagholderMixin {
 
   int tileBitmask = 0xffff;
 
-  int otherZoomlevel = -1;
-
-  Wayholder(this.way, List<Tagholder> tagholders) {
-    this.tagholders = analyzeTags(way.tags, tagholders);
+  Wayholder(this.way, List<Tagholder> tagholders, String? languagesPreference) {
+    if (languagesPreference != null)
+      super.languagesPreference.addAll(languagesPreference.split(","));
+    analyzeTags(way.tags, tagholders);
   }
 
-  void setSubTileBitmap(int idx) {
-    tileBitmask |= 1 << idx;
-    //print("setSubTileBitmap $idx 0x${tileBitmask.toRadixString(16)} for $way");
-  }
+  // void setSubTileBitmap(int idx) {
+  //   tileBitmask |= 1 << idx;
+  //   //print("setSubTileBitmap $idx 0x${tileBitmask.toRadixString(16)} for $way");
+  // }
 
   void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
@@ -30,14 +30,39 @@ class Wayholder with TagholderMixin {
     }
   }
 
-  void usedFor(int otherZoomlevel) {
-    if (this.otherZoomlevel < otherZoomlevel)
-      this.otherZoomlevel = otherZoomlevel;
+  /**
+   * A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
+   * it is analyzed if the given way needs to be included. The result is represented as a 16 bit short value. Each bit
+   * represents one of the 16 sub tiles. A bit is set to 1 if the sub tile needs to include the way. Representation is
+   * row-wise.
+   *
+   * @param geometry           the geometry which is analyzed
+   * @param tile               the tile which is split into 16 sub tiles
+   * @param enlargementInMeter amount of pixels that is used to enlarge the bounding box of the way and the tiles in the mapping
+   *                           process
+   * @return a 16 bit short value that represents the information which of the sub tiles needs to include the way
+   */
+  void computeBitmask(Way way, Tile tile, final int enlargementInMeter) {
+    List<Tile> subtiles = tile.getGrandchilds();
+
+    tileBitmask = 0;
+    int tileCounter = 1 << 15;
+    BoundingBox boundingBox = way.getBoundingBox();
+    for (Tile subtile in subtiles) {
+      if (subtile.getBoundingBox().intersects(boundingBox) ||
+          subtile.getBoundingBox().containsBoundingBox(boundingBox)) {
+        tileBitmask |= tileCounter;
+      }
+      print(
+          "$tile -> $subtile 0x${tileBitmask.toRadixString(16)} $tileCounter");
+      tileCounter = tileCounter >> 1;
+    }
   }
 
   /// can be done when the tags are sorted
   Writebuffer writeWaydata(
-      bool debugFile, double tileLatitude, double tileLongitude) {
+      bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
+    computeBitmask(way, tile, 0);
     Writebuffer writebuffer3 = Writebuffer();
     _writeWaySignature(debugFile, writebuffer3);
     Writebuffer writebuffer =
@@ -53,11 +78,6 @@ class Wayholder with TagholderMixin {
     assert(way.latLongs.isNotEmpty);
 
     Writebuffer writebuffer = Writebuffer();
-
-    if (otherZoomlevel >= 0) {
-      // todo not working for an unknown reason. I miss the ways for most zoomlevels.
-      tileBitmask = 0xffff;
-    }
 
     /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2
     // for each sub tile (row-wise, left to right):
@@ -86,7 +106,7 @@ class Wayholder with TagholderMixin {
     if (featureLabelPosition)
       featureByte |= MapfileHelper.WAY_FEATURE_LABEL_POSITION;
     // number of way data blocks or false if we have only 1
-    bool featureWayDataBlocksByte = false; //way.latLongs.length > 1;
+    bool featureWayDataBlocksByte = way.latLongs.length > 1;
     if (featureWayDataBlocksByte)
       featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
 
@@ -124,6 +144,7 @@ class Wayholder with TagholderMixin {
     }
 
     if (featureWayDataBlocksByte) {
+      // let's write the length during single/double delta encoding
       writebuffer.appendUnsignedInt(way.latLongs.length);
     }
 

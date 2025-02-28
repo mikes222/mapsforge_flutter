@@ -13,7 +13,9 @@ class PointOfInterest {
   /// The tags of this POI.
   final List<Tag> tags;
 
-  const PointOfInterest(this.layer, this.tags, this.position);
+  const PointOfInterest(this.layer, this.tags, this.position)
+      : assert(layer >= -5),
+        assert(layer <= 10);
 
   @override
   bool operator ==(Object other) =>

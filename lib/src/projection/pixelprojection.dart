@@ -110,6 +110,16 @@ class PixelProjection extends MercatorProjection {
     return 360 * ((pixelX / _mapSize) - 0.5);
   }
 
+  double longitudeDiffPerPixel(double longitude, double pixelDiff) {
+    double pixel = (longitude + 180) / 360 * _mapSize;
+
+    double pixelX = pixel + pixelDiff;
+    pixelX = min(max(0, pixelX), _mapSize.toDouble());
+    double longitudeX = 360 * ((pixelX / _mapSize) - 0.5);
+
+    return longitudeX - longitude;
+  }
+
   /// Calculates the absolute pixel position for a map size and tile size
   ///
   /// @param latLong the geographic position.
@@ -175,6 +185,14 @@ class PixelProjection extends MercatorProjection {
   /// the _mapSize is equal to the tileSize.
   ///
   int get mapsize => _mapSize;
+
+  MapRectangle boundingBoxToRectangle(BoundingBox boundingBox) {
+    return MapRectangle(
+        longitudeToPixelX(boundingBox.minLongitude),
+        latitudeToPixelY(boundingBox.minLatitude),
+        longitudeToPixelX(boundingBox.maxLongitude),
+        latitudeToPixelY(boundingBox.maxLatitude));
+  }
 
   @override
   String toString() {
