@@ -27,6 +27,7 @@ class DebugDatastore extends MarkerByItemDataStore {
     // });
 
     clearMarkers();
+    if (tile != null) await createTileMarker(tile);
     if (readResult == null) return;
     for (PointOfInterest poi in readResult.pointOfInterests) {
       //print(poi);
@@ -41,8 +42,25 @@ class DebugDatastore extends MarkerByItemDataStore {
     setRepaint();
   }
 
+  Future<void> createTileMarker(Tile tile) async {
+    Marker marker = RectMarker(
+        minLatLon: LatLong(tile.getBoundingBox().minLatitude,
+            tile.getBoundingBox().minLongitude),
+        maxLatLon: LatLong(tile.getBoundingBox().maxLatitude,
+            tile.getBoundingBox().maxLongitude),
+        displayModel: displayModel);
+    addMarker(marker);
+  }
+
   Future<void> createWayMarker(Way way) async {
     clearMarkers();
+    if (tile != null) await createTileMarker(tile!);
+    Marker circleMarker = CircleMarker(
+        center: way.latLongs[0].first,
+        displayModel: displayModel,
+        fillColor: 0x80e97656,
+        radius: 5);
+    addMarker(circleMarker);
     Marker marker = await _createWayMarker(way, true);
     addMarker(marker);
     setRepaint();

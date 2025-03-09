@@ -139,7 +139,8 @@ class ViewModel {
 
   void zoomIn() {
     if (_mapViewPosition == null) return;
-    if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
+    if (_mapViewPosition!.zoomLevel >= displayModel.zoomlevelRange.zoomlevelMax)
+      return;
     MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
@@ -147,7 +148,8 @@ class ViewModel {
 
   void zoomInAround(double latitude, double longitude) {
     if (_mapViewPosition == null) return;
-    if (_mapViewPosition!.zoomLevel >= displayModel.maxZoomLevel) return;
+    if (_mapViewPosition!.zoomLevel >= displayModel.zoomlevelRange.zoomlevelMax)
+      return;
     MapViewPosition newPosition =
         MapViewPosition.zoomInAround(_mapViewPosition!, latitude, longitude);
     _mapViewPosition = newPosition;
@@ -163,8 +165,8 @@ class ViewModel {
   }
 
   MapViewPosition setZoomLevel(int zoomLevel) {
-    if (zoomLevel > displayModel.maxZoomLevel)
-      zoomLevel = displayModel.maxZoomLevel;
+    if (zoomLevel > displayModel.zoomlevelRange.zoomlevelMax)
+      zoomLevel = displayModel.zoomlevelRange.zoomlevelMax;
     if (zoomLevel < 0) zoomLevel = 0;
     if (_mapViewPosition != null) {
       if (_mapViewPosition!.zoomLevel == zoomLevel &&
@@ -185,8 +187,8 @@ class ViewModel {
 
   MapViewPosition zoomAround(double latitude, double longitude, int zoomLevel) {
     assert(_mapViewPosition != null);
-    if (zoomLevel > displayModel.maxZoomLevel)
-      zoomLevel = displayModel.maxZoomLevel;
+    if (zoomLevel > displayModel.zoomlevelRange.zoomlevelMax)
+      zoomLevel = displayModel.zoomlevelRange.zoomlevelMax;
     if (zoomLevel < 0) zoomLevel = 0;
     MapViewPosition newPosition = MapViewPosition.zoomAround(
         _mapViewPosition!, latitude, longitude, zoomLevel);
@@ -259,10 +261,11 @@ class ViewModel {
             Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) *
                 scale;
         if (scaleFactor >
-            Scalefactor.zoomlevelToScalefactor(displayModel.maxZoomLevel)) {
+            Scalefactor.zoomlevelToScalefactor(
+                displayModel.zoomlevelRange.zoomlevelMax)) {
           // zoom in until we reach the maximum zoom level, limit the zoom then
           scale = Scalefactor.zoomlevelToScalefactor(
-                  displayModel.maxZoomLevel) /
+                  displayModel.zoomlevelRange.zoomlevelMax) /
               Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
         }
       }

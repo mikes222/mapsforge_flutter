@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/pbf.dart';
+import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 
@@ -17,6 +18,19 @@ main() async {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < data.length) {
+      PbfData blockData = await pbfReader.read(readbufferSource);
+      print(blockData);
+    }
+  });
+
+  test("Read pbf file", () async {
+    _initLogging();
+    ReadbufferSource readbufferSource = ReadbufferFile(
+        TestAssetBundle().correctFilename("monaco-latest.osm.pbf"));
+    int length = await readbufferSource.length();
+    PbfReader pbfReader = PbfReader();
+    await pbfReader.open(readbufferSource);
+    while (readbufferSource.getPosition() < length) {
       PbfData blockData = await pbfReader.read(readbufferSource);
       print(blockData);
     }

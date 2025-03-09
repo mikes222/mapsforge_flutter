@@ -167,6 +167,7 @@ class MapfileHelper {
       // get the way tile bitmask (2 bytes)
       int tileBitmask = readBuffer.readShort();
       // check if the way is inside the requested tile
+
       if ((queryParameters.queryTileBitmask! & tileBitmask) == 0) {
         // skip the rest of the way and continue with the next way
         readBuffer.skipBytes(wayDataSize - 2);

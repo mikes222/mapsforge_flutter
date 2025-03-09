@@ -120,6 +120,26 @@ class PixelProjection extends MercatorProjection {
     return longitudeX - longitude;
   }
 
+  double latitudeDiffPerPixel(double latitude, double pixelDiff) {
+    const double pi180 = pi / 180;
+    const double pi4 = 4 * pi;
+    const double pi2 = 2 * pi;
+    const double pi360 = 360 / pi;
+
+    double sinLatitude = sin(latitude * pi180);
+// FIXME improve this formula so that it works correctly without the clipping
+    double pixelY =
+        (0.5 - log((1 + sinLatitude) / (1 - sinLatitude)) / pi4) * _mapSize;
+
+    pixelY = pixelY + pixelDiff;
+
+    pixelY = min(max(0, pixelY), _mapSize.toDouble());
+    double y = 0.5 - (pixelY / _mapSize);
+    double lat = 90 - pi360 * atan(exp(-y * pi2));
+
+    return (latitude - lat);
+  }
+
   /// Calculates the absolute pixel position for a map size and tile size
   ///
   /// @param latLong the geographic position.

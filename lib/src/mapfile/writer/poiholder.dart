@@ -10,17 +10,12 @@ import 'mapfile_writer.dart';
 class Poiholder with TagholderMixin {
   final PointOfInterest poi;
 
-  Poiholder(this.poi, List<Tagholder> tagholders, String? languagesPreference) {
+  Poiholder(this.poi) {}
+
+  void analyze(List<Tagholder> tagholders, String? languagesPreference) {
     if (languagesPreference != null)
       super.languagesPreference.addAll(languagesPreference.split(","));
     analyzeTags(poi.tags, tagholders);
-  }
-
-  void _writePoiSignature(bool debugFile, Writebuffer writebuffer) {
-    if (debugFile) {
-      writebuffer.appendStringWithoutLength("***POIStart${poi.hashCode}***"
-          .padRight(MapfileHelper.SIGNATURE_LENGTH_POI, " "));
-    }
   }
 
   /// can be done when the tags are sorted
@@ -62,5 +57,12 @@ class Poiholder with TagholderMixin {
       writebuffer.appendSignedInt(featureElevation!);
     }
     return writebuffer;
+  }
+
+  void _writePoiSignature(bool debugFile, Writebuffer writebuffer) {
+    if (debugFile) {
+      writebuffer.appendStringWithoutLength("***POIStart${poi.hashCode}***"
+          .padRight(MapfileHelper.SIGNATURE_LENGTH_POI, " "));
+    }
   }
 }

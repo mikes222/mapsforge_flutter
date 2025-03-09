@@ -12,7 +12,8 @@ class ZoomlevelRange {
         zoomlevelMax = 25;
 
   const ZoomlevelRange(this.zoomlevelMin, this.zoomlevelMax)
-      : assert(zoomlevelMin <= zoomlevelMax);
+      : assert(zoomlevelMin <= zoomlevelMax,
+            "zoomlevelMin ($zoomlevelMin) should less or equal zoomlevelMax ($zoomlevelMax)");
 
   /// Returns a new ZoomlevelRange where the minimum zoomlevel is either the given
   /// zoomlevel or the existing one - whichever is bigger.

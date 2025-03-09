@@ -135,8 +135,8 @@ class MapDownloadPageState extends State<MapDownloadPage> {
       String fileName = widget.mapFileData.fileName;
 
       PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-      final MapFile mapFile =
-          await MapFile.from(pathHandler.getPath(fileName), null, null);
+      final IsolateMapfile mapFile =
+          IsolateMapfile(pathHandler.getPath(fileName), null);
       await _startMap(mapFile);
     }
   }

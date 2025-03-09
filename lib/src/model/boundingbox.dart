@@ -55,6 +55,7 @@ class BoundingBox {
    * @param latLongs the coordinates list.
    */
   static BoundingBox fromLatLongs(List<ILatLong> latLongs) {
+    assert(latLongs.isNotEmpty);
     double minLatitude = double.infinity;
     double minLongitude = double.infinity;
     double maxLatitude = double.negativeInfinity;
@@ -129,6 +130,14 @@ class BoundingBox {
         max(this.maxLatitude, boundingBox.maxLatitude),
         max(this.maxLongitude, boundingBox.maxLongitude));
   }
+
+  ILatLong getLeftUpper() => LatLong(maxLatitude, minLongitude);
+
+  ILatLong getLeftLower() => LatLong(minLatitude, minLongitude);
+
+  ILatLong getRightUpper() => LatLong(maxLatitude, maxLongitude);
+
+  ILatLong getRightLower() => LatLong(minLatitude, maxLongitude);
 
   /**
    * Creates a BoundingBox extended up to coordinates (but does not cross date line/poles).
@@ -281,6 +290,9 @@ class BoundingBox {
 //    return new Rectangle(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
 //  }
 
+  /// Returns true if the rectange overlaps with the given rectangle. The
+  /// rectangles intersect if their four edges overlap at least at one point.
+  /// To determine an intersection, all four conditions must be met.
   /// @param boundingBox the BoundingBox which should be checked for intersection with this BoundingBox.
   /// @return true if this BoundingBox intersects with the given BoundingBox, false otherwise.
   bool intersects(BoundingBox boundingBox) {
@@ -333,6 +345,79 @@ class BoundingBox {
     }
     return this.intersects(
         new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
+  }
+
+  /**
+   * Überprüft, ob eine Linie, die durch zwei Punkte gegeben ist, ein Rechteck überschneidet oder berührt.
+   *
+   * @param lineStart Der Startpunkt der Linie.
+   * @param lineEnd Der Endpunkt der Linie.
+   * @param rectangle Das Rechteck, das auf Überschneidung geprüft werden soll.
+   * @return `true`, wenn die Linie das Rechteck überschneidet oder berührt, andernfalls `false`.
+   */
+  bool intersectsLineRectangle(ILatLong lineStart, ILatLong lineEnd) {
+    // 1. Überprüfe, ob einer der Linienendpunkte innerhalb des Rechtecks liegt.
+    if (this.containsLatLong(lineStart) || this.containsLatLong(lineEnd)) {
+      return true;
+    }
+
+    // 2. Definiere die vier Liniensegmente des Rechtecks.
+    ILatLong topLeft = LatLong(maxLatitude, minLongitude);
+    ILatLong topRight = LatLong(maxLatitude, maxLongitude);
+    ILatLong bottomRight = LatLong(minLatitude, maxLongitude);
+    ILatLong bottomLeft = LatLong(minLatitude, minLongitude);
+
+    // 3. Überprüfe, ob die Linie eines der Rechtecksegmente schneidet.
+    bool topIntersects =
+        _doLinesIntersect(lineStart, lineEnd, topLeft, topRight);
+    bool rightIntersects =
+        _doLinesIntersect(lineStart, lineEnd, topRight, bottomRight);
+    bool bottomIntersects =
+        _doLinesIntersect(lineStart, lineEnd, bottomRight, bottomLeft);
+    bool leftIntersects =
+        _doLinesIntersect(lineStart, lineEnd, bottomLeft, topLeft);
+
+    return topIntersects ||
+        rightIntersects ||
+        bottomIntersects ||
+        leftIntersects;
+  }
+
+  /**
+   * Überprüft, ob sich zwei Liniensegmente überschneiden.
+   *
+   * @param line1Start Der Startpunkt des ersten Liniensegments.
+   * @param line1End Der Endpunkt des ersten Liniensegments.
+   * @param line2Start Der Startpunkt des zweiten Liniensegments.
+   * @param line2End Der Endpunkt des zweiten Liniensegments.
+   * @return `true`, wenn sich die Liniensegmente überschneiden, andernfalls `false`.
+   */
+  bool _doLinesIntersect(ILatLong line1Start, ILatLong line1End,
+      ILatLong line2Start, ILatLong line2End) {
+    // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+    double x1 = line1Start.longitude;
+    double y1 = line1Start.latitude;
+    double x2 = line1End.longitude;
+    double y2 = line1End.latitude;
+    double x3 = line2Start.longitude;
+    double y3 = line2Start.latitude;
+    double x4 = line2End.longitude;
+    double y4 = line2End.latitude;
+
+    double denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+    if (denominator == 0.0) {
+      // Die Linien sind parallel.
+      return false;
+    }
+
+    double tNumerator = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
+    double uNumerator = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
+
+    double t = tNumerator.toDouble() / denominator.toDouble();
+    double u = uNumerator.toDouble() / denominator.toDouble();
+
+    return t >= 0.0 && t <= 1.0 && u >= 0 && u <= 1.0;
   }
 
   @override

@@ -44,7 +44,19 @@ mixin TagholderMixin {
         if (tag.value != null && tag.value!.isNotEmpty) fallback = tag.value;
         continue;
       }
+      if (tag.key == "official_name") {
+        if (tag.value != null && tag.value!.isNotEmpty) fallback = tag.value;
+        continue;
+      }
       if (tag.key?.startsWith("name:") ?? false) {
+        String language = tag.key!.substring(5);
+        if (languagesPreference.isNotEmpty &&
+            !languagesPreference.contains(language)) continue;
+        if (tag.value != null && tag.value!.isNotEmpty)
+          names.add("${language}\b${tag.value!}");
+        continue;
+      }
+      if (tag.key?.startsWith("official_name:") ?? false) {
         String language = tag.key!.substring(5);
         if (languagesPreference.isNotEmpty &&
             !languagesPreference.contains(language)) continue;
@@ -57,7 +69,15 @@ mixin TagholderMixin {
         continue;
       }
       if (tag.key == MapfileHelper.TAG_KEY_ELE) {
-        featureElevation = int.parse(tag.value!);
+        try {
+          featureElevation = int.parse(tag.value!);
+        } catch (_) {
+          try {
+            featureElevation = double.parse(tag.value!).round();
+          } catch (_) {
+            // ignore the elevation which is neither a double nor an integer
+          }
+        }
         continue;
       }
       // only for ways:

@@ -92,12 +92,8 @@ class _DebugContextMenuState extends DefaultContextMenuState {
         },
         child: const Text("Clear")));
     result.add(LabeltextCustom(
-      label: "ZoomLevel",
-      value: "${tile.zoomLevel}",
-    ));
-    result.add(LabeltextCustom(
-      label: "IndoorLevel",
-      value: "${tile.indoorLevel}",
+      label: "Tile",
+      value: "${tile}",
     ));
     if (debugDatastore.tile == null || debugDatastore.tile != tile) {
       result.add(FutureBuilder<DatastoreReadResult?>(
@@ -123,6 +119,8 @@ class _DebugContextMenuState extends DefaultContextMenuState {
         if (marker.item is PointOfInterest) {
           PointOfInterest poi = marker.item;
           result.add(_buildPoiInfo(poi, tile));
+        } else if (marker.item == null) {
+          // tile
         } else {
           Way way = marker.item;
           result.add(_buildWayInfo(way, tile));
@@ -174,9 +172,17 @@ class _DebugContextMenuState extends DefaultContextMenuState {
                       : Colors.red)),
           child: Row(
             children: [
-              if (LatLongUtils.isClosedWay(way.latLongs[0]))
+              if (LatLongUtils.isClosedWay(way.latLongs[0]) &&
+                  way.latLongs.length > 1)
+                const Icon(Icons.rectangle),
+              if (LatLongUtils.isClosedWay(way.latLongs[0]) &&
+                  way.latLongs.length <= 1)
                 const Icon(Icons.rectangle_outlined),
-              if (!LatLongUtils.isClosedWay(way.latLongs[0]))
+              if (!LatLongUtils.isClosedWay(way.latLongs[0]) &&
+                  way.latLongs.length > 1)
+                const Icon(Icons.polymer),
+              if (!LatLongUtils.isClosedWay(way.latLongs[0]) &&
+                  way.latLongs.length <= 1)
                 const Icon(Icons.polyline_rounded),
               const SizedBox(width: 4),
               Text("Layer ${way.layer}"),

@@ -8,41 +8,30 @@ import 'mapfile_writer.dart';
 
 /// Holds one way and its tags
 class Wayholder with TagholderMixin {
-  final Way way;
+  Way way;
 
   int tileBitmask = 0xffff;
 
-  Wayholder(this.way, List<Tagholder> tagholders, String? languagesPreference) {
-    if (languagesPreference != null)
-      super.languagesPreference.addAll(languagesPreference.split(","));
-    analyzeTags(way.tags, tagholders);
-  }
+  /// PBF supports relations with multiple outer ways. Mapfile requires to
+  /// store this outer ways as additional Way data blocks and split it into
+  /// several ways - all with the same way properties - when reading the file.
+  List<List<ILatLong>> otherOuters = [];
 
-  // void setSubTileBitmap(int idx) {
-  //   tileBitmask |= 1 << idx;
-  //   //print("setSubTileBitmap $idx 0x${tileBitmask.toRadixString(16)} for $way");
-  // }
+  bool mergedWithOtherWay = false;
 
-  void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
-    if (debugFile) {
-      writebuffer.appendStringWithoutLength("---WayStart${way.hashCode}---"
-          .padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
-    }
-  }
+  Wayholder(this.way) {}
 
-  /**
-   * A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
-   * it is analyzed if the given way needs to be included. The result is represented as a 16 bit short value. Each bit
-   * represents one of the 16 sub tiles. A bit is set to 1 if the sub tile needs to include the way. Representation is
-   * row-wise.
-   *
-   * @param geometry           the geometry which is analyzed
-   * @param tile               the tile which is split into 16 sub tiles
-   * @param enlargementInMeter amount of pixels that is used to enlarge the bounding box of the way and the tiles in the mapping
-   *                           process
-   * @return a 16 bit short value that represents the information which of the sub tiles needs to include the way
-   */
-  void computeBitmask(Way way, Tile tile, final int enlargementInMeter) {
+  /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
+  /// it is analyzed if the given way needs to be included. The result is represented as a 16 bit short value. Each bit
+  /// represents one of the 16 sub tiles. A bit is set to 1 if the sub tile needs to include the way. Representation is
+  /// row-wise.
+  ///
+  /// @param geometry           the geometry which is analyzed
+  /// @param tile               the tile which is split into 16 sub tiles
+  /// @param enlargementInMeter amount of pixels that is used to enlarge the bounding box of the way and the tiles in the mapping
+  ///                           process
+  /// @return a 16 bit short value that represents the information which of the sub tiles needs to include the way
+  void _computeBitmask(Way way, Tile tile, final int enlargementInMeter) {
     List<Tile> subtiles = tile.getGrandchilds();
 
     tileBitmask = 0;
@@ -50,19 +39,26 @@ class Wayholder with TagholderMixin {
     BoundingBox boundingBox = way.getBoundingBox();
     for (Tile subtile in subtiles) {
       if (subtile.getBoundingBox().intersects(boundingBox) ||
-          subtile.getBoundingBox().containsBoundingBox(boundingBox)) {
+          subtile.getBoundingBox().containsBoundingBox(boundingBox) ||
+          boundingBox.containsBoundingBox(subtile.getBoundingBox())) {
         tileBitmask |= tileCounter;
       }
-      print(
-          "$tile -> $subtile 0x${tileBitmask.toRadixString(16)} $tileCounter");
+      // print(
+      //     "$tile -> $subtile 0x${tileBitmask.toRadixString(16)} $tileCounter");
       tileCounter = tileCounter >> 1;
     }
+  }
+
+  void analyze(List<Tagholder> tagholders, String? languagesPreference) {
+    if (languagesPreference != null)
+      super.languagesPreference.addAll(languagesPreference.split(","));
+    analyzeTags(way.tags, tagholders);
   }
 
   /// can be done when the tags are sorted
   Writebuffer writeWaydata(
       bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
-    computeBitmask(way, tile, 0);
+    _computeBitmask(way, tile, 0);
     Writebuffer writebuffer3 = Writebuffer();
     _writeWaySignature(debugFile, writebuffer3);
     Writebuffer writebuffer =
@@ -71,6 +67,13 @@ class Wayholder with TagholderMixin {
     writebuffer3.appendUnsignedInt(writebuffer.length);
     writebuffer3.appendWritebuffer(writebuffer);
     return writebuffer3;
+  }
+
+  void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
+    if (debugFile) {
+      writebuffer.appendStringWithoutLength("---WayStart${way.hashCode}---"
+          .padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
+    }
   }
 
   Writebuffer _writeWayPropertyAndWayData(
@@ -83,7 +86,7 @@ class Wayholder with TagholderMixin {
     // for each sub tile (row-wise, left to right):
     // 1 bit that represents a flag whether the way is relevant for the sub tile
     // Special case: coastline ways must always have all 16 bits set.
-    writebuffer.appendInt2(tileBitmask);
+    writebuffer.appendUInt2(tileBitmask);
 
     int specialByte = 0;
     // bit 1-4 represent the layer
@@ -106,14 +109,26 @@ class Wayholder with TagholderMixin {
     if (featureLabelPosition)
       featureByte |= MapfileHelper.WAY_FEATURE_LABEL_POSITION;
     // number of way data blocks or false if we have only 1
-    bool featureWayDataBlocksByte = way.latLongs.length > 1;
+    bool featureWayDataBlocksByte = otherOuters.isNotEmpty;
     if (featureWayDataBlocksByte)
       featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
 
-    Writebuffer singleWritebuffer =
-        _writeSingleDeltaEncoding(way, tileLatitude, tileLongitude);
-    Writebuffer doubleWritebuffer =
-        _writeDoubleDeltaEncoding(way, tileLatitude, tileLongitude);
+    Writebuffer singleWritebuffer = Writebuffer();
+    _writeSingleDeltaEncoding(
+        singleWritebuffer, way.latLongs, tileLatitude, tileLongitude);
+    otherOuters.forEach((List<ILatLong> outer) {
+      _writeSingleDeltaEncoding(
+          singleWritebuffer, [outer], tileLatitude, tileLongitude);
+    });
+
+    Writebuffer doubleWritebuffer = Writebuffer();
+    _writeDoubleDeltaEncoding(
+        doubleWritebuffer, way.latLongs, tileLatitude, tileLongitude);
+    otherOuters.forEach((List<ILatLong> outer) {
+      _writeDoubleDeltaEncoding(
+          doubleWritebuffer, [outer], tileLatitude, tileLongitude);
+    });
+
     bool featureWayDoubleDeltaEncoding =
         doubleWritebuffer.length < singleWritebuffer.length;
     if (featureWayDoubleDeltaEncoding)
@@ -121,19 +136,14 @@ class Wayholder with TagholderMixin {
 
     writebuffer.appendInt1(featureByte);
 
-    // check if the POI has a name
     if (featureName != null) {
-      writebuffer.appendString(way.getTag(MapfileHelper.TAG_KEY_NAME)!);
+      writebuffer.appendString(featureName!);
     }
-
-    // check if the POI has a house number
     if (featureHouseNumber != null) {
-      writebuffer.appendString(way.getTag(MapfileHelper.TAG_KEY_HOUSE_NUMBER)!);
+      writebuffer.appendString(featureHouseNumber!);
     }
-
-    // check if the way has a reference
     if (featureRef != null) {
-      writebuffer.appendString(way.getTag(MapfileHelper.TAG_KEY_REF)!);
+      writebuffer.appendString(featureRef!);
     }
 
     if (featureLabelPosition) {
@@ -144,8 +154,7 @@ class Wayholder with TagholderMixin {
     }
 
     if (featureWayDataBlocksByte) {
-      // let's write the length during single/double delta encoding
-      writebuffer.appendUnsignedInt(way.latLongs.length);
+      writebuffer.appendUnsignedInt(otherOuters.length + 1);
     }
 
     if (featureWayDoubleDeltaEncoding)
@@ -156,11 +165,15 @@ class Wayholder with TagholderMixin {
   }
 
   /// Way data block
-  Writebuffer _writeSingleDeltaEncoding(
-      Way way, double tileLatitude, double tileLongitude) {
-    Writebuffer writebuffer = Writebuffer();
-    writebuffer.appendUnsignedInt(way.latLongs.length);
-    for (List<ILatLong> waySegment in way.latLongs) {
+  void _writeSingleDeltaEncoding(
+      Writebuffer writebuffer,
+      List<List<ILatLong>> latLongs,
+      double tileLatitude,
+      double tileLongitude) {
+    // amount of following way coordinate blocks (see docu)
+    writebuffer.appendUnsignedInt(latLongs.length);
+    for (List<ILatLong> waySegment in latLongs) {
+      // amount of way nodes of this way (see docu)
       writebuffer.appendUnsignedInt(waySegment.length);
       bool first = true;
       double previousLatitude = 0;
@@ -188,15 +201,15 @@ class Wayholder with TagholderMixin {
         }
       }
     }
-    return writebuffer;
   }
 
   /// Way data block
-  Writebuffer _writeDoubleDeltaEncoding(
-      Way way, double tileLatitude, double tileLongitude) {
-    Writebuffer writebuffer = Writebuffer();
-    writebuffer.appendUnsignedInt(way.latLongs.length);
-    for (List<ILatLong> waySegment in way.latLongs) {
+  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, latLongs,
+      double tileLatitude, double tileLongitude) {
+    // amount of following way coordinate blocks (see docu)
+    writebuffer.appendUnsignedInt(latLongs.length);
+    for (List<ILatLong> waySegment in latLongs) {
+      // amount of way nodes of this way (see docu)
       writebuffer.appendUnsignedInt(waySegment.length);
       bool first = true;
       double previousLatitude = 0;
@@ -232,6 +245,10 @@ class Wayholder with TagholderMixin {
         }
       }
     }
-    return writebuffer;
+  }
+
+  @override
+  String toString() {
+    return 'Wayholder{tileBitmask: 0x${tileBitmask.toRadixString(16)}, otherOuters: ${otherOuters.length}, mergedWithOtherWay: $mergedWithOtherWay}, way $way';
   }
 }

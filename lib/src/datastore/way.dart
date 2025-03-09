@@ -7,7 +7,8 @@ class Way {
   /// The position of the area label (may be null).
   final ILatLong? labelPosition;
 
-  /// The geographical coordinates of the way nodes.
+  /// The geographical coordinates of the way nodes. The first item is the outer way whereas succeeding item
+  /// always represents inner ways.
   final List<List<ILatLong>> latLongs;
 
   /// The layer of this way + 5 (to avoid negative values).
@@ -57,6 +58,10 @@ class Way {
 
   @override
   String toString() {
-    return 'Way{labelPosition: $labelPosition, latLongs: $latLongs, layer: $layer, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+  }
+
+  String toStringWithoutNames() {
+    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.where((test) => test.key?.startsWith("name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
   }
 }

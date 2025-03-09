@@ -2,7 +2,6 @@ import 'dart:math';
 
 import '../mapfile/subfileparameter.dart';
 import '../model/tile.dart';
-
 import 'querycalculations.dart';
 
 class QueryParameters {
@@ -87,7 +86,7 @@ class QueryParameters {
   }
 
   void calculateBlocks(SubFileParameter subFileParameter) {
-    // calculate the blocks in the file which need to be read
+    // calculate the blocks (tiles) in the subfile which need to be read
     this.fromBlockX =
         max(this.fromBaseTileX - subFileParameter.boundaryTileLeft, 0);
     this.fromBlockY =
@@ -131,6 +130,6 @@ class QueryParameters {
 
   @override
   String toString() {
-    return 'QueryParameters{fromBaseTileX: $fromBaseTileX, fromBaseTileY: $fromBaseTileY, fromBlockX: $fromBlockX, fromBlockY: $fromBlockY, queryTileBitmask: $queryTileBitmask, queryZoomLevel: $queryZoomLevel, toBaseTileX: $toBaseTileX, toBaseTileY: $toBaseTileY, toBlockX: $toBlockX, toBlockY: $toBlockY, useTileBitmask: $useTileBitmask}';
+    return 'QueryParameters{fromBaseTileX/Y: $fromBaseTileX/$fromBaseTileY, toBaseTileX/Y: $toBaseTileX/$toBaseTileY, fromBlockX/Y: $fromBlockX/$fromBlockY, toBlockX/Y: $toBlockX/$toBlockY, queryTileBitmask: 0x${queryTileBitmask?.toRadixString(16)}, queryZoomLevel: $queryZoomLevel, useTileBitmask: $useTileBitmask}';
   }
 }

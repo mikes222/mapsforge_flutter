@@ -52,6 +52,7 @@ class FlutterIsolateInstance {
     return instance;
   }
 
+  /// Performs a single computation in an isolate and disposes the isolate afterwards.
   static Future<V> isolateCompute<V, R>(
       EntryPoint<V, R> entryPoint, R request) async {
     FlutterIsolateInstance instance = await FlutterIsolateInstance.create();
@@ -96,9 +97,9 @@ class FlutterIsolateInstance {
     _isolate = await Isolate.spawn<_IsolateInitInstanceParams>(
         isolateEntryPoint, initParams);
     // let the listener run in background
-//        logNow("start sendport=$_sendPort vor listen");
+    //print("start sendport=$_sendPort vor listen");
     unawaited(_listenToIsolate(receivePort));
-//        logNow("start sendport=$_sendPort nach listen");
+    //print("start sendport=$_sendPort nach listen");
     return _isolateCompleter.future;
   }
 

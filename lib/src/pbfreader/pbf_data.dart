@@ -145,4 +145,8 @@ class OsmRelation extends _OsmPrimitive {
   String toString() {
     return 'OsmRelation{id: $id, tags: $tags, members: $members}';
   }
+
+  String toStringWithoutNames() {
+    return 'OsmRelation{id: $id, members: ${members.length}, tags: ${tags.entries.where((test) => test.key.startsWith("name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+  }
 }

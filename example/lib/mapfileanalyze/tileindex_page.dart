@@ -1,3 +1,5 @@
+import 'dart:math' as Math;
+
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
@@ -12,6 +14,8 @@ class TileindexPage extends StatelessWidget {
   final SubFileParameter subFileParameter;
 
   final MapFile mapFile;
+
+  final int maxItems = 50;
 
   const TileindexPage(
       {super.key, required this.subFileParameter, required this.mapFile});
@@ -29,7 +33,7 @@ class TileindexPage extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     return SafeArea(
       child: FutureBuilder(
-          future: _readIndex(),
+          future: _readTileIndex(),
           builder: (context, snapshot) {
             if (snapshot.hasError || snapshot.error != null) {
               return Center(
@@ -43,48 +47,15 @@ class TileindexPage extends StatelessWidget {
               return const Center(
                 child: CircularProgressIndicator(),
               );
-            List<int> indexes = snapshot.data!;
+            List<int> tileIndexes = snapshot.data!;
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 20,
-                children: indexes
-                    .map((indexEntry) => Card(
-                          child: Column(
-                            children: [
-                              Text(
-                                "Tile at 0x${(subFileParameter.startAddress + indexEntry).toRadixString(16)} (0x${indexEntry.toRadixString(16)})",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              FutureBuilder(
-                                  future: _readTileHeader(
-                                      indexes,
-                                      indexEntry &
-                                          MapFile.BITMASK_INDEX_OFFSET),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasError ||
-                                        snapshot.error != null) {
-                                      print(snapshot.error);
-                                      print(snapshot.stackTrace);
-                                      return Text(snapshot.error.toString(),
-                                          style: const TextStyle(
-                                              fontSize: 12, color: Colors.red));
-                                    }
-                                    if (snapshot.data == null)
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    List<Widget> widgets = snapshot.data!;
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: widgets,
-                                    );
-                                  }),
-                            ],
-                          ),
-                        ))
+                children: tileIndexes
+                    .getRange(0, Math.min(200, tileIndexes.length))
+                    .map(
+                        (indexEntry) => _buildTileCard(indexEntry, tileIndexes))
                     .toList(),
               ),
             );
@@ -92,7 +63,42 @@ class TileindexPage extends StatelessWidget {
     );
   }
 
-  Future<List<int>> _readIndex() async {
+  Card _buildTileCard(int indexEntry, List<int> tileIndexes) {
+    return Card(
+      child: Column(
+        children: [
+          Text(
+            "Tile at 0x${(subFileParameter.startAddress + indexEntry).toRadixString(16)} (0x${indexEntry.toRadixString(16)})",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          FutureBuilder(
+              future: _readTileHeader(
+                  tileIndexes, indexEntry & MapFile.BITMASK_INDEX_OFFSET),
+              builder: (context, snapshot) {
+                if (snapshot.hasError || snapshot.error != null) {
+                  print(snapshot.error);
+                  print(snapshot.stackTrace);
+                  return Text(snapshot.error.toString(),
+                      style: const TextStyle(fontSize: 12, color: Colors.red));
+                }
+                if (snapshot.data == null)
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                List<Widget> widgets = snapshot.data!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widgets,
+                );
+              }),
+        ],
+      ),
+    );
+  }
+
+  /// Reads the tileIndexes for a subfile. Each index has 5 byte and points to the
+  /// beginning of a tile.
+  Future<List<int>> _readTileIndex() async {
     ReadbufferFile readBufferMaster =
         ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
     Readbuffer readBuffer = await readBufferMaster.readFromFileAt(
@@ -122,11 +128,14 @@ class TileindexPage extends StatelessWidget {
     double tileLongitude = subFileParameter.projection
         .tileXToLongitude((subFileParameter.boundaryTileLeft + column));
 
+    int nextOffset = index + 1 == subFileParameter.numberOfBlocks
+        ? subFileParameter.subFileSize
+        : indexes[index + 1];
+
     ReadbufferFile readBufferMaster =
         ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
     Readbuffer readBuffer = await readBufferMaster.readFromFileAt(
-        subFileParameter.startAddress + offset,
-        subFileParameter.subFileSize - offset);
+        subFileParameter.startAddress + offset, nextOffset - offset);
     List<Widget> res = [];
     if (mapFile.getMapHeaderInfo().debugFile)
       readBuffer.readUTF8EncodedString2(32);
@@ -140,11 +149,13 @@ class TileindexPage extends StatelessWidget {
       wayCounts[inner.zoomlevel] = inner.wayCount;
     });
     int offsetToFirstWay = readBuffer.readUnsignedInt();
+    res.add(Text(
+        "Bytes per poi: ${(offsetToFirstWay / zoomtable.fold(0, (idx, combine) => idx + combine.poiCount)).toStringAsFixed(1)}"));
     res.add(
         Text("Offset to first way: 0x${offsetToFirstWay.toRadixString(16)}"));
     int taglessPois = 0;
     poiCounts.forEach((zoomlevel, poicount) {
-      for (int i = 0; i < poicount; ++i) {
+      for (int i = 0; i < Math.min(maxItems, poicount); ++i) {
         PointOfInterest pointOfInterest = mapFile.getMapfileHelper().read1Poi(
             readBuffer,
             tileLatitude,
@@ -173,7 +184,7 @@ class TileindexPage extends StatelessWidget {
     // }
     int taglessWays = 0;
     wayCounts.forEach((zoomlevel, waycount) {
-      for (int i = 0; i < waycount; ++i) {
+      for (int i = 0; i < Math.min(maxItems, waycount); ++i) {
         List<Way> newWays = mapFile.getMapfileHelper().read1Way(
             readBuffer,
             QueryParameters(),
@@ -182,7 +193,7 @@ class TileindexPage extends StatelessWidget {
             mapFile,
             mapFile.getMapHeaderInfo().wayTags,
             false,
-            BoundingBox(0, 0, 0, 0),
+            const BoundingBox(0, 0, 0, 0),
             MapfileSelector.ALL);
 
         for (Way way in newWays) {
@@ -194,11 +205,11 @@ class TileindexPage extends StatelessWidget {
               spacing: 10,
               children: [
                 Text(
-                    "Zoomlelel: $zoomlevel, Way: Layer: ${way.layer}, tags: ${way.tags}",
+                    "Zoomlelel: $zoomlevel, ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}Way: Layer: ${way.layer}, latLongs: ${way.latLongs.map((toElement) => toElement.length).toList()}, tags: ${way.tags}",
                     maxLines: 5),
                 Text(
                   "${way.getBoundingBox()}",
-                  style: TextStyle(fontSize: 10),
+                  style: const TextStyle(fontSize: 10),
                   maxLines: 5,
                 ),
               ],
@@ -211,6 +222,8 @@ class TileindexPage extends StatelessWidget {
       res.add(Text("Ways without tags: $taglessWays"));
     }
 
+    res.add(Text(
+        "Bytes per way: ${((readBuffer.getBufferPosition() - offsetToFirstWay) / zoomtable.fold(0, (idx, combine) => idx + combine.wayCount)).toStringAsFixed(1)}"));
     res.add(Text(
         "read 0x${readBuffer.getBufferPosition().toRadixString(16)} bytes"));
     return res;

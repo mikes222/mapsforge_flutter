@@ -83,8 +83,17 @@ class LatLongUtils {
    * @return true if this way is closed, false otherwise.
    */
   static bool isClosedWay(List<ILatLong> latLongs) {
-    return euclideanDistance(latLongs[0], latLongs[latLongs.length - 1]) <
-        0.000000001;
+    return isNear(latLongs.first, latLongs.last);
+  }
+
+  /// Returns true if the other point is equal or near this point.
+  static bool isNear(ILatLong me, ILatLong other) {
+    if (me.latitude == other.latitude && me.longitude == other.longitude)
+      return true;
+    if ((me.latitude - other.latitude).abs() <= 0.000002 &&
+        (me.longitude - other.longitude).abs() <= 0.000002) return true;
+    // the following method is expensive, try simpler methods first
+    return euclideanDistance(me, other) < 0.000000001;
   }
 
   /// Converts a coordinate from microdegrees (degrees * 10^6) to degrees. No validation is performed.

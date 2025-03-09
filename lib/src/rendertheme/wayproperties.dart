@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/rendertheme/nodewayproperties.dart';
+import 'package:mapsforge_flutter/src/utils/douglas_peucker_mappoint.dart';
 
 import '../../core.dart';
 import '../../datastore.dart';
@@ -12,7 +13,6 @@ import '../model/linestring.dart';
 import '../renderer/geometryutils.dart';
 import '../renderer/minmaxdouble.dart';
 import '../renderer/rendererutils.dart';
-import '../utils/reducehelper.dart';
 
 /// Properties for one Way as read from the datastore. Note that the properties are
 /// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
@@ -52,7 +52,8 @@ class WayProperties implements NodeWayProperties {
       if (idx == 0) this.minMaxMappoint = minMaxMappoint;
       if (minMaxMappoint.maxX - minMaxMappoint.minX > maxGap ||
           minMaxMappoint.maxY - minMaxMappoint.minY > maxGap) {
-        if (mp1.length > 6) mp1 = ReduceHelper.reduceMappoint(mp1, maxGap);
+        if (mp1.length > 6)
+          mp1 = DouglasPeuckerMappoint().simplify(mp1, maxGap);
         // check if the area to draw is too small. This saves 100ms for complex structures
         coordinatesAbsolute!.add(mp1);
       }

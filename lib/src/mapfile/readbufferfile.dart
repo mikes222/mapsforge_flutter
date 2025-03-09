@@ -54,7 +54,7 @@ class ReadbufferFile implements ReadbufferSource {
   Future<Readbuffer> readFromFile(int length) async {
     assert(length > 0);
     // ensure that the read buffer is large enough
-    assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
+    //assert(length <= Parameters.MAXIMUM_BUFFER_SIZE, "length: $length");
 
     String cacheKey = "$_position-$length";
 

@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../graphics/filter.dart';
@@ -53,7 +54,7 @@ class DisplayModel {
   //late int tileSize;
 
   /// maximum zoomlevel
-  int maxZoomLevel;
+  ZoomlevelRange zoomlevelRange;
 
   /**
    * Returns the device scale factor.
@@ -65,7 +66,7 @@ class DisplayModel {
   }
 
   DisplayModel({
-    this.maxZoomLevel = 25,
+    int maxZoomLevel = 25,
     //this.tileSize = DEFAULT_TILE_SIZE,
     this.deviceScaleFactor = 1.0,
     this.userScaleFactor = 1.0,
@@ -75,7 +76,8 @@ class DisplayModel {
     int tilesize = DEFAULT_TILE_SIZE,
   })  : assert(maxZoomLevel <= 30 && maxZoomLevel > 0),
         assert(maxTextWidthFactor > 0),
-        assert(tilesize > 0) {
+        assert(tilesize > 0),
+        zoomlevelRange = ZoomlevelRange(0, maxZoomLevel) {
     this._setTileSize(tilesize);
     _setMaxTextWidth();
   }

@@ -54,6 +54,11 @@ class RuleBuilder {
   String? cat;
   ZoomlevelRange zoomlevelRange;
 
+  /// A boolean variable which will be set to true if this rule can never be
+  /// executed. This may happen for example if the [DisplayModel] sets the
+  /// max zoom size to for example 9 and the rule has a min-zoom size of 10.
+  bool impossible = false;
+
   Closed closed = Closed.ANY;
   Element element = Element.ANY;
   String? keys;
@@ -105,7 +110,7 @@ class RuleBuilder {
 
   RuleBuilder(DisplayModel displayModel,
       ZoomlevelSymbolFinder? parentSymbolFinder, this.level)
-      : zoomlevelRange = ZoomlevelRange(0, displayModel.maxZoomLevel),
+      : zoomlevelRange = displayModel.zoomlevelRange,
         ruleBuilderStack = [],
         renderInstructionNodes = [],
         renderInstructionOpenWays = [],
@@ -213,11 +218,19 @@ class RuleBuilder {
         this.closed = Closed.values
             .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (ZOOM_MIN == name) {
-        zoomlevelRange = zoomlevelRange
-            .restrictToMin(XmlUtils.parseNonNegativeByte(name, value));
+        try {
+          zoomlevelRange = zoomlevelRange
+              .restrictToMin(XmlUtils.parseNonNegativeByte(name, value));
+        } catch (_) {
+          impossible = true;
+        }
       } else if (ZOOM_MAX == name) {
-        zoomlevelRange = zoomlevelRange
-            .restrictToMax(XmlUtils.parseNonNegativeByte(name, value));
+        try {
+          zoomlevelRange = zoomlevelRange
+              .restrictToMax(XmlUtils.parseNonNegativeByte(name, value));
+        } catch (_) {
+          impossible = true;
+        }
       } else {
         throw Exception("Invalid $name = $value in rule");
       }
@@ -290,7 +303,14 @@ class RuleBuilder {
           RuleBuilder(displayModel, zoomlevelSymbolFinder, ++level);
       ruleBuilder.zoomlevelRange = zoomlevelRange;
 
-      ruleBuilder.parse(displayModel, rootElement);
+      try {
+        ruleBuilder.parse(displayModel, rootElement);
+      } catch (error, stacktrace) {
+        _log.warning(
+            "Error while parsing rule $ruleBuilder which is a subrule of $this",
+            error,
+            stacktrace);
+      }
       ruleBuilderStack.add(ruleBuilder);
       maxLevel = max(level, ruleBuilder.maxLevel);
     } else if ("area" == qName) {

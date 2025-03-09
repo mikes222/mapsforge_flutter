@@ -69,8 +69,10 @@ class RenderThemeBuilder {
     assert(ruleBuilderStack.length > 0);
     RenderTheme renderTheme = RenderTheme(this);
     ruleBuilderStack.forEach((ruleBuilder) {
-      Rule rule = ruleBuilder.build();
-      renderTheme.addRule(rule);
+      if (!ruleBuilder.impossible) {
+        Rule rule = ruleBuilder.build();
+        renderTheme.addRule(rule);
+      }
     });
     return renderTheme;
   }

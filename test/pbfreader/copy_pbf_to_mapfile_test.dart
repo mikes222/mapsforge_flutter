@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -7,23 +5,28 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/pbf.dart';
 import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
+import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_writer.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/subfile_filler.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rule/rule_analyzer.dart';
-import 'package:mapsforge_flutter/src/utils/reducehelper.dart';
+import 'package:mapsforge_flutter/src/utils/timing.dart';
 
 import '../testassetbundle.dart';
 
 main() async {
-  test("Read pbf file from memory", () async {
+  final _log = new Logger('CopyPbfToMapfileTest');
+
+  test("Read pbf file and convert it to mapfile", () async {
     _initLogging();
 
+    Timing timing = Timing(log: _log);
     // prepare render theme
-    DisplayModel displayModel = DisplayModel();
+    DisplayModel displayModel = DisplayModel(maxZoomLevel: 20);
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
     String content = await TestAssetBundle().loadString("lightrender.xml");
     renderThemeBuilder.parseXml(displayModel, content);
@@ -34,9 +37,10 @@ main() async {
     }
 
     // read and prepare pbf file
-    ByteData byteData = await TestAssetBundle().load("monaco-latest.osm.pbf");
-    Uint8List data = byteData.buffer.asUint8List();
-    ReadbufferSource readbufferSource = ReadbufferMemory(data);
+    ReadbufferSource readbufferSource = ReadbufferFile(TestAssetBundle()
+        .correctFilename(
+            "monaco-latest.osm.pbf")); //"map_default_46_16.pbf")); monaco-latest.osm.pbf
+    int length = await readbufferSource.length();
     PbfAnalyzer pbfAnalyzer = PbfAnalyzer();
     pbfAnalyzer.converter = MyTagModifier(
         allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
@@ -44,12 +48,13 @@ main() async {
         negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
         negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
         keys: ruleAnalyzer.keys);
-    await pbfAnalyzer.analyze(readbufferSource, data.length);
-    //pbfAnalyzer.statistics();
+    await pbfAnalyzer.analyze(readbufferSource, length);
+    pbfAnalyzer.statistics();
+    timing.lap(1000, "Analyzer completed");
 
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
-    Map<ZoomlevelRange, List<Way>> ways = {};
+    Map<ZoomlevelRange, List<Wayholder>> ways = {};
     int noRangeNodes = 0;
     pbfAnalyzer.pois.forEach((pointOfInterest) {
       ZoomlevelRange? range =
@@ -61,25 +66,28 @@ main() async {
       if (nodes[range] == null) nodes[range] = [];
       nodes[range]!.add(pointOfInterest);
     });
+    timing.lap(1000, "Processing pois completed");
     int noRangeWays = 0;
-    pbfAnalyzer.waysMerged.forEach((way) {
-      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(way);
+    pbfAnalyzer.ways.forEach((wayHolder) {
+      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(wayHolder.way);
       if (range == null) {
         ++noRangeWays;
         return;
       }
       if (ways[range] == null) ways[range] = [];
-      ways[range]!.add(way);
+      ways[range]!.add(wayHolder);
     });
-    pbfAnalyzer.ways.forEach((way) {
-      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(way);
+    timing.lap(1000, "Processing ways completed");
+    pbfAnalyzer.waysMerged.forEach((wayHolder) {
+      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(wayHolder.way);
       if (range == null) {
         ++noRangeWays;
         return;
       }
       if (ways[range] == null) ways[range] = [];
-      ways[range]!.add(way);
+      ways[range]!.add(wayHolder);
     });
+    timing.lap(1000, "Processing relations completed");
     print(
         "Removed $noRangeNodes nodes because we would never draw them according to the render theme");
     print(
@@ -94,6 +102,7 @@ main() async {
 
     // prepare the mapfile writer
     BoundingBox boundingBox = pbfAnalyzer.boundingBox!;
+    pbfAnalyzer.clear();
     MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
       boundingBox: boundingBox,
       debugFile: false,
@@ -117,53 +126,80 @@ main() async {
     // write the subfiles
     SubfileCreator subfileCreator = SubfileCreator(
         mapHeaderInfo: mapHeaderInfo,
-        baseZoomLevel: 5,
+        baseZoomLevel: 8,
         boundingBox: boundingBox,
-        zoomlevelRange: const ZoomlevelRange(0, 7));
-    fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+        zoomlevelRange: const ZoomlevelRange(0, 11));
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+    timing.lap(1000, "Subfile 1 completed");
 
     subfileCreator = SubfileCreator(
         mapHeaderInfo: mapHeaderInfo,
-        baseZoomLevel: 10,
+        baseZoomLevel: 13,
         boundingBox: boundingBox,
-        zoomlevelRange: const ZoomlevelRange(8, 11));
-    fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+        zoomlevelRange: const ZoomlevelRange(12, 15));
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+    timing.lap(1000, "Subfile 2 completed");
 
     subfileCreator = SubfileCreator(
         mapHeaderInfo: mapHeaderInfo,
-        baseZoomLevel: 14,
+        baseZoomLevel: 17,
         boundingBox: boundingBox,
-        zoomlevelRange: const ZoomlevelRange(12, 21));
-    fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+        zoomlevelRange: const ZoomlevelRange(16, 20));
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+    timing.lap(1000, "Subfile 3 completed");
 
     // now start with writing the actual file
     mapfileWriter.write();
     await mapfileWriter.close();
+
+    timing.lap(1000, "Process completed");
   });
 }
 
-void fillSubfile(
+Future<void> fillSubfile(
     MapfileWriter mapfileWriter,
     SubfileCreator subfileCreator,
     Map<ZoomlevelRange, List<PointOfInterest>> nodes,
-    Map<ZoomlevelRange, List<Way>> ways) {
+    Map<ZoomlevelRange, List<Wayholder>> wayHolders) async {
   nodes.forEach((zoomlevelRange, nodelist) {
-    subfileCreator.addPoidata(zoomlevelRange, nodelist, mapfileWriter.poiTags);
+    if (subfileCreator.zoomlevelRange.zoomlevelMin >
+        zoomlevelRange.zoomlevelMax) return;
+    if (subfileCreator.zoomlevelRange.zoomlevelMax <
+        zoomlevelRange.zoomlevelMin) return;
+    subfileCreator.addPoidata(zoomlevelRange, nodelist);
   });
-  _SizeFilter sizeFilter =
-      _SizeFilter(subfileCreator.zoomlevelRange.zoomlevelMax, 20);
-  _SimplifyFilter simplifyFilter =
-      _SimplifyFilter(subfileCreator.zoomlevelRange.zoomlevelMax, 10);
-  ways.forEach((zoomlevelRange, waylist) {
-    List<Way> ways = List.from(waylist);
-    ways.removeWhere((test) => sizeFilter.shouldFilter(test));
-    int count = waylist.length - ways.length;
-    //if (count > 0) print("$count removed from ${waylist.length}");
-
-    List<Way> ways2 = ways.map((way) => simplifyFilter.reduce(way)).toList();
-    subfileCreator.addWaydata(zoomlevelRange, ways2, mapfileWriter.wayTags);
+  // SubfileFiller subfileFiller =
+  //     SubfileFiller(subfileCreator.zoomlevelRange, subfileCreator.boundingBox);
+  List<Future> wayholderFutures = [];
+  wayHolders
+      .forEach((ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist) {
+    if (wayholderlist.isEmpty) return;
+    wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholderlist,
+        mapfileWriter.mapHeaderInfo.tilePixelSize));
+    // List<Wayholder> wayholders = subfileFiller.prepareWays(
+    //     subfileCreator.zoomlevelRange,
+    //     zoomlevelRange,
+    //     List.from(wayholderlist));
+    //subfileCreator.addWaydata(zoomlevelRange, wayholders);
   });
+  await Future.wait(wayholderFutures);
+  print("=== Subfile:");
+  subfileCreator.statistics();
   mapfileWriter.subfileCreators.add(subfileCreator);
+}
+
+Future<void> _isolate(
+    SubfileCreator subfileCreator,
+    ZoomlevelRange zoomlevelRange,
+    List<Wayholder> wayholderlist,
+    int tilePixelSize) async {
+  List<Wayholder> wayholders = await IsolateSubfileFiller().prepareWays(
+      subfileCreator.zoomlevelRange,
+      subfileCreator.boundingBox,
+      zoomlevelRange,
+      wayholderlist,
+      tilePixelSize);
+  subfileCreator.addWaydata(zoomlevelRange, wayholders);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -201,6 +237,7 @@ class MyTagModifier extends PbfAnalyzerConverter {
     tags.removeWhere((test) {
       if (keys.contains(test.key)) return false;
       if (test.key!.startsWith("name:")) return false;
+      if (test.key!.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedNodeTags[test.key];
       if (valueInfo != null) {
         if (valueInfo.values.contains("*")) return false;
@@ -221,6 +258,7 @@ class MyTagModifier extends PbfAnalyzerConverter {
     tags.removeWhere((test) {
       if (keys.contains(test.key)) return false;
       if (test.key!.startsWith("name:")) return false;
+      if (test.key!.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedWayTags[test.key];
       if (valueInfo != null) {
         if (valueInfo.values.contains("*")) return false;
@@ -235,62 +273,25 @@ class MyTagModifier extends PbfAnalyzerConverter {
       return true;
     });
   }
-}
 
-//////////////////////////////////////////////////////////////////////////////
-
-/// Filter ways by size. If the way would be too small in max zoom of the desired
-/// subfile (hence maxZoomlevel) we do not want to include it at all.
-class _SizeFilter {
-  PixelProjection projection;
-
-  double filterSize;
-
-  _SizeFilter(int zoomlevel, this.filterSize)
-      : projection = PixelProjection(zoomlevel);
-
-  bool shouldFilter(Way way) {
-    BoundingBox boundingBox = way.getBoundingBox();
-    double x = projection.longitudeToPixelX(boundingBox.maxLongitude) -
-        projection.longitudeToPixelX(boundingBox.minLongitude);
-    if (x.abs() > filterSize) return false;
-    double y = projection.latitudeToPixelY(boundingBox.maxLatitude) -
-        projection.latitudeToPixelY(boundingBox.minLatitude);
-    if (y.abs() > filterSize) return false;
-    return true;
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-class _SimplifyFilter {
-  PixelProjection projection;
-
-  double maxDeviationPixel;
-
-  _SimplifyFilter(int zoomlevel, this.maxDeviationPixel)
-      : projection = PixelProjection(zoomlevel) {}
-
-  Way reduce(Way way) {
-    int oldCount = 0;
-    int newCount = 0;
-    double? maxDeviationLatLong;
-    List<List<ILatLong>> newLatLongs = [];
-    for (List<ILatLong> latLongs in way.latLongs) {
-      if (latLongs.length <= 3) continue;
-      maxDeviationLatLong ??= projection.longitudeDiffPerPixel(
-          latLongs.first.longitude, maxDeviationPixel);
-      oldCount += latLongs.length;
-      List<ILatLong> res1 =
-          ReduceHelper.reduceLatLong(latLongs, maxDeviationLatLong);
-      newCount += res1.length;
-      newLatLongs.add(res1);
-    }
-    //print("Way ${way.tags} reduced from $oldCount to $newCount");
-    if (newCount >= 3 && newCount / oldCount < 0.8) {
-      // at most 80% of the previous nodes
-      return Way(way.layer, way.tags, newLatLongs, way.labelPosition);
-    }
-    return way;
+  @override
+  void modifyRelationTags(OsmRelation relation, List<Tag> tags) {
+    tags.removeWhere((test) {
+      if (keys.contains(test.key)) return false;
+      if (test.key!.startsWith("name:")) return false;
+      if (test.key!.startsWith("official_name:")) return false;
+      ValueInfo? valueInfo = allowedWayTags[test.key];
+      if (valueInfo != null) {
+        if (valueInfo.values.contains("*")) return false;
+        if (valueInfo.values.contains(test.value)) return false;
+      }
+      valueInfo = negativeWayTags[test.key];
+      if (valueInfo != null) {
+        return false;
+        // if (valueInfo.values.contains("*")) return false;
+        // if (valueInfo.values.contains(test.value)) return false;
+      }
+      return true;
+    });
   }
 }
