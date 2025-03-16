@@ -1,7 +1,8 @@
 import 'dart:math';
 
-import 'package:mapsforge_flutter/src/model/ilatlong.dart';
-import 'package:mapsforge_flutter/src/model/mappoint.dart';
+import 'package:mapsforge_flutter/datastore.dart';
+
+import '../../core.dart';
 
 class LatLongUtils {
   /**
@@ -17,6 +18,8 @@ class LatLongUtils {
   static final double CONVERSION_FACTOR = 1000000.0;
 
   static final String DELIMITER = ",";
+
+  LatLongUtils._();
 
   /**
    * Find if the given point lies within this polygon.
@@ -83,6 +86,7 @@ class LatLongUtils {
    * @return true if this way is closed, false otherwise.
    */
   static bool isClosedWay(List<ILatLong> latLongs) {
+    if (latLongs.length < 3) return false;
     return isNear(latLongs.first, latLongs.last);
   }
 
@@ -90,10 +94,9 @@ class LatLongUtils {
   static bool isNear(ILatLong me, ILatLong other) {
     if (me.latitude == other.latitude && me.longitude == other.longitude)
       return true;
-    if ((me.latitude - other.latitude).abs() <= 0.000002 &&
-        (me.longitude - other.longitude).abs() <= 0.000002) return true;
-    // the following method is expensive, try simpler methods first
-    return euclideanDistance(me, other) < 0.000000001;
+    if ((me.latitude - other.latitude).abs() <= 0.00005 &&
+        (me.longitude - other.longitude).abs() <= 0.00005) return true;
+    return false;
   }
 
   /// Converts a coordinate from microdegrees (degrees * 10^6) to degrees. No validation is performed.
@@ -206,7 +209,162 @@ class LatLongUtils {
 //    return zoom;
 //  }
 
-  LatLongUtils() {
-    throw new Exception();
+  /// Determines if a point is inside or outside a polygon.
+  ///
+  /// Uses the "ray casting" algorithm to determine if a point is inside a polygon.
+  ///
+  /// Args:
+  ///   point: The point to test (ILatLong).
+  ///   polygon: A list of points (List<ILatLong>) that define the polygon.
+  ///            The polygon must be closed (first and last point are the same).
+  ///
+  /// Returns:
+  ///   True if the point is inside the polygon, false otherwise.
+  static bool isPointInPolygon(ILatLong point, List<ILatLong> polygon) {
+    assert(polygon.length >= 3);
+    // Check if the polygon is valid.
+    // if (polygon.length < 3 || polygon.first != polygon.last) {
+    //   throw ArgumentError(
+    //       'The polygon must have at least 3 points and must be closed (first and last points are the same).');
+    // }
+
+    // Ray casting algorithm
+    int intersectionCount = 0;
+    final double pointX = point.longitude;
+    final double pointY = point.latitude;
+
+    ILatLong? previous;
+
+    polygon.forEach((current) {
+      if (previous != null) {
+        final double x1 = previous!.longitude;
+        final double y1 = previous!.latitude;
+        final double x2 = current.longitude;
+        final double y2 = current.latitude;
+
+        // Check if the ray intersects the current edge
+        if (y1 <= pointY && y2 > pointY || y2 <= pointY && y1 > pointY) {
+          // Calculate the intersection point of the ray with the current edge
+          final double intersectionX =
+              (x2 - x1) * (pointY - y1) / (y2 - y1) + x1;
+
+          // If the intersection point is to the left of the test point, count it as an intersection
+          if (pointX < intersectionX) {
+            intersectionCount++;
+          }
+        }
+      }
+      previous = current;
+    });
+
+    // If the number of intersections is odd, the point is inside the polygon; otherwise, it's outside
+    return intersectionCount % 2 == 1;
+  }
+
+  /// Checks if two line segments intersect. They do NOT intersect if the
+  /// intersection point is outside of the given start-end points.
+  ///
+  /// @param line1Start Der Startpunkt des ersten Liniensegments.
+  /// @param line1End Der Endpunkt des ersten Liniensegments.
+  /// @param line2Start Der Startpunkt des zweiten Liniensegments.
+  /// @param line2End Der Endpunkt des zweiten Liniensegments.
+  /// @return `true`, wenn sich die Liniensegmente überschneiden, andernfalls `false`.
+  static bool doLinesIntersect(ILatLong line1Start, ILatLong line1End,
+      ILatLong line2Start, ILatLong line2End) {
+    // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+    double x1 = line1Start.longitude;
+    double y1 = line1Start.latitude;
+    double x2 = line1End.longitude;
+    double y2 = line1End.latitude;
+    double x3 = line2Start.longitude;
+    double y3 = line2Start.latitude;
+    double x4 = line2End.longitude;
+    double y4 = line2End.latitude;
+
+    final x12diff = x1 - x2;
+    final x34diff = x3 - x4;
+    final y12diff = y1 - y2;
+    final y34diff = y3 - y4;
+    final denominator = x12diff * y34diff - y12diff * x34diff;
+
+    if (denominator == 0.0) {
+      // Die Linien sind parallel.
+      return false;
+    }
+
+    final x13diff = x1 - x3;
+    final y13diff = y1 - y3;
+    final tNumerator = x13diff * y34diff - y13diff * x34diff;
+    final uNumerator = -(x12diff * y13diff - y12diff * x13diff);
+
+    double t = tNumerator / denominator;
+    double u = uNumerator / denominator;
+
+    return t >= 0.0 && t <= 1.0 && u >= 0 && u <= 1.0;
+  }
+
+  /// Findet den Schnittpunkt von zwei Liniensegmenten.
+  ///
+  /// @param line1Start Der Startpunkt des ersten Liniensegments.
+  /// @param line1End Der Endpunkt des ersten Liniensegments.
+  /// @param line2Start Der Startpunkt des zweiten Liniensegments.
+  /// @param line2End Der Endpunkt des zweiten Liniensegments.
+  /// @return Der Schnittpunkt als ILatLong oder null, wenn kein Schnittpunkt gefunden wurde.
+  static ILatLong? getLineIntersection(ILatLong line1Start, ILatLong line1End,
+      ILatLong line2Start, ILatLong line2End) {
+    final x1 = line1Start.longitude;
+    final y1 = line1Start.latitude;
+    final x2 = line1End.longitude;
+    final y2 = line1End.latitude;
+    final x3 = line2Start.longitude;
+    final y3 = line2Start.latitude;
+    final x4 = line2End.longitude;
+    final y4 = line2End.latitude;
+
+    final x12diff = x1 - x2;
+    final x34diff = x3 - x4;
+    final y12diff = y1 - y2;
+    final y34diff = y3 - y4;
+    final denominator = x12diff * y34diff - y12diff * x34diff;
+
+    if (denominator == 0.0) {
+      // Die Linien sind parallel.
+      return null;
+    }
+
+    final x13diff = x1 - x3;
+    final y13diff = y1 - y3;
+    final tNumerator = x13diff * y34diff - y13diff * x34diff;
+    final uNumerator = -(x12diff * y13diff - y12diff * x13diff);
+
+    final t = tNumerator / denominator;
+    final u = uNumerator / denominator;
+
+    if (t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0) {
+      final intersectionX = x1 + t * (x2 - x1);
+      final intersectionY = y1 + t * (y2 - y1);
+      return LatLong(intersectionY, intersectionX);
+    }
+
+    return null;
+  }
+
+  static void printLatLongs(Way way) {
+    way.latLongs.forEach((latlongs) {
+      List<String> results = [];
+      String result = "";
+      latlongs.forEach((latlong) {
+        result +=
+            "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
+        if (result.length > 250) {
+          results.add(result);
+          result = "";
+        }
+      });
+      if (result.isNotEmpty) results.add(result);
+      results.forEach((action) {
+        print("  $action");
+      });
+    });
   }
 }

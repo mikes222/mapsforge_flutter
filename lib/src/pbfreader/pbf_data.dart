@@ -71,37 +71,6 @@ class OsmWay extends _OsmPrimitive {
 // ignore: public_member_api_docs
 enum MemberType { node, way, relation }
 
-enum RoleType {
-  unassigned,
-  none,
-  inner,
-  outer,
-  subarea,
-  label,
-  admin_centre,
-  start_finish,
-  pit_lane,
-  apply_to,
-  stop,
-  platform,
-  station,
-  house,
-  street,
-  stop_entry_only,
-  platform_entry_only,
-  stop_exit_only,
-  platform_exit_only,
-  member_state,
-  to,
-  via,
-  from,
-  number,
-  hashtag_number,
-  member,
-  building,
-  garden,
-}
-
 //////////////////////////////////////////////////////////////////////////////
 
 class OsmRelationMember {
@@ -112,7 +81,7 @@ class OsmRelationMember {
   final MemberType memberType;
 
   /// The role of the member. Note that not all roles are yet defined in the enum
-  final RoleType role;
+  final String role;
 
   const OsmRelationMember({
     required this.memberId,

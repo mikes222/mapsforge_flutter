@@ -39,7 +39,7 @@ main() async {
     // read and prepare pbf file
     ReadbufferSource readbufferSource = ReadbufferFile(TestAssetBundle()
         .correctFilename(
-            "monaco-latest.osm.pbf")); //"map_default_46_16.pbf")); monaco-latest.osm.pbf
+            "map_default_46_16.pbf")); //"map_default_46_16.pbf")); monaco-latest.osm.pbf
     int length = await readbufferSource.length();
     PbfAnalyzer pbfAnalyzer = PbfAnalyzer();
     pbfAnalyzer.converter = MyTagModifier(
@@ -74,6 +74,8 @@ main() async {
         ++noRangeWays;
         return;
       }
+      // if (wayHolder.way.hasTagValue("natural", "water"))
+      //   print("found $range ${wayHolder.way}");
       if (ways[range] == null) ways[range] = [];
       ways[range]!.add(wayHolder);
     });
@@ -88,16 +90,16 @@ main() async {
       ways[range]!.add(wayHolder);
     });
     timing.lap(1000, "Processing relations completed");
-    print(
+    _log.info(
         "Removed $noRangeNodes nodes because we would never draw them according to the render theme");
-    print(
+    _log.info(
         "Removed $noRangeWays ways because we would never draw them according to the render theme");
 
     nodes.forEach((zoomlevelRange, nodelist) {
-      print("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
+      _log.info("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
     });
     ways.forEach((zoomlevelRange, waylist) {
-      print("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
+      _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
     });
 
     // prepare the mapfile writer
@@ -126,30 +128,38 @@ main() async {
     // write the subfiles
     SubfileCreator subfileCreator = SubfileCreator(
         mapHeaderInfo: mapHeaderInfo,
-        baseZoomLevel: 8,
+        baseZoomLevel: 0,
         boundingBox: boundingBox,
-        zoomlevelRange: const ZoomlevelRange(0, 11));
-    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
+        zoomlevelRange: const ZoomlevelRange(0, 8));
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways, _log);
     timing.lap(1000, "Subfile 1 completed");
+
+    subfileCreator = SubfileCreator(
+        mapHeaderInfo: mapHeaderInfo,
+        baseZoomLevel: 9,
+        boundingBox: boundingBox,
+        zoomlevelRange: const ZoomlevelRange(9, 12));
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways, _log);
+    timing.lap(1000, "Subfile 2 completed");
 
     subfileCreator = SubfileCreator(
         mapHeaderInfo: mapHeaderInfo,
         baseZoomLevel: 13,
         boundingBox: boundingBox,
-        zoomlevelRange: const ZoomlevelRange(12, 15));
-    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
-    timing.lap(1000, "Subfile 2 completed");
+        zoomlevelRange: const ZoomlevelRange(13, 15));
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways, _log);
+    timing.lap(1000, "Subfile 3 completed");
 
     subfileCreator = SubfileCreator(
         mapHeaderInfo: mapHeaderInfo,
-        baseZoomLevel: 17,
+        baseZoomLevel: 16,
         boundingBox: boundingBox,
         zoomlevelRange: const ZoomlevelRange(16, 20));
-    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways);
-    timing.lap(1000, "Subfile 3 completed");
+    await fillSubfile(mapfileWriter, subfileCreator, nodes, ways, _log);
+    timing.lap(1000, "Subfile 4 completed");
 
     // now start with writing the actual file
-    mapfileWriter.write();
+    await mapfileWriter.write();
     await mapfileWriter.close();
 
     timing.lap(1000, "Process completed");
@@ -160,7 +170,8 @@ Future<void> fillSubfile(
     MapfileWriter mapfileWriter,
     SubfileCreator subfileCreator,
     Map<ZoomlevelRange, List<PointOfInterest>> nodes,
-    Map<ZoomlevelRange, List<Wayholder>> wayHolders) async {
+    Map<ZoomlevelRange, List<Wayholder>> wayHolders,
+    _log) async {
   nodes.forEach((zoomlevelRange, nodelist) {
     if (subfileCreator.zoomlevelRange.zoomlevelMin >
         zoomlevelRange.zoomlevelMax) return;
@@ -183,7 +194,7 @@ Future<void> fillSubfile(
     //subfileCreator.addWaydata(zoomlevelRange, wayholders);
   });
   await Future.wait(wayholderFutures);
-  print("=== Subfile:");
+  _log.info("=== Subfile:");
   subfileCreator.statistics();
   mapfileWriter.subfileCreators.add(subfileCreator);
 }
@@ -236,6 +247,10 @@ class MyTagModifier extends PbfAnalyzerConverter {
   void modifyNodeTags(OsmNode node, List<Tag> tags) {
     tags.removeWhere((test) {
       if (keys.contains(test.key)) return false;
+      if (test.key == "name") return false;
+      if (test.key == "loc_name") return false;
+      if (test.key == "int_name") return false;
+      if (test.key == "official_name") return false;
       if (test.key!.startsWith("name:")) return false;
       if (test.key!.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedNodeTags[test.key];
@@ -257,6 +272,10 @@ class MyTagModifier extends PbfAnalyzerConverter {
   void modifyWayTags(OsmWay way, List<Tag> tags) {
     tags.removeWhere((test) {
       if (keys.contains(test.key)) return false;
+      if (test.key == "name") return false;
+      if (test.key == "loc_name") return false;
+      if (test.key == "int_name") return false;
+      if (test.key == "official_name") return false;
       if (test.key!.startsWith("name:")) return false;
       if (test.key!.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedWayTags[test.key];
@@ -278,6 +297,10 @@ class MyTagModifier extends PbfAnalyzerConverter {
   void modifyRelationTags(OsmRelation relation, List<Tag> tags) {
     tags.removeWhere((test) {
       if (keys.contains(test.key)) return false;
+      if (test.key == "name") return false;
+      if (test.key == "loc_name") return false;
+      if (test.key == "int_name") return false;
+      if (test.key == "official_name") return false;
       if (test.key!.startsWith("name:")) return false;
       if (test.key!.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedWayTags[test.key];

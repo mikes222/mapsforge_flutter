@@ -4,7 +4,6 @@ linter:
   rules:
     - prefer_const_constructors
     - unawaited_futures
-    - avoid_returning_null_for_future
     - close_sinks
     - annotate_overrides
     - avoid_void_async

@@ -7,7 +7,8 @@ import 'package:mapsforge_flutter/src/pbfreader/proto/osmformat.pb.dart';
 class PbfBlockReader {
   PbfData readBlock(BlobResult blobResult) {
     final block = PrimitiveBlock.fromBuffer(blobResult.blobOutput);
-    final stringTable = block.stringtable.s.map((s) => utf8.decode(s)).toList();
+    List<String> stringTable =
+        block.stringtable.s.map((s) => utf8.decode(s)).toList();
     final latOffset = block.latOffset.toInt();
     final lonOffset = block.lonOffset.toInt();
     final granularity = block.granularity;
@@ -57,53 +58,14 @@ class PbfBlockReader {
             };
           }).toList();
           final roles = relation.rolesSid.map((role) {
-            return switch (role) {
-              96 => RoleType.number,
-              105 => RoleType.none,
-              106 => RoleType.admin_centre,
-              107 => RoleType.label,
-              108 => RoleType.outer,
-              109 => RoleType.subarea,
-              686 => RoleType.start_finish,
-              687 => RoleType.pit_lane,
-              758 => RoleType.building,
-              790 => RoleType.inner,
-              824 => RoleType.number,
-              837 => RoleType.apply_to,
-              854 => RoleType.to,
-              846 => RoleType.from,
-              872 => RoleType.stop,
-              873 => RoleType.platform,
-              874 => RoleType.station,
-              1036 => RoleType.number,
-              1048 => RoleType.house,
-              1049 => RoleType.street,
-              1056 => RoleType.number,
-              1184 => RoleType.stop_entry_only,
-              1185 => RoleType.platform_entry_only,
-              1186 => RoleType.stop_exit_only,
-              1187 => RoleType.platform_exit_only,
-              1214 => RoleType.number,
-              1225 => RoleType.number,
-              1248 => RoleType.number,
-              1423 => RoleType.member_state,
-              1448 => RoleType.via,
-              >= 1457 && <= 1553 => RoleType.number,
-              >= 1575 && <= 1595 => RoleType.number,
-              1750 => RoleType.garden,
-              >= 1793 && <= 1821 => RoleType.hashtag_number,
-              1936 => RoleType.member,
-              _ => RoleType.unassigned
-              // throw Exception(
-              //       'Unknown role type: $role for relation with id $id ${relation.rolesSid}')
-            };
+            return stringTable[role];
           }).toList();
 
           List<OsmRelationMember> members = [];
           for (int idx = 0; idx < memberIds.length; idx++) {
             int memberId = memberIds[idx];
             MemberType memberType = types[idx];
-            RoleType role = roles[idx];
+            String role = roles[idx];
             OsmRelationMember member = OsmRelationMember(
                 memberId: memberId, memberType: memberType, role: role);
             members.add(member);

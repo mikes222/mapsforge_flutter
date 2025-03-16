@@ -200,7 +200,24 @@ class _DebugContextMenuState extends DefaultContextMenuState {
       ),
       onTap: () {
         debugDatastore.createWayMarker(way);
-        print("Way: $way");
+        print(
+            "Way: $way ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}");
+        // way.latLongs.forEach((latlongs) {
+        //   List<String> results = [];
+        //   String result = "";
+        //   latlongs.forEach((latlong) {
+        //     result +=
+        //         "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
+        //     if (result.length > 250) {
+        //       results.add(result);
+        //       result = "";
+        //     }
+        //   });
+        //   if (result.isNotEmpty) results.add(result);
+        //   results.forEach((action) {
+        //     print("  $action");
+        //   });
+        // });
 
         RenderthemeLevel renderthemeLevel =
             renderTheme.prepareZoomlevel(tile.zoomLevel);

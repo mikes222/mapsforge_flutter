@@ -33,7 +33,7 @@ class IsolateSubfileFiller {
     DisplayModel(tilesize: request.tilePixelSize);
     SubfileFiller subfileFiller = SubfileFiller(
         request.subfileZoomlevelRange, request.subfileBoundingBox);
-    return subfileFiller.prepareWays(request.subfileZoomlevelRange,
+    return subfileFiller.prepareWays(
         request.zoomlevelRange, request.wayholders);
   }
 }
@@ -66,8 +66,9 @@ class SubfileFiller {
 
   late _SimplifyFilter simplifyFilter;
 
-  SubfileFiller(
-      ZoomlevelRange subfileZoomlevelRange, BoundingBox subfileBoundingBox) {
+  final ZoomlevelRange subfileZoomlevelRange;
+
+  SubfileFiller(this.subfileZoomlevelRange, BoundingBox subfileBoundingBox) {
     sizeFilter =
         _SizeFilter(subfileZoomlevelRange.zoomlevelMax, 10, subfileBoundingBox);
     simplifyFilter = _SimplifyFilter(
@@ -75,7 +76,6 @@ class SubfileFiller {
   }
 
   List<Wayholder> prepareWays(
-    ZoomlevelRange subfileZoomlevelRange,
     ZoomlevelRange zoomlevelRange,
     List<Wayholder> wayholders,
   ) {
@@ -85,6 +85,11 @@ class SubfileFiller {
       return [];
     wayholders.removeWhere((test) => sizeFilter.shouldFilter(test));
     wayholders = wayholders.map((test) => simplifyFilter.reduce(test)).toList();
+    // wayholders
+    //     .where((test) => test.way.hasTag("admin_level"))
+    //     .forEach((action) {
+    //   print("$subfileZoomlevelRange: ${action.way.toStringWithoutNames()}");
+    // });
     return wayholders;
   }
 }

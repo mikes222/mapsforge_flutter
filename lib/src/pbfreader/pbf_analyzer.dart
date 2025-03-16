@@ -116,6 +116,7 @@ class PbfAnalyzer {
       if (latLongs[0].length >= 2) {
         Way? way = converter.createWay(osmWay, latLongs);
         if (way != null) {
+          assert(!_wayHolders.containsKey(osmWay.id));
           _wayHolders[osmWay.id] = Wayholder(way);
         }
       }
@@ -155,19 +156,20 @@ class PbfAnalyzer {
       List<Wayholder> outers = [];
       List<Wayholder> inners = [];
       ILatLong? labelPosition = null;
+      // search for outer and inner ways and for possible label position
       relation.members.forEach((member) {
-        if (member.role == RoleType.label) {
+        if (member.role == "label") {
           PointOfInterest? pointOfInterest = _searchPoi(member.memberId);
           if (pointOfInterest != null) {
             labelPosition = pointOfInterest.position;
           }
-        } else if (member.role == RoleType.outer &&
+        } else if (member.role == "outer" &&
             member.memberType == MemberType.way) {
           Wayholder? wayHolder = _searchWayHolder(member.memberId);
           if (wayHolder != null) {
             outers.add(wayHolder);
           }
-        } else if (member.role == RoleType.inner &&
+        } else if (member.role == "inner" &&
             member.memberType == MemberType.way) {
           Wayholder? wayHolder = _searchWayHolder(member.memberId);
           if (wayHolder != null) {
@@ -179,20 +181,32 @@ class PbfAnalyzer {
         Way? way = converter.createMergedWay(relation);
         if (way == null) return;
         Wayholder wayholder = Wayholder(way);
+        bool debug = false;
+        // if (wayholder.way.hasTagValue("natural", "water")) {
+        //   print(
+        //       "Found ${wayholder.way.toStringWithoutNames()} with ${outers.length} outers and ${inners.length} inners for relation ${relation.id}");
+        //   outers.forEach((outer) {
+        //     print("  ${outer.way.toStringWithoutNames()}");
+        //   });
+        //   debug = true;
+        // }
         List<Wayholder> remainingOuters = [];
 
         for (Wayholder outerWayholder in outers) {
-          //print("Adding $outer to $wayHolder");
+          // if (outerWayholder.mergedWithOtherWay) continue;
           assert(outerWayholder.way.latLongs.length == 1);
           bool appended =
               _appendLatLongs(relation, wayholder.way, outerWayholder.way);
           if (appended) {
             outerWayholder.mergedWithOtherWay = true;
+            if (debug)
+              print(
+                  "appended ${outerWayholder.way.toStringWithoutNames()} to ${wayholder.way.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(wayholder.way.latLongs[0])}");
           } else {
             remainingOuters.add(outerWayholder);
-            // } else {
-            //   print(
-            //       "Appended ${wayHolder.way.toStringWithoutNames()}\n and ${outerWayholder.way.toStringWithoutNames()}\n for ${relation.toStringWithoutNames()}");
+            if (debug)
+              print(
+                  "NOT appended ${outerWayholder.way.toStringWithoutNames()} to ${wayholder.way.toStringWithoutNames()}");
           }
         }
         for (Wayholder inner in inners) {
@@ -215,6 +229,9 @@ class PbfAnalyzer {
             bool appended =
                 _appendLatLongs(relation, wayholder.way, remainingOuter.way);
             if (appended) {
+              if (debug)
+                print(
+                    "later appended ${remainingOuter.way.toStringWithoutNames()} to ${wayholder.way.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(wayholder.way.latLongs[0])}");
               remainingOuters.remove(remainingOuter);
               remainingOuter.mergedWithOtherWay = true;
             }
@@ -230,32 +247,29 @@ class PbfAnalyzer {
           wayholder.otherOuters.add(remainingOuter.way.latLongs[0]);
           remainingOuter.mergedWithOtherWay = true;
         }
-        // print(
-        //     "way merging ${outers.length} outers and ${inners.length} inners and ${wayHolder.way.latLongs.length} ways");
         _wayHoldersMerged.add(wayholder);
       }
     });
   }
 
   bool _appendLatLongs(OsmRelation osmRelation, Way master, Way other) {
-    // find out if we should really merge these ways.
-    String? admin_level = osmRelation.tags.entries
-        .firstWhereOrNull((entry) => entry.key == "admin_level")
-        ?.value;
-    if (admin_level != null) {
-      Tag? tag =
-          other.tags.firstWhereOrNull((test) => test.key == "admin_level");
-      if (tag == null || tag.value != admin_level) {
-        // the way is not a member of the same admin_level
-        return false;
-      }
-    }
+    // do not add to closed ways
+    if (master.latLongs.isNotEmpty &&
+        LatLongUtils.isClosedWay(master.latLongs[0])) return false;
+
     if (master.latLongs.isEmpty) {
-      master.latLongs.add(other.latLongs[0]);
+      master.latLongs.add([]..addAll(other.latLongs[0]));
       return true;
     }
     List<ILatLong> latlongs = master.latLongs[0];
     List<ILatLong> otherLatLongs = other.latLongs[0];
+    // int count = otherLatLongs.fold(
+    //     0, (value, combine) => latlongs.contains(combine) ? ++value : value);
+    // // return true because it is already merged
+    // // if (count == otherLatLongs.length) return true;
+    // if (count > 1)
+    //   print(
+    //       "${other.toStringWithoutNames()} has $count latlongs in common with ${master.toStringWithoutNames()}");
     if (LatLongUtils.isNear(latlongs.first, otherLatLongs.last)) {
       // add to the start of this list
       latlongs.removeAt(0);

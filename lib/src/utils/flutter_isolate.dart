@@ -2,27 +2,69 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:rxdart/rxdart.dart';
+
 /// always annotate your entry point with
 /// ``@pragma('vm:entry-point')``
 typedef Future<V> EntryPoint<V, R>(R request);
 
+/// always annotate your entry point with
+/// ``@pragma('vm:entry-point')``
+typedef void CreateInstanceFunction(Object object);
+
 //////////////////////////////////////////////////////////////////////////////
 
 class FlutterIsolateInstancePool {
+  final int maxInstances;
+
+  int _isolateCounter = 0;
+
+  Subject<bool> _subject = PublishSubject();
+
   List<FlutterIsolateInstance> isolateInstances = [];
+
+  Object? instanceParams;
+
+  CreateInstanceFunction? createInstance;
+
+  /// Constructor for a pool of isolates.
+  /// @param maxInstances The maximum number of isolates that can be created.
+  /// @param createInstance The function to create an instance or null
+  /// @param instanceParams The parameters to pass to the instance or null
+  FlutterIsolateInstancePool(
+      {this.maxInstances = 10, this.createInstance, this.instanceParams});
 
   void dispose() {
     isolateInstances.forEach((action) => action.dispose());
     isolateInstances.clear();
+    _subject.close();
   }
 
+  /// Executes a computation in an isolate and returns the result. Creates a new
+  /// isolate if none is available or waits until an isolate is available.
   Future<V> compute<V, R>(EntryPoint<V, R> entryPoint, R request) async {
-    FlutterIsolateInstance isolateInstance = isolateInstances.isNotEmpty
-        ? isolateInstances.removeLast()
-        : await FlutterIsolateInstance.create();
+    FlutterIsolateInstance isolateInstance = await _getInstance();
     Future<V> result = isolateInstance.compute(entryPoint, request);
     isolateInstances.add(isolateInstance);
+    _subject.add(true);
     return result;
+  }
+
+  Future<FlutterIsolateInstance> _getInstance() async {
+    while (_isolateCounter > maxInstances) {
+      await _subject.stream.first;
+    }
+    FlutterIsolateInstance? isolateInstance =
+        isolateInstances.isNotEmpty ? isolateInstances.removeLast() : null;
+    if (isolateInstance != null) return isolateInstance;
+    return _createInstance();
+  }
+
+  Future<FlutterIsolateInstance> _createInstance() async {
+    ++_isolateCounter;
+    FlutterIsolateInstance isolateInstance =
+        await FlutterIsolateInstance._create(createInstance, instanceParams);
+    return isolateInstance;
   }
 }
 
@@ -46,16 +88,18 @@ class FlutterIsolateInstance {
     _sendPort = null;
   }
 
-  static Future<FlutterIsolateInstance> create() async {
+  static Future<FlutterIsolateInstance> _create(
+      CreateInstanceFunction? createInstance, Object? instanceParams) async {
     FlutterIsolateInstance instance = FlutterIsolateInstance._();
-    await instance.start();
+    await instance.start(createInstance, instanceParams);
     return instance;
   }
 
   /// Performs a single computation in an isolate and disposes the isolate afterwards.
   static Future<V> isolateCompute<V, R>(
       EntryPoint<V, R> entryPoint, R request) async {
-    FlutterIsolateInstance instance = await FlutterIsolateInstance.create();
+    FlutterIsolateInstance instance =
+        await FlutterIsolateInstance._create(null, null);
     V result = await instance.compute(entryPoint, request);
     instance.dispose();
     return result;
@@ -68,6 +112,15 @@ class FlutterIsolateInstance {
     var receivePort = new ReceivePort();
     // Send message to other Isolate and inform it about this receiver
     isolateInitParams.sendPort.send(receivePort.sendPort);
+
+    if (isolateInitParams.createInstanceHandle != null) {
+      final createInstanceHandle =
+          CallbackHandle.fromRawHandle(isolateInitParams.createInstanceHandle!);
+      final createInstance =
+          PluginUtilities.getCallbackFromHandle(createInstanceHandle);
+      Object? instanceParams = isolateInitParams.object;
+      createInstance!(instanceParams);
+    }
 
     // Listen for messages
     await for (var data in receivePort) {
@@ -90,10 +143,17 @@ class FlutterIsolateInstance {
     return;
   }
 
-  Future<void> start() async {
+  /// Starts a new isolate. Do not call this directly. Use [isolateCompute] instead.
+  Future<void> start(
+      CreateInstanceFunction? createInstance, Object? instanceParams) async {
     ReceivePort receivePort = ReceivePort();
-    _IsolateInitInstanceParams initParams =
-        _IsolateInitInstanceParams(receivePort.sendPort);
+    int? createInstanceHandle;
+    if (createInstance != null)
+      createInstanceHandle =
+          PluginUtilities.getCallbackHandle(createInstance)!.toRawHandle();
+
+    _IsolateInitInstanceParams initParams = _IsolateInitInstanceParams(
+        receivePort.sendPort, createInstanceHandle, instanceParams);
     _isolate = await Isolate.spawn<_IsolateInitInstanceParams>(
         isolateEntryPoint, initParams);
     // let the listener run in background
@@ -127,6 +187,8 @@ class FlutterIsolateInstance {
     }
   }
 
+  /// Performs a single computation in an isolate. Do not call this method
+  /// directly. Use [isolateCompute] instead.
   Future<V> compute<V, R>(EntryPoint<V, R> entryPoint, R request) {
     assert(_sendPort != null, "wait until start() is done");
     final entryPointHandle =
@@ -157,7 +219,12 @@ class _FlutterProcess<V> {
 class _IsolateInitInstanceParams {
   final SendPort sendPort;
 
-  _IsolateInitInstanceParams(this.sendPort);
+  final Object? object;
+
+  final int? createInstanceHandle;
+
+  _IsolateInitInstanceParams(
+      this.sendPort, this.createInstanceHandle, this.object);
 }
 
 //////////////////////////////////////////////////////////////////////////////

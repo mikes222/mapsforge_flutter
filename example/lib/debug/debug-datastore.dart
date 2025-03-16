@@ -58,6 +58,12 @@ class DebugDatastore extends MarkerByItemDataStore {
     Marker circleMarker = CircleMarker(
         center: way.latLongs[0].first,
         displayModel: displayModel,
+        fillColor: 0x802be690, // greenish
+        radius: 10);
+    addMarker(circleMarker);
+    circleMarker = CircleMarker(
+        center: way.latLongs[0].last,
+        displayModel: displayModel,
         fillColor: 0x80e97656,
         radius: 5);
     addMarker(circleMarker);

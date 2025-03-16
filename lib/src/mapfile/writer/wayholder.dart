@@ -21,6 +21,21 @@ class Wayholder with TagholderMixin {
 
   Wayholder(this.way) {}
 
+  Wayholder cloneWith({Way? way, List<List<ILatLong>>? otherOuters}) {
+    Wayholder result = Wayholder(way ?? this.way);
+    result.otherOuters = otherOuters ?? this.otherOuters;
+    result.tileBitmask = this.tileBitmask;
+    result.tagholders = this.tagholders;
+    result.featureElevation = this.featureElevation;
+    result.featureHouseNumber = this.featureHouseNumber;
+    result.featureName = this.featureName;
+    result.featureRef = this.featureRef;
+    result.mergedWithOtherWay = this.mergedWithOtherWay;
+    result.languagesPreference = this.languagesPreference;
+    result.tagholders = this.tagholders;
+    return result;
+  }
+
   /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
   /// it is analyzed if the given way needs to be included. The result is represented as a 16 bit short value. Each bit
   /// represents one of the 16 sub tiles. A bit is set to 1 if the sub tile needs to include the way. Representation is

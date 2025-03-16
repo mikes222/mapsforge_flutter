@@ -120,73 +120,73 @@ abstract class Rule {
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
-    if (matchesForZoomlevelRange(pointOfInterest.tags)) {
-      bool supported = instructions.hasInstructionsNodes();
-      // this rule supports the argument. Return this subrule which is the
-      // widest subrule which supports the argument
-      if (supported) return zoomlevelRange;
-      ZoomlevelRange? result;
-      subRules.forEach((element) {
-        ZoomlevelRange? range = element.getZoomlevelRangeNode(pointOfInterest);
-        if (range != null) {
-          if (result == null) {
-            result = range;
-          } else {
-            result = result!.widenTo(range);
-          }
+    // tag not accepted by this rule.
+    if (!matchesForZoomlevelRange(pointOfInterest.tags)) return null;
+
+    bool supported = instructions.hasInstructionsNodes();
+    // this rule supports the argument. Returns this zoomlevel range which is
+    // the widest possible range.
+    if (supported) return zoomlevelRange;
+    ZoomlevelRange? result;
+    subRules.forEach((element) {
+      ZoomlevelRange? range = element.getZoomlevelRangeNode(pointOfInterest);
+      if (range != null) {
+        if (result == null) {
+          result = range;
+        } else {
+          result = result!.widenTo(range);
         }
-      });
-      return result;
-    }
-    return null;
+      }
+    });
+    return result;
   }
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeOpenWay(Way way) {
-    if (matchesForZoomlevelRange(way.tags)) {
-      bool supported = instructions.hasInstructionsOpenWays();
-      // this rule supports the argument. Return this subrule which is the
-      // widest subrule which supports the argument
-      if (supported) return zoomlevelRange;
-      ZoomlevelRange? result;
-      subRules.forEach((element) {
-        ZoomlevelRange? range = element.getZoomlevelRangeOpenWay(way);
-        if (range != null) {
-          if (result == null) {
-            result = range;
-          } else {
-            result = result!.widenTo(range);
-          }
+    if (!matchesForZoomlevelRange(way.tags)) return null;
+
+    bool supported = instructions.hasInstructionsOpenWays();
+    // this rule supports the argument. Return this subrule which is the
+    // widest subrule which supports the argument
+    if (supported) return zoomlevelRange;
+    ZoomlevelRange? result;
+    subRules.forEach((element) {
+      ZoomlevelRange? range = element.getZoomlevelRangeOpenWay(way);
+      if (range != null) {
+        if (result == null) {
+          result = range;
+        } else {
+          result = result!.widenTo(range);
         }
-      });
-      return result;
-    }
-    return null;
+      }
+    });
+    return result;
   }
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeClosedWay(Way way) {
-    if (matchesForZoomlevelRange(way.tags)) {
-      bool supported = instructions.hasInstructionsClosedWays();
-      // this rule supports the argument. Return this subrule which is the
-      // widest subrule which supports the argument
-      if (supported) return zoomlevelRange;
-      ZoomlevelRange? result;
-      subRules.forEach((element) {
-        ZoomlevelRange? range = element.getZoomlevelRangeClosedWay(way);
-        if (range != null) {
-          if (result == null) {
-            result = range;
-          } else {
-            result = result!.widenTo(range);
-          }
-        }
-      });
-      return result;
+    if (!matchesForZoomlevelRange(way.tags)) return null;
+
+    bool supported = instructions.hasInstructionsClosedWays();
+    // this rule supports the argument. Return this subrule which is the
+    // widest subrule which supports the argument
+    if (supported) {
+      return zoomlevelRange;
     }
-    return null;
+    ZoomlevelRange? result;
+    subRules.forEach((element) {
+      ZoomlevelRange? range = element.getZoomlevelRangeClosedWay(way);
+      if (range != null) {
+        if (result == null) {
+          result = range;
+        } else {
+          result = result!.widenTo(range);
+        }
+      }
+    });
+    return result;
   }
 
   void onComplete() {

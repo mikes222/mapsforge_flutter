@@ -2,6 +2,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/map_header_info.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_header_writer.dart';
@@ -11,6 +12,8 @@ import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 
 /// see https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md
 class MapfileWriter {
+  final _log = new Logger('MapfileWriter');
+
   final String filename;
 
   final List<Tagholder> poiTags = [];
@@ -42,7 +45,7 @@ class MapfileWriter {
     await raf.close();
   }
 
-  void write() {
+  Future<void> write() async {
     //createSubfiles();
 
     assert(subfileCreators.isNotEmpty);
@@ -61,9 +64,12 @@ class MapfileWriter {
     Writebuffer writebufferHeader = mapfileHeaderWriter
         .write(writebuffer.length + 1 + 19 * subfileCreators.length);
 
+    for (SubfileCreator subfileCreator in subfileCreators) {
+      await subfileCreator.prepareTiles(mapHeaderInfo.debugFile);
+    }
     // amount of zoom intervals
     writebuffer.appendInt1(subfileCreators.length);
-    _writeZoomIntervalConfiguration(
+    await _writeZoomIntervalConfiguration(
         writebuffer,
         writebufferHeader.length +
             writebuffer.length +
@@ -77,15 +83,15 @@ class MapfileWriter {
       Writebuffer writebuffer =
           subfileCreator.writeTileIndex(mapHeaderInfo.debugFile);
       writebuffer.writeToSink(_sink);
-      writebuffer = subfileCreator.writeTiles(mapHeaderInfo.debugFile);
-      writebuffer.writeToSink(_sink);
+      await subfileCreator.writeTiles(mapHeaderInfo.debugFile, _sink);
+      subfileCreator.dispose();
     }
   }
 
-  void _writeZoomIntervalConfiguration(
-      Writebuffer writebuffer, int headersize) {
+  Future<void> _writeZoomIntervalConfiguration(
+      Writebuffer writebuffer, int headersize) async {
     int startAddress = headersize;
-    subfileCreators.forEach((SubfileCreator subfileCreator) {
+    for (SubfileCreator subfileCreator in subfileCreators) {
       writebuffer.appendInt1(subfileCreator.baseZoomLevel);
       writebuffer.appendInt1(subfileCreator.zoomlevelRange.zoomlevelMin);
       writebuffer.appendInt1(subfileCreator.zoomlevelRange.zoomlevelMax);
@@ -93,12 +99,11 @@ class MapfileWriter {
       writebuffer.appendInt8(startAddress);
       Writebuffer writebufferIndex =
           subfileCreator.writeTileIndex(mapHeaderInfo.debugFile);
-      Writebuffer writebufferTiles =
-          subfileCreator.writeTiles(mapHeaderInfo.debugFile);
+      int length = await subfileCreator.getTilesLength(mapHeaderInfo.debugFile);
       // size of the sub-file as 8-byte LONG
-      writebuffer.appendInt8(writebufferIndex.length + writebufferTiles.length);
-      startAddress += writebufferIndex.length + writebufferTiles.length;
-    });
+      writebuffer.appendInt8(writebufferIndex.length + length);
+      startAddress += writebufferIndex.length + length;
+    }
   }
 
   void _writeTags(Writebuffer writebuffer, List<Tagholder> tagholders) {

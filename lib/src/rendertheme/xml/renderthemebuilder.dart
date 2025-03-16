@@ -47,6 +47,12 @@ class RenderThemeBuilder {
 
   RenderThemeBuilder();
 
+  static RenderTheme parse(DisplayModel displayModel, String content) {
+    RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
+    renderThemeBuilder.parseXml(displayModel, content);
+    return renderThemeBuilder.build();
+  }
+
   /// Builds and returns a rendertheme by loading a rendertheme-file. This
   /// is a convienience-function. If desired we can also implement some caching
   /// so that we do not need to parse the same file over and over again.

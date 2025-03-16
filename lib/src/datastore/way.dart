@@ -36,16 +36,14 @@ class Way {
       layer.hashCode ^
       tags.hashCode;
 
-  // BoundingBox getBoundary() {
-  //   MinMaxDouble minMaxMappoint = MinMaxDouble.empty();
-  //   latLongs.forEach((List<ILatLong> lls) {
-  //     minMaxMappoint.extendLatLong(lls);
-  //   });
-  //   return minMaxMappoint.getBoundary();
-  // }
-
   bool hasTag(String key) {
     return tags.firstWhereOrNull((test) => test.key == key) != null;
+  }
+
+  bool hasTagValue(String key, String value) {
+    return tags.firstWhereOrNull(
+            (test) => test.key == key && test.value == value) !=
+        null;
   }
 
   String? getTag(String key) {
@@ -58,10 +56,10 @@ class Way {
 
   @override
   String toString() {
-    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}}';
   }
 
   String toStringWithoutNames() {
-    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.where((test) => test.key?.startsWith("name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.where((test) => test.key?.startsWith("name:") == false && test.key?.startsWith("official_name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}}';
   }
 }

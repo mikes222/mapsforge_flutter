@@ -25,10 +25,10 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
                     stroke="#ffffff" stroke-width="2.0" />
             </rule>
         </rule>
-        <rule e="way" k="landuse" v="military">
+        <rule e="way" k="landuse" v="military" zoom-min="12">
             <area src="jar:patterns/dark_military.png" stroke="#e4e4e4" stroke-width="0.2" />
         </rule>
-        <rule e="way" k="landuse" v="residential" zoom-min="14">
+        <rule e="way" k="landuse" v="residential" zoom-min="12">
             <area fill="#DEDEDE" />
         </rule>
 
@@ -39,10 +39,10 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
             zoom-min="14">
             <area fill="#BBC9DDDD" stroke="#CCCCCC" stroke-width="0.2" />
         </rule>
-        <rule e="way" k="landuse" v="field|farm|farmland|orchard|vineyard" zoom-min="13">
+        <rule e="way" k="landuse" v="field|farm|farmland|orchard|vineyard" zoom-min="12">
             <area src="jar:patterns/dark_farmland.svg" symbol-height="70" symbol-width="70" />
         </rule>
-        <rule e="way" k="natural|landuse" v="forest|wood">
+        <rule e="way" k="natural|landuse" v="forest|wood" zoom-min="12">
             <area fill="#A5CBA5" />
             <rule e="any" k="*" v="*" zoom-min="13">
                 <rule e="any" k="wood" v="coniferous">
@@ -57,22 +57,22 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
                 </rule>
             </rule>
         </rule>
-        <rule e="way" k="landuse|natural" v="meadow|grassland" zoom-min="13">
+        <rule e="way" k="landuse|natural" v="meadow|grassland" zoom-min="12">
             <area fill="#BBE6FFDB" stroke="#C6E6B8" stroke-width="0.1" />
         </rule>
         <rule e="way" k="natural" v="*">
-            <rule e="way" k="natural" v="marsh|wetland|mud" zoom-min="13">
+            <rule e="way" k="natural" v="marsh|wetland|mud" zoom-min="12">
                 <area fill="#88D0D9BF" stroke="#D0D9BF" stroke-width="0.1" />
                 <area src="jar:patterns/swamp.svg" symbol-height="40" symbol-width="40" />
             </rule>
-            <rule e="way" k="natural" v="beach|sand" zoom-min="14">
+            <rule e="way" k="natural" v="beach|sand" zoom-min="12">
                 <area fill="#FAEBB9" />
             </rule>
-            <rule e="way" k="natural" v="rock|stone|bare_rock|bedrock" zoom-min="14">
+            <rule e="way" k="natural" v="rock|stone|bare_rock|bedrock" zoom-min="12">
                 <area fill="#BBF1F1F1" stroke="#F1F1F1" stroke-width="0.1" />
                 <area src="jar:patterns/hills.svg" symbol-height="40" symbol-width="40" />
             </rule>
-            <rule e="way" k="natural" v="heath" zoom-min="14">
+            <rule e="way" k="natural" v="heath" zoom-min="13">
                 <area fill="#BBEBF7E4" stroke="#EBF7E4" stroke-width="0.1" />
                 <area src="jar:patterns/grass.svg" symbol-percent="30" />
             </rule>
@@ -84,7 +84,7 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
                 <area fill="#BBE9FCE6" stroke="#E9FCE6" stroke-width="0.1" />
                 <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
             </rule>
-            <rule e="way" k="natural" v="scree" zoom-min="14">
+            <rule e="way" k="natural" v="scree" zoom-min="13">
                 <area fill="#BBF5F5F5" stroke="#F5F5F5" stroke-width="0.1" />
                 <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
             </rule>
@@ -92,7 +92,7 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
                 <area fill="#BBE0FFFF" stroke="#E0FFFF" stroke-width="0.8" />
             </rule>
         </rule>
-        <rule e="way" k="landuse" v="landfill|quarry" zoom-min="14">
+        <rule e="way" k="landuse" v="landfill|quarry" zoom-min="13">
             <area fill="#CCF2EFE4" stroke="#9EA199" stroke-width="0.2" />
             <area src="jar:patterns/quarry.svg" symbol-height="90" symbol-width="90" />
         </rule>
@@ -109,18 +109,6 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
         </rule>
     </rule>
 
-    <rule e="way" k="landuse|leisure" v="garden|village_green|common|grass" zoom-min="14">
-        <area fill="#BBC7F1A3" stroke="#6FC18E" stroke-width="0.2" />
-    </rule>
-    <rule e="way" k="landuse|leisure" v="allotments|greenfield|golf_course" zoom-min="15">
-        <area fill="#BBD3EBD9" stroke="#6FC13D" stroke-width="0.2" />
-    </rule>
-
-    <rule e="way" k="leisure|tourism|landuse"
-        v="park|zoo|picnic_site|camp_site|caravan_site|recreation_ground" zoom-min="14">
-        <area fill="#92bb70" stroke="#6FC18E" stroke-width="0.2" />
-    </rule>
-
     <!-- bridges -->
     <rule e="way" k="bridge" v="yes|true|viaduct|aqueduct|suspension|culvert|swing" zoom-min="8">
         <rule e="way" k="highway" v="construction">
@@ -128,18 +116,16 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
             <line stroke="#60EEEEEE" stroke-linecap="butt" stroke-width="2.2" />
             <line stroke="#60888888" stroke-linecap="butt" stroke-width="1.8" />
         </rule>
-        <rule e="way" k="highway" v="road|unclassified|residential|living_street">
+        <rule e="way" k="highway" v="road|unclassified|residential|living_street" zoom-min="12">
             <line stroke="#333333" stroke-linecap="butt" stroke-width="2.7" />
             <line stroke="#EEEEEE" stroke-linecap="butt" stroke-width="2.2" />
             <line stroke="#000000" stroke-linecap="butt" stroke-width="1.8" />
         </rule>
-        <rule e="way" k="highway"
-            v="tertiary|tertiary_link|secondary_link|secondary">
+        <rule e="way" k="highway" v="tertiary|tertiary_link|secondary_link|secondary" zoom-min="12">
             <line stroke="#333333" stroke-linecap="butt" stroke-width="3.0" />
             <line stroke="#EEEEEE" stroke-linecap="butt" stroke-width="2.4" />
         </rule>
-        <rule e="way" k="highway"
-            v="primary|primary_link|trunk_link|trunk">
+        <rule e="way" k="highway" v="primary|primary_link|trunk_link|trunk" zoom-min="12">
             <line stroke="#333333" stroke-linecap="butt" stroke-width="3.0" />
             <line stroke="#f15454" stroke-linecap="butt" stroke-width="2.4" />
         </rule>
@@ -151,7 +137,7 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
 
         <!-- railway bridges -->
         <rule e="way" k="railway"
-            v="tram|light_rail|narrow_gauge|preserved|funicular|miniature|monorail">
+            v="tram|light_rail|narrow_gauge|preserved|funicular|miniature|monorail" zoom-min="10">
             <line stroke="#60999999" stroke-width="0.25" />
         </rule>
         <rule e="way" k="railway" v="rail">
@@ -165,47 +151,45 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
         <!-- highway NO tunnel -->
         <rule e="way" k="highway" v="*">
             <!-- highway areas NO tunnel -->
-            <rule e="way" k="area" v="yes|true">
-                <rule e="way" k="highway" v="unclassified|residential|road|living_street">
+            <rule e="way" k="area" v="yes|true" zoom-min="9">
+                <rule e="way" k="highway" v="unclassified|residential|road|living_street"
+                    zoom-min="9">
                     <area fill="#FFFFFF" stroke="#707070" stroke-width="0.15" />
                 </rule>
             </rule>
             <!-- highway lines NO tunnel -->
             <rule e="way" k="area" v="~|no|false">
-                <rule e="way" k="highway" v="construction">
+                <rule e="way" k="highway" v="construction" zoom-min="12">
                     <line stroke="#CCFFFFFF" stroke-dasharray="15,2" stroke-linecap="butt"
                         stroke-width="1.3" />
                 </rule>
 
-                <rule e="way" k="highway"
-                    v="road|unclassified|residential|living_street|road">
-                    <line stroke="#626262" stroke-width="1.8" />
+                <rule e="way" k="highway" v="road|unclassified|residential|living_street|road"
+                    zoom-min="13">
+                    <line stroke="#3c3c3c" stroke-linecap="butt" stroke-width="1.8" />
+                    <line stroke="#ffffff" stroke-linecap="butt" stroke-width="1.4" />
                 </rule>
-                <rule e="way" k="highway" v="construction">
-                    <line stroke="#60626262" stroke-width="1.8" />
-                </rule>
-                <rule e="way" k="highway"
-                    v="tertiary|tertiary_link|secondary_link|secondary">
-                    <line stroke="#3c3c3c" stroke-width="2.5" />
-                    <line stroke="#a3a3a3" stroke-width="2.0" />
+                <rule e="way" k="highway" v="tertiary|tertiary_link|secondary_link|secondary"
+                    zoom-min="12">
+                    <line stroke="#3c3c3c" stroke-linecap="butt" stroke-width="2.5" />
+                    <line stroke="#FFD700" stroke-linecap="butt" stroke-width="2.0" />
                     <rule e="way" k="*" v="*" zoom-min="13">
                         <pathText fill="#606060" font-size="18" font-style="bold" k="ref"
                             priority="-5" stroke="#ffffffff" stroke-width="3.0" />
                     </rule>
                 </rule>
-                <rule e="way" k="highway"
-                    v="primary_link|trunk_link|primary|trunk">
-                    <line stroke="#3c3c3c" stroke-width="3.0" />
-                    <line stroke="#f15454" stroke-width="2.5" />
+                <rule e="way" k="highway" v="primary_link|trunk_link|primary|trunk" zoom-min="10">
+                    <line stroke="#3c3c3c" stroke-linecap="butt" stroke-width="3.0" />
+                    <line stroke="#f15454" stroke-linecap="butt" stroke-width="2.5" />
                     <rule e="way" k="*" v="*" zoom-min="13">
                         <pathText fill="#606060" font-size="18" font-style="bold" k="ref"
                             priority="-5" stroke="#ffffffff" stroke-width="3.0" />
                     </rule>
                 </rule>
                 <rule e="way" k="highway" v="motorway|motorway_link">
-                    <line stroke="#ffbcbc4e" stroke-width="3.5" />
-                    <line stroke="#ffffc100" stroke-width="2.8" />
-                    <rule e="any" k="*" v="*" zoom-min="8">
+                    <line stroke="#ffbcbc4e" stroke-linecap="butt" stroke-width="3.5" />
+                    <line stroke="#ffffc100" stroke-linecap="butt" stroke-width="2.8" />
+                    <rule e="any" k="*" v="*" zoom-min="12">
                         <pathText fill="#ffFF0000" font-size="18" font-style="bold" k="ref"
                             priority="-4" stroke="#ffffff00" stroke-width="3.0" />
                     </rule>
@@ -234,6 +218,21 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
                 </rule>
             </rule>
         </rule>
+
+
+
+        <rule e="way" k="landuse|leisure" v="garden|village_green|common|grass" zoom-min="14">
+            <area fill="#BBC7F1A3" stroke="#6FC18E" stroke-width="0.2" />
+        </rule>
+        <rule e="way" k="landuse|leisure" v="allotments|greenfield|golf_course" zoom-min="15">
+            <area fill="#BBD3EBD9" stroke="#6FC13D" stroke-width="0.2" />
+        </rule>
+
+        <rule e="way" k="leisure|tourism|landuse"
+            v="park|zoo|picnic_site|camp_site|caravan_site|recreation_ground" zoom-min="14">
+            <area fill="#92bb70" stroke="#6FC18E" stroke-width="0.2" />
+        </rule>
+
         <rule e="way" k="landuse|amenity" v="cemetery|grave_yard" zoom-min="14">
             <area src="jar:patterns/cemetery.png" />
         </rule>
@@ -246,26 +245,26 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
         </rule>
 
         <!-- WAY waterway NO tunnel -->
-        <rule e="way" k="waterway" v="*">
-            <rule e="way" k="waterway" v="ditch">
+        <rule e="way" k="waterway" v="*" zoom-min="6">
+            <rule e="way" k="waterway" v="ditch" zoom-min="11">
                 <line stroke="#B3DDFF" stroke-width="0.6" />
             </rule>
-            <rule e="way" k="waterway" v="drain">
+            <rule e="way" k="waterway" v="drain" zoom-min="11">
                 <line stroke="#B0B0B0" stroke-linecap="butt" stroke-width="0.7" />
                 <line stroke="#B3DDFF" stroke-linecap="butt" stroke-width="0.5" />
             </rule>
-            <rule e="way" k="waterway" v="canal">
+            <rule e="way" k="waterway" v="canal" zoom-min="11">
                 <line stroke="#B0B0B0" stroke-linecap="butt" stroke-width="1.1" />
                 <line stroke="#B3DDFF" stroke-linecap="butt" stroke-width="0.9" />
             </rule>
-            <rule e="way" k="waterway" v="stream">
+            <rule e="way" k="waterway" v="stream" zoom-min="11">
                 <line stroke="#B3DDFF" stroke-width="3" />
             </rule>
             <rule e="way" k="waterway" v="river">
                 <line stroke="#B3DDFF" stroke-width="4" />
                 <rule e="way" k="waterway" v="river" zoom-min="12">
-                    <pathText display="always" fill="#6C96E6" font-size="18" font-style="bold" k="name"
-                        priority="-100" stroke="#FFFFFF" stroke-width="2.0" />
+                    <pathText display="always" fill="#6C96E6" font-size="18" font-style="bold"
+                        k="name" priority="-100" stroke="#FFFFFF" stroke-width="2.0" />
                 </rule>
             </rule>
             <rule e="way" k="waterway" v="riverbank">
@@ -282,7 +281,8 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
             <!-- railway bridges -->
             <rule e="way" k="bridge" v="yes|true|viaduct|aqueduct|suspension|culvert|swing">
                 <rule e="way" k="railway"
-                    v="narrow_gauge|preserved|funicular|miniature|tram|light_rail|monorail">
+                    v="narrow_gauge|preserved|funicular|miniature|tram|light_rail|monorail"
+                    zoom-min="10">
                     <line stroke="#666666" stroke-linecap="butt" stroke-width="1.2" />
                     <line stroke="#EEEEEE" stroke-linecap="butt" stroke-width="0.8" />
                 </rule>
@@ -292,12 +292,13 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
                 </rule>
             </rule>
             <!-- railway casings and cores -->
-            <rule e="way" k="railway" v="tram|light_rail">
+            <rule e="way" k="railway" v="tram|light_rail" zoom-min="10">
                 <line stroke="#666666" stroke-linecap="butt" stroke-width="0.9" />
                 <line stroke="#333333" stroke-dasharray="12,12" stroke-linecap="butt"
                     stroke-width="0.8" />
             </rule>
-            <rule e="way" k="railway" v="narrow_gauge|preserved|funicular|miniature|monorail">
+            <rule e="way" k="railway" v="narrow_gauge|preserved|funicular|miniature|monorail"
+                zoom-min="10">
                 <line stroke="#333333" stroke-linecap="butt" stroke-width="1" />
                 <line stroke="#E6E6E6" stroke-linecap="butt" stroke-width="0.9" />
                 <line stroke="#333333" stroke-dasharray="12,12" stroke-linecap="butt"
@@ -306,8 +307,7 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
             <rule e="way" k="railway" v="rail">
                 <line stroke="#333333" stroke-width="1" />
                 <line stroke="#E6E6E6" stroke-width="0.9" />
-                <line stroke="#333333" stroke-dasharray="15,15"
-                    stroke-width="0.8" />
+                <line stroke="#333333" stroke-dasharray="15,15" stroke-width="0.8" />
                 <rule e="any" k="*" v="*" zoom-min="10">
                     <pathText display="always" fill="#333333" font-size="18" font-style="bold"
                         k="name" priority="-100" stroke="#FFFFFF" stroke-width="3.0" />
@@ -341,42 +341,42 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
 
 
     <!-- turning circle casing -->
-    <rule e="node" k="highway" v="turning_circle" zoom-min="8">
+    <rule e="node" k="highway" v="turning_circle" zoom-min="15">
         <circle fill="#000000" radius="1.45" scale-radius="true" />
     </rule>
 
     <!-- way admin_level -->
     <rule e="way" k="admin_level" v="*">
-        <rule e="way" k="admin_level" v="2">
-            <rule e="any" k="*" v="*" zoom-max="13">
-                <line stroke="#C0EDC2EC" stroke-linecap="butt" stroke-width="8" />
-                <line stroke="#C0ffff00" stroke-width="1" />
-                <line stroke="#693937" stroke-dasharray="15, 15" stroke-width="0.5" />
+        <rule e="way" k="admin_level" v="1|2">
+            <rule e="any" k="*" v="*" zoom-max="15">
+                <line stroke="#C0EDC2EC" stroke-linecap="butt" stroke-width="10" />
+                <line stroke="#C0ffff00" stroke-width="5" />
+                <line stroke="#693937" stroke-dasharray="15, 15" stroke-width="2" />
             </rule>
-            <rule e="any" k="*" v="*" zoom-min="14">
-                <line stroke="#80EDC2EC" stroke-linecap="butt" stroke-width="6" />
-                <line stroke="#80ffff00" stroke-width="0.75" />
-                <line stroke="#693937" stroke-dasharray="15, 15" stroke-width="0.25" />
+            <rule e="any" k="*" v="*" zoom-min="16">
+                <line stroke="#C0EDC2EC" stroke-linecap="butt" stroke-width="3" />
+                <line stroke="#C0ffff00" stroke-width="1.5" />
+                <line stroke="#693937" stroke-dasharray="15, 15" stroke-width="0.3" />
             </rule>
         </rule>
         <rule e="way" k="admin_level" v="3">
             <line stroke="#70EDC2EC" stroke-linecap="butt" stroke-width="4" />
             <line stroke="#693937" stroke-dasharray="15, 5, 5, 5" stroke-width="0.25" />
         </rule>
-        <rule e="way" k="admin_level" v="4">
+        <rule e="way" k="admin_level" v="4" zoom-min="10">
             <line stroke="#70EDC2EC" stroke-linecap="butt" stroke-width="4" />
             <line stroke="#693937" stroke-dasharray="15, 5, 5, 5" stroke-width="0.25" />
         </rule>
-        <rule e="way" k="admin_level" v="6">
+        <rule e="way" k="admin_level" v="6" zoom-min="12">
             <line stroke="#70EDC2EC" stroke-linecap="butt" stroke-width="4" />
             <line stroke="#693937" stroke-dasharray="5, 5" stroke-width="0.25" />
         </rule>
-        <rule e="way" k="admin_level" v="8">
+        <rule e="way" k="admin_level" v="8" zoom-min="12">
             <line stroke="#70EDC2EC" stroke-dasharray="15, 5, 5, 5" stroke-linecap="butt"
                 stroke-width="4" />
             <line stroke="#693937" stroke-dasharray="15, 5, 5, 5" stroke-width="0.25" />
         </rule>
-        <rule e="way" k="admin_level" v="9">
+        <rule e="way" k="admin_level" v="9" zoom-min="12">
             <line stroke="#70EDC2EC" stroke-dasharray="15, 15" stroke-linecap="butt"
                 stroke-width="4" />
             <line stroke="#693937" stroke-dasharray="15, 15" stroke-width="0.25" />
@@ -587,7 +587,7 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
         </rule>
 
         <rule e="way" k="building" v="*">
-            <area fill="#eadfd3" stroke="#6A5A8E" stroke-width="0.4" />
+            <area fill="#eadfd3" stroke="#b7adc3" stroke-width="0.2" />
             <rule e="any" k="building" v="train_station" zoom-min="13">
                 <rule e="any" k="*" v="*" zoom-min="15">
                     <caption fill="#0092DA" font-size="16" font-style="bold" k="name"
@@ -629,8 +629,8 @@ http://mapsforge.org/renderTheme http://mapsforge.org/renderTheme4">
             <line stroke="#D4DCBD" stroke-linecap="butt" stroke-width="1.8" />
         </rule>
         <rule closed="no" e="way" k="aeroway" v="runway">
-            <line stroke="#000000" stroke-linecap="butt" stroke-width="6" />
-            <line stroke="#c5c7f6" stroke-linecap="butt" stroke-width="5.5" />
+            <line stroke="#000000" stroke-linecap="butt" stroke-width="4" />
+            <line stroke="#c5c7f6" stroke-linecap="butt" stroke-width="2.5" />
         </rule>
         <rule closed="yes" e="way" k="aeroway" v="runway">
             <area fill="#D4DCBD" />
