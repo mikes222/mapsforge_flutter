@@ -2,7 +2,7 @@ import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/marker.dart';
 
-class DebugDatastore extends MarkerByItemDataStore {
+class DebugDatastore extends MarkerDataStore {
   final SymbolCache symbolCache;
 
   Tile? tile;
@@ -36,39 +36,41 @@ class DebugDatastore extends MarkerByItemDataStore {
     }
 
     for (Way way in readResult.ways) {
-      Marker marker = await _createWayMarker(way, false);
-      addMarker(marker);
+      int idx = 0;
+      for (List<ILatLong> latLongs in way.latLongs) {
+        await _createWayMarker(latLongs, idx, way, false);
+        ++idx;
+      }
     }
     setRepaint();
   }
 
   Future<void> createTileMarker(Tile tile) async {
     Marker marker = RectMarker(
-        minLatLon: LatLong(tile.getBoundingBox().minLatitude,
-            tile.getBoundingBox().minLongitude),
-        maxLatLon: LatLong(tile.getBoundingBox().maxLatitude,
-            tile.getBoundingBox().maxLongitude),
+        minLatLon: LatLong(tile.getBoundingBox().minLatitude, tile.getBoundingBox().minLongitude),
+        maxLatLon: LatLong(tile.getBoundingBox().maxLatitude, tile.getBoundingBox().maxLongitude),
         displayModel: displayModel);
     addMarker(marker);
   }
 
-  Future<void> createWayMarker(Way way) async {
+  Future<void> createWayMarker(Way way, List<ILatLong> latLongs, int idx) async {
     clearMarkers();
     if (tile != null) await createTileMarker(tile!);
     Marker circleMarker = CircleMarker(
-        center: way.latLongs[0].first,
+        center: latLongs.first,
         displayModel: displayModel,
         fillColor: 0x802be690, // greenish
         radius: 10);
     addMarker(circleMarker);
     circleMarker = CircleMarker(
-        center: way.latLongs[0].last,
+        center: latLongs.elementAt(1),
         displayModel: displayModel,
-        fillColor: 0x80e97656,
-        radius: 5);
+        fillColor: 0x802be690, // greenish
+        radius: 6);
     addMarker(circleMarker);
-    Marker marker = await _createWayMarker(way, true);
-    addMarker(marker);
+    await _createWayMarker(latLongs, idx, way, true);
+    circleMarker = CircleMarker(center: latLongs.last, displayModel: displayModel, fillColor: 0x80e97656, radius: 4);
+    addMarker(circleMarker);
     setRepaint();
   }
 
@@ -88,33 +90,45 @@ class DebugDatastore extends MarkerByItemDataStore {
     return marker;
   }
 
-  Future<Marker> _createWayMarker(Way way, bool intense) async {
-    if (LatLongUtils.isClosedWay(way.latLongs.first)) {
+  Future<void> _createWayMarker(List<ILatLong> latLongs, int idx, Way way, bool intense) async {
+    if (LatLongUtils.isClosedWay(latLongs)) {
       PolygonMarker marker = PolygonMarker(
-        item: way,
+        item: WayInfo(way, latLongs, idx),
         strokeWidth: intense ? 10 : 2,
         fillColor: 0x10c8c623,
         strokeColor: 0x80c8c623, // yellowish
         displayModel: displayModel,
       );
-      way.latLongs.first.forEach((element) {
+      latLongs.forEach((element) {
         marker.addLatLong(element);
       });
       await marker.initResources(symbolCache);
-      return marker;
+      addMarker(marker);
     } else {
       PathMarker marker = PathMarker(
-        item: way,
+        item: WayInfo(way, latLongs, idx),
         strokeWidth: intense ? 10 : 2,
         //fillColor: 0x0088e283,
         strokeColor: 0x80e97656, // redish
         displayModel: displayModel,
       );
-      way.latLongs.first.forEach((element) {
+      latLongs.forEach((element) {
         marker.addLatLong(element);
       });
       //await marker.initResources(symbolCache);
-      return marker;
+      addMarker(marker);
     }
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class WayInfo {
+  final Way way;
+
+  final List<ILatLong> latLongs;
+
+  final int idx;
+
+  WayInfo(this.way, this.latLongs, this.idx);
 }

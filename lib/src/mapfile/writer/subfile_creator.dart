@@ -59,22 +59,15 @@ class SubfileCreator {
 
   late final TileBuffer tileBuffer;
 
-  SubfileCreator(
-      {required this.baseZoomLevel,
-      required this.zoomlevelRange,
-      required this.boundingBox,
-      required this.mapHeaderInfo}) {
-    MercatorProjection projection =
-        MercatorProjection.fromZoomlevel(baseZoomLevel);
+  SubfileCreator({required this.baseZoomLevel, required this.zoomlevelRange, required this.boundingBox, required this.mapHeaderInfo}) {
+    MercatorProjection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
     _minX = projection.longitudeToTileX(boundingBox.minLongitude);
     _maxX = projection.longitudeToTileX(boundingBox.maxLongitude);
     _minY = projection.latitudeToTileY(boundingBox.maxLatitude);
     _maxY = projection.latitudeToTileY(boundingBox.minLatitude);
     tileBuffer = TileBuffer(baseZoomLevel);
 
-    for (int zoomlevel = zoomlevelRange.zoomlevelMin;
-        zoomlevel <= zoomlevelRange.zoomlevelMax;
-        ++zoomlevel) {
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
       _poiinfos[zoomlevel] = Poiinfo();
       _wayinfos[zoomlevel] = Wayinfo();
     }
@@ -87,8 +80,7 @@ class SubfileCreator {
   void addPoidata(ZoomlevelRange zoomlevelRange, List<PointOfInterest> pois) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    Poiinfo poiinfo = _poiinfos[Math.max(
-        this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    Poiinfo poiinfo = _poiinfos[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
     for (PointOfInterest pointOfInterest in pois) {
       poiinfo.setPoidata(pointOfInterest);
     }
@@ -97,15 +89,13 @@ class SubfileCreator {
   void addWaydata(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    Wayinfo wayinfo = _wayinfos[Math.max(
-        this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    Wayinfo wayinfo = _wayinfos[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
     for (Wayholder wayholder in wayholders) {
       wayinfo.setWaydata(wayholder.way);
     }
   }
 
-  void analyze(List<Tagholder> poiTagholders, List<Tagholder> wayTagholders,
-      String? languagesPreference) {
+  void analyze(List<Tagholder> poiTagholders, List<Tagholder> wayTagholders, String? languagesPreference) {
     _poiinfos.forEach((zoomlevel, poiinfo) {
       poiinfo.analyze(poiTagholders, languagesPreference);
     });
@@ -114,8 +104,7 @@ class SubfileCreator {
     });
   }
 
-  Future<void> _process(ProcessFunc process,
-      [Function(int processedTiles, int sumTiles)? lineProcess = null]) async {
+  Future<void> _process(ProcessFunc process, [Function(int processedTiles, int sumTiles)? lineProcess = null]) async {
     int started = DateTime.now().millisecondsSinceEpoch;
     int sumTiles = (_maxY - _minY + 1) * (_maxX - _minX + 1);
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
@@ -128,17 +117,15 @@ class SubfileCreator {
         lineProcess(processedTiles, sumTiles);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
-      if (diff > 1000 * 60) {
+      if (diff > 1000 * 120) {
         // more than one minute
-        _log.info(
-            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for baseZoomLevel $baseZoomLevel");
+        _log.info("Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for baseZoomLevel $baseZoomLevel");
         started = DateTime.now().millisecondsSinceEpoch;
       }
     }
   }
 
-  void _processSync(Function(Tile tile) process,
-      [Function(int processedTiles, int sumTiles)? lineProcess = null]) {
+  void _processSync(Function(Tile tile) process, [Function(int processedTiles, int sumTiles)? lineProcess = null]) {
     int started = DateTime.now().millisecondsSinceEpoch;
     int sumTiles = (_maxY - _minY + 1) * (_maxX - _minX + 1);
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
@@ -151,10 +138,9 @@ class SubfileCreator {
         lineProcess(processedTiles, sumTiles);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
-      if (diff > 1000 * 60) {
+      if (diff > 1000 * 120) {
         // more than one minute
-        _log.info(
-            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for baseZoomLevel $baseZoomLevel.");
+        _log.info("Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for baseZoomLevel $baseZoomLevel.");
         started = DateTime.now().millisecondsSinceEpoch;
       }
     }
@@ -168,11 +154,9 @@ class SubfileCreator {
 
   Future<void> prepareTiles(bool debugFile) async {
     Timing timing = Timing(log: _log);
-    IsolateTileConstructor tileConstructor =
-        IsolateTileConstructor(_poiinfos, _wayinfos, zoomlevelRange);
+    IsolateTileConstructor tileConstructor = IsolateTileConstructor(_poiinfos, _wayinfos, zoomlevelRange);
     await _process((tile) async {
-      Uint8List writebufferTile =
-          await tileConstructor.writeTile(debugFile, tile);
+      Uint8List writebufferTile = await tileConstructor.writeTile(debugFile, tile);
       tileBuffer.set(tile, writebufferTile);
       // print("h ${writebufferTile.length}");
     }, (int processedTiles, int sumTiles) {
@@ -182,8 +166,7 @@ class SubfileCreator {
     });
     await tileBuffer.writeComplete();
     tileConstructor.dispose();
-    timing.lap(
-        1000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
+    timing.lap(1000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
   }
 
   Writebuffer writeTileIndex(bool debugFile) {
@@ -192,8 +175,7 @@ class SubfileCreator {
     _writeIndexHeaderSignature(debugFile, _writebufferTileIndex!);
     // todo find out how to do this
     bool coveredByWater = false;
-    int offset = _writebufferTileIndex!.length +
-        5 * (_maxX - _minX + 1) * (_maxY - _minY + 1);
+    int offset = _writebufferTileIndex!.length + 5 * (_maxX - _minX + 1) * (_maxY - _minY + 1);
     int firstOffset = offset;
     _processSync((tile) {
       _writeTileIndexEntry(_writebufferTileIndex!, coveredByWater, offset);
@@ -208,8 +190,7 @@ class SubfileCreator {
   }
 
   /// Note: to calculate how many tile index entries there will be, use the formulae at [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames] to find out how many tiles will be covered by the bounding box at the base zoom level of the sub file
-  void _writeTileIndexEntry(
-      Writebuffer writebuffer, bool coveredByWater, int offset) {
+  void _writeTileIndexEntry(Writebuffer writebuffer, bool coveredByWater, int offset) {
     int indexEntry = 0;
     if (coveredByWater) indexEntry = indexEntry |= MapFile.BITMASK_INDEX_WATER;
 
@@ -236,12 +217,9 @@ class SubfileCreator {
 
   void statistics() {
     int tileCount = (_maxX - _minX + 1) * (_maxY - _minY + 1);
-    int poiCount = _poiinfos.values
-        .fold(0, (int combine, Poiinfo poiinfo) => combine + poiinfo.count);
-    int wayCount =
-        _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.count);
-    _log.info(
-        "$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount");
+    int poiCount = _poiinfos.values.fold(0, (int combine, Poiinfo poiinfo) => combine + poiinfo.count);
+    int wayCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.count);
+    _log.info("$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount");
   }
 }
 
@@ -282,13 +260,11 @@ class Poiinfo {
     }
   }
 
-  Uint8List writePoidata(
-      bool debugFile, double tileLatitude, double tileLongitude) {
+  Uint8List writePoidata(bool debugFile, double tileLatitude, double tileLongitude) {
     if (content != null) return content!;
     Writebuffer writebuffer = Writebuffer();
     for (Poiholder poiholder in poiholders) {
-      writebuffer.appendWritebuffer(
-          poiholder.writePoidata(debugFile, tileLatitude, tileLongitude));
+      writebuffer.appendWritebuffer(poiholder.writePoidata(debugFile, tileLatitude, tileLongitude));
     }
     poiholders.clear();
     content = writebuffer.getUint8List();
@@ -333,13 +309,11 @@ class Wayinfo {
     }
   }
 
-  Uint8List writeWaydata(
-      bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
+  Uint8List writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
     if (content != null) return content!;
     Writebuffer writebuffer = Writebuffer();
     for (Wayholder wayholder in wayholders) {
-      writebuffer.appendWritebuffer(
-          wayholder.writeWaydata(debugFile, tile, tileLatitude, tileLongitude));
+      writebuffer.appendWritebuffer(wayholder.writeWaydata(debugFile, tile, tileLatitude, tileLongitude));
     }
     wayholders.clear();
     content = writebuffer.getUint8List();
@@ -363,8 +337,7 @@ class TileBuffer {
   late final String _filename;
 
   TileBuffer(int baseZoomlevel) {
-    _filename =
-        "temp_${DateTime.now().millisecondsSinceEpoch}_${baseZoomlevel}.tmp";
+    _filename = "temp_${DateTime.now().millisecondsSinceEpoch}_${baseZoomlevel}.tmp";
   }
 
   void dispose() {
@@ -388,14 +361,12 @@ class TileBuffer {
   /// Returns the content of the tile. Assumes that the order of retrieval is exactly
   /// the same as the order of storage.
   Future<Uint8List> get(Tile tile) async {
-    if (_writebufferForTiles.containsKey(tile))
-      return _writebufferForTiles[tile]!;
+    if (_writebufferForTiles.containsKey(tile)) return _writebufferForTiles[tile]!;
 
     await writeComplete();
     if (_readbufferFile != null) {
       _TempfileIndex tempfileIndex = _indexes[tile]!;
-      Readbuffer readbuffer = await _readbufferFile!
-          .readFromFileAt(tempfileIndex.position, tempfileIndex.length);
+      Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex.position, tempfileIndex.length);
       return readbuffer.getBuffer(0, tempfileIndex.length);
     }
     return _writebufferForTiles[tile]!;
@@ -425,8 +396,7 @@ class TileBuffer {
     if (_writebufferForTiles.isEmpty) return;
     _ioSink ??= MapfileSink(File(_filename).openWrite());
     _writebufferForTiles.forEach((tile, content) {
-      _TempfileIndex tempfileIndex =
-          _TempfileIndex(_ioSink!.written, content.length);
+      _TempfileIndex tempfileIndex = _TempfileIndex(_ioSink!.written, content.length);
       _indexes[tile] = tempfileIndex;
       _ioSink!.add(content);
     });

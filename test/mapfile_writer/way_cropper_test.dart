@@ -15,8 +15,7 @@ import '../testhelper.dart';
 main() async {
   final _log = new Logger('CopyPbfToMapfileTest');
 
-  testWidgets("Test monaco casino south part cropping for a tile",
-      (WidgetTester tester) async {
+  testWidgets("Test monaco casino south part cropping for a tile", (WidgetTester tester) async {
     _initLogging();
 
     MemoryDatastore datastore = MemoryDatastore();
@@ -105,7 +104,7 @@ main() async {
     Tile tile = Tile(68235, 47798, 17, 0);
 
     WayCropper wayCropper = WayCropper();
-    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox()).way;
+    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox(), 19).way;
 
     // wayCropper.steps.forEach((step) {
     //   print(step);
@@ -116,27 +115,22 @@ main() async {
     var img = await (tester.runAsync(() async {
       final DisplayModel displayModel = DisplayModel();
 
-      SymbolCache symbolCache = FileSymbolCache(
-          imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+      SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       RenderTheme renderTheme = RenderThemeBuilder.parse(displayModel, content);
 
-      MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
       Job mapGeneratorJob0 = Job(tile, false);
-      JobResult jobResult1 =
-          (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertToImage();
       return img1;
     }));
 
-    await TestHelper.pumpWidget(
-        tester: tester, child: RawImage(image: img), goldenfile: 'casino.png');
+    await TestHelper.pumpWidget(tester: tester, child: RawImage(image: img), goldenfile: 'casino.png');
   });
 
-  testWidgets("Test monaco casino east part cropping for a tile",
-      (WidgetTester tester) async {
+  testWidgets("Test monaco casino east part cropping for a tile", (WidgetTester tester) async {
     _initLogging();
 
     MemoryDatastore datastore = MemoryDatastore();
@@ -225,7 +219,7 @@ main() async {
     Tile tile = Tile(68236, 47798, 17, 0);
 
     WayCropper wayCropper = WayCropper();
-    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox()).way;
+    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox(), 19).way;
 
     // wayCropper.steps.forEach((step) {
     //   print(step);
@@ -236,28 +230,23 @@ main() async {
     var img = await (tester.runAsync(() async {
       final DisplayModel displayModel = DisplayModel();
 
-      SymbolCache symbolCache = FileSymbolCache(
-          imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+      SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       RenderTheme renderTheme = RenderThemeBuilder.parse(displayModel, content);
 
-      MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
       Job mapGeneratorJob0 = Job(tile, false);
-      JobResult jobResult1 =
-          (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertToImage();
       return img1;
     }));
 
-    await TestHelper.pumpWidget(
-        tester: tester, child: RawImage(image: img), goldenfile: 'casino2.png');
+    await TestHelper.pumpWidget(tester: tester, child: RawImage(image: img), goldenfile: 'casino2.png');
   });
 
   /// Coordinates taken from subfile_filler_test
-  testWidgets("Test admin_level2 cropping for a tile",
-      (WidgetTester tester) async {
+  testWidgets("Test admin_level2 cropping for a tile", (WidgetTester tester) async {
     _initLogging();
 
     MemoryDatastore datastore = MemoryDatastore();
@@ -303,7 +292,7 @@ main() async {
     Tile tile = Tile(4265, 2989, 13, 0);
 
     WayCropper wayCropper = WayCropper();
-    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox()).way;
+    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox(), 19).way;
 
     // wayCropper.steps.forEach((step) {
     //   print(step);
@@ -312,8 +301,7 @@ main() async {
       List<String> results = [];
       String result = "";
       latlongs.forEach((latlong) {
-        result +=
-            "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
+        result += "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
         if (result.length > 250) {
           results.add(result);
           result = "";
@@ -330,31 +318,24 @@ main() async {
     var img = await (tester.runAsync(() async {
       final DisplayModel displayModel = DisplayModel();
 
-      SymbolCache symbolCache = FileSymbolCache(
-          imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+      SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       RenderTheme renderTheme = RenderThemeBuilder.parse(displayModel, content);
 
-      MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
       //tile = Tile(533, 373, 10, 0);
       Job mapGeneratorJob0 = Job(tile, false);
-      JobResult jobResult1 =
-          (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertToImage();
       return img1;
     }));
 
-    await TestHelper.pumpWidget(
-        tester: tester,
-        child: RawImage(image: img),
-        goldenfile: 'adminlevel.png');
+    await TestHelper.pumpWidget(tester: tester, child: RawImage(image: img), goldenfile: 'adminlevel.png');
   });
 
   /// Coordinates taken from subfile_filler_test
-  testWidgets("Test admin_level2 cropping for a tile one tile above",
-      (WidgetTester tester) async {
+  testWidgets("Test admin_level2 cropping for a tile one tile above", (WidgetTester tester) async {
     _initLogging();
 
     MemoryDatastore datastore = MemoryDatastore();
@@ -400,33 +381,27 @@ main() async {
     Tile tile = Tile(4265, 2988, 13, 0);
 
     WayCropper wayCropper = WayCropper();
-    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox()).way;
+    way = wayCropper.cropWay(Wayholder(way), tile.getBoundingBox(), 19).way;
 
     datastore.addWay(way);
 
     var img = await (tester.runAsync(() async {
       final DisplayModel displayModel = DisplayModel();
 
-      SymbolCache symbolCache = FileSymbolCache(
-          imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+      SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
       String content = await TestAssetBundle().loadString("rendertheme.xml");
       RenderTheme renderTheme = RenderThemeBuilder.parse(displayModel, content);
 
-      MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
       //tile = Tile(533, 373, 10, 0);
       Job mapGeneratorJob0 = Job(tile, false);
-      JobResult jobResult1 =
-          (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertToImage();
       return img1;
     }));
 
-    await TestHelper.pumpWidget(
-        tester: tester,
-        child: RawImage(image: img),
-        goldenfile: 'adminlevel2.png');
+    await TestHelper.pumpWidget(tester: tester, child: RawImage(image: img), goldenfile: 'adminlevel2.png');
   });
 }
 

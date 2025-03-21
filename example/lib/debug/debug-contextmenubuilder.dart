@@ -12,13 +12,7 @@ class DebugContextMenuBuilder extends ContextMenuBuilder {
   DebugContextMenuBuilder({required this.datastore});
 
   @override
-  Widget buildContextMenu(
-      BuildContext context,
-      MapModel mapModel,
-      ViewModel viewModel,
-      MapViewPosition mapViewPosition,
-      Dimension screen,
-      TapEvent event) {
+  Widget buildContextMenu(BuildContext context, MapModel mapModel, ViewModel viewModel, MapViewPosition mapViewPosition, Dimension screen, TapEvent event) {
     return DebugContextMenu(
       screen: screen,
       event: event,
@@ -44,11 +38,7 @@ class DebugContextMenu extends DefaultContextMenu {
       required ViewModel viewModel,
       required MapViewPosition mapViewPosition,
       required this.datastore})
-      : super(
-            screen: screen,
-            event: event,
-            viewModel: viewModel,
-            mapViewPosition: mapViewPosition);
+      : super(screen: screen, event: event, viewModel: viewModel, mapViewPosition: mapViewPosition);
 
   @override
   State<StatefulWidget> createState() {
@@ -69,20 +59,15 @@ class _DebugContextMenuState extends DefaultContextMenuState {
   @override
   void initState() {
     super.initState();
-    debugDatastore = widget.mapModel.markerDataStores
-        .firstWhere((element) => element is DebugDatastore) as DebugDatastore;
-    renderTheme =
-        (widget.mapModel.renderer as MapDataStoreRenderer).renderTheme;
+    debugDatastore = widget.mapModel.markerDataStores.firstWhere((element) => element is DebugDatastore) as DebugDatastore;
+    renderTheme = (widget.mapModel.renderer as MapDataStoreRenderer).renderTheme;
   }
 
   @override
   List<Widget> buildColumns(BuildContext context) {
-    int tileY = widget.viewModel.mapViewPosition!.projection
-        .latitudeToTileY(widget.event.latitude);
-    int tileX = widget.viewModel.mapViewPosition!.projection
-        .longitudeToTileX(widget.event.longitude);
-    Tile tile = Tile(tileX, tileY, widget.viewModel.mapViewPosition!.zoomLevel,
-        widget.viewModel.mapViewPosition!.indoorLevel);
+    int tileY = widget.viewModel.mapViewPosition!.projection.latitudeToTileY(widget.event.latitude);
+    int tileX = widget.viewModel.mapViewPosition!.projection.longitudeToTileX(widget.event.longitude);
+    Tile tile = Tile(tileX, tileY, widget.viewModel.mapViewPosition!.zoomLevel, widget.viewModel.mapViewPosition!.indoorLevel);
 
     List<Widget> result = super.buildColumns(context);
     result.add(TextButton(
@@ -122,8 +107,8 @@ class _DebugContextMenuState extends DefaultContextMenuState {
         } else if (marker.item == null) {
           // tile
         } else {
-          Way way = marker.item;
-          result.add(_buildWayInfo(way, tile));
+          WayInfo wayinfo = marker.item;
+          result.add(_buildWayInfo(wayinfo, tile));
         }
       }
     }
@@ -141,67 +126,48 @@ class _DebugContextMenuState extends DefaultContextMenuState {
               const SizedBox(width: 4),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: poi.tags
-                    .map((e) => Text("${e.key} = ${e.value}",
-                        style: const TextStyle(fontSize: 10)))
-                    .toList(),
+                children: poi.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
               ),
             ],
           ),
         ),
       ),
       onTap: () {
-        RenderthemeLevel renderthemeLevel =
-            renderTheme.prepareZoomlevel(tile.zoomLevel);
-        List<Shape> shapes =
-            renderthemeLevel.matchNode(tile, NodeProperties(poi));
+        RenderthemeLevel renderthemeLevel = renderTheme.prepareZoomlevel(tile.zoomLevel);
+        List<Shape> shapes = renderthemeLevel.matchNode(tile, NodeProperties(poi));
         shapes.forEach((shape) => print(shape.toString()));
       },
     );
   }
 
-  Widget _buildWayInfo(Way way, Tile tile) {
+  Widget _buildWayInfo(WayInfo wayinfo, Tile tile) {
     return InkWell(
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8.0),
         child: Container(
-          decoration: BoxDecoration(
-              border: Border.all(
-                  color: LatLongUtils.isClosedWay(way.latLongs[0])
-                      ? Colors.yellow
-                      : Colors.red)),
+          decoration: BoxDecoration(border: Border.all(color: LatLongUtils.isClosedWay(wayinfo.latLongs) ? Colors.yellow : Colors.red)),
           child: Row(
             children: [
-              if (LatLongUtils.isClosedWay(way.latLongs[0]) &&
-                  way.latLongs.length > 1)
-                const Icon(Icons.rectangle),
-              if (LatLongUtils.isClosedWay(way.latLongs[0]) &&
-                  way.latLongs.length <= 1)
-                const Icon(Icons.rectangle_outlined),
-              if (!LatLongUtils.isClosedWay(way.latLongs[0]) &&
-                  way.latLongs.length > 1)
-                const Icon(Icons.polymer),
-              if (!LatLongUtils.isClosedWay(way.latLongs[0]) &&
-                  way.latLongs.length <= 1)
-                const Icon(Icons.polyline_rounded),
+              if (LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length > 1) const Icon(Icons.rectangle),
+              if (LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length <= 1) const Icon(Icons.rectangle_outlined),
+              if (!LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length > 1) const Icon(Icons.polymer),
+              if (!LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length <= 1) const Icon(Icons.polyline_rounded),
               const SizedBox(width: 4),
-              Text("Layer ${way.layer}"),
+              Text("Layer ${wayinfo.way.layer}"),
+              const SizedBox(width: 4),
+              Text("Idx ${wayinfo.idx}"),
               const SizedBox(width: 4),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: way.tags
-                    .map((e) => Text("${e.key} = ${e.value}",
-                        style: const TextStyle(fontSize: 10)))
-                    .toList(),
+                children: wayinfo.way.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
               ),
             ],
           ),
         ),
       ),
       onTap: () {
-        debugDatastore.createWayMarker(way);
-        print(
-            "Way: $way ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}");
+        debugDatastore.createWayMarker(wayinfo.way, wayinfo.latLongs, wayinfo.idx);
+        print("Way: ${wayinfo.way} (idx: ${wayinfo.idx}), ${LatLongUtils.isClosedWay(wayinfo.latLongs) ? "Closed" : "Open"}");
         // way.latLongs.forEach((latlongs) {
         //   List<String> results = [];
         //   String result = "";
@@ -219,13 +185,12 @@ class _DebugContextMenuState extends DefaultContextMenuState {
         //   });
         // });
 
-        RenderthemeLevel renderthemeLevel =
-            renderTheme.prepareZoomlevel(tile.zoomLevel);
-        if (LatLongUtils.isClosedWay(way.latLongs[0])) {
-          List<Shape> shapes = renderthemeLevel.matchClosedWay(tile, way);
+        RenderthemeLevel renderthemeLevel = renderTheme.prepareZoomlevel(tile.zoomLevel);
+        if (LatLongUtils.isClosedWay(wayinfo.latLongs)) {
+          List<Shape> shapes = renderthemeLevel.matchClosedWay(tile, wayinfo.way);
           shapes.forEach((shape) => print(shape.toString()));
         } else {
-          List<Shape> shapes = renderthemeLevel.matchLinearWay(tile, way);
+          List<Shape> shapes = renderthemeLevel.matchLinearWay(tile, wayinfo.way);
           shapes.forEach((shape) => print(shape.toString()));
         }
       },
@@ -233,8 +198,7 @@ class _DebugContextMenuState extends DefaultContextMenuState {
   }
 
   Future<DatastoreReadResult?> _buildTile(Tile tile) async {
-    DatastoreReadResult? datastoreReadResult =
-        await widget.datastore.readMapDataSingle(tile);
+    DatastoreReadResult? datastoreReadResult = await widget.datastore.readMapDataSingle(tile);
     // will throw an execption if the datastore is not available. This is ok since it is only for debug purposes
     await debugDatastore.setInfos(tile, datastoreReadResult);
     return datastoreReadResult;

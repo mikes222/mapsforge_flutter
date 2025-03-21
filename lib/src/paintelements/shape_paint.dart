@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:mapsforge_flutter/src/graphics/fillrule.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontfamily.dart';
 import 'package:mapsforge_flutter/src/graphics/mapfontstyle.dart';
 
@@ -10,7 +11,6 @@ import '../graphics/join.dart';
 import '../graphics/maptextpaint.dart';
 import '../graphics/resourcebitmap.dart';
 import '../model/maprectangle.dart';
-import '../rendertheme/shape/shape.dart';
 import '../rendertheme/wayproperties.dart';
 
 /// A container which holds a shape and is able to draw the shape to the canvas (=Tile)
@@ -26,13 +26,9 @@ abstract class ShapePaint<T extends Shape> {
     return shape.calculateBoundary();
   }
 
-  void renderNode(
-      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
-      [double rotationRadian = 0]);
+  void renderNode(MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference, [double rotationRadian = 0]);
 
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint reference,
-      [double rotationRadian = 0]);
+  void renderWay(MapCanvas canvas, WayProperties wayProperties, PixelProjection projection, Mappoint reference, [double rotationRadian = 0]);
 
   Future<void> init(SymbolCache symbolCache);
 
@@ -59,19 +55,12 @@ abstract class ShapePaint<T extends Shape> {
   }
 
   Future<ResourceBitmap?> createBitmap(
-      {required SymbolCache symbolCache,
-      required String bitmapSrc,
-      required int bitmapWidth,
-      required int bitmapHeight}) async {
-    ResourceBitmap? resourceBitmap = await symbolCache.getOrCreateSymbol(
-        bitmapSrc, bitmapWidth, bitmapHeight);
+      {required SymbolCache symbolCache, required String bitmapSrc, required int bitmapWidth, required int bitmapHeight}) async {
+    ResourceBitmap? resourceBitmap = await symbolCache.getOrCreateSymbol(bitmapSrc, bitmapWidth, bitmapHeight);
     return resourceBitmap;
   }
 
-  MapTextPaint createTextPaint(
-      {MapFontFamily fontFamily = MapFontFamily.DEFAULT,
-      MapFontStyle fontStyle = MapFontStyle.NORMAL,
-      double fontSize = 10}) {
+  MapTextPaint createTextPaint({MapFontFamily fontFamily = MapFontFamily.DEFAULT, MapFontStyle fontStyle = MapFontStyle.NORMAL, double fontSize = 10}) {
     MapTextPaint result = GraphicFactory().createTextPaint();
     result.setFontFamily(fontFamily);
     result.setFontStyle(fontStyle);
@@ -79,9 +68,10 @@ abstract class ShapePaint<T extends Shape> {
     return result;
   }
 
-  MapPath calculatePath(
-      List<List<Mappoint>> coordinatesAbsolute, Mappoint reference, double dy) {
+  MapPath calculatePath(List<List<Mappoint>> coordinatesAbsolute, Mappoint reference, double dy) {
     MapPath _path = GraphicFactory().createPath();
+    // omit holes in the area. Without this the hole is also drawn.
+    _path.setFillRule(FillRule.EVEN_ODD);
     coordinatesAbsolute.forEach((List<Mappoint> outerList) {
       outerList.forEachIndexed((int idx, Mappoint point) {
         if (idx == 0)

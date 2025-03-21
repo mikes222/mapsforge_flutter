@@ -88,22 +88,15 @@ class RuleAnalyzer extends RuleVisitor {
       print("${' ' * level * 2}Unknown rule ${rule.runtimeType}");
     }
     if (rule.instructions is InstructionInstructions) {
-      for (RenderInstructionNode renderInstruction
-          in (rule.instructions as InstructionInstructions)
-              .renderInstructionNodes) {
-        if (debug)
-          print("${' ' * level * 2}--> Node ${renderInstruction.runtimeType}");
+      for (RenderInstructionNode renderInstruction in (rule.instructions as InstructionInstructions).renderInstructionNodes) {
+        if (debug) print("${' ' * level * 2}--> Node ${renderInstruction.runtimeType}");
         if (renderInstruction is RenderinstructionCaption) {
           String? textKey = renderInstruction.base.textKey?.key;
           if (textKey != null) keys.add(textKey);
         }
       }
-      for (RenderInstructionWay renderInstruction
-          in (rule.instructions as InstructionInstructions)
-              .renderInstructionOpenWays) {
-        if (debug)
-          print(
-              "${' ' * level * 2}--> Open Way ${renderInstruction.runtimeType}");
+      for (RenderInstructionWay renderInstruction in (rule.instructions as InstructionInstructions).renderInstructionOpenWays) {
+        if (debug) print("${' ' * level * 2}--> Open Way ${renderInstruction.runtimeType}");
         if (renderInstruction is RenderinstructionCaption) {
           String? textKey = renderInstruction.base.textKey?.key;
           if (textKey != null) keys.add(textKey);
@@ -112,12 +105,8 @@ class RuleAnalyzer extends RuleVisitor {
           if (textKey != null) keys.add(textKey);
         }
       }
-      for (RenderInstructionWay renderInstruction
-          in (rule.instructions as InstructionInstructions)
-              .renderInstructionClosedWays) {
-        if (debug)
-          print(
-              "${' ' * level * 2}--> Closed Way ${renderInstruction.runtimeType}");
+      for (RenderInstructionWay renderInstruction in (rule.instructions as InstructionInstructions).renderInstructionClosedWays) {
+        if (debug) print("${' ' * level * 2}--> Closed Way ${renderInstruction.runtimeType}");
         if (renderInstruction is RenderinstructionCaption) {
           String? textKey = renderInstruction.base.textKey?.key;
           if (textKey != null) keys.add(textKey);
@@ -128,19 +117,14 @@ class RuleAnalyzer extends RuleVisitor {
       }
     } else {
       for (Shape shape in (rule.instructions as ShapeInstructions).shapeNodes) {
-        if (debug)
-          print(
-              "${' ' * level * 2}--> Node ${shape.runtimeType}, level ${shape.level}");
+        if (debug) print("${' ' * level * 2}--> Node ${shape.runtimeType}, level ${shape.level}");
         if (shape is ShapeCaption) {
           String? textKey = shape.textKey?.key;
           if (textKey != null) keys.add(textKey);
         }
       }
-      for (Shape shape
-          in (rule.instructions as ShapeInstructions).shapeOpenWays) {
-        if (debug)
-          print(
-              "${' ' * level * 2}--> Open Way ${shape.runtimeType}, level ${shape.level}");
+      for (Shape shape in (rule.instructions as ShapeInstructions).shapeOpenWays) {
+        if (debug) print("${' ' * level * 2}--> Open Way ${shape.runtimeType}, level ${shape.level}");
         if (shape is ShapeCaption) {
           String? textKey = shape.textKey?.key;
           if (textKey != null) keys.add(textKey);
@@ -149,11 +133,8 @@ class RuleAnalyzer extends RuleVisitor {
           if (textKey != null) keys.add(textKey);
         }
       }
-      for (Shape shape
-          in (rule.instructions as ShapeInstructions).shapeClosedWays) {
-        if (debug)
-          print(
-              "${' ' * level * 2}--> Closed Way ${shape.runtimeType}, level ${shape.level}");
+      for (Shape shape in (rule.instructions as ShapeInstructions).shapeClosedWays) {
+        if (debug) print("${' ' * level * 2}--> Closed Way ${shape.runtimeType}, level ${shape.level}");
         if (shape is ShapeCaption) {
           String? textKey = shape.textKey?.key;
           if (textKey != null) keys.add(textKey);
@@ -227,8 +208,7 @@ class RuleAnalyzer extends RuleVisitor {
 
   Map<String, ValueInfo> openWayNegativeValueinfos() {
     Map<String, ValueInfo> values = {};
-    for (MapEntry<String, ValueInfo> entry
-        in openWays.negativeMatchers.entries) {
+    for (MapEntry<String, ValueInfo> entry in openWays.negativeMatchers.entries) {
       ValueInfo? valueInfo = _append(values, entry.key);
       valueInfo.values.addAll(entry.value.values);
     }
@@ -246,8 +226,7 @@ class RuleAnalyzer extends RuleVisitor {
 
   Map<String, ValueInfo> closedWayNegativeValueinfos() {
     Map<String, ValueInfo> values = {};
-    for (MapEntry<String, ValueInfo> entry
-        in closedWays.negativeMatchers.entries) {
+    for (MapEntry<String, ValueInfo> entry in closedWays.negativeMatchers.entries) {
       ValueInfo? valueInfo = _append(values, entry.key);
       valueInfo.values.addAll(entry.value.values);
     }
@@ -304,8 +283,7 @@ class ElementInfo {
         // }
         any = true;
       } else {
-        print(
-            "Unknown valueMatcher ${valueMatcher.runtimeType} for keyMatcher AnyMatcher");
+        print("Unknown valueMatcher ${valueMatcher.runtimeType} for keyMatcher AnyMatcher");
       }
     } else {
       print("Unknown keyMatcher ${keyMatcher.runtimeType}");
@@ -346,5 +324,10 @@ class ValueInfo {
     } else {
       print("Unknown matcher ${valueMatcher.runtimeType}");
     }
+  }
+
+  @override
+  String toString() {
+    return 'ValueInfo{values: $values, _any: $_any}';
   }
 }

@@ -80,6 +80,11 @@ class LatLongUtils {
         pow(latLong1.latitude - latLong2.latitude, 2));
   }
 
+  static double euclideanDistanceSquared(ILatLong latLong1, ILatLong latLong2) {
+    return pow(latLong1.longitude - latLong2.longitude, 2).toDouble() +
+        pow(latLong1.latitude - latLong2.latitude, 2);
+  }
+
   /**
    * Find if this way is closed.
    *
@@ -366,5 +371,30 @@ class LatLongUtils {
         print("  $action");
       });
     });
+  }
+
+  /// adds the [otherLatLongs] to [latlongs] in the correct order. Returns true if successful
+  static bool combine(List<ILatLong> latlongs, List<ILatLong> otherLatLongs) {
+    if (LatLongUtils.isNear(latlongs.first, otherLatLongs.last)) {
+      // add to the start of this list
+      latlongs.removeAt(0);
+      latlongs.insertAll(0, otherLatLongs);
+      return true;
+    } else if (LatLongUtils.isNear(latlongs.last, otherLatLongs.first)) {
+      // add to end of this list
+      latlongs.addAll(otherLatLongs.skip(1));
+      return true;
+    } else if (LatLongUtils.isNear(latlongs.first, otherLatLongs.first)) {
+      // reversed order, add to start of the list in reversed order
+      latlongs.removeAt(0);
+      latlongs.insertAll(0, otherLatLongs.reversed);
+      return true;
+    } else if (LatLongUtils.isNear(latlongs.last, otherLatLongs.last)) {
+      // reversed order, add to end of the list in reversed order
+      latlongs.addAll(otherLatLongs.reversed.skip(1));
+      return true;
+    } else {
+      return false;
+    }
   }
 }

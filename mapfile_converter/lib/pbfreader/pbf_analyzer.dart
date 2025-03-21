@@ -1,23 +1,28 @@
 import 'dart:math' as Math;
 
 import 'package:collection/collection.dart';
+import 'package:logging/logging.dart';
+import 'package:mapfile_converter/pbfreader/pbf_data.dart';
+import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
+import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
-import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
+import 'package:mapsforge_flutter/special.dart';
 
-import '../../core.dart';
-import '../../pbf.dart';
+import '../custom_tag_modifier.dart';
+import 'way_repair.dart';
 
 /// Reads data from a pbf file and converts it to PointOfInterest and Way objects
 /// so that they are usable in mapsforge. By implementing your own version of
 /// [PbfAnalyzerConverter] you can control the behavior of the converstion from
 /// OSM data to PointOfInterest and Way objects.
 class PbfAnalyzer {
-  Map<int, _PoiHolder> _nodeHolders = {};
+  final _log = new Logger('PbfAnalyzer');
 
-  Map<int, Wayholder> _wayHolders = {};
+  final Map<int, _PoiHolder> _nodeHolders = {};
 
-  List<Wayholder> _wayHoldersMerged = [];
+  final Map<int, Wayholder> _wayHolders = {};
+
+  final List<Wayholder> _wayHoldersMerged = [];
 
   Map<int, OsmRelation> relations = {};
 
@@ -35,24 +40,72 @@ class PbfAnalyzer {
 
   PbfAnalyzerConverter converter = PbfAnalyzerConverter();
 
-  List<PointOfInterest> get pois =>
-      _nodeHolders.values.map((e) => e.pointOfInterest).toList();
+  List<PointOfInterest> get pois => _nodeHolders.values.map((e) => e.pointOfInterest).toList();
 
   List<Wayholder> get ways => _wayHolders.values.map((e) => e).toList();
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
-  Future<void> analyze(
-      ReadbufferSource readbufferSource, int sourceLength) async {
+  static Future<PbfAnalyzer> readFile(String filename, RuleAnalyzer ruleAnalyzer) async {
+    ReadbufferSource readbufferSource = ReadbufferFile(filename);
+    return readSource(readbufferSource, ruleAnalyzer);
+  }
+
+  static Future<PbfAnalyzer> readSource(ReadbufferSource readbufferSource, RuleAnalyzer ruleAnalyzer) async {
+    int length = await readbufferSource.length();
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer();
+    pbfAnalyzer.converter = CustomTagModifier(
+      allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
+      allowedWayTags: ruleAnalyzer.wayValueinfos(),
+      negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
+      negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
+      keys: ruleAnalyzer.keys,
+    );
+    await pbfAnalyzer.analyze(readbufferSource, length);
+    pbfAnalyzer.removeSuperflous();
+    //    print("rule: ${ruleAnalyzer.closedWayValueinfos()}");
+    //    print("rule neg: ${ruleAnalyzer.closedWayNegativeValueinfos()}");
+    return pbfAnalyzer;
+  }
+
+  Future<void> analyze(ReadbufferSource readbufferSource, int sourceLength) async {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < sourceLength) {
       await _analyze1Block(pbfReader, readbufferSource);
     }
     _mergeRelationsToWays();
+
+    _wayHoldersMerged.forEach((value) {
+      if (value.way.latLongs.isEmpty) {
+        value.way = Way(value.way.layer, value.way.tags, value.otherOuters, value.way.labelPosition);
+        value.otherOuters = [];
+      }
+    });
+
+    WayRepair wayRepair = WayRepair();
+    for (var wayholder in _wayHoldersMerged) {
+      // would be nice to find the tags which requires a closed area via the render rules but for now they seem too many. Lets define a set of rules here.
+      if (wayholder.way.hasTagValue("natural", "water") ||
+          wayholder.way.hasTagValue("natural", "land") ||
+          wayholder.way.hasTagValue("natural", "meadow") ||
+          wayholder.way.hasTagValue("natural", "wetland") ||
+          wayholder.way.hasTagValue("landuse", "residential") ||
+          wayholder.way.hasTagValue("landuse", "forest") ||
+          wayholder.way.hasTagValue("landuse", "wood") ||
+          wayholder.way.hasTagValue("landuse", "grassland")) {
+        wayRepair.repairClosed(wayholder);
+      } else {
+        wayRepair.repairOpen(wayholder);
+      }
+    }
+
+    boundingBox = pbfReader.calculateBounds();
+  }
+
+  void removeSuperflous() {
     int count = _nodeHolders.length;
-    _nodeHolders
-        .removeWhere((key, value) => value.pointOfInterest.tags.isEmpty);
+    _nodeHolders.removeWhere((key, value) => value.pointOfInterest.tags.isEmpty);
     nodesWithoutTagsRemoved = count - _nodeHolders.length;
 
     // remove ways with less than 2 points (this is not a way)
@@ -75,31 +128,19 @@ class PbfAnalyzer {
     _wayHoldersMerged.forEach((value) {
       value.way.latLongs.removeWhere((test) => test.length < 2);
     });
-    _wayHoldersMerged.forEach((value) {
-      if (value.way.latLongs.isEmpty) {
-        value.way = Way(value.way.layer, value.way.tags, value.otherOuters,
-            value.way.labelPosition);
-        value.otherOuters = [];
-      }
-    });
 
-    _wayHoldersMerged
-        .removeWhere((Wayholder test) => test.way.latLongs.isEmpty);
+    _wayHoldersMerged.removeWhere((Wayholder test) => test.way.latLongs.isEmpty);
     waysWithoutNodesRemoved = count - _wayHoldersMerged.length;
 
-    count = _nodeHolders.values.fold(0, (count, test) => count + test.useCount);
-
-    boundingBox = pbfReader.calculateBounds();
+    //    count = _nodeHolders.values.fold(0, (count, test) => count + test.useCount);
   }
 
-  Future<void> _analyze1Block(
-      PbfReader pbfReader, ReadbufferSource readbufferSource) async {
+  Future<void> _analyze1Block(PbfReader pbfReader, ReadbufferSource readbufferSource) async {
     PbfData blockData = await pbfReader.read(readbufferSource);
     //print(blockData);
     blockData.nodes.forEach((osmNode) {
       PointOfInterest? pointOfInterest = converter.createNode(osmNode);
-      if (pointOfInterest != null)
-        _nodeHolders[osmNode.id] = _PoiHolder(pointOfInterest);
+      if (pointOfInterest != null) _nodeHolders[osmNode.id] = _PoiHolder(pointOfInterest);
     });
     blockData.ways.forEach((osmWay) {
       List<List<ILatLong>> latLongs = [];
@@ -130,25 +171,15 @@ class PbfAnalyzer {
 
   void statistics() {
     // remove nodes that do not have any tags.
-    print("Removed ${nodesWithoutTagsRemoved} nodes because of no tags");
+    _log.info("Removed ${nodesWithoutTagsRemoved} nodes because of no tags");
 
-    print("Removed ${waysWithoutNodesRemoved} ways because less than 2 nodes");
-    print(
-        "Removed ${waysMergedCount} ways because they have been merged to other ways");
+    _log.info("Removed ${waysWithoutNodesRemoved} ways because less than 2 nodes");
+    _log.info("Removed ${waysMergedCount} ways because they have been merged to other ways");
 
-    print(
-        "${nodeNotFound.length} nodes not found, ${wayNotFound.length} ways not found");
-    print(
-        "Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}");
+    _log.info("${nodeNotFound.length} nodes not found, ${wayNotFound.length} ways not found");
+    _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}");
     // print(
     //     "Total way reference count: $count, no reference found: $noWayRefFound");
-
-    // print("First 20 nodes:");
-    // _nodeHolders.values.forEachIndexedWhile((idx, action) {
-    //   print("  ${action.pointOfInterest}");
-    //   if (idx >= 20) return false;
-    //   return true;
-    // });
   }
 
   void _mergeRelationsToWays() {
@@ -163,14 +194,12 @@ class PbfAnalyzer {
           if (pointOfInterest != null) {
             labelPosition = pointOfInterest.position;
           }
-        } else if (member.role == "outer" &&
-            member.memberType == MemberType.way) {
+        } else if (member.role == "outer" && member.memberType == MemberType.way) {
           Wayholder? wayHolder = _searchWayHolder(member.memberId);
           if (wayHolder != null) {
             outers.add(wayHolder);
           }
-        } else if (member.role == "inner" &&
-            member.memberType == MemberType.way) {
+        } else if (member.role == "inner" && member.memberType == MemberType.way) {
           Wayholder? wayHolder = _searchWayHolder(member.memberId);
           if (wayHolder != null) {
             inners.add(wayHolder);
@@ -178,89 +207,138 @@ class PbfAnalyzer {
         }
       });
       if (outers.isNotEmpty || inners.isNotEmpty) {
-        Way? way = converter.createMergedWay(relation);
-        if (way == null) return;
-        Wayholder wayholder = Wayholder(way);
+        Way? mergedWay = converter.createMergedWay(relation);
+        if (mergedWay == null) return;
         bool debug = false;
-        // if (wayholder.way.hasTagValue("natural", "water")) {
-        //   print(
-        //       "Found ${wayholder.way.toStringWithoutNames()} with ${outers.length} outers and ${inners.length} inners for relation ${relation.id}");
+        // if (mergedWay.hasTagValue("landuse", "forest")) {
         //   outers.forEach((outer) {
-        //     print("  ${outer.way.toStringWithoutNames()}");
+        //     if (outer.way.latLongs[0].first == LatLong(47.299339, 17.045369) || outer.way.latLongs[0].last == LatLong(47.299339, 17.045369)) debug = true;
         //   });
-        //   debug = true;
         // }
+        if (debug) {
+          print("Found ${mergedWay.toStringWithoutNames()} with ${outers.length} outers and ${inners.length} inners for relation ${relation.id}");
+          outers.forEach((outer) {
+            print("  ${outer.way.toStringWithoutNames()}");
+          });
+        }
         List<Wayholder> remainingOuters = [];
 
         for (Wayholder outerWayholder in outers) {
-          // if (outerWayholder.mergedWithOtherWay) continue;
           assert(outerWayholder.way.latLongs.length == 1);
-          bool appended =
-              _appendLatLongs(relation, wayholder.way, outerWayholder.way);
+          if (mergedWay.latLongs.isEmpty) {
+            mergedWay.latLongs.add([...outerWayholder.way.latLongs[0]]);
+            outerWayholder.mergedWithOtherWay = true;
+            if (debug) {
+              print(
+                "added ${outerWayholder.way.toStringWithoutNames()} to ${mergedWay.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(mergedWay.latLongs[0])}",
+              );
+            }
+            continue;
+          }
+          bool appended = _appendLatLongs(relation, mergedWay, outerWayholder.way);
           if (appended) {
             outerWayholder.mergedWithOtherWay = true;
-            if (debug)
+            if (debug) {
               print(
-                  "appended ${outerWayholder.way.toStringWithoutNames()} to ${wayholder.way.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(wayholder.way.latLongs[0])}");
+                "appended ${outerWayholder.way.toStringWithoutNames()} to ${mergedWay.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(mergedWay.latLongs[0])}",
+              );
+            }
           } else {
             remainingOuters.add(outerWayholder);
-            if (debug)
-              print(
-                  "NOT appended ${outerWayholder.way.toStringWithoutNames()} to ${wayholder.way.toStringWithoutNames()}");
+            if (debug) {
+              print("NOT appended ${outerWayholder.way.toStringWithoutNames()} to ${mergedWay.toStringWithoutNames()}");
+            }
           }
         }
         for (Wayholder inner in inners) {
-          //print("Adding $inner to $wayHolder");
-          inner.way.latLongs.forEach((latlongs) {
-            wayholder.way.latLongs.add(latlongs);
-          });
+          assert(inner.way.latLongs.length == 1);
+          mergedWay.latLongs.add(inner.way.latLongs[0]);
           inner.mergedWithOtherWay = true;
         }
         if (labelPosition != null) {
-          Way way = Way(wayholder.way.layer, wayholder.way.tags,
-              wayholder.way.latLongs, labelPosition);
-          wayholder.way = way;
+          mergedWay = Way(mergedWay.layer, mergedWay.tags, mergedWay.latLongs, labelPosition);
         }
-        // try to append again
+        // try to append to the master again
         int iterations = 0;
         while (true) {
           int count = remainingOuters.length;
+          ++iterations;
           for (Wayholder remainingOuter in List.from(remainingOuters)) {
-            bool appended =
-                _appendLatLongs(relation, wayholder.way, remainingOuter.way);
+            if (LatLongUtils.isClosedWay(mergedWay.latLongs[0])) {
+              break;
+            }
+            bool appended = _appendLatLongs(relation, mergedWay, remainingOuter.way);
             if (appended) {
-              if (debug)
+              if (debug) {
                 print(
-                    "later appended ${remainingOuter.way.toStringWithoutNames()} to ${wayholder.way.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(wayholder.way.latLongs[0])}");
+                  "later appended ${remainingOuter.way.toStringWithoutNames()} to ${mergedWay.toStringWithoutNames()}, closed: ${LatLongUtils.isClosedWay(mergedWay.latLongs[0])}",
+                );
+              }
               remainingOuters.remove(remainingOuter);
               remainingOuter.mergedWithOtherWay = true;
             }
           }
           if (remainingOuters.length == count) break;
+        }
+        // now try to append the remaining outers to each other
+        while (true) {
+          int count = remainingOuters.length;
           ++iterations;
-          if (iterations % 10 == 0)
-            print("$iterations iterations for $count outers");
+          List<Wayholder> merged = [];
+          for (Wayholder remainingOuterFirst in List.from(remainingOuters)) {
+            if (LatLongUtils.isClosedWay(remainingOuterFirst.way.latLongs[0])) {
+              continue;
+            }
+            for (Wayholder remainingOuterSecond in List.from(remainingOuters)) {
+              if (remainingOuterFirst == remainingOuterSecond) continue;
+              if (merged.contains(remainingOuterFirst) || merged.contains(remainingOuterSecond)) {
+                continue;
+              }
+              if (LatLongUtils.isClosedWay(remainingOuterSecond.way.latLongs[0])) {
+                continue;
+              }
+              bool appended = _appendLatLongs(relation, remainingOuterFirst.way, remainingOuterSecond.way);
+              if (appended) {
+                if (debug) {
+                  print("outer appended ${remainingOuterSecond.way.toStringWithoutNames()} to ${remainingOuterFirst.way.toStringWithoutNames()}");
+                }
+                bool ok = remainingOuters.remove(remainingOuterSecond);
+                assert(ok);
+                remainingOuterSecond.mergedWithOtherWay = true;
+                merged.add(remainingOuterSecond);
+              }
+            }
+          }
+          if (remainingOuters.length == count) break;
+        }
+
+        if (debug) {
+          print("$iterations iterations needed to combine. ${remainingOuters.length} outers left");
         }
         // add the remaining outer ways. They use the same properties as the master way
         // but will be treated as separate ways when reading the mapfile
-        for (Wayholder remainingOuter in List.from(remainingOuters)) {
-          wayholder.otherOuters.add(remainingOuter.way.latLongs[0]);
+        Wayholder mergedWayholder = Wayholder(mergedWay);
+        for (Wayholder remainingOuter in remainingOuters) {
+          assert(remainingOuter.way.latLongs.length == 1);
+          mergedWayholder.otherOuters.add(List.from(remainingOuter.way.latLongs[0]));
           remainingOuter.mergedWithOtherWay = true;
+          if (debug) {
+            print(
+              "  remaining: $remainingOuter with first: ${remainingOuter.way.latLongs[0].first} and last: ${remainingOuter.way.latLongs[0].last}, closed: ${LatLongUtils.isClosedWay(remainingOuter.way.latLongs[0])}",
+            );
+          }
         }
-        _wayHoldersMerged.add(wayholder);
+        _wayHoldersMerged.add(mergedWayholder);
       }
     });
   }
 
   bool _appendLatLongs(OsmRelation osmRelation, Way master, Way other) {
     // do not add to closed ways
-    if (master.latLongs.isNotEmpty &&
-        LatLongUtils.isClosedWay(master.latLongs[0])) return false;
-
-    if (master.latLongs.isEmpty) {
-      master.latLongs.add([]..addAll(other.latLongs[0]));
-      return true;
+    if (master.latLongs.isNotEmpty && LatLongUtils.isClosedWay(master.latLongs[0])) {
+      return false;
     }
+
     List<ILatLong> latlongs = master.latLongs[0];
     List<ILatLong> otherLatLongs = other.latLongs[0];
     // int count = otherLatLongs.fold(
@@ -270,34 +348,14 @@ class PbfAnalyzer {
     // if (count > 1)
     //   print(
     //       "${other.toStringWithoutNames()} has $count latlongs in common with ${master.toStringWithoutNames()}");
-    if (LatLongUtils.isNear(latlongs.first, otherLatLongs.last)) {
-      // add to the start of this list
-      latlongs.removeAt(0);
-      latlongs.insertAll(0, otherLatLongs);
-      return true;
-    } else if (LatLongUtils.isNear(latlongs.last, otherLatLongs.first)) {
-      // add to end of this list
-      latlongs.addAll(otherLatLongs.skip(1));
-      return true;
-    } else if (LatLongUtils.isNear(latlongs.first, otherLatLongs.first)) {
-      // reversed order, add to start of the list in reversed order
-      latlongs.removeAt(0);
-      latlongs.insertAll(0, otherLatLongs.reversed);
-      return true;
-    } else if (LatLongUtils.isNear(latlongs.last, otherLatLongs.last)) {
-      // reversed order, add to end of the list in reversed order
-      latlongs.addAll(otherLatLongs.reversed.skip(1));
-      return true;
-    } else {
-      return false;
-    }
+    return LatLongUtils.combine(latlongs, otherLatLongs);
   }
 
   void _relationReferences(OsmRelation osmRelation) {
     osmRelation.members.forEach((member) {
       switch (member.memberType) {
         case MemberType.node:
-//          PointOfInterest? pointOfInterest = findPoi(member.memberId);
+          //          PointOfInterest? pointOfInterest = findPoi(member.memberId);
           break;
         case MemberType.way:
           //Way? way = findWay(member.memberId);
@@ -351,6 +409,11 @@ class PbfAnalyzer {
     relations.clear();
     nodeNotFound.clear();
   }
+
+  void filterByBoundingBox(BoundingBox boundingBox) {
+    _nodeHolders.removeWhere((zoomlevel, test) => !boundingBox.containsLatLong(test.pointOfInterest.position));
+    _wayHolders.removeWhere((zoomlevel, test) => !boundingBox.intersects(test.way.getBoundingBox()));
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -373,8 +436,7 @@ class PbfAnalyzerConverter {
     // even with no tags the node may belong to a relation, so keep it
     // convert and round the latlongs to 6 digits after the decimal point. This
     // helps determining if ways are closed.
-    LatLong latLong = LatLong(
-        _roundDouble(osmNode.latitude, 6), _roundDouble(osmNode.longitude, 6));
+    LatLong latLong = LatLong(_roundDouble(osmNode.latitude, 6), _roundDouble(osmNode.longitude, 6));
     PointOfInterest pointOfInterest = PointOfInterest(layer, tags, latLong);
     return pointOfInterest;
   }
@@ -412,8 +474,7 @@ class PbfAnalyzerConverter {
   void modifyRelationTags(OsmRelation relation, List<Tag> tags) {}
 
   int findLayer(List<Tag> tags) {
-    Tag? layerTag = tags
-        .firstWhereOrNull((test) => test.key == "layer" && test.value != null);
+    Tag? layerTag = tags.firstWhereOrNull((test) => test.key == "layer" && test.value != null);
     int layer = 0;
     if (layerTag != null) {
       layer = int.tryParse(layerTag.value!) ?? 0;

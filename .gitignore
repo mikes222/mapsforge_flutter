@@ -79,3 +79,6 @@ simplified_example/android/app/.cxx/Debug/yj1057m5/hash_key.txt
 simplified_example/android/app/.cxx/Debug/yj1057m5/arm64-v8a/additional_project_files.txt
 simplified_example/android/app/.cxx/
 test.map
+mapfile_converter/linux/
+mapfile_converter/windows/.gitignore
+mapfile_converter/windows/

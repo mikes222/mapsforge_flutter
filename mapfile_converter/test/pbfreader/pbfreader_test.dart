@@ -2,7 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter/pbf.dart';
+import 'package:mapfile_converter/pbfreader/pbf_data.dart';
+import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
@@ -26,7 +27,8 @@ main() async {
   test("Read pbf file", () async {
     _initLogging();
     ReadbufferSource readbufferSource = ReadbufferFile(
-        TestAssetBundle().correctFilename("monaco-latest.osm.pbf"));
+      TestAssetBundle().correctFilename("monaco-latest.osm.pbf"),
+    );
     int length = await readbufferSource.length();
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
@@ -53,7 +55,7 @@ main() async {
 //////////////////////////////////////////////////////////////////////////////
 
 void _initLogging() {
-// Print output to console.
+  // Print output to console.
   Logger.root.onRecord.listen((LogRecord r) {
     print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
   });

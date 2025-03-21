@@ -23,13 +23,12 @@ class BoundingBox {
   /// @param maxLatitude  the maximum latitude coordinate in degrees.
   /// @param maxLongitude the maximum longitude coordinate in degrees.
   /// @throws IllegalArgumentException if a coordinate is invalid.
-  const BoundingBox(
-      this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude)
+  const BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude)
       : assert(minLatitude <= maxLatitude),
         assert(minLongitude <= maxLongitude);
 
   /// @param latLongs the coordinates list.
-  static BoundingBox fromLatLongs(List<ILatLong> latLongs) {
+  factory BoundingBox.fromLatLongs(List<ILatLong> latLongs) {
     assert(latLongs.isNotEmpty);
     double minLatitude = double.infinity;
     double minLongitude = double.infinity;
@@ -56,10 +55,7 @@ class BoundingBox {
   /// @param longitude the longitude coordinate in degrees.
   /// @return true if this BoundingBox contains the given coordinates, false otherwise.
   bool contains(double latitude, double longitude) {
-    return this.minLatitude <= latitude &&
-        this.maxLatitude >= latitude &&
-        this.minLongitude <= longitude &&
-        this.maxLongitude >= longitude;
+    return this.minLatitude <= latitude && this.maxLatitude >= latitude && this.minLongitude <= longitude && this.maxLongitude >= longitude;
   }
 
   /// @param latLong the LatLong whose coordinates should be checked.
@@ -71,8 +67,7 @@ class BoundingBox {
   /// @param box the BoundingBox whose coordinates should be checked.
   /// @return true if this BoundingBox contains the given BoundingBox completely, false otherwise.
   bool containsBoundingBox(BoundingBox box) {
-    return contains(box.minLatitude, box.minLongitude) &&
-        contains(box.maxLatitude, box.maxLongitude);
+    return contains(box.minLatitude, box.minLongitude) && contains(box.maxLatitude, box.maxLongitude);
   }
 
   @override
@@ -86,20 +81,13 @@ class BoundingBox {
           minLongitude == other.minLongitude;
 
   @override
-  int get hashCode =>
-      maxLatitude.hashCode ^
-      maxLongitude.hashCode ^
-      minLatitude.hashCode ^
-      minLongitude.hashCode;
+  int get hashCode => maxLatitude.hashCode ^ maxLongitude.hashCode ^ minLatitude.hashCode ^ minLongitude.hashCode;
 
   /// @param boundingBox the BoundingBox which this BoundingBox should be extended if it is larger
   /// @return a BoundingBox that covers this BoundingBox and the given BoundingBox.
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
-    return new BoundingBox(
-        min(this.minLatitude, boundingBox.minLatitude),
-        min(this.minLongitude, boundingBox.minLongitude),
-        max(this.maxLatitude, boundingBox.maxLatitude),
-        max(this.maxLongitude, boundingBox.maxLongitude));
+    return new BoundingBox(min(this.minLatitude, boundingBox.minLatitude), min(this.minLongitude, boundingBox.minLongitude),
+        max(this.maxLatitude, boundingBox.maxLatitude), max(this.maxLongitude, boundingBox.maxLongitude));
   }
 
   ILatLong getLeftUpper() => LatLong(maxLatitude, minLongitude);
@@ -109,6 +97,14 @@ class BoundingBox {
   ILatLong getRightUpper() => LatLong(maxLatitude, maxLongitude);
 
   ILatLong getRightLower() => LatLong(minLatitude, maxLongitude);
+
+  ILatLong getTopCenter() => LatLong(maxLatitude, minLongitude + (maxLongitude - minLongitude) / 2);
+
+  ILatLong getBottomCenter() => LatLong(minLatitude, minLongitude + (maxLongitude - minLongitude) / 2);
+
+  ILatLong getLeftCenter() => LatLong(minLatitude + (maxLatitude - minLatitude) / 2, minLongitude);
+
+  ILatLong getRightCenter() => LatLong(minLatitude + (maxLatitude - minLatitude) / 2, maxLongitude);
 
   /**
    * Creates a BoundingBox extended up to coordinates (but does not cross date line/poles).
@@ -180,16 +176,12 @@ class BoundingBox {
       return this;
     }
 
-    double verticalExpansion =
-        (this.getLatitudeSpan() * margin - this.getLatitudeSpan()) * 0.5;
-    double horizontalExpansion =
-        (this.getLongitudeSpan() * margin - this.getLongitudeSpan()) * 0.5;
+    double verticalExpansion = (this.getLatitudeSpan() * margin - this.getLatitudeSpan()) * 0.5;
+    double horizontalExpansion = (this.getLongitudeSpan() * margin - this.getLongitudeSpan()) * 0.5;
 
-    double minLat =
-        max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+    double minLat = max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
     double minLon = max(-180, this.minLongitude - horizontalExpansion);
-    double maxLat =
-        min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+    double maxLat = min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
     double maxLon = min(180, this.maxLongitude + horizontalExpansion);
 
     return BoundingBox(minLat, minLon, maxLat, maxLon);
@@ -206,17 +198,12 @@ class BoundingBox {
     }
 
     double verticalExpansion = Projection.latitudeDistance(meters);
-    double horizontalExpansion = Projection.longitudeDistance(
-        meters, max(minLatitude.abs(), maxLatitude.abs()));
+    double horizontalExpansion = Projection.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
 
-    double minLat =
-        max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon =
-        max(Projection.LONGITUDE_MIN, this.minLongitude - horizontalExpansion);
-    double maxLat =
-        min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon =
-        min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
+    double minLat = max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
+    double minLon = max(Projection.LONGITUDE_MIN, this.minLongitude - horizontalExpansion);
+    double maxLat = min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
+    double maxLon = min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
 
     return BoundingBox(minLat, minLon, maxLat, maxLon);
   }
@@ -227,8 +214,7 @@ class BoundingBox {
   LatLong getCenterPoint() {
     double latitudeOffset = (this.maxLatitude - this.minLatitude) / 2;
     double longitudeOffset = (this.maxLongitude - this.minLongitude) / 2;
-    return new LatLong(
-        this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
+    return new LatLong(this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
   }
 
   /**
@@ -312,8 +298,7 @@ class BoundingBox {
         tmpMaxLon = max(tmpMaxLon, latLong.longitude);
       }
     }
-    return this.intersects(
-        new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
+    return this.intersects(new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
   }
 
   /// Checks if a line intersects with the rectangle.
@@ -335,23 +320,19 @@ class BoundingBox {
     ILatLong bottomLeft = LatLong(minLatitude, minLongitude);
 
     // 3. Überprüfe, ob die Linie eines der Rechtecksegmente schneidet.
-    bool topIntersects =
-        LatLongUtils.doLinesIntersect(lineStart, lineEnd, topLeft, topRight);
+    bool topIntersects = LatLongUtils.doLinesIntersect(lineStart, lineEnd, topLeft, topRight);
     if (topIntersects) return true;
-    bool rightIntersects = LatLongUtils.doLinesIntersect(
-        lineStart, lineEnd, topRight, bottomRight);
+    bool rightIntersects = LatLongUtils.doLinesIntersect(lineStart, lineEnd, topRight, bottomRight);
     if (rightIntersects) return true;
-    bool bottomIntersects = LatLongUtils.doLinesIntersect(
-        lineStart, lineEnd, bottomRight, bottomLeft);
+    bool bottomIntersects = LatLongUtils.doLinesIntersect(lineStart, lineEnd, bottomRight, bottomLeft);
     if (bottomIntersects) return true;
-    bool leftIntersects =
-        LatLongUtils.doLinesIntersect(lineStart, lineEnd, bottomLeft, topLeft);
+    bool leftIntersects = LatLongUtils.doLinesIntersect(lineStart, lineEnd, bottomLeft, topLeft);
     if (leftIntersects) return true;
     return false;
   }
 
   @override
   String toString() {
-    return 'BoundingBox{maxLatitude: $maxLatitude, maxLongitude: $maxLongitude, minLatitude: $minLatitude, minLongitude: $minLongitude}';
+    return 'BoundingBox{minLatitude: $minLatitude, minLongitude: $minLongitude, maxLatitude: $maxLatitude, maxLongitude: $maxLongitude}';
   }
 }

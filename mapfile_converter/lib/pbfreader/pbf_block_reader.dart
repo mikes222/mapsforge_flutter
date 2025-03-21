@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:mapsforge_flutter/src/pbfreader/pbf_data.dart';
-import 'package:mapsforge_flutter/src/pbfreader/pbf_reader.dart';
-import 'package:mapsforge_flutter/src/pbfreader/proto/osmformat.pb.dart';
+import 'package:mapfile_converter/pbfreader/pbf_data.dart';
+import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
+import 'package:mapfile_converter/pbfreader/proto/osmformat.pb.dart';
 
 class PbfBlockReader {
   PbfData readBlock(BlobResult blobResult) {
@@ -27,39 +27,42 @@ class PbfBlockReader {
         for (final way in primitiveGroup.ways) {
           final id = way.id.toInt();
           var refDelta = 0;
-          final refs = way.refs.map((ref) {
-            refDelta += ref.toInt();
-            return refDelta;
-          }).toList();
+          final refs =
+              way.refs.map((ref) {
+                refDelta += ref.toInt();
+                return refDelta;
+              }).toList();
           final tags = _parseParallelTags(way.keys, way.vals, stringTable);
-          ways.add(OsmWay(
-            id: id,
-            refs: refs,
-            tags: tags,
-          ));
+          ways.add(OsmWay(id: id, refs: refs, tags: tags));
         }
       }
       if (primitiveGroup.relations.isNotEmpty) {
         for (final relation in primitiveGroup.relations) {
           final id = relation.id.toInt();
-          final tags =
-              _parseParallelTags(relation.keys, relation.vals, stringTable);
+          final tags = _parseParallelTags(
+            relation.keys,
+            relation.vals,
+            stringTable,
+          );
           var refDelta = 0;
-          final memberIds = relation.memids.map((ref) {
-            refDelta += ref.toInt();
-            return refDelta;
-          }).toList();
-          final types = relation.types.map((type) {
-            return switch (type) {
-              Relation_MemberType.NODE => MemberType.node,
-              Relation_MemberType.WAY => MemberType.way,
-              Relation_MemberType.RELATION => MemberType.relation,
-              _ => throw Exception('Unknown member type: $type')
-            };
-          }).toList();
-          final roles = relation.rolesSid.map((role) {
-            return stringTable[role];
-          }).toList();
+          final memberIds =
+              relation.memids.map((ref) {
+                refDelta += ref.toInt();
+                return refDelta;
+              }).toList();
+          final types =
+              relation.types.map((type) {
+                return switch (type) {
+                  Relation_MemberType.NODE => MemberType.node,
+                  Relation_MemberType.WAY => MemberType.way,
+                  Relation_MemberType.RELATION => MemberType.relation,
+                  _ => throw Exception('Unknown member type: $type'),
+                };
+              }).toList();
+          final roles =
+              relation.rolesSid.map((role) {
+                return stringTable[role];
+              }).toList();
 
           List<OsmRelationMember> members = [];
           for (int idx = 0; idx < memberIds.length; idx++) {
@@ -67,14 +70,13 @@ class PbfBlockReader {
             MemberType memberType = types[idx];
             String role = roles[idx];
             OsmRelationMember member = OsmRelationMember(
-                memberId: memberId, memberType: memberType, role: role);
+              memberId: memberId,
+              memberType: memberType,
+              role: role,
+            );
             members.add(member);
           }
-          relations.add(OsmRelation(
-            id: id,
-            tags: tags,
-            members: members,
-          ));
+          relations.add(OsmRelation(id: id, tags: tags, members: members));
         }
       }
       var j = 0;
@@ -96,12 +98,7 @@ class PbfBlockReader {
             j += 2;
           }
           j++;
-          nodes.add(OsmNode(
-            id: id,
-            latitude: lat,
-            longitude: lon,
-            tags: tags,
-          ));
+          nodes.add(OsmNode(id: id, latitude: lat, longitude: lon, tags: tags));
         }
       }
     }
@@ -109,7 +106,10 @@ class PbfBlockReader {
   }
 
   Map<String, String> _parseParallelTags(
-      List<int> keys, List<int> values, List<String> stringTable) {
+    List<int> keys,
+    List<int> values,
+    List<String> stringTable,
+  ) {
     final tags = <String, String>{};
     assert(keys.length == values.length);
     for (var i = 0; i < keys.length; i++) {
