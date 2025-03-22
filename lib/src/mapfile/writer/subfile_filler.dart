@@ -10,8 +10,9 @@ import '../../utils/flutter_isolate.dart';
 class IsolateSubfileFiller {
   IsolateSubfileFiller();
 
-  Future<List<Wayholder>> prepareWays(ZoomlevelRange subfileZoomlevelRange, BoundingBox subfileBoundingBox, ZoomlevelRange zoomlevelRange,
-      List<Wayholder> wayholders, int tilePixelSize) async {
+  Future<List<Wayholder>> prepareWays(
+      ZoomlevelRange subfileZoomlevelRange, BoundingBox subfileBoundingBox, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders, int tilePixelSize,
+      [double maxDeviation = 10]) async {
     return await FlutterIsolateInstance.isolateCompute(
         prepareWaysStatic,
         _SubfileFillerRequest(
@@ -19,13 +20,14 @@ class IsolateSubfileFiller {
             subfileBoundingBox: subfileBoundingBox,
             zoomlevelRange: zoomlevelRange,
             wayholders: wayholders,
-            tilePixelSize: tilePixelSize));
+            tilePixelSize: tilePixelSize,
+            maxDeviation: maxDeviation));
   }
 
   @pragma('vm:entry-point')
   static Future<List<Wayholder>> prepareWaysStatic(_SubfileFillerRequest request) async {
     DisplayModel(tilesize: request.tilePixelSize);
-    SubfileFiller subfileFiller = SubfileFiller(request.subfileZoomlevelRange, request.subfileBoundingBox);
+    SubfileFiller subfileFiller = SubfileFiller(request.subfileZoomlevelRange, request.subfileBoundingBox, request.maxDeviation);
     return subfileFiller.prepareWays(request.zoomlevelRange, request.wayholders);
   }
 }
@@ -43,12 +45,15 @@ class _SubfileFillerRequest {
 
   final int tilePixelSize;
 
+  final double maxDeviation;
+
   _SubfileFillerRequest(
       {required this.subfileZoomlevelRange,
       required this.subfileBoundingBox,
       required this.zoomlevelRange,
       required this.wayholders,
-      required this.tilePixelSize});
+      required this.tilePixelSize,
+      required this.maxDeviation});
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,9 +65,9 @@ class SubfileFiller {
 
   final ZoomlevelRange subfileZoomlevelRange;
 
-  SubfileFiller(this.subfileZoomlevelRange, BoundingBox subfileBoundingBox) {
-    sizeFilter = _SizeFilter(subfileZoomlevelRange.zoomlevelMax, 10, subfileBoundingBox);
-    simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, 10, subfileBoundingBox);
+  SubfileFiller(this.subfileZoomlevelRange, BoundingBox subfileBoundingBox, double maxDeviation) {
+    sizeFilter = _SizeFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation, subfileBoundingBox);
+    simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation, subfileBoundingBox);
   }
 
   List<Wayholder> prepareWays(

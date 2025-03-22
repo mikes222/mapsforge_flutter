@@ -28,30 +28,16 @@ class ZoomlevelWriter {
     Map<ZoomlevelRange, List<Wayholder>> wayHolders,
   ) async {
     nodes.forEach((zoomlevelRange, nodelist) {
-      if (subfileCreator.zoomlevelRange.zoomlevelMin >
-          zoomlevelRange.zoomlevelMax)
-        return;
-      if (subfileCreator.zoomlevelRange.zoomlevelMax <
-          zoomlevelRange.zoomlevelMin)
-        return;
+      if (subfileCreator.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
+      if (subfileCreator.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
       subfileCreator.addPoidata(zoomlevelRange, nodelist);
     });
     // SubfileFiller subfileFiller =
     //     SubfileFiller(subfileCreator.zoomlevelRange, subfileCreator.boundingBox);
     List<Future> wayholderFutures = [];
-    wayHolders.forEach((
-      ZoomlevelRange zoomlevelRange,
-      List<Wayholder> wayholderlist,
-    ) {
+    wayHolders.forEach((ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist) {
       if (wayholderlist.isEmpty) return;
-      wayholderFutures.add(
-        _isolate(
-          subfileCreator,
-          zoomlevelRange,
-          wayholderlist,
-          mapfileWriter.mapHeaderInfo.tilePixelSize,
-        ),
-      );
+      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholderlist, mapfileWriter.mapHeaderInfo.tilePixelSize));
       // List<Wayholder> wayholders = subfileFiller.prepareWays(
       //     subfileCreator.zoomlevelRange,
       //     zoomlevelRange,
@@ -63,18 +49,14 @@ class ZoomlevelWriter {
     mapfileWriter.subfileCreators.add(subfileCreator);
   }
 
-  Future<void> _isolate(
-    SubfileCreator subfileCreator,
-    ZoomlevelRange zoomlevelRange,
-    List<Wayholder> wayholderlist,
-    int tilePixelSize,
-  ) async {
+  Future<void> _isolate(SubfileCreator subfileCreator, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist, int tilePixelSize) async {
     List<Wayholder> wayholders = await IsolateSubfileFiller().prepareWays(
       subfileCreator.zoomlevelRange,
       subfileCreator.boundingBox,
       zoomlevelRange,
       wayholderlist,
       tilePixelSize,
+      5,
     );
     subfileCreator.addWaydata(zoomlevelRange, wayholders);
   }

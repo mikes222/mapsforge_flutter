@@ -42,7 +42,7 @@ class Tile {
       case 2:
         return 3;
       default:
-        return (2 << zoomLevel) - 1;
+        return (1 << zoomLevel) - 1;
     }
   }
 
@@ -54,10 +54,8 @@ class Tile {
       : assert(tileX >= 0),
         assert(tileY >= 0),
         assert(zoomLevel >= 0) {
-    assert(tileX <= getMaxTileNumber(zoomLevel),
-        "$tileX > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
-    assert(tileY <= getMaxTileNumber(zoomLevel),
-        "$tileY > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
+    assert(tileX <= getMaxTileNumber(zoomLevel), "$tileX > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
+    assert(tileY <= getMaxTileNumber(zoomLevel), "$tileY > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
   }
 
   void dispose() {}
@@ -73,11 +71,7 @@ class Tile {
           indoorLevel == other.indoorLevel;
 
   @override
-  int get hashCode =>
-      tileX.hashCode ^
-      tileY.hashCode ^
-      zoomLevel.hashCode ^
-      indoorLevel.hashCode << 5;
+  int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
 
   /// Returns a set of the eight neighbours of this tile.
   ///
@@ -222,8 +216,7 @@ class Tile {
       return null;
     }
 
-    return Tile((this.tileX / 2).floor(), (this.tileY / 2).floor(),
-        (this.zoomLevel - 1), this.indoorLevel);
+    return Tile((this.tileX / 2).floor(), (this.tileY / 2).floor(), (this.zoomLevel - 1), this.indoorLevel);
   }
 
   /// Returns the childs of this tile. The first two items are the upper row from left to right, the next two items are the lower row.
@@ -289,24 +282,21 @@ class Tile {
 
   Mappoint getLeftUpper() {
     if (_leftUpper != null) return _leftUpper!;
-    _leftUpper = Mappoint((tileX * MapsforgeConstants().tileSize),
-        (tileY * MapsforgeConstants().tileSize));
+    _leftUpper = Mappoint((tileX * MapsforgeConstants().tileSize), (tileY * MapsforgeConstants().tileSize));
     return _leftUpper!;
   }
 
   Mappoint getCenter() {
     if (_center != null) return _center!;
     double tileSize = MapsforgeConstants().tileSize;
-    _center = Mappoint((tileX * tileSize + tileSize / 2).toDouble(),
-        (tileY * tileSize + tileSize / 2).toDouble());
+    _center = Mappoint((tileX * tileSize + tileSize / 2).toDouble(), (tileY * tileSize + tileSize / 2).toDouble());
     return _center!;
   }
 
   MapRectangle getMapBoundary() {
     if (_mapBoundary != null) return _mapBoundary!;
     double tileSize = MapsforgeConstants().tileSize;
-    _mapBoundary = MapRectangle((tileX * tileSize), (tileY * tileSize),
-        (tileX * tileSize + tileSize), (tileY * tileSize + tileSize));
+    _mapBoundary = MapRectangle((tileX * tileSize), (tileY * tileSize), (tileX * tileSize + tileSize), (tileY * tileSize + tileSize));
     return _mapBoundary!;
   }
 

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 class Scalefactor {
-  static final int MAXZOOMLEVEL = 30;
+  static final int MAXZOOMLEVEL = 25;
 
   /// The number of tiles in horizontal/vertical direction. ZoomLevel 3 (8*8 tiles)
   /// results to 2^zoomlevel = 8. To reflect pinch'n'zoom the scalefactor can also
