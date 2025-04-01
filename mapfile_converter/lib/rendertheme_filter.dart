@@ -1,17 +1,16 @@
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/pbfreader/pbf_analyzer.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
 
-class Simplifier {
+class RenderthemeFilter {
   final _log = new Logger('Simplifier');
 
-  Map<ZoomlevelRange, List<PointOfInterest>> simplifyNodes(PbfAnalyzer pbfAnalyzer, RenderTheme renderTheme) {
+  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<PointOfInterest> pois, RenderTheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
     int noRangeNodes = 0;
-    pbfAnalyzer.pois.forEach((pointOfInterest) {
+    pois.forEach((pointOfInterest) {
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest);
       if (range == null) {
         ++noRangeNodes;
@@ -24,30 +23,21 @@ class Simplifier {
     return nodes;
   }
 
-  Map<ZoomlevelRange, List<Wayholder>> simplifyWays(PbfAnalyzer pbfAnalyzer, RenderTheme renderTheme) {
+  Map<ZoomlevelRange, List<Wayholder>> filterWays(List<Wayholder> ways, RenderTheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, List<Wayholder>> ways = {};
+    Map<ZoomlevelRange, List<Wayholder>> result = {};
     int noRangeWays = 0;
-    pbfAnalyzer.ways.forEach((wayHolder) {
+    ways.forEach((wayHolder) {
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(wayHolder.way);
       if (range == null) {
         ++noRangeWays;
         return;
       }
-      if (ways[range] == null) ways[range] = [];
-      ways[range]!.add(wayHolder);
-    });
-    pbfAnalyzer.waysMerged.forEach((wayHolder) {
-      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(wayHolder.way);
-      if (range == null) {
-        ++noRangeWays;
-        return;
-      }
-      if (ways[range] == null) ways[range] = [];
-      ways[range]!.add(wayHolder);
+      if (result[range] == null) result[range] = [];
+      result[range]!.add(wayHolder);
     });
     _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
 
-    return ways;
+    return result;
   }
 }

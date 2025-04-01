@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/pbfreader/pbf_block_reader.dart';
 import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
@@ -19,21 +20,23 @@ main() async {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < data.length) {
-      PbfData blockData = await pbfReader.read(readbufferSource);
+      BlobResult blobResult = await pbfReader.readBlob(readbufferSource);
+      PbfBlockReader reader = PbfBlockReader();
+      PbfData blockData = reader.readBlock(blobResult);
       print(blockData);
     }
   });
 
   test("Read pbf file", () async {
     _initLogging();
-    ReadbufferSource readbufferSource = ReadbufferFile(
-      TestAssetBundle().correctFilename("monaco-latest.osm.pbf"),
-    );
+    ReadbufferSource readbufferSource = ReadbufferFile(TestAssetBundle().correctFilename("monaco-latest.osm.pbf"));
     int length = await readbufferSource.length();
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < length) {
-      PbfData blockData = await pbfReader.read(readbufferSource);
+      BlobResult blobResult = await pbfReader.readBlob(readbufferSource);
+      PbfBlockReader reader = PbfBlockReader();
+      PbfData blockData = reader.readBlock(blobResult);
       print(blockData);
     }
   });

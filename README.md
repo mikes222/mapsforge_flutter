@@ -27,17 +27,20 @@ Start with the [simplified_example/README.md](simplified_example/README.md) or e
 - Interactive Markers & Drag-and-Drop
 - Online & Offline Maps
 - Map Rotation
+- Bonus: Convert PBF files to mapsforge files
+- Bonus: Convert PBF files to osm files
 
 ## Why mapsforge_flutter?
 
 *Fully Offline*: No internet? No problem! Load and render maps without network access.
 
+*Support for online maps*: If you ADDITIONALLY need online maps you can do so easily with the same codebase and api.
+
 *High Customizability*: Supports custom rendering themes, allowing you to tailor the map’s look and feel.
 
 *Lightweight & Efficient*: Designed for mobile, mapsforge uses optimized mapfiles that provide rich geographical data in a compact format.
 
-*Advanced Features*: Indoor navigation, hillshading, and more!
-
+*Advanced Features*: Indoor navigation, hillshading, map rotation and more!
 
 ## Getting Started
 
@@ -79,7 +82,7 @@ Tip: If reading from memory, use ``MapFile.using(content, null, null)``
 
 2. Create a symbol cache for assets (e.g. parking signs, bus stop icons)
 
-> Assets are mostly small images to display in the map, for example parking signs, bus stop signs and so on
+> Assets are mostly small images to display in the map
 
     SymbolCache symbolCache = FileSymbolCache();
 
@@ -88,7 +91,6 @@ Tip: If reading from memory, use ``MapFile.using(content, null, null)``
 > Create the displayModel which defines and holds the view/display settings like maximum zoomLevel.
 
     DisplayModel displayModel = DisplayModel();
-
 
 Tip: For crisper maps consider to set the deviceScaleFactor to a higher value, e.g. 2
 
@@ -122,13 +124,14 @@ or
 7. Integrate everything into MapModel & ViewModel
 
     MapModel mapModel = MapModel(
-      displayModel: displayModel,
-      renderer: jobRenderer,
-      symbolCache: symbolCache,
-      tileBitmapCache: bitmapCache,
+        displayModel: displayModel,
+        renderer: jobRenderer,
+        symbolCache: symbolCache,
+        tileBitmapCache: bitmapCache,
     );
     
     ViewModel viewModel = ViewModel(displayModel: displayModel);
+
 
 8. Add the map widget to your Flutter app
 
@@ -217,15 +220,19 @@ New method:
 Impeller is the new rendering engine for flutter. 
 It seems there are still some problems with it. In case you experience some flaws try disabling impeller. 
 
-To disable impeller: ``--no-enable-impeller``
+To disable impeller add this parameter as "additional run args": 
 
-or in ``AndroidManifest.xml``:
+``--no-enable-impeller``
+
+or 
+
+in ``AndroidManifest.xml``:
 
     <meta-data
     android:name="io.flutter.embedding.android.EnableImpeller"
     android:value="false" />
 
-Note: Give impeller a chance and enable it from time to time to see if it already working for you.
+*Note:* Give impeller a chance and enable it from time to time to see if it already working for you.
 
 ## Documentation
 

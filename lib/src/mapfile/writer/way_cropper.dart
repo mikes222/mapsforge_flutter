@@ -6,6 +6,10 @@ import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import '../../../datastore.dart';
 
 class WayCropper {
+  final double maxDeviationPixel;
+
+  WayCropper({required this.maxDeviationPixel});
+
   Wayholder cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
     List<List<ILatLong>> newLatLongs = [];
     wayholder.way.latLongs.forEach((test) {
@@ -15,11 +19,11 @@ class WayCropper {
     Way way = Way(wayholder.way.layer, wayholder.way.tags, newLatLongs, wayholder.way.labelPosition);
     newLatLongs = [];
     wayholder.otherOuters.forEach((test) {
-      List<ILatLong> toAdd = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
+      List<ILatLong> toAdd = _optimizeWaypoints(test.path, boundingBox, maxZoomlevel);
       if (toAdd.length >= 2) newLatLongs.add(toAdd);
     });
     // return a new wayholder instance
-    return wayholder.cloneWith(way: way, otherOuters: newLatLongs);
+    return wayholder.cloneWith(way: way, otherOuters: newLatLongs.map((toElement) => Waypath(toElement)).toList());
   }
 
   /// Optimiert eine Liste von Wegpunkten, indem unnötige Punkte entfernt werden,
@@ -36,7 +40,7 @@ class WayCropper {
     if (tileBoundary.containsBoundingBox(wayBoundingBox)) {
       if (waypoints.length > 32767) {
         // many waypoints? simplify them.
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, 20, wayBoundingBox);
+        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
         List<ILatLong> result = simplifyFilter.reduceWayEnsureMax(waypoints);
         print("${waypoints.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
         return result;
@@ -453,8 +457,6 @@ class WayCropper {
 
       return _checkLeftRight(start, end, topLeft, topRight, bottomRight, bottomLeft);
     }
-
-    return (null, -1);
   }
 
   (ILatLong?, int) _checkLeftRight(ILatLong start, ILatLong end, ILatLong topLeft, ILatLong topRight, ILatLong bottomRight, ILatLong bottomLeft) {

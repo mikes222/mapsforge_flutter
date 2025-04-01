@@ -3,6 +3,10 @@ import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/special.dart';
 
 class ZoomlevelWriter {
+  final double maxDeviationSize;
+
+  ZoomlevelWriter(this.maxDeviationSize);
+
   Future<void> writeZoomlevel(
     MapfileWriter mapfileWriter,
     MapHeaderInfo mapHeaderInfo,
@@ -56,7 +60,7 @@ class ZoomlevelWriter {
       zoomlevelRange,
       wayholderlist,
       tilePixelSize,
-      5,
+      maxDeviationSize,
     );
     subfileCreator.addWaydata(zoomlevelRange, wayholders);
   }

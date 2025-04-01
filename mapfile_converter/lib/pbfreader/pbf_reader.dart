@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:mapfile_converter/pbfreader/pbf_block_reader.dart';
-import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/proto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfreader/proto/osmformat.pb.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -17,9 +15,7 @@ class PbfReader {
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
     readbuffer = await readbufferSource.readFromFile(blobHeaderLength);
-    final blobHeader = BlobHeader.fromBuffer(
-      readbuffer.getBuffer(0, blobHeaderLength),
-    );
+    final blobHeader = BlobHeader.fromBuffer(readbuffer.getBuffer(0, blobHeaderLength));
     // print("blobHeader: ${blobHeader.type}");
     // print("blobHeader.datasize: ${blobHeader.datasize}");
     // print("blobHeader.indexdata: ${blobHeader.indexdata}");
@@ -38,14 +34,10 @@ class PbfReader {
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
     readbuffer = await readbufferSource.readFromFile(blobHeaderLength);
-    final blobHeader = BlobHeader.fromBuffer(
-      readbuffer.getBuffer(0, blobHeaderLength),
-    );
+    final blobHeader = BlobHeader.fromBuffer(readbuffer.getBuffer(0, blobHeaderLength));
 
     final blobLength = blobHeader.datasize;
-    await readbufferSource.setPosition(
-      readbufferSource.getPosition() + blobLength,
-    );
+    await readbufferSource.setPosition(readbufferSource.getPosition() + blobLength);
   }
 
   Future<void> open(ReadbufferSource readbufferSource) async {
@@ -67,19 +59,10 @@ class PbfReader {
     //     "headerBlock.osmosisReplicationBaseUrl: ${headerBlock!.osmosisReplicationBaseUrl}");
   }
 
-  Future<PbfData> read(ReadbufferSource readbufferSource) async {
-    PbfBlockReader reader = PbfBlockReader();
-    final blobResult = await readBlob(readbufferSource);
-    return reader.readBlock(blobResult);
-  }
-
   BoundingBox? calculateBounds() {
     if (headerBlock == null) return null;
     final bounds =
-        (headerBlock!.bbox.bottom != 0 ||
-                headerBlock!.bbox.left != 0 ||
-                headerBlock!.bbox.top != 0 ||
-                headerBlock!.bbox.right != 0)
+        (headerBlock!.bbox.bottom != 0 || headerBlock!.bbox.left != 0 || headerBlock!.bbox.top != 0 || headerBlock!.bbox.right != 0)
             ? BoundingBox(
               1e-9 * headerBlock!.bbox.bottom.toInt(),
               1e-9 * headerBlock!.bbox.left.toInt(),

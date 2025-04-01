@@ -65,7 +65,9 @@ class SubfileFiller {
 
   final ZoomlevelRange subfileZoomlevelRange;
 
-  SubfileFiller(this.subfileZoomlevelRange, BoundingBox subfileBoundingBox, double maxDeviation) {
+  final double maxDeviation;
+
+  SubfileFiller(this.subfileZoomlevelRange, BoundingBox subfileBoundingBox, this.maxDeviation) {
     sizeFilter = _SizeFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation, subfileBoundingBox);
     simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation, subfileBoundingBox);
   }
@@ -76,13 +78,10 @@ class SubfileFiller {
   ) {
     if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return [];
     if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return [];
-    wayholders.removeWhere((test) => sizeFilter.shouldFilter(test));
-    wayholders = wayholders.map((test) => simplifyFilter.reduce(test)).toList();
-    // wayholders
-    //     .where((test) => test.way.hasTag("admin_level"))
-    //     .forEach((action) {
-    //   print("$subfileZoomlevelRange: ${action.way.toStringWithoutNames()}");
-    // });
+    if (maxDeviation > 0) {
+      wayholders.removeWhere((test) => sizeFilter.shouldFilter(test));
+      wayholders = wayholders.map((test) => simplifyFilter.reduce(test)).toList();
+    }
     return wayholders;
   }
 }
@@ -107,8 +106,8 @@ class _SizeFilter {
     if ((boundingBox.maxLatitude - boundingBox.minLatitude).abs() > maxDeviationLatLong) return false;
     if ((boundingBox.maxLongitude - boundingBox.minLongitude).abs() > maxDeviationLatLong) return false;
 
-    for (List<ILatLong> latLongs in wayHolder.otherOuters) {
-      BoundingBox boundingBox = BoundingBox.fromLatLongs(latLongs);
+    for (Waypath latLongs in wayHolder.otherOuters) {
+      BoundingBox boundingBox = latLongs.boundingBox;
       if ((boundingBox.maxLatitude - boundingBox.minLatitude).abs() > maxDeviationLatLong) return false;
       if ((boundingBox.maxLongitude - boundingBox.minLongitude).abs() > maxDeviationLatLong) return false;
     }

@@ -1,21 +1,17 @@
 import 'dart:collection';
 import 'dart:math' as Math;
-import 'dart:math';
 
 import '../../core.dart';
 
 class DouglasPeuckerLatLong {
-  double _perpendicularDistanceSquared(ILatLong p, ILatLong a, ILatLong b) {
+  num _perpendicularDistanceSquared(ILatLong p, ILatLong a, ILatLong b) {
     // Berechne das Quadrat der senkrechten Distanz von Punkt p zur Linie ab
     // zwischen den Punkten a und b.
     if (a.longitude == b.longitude && a.latitude == b.latitude) {
-      return Math.pow(p.longitude - a.longitude, 2) +
-          pow(p.latitude - a.latitude, 2).toDouble();
+      return Math.pow(p.longitude - a.longitude, 2) + Math.pow(p.latitude - a.latitude, 2);
     }
-    double area = (b.longitude - a.longitude) * (a.latitude - p.latitude) -
-        (a.longitude - p.longitude) * (b.latitude - a.latitude);
-    double abDistSquared = Math.pow(b.longitude - a.longitude, 2) +
-        pow(b.latitude - a.latitude, 2).toDouble();
+    double area = (b.longitude - a.longitude) * (a.latitude - p.latitude) - (a.longitude - p.longitude) * (b.latitude - a.latitude);
+    num abDistSquared = Math.pow(b.longitude - a.longitude, 2) + Math.pow(b.latitude - a.latitude, 2);
     return (area * area) / abDistSquared;
   }
 
@@ -34,12 +30,11 @@ class DouglasPeuckerLatLong {
       int start = current[0];
       int end = current[1];
 
-      double maxDistanceSquared = 0;
+      num maxDistanceSquared = 0;
       int maxDistanceIndex = start;
 
       for (int i = start + 1; i < end; i++) {
-        double distanceSquared = _perpendicularDistanceSquared(
-            points[i], points[start], points[end]);
+        num distanceSquared = _perpendicularDistanceSquared(points[i], points[start], points[end]);
         if (distanceSquared > maxDistanceSquared) {
           maxDistanceSquared = distanceSquared;
           maxDistanceIndex = i;

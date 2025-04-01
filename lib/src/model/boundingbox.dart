@@ -86,7 +86,7 @@ class BoundingBox {
   /// @param boundingBox the BoundingBox which this BoundingBox should be extended if it is larger
   /// @return a BoundingBox that covers this BoundingBox and the given BoundingBox.
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
-    return new BoundingBox(min(this.minLatitude, boundingBox.minLatitude), min(this.minLongitude, boundingBox.minLongitude),
+    return BoundingBox(min(this.minLatitude, boundingBox.minLatitude), min(this.minLongitude, boundingBox.minLongitude),
         max(this.maxLatitude, boundingBox.maxLatitude), max(this.maxLongitude, boundingBox.maxLongitude));
   }
 

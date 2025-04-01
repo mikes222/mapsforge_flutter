@@ -15,13 +15,15 @@ class Wayholder with TagholderMixin {
   /// PBF supports relations with multiple outer ways. Mapfile requires to
   /// store this outer ways as additional Way data blocks and split it into
   /// several ways - all with the same way properties - when reading the file.
-  List<List<ILatLong>> otherOuters = [];
+  List<Waypath> otherOuters = [];
 
   bool mergedWithOtherWay = false;
 
+  BoundingBox? _boundingBox;
+
   Wayholder(this.way) {}
 
-  Wayholder cloneWith({Way? way, List<List<ILatLong>>? otherOuters}) {
+  Wayholder cloneWith({Way? way, List<Waypath>? otherOuters}) {
     Wayholder result = Wayholder(way ?? this.way);
     result.otherOuters = otherOuters ?? this.otherOuters;
     result.tileBitmask = this.tileBitmask;
@@ -34,6 +36,11 @@ class Wayholder with TagholderMixin {
     result.languagesPreference = this.languagesPreference;
     result.tagholders = this.tagholders;
     return result;
+  }
+
+  BoundingBox get boundingBoxCached {
+    _boundingBox ??= way.getBoundingBox();
+    return _boundingBox!;
   }
 
   /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
@@ -120,14 +127,14 @@ class Wayholder with TagholderMixin {
 
     Writebuffer singleWritebuffer = Writebuffer();
     _writeSingleDeltaEncoding(singleWritebuffer, way.latLongs, tileLatitude, tileLongitude);
-    otherOuters.forEach((List<ILatLong> outer) {
-      _writeSingleDeltaEncoding(singleWritebuffer, [outer], tileLatitude, tileLongitude);
+    otherOuters.forEach((Waypath outer) {
+      _writeSingleDeltaEncoding(singleWritebuffer, [outer.path], tileLatitude, tileLongitude);
     });
 
     Writebuffer doubleWritebuffer = Writebuffer();
     _writeDoubleDeltaEncoding(doubleWritebuffer, way.latLongs, tileLatitude, tileLongitude);
-    otherOuters.forEach((List<ILatLong> outer) {
-      _writeDoubleDeltaEncoding(doubleWritebuffer, [outer], tileLatitude, tileLongitude);
+    otherOuters.forEach((Waypath outer) {
+      _writeDoubleDeltaEncoding(doubleWritebuffer, [outer.path], tileLatitude, tileLongitude);
     });
 
     bool featureWayDoubleDeltaEncoding = doubleWritebuffer.length < singleWritebuffer.length;
@@ -194,7 +201,7 @@ class Wayholder with TagholderMixin {
   }
 
   /// Way data block
-  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, latLongs, double tileLatitude, double tileLongitude) {
+  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, List<List<ILatLong>> latLongs, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
     writebuffer.appendUnsignedInt(latLongs.length);
     for (List<ILatLong> waySegment in latLongs) {

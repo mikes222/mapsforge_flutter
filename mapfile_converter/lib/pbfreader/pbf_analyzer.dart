@@ -1,12 +1,14 @@
-import 'dart:math' as Math;
+import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/pbfreader/pbf_block_reader.dart';
 import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/special.dart';
+import 'package:uuid/uuid.dart';
 
 import '../custom_tag_modifier.dart';
 import 'way_repair.dart';
@@ -16,7 +18,9 @@ import 'way_repair.dart';
 /// [PbfAnalyzerConverter] you can control the behavior of the converstion from
 /// OSM data to PointOfInterest and Way objects.
 class PbfAnalyzer {
-  final _log = new Logger('PbfAnalyzer');
+  final _log = Logger('PbfAnalyzer');
+
+  final double maxGapMeter;
 
   final Map<int, _PoiHolder> _nodeHolders = {};
 
@@ -46,14 +50,18 @@ class PbfAnalyzer {
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
-  static Future<PbfAnalyzer> readFile(String filename, RuleAnalyzer ruleAnalyzer) async {
+  PbfAnalyzer({this.maxGapMeter = 200});
+
+  static Future<PbfAnalyzer> readFile(String filename, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200}) async {
     ReadbufferSource readbufferSource = ReadbufferFile(filename);
-    return readSource(readbufferSource, ruleAnalyzer);
+    PbfAnalyzer result = await readSource(readbufferSource, ruleAnalyzer, maxGapMeter: maxGapMeter);
+    readbufferSource.dispose();
+    return result;
   }
 
-  static Future<PbfAnalyzer> readSource(ReadbufferSource readbufferSource, RuleAnalyzer ruleAnalyzer) async {
+  static Future<PbfAnalyzer> readSource(ReadbufferSource readbufferSource, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200}) async {
     int length = await readbufferSource.length();
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer();
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer(maxGapMeter: maxGapMeter);
     pbfAnalyzer.converter = CustomTagModifier(
       allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
       allowedWayTags: ruleAnalyzer.wayValueinfos(),
@@ -61,35 +69,45 @@ class PbfAnalyzer {
       negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
       keys: ruleAnalyzer.keys,
     );
-    await pbfAnalyzer.analyze(readbufferSource, length);
+    await pbfAnalyzer.readToMemory(readbufferSource, length);
+    await pbfAnalyzer.analyze();
     pbfAnalyzer.removeSuperflous();
     //    print("rule: ${ruleAnalyzer.closedWayValueinfos()}");
     //    print("rule neg: ${ruleAnalyzer.closedWayNegativeValueinfos()}");
     return pbfAnalyzer;
   }
 
-  Future<void> analyze(ReadbufferSource readbufferSource, int sourceLength) async {
+  Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < sourceLength) {
-      await _analyze1Block(pbfReader, readbufferSource);
+      BlobResult blobResult = await pbfReader.readBlob(readbufferSource);
+      PbfBlockReader reader = PbfBlockReader();
+      PbfData blockData = reader.readBlock(blobResult);
+      await _analyze1Block(blockData);
     }
+    boundingBox = pbfReader.calculateBounds();
+  }
+
+  Future<void> analyze() async {
     _mergeRelationsToWays();
 
-    _wayHoldersMerged.forEach((value) {
+    for (var value in _wayHoldersMerged) {
+      assert(value.way.latLongs.isNotEmpty);
       if (value.way.latLongs.isEmpty) {
-        value.way = Way(value.way.layer, value.way.tags, value.otherOuters, value.way.labelPosition);
+        value.way = Way(value.way.layer, value.way.tags, value.otherOuters.map((toElement) => toElement.path).toList(), value.way.labelPosition);
         value.otherOuters = [];
       }
-    });
+    }
 
-    WayRepair wayRepair = WayRepair();
+    WayRepair wayRepair = WayRepair(maxGapMeter);
     for (var wayholder in _wayHoldersMerged) {
       // would be nice to find the tags which requires a closed area via the render rules but for now they seem too many. Lets define a set of rules here.
       if (wayholder.way.hasTagValue("natural", "water") ||
           wayholder.way.hasTagValue("natural", "land") ||
           wayholder.way.hasTagValue("natural", "meadow") ||
           wayholder.way.hasTagValue("natural", "wetland") ||
+          wayholder.way.hasTagValue("natural", "coastline") ||
           wayholder.way.hasTagValue("landuse", "residential") ||
           wayholder.way.hasTagValue("landuse", "forest") ||
           wayholder.way.hasTagValue("landuse", "wood") ||
@@ -99,8 +117,25 @@ class PbfAnalyzer {
         wayRepair.repairOpen(wayholder);
       }
     }
-
-    boundingBox = pbfReader.calculateBounds();
+    List<Wayholder> wayholders =
+        _wayHolders.values
+            //.where((test) => !test.mergedWithOtherWay)
+            .where((test) => test.way.hasTagValue("natural", "coastline"))
+            .where((test) => test.way.latLongs.length == 1)
+            .toList();
+    if (wayholders.isNotEmpty) {
+      // Coastline is hardly connected. Try to connect the items now.
+      Wayholder wayholder = Wayholder(wayholders.first.way);
+      wayholders.first.mergedWithOtherWay = true;
+      // use a inherited class of waypath which can set the [mergedWithOutherWays] property of the wayholder.
+      wayholder.otherOuters = wayholders.skip(1).map((toElement) => _Waypath(toElement.way.latLongs[0], toElement)).toList();
+      _log.info("Repairing coastline: ${wayholder.otherOuters.length} items");
+      wayRepair.connect(wayholder);
+      _log.info("Repairing coastline: ${wayholder.otherOuters.length} items after connecting items");
+      wayRepair.repairClosed(wayholder);
+      _wayHolders[int.parse(Uuid().v4().replaceAll("-", "").substring(19), radix: 16)] = wayholder;
+      _log.info("Repairing coastline: reduced to ${wayholder.otherOuters.length} items");
+    }
   }
 
   void removeSuperflous() {
@@ -122,12 +157,12 @@ class PbfAnalyzer {
 
     // remove ways with less than 2 points (this is not a way)
     count = _wayHoldersMerged.length;
-    _wayHoldersMerged.forEach((value) {
+    for (var value in _wayHoldersMerged) {
       value.otherOuters.removeWhere((test) => test.length < 2);
-    });
-    _wayHoldersMerged.forEach((value) {
+    }
+    for (var value in _wayHoldersMerged) {
       value.way.latLongs.removeWhere((test) => test.length < 2);
-    });
+    }
 
     _wayHoldersMerged.removeWhere((Wayholder test) => test.way.latLongs.isEmpty);
     waysWithoutNodesRemoved = count - _wayHoldersMerged.length;
@@ -135,25 +170,23 @@ class PbfAnalyzer {
     //    count = _nodeHolders.values.fold(0, (count, test) => count + test.useCount);
   }
 
-  Future<void> _analyze1Block(PbfReader pbfReader, ReadbufferSource readbufferSource) async {
-    PbfData blockData = await pbfReader.read(readbufferSource);
-    //print(blockData);
-    blockData.nodes.forEach((osmNode) {
+  Future<void> _analyze1Block(PbfData blockData) async {
+    for (var osmNode in blockData.nodes) {
       PointOfInterest? pointOfInterest = converter.createNode(osmNode);
       if (pointOfInterest != null) _nodeHolders[osmNode.id] = _PoiHolder(pointOfInterest);
-    });
-    blockData.ways.forEach((osmWay) {
+    }
+    for (var osmWay in blockData.ways) {
       List<List<ILatLong>> latLongs = [];
       latLongs.add([]);
-      osmWay.refs.forEach((ref) {
+      for (var ref in osmWay.refs) {
         if (nodeNotFound.contains(ref)) {
-          return;
+          continue;
         }
         PointOfInterest? pointOfInterest = _searchPoi(ref);
         if (pointOfInterest != null) {
           latLongs[0].add(pointOfInterest.position);
         }
-      });
+      }
       if (latLongs[0].length >= 2) {
         Way? way = converter.createWay(osmWay, latLongs);
         if (way != null) {
@@ -161,23 +194,23 @@ class PbfAnalyzer {
           _wayHolders[osmWay.id] = Wayholder(way);
         }
       }
-    });
-    blockData.relations.forEach((osmRelation) {
+    }
+    for (var osmRelation in blockData.relations) {
       _relationReferences(osmRelation);
       relations[osmRelation.id] = osmRelation;
       //print("Relation ${osmRelation.id}: $memberType $member $tags");
-    });
+    }
   }
 
   void statistics() {
     // remove nodes that do not have any tags.
-    _log.info("Removed ${nodesWithoutTagsRemoved} nodes because of no tags");
+    _log.info("Removed $nodesWithoutTagsRemoved nodes because of no tags");
 
-    _log.info("Removed ${waysWithoutNodesRemoved} ways because less than 2 nodes");
-    _log.info("Removed ${waysMergedCount} ways because they have been merged to other ways");
+    _log.info("Removed $waysWithoutNodesRemoved ways because less than 2 nodes");
+    _log.info("Removed $waysMergedCount ways because they have been merged to other ways");
 
     _log.info("${nodeNotFound.length} nodes not found, ${wayNotFound.length} ways not found");
-    _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}");
+    _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}, total relation-way count: ${waysMerged.length}");
     // print(
     //     "Total way reference count: $count, no reference found: $noWayRefFound");
   }
@@ -186,9 +219,9 @@ class PbfAnalyzer {
     relations.forEach((key, relation) {
       List<Wayholder> outers = [];
       List<Wayholder> inners = [];
-      ILatLong? labelPosition = null;
+      ILatLong? labelPosition;
       // search for outer and inner ways and for possible label position
-      relation.members.forEach((member) {
+      for (var member in relation.members) {
         if (member.role == "label") {
           PointOfInterest? pointOfInterest = _searchPoi(member.memberId);
           if (pointOfInterest != null) {
@@ -205,7 +238,7 @@ class PbfAnalyzer {
             inners.add(wayHolder);
           }
         }
-      });
+      }
       if (outers.isNotEmpty || inners.isNotEmpty) {
         Way? mergedWay = converter.createMergedWay(relation);
         if (mergedWay == null) return;
@@ -320,7 +353,7 @@ class PbfAnalyzer {
         Wayholder mergedWayholder = Wayholder(mergedWay);
         for (Wayholder remainingOuter in remainingOuters) {
           assert(remainingOuter.way.latLongs.length == 1);
-          mergedWayholder.otherOuters.add(List.from(remainingOuter.way.latLongs[0]));
+          mergedWayholder.otherOuters.add(Waypath(List.from(remainingOuter.way.latLongs[0])));
           remainingOuter.mergedWithOtherWay = true;
           if (debug) {
             print(
@@ -352,7 +385,7 @@ class PbfAnalyzer {
   }
 
   void _relationReferences(OsmRelation osmRelation) {
-    osmRelation.members.forEach((member) {
+    for (var member in osmRelation.members) {
       switch (member.memberType) {
         case MemberType.node:
           //          PointOfInterest? pointOfInterest = findPoi(member.memberId);
@@ -367,11 +400,11 @@ class PbfAnalyzer {
             //     "Relation for $member in relation ${osmRelation.id} not found");
             //++noWayRefFound;
             //notFound.add(member);
-            return;
+            continue;
           }
           break;
       }
-    });
+    }
   }
 
   PointOfInterest? _searchPoi(int id) {
@@ -408,6 +441,7 @@ class PbfAnalyzer {
     _wayHoldersMerged.clear();
     relations.clear();
     nodeNotFound.clear();
+    wayNotFound.clear();
   }
 
   void filterByBoundingBox(BoundingBox boundingBox) {
@@ -446,7 +480,7 @@ class PbfAnalyzerConverter {
     int layer = findLayer(tags);
     modifyWayTags(osmWay, tags);
     // even with no tags the way may belong to a relation, so keep it
-    ILatLong? labelPosition = null;
+    ILatLong? labelPosition;
     Way way = Way(layer, tags, latLongs, labelPosition);
     return way;
   }
@@ -457,13 +491,13 @@ class PbfAnalyzerConverter {
     modifyRelationTags(relation, tags);
     // topmost structure, if we have no tags, we cannot render anything
     if (tags.isEmpty) return null;
-    ILatLong? labelPosition = null;
+    ILatLong? labelPosition;
     Way way = Way(layer, tags, [], labelPosition);
     return way;
   }
 
   double _roundDouble(double value, int places) {
-    num mod = Math.pow(10.0, places);
+    num mod = math.pow(10.0, places);
     return ((value * mod).round().toDouble() / mod);
   }
 
@@ -484,5 +518,19 @@ class PbfAnalyzerConverter {
     if (layer < -5) layer = -5;
     if (layer > 10) layer = 10;
     return layer;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _Waypath extends Waypath {
+  final Wayholder wayholder;
+
+  _Waypath(super.path, this.wayholder);
+
+  @override
+  void clear() {
+    wayholder.mergedWithOtherWay = true;
+    super.clear();
   }
 }

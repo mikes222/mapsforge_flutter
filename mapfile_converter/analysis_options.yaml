@@ -13,21 +13,19 @@
 
 include: package:lints/recommended.yaml
 
-# Uncomment the following section to specify additional rules.
-
-# linter:
-#   rules:
-#     - camel_case_types
-
-# analyzer:
-#   exclude:
-#     - path/to/excluded/files/**
-
-# For more information about the core and recommended set of lints, see
-# https://dart.dev/go/core-lints
-
-# For additional information about configuring this file, see
-# https://dart.dev/guides/language/analysis-options
+linter:
+  rules:
+    - prefer_const_constructors
+    - unawaited_futures
+    - close_sinks
+    - annotate_overrides
+    - avoid_void_async
+    - await_only_futures
+    - implementation_imports
+    - null_closures
+    - overridden_fields
+    - prefer_conditional_assignment
+    - use_build_context_synchronously
 
 formatter:
   page_width: 160

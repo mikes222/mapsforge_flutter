@@ -17,7 +17,8 @@ class WaySimplifyFilter {
 
   WaySimplifyFilter(int zoomlevel, this.maxDeviationPixel, this.boundingBox) : projection = PixelProjection(zoomlevel) {
     maxDeviationLatLong = projection.latitudeDiffPerPixel((boundingBox.minLatitude + boundingBox.maxLatitude) / 2, maxDeviationPixel);
-    //print("maxDeviationLatLong: $maxDeviationLatLong for maxZoom: $zoomlevel");
+    // print(
+    //     "maxDeviationLatLong: $maxDeviationLatLong from $maxDeviationPixel for maxZoom: $zoomlevel in boundingbox $boundingBox would result to ${LatLongUtils.euclideanDistance(boundingBox.getCenterPoint(), LatLong(boundingBox.getCenterPoint().latitude + maxDeviationLatLong, boundingBox.getCenterPoint().longitude + maxDeviationLatLong))}");
   }
 
   Wayholder reduce(Wayholder wayholder) {
@@ -28,10 +29,10 @@ class WaySimplifyFilter {
     Wayholder result = wayholder.cloneWith(way: Way(wayholder.way.layer, wayholder.way.tags, newLatLongs, wayholder.way.labelPosition));
 
     newLatLongs = [];
-    for (List<ILatLong> latLongs in wayholder.otherOuters) {
-      newLatLongs.add(reduceWay(latLongs));
+    for (Waypath latLongs in wayholder.otherOuters) {
+      newLatLongs.add(reduceWay(latLongs.path));
     }
-    result.otherOuters = newLatLongs;
+    result.otherOuters = newLatLongs.map((toElement) => Waypath(toElement)).toList();
     return result;
   }
 
