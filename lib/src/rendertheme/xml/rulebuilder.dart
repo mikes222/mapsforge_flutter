@@ -294,8 +294,6 @@ class RuleBuilder {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderinstructionSymbol symbol = RenderinstructionSymbol(zoomlevelSymbolFinder, level);
       symbol.parse(displayModel, rootElement);
-      print('excludeIds = ${excludeIds}');
-      print('symbol.base.id = ${symbol.base.id}');
       // Skip if the symbol's id is in the excluded set.
       if (symbol.base.id != null && excludeIds.contains(symbol.base.id)) {
         _log.info("Excluding symbol with id: ${symbol.base.id}");
