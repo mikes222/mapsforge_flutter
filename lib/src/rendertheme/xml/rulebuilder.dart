@@ -47,7 +47,7 @@ class RuleBuilder {
   static final String V = "v";
   static final String ZOOM_MAX = "zoom-max";
   static final String ZOOM_MIN = "zoom-min";
-
+  final Set<String> excludeIds;
   int level;
   int maxLevel;
 
@@ -74,8 +74,7 @@ class RuleBuilder {
   /// the tree-structure of the xml-file or this rules.
   final ZoomlevelSymbolFinder zoomlevelSymbolFinder;
 
-  List<RenderinstructionHillshading> hillShadings =
-      []; // NOPMD specific interface for trimToSize
+  List<RenderinstructionHillshading> hillShadings = []; // NOPMD specific interface for trimToSize
   String? values;
 
   late AttributeMatcher keyMatcher;
@@ -108,9 +107,9 @@ class RuleBuilder {
     return RuleOptimizer.optimizeElementMatcher(result, this.ruleBuilderStack);
   }
 
-  RuleBuilder(DisplayModel displayModel,
-      ZoomlevelSymbolFinder? parentSymbolFinder, this.level)
-      : zoomlevelRange = displayModel.zoomlevelRange,
+  RuleBuilder(DisplayModel displayModel, ZoomlevelSymbolFinder? parentSymbolFinder, this.level, {Set<String>? excludeIds})
+      : excludeIds = excludeIds ?? {},
+        zoomlevelRange = displayModel.zoomlevelRange,
         ruleBuilderStack = [],
         renderInstructionNodes = [],
         renderInstructionOpenWays = [],
@@ -124,30 +123,22 @@ class RuleBuilder {
   void validateTree() {
     for (RuleBuilder ruleBuilder in ruleBuilderStack) {
       if (element == Element.NODE && ruleBuilder.element == Element.WAY) {
-        _log.warning(
-            "Impossible SubRule which has element way (${ruleBuilder.element}) whereas the parent has element node ($element)");
+        _log.warning("Impossible SubRule which has element way (${ruleBuilder.element}) whereas the parent has element node ($element)");
       }
       if (element == Element.WAY && ruleBuilder.element == Element.NODE) {
-        _log.warning(
-            "Impossible SubRule which has element node (${ruleBuilder}) whereas the parent has element way ($this)");
+        _log.warning("Impossible SubRule which has element node (${ruleBuilder}) whereas the parent has element way ($this)");
       }
       if (closed == Closed.YES && ruleBuilder.closed == Closed.NO) {
-        _log.warning(
-            "Impossible SubRule which has closed no (${ruleBuilder}) whereas the parent has closed yes ($this)");
+        _log.warning("Impossible SubRule which has closed no (${ruleBuilder}) whereas the parent has closed yes ($this)");
       }
       if (closed == Closed.NO && ruleBuilder.closed == Closed.YES) {
-        _log.warning(
-            "Impossible SubRule which has closed yes (${ruleBuilder}) whereas the parent has closed no ($this)");
+        _log.warning("Impossible SubRule which has closed yes (${ruleBuilder}) whereas the parent has closed no ($this)");
       }
-      if (zoomlevelRange.zoomlevelMax <
-          ruleBuilder.zoomlevelRange.zoomlevelMin) {
-        _log.warning(
-            "Impossible SubZoomMin ${ruleBuilder.zoomlevelRange.zoomlevelMin} whereas the parent has zoomMax ${zoomlevelRange.zoomlevelMax}");
+      if (zoomlevelRange.zoomlevelMax < ruleBuilder.zoomlevelRange.zoomlevelMin) {
+        _log.warning("Impossible SubZoomMin ${ruleBuilder.zoomlevelRange.zoomlevelMin} whereas the parent has zoomMax ${zoomlevelRange.zoomlevelMax}");
       }
-      if (zoomlevelRange.zoomlevelMin >
-          ruleBuilder.zoomlevelRange.zoomlevelMax) {
-        _log.warning(
-            "Impossible SubZoomMax ${ruleBuilder.zoomlevelRange.zoomlevelMax} whereas the parent has zoomMin ${zoomlevelRange.zoomlevelMin}");
+      if (zoomlevelRange.zoomlevelMin > ruleBuilder.zoomlevelRange.zoomlevelMax) {
+        _log.warning("Impossible SubZoomMax ${ruleBuilder.zoomlevelRange.zoomlevelMax} whereas the parent has zoomMin ${zoomlevelRange.zoomlevelMin}");
       }
     }
     // this is allowed: A rule "node" could have a "caption" which is both used for nodes and for ways
@@ -159,25 +150,14 @@ class RuleBuilder {
     //   _log.warning(
     //       "Impossible SubRule which has renderInstructionNodess whereas the parent has element way ($this)");
     // }
-    if (element == Element.NODE &&
-        renderInstructionNodes.isEmpty &&
-        ruleBuilderStack.isEmpty) {
-      _log.warning(
-          "Impossible SubRule which has no renderInstructionNodes whereas the parent has element node ($this)");
+    if (element == Element.NODE && renderInstructionNodes.isEmpty && ruleBuilderStack.isEmpty) {
+      _log.warning("Impossible SubRule which has no renderInstructionNodes whereas the parent has element node ($this)");
     }
-    if (element == Element.WAY &&
-        renderInstructionOpenWays.isEmpty &&
-        renderInstructionClosedWays.isEmpty &&
-        ruleBuilderStack.isEmpty) {
-      _log.warning(
-          "Impossible SubRule which has no renderInstructionWays whereas the parent has element way ($this)");
+    if (element == Element.WAY && renderInstructionOpenWays.isEmpty && renderInstructionClosedWays.isEmpty && ruleBuilderStack.isEmpty) {
+      _log.warning("Impossible SubRule which has no renderInstructionWays whereas the parent has element way ($this)");
     }
-    if (renderInstructionNodes.isEmpty &&
-        renderInstructionOpenWays.isEmpty &&
-        renderInstructionClosedWays.isEmpty &&
-        ruleBuilderStack.isEmpty) {
-      _log.warning(
-          "Impossible SubRule which has no renderInstructionNodes or renderInstructionWays ($this)");
+    if (renderInstructionNodes.isEmpty && renderInstructionOpenWays.isEmpty && renderInstructionClosedWays.isEmpty && ruleBuilderStack.isEmpty) {
+      _log.warning("Impossible SubRule which has no renderInstructionNodes or renderInstructionWays ($this)");
     }
   }
 
@@ -189,12 +169,9 @@ class RuleBuilder {
       return NegativeRule(this, negativeMatcher!);
     }
 
-    if (renderInstructionNodes.isEmpty &&
-        renderInstructionOpenWays.isEmpty &&
-        renderInstructionClosedWays.isEmpty) {
+    if (renderInstructionNodes.isEmpty && renderInstructionOpenWays.isEmpty && renderInstructionClosedWays.isEmpty) {
       keyMatcher = RuleOptimizer.optimize(keyMatcher, this.ruleBuilderStack);
-      valueMatcher =
-          RuleOptimizer.optimize(valueMatcher, this.ruleBuilderStack);
+      valueMatcher = RuleOptimizer.optimize(valueMatcher, this.ruleBuilderStack);
     }
 
     return PositiveRule(this, keyMatcher, valueMatcher);
@@ -206,8 +183,7 @@ class RuleBuilder {
       String value = attribute.value;
       //_log.info("checking $name=$value");
       if (E == name) {
-        this.element = Element.values
-            .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
+        this.element = Element.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (K == name) {
         this.keys = value;
       } else if (V == name) {
@@ -215,19 +191,16 @@ class RuleBuilder {
       } else if (CAT == name) {
         this.cat = value;
       } else if (CLOSED == name) {
-        this.closed = Closed.values
-            .firstWhere((ele) => ele.toString().toLowerCase().contains(value));
+        this.closed = Closed.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (ZOOM_MIN == name) {
         try {
-          zoomlevelRange = zoomlevelRange
-              .restrictToMin(XmlUtils.parseNonNegativeByte(name, value));
+          zoomlevelRange = zoomlevelRange.restrictToMin(XmlUtils.parseNonNegativeByte(name, value));
         } catch (_) {
           impossible = true;
         }
       } else if (ZOOM_MAX == name) {
         try {
-          zoomlevelRange = zoomlevelRange
-              .restrictToMax(XmlUtils.parseNonNegativeByte(name, value));
+          zoomlevelRange = zoomlevelRange.restrictToMax(XmlUtils.parseNonNegativeByte(name, value));
         } catch (_) {
           impossible = true;
         }
@@ -299,17 +272,13 @@ class RuleBuilder {
 
     if ("rule" == qName) {
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder =
-          RuleBuilder(displayModel, zoomlevelSymbolFinder, ++level);
+      RuleBuilder ruleBuilder = RuleBuilder(displayModel, zoomlevelSymbolFinder, ++level, excludeIds: this.excludeIds);
       ruleBuilder.zoomlevelRange = zoomlevelRange;
 
       try {
         ruleBuilder.parse(displayModel, rootElement);
       } catch (error, stacktrace) {
-        _log.warning(
-            "Error while parsing rule $ruleBuilder which is a subrule of $this",
-            error,
-            stacktrace);
+        _log.warning("Error while parsing rule $ruleBuilder which is a subrule of $this", error, stacktrace);
       }
       ruleBuilderStack.add(ruleBuilder);
       maxLevel = max(level, ruleBuilder.maxLevel);
@@ -321,10 +290,24 @@ class RuleBuilder {
         if (closed != Closed.NO) this.addRenderingInstructionClosedWay(area);
         maxLevel = max(maxLevel, level);
       }
+    } else if ("symbol" == qName) {
+      checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
+      RenderinstructionSymbol symbol = RenderinstructionSymbol(zoomlevelSymbolFinder, level);
+      symbol.parse(displayModel, rootElement);
+      print('excludeIds = ${excludeIds}');
+      print('symbol.base.id = ${symbol.base.id}');
+      // Skip if the symbol's id is in the excluded set.
+      if (symbol.base.id != null && excludeIds.contains(symbol.base.id)) {
+        _log.info("Excluding symbol with id: ${symbol.base.id}");
+      } else {
+        if (isVisible(symbol)) {
+          if (element != Element.WAY) addRenderingInstructionNode(symbol);
+          if (closed != Closed.NO) addRenderingInstructionClosedWay(symbol);
+        }
+      }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionCaption caption =
-          new RenderinstructionCaption(zoomlevelSymbolFinder, level);
+      RenderinstructionCaption caption = new RenderinstructionCaption(zoomlevelSymbolFinder, level);
       caption.parse(displayModel, rootElement);
       if (isVisible(caption)) {
         if (element != Element.WAY) this.addRenderingInstructionNode(caption);
@@ -353,14 +336,11 @@ class RuleBuilder {
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionLinesymbol lineSymbol =
-          new RenderinstructionLinesymbol(level);
+      RenderinstructionLinesymbol lineSymbol = new RenderinstructionLinesymbol(level);
       lineSymbol.parse(displayModel, rootElement);
       if (isVisibleWay(lineSymbol)) {
-        if (closed != Closed.YES)
-          this.addRenderingInstructionOpenWay(lineSymbol);
-        if (closed != Closed.NO)
-          this.addRenderingInstructionClosedWay(lineSymbol);
+        if (closed != Closed.YES) this.addRenderingInstructionOpenWay(lineSymbol);
+        if (closed != Closed.NO) this.addRenderingInstructionClosedWay(lineSymbol);
         //maxLevel = max(maxLevel, level);
       }
     }
@@ -376,14 +356,12 @@ class RuleBuilder {
       pathText.parse(displayModel, rootElement);
       if (isVisibleWay(pathText)) {
         if (closed != Closed.YES) this.addRenderingInstructionOpenWay(pathText);
-        if (closed != Closed.NO)
-          this.addRenderingInstructionClosedWay(pathText);
+        if (closed != Closed.NO) this.addRenderingInstructionClosedWay(pathText);
         //maxLevel = max(maxLevel, level);
       }
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionSymbol symbol =
-          new RenderinstructionSymbol(zoomlevelSymbolFinder, level);
+      RenderinstructionSymbol symbol = new RenderinstructionSymbol(zoomlevelSymbolFinder, level);
       symbol.parse(displayModel, rootElement);
       if (isVisible(symbol)) {
         if (element != Element.WAY) this.addRenderingInstructionNode(symbol);
@@ -410,10 +388,8 @@ class RuleBuilder {
         } else if ("zoom-max" == name) {
           maxZoom = XmlUtils.parseNonNegativeByte("zoom-max", value);
         } else if ("magnitude" == name) {
-          magnitude =
-              XmlUtils.parseNonNegativeInteger("magnitude", value).toDouble();
-          if (magnitude > 255)
-            throw new Exception("Attribute 'magnitude' must not be > 255");
+          magnitude = XmlUtils.parseNonNegativeInteger("magnitude", value).toDouble();
+          if (magnitude > 255) throw new Exception("Attribute 'magnitude' must not be > 255");
         } else if ("always" == name) {
           always = "true" == (value);
         } else if ("layer" == name) {
@@ -421,17 +397,14 @@ class RuleBuilder {
         }
       });
 
-      RenderinstructionHillshading hillshading =
-          new RenderinstructionHillshading(
-              minZoom, maxZoom, magnitude, layer, always, this.level);
+      RenderinstructionHillshading hillshading = new RenderinstructionHillshading(minZoom, maxZoom, magnitude, layer, always, this.level);
       maxLevel = max(maxLevel, level);
 
 //      if (this.categories == null || category == null || this.categories.contains(category)) {
       hillShadings.add(hillshading);
 //      }
     } else {
-      throw new Exception(
-          "unknown element: " + qName + ", " + rootElement.toString());
+      throw new Exception("unknown element: " + qName + ", " + rootElement.toString());
     }
   }
 
@@ -486,18 +459,15 @@ class RuleBuilder {
     //return this.categories == null || rule.cat == null || this.categories.contains(rule.cat);
   }
 
-  void addRenderingInstructionNode(
-      RenderInstructionNode renderInstructionNode) {
+  void addRenderingInstructionNode(RenderInstructionNode renderInstructionNode) {
     this.renderInstructionNodes.add(renderInstructionNode);
   }
 
-  void addRenderingInstructionOpenWay(
-      RenderInstructionWay renderInstructionWay) {
+  void addRenderingInstructionOpenWay(RenderInstructionWay renderInstructionWay) {
     this.renderInstructionOpenWays.add(renderInstructionWay);
   }
 
-  void addRenderingInstructionClosedWay(
-      RenderInstructionWay renderInstructionWay) {
+  void addRenderingInstructionClosedWay(RenderInstructionWay renderInstructionWay) {
     this.renderInstructionClosedWays.add(renderInstructionWay);
   }
 
