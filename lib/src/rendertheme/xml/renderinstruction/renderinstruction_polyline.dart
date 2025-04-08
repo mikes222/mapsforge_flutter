@@ -41,6 +41,8 @@ class RenderinstructionPolyline extends RenderInstructionWay {
         base.bitmapSrc = value;
       } else if (RenderInstruction.CAT == name) {
         base.category = value;
+      } else if (RenderInstruction.ID == name) {
+        base.id = value;
       } else if (RenderInstruction.DY == name) {
         base.setDy(double.parse(value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SCALE == name) {
@@ -58,19 +60,15 @@ class RenderinstructionPolyline extends RenderInstructionWay {
           }
         base.setStrokeDashArray(dashArray);
       } else if (RenderInstruction.STROKE_LINECAP == name) {
-        base.setStrokeCap(Cap.values
-            .firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        base.setStrokeCap(Cap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_LINEJOIN == name) {
-        base.setStrokeJoin(Join.values
-            .firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        base.setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (RenderInstruction.STROKE_WIDTH == name) {
-        base.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) *
-            displayModel.getScaleFactor());
+        base.setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * displayModel.getScaleFactor());
       } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
         base.setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (RenderInstruction.SYMBOL_PERCENT == name) {
-        base.setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) *
-            displayModel.getFontScaleFactor().round());
+        base.setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * displayModel.getFontScaleFactor().round());
       } else if (RenderInstruction.SYMBOL_SCALING == name) {
 // no-op
       } else if (RenderInstruction.SYMBOL_WIDTH == name) {
@@ -83,9 +81,7 @@ class RenderinstructionPolyline extends RenderInstructionWay {
 
   static List<double> parseFloatArray(String name, String dashString) {
     List<String> dashEntries = dashString.split(",");
-    List<double> dashIntervals = dashEntries
-        .map((e) => XmlUtils.parseNonNegativeFloat(name, e))
-        .toList();
+    List<double> dashIntervals = dashEntries.map((e) => XmlUtils.parseNonNegativeFloat(name, e)).toList();
     // List<double>(dashEntries.length);
     // for (int i = 0; i < dashEntries.length; ++i) {
     //   dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);

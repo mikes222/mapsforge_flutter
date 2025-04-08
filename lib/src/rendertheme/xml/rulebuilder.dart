@@ -40,6 +40,7 @@ class RuleBuilder {
   static final String CLOSED = "closed";
   static final String E = "e";
   static final String K = "k";
+  static final String ID = "id";
 
   static final Pattern SPLIT_PATTERN = ("|");
   static final String STRING_NEGATION = "~";
@@ -52,6 +53,7 @@ class RuleBuilder {
   int maxLevel;
 
   String? cat;
+  String? id;
   ZoomlevelRange zoomlevelRange;
 
   /// A boolean variable which will be set to true if this rule can never be
@@ -180,6 +182,7 @@ class RuleBuilder {
   void parse(DisplayModel displayModel, XmlNode rootElement) {
     rootElement.attributes.forEach((XmlAttribute attribute) {
       String name = attribute.name.toString();
+
       String value = attribute.value;
       //_log.info("checking $name=$value");
       if (E == name) {
@@ -190,6 +193,8 @@ class RuleBuilder {
         this.values = value;
       } else if (CAT == name) {
         this.cat = value;
+      } else if (ID == name) {
+        this.id = value;
       } else if (CLOSED == name) {
         this.closed = Closed.values.firstWhere((ele) => ele.toString().toLowerCase().contains(value));
       } else if (ZOOM_MIN == name) {
@@ -214,11 +219,12 @@ class RuleBuilder {
     List<String> keyList = this.keys!.split(SPLIT_PATTERN);
     List<String> valueList = this.values!.split(SPLIT_PATTERN);
 
+// Always initialize keyMatcher and valueMatcher
+    keyMatcher = AttributeMatcher.getKeyMatcher(keyList);
+    valueMatcher = AttributeMatcher.getValueMatcher(valueList);
+
     if (valueList.remove(STRING_NEGATION)) {
       negativeMatcher = NegativeMatcher(keyList, valueList);
-    } else {
-      keyMatcher = AttributeMatcher.getKeyMatcher(keyList);
-      valueMatcher = AttributeMatcher.getValueMatcher(valueList);
     }
 
     for (XmlNode node in rootElement.children) {
@@ -271,6 +277,11 @@ class RuleBuilder {
     String qName = rootElement.name.toString();
 
     if ("rule" == qName) {
+      String? ruleId = rootElement.getAttribute("id");
+      if (ruleId != null && excludeIds.contains(ruleId)) {
+        _log.info("Excluding rule with id: $ruleId");
+        return; // Skip parsing this rule entirely.
+      }
       checkState(qName, XmlElementType.RULE);
       RuleBuilder ruleBuilder = RuleBuilder(displayModel, zoomlevelSymbolFinder, ++level, excludeIds: this.excludeIds);
       ruleBuilder.zoomlevelRange = zoomlevelRange;
@@ -278,6 +289,7 @@ class RuleBuilder {
       try {
         ruleBuilder.parse(displayModel, rootElement);
       } catch (error, stacktrace) {
+        print('Error while parsing rule $ruleBuilder which is a subrule of $this", $error, $stacktrace');
         _log.warning("Error while parsing rule $ruleBuilder which is a subrule of $this", error, stacktrace);
       }
       ruleBuilderStack.add(ruleBuilder);
@@ -326,11 +338,17 @@ class RuleBuilder {
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
       RenderinstructionPolyline line = RenderinstructionPolyline(level);
+
       line.parse(displayModel, rootElement);
-      if (isVisibleWay(line)) {
-        if (closed != Closed.YES) this.addRenderingInstructionOpenWay(line);
-        if (closed != Closed.NO) this.addRenderingInstructionClosedWay(line);
-        maxLevel = max(maxLevel, level);
+      if (line.base.id != null && excludeIds.contains(line.base.id)) {
+        print("Excluding symbol with id: ${line.base.id}");
+        _log.info("Excluding symbol with id: ${line.base.id}");
+      } else {
+        if (isVisibleWay(line)) {
+          if (closed != Closed.YES) this.addRenderingInstructionOpenWay(line);
+          if (closed != Closed.NO) this.addRenderingInstructionClosedWay(line);
+          maxLevel = max(maxLevel, level);
+        }
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
