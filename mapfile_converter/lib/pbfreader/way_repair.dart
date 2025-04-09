@@ -17,13 +17,13 @@ class WayRepair {
     /*double maxGap =*/
     _repair(wayholder);
     if (!LatLongUtils.isClosedWay(wayholder.way.latLongs[0])) {
-      if (LatLongUtils.euclideanDistance(wayholder.way.latLongs[0].first, wayholder.way.latLongs[0].last) <= maxGapMeter) {
+      if (Projection.distance(wayholder.way.latLongs[0].first, wayholder.way.latLongs[0].last) <= maxGapMeter) {
         wayholder.way.latLongs[0].add(wayholder.way.latLongs[0].first);
       }
     }
     for (var waypath in wayholder.otherOuters) {
       if (!waypath.isClosedWay()) {
-        if (LatLongUtils.euclideanDistance(waypath.first, waypath.last) <= maxGapMeter) {
+        if (Projection.distance(waypath.first, waypath.last) <= maxGapMeter) {
           waypath.add(waypath.first);
         }
       }

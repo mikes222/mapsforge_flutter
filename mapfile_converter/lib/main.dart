@@ -52,6 +52,7 @@ class StatisticsCommand extends Command {
     argParser.addOption("sourcefile", abbr: "s", help: "Source filename (PBF file)", mandatory: true);
   }
 
+  @override
   Future<void> run() async {
     _log.info("Calculating, please wait...");
     PbfStatistics pbfStatistics = await PbfStatistics.readFile(argResults!.option("sourcefile")!);
@@ -72,54 +73,77 @@ class ConvertCommand extends Command {
 
   ConvertCommand() {
     argParser.addOption("rendertheme", abbr: "r", defaultsTo: "rendertheme.xml", help: "Render theme filename");
-    argParser.addOption("sourcefile", abbr: "s", help: "Source filename (PBF file)", mandatory: true);
+    argParser.addOption("sourcefiles", abbr: "s", help: "Source filenames (PBF or osm files), separated by #", mandatory: true);
     argParser.addOption("destinationfile", abbr: "d", help: "Destination filename (mapfile or osm)", mandatory: true);
-    argParser.addOption("zoomlevels", abbr: "z", help: "Comma-separated zoomlevels. The last one is the max zoomlevel", defaultsTo: "0,5,9,13,16,20");
-    argParser.addOption("boundary", abbr: "b", help: "Boundary in minLat,minLong,maxLat,maxLong order. If omitted the boundary of the source file is used");
+    argParser.addOption(
+      "zoomlevels",
+      abbr: "z",
+      help: "Comma-separated zoomlevels. The last one is the max zoomlevel, separator=#",
+      defaultsTo: "0#5#9#13#16#20",
+    );
+    argParser.addOption(
+      "boundary",
+      abbr: "b",
+      help: "Boundary in minLat,minLong,maxLat,maxLong order. If omitted the boundary of the source file is used, separator=#",
+    );
     argParser.addFlag("debug", abbr: "f", defaultsTo: false, help: "Writes debug information in the mapfile");
     argParser.addOption("maxdeviation", abbr: "m", help: "Max deviation in pixels to simplify ways", defaultsTo: "5");
     argParser.addOption("maxgap", abbr: "g", help: "Max gap in meters to connect ways", defaultsTo: "200");
   }
 
+  @override
   Future<void> run() async {
-    _log.info("Converting, please wait...");
-
     /// Read and analyze render theme
     RuleReader ruleReader = RuleReader();
     final (ruleAnalyzer, renderTheme) = await ruleReader.readFile(argResults!.option("rendertheme")!);
 
-    /// Read and analyze PBF file
-    PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(
-      argResults!.option("sourcefile")!,
-      ruleAnalyzer,
-      maxGapMeter: double.parse(argResults!.option("maxgap")!),
-    );
-    pbfAnalyzer.statistics();
+    BoundingBox? boundingBox = _parseBoundingBoxFromCli();
 
-    /// Now start exporting the data to a mapfile
-    BoundingBox boundingBox = pbfAnalyzer.boundingBox!;
-    if (argResults!.option("boundary") != null) {
-      List<String> coordinatesString = argResults!.option("boundary")!.split(",");
-      if (coordinatesString.length != 4) {
-        coordinatesString = argResults!.option("boundary")!.split("_");
+    List<PointOfInterest> pois = [];
+    List<Wayholder> ways = [];
+
+    List<String> sourcefiles = _split(argResults!.option("sourcefiles")!);
+    for (var sourcefile in sourcefiles) {
+      _log.info("Reading $sourcefile, please wait...");
+      if (sourcefile.toLowerCase().endsWith(".osm")) {
+        PbfAnalyzer pbfAnalyzer = PbfAnalyzer(ruleAnalyzer: ruleAnalyzer, maxGapMeter: double.parse(argResults!.option("maxgap")!));
+        await pbfAnalyzer.readOsmToMemory(sourcefile);
+
+        if (boundingBox != null) {
+          int countPoi = pbfAnalyzer.pois.length;
+          int countWay = pbfAnalyzer.ways.length;
+          pbfAnalyzer.filterByBoundingBox(boundingBox);
+          _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
+          _log.info("Removed ${countWay - pbfAnalyzer.ways.length} ways because they are out of boundary");
+        }
+
+        boundingBox ??= pbfAnalyzer.boundingBox!;
+        pbfAnalyzer.statistics();
+        pois.addAll(pbfAnalyzer.pois);
+        ways.addAll(pbfAnalyzer.ways);
+        ways.addAll(pbfAnalyzer.waysMerged);
+        pbfAnalyzer.clear();
+      } else {
+        /// Read and analyze PBF file
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(sourcefile, ruleAnalyzer, maxGapMeter: double.parse(argResults!.option("maxgap")!));
+
+        if (boundingBox != null) {
+          int countPoi = pbfAnalyzer.pois.length;
+          int countWay = pbfAnalyzer.ways.length;
+          pbfAnalyzer.filterByBoundingBox(boundingBox);
+          _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
+          _log.info("Removed ${countWay - pbfAnalyzer.ways.length} ways because they are out of boundary");
+        }
+
+        /// Now start exporting the data to a mapfile
+        boundingBox ??= pbfAnalyzer.boundingBox!;
+        pbfAnalyzer.statistics();
+        pois.addAll(pbfAnalyzer.pois);
+        ways.addAll(pbfAnalyzer.ways);
+        ways.addAll(pbfAnalyzer.waysMerged);
+        pbfAnalyzer.clear();
       }
-      if (coordinatesString.length != 4) {
-        _log.info("Invalid boundary ${argResults!.option("boundary")}");
-        return;
-      }
-      List<double> coordinates = coordinatesString.map((toElement) => double.parse(toElement)).toList();
-      boundingBox = BoundingBox(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
-      // remove items which are outside of the given boundary
-      int countPoi = pbfAnalyzer.pois.length;
-      int countWay = pbfAnalyzer.ways.length;
-      pbfAnalyzer.filterByBoundingBox(boundingBox);
-      _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-      _log.info("Removed ${countWay - pbfAnalyzer.ways.length} ways because they are out of boundary");
     }
-    List<PointOfInterest> pois = pbfAnalyzer.pois;
-    List<Wayholder> ways = pbfAnalyzer.ways;
-    ways.addAll(pbfAnalyzer.waysMerged);
-    pbfAnalyzer.clear();
 
     /// Simplify the data: Remove small areas, simplify ways
     RenderthemeFilter renderthemeFilter = RenderthemeFilter();
@@ -132,8 +156,9 @@ class ConvertCommand extends Command {
     //   _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
     // });
 
+    _log.info("Writing ${argResults!.option("destinationfile")!}");
     if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".osm")) {
-      OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, boundingBox);
+      OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, boundingBox!);
       for (var pois2 in poiZoomlevels.values) {
         for (var poi in pois2) {
           osmWriter.writeNode(poi.position, poi.tags);
@@ -145,45 +170,58 @@ class ConvertCommand extends Command {
         }
       }
       await osmWriter.close();
-      _log.info("Process completed");
-      return;
-    }
+    } else {
+      List<String> zoomlevelsString = _split(argResults!.option("zoomlevels")!);
+      List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
 
-    List<String> zoomlevelsString = argResults!.option("zoomlevels")!.split(",");
-    if (zoomlevelsString.length < 3) {
-      zoomlevelsString = argResults!.option("zoomlevels")!.split("_");
-    }
-    List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
+      MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
+        boundingBox: boundingBox!,
+        debugFile: argResults!.flag("debug"),
+        zoomlevelRange: ZoomlevelRange(zoomlevels.first, zoomlevels.last),
+        //languagesPreference: "ja,es",
+      );
+      MapfileWriter mapfileWriter = MapfileWriter(filename: argResults!.option("destinationfile")!, mapHeaderInfo: mapHeaderInfo);
 
-    MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
-      boundingBox: boundingBox,
-      debugFile: argResults!.flag("debug"),
-      zoomlevelRange: ZoomlevelRange(zoomlevels.first, zoomlevels.last),
-      //languagesPreference: "ja,es",
-    );
-    MapfileWriter mapfileWriter = MapfileWriter(filename: argResults!.option("destinationfile")!, mapHeaderInfo: mapHeaderInfo);
-
-    /// Create the zoomlevels in the mapfile
-    int? previousZoomlevel;
-    ZoomlevelWriter zoomlevelWriter = ZoomlevelWriter(double.parse(argResults!.option("maxdeviation")!));
-    for (int zoomlevel in zoomlevels) {
-      if (previousZoomlevel != null) {
-        await zoomlevelWriter.writeZoomlevel(
-          mapfileWriter,
-          mapHeaderInfo,
-          boundingBox,
-          previousZoomlevel,
-          zoomlevel == zoomlevels.last ? zoomlevel : zoomlevel - 1,
-          wayZoomlevels,
-          poiZoomlevels,
-        );
+      /// Create the zoomlevels in the mapfile
+      int? previousZoomlevel;
+      ZoomlevelWriter zoomlevelWriter = ZoomlevelWriter(double.parse(argResults!.option("maxdeviation")!));
+      for (int zoomlevel in zoomlevels) {
+        if (previousZoomlevel != null) {
+          await zoomlevelWriter.writeZoomlevel(
+            mapfileWriter,
+            mapHeaderInfo,
+            boundingBox,
+            previousZoomlevel,
+            zoomlevel == zoomlevels.last ? zoomlevel : zoomlevel - 1,
+            wayZoomlevels,
+            poiZoomlevels,
+          );
+        }
+        previousZoomlevel = zoomlevel;
       }
-      previousZoomlevel = zoomlevel;
-    }
 
-    /// Write everything to the file and close the file
-    await mapfileWriter.write(double.parse(argResults!.option("maxdeviation")!));
-    await mapfileWriter.close();
+      /// Write everything to the file and close the file
+      await mapfileWriter.write(double.parse(argResults!.option("maxdeviation")!));
+      await mapfileWriter.close();
+    }
     _log.info("Process completed");
+    exit(0);
+  }
+
+  BoundingBox? _parseBoundingBoxFromCli() {
+    if (argResults!.option("boundary") != null) {
+      List<String> coordinatesString = _split(argResults!.option("boundary")!);
+      if (coordinatesString.length != 4) {
+        _log.info("Invalid boundary ${argResults!.option("boundary")}");
+        return null;
+      }
+      List<double> coordinates = coordinatesString.map((toElement) => double.parse(toElement)).toList();
+      return BoundingBox(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+    }
+    return null;
+  }
+
+  List<String> _split(String value) {
+    return value.split("#");
   }
 }

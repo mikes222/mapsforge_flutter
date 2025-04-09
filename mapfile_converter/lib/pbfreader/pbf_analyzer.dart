@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/pbfreader/pbf_block_reader.dart';
 import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -11,6 +10,7 @@ import 'package:mapsforge_flutter/special.dart';
 import 'package:uuid/uuid.dart';
 
 import '../custom_tag_modifier.dart';
+import '../osm/osm_reader.dart';
 import 'way_repair.dart';
 
 /// Reads data from a pbf file and converts it to PointOfInterest and Way objects
@@ -50,7 +50,15 @@ class PbfAnalyzer {
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
-  PbfAnalyzer({this.maxGapMeter = 200});
+  PbfAnalyzer({this.maxGapMeter = 200, required RuleAnalyzer ruleAnalyzer}) {
+    converter = CustomTagModifier(
+      allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
+      allowedWayTags: ruleAnalyzer.wayValueinfos(),
+      negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
+      negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
+      keys: ruleAnalyzer.keys,
+    );
+  }
 
   static Future<PbfAnalyzer> readFile(String filename, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200}) async {
     ReadbufferSource readbufferSource = ReadbufferFile(filename);
@@ -61,14 +69,7 @@ class PbfAnalyzer {
 
   static Future<PbfAnalyzer> readSource(ReadbufferSource readbufferSource, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200}) async {
     int length = await readbufferSource.length();
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer(maxGapMeter: maxGapMeter);
-    pbfAnalyzer.converter = CustomTagModifier(
-      allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
-      allowedWayTags: ruleAnalyzer.wayValueinfos(),
-      negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
-      negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
-      keys: ruleAnalyzer.keys,
-    );
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer(maxGapMeter: maxGapMeter, ruleAnalyzer: ruleAnalyzer);
     await pbfAnalyzer.readToMemory(readbufferSource, length);
     await pbfAnalyzer.analyze();
     pbfAnalyzer.removeSuperflous();
@@ -81,12 +82,18 @@ class PbfAnalyzer {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < sourceLength) {
-      BlobResult blobResult = await pbfReader.readBlob(readbufferSource);
-      PbfBlockReader reader = PbfBlockReader();
-      PbfData blockData = reader.readBlock(blobResult);
-      await _analyze1Block(blockData);
+      PbfData pbfData = await pbfReader.readBlobData(readbufferSource);
+      await _analyze1Block(pbfData);
     }
     boundingBox = pbfReader.calculateBounds();
+  }
+
+  Future<void> readOsmToMemory(String filename) async {
+    OsmReader osmReader = OsmReader(filename);
+    await osmReader.readOsmFile((PbfData pbfData) async {
+      await _analyze1Block(pbfData);
+    });
+    boundingBox = osmReader.boundingBox;
   }
 
   Future<void> analyze() async {
@@ -103,15 +110,12 @@ class PbfAnalyzer {
     WayRepair wayRepair = WayRepair(maxGapMeter);
     for (var wayholder in _wayHoldersMerged) {
       // would be nice to find the tags which requires a closed area via the render rules but for now they seem too many. Lets define a set of rules here.
-      if (wayholder.way.hasTagValue("natural", "water") ||
-          wayholder.way.hasTagValue("natural", "land") ||
-          wayholder.way.hasTagValue("natural", "meadow") ||
-          wayholder.way.hasTagValue("natural", "wetland") ||
-          wayholder.way.hasTagValue("natural", "coastline") ||
-          wayholder.way.hasTagValue("landuse", "residential") ||
-          wayholder.way.hasTagValue("landuse", "forest") ||
-          wayholder.way.hasTagValue("landuse", "wood") ||
-          wayholder.way.hasTagValue("landuse", "grassland")) {
+      // See https://wiki.openstreetmap.org/wiki/Key:area
+      if (wayholder.way.hasTag("building") ||
+          wayholder.way.hasTag("landuse") ||
+          wayholder.way.hasTag("leisure") ||
+          wayholder.way.hasTag("natural") ||
+          wayholder.way.hasTagValue("indoor", "corridor")) {
         wayRepair.repairClosed(wayholder);
       } else {
         wayRepair.repairOpen(wayholder);
@@ -129,12 +133,13 @@ class PbfAnalyzer {
       wayholders.first.mergedWithOtherWay = true;
       // use a inherited class of waypath which can set the [mergedWithOutherWays] property of the wayholder.
       wayholder.otherOuters = wayholders.skip(1).map((toElement) => _Waypath(toElement.way.latLongs[0], toElement)).toList();
-      _log.info("Repairing coastline: ${wayholder.otherOuters.length} items");
+      int count = wayholder.otherOuters.length;
+      //_log.info("Repairing coastline: ${wayholder.otherOuters.length} ways");
+      WayRepair wayRepair = WayRepair(10000);
       wayRepair.connect(wayholder);
-      _log.info("Repairing coastline: ${wayholder.otherOuters.length} items after connecting items");
       wayRepair.repairClosed(wayholder);
-      _wayHolders[int.parse(Uuid().v4().replaceAll("-", "").substring(19), radix: 16)] = wayholder;
-      _log.info("Repairing coastline: reduced to ${wayholder.otherOuters.length} items");
+      _wayHolders[int.parse(const Uuid().v4().replaceAll("-", "").substring(19), radix: 16)] = wayholder;
+      _log.info("Repairing coastline: reduced from $count to ${wayholder.otherOuters.length} ways");
     }
   }
 
@@ -446,7 +451,18 @@ class PbfAnalyzer {
 
   void filterByBoundingBox(BoundingBox boundingBox) {
     _nodeHolders.removeWhere((zoomlevel, test) => !boundingBox.containsLatLong(test.pointOfInterest.position));
-    _wayHolders.removeWhere((zoomlevel, test) => !boundingBox.intersects(test.way.getBoundingBox()));
+    _wayHolders.removeWhere(
+      (zoomlevel, test) =>
+          !boundingBox.intersects(test.way.getBoundingBox()) &&
+          !boundingBox.containsBoundingBox(test.way.getBoundingBox()) &&
+          !test.way.getBoundingBox().containsBoundingBox(boundingBox),
+    );
+    _wayHoldersMerged.removeWhere(
+      (test) =>
+          !boundingBox.intersects(test.way.getBoundingBox()) &&
+          !boundingBox.containsBoundingBox(test.way.getBoundingBox()) &&
+          !test.way.getBoundingBox().containsBoundingBox(boundingBox),
+    );
   }
 }
 

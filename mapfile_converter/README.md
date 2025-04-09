@@ -1,14 +1,12 @@
-Converts a pbf file to a mapfile or osm file. It uses a rendertheme file to determine which points/ways should be kept and which can be omitted in the destination file.
+Converts a pbf or osm file to a mapfile or osm file. It uses a rendertheme file to determine which points/ways should be kept and which can be omitted in the destination file. This makes sure that only necessary informations are included in the destination file.
 
-Currently the base zoomlevel must be equal to the min zoomlevel
-
-flutter: Converts a pbf file to mapfile
+Currently the base zoomlevel must be equal to the min zoomlevel.
 
 Usage: mapfile_converter convert [arguments]
 -h, --help                           Print this usage information.
 -r, --rendertheme                    Render theme filename
 (defaults to "rendertheme.xml")
--s, --sourcefile (mandatory)         Source filename (PBF file)
+-s, --sourcefiles (mandatory)         Source filename (PBF file)
 -d, --destinationfile (mandatory)    Destination filename (mapfile or osm)
 -z, --zoomlevels                     Comma-separated zoomlevels. The last one is the max zoomlevel
 (defaults to "0,5,9,13,16,20")
@@ -16,27 +14,63 @@ Usage: mapfile_converter convert [arguments]
 -f, --[no-]debug                     Writes debug information in the mapfile
 -m, --maxdeviation                   Max deviation in pixels to simplify ways
 (defaults to "5")
--g, --maxgap                         Max gap in meters to connect ways
+-g, --maxgap                         Max gap in meters to connect ways 
 (defaults to "200")
+
+## Explanation
+
+sourcefiles:
+
+"#"-separated list of sourcefiles. If you omit the ``boundary`` parameter the boundary of the first sourcefile is used. PBF and osm is currently supported.
+
+destinationfile:
+
+path to the destinationfile. mapfile or osm is currently supported.
+
+rendertheme:
+
+path to the render theme file. All information which are not used to draw something according to the render theme is ignored and will be omitted in the output file
+
+zoomlevels: 
+ 
+"#"-separated list of zoomlevels. The last one is the max zoomlevel. This is used when creating mapfiles. 
+For example for zoomlevels 0#5#8#12 the mapfile consists of 3 subfiles, one for zoomlevel 0-4 (base zoomlevel 0), one for zoomlevel 5-7 (base zoomlevel 5), one for zoomlevel 8-12 (base zoomlevel 8).  
+
+boundary:
+
+"#"-separated list of boundaries in minLat,minLong,maxLat,maxLong order. If omitted the boundary of the first sourcefile is used.
+
+debug:
+
+if set, debug informations are added to the mapfile. This increases the size of the mapfile significantly. Do not use for production.
+
+maxdeviation:
+
+Maximum deviation allowed in pixels to simplify ways. If a way consists of many nodes we try to remove some nodes as long as the new way does not deviate more from the original way than specified by maxdeviation.
+
+maxgap:
+
+Maximum gap in meters to be allowed to "close" open ways. 
+
+
+Note that the program creates temporary files in the current directory so it must have write access to the current directory.
 
 
 Documentation is not yet done.
 
-Just try
+## Examples
 
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=lightrender.xml --dart-entrypoint-args --sourcefile=monaco-latest.osm.pbf --dart-entrypoint-args --destinationfile=monaco.map
+Converting coastal information from pbf to osm:
 
-or
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=lowres_coast.osm --dart-entrypoint-args --maxgap=10000
 
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=lightrender.xml --dart-entrypoint-args --sourcefile=map_default_46_16.pbf --dart-entrypoint-args --destinationfile=test.map
+Converting coastal information from osm to mapfile:
 
-or
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=lowres_coast.osm --dart-entrypoint-args --destinationfile=lowres_coast.map --dart-entrypoint-args --maxgap=10000 --dart-entrypoint-args --zoomlevels=0#5#9#12
 
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=lightrender.xml --dart-entrypoint-args --sourcefile=map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=test.map --dart-entrypoint-args --zoomlevels=0_5_9_12 --dart-entrypoint-args --maxdeviation=20 --dart-entrypoint-args --maxgap=1000
+Converting 2 pbf files to mapfile:
 
-or
-
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=lightrender.xml --dart-entrypoint-args --sourcefile=map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=lowres_coast.osm --dart-entrypoint-args --zoomlevels=0_5_9_12 --dart-entrypoint-args --maxgap=10000
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_default_44_12.pbf#map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=test.map --dart-entrypoint-args --maxgap=100
 
 type 
 

@@ -3,8 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/pbfreader/pbf_analyzer.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffermemory.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
+import 'package:mapsforge_flutter/special.dart';
 
 import '../testassetbundle.dart';
 
@@ -14,7 +13,7 @@ main() async {
     ByteData byteData = await TestAssetBundle().load("monaco-latest.osm.pbf");
     Uint8List data = byteData.buffer.asUint8List();
     ReadbufferSource readbufferSource = ReadbufferMemory(data);
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer();
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer(ruleAnalyzer: RuleAnalyzer());
     await pbfAnalyzer.readToMemory(readbufferSource, data.length);
     readbufferSource.dispose();
     await pbfAnalyzer.analyze();

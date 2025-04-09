@@ -21,10 +21,8 @@ class ReadbufferMemory extends ReadbufferSource {
   }
 
   @override
-  Future<Readbuffer> readFromFileAt(
-      int indexBlockPosition, int indexBlockSize) {
-    Uint8List c = content.sublist(
-        indexBlockPosition, indexBlockPosition + indexBlockSize);
+  Future<Readbuffer> readFromFileAt(int indexBlockPosition, int indexBlockSize) {
+    Uint8List c = content.sublist(indexBlockPosition, indexBlockPosition + indexBlockSize);
     return Future.value(Readbuffer(c, indexBlockPosition));
   }
 
@@ -45,5 +43,10 @@ class ReadbufferMemory extends ReadbufferSource {
   Future<void> setPosition(int position) {
     _lastOffset = position;
     return Future.value();
+  }
+
+  @override
+  Stream<List<int>> get inputStream {
+    return Stream.value(content);
   }
 }

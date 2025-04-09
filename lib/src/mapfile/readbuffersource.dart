@@ -22,4 +22,6 @@ abstract class ReadbufferSource {
   int getPosition();
 
   Future<void> setPosition(int position);
+
+  Stream<List<int>> get inputStream;
 }

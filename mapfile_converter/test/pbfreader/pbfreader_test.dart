@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/pbfreader/pbf_block_reader.dart';
 import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
@@ -20,9 +19,7 @@ main() async {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < data.length) {
-      BlobResult blobResult = await pbfReader.readBlob(readbufferSource);
-      PbfBlockReader reader = PbfBlockReader();
-      PbfData blockData = reader.readBlock(blobResult);
+      PbfData blockData = await pbfReader.readBlobData(readbufferSource);
       print(blockData);
     }
   });
@@ -34,9 +31,7 @@ main() async {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < length) {
-      BlobResult blobResult = await pbfReader.readBlob(readbufferSource);
-      PbfBlockReader reader = PbfBlockReader();
-      PbfData blockData = reader.readBlock(blobResult);
+      PbfData blockData = await pbfReader.readBlobData(readbufferSource);
       print(blockData);
     }
   });

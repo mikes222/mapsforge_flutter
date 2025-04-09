@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
@@ -24,8 +25,7 @@ class ReadbufferFile implements ReadbufferSource {
 
   int? _length;
 
-  final Storage<String, Readbuffer> _storage =
-      WeakReferenceStorage<String, Readbuffer>();
+  final Storage<String, Readbuffer> _storage = WeakReferenceStorage<String, Readbuffer>();
 
   late LruCache<String, Readbuffer> _cache;
 
@@ -59,8 +59,7 @@ class ReadbufferFile implements ReadbufferSource {
     String cacheKey = "$_position-$length";
 
     Timing timing = Timing(log: _log);
-    Readbuffer readbuffer =
-        await _cache.getOrProduce(cacheKey, (String key) async {
+    Readbuffer readbuffer = await _cache.getOrProduce(cacheKey, (String key) async {
       _resource ??= _ReadBufferFileResource(filename);
       Uint8List _bufferData = await _resource!.read(length);
       assert(_bufferData.length == length);
@@ -94,13 +93,10 @@ class ReadbufferFile implements ReadbufferSource {
 
     Timing timing = Timing(log: _log);
     Readbuffer result = await _cache.getOrProduce(cacheKey, (String key) async {
-      _ReadBufferFileResource _ressourceAt = _resourceAts.isNotEmpty
-          ? _resourceAts.removeLast()
-          : _ReadBufferFileResource(filename);
+      _ReadBufferFileResource _ressourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeLast() : _ReadBufferFileResource(filename);
       await _ressourceAt.setPosition(position);
       Uint8List _bufferData = await _ressourceAt.read(length);
-      assert(_bufferData.length == length,
-          "${_bufferData.length} == ${length} at position 0x${position.toRadixString(16)} with resource ${_ressourceAt._id}");
+      assert(_bufferData.length == length, "${_bufferData.length} == ${length} at position 0x${position.toRadixString(16)} with resource ${_ressourceAt._id}");
       _resourceAts.add(_ressourceAt);
       Readbuffer result = Readbuffer(_bufferData, position);
       return result;
@@ -112,9 +108,7 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   Future<int> length() async {
     if (_length != null) return _length!;
-    _ReadBufferFileResource _ressourceAt = _resourceAts.isNotEmpty
-        ? _resourceAts.removeLast()
-        : _ReadBufferFileResource(filename);
+    _ReadBufferFileResource _ressourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeLast() : _ReadBufferFileResource(filename);
     _length = await _ressourceAt.length();
     assert(_length! >= 0);
     _resourceAts.add(_ressourceAt);
@@ -130,6 +124,16 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   int getPosition() {
     return _position;
+  }
+
+  @override
+  Stream<List<int>> get inputStream async* {
+    int length = await this.length();
+    while (_position < length) {
+      int l = Math.min(length - _position, 10000);
+      Readbuffer readbuffer = await readFromFile(l);
+      yield readbuffer.getBuffer(0, l);
+    }
   }
 }
 

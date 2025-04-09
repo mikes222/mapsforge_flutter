@@ -31,12 +31,9 @@ class LatLongUtils {
   static bool contains(List<ILatLong> latLongs, ILatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
-      if ((latLongs[i].latitude > latLong.latitude) !=
-              (latLongs[j].latitude > latLong.latitude) &&
+      if ((latLongs[i].latitude > latLong.latitude) != (latLongs[j].latitude > latLong.latitude) &&
           (latLong.longitude <
-              (latLongs[j].longitude - latLongs[i].longitude) *
-                      (latLong.latitude - latLongs[i].latitude) /
-                      (latLongs[j].latitude - latLongs[i].latitude) +
+              (latLongs[j].longitude - latLongs[i].longitude) * (latLong.latitude - latLongs[i].latitude) / (latLongs[j].latitude - latLongs[i].latitude) +
                   latLongs[i].longitude)) {
         result = !result;
       }
@@ -49,10 +46,8 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static double distanceSegmentPoint(double startX, double startY, double endX,
-      double endY, double pointX, double pointY) {
-    Mappoint nearest =
-        nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
+  static double distanceSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
+    Mappoint nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
     return sqrt(pow(nearest.x - pointX, 2) + pow(nearest.y - pointY, 2));
   }
 
@@ -76,13 +71,11 @@ class LatLongUtils {
   /// @param latLong2 second LatLong
   /// @return distance in degrees as a double
   static double euclideanDistance(ILatLong latLong1, ILatLong latLong2) {
-    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) +
-        pow(latLong1.latitude - latLong2.latitude, 2));
+    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) + pow(latLong1.latitude - latLong2.latitude, 2));
   }
 
   static double euclideanDistanceSquared(ILatLong latLong1, ILatLong latLong2) {
-    return pow(latLong1.longitude - latLong2.longitude, 2).toDouble() +
-        pow(latLong1.latitude - latLong2.latitude, 2);
+    return pow(latLong1.longitude - latLong2.longitude, 2).toDouble() + pow(latLong1.latitude - latLong2.latitude, 2);
   }
 
   /**
@@ -97,10 +90,8 @@ class LatLongUtils {
 
   /// Returns true if the other point is equal or near this point.
   static bool isNear(ILatLong me, ILatLong other) {
-    if (me.latitude == other.latitude && me.longitude == other.longitude)
-      return true;
-    if ((me.latitude - other.latitude).abs() <= 0.00005 &&
-        (me.longitude - other.longitude).abs() <= 0.00005) return true;
+    if (me.latitude == other.latitude && me.longitude == other.longitude) return true;
+    if ((me.latitude - other.latitude).abs() <= 0.00005 && (me.longitude - other.longitude).abs() <= 0.00005) return true;
     return false;
   }
 
@@ -125,15 +116,12 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static Mappoint nearestSegmentPoint(double startX, double startY, double endX,
-      double endY, double pointX, double pointY) {
+  static Mappoint nearestSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
     double length2 = xDiff * xDiff + yDiff * yDiff;
     if (length2 == 0) return Mappoint(startX, startY);
-    double t = ((pointX - startX) * (endX - startX) +
-            (pointY - startY) * (endY - startY)) /
-        length2;
+    double t = ((pointX - startX) * (endX - startX) + (pointY - startY) * (endY - startY)) / length2;
     if (t < 0) return Mappoint(startX, startY);
     if (t > 1) return Mappoint(endX, endY);
     return Mappoint(startX + t * (endX - startX), startY + t * (endY - startY));
@@ -250,8 +238,7 @@ class LatLongUtils {
         // Check if the ray intersects the current edge
         if (y1 <= pointY && y2 > pointY || y2 <= pointY && y1 > pointY) {
           // Calculate the intersection point of the ray with the current edge
-          final double intersectionX =
-              (x2 - x1) * (pointY - y1) / (y2 - y1) + x1;
+          final double intersectionX = (x2 - x1) * (pointY - y1) / (y2 - y1) + x1;
 
           // If the intersection point is to the left of the test point, count it as an intersection
           if (pointX < intersectionX) {
@@ -274,8 +261,7 @@ class LatLongUtils {
   /// @param line2Start Der Startpunkt des zweiten Liniensegments.
   /// @param line2End Der Endpunkt des zweiten Liniensegments.
   /// @return `true`, wenn sich die Liniensegmente überschneiden, andernfalls `false`.
-  static bool doLinesIntersect(ILatLong line1Start, ILatLong line1End,
-      ILatLong line2Start, ILatLong line2End) {
+  static bool doLinesIntersect(ILatLong line1Start, ILatLong line1End, ILatLong line2Start, ILatLong line2End) {
     // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
     double x1 = line1Start.longitude;
     double y1 = line1Start.latitude;
@@ -315,8 +301,7 @@ class LatLongUtils {
   /// @param line2Start Der Startpunkt des zweiten Liniensegments.
   /// @param line2End Der Endpunkt des zweiten Liniensegments.
   /// @return Der Schnittpunkt als ILatLong oder null, wenn kein Schnittpunkt gefunden wurde.
-  static ILatLong? getLineIntersection(ILatLong line1Start, ILatLong line1End,
-      ILatLong line2Start, ILatLong line2End) {
+  static ILatLong? getLineIntersection(ILatLong line1Start, ILatLong line1End, ILatLong line2Start, ILatLong line2End) {
     final x1 = line1Start.longitude;
     final y1 = line1Start.latitude;
     final x2 = line1End.longitude;
@@ -354,13 +339,37 @@ class LatLongUtils {
     return null;
   }
 
+  /// Finds the intersection point of two line segments whereas the second line segment is horizontal. This is a method which may be faster than the generic one
+  /// in the case when the first line is above or below the second line.
+  static ILatLong? getLineIntersectionHorizontal(ILatLong line1Start, ILatLong line1End, ILatLong line2Start, ILatLong line2End) {
+    final y1 = line1Start.latitude;
+    final y2 = line1End.latitude;
+    final y3 = line2Start.latitude;
+
+    // first lines is below or above the second line
+    if (y1 > y3 && y2 > y3) return null;
+    if (y1 < y3 && y2 < y3) return null;
+
+    return getLineIntersection(line1Start, line1End, line2Start, line2End);
+  }
+
+  static ILatLong? getLineIntersectionVertical(ILatLong line1Start, ILatLong line1End, ILatLong line2Start, ILatLong line2End) {
+    final x1 = line1Start.longitude;
+    final x2 = line1End.longitude;
+    final x3 = line2Start.longitude;
+
+    if (x1 < x3 && x2 < x3) return null;
+    if (x1 > x3 && x2 > x3) return null;
+
+    return getLineIntersection(line1Start, line1End, line2Start, line2End);
+  }
+
   static void printLatLongs(Way way) {
     way.latLongs.forEach((latlongs) {
       List<String> results = [];
       String result = "";
       latlongs.forEach((latlong) {
-        result +=
-            "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
+        result += "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
         if (result.length > 250) {
           results.add(result);
           result = "";

@@ -5,6 +5,7 @@ class Waypath {
 
   bool? _closed;
 
+  // cached bounding box
   BoundingBox? _boundingBox;
 
   Waypath(this._path);
@@ -55,7 +56,8 @@ class Waypath {
 
   bool get isNotEmpty => _path.isNotEmpty;
 
-  List<ILatLong> get path => List.from(_path);
+  // for debugging purposes: return a copy of the path
+  List<ILatLong> get path => _path; //List.from(_path);
 
   List<ILatLong> get pathForModification {
     _closed = null;

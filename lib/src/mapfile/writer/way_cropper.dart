@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_simplify_filter.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
@@ -13,13 +12,13 @@ class WayCropper {
   Wayholder cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
     List<List<ILatLong>> newLatLongs = [];
     wayholder.way.latLongs.forEach((test) {
-      List<ILatLong> toAdd = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
+      List<ILatLong> toAdd = _optimizeWaypoints(Waypath(test), boundingBox, maxZoomlevel);
       if (toAdd.length >= 2) newLatLongs.add(toAdd);
     });
     Way way = Way(wayholder.way.layer, wayholder.way.tags, newLatLongs, wayholder.way.labelPosition);
     newLatLongs = [];
     wayholder.otherOuters.forEach((test) {
-      List<ILatLong> toAdd = _optimizeWaypoints(test.path, boundingBox, maxZoomlevel);
+      List<ILatLong> toAdd = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
       if (toAdd.length >= 2) newLatLongs.add(toAdd);
     });
     // return a new wayholder instance
@@ -32,20 +31,20 @@ class WayCropper {
   /// @param waypoints Die Liste der Wegpunkte.
   /// @param tileBoundary Die Tile-Boundary (Bounding Box).
   /// @return Die optimierte Liste der Wegpunkte.
-  List<ILatLong> _optimizeWaypoints(List<ILatLong> waypoints, BoundingBox tileBoundary, int maxZoomlevel) {
+  List<ILatLong> _optimizeWaypoints(Waypath waypoints, BoundingBox tileBoundary, int maxZoomlevel) {
     if (waypoints.isEmpty) return [];
 
-    BoundingBox wayBoundingBox = BoundingBox.fromLatLongs(waypoints);
+    BoundingBox wayBoundingBox = waypoints.boundingBox;
     // all points inside the tile boundary
     if (tileBoundary.containsBoundingBox(wayBoundingBox)) {
       if (waypoints.length > 32767) {
         // many waypoints? simplify them.
         WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
-        List<ILatLong> result = simplifyFilter.reduceWayEnsureMax(waypoints);
+        List<ILatLong> result = simplifyFilter.reduceWayEnsureMax(waypoints.path);
         print("${waypoints.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
         return result;
       }
-      return waypoints;
+      return waypoints.path;
     }
 
     // no intersection, ignore these points
@@ -59,7 +58,7 @@ class WayCropper {
     var lastEntryDirection = -1;
     var lastExitDirection = -1;
 
-    waypoints.forEachIndexed((index, waypoint) {
+    waypoints.path.forEach((waypoint) {
       bool isInside = tileBoundary.containsLatLong(waypoint);
 
       if (isInside) {
@@ -68,7 +67,7 @@ class WayCropper {
           final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint!, waypoint, tileBoundary);
           if (firstEntryDirection == -1) firstEntryDirection = direction;
           lastEntryDirection = direction;
-          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypoints);
+          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypoints.path);
           optimizedWaypoints.add(intersectionPoint!);
         }
         optimizedWaypoints.add(waypoint);
@@ -86,7 +85,7 @@ class WayCropper {
             // yes, they intersect (twice)
             if (firstEntryDirection == -1) firstEntryDirection = direction;
             lastEntryDirection = direction;
-            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypoints);
+            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypoints.path);
             optimizedWaypoints.add(intersectionPoint);
             // and now find the exit point. Search in opposite direction to find
             // the exit point nearest to the current waypoint
@@ -103,9 +102,9 @@ class WayCropper {
     });
 
     // Check if it is a closed way and the new way is not closed
-    if (LatLongUtils.isClosedWay(waypoints)) {
+    if (waypoints.isClosedWay()) {
       // Step 1: Find out if the center of the tile is inside or outside of the original way
-      bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypoints);
+      bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypoints.path);
       if (optimizedWaypoints.isEmpty && !isInside) {
         // no intersection, ignore these points
         return [];
@@ -134,7 +133,7 @@ class WayCropper {
       // find how we should close the way:
       // Step 2: Temporary close the way and find out if the center of the tile is inside or outside of the new way
       List<ILatLong> tempWaypoints = List.from(optimizedWaypoints);
-      _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, waypoints);
+      _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, waypoints.path);
       // close the temporary way
       tempWaypoints.add(tempWaypoints.first);
       bool isInsideNew = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), tempWaypoints);
@@ -416,16 +415,16 @@ class WayCropper {
 
     // Prüfe jeden Rand des Rechtecks auf Schnittpunkte
 
-    ILatLong? intersection = LatLongUtils.getLineIntersection(start, end, topLeft, topRight);
+    ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, topLeft, topRight);
     if (intersection != null) return (intersection, 0);
 
-    intersection = LatLongUtils.getLineIntersection(start, end, topRight, bottomRight);
+    intersection = LatLongUtils.getLineIntersectionVertical(start, end, topRight, bottomRight);
     if (intersection != null) return (intersection, 1);
 
-    intersection = LatLongUtils.getLineIntersection(start, end, bottomRight, bottomLeft);
+    intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, bottomRight, bottomLeft);
     if (intersection != null) return (intersection, 2);
 
-    intersection = LatLongUtils.getLineIntersection(start, end, bottomLeft, topLeft);
+    intersection = LatLongUtils.getLineIntersectionVertical(start, end, bottomLeft, topLeft);
     if (intersection != null) return (intersection, 3);
 
     return (null, -1);
@@ -447,12 +446,12 @@ class WayCropper {
     // Prüfe jeden Rand des Rechtecks auf Schnittpunkte
 
     if (start.latitude > end.latitude) {
-      ILatLong? intersection = LatLongUtils.getLineIntersection(start, end, topLeft, topRight);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, topLeft, topRight);
       if (intersection != null) return (intersection, 0);
 
       return _checkLeftRight(start, end, topLeft, topRight, bottomRight, bottomLeft);
     } else {
-      ILatLong? intersection = LatLongUtils.getLineIntersection(start, end, bottomRight, bottomLeft);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, bottomRight, bottomLeft);
       if (intersection != null) return (intersection, 2);
 
       return _checkLeftRight(start, end, topLeft, topRight, bottomRight, bottomLeft);
@@ -461,10 +460,10 @@ class WayCropper {
 
   (ILatLong?, int) _checkLeftRight(ILatLong start, ILatLong end, ILatLong topLeft, ILatLong topRight, ILatLong bottomRight, ILatLong bottomLeft) {
     if (start.longitude > end.longitude) {
-      ILatLong? intersection = LatLongUtils.getLineIntersection(start, end, topRight, bottomRight);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionVertical(start, end, topRight, bottomRight);
       if (intersection != null) return (intersection, 1);
     } else {
-      ILatLong? intersection1 = LatLongUtils.getLineIntersection(start, end, bottomLeft, topLeft);
+      ILatLong? intersection1 = LatLongUtils.getLineIntersectionVertical(start, end, bottomLeft, topLeft);
       if (intersection1 != null) return (intersection1, 3);
     }
 

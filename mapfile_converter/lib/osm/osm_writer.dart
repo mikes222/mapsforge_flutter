@@ -51,15 +51,35 @@ class OsmWriter {
     _Way _way = _Way(way.tags);
     way.latLongs.forEachIndexed((idx, latLongs) {
       List<int> nodes = [];
-      for (var latLong in latLongs) {
-        nodes.add(writeNode(latLong, []));
+      bool closed = LatLongUtils.isClosedWay(latLongs);
+      if (closed) {
+        int firstId = writeNode(latLongs.first, []);
+        nodes.add(firstId);
+        for (var latLong in latLongs.skip(1).take(latLongs.length - 2)) {
+          nodes.add(writeNode(latLong, []));
+        }
+        nodes.add(firstId);
+      } else {
+        for (var latLong in latLongs) {
+          nodes.add(writeNode(latLong, []));
+        }
       }
       _way.addNodes(nodes);
     });
     for (var waypath in waypaths) {
       List<int> nodes = [];
-      for (var latLong in waypath.path) {
-        nodes.add(writeNode(latLong, []));
+      bool closed = LatLongUtils.isClosedWay(waypath.path);
+      if (closed) {
+        int firstId = writeNode(waypath.path.first, []);
+        nodes.add(firstId);
+        for (var latLong in waypath.path.skip(1).take(waypath.path.length - 2)) {
+          nodes.add(writeNode(latLong, []));
+        }
+        nodes.add(firstId);
+      } else {
+        for (var latLong in waypath.path) {
+          nodes.add(writeNode(latLong, []));
+        }
       }
       _way.addOuterNodes(nodes);
     }
@@ -73,7 +93,7 @@ class OsmWriter {
   void _writeTags(List<Tag> tags, IOSink sink) {
     ++_currentIdent;
     for (var tag in tags) {
-      _writeString('<tag k="${tag.key}" v="${tag.value}"/>', sink);
+      _writeString('<tag k="${const HtmlEscape().convert(tag.key!)}" v="${const HtmlEscape().convert(tag.value!)}"/>', sink);
     }
     --_currentIdent;
   }

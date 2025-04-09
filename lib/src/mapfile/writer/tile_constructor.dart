@@ -190,9 +190,27 @@ class TileConstructor {
       Wayinfo newWayinfo = Wayinfo();
       wayinfo.wayholders.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (tileBoundingBox.intersects(wayBoundingBox) ||
-            tileBoundingBox.containsBoundingBox(wayBoundingBox) ||
-            wayBoundingBox.containsBoundingBox(tileBoundingBox)) {
+        if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
+          newWayinfo.addWayholder(wayholder);
+        } else if (wayBoundingBox.containsBoundingBox(tileBoundingBox)) {
+          // if (wayholder.way.latLongs[0].length > 50) {
+          //   // this is a long way, see if it really intersects with the current tile2
+          //   bool inTile = false;
+          //   for (ILatLong point in wayholder.way.latLongs[0]) {
+          //     if (tileBoundingBox.containsLatLong(point)) {
+          //       inTile = true;
+          //       break;
+          //     }
+          //   }
+          //   if (inTile) {
+          //     newWayinfo.addWayholder(wayholder);
+          //   } else {
+          //
+          //   }
+          // } else {
+          newWayinfo.addWayholder(wayholder);
+//          }
+        } else if (tileBoundingBox.intersects(wayBoundingBox)) {
           newWayinfo.addWayholder(wayholder);
         }
       });
