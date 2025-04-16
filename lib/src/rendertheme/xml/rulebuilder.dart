@@ -289,7 +289,6 @@ class RuleBuilder {
       try {
         ruleBuilder.parse(displayModel, rootElement);
       } catch (error, stacktrace) {
-        print('Error while parsing rule $ruleBuilder which is a subrule of $this", $error, $stacktrace');
         _log.warning("Error while parsing rule $ruleBuilder which is a subrule of $this", error, stacktrace);
       }
       ruleBuilderStack.add(ruleBuilder);
@@ -341,7 +340,6 @@ class RuleBuilder {
 
       line.parse(displayModel, rootElement);
       if (line.base.id != null && excludeIds.contains(line.base.id)) {
-        print("Excluding symbol with id: ${line.base.id}");
         _log.info("Excluding symbol with id: ${line.base.id}");
       } else {
         if (isVisibleWay(line)) {
