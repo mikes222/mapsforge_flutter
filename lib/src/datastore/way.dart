@@ -25,25 +25,20 @@ class Way {
       other is Way &&
           runtimeType == other.runtimeType &&
           labelPosition == other.labelPosition &&
+          // note: listEquals() is very expensive
           listEquals(latLongs[0], other.latLongs[0]) &&
           layer == other.layer &&
           listEquals(tags, other.tags);
 
   @override
-  int get hashCode =>
-      labelPosition.hashCode ^
-      latLongs.hashCode ^
-      layer.hashCode ^
-      tags.hashCode;
+  int get hashCode => labelPosition.hashCode ^ latLongs.hashCode ^ layer.hashCode ^ tags.hashCode;
 
   bool hasTag(String key) {
     return tags.firstWhereOrNull((test) => test.key == key) != null;
   }
 
   bool hasTagValue(String key, String value) {
-    return tags.firstWhereOrNull(
-            (test) => test.key == key && test.value == value) !=
-        null;
+    return tags.firstWhereOrNull((test) => test.key == key && test.value == value) != null;
   }
 
   String? getTag(String key) {

@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/datastore.dart';
+import 'package:mapsforge_flutter/special.dart';
 
 class OsmWriter {
   late final IOSink _sink;
@@ -47,40 +46,18 @@ class OsmWriter {
     return _nextId++;
   }
 
-  void writeWay(Way way, List<Waypath> waypaths) {
-    _Way _way = _Way(way.tags);
-    way.latLongs.forEachIndexed((idx, latLongs) {
-      List<int> nodes = [];
-      bool closed = LatLongUtils.isClosedWay(latLongs);
-      if (closed) {
-        int firstId = writeNode(latLongs.first, []);
-        nodes.add(firstId);
-        for (var latLong in latLongs.skip(1).take(latLongs.length - 2)) {
-          nodes.add(writeNode(latLong, []));
-        }
-        nodes.add(firstId);
-      } else {
-        for (var latLong in latLongs) {
-          nodes.add(writeNode(latLong, []));
-        }
-      }
+  void writeWay(Wayholder wayholder) {
+    _Way _way = _Way(wayholder.tags);
+    for (var waypath in wayholder.innerRead) {
+      List<int> nodes = _writeNodesForWay(waypath);
       _way.addNodes(nodes);
-    });
-    for (var waypath in waypaths) {
-      List<int> nodes = [];
-      bool closed = LatLongUtils.isClosedWay(waypath.path);
-      if (closed) {
-        int firstId = writeNode(waypath.path.first, []);
-        nodes.add(firstId);
-        for (var latLong in waypath.path.skip(1).take(waypath.path.length - 2)) {
-          nodes.add(writeNode(latLong, []));
-        }
-        nodes.add(firstId);
-      } else {
-        for (var latLong in waypath.path) {
-          nodes.add(writeNode(latLong, []));
-        }
-      }
+    }
+    for (var waypath in wayholder.closedOutersRead) {
+      List<int> nodes = _writeNodesForWay(waypath);
+      _way.addOuterNodes(nodes);
+    }
+    for (var waypath in wayholder.openOutersRead) {
+      List<int> nodes = _writeNodesForWay(waypath);
       _way.addOuterNodes(nodes);
     }
     _ways.add(_way);
@@ -88,6 +65,24 @@ class OsmWriter {
       _tempSink ??= File(tempFilename).openWrite();
       _writeWays(_tempSink!);
     }
+  }
+
+  List<int> _writeNodesForWay(Waypath waypath) {
+    List<int> nodes = [];
+    bool closed = waypath.isClosedWay();
+    if (closed) {
+      int firstId = writeNode(waypath.path.first, []);
+      nodes.add(firstId);
+      for (var latLong in waypath.path.skip(1).take(waypath.path.length - 2)) {
+        nodes.add(writeNode(latLong, []));
+      }
+      nodes.add(firstId);
+    } else {
+      for (var latLong in waypath.path) {
+        nodes.add(writeNode(latLong, []));
+      }
+    }
+    return nodes;
   }
 
   void _writeTags(List<Tag> tags, IOSink sink) {

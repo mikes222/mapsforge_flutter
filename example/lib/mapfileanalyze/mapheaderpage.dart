@@ -62,8 +62,7 @@ class MapHeaderPage extends StatelessWidget {
             children: <Widget>[
               LabeltextCustom(
                   label: "Zoomlevel",
-                  value:
-                      "${mapFile.getMapFileInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapFileInfo().zoomlevelRange.zoomlevelMin}"),
+                  value: "${mapFile.getMapFileInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapFileInfo().zoomlevelRange.zoomlevelMax}"),
               InkWell(
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -77,11 +76,7 @@ class MapHeaderPage extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (BuildContext context) => SubfileParamsPage(
                         mapFile: mapFile,
-                        subFileParameters: mapFile
-                            .getMapFileInfo()
-                            .subFileParameters
-                            .values
-                            .toList(),
+                        subFileParameters: mapFile.getMapFileInfo().subFileParameters.values.toList(),
                         renderTheme: renderTheme,
                       ),
                     ),
@@ -110,11 +105,8 @@ class MapHeaderPage extends StatelessWidget {
             children: <Widget>[
               //LabeltextCustom(label: "Filename", value: mapFile.filename),
               // _fileSize is private but only used to verify header and to check if read beyond file
-              LabeltextCustom(
-                  label: "Zoomlevel", value: "${mapFile.zoomlevelRange}"),
-              LabeltextCustom(
-                  label: "Timestamp",
-                  value: formatMsToDatetimeMs(mapFile.timestamp)),
+              LabeltextCustom(label: "Zoomlevel", value: "${mapFile.zoomlevelRange}"),
+              LabeltextCustom(label: "Timestamp", value: formatMsToDatetimeMs(mapFile.timestamp)),
             ],
           ),
         ],
@@ -134,55 +126,26 @@ class MapHeaderPage extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              LabeltextCustom(
-                  label: "Comment", value: mapFile.getMapHeaderInfo().comment),
-              LabeltextCustom(
-                  label: "CreatedBy",
-                  value: mapFile.getMapHeaderInfo().createdBy),
-              LabeltextCustom(
-                  label: "debugFile",
-                  value: "${mapFile.getMapHeaderInfo().debugFile}"),
-              LabeltextCustom(
-                  label: "FileSize",
-                  value: "${mapFile.getMapHeaderInfo().fileSize}"),
-              LabeltextCustom(
-                  label: "FileVersion",
-                  value: "${mapFile.getMapHeaderInfo().fileVersion}"),
-              LabeltextCustom(
-                  label: "LanguagesPreferences",
-                  value: mapFile.getMapHeaderInfo().languagesPreference),
-              LabeltextCustom(
-                  label: "MapTimestamp",
-                  value:
-                      formatMsToDatetimeMs(mapFile.getMapHeaderInfo().mapDate)),
-              LabeltextCustom(
-                  label: "ProjectionName",
-                  value: mapFile.getMapHeaderInfo().projectionName),
-              LabeltextCustom(
-                  label: "StartZoomLevel",
-                  value: "${mapFile.getMapHeaderInfo().startZoomLevel}"),
-              LabeltextCustom(
-                  label: "StartPosition",
-                  value:
-                      "${formatLatLong(mapFile.getMapHeaderInfo().startPosition)}"),
-              LabeltextCustom(
-                  label: "TilePixelSize",
-                  value: "${mapFile.getMapHeaderInfo().tilePixelSize}"),
+              LabeltextCustom(label: "Comment", value: mapFile.getMapHeaderInfo().comment),
+              LabeltextCustom(label: "CreatedBy", value: mapFile.getMapHeaderInfo().createdBy),
+              LabeltextCustom(label: "debugFile", value: "${mapFile.getMapHeaderInfo().debugFile}"),
+              LabeltextCustom(label: "FileSize", value: "${mapFile.getMapHeaderInfo().fileSize}"),
+              LabeltextCustom(label: "FileVersion", value: "${mapFile.getMapHeaderInfo().fileVersion}"),
+              LabeltextCustom(label: "LanguagesPreferences", value: mapFile.getMapHeaderInfo().languagesPreference),
+              LabeltextCustom(label: "MapTimestamp", value: formatMsToDatetimeMs(mapFile.getMapHeaderInfo().mapDate)),
+              LabeltextCustom(label: "ProjectionName", value: mapFile.getMapHeaderInfo().projectionName),
+              LabeltextCustom(label: "StartZoomLevel", value: "${mapFile.getMapHeaderInfo().startZoomLevel}"),
+              LabeltextCustom(label: "StartPosition", value: "${formatLatLong(mapFile.getMapHeaderInfo().startPosition)}"),
+              LabeltextCustom(label: "TilePixelSize", value: "${mapFile.getMapHeaderInfo().tilePixelSize}"),
               LabeltextCustom(
                   label: "Zoomlevel",
-                  value:
-                      "${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMax}"),
-              LabeltextCustom(
-                  label: "Boundingbox",
-                  value:
-                      "${formatBoundingbox(mapFile.getMapHeaderInfo().boundingBox)}"),
+                  value: "${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMax}"),
+              LabeltextCustom(label: "Boundingbox", value: "${formatBoundingbox(mapFile.getMapHeaderInfo().boundingBox)}"),
               InkWell(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    LabeltextCustom(
-                        label: "PoiTags",
-                        value: "${mapFile.getMapHeaderInfo().poiTags.length}"),
+                    LabeltextCustom(label: "PoiTags", value: "${mapFile.getMapHeaderInfo().poiTags.length}"),
                     const Icon(Icons.more_horiz),
                   ],
                 ),
@@ -200,9 +163,7 @@ class MapHeaderPage extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    LabeltextCustom(
-                        label: "WayTags",
-                        value: "${mapFile.getMapHeaderInfo().wayTags.length}"),
+                    LabeltextCustom(label: "WayTags", value: "${mapFile.getMapHeaderInfo().wayTags.length}"),
                     const Icon(Icons.more_horiz),
                   ],
                 ),
@@ -217,9 +178,7 @@ class MapHeaderPage extends StatelessWidget {
                 },
               ),
 
-              LabeltextCustom(
-                  label: "numberOfSubFiles",
-                  value: "${mapFile.getMapHeaderInfo().numberOfSubFiles}"),
+              LabeltextCustom(label: "numberOfSubFiles", value: "${mapFile.getMapHeaderInfo().numberOfSubFiles}"),
               // poiTags
               // wayTags
             ],
@@ -231,8 +190,7 @@ class MapHeaderPage extends StatelessWidget {
 
   Future<MapFile> _loadMapFile() async {
     PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-    MapFile mapFile = await MapFile.from(
-        pathHandler.getPath(mapFileData.fileName), null, null);
+    MapFile mapFile = await MapFile.from(pathHandler.getPath(mapFileData.fileName), null, null);
     // to open the mapfile
     await mapFile.getBoundingBox();
     return mapFile;

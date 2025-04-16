@@ -47,16 +47,25 @@ class OsmReader {
             );
             _nodes[_currentNode!.id] = _currentNode!;
             if (event.isSelfClosing) {
+              _currentNode = null;
               _sendData(callback, false);
             }
             break;
           case 'way':
             _currentWay = OsmWay(id: int.parse(event.attributes.firstWhere((attr) => attr.name == 'id').value), refs: [], tags: {});
             _ways[_currentWay!.id] = _currentWay!;
+            if (event.isSelfClosing) {
+              _currentWay = null;
+              _sendData(callback, false);
+            }
             break;
           case 'relation':
             _currentRelation = OsmRelation(id: int.parse(event.attributes.firstWhere((attr) => attr.name == 'id').value), members: [], tags: {});
             _relations[_currentRelation!.id] = _currentRelation!;
+            if (event.isSelfClosing) {
+              _currentRelation = null;
+              _sendData(callback, false);
+            }
             break;
           case 'tag':
             if (_currentNode != null) {

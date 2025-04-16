@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
@@ -26,9 +27,7 @@ class _TagsPageState extends State<TagsPage> {
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: widget.tags
-              .map((element) => Text("${element.key} = ${element.value}"))
-              .toList(),
+          children: widget.tags.mapIndexed((idx, element) => Text("$idx: ${element.key} = ${element.value}")).toList(),
         ),
       ),
     );

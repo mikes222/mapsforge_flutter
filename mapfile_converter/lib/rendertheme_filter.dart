@@ -27,15 +27,18 @@ class RenderthemeFilter {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<Wayholder>> result = {};
     int noRangeWays = 0;
-    ways.forEach((wayHolder) {
-      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(wayHolder.way);
+    for (var wayHolder in ways) {
+      ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(
+        wayHolder.closedOutersRead.isNotEmpty ? wayHolder.closedOutersRead.first : wayHolder.openOutersRead.first,
+        wayHolder.tags,
+      );
       if (range == null) {
         ++noRangeWays;
-        return;
+        continue;
       }
       if (result[range] == null) result[range] = [];
       result[range]!.add(wayHolder);
-    });
+    }
     _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
 
     return result;

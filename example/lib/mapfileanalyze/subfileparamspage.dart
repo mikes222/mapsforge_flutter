@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapsforge_example/mapfileanalyze/blockpage.dart';
 import 'package:mapsforge_example/mapfileanalyze/labeltextcustom.dart';
-import 'package:mapsforge_example/mapfileanalyze/poi_way_list_page.dart';
 import 'package:mapsforge_example/mapfileanalyze/tileindex_page.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/mapfile/subfileparameter.dart';
@@ -13,12 +12,7 @@ class SubfileParamsPage extends StatelessWidget {
 
   final RenderTheme renderTheme;
 
-  const SubfileParamsPage(
-      {Key? key,
-      required this.mapFile,
-      required this.subFileParameters,
-      required this.renderTheme})
-      : super(key: key);
+  const SubfileParamsPage({Key? key, required this.mapFile, required this.subFileParameters, required this.renderTheme}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,65 +30,40 @@ class SubfileParamsPage extends StatelessWidget {
         newList.add(element);
       }
     });
-    print(
-        "analyzing ${subFileParameters.length} subfileParameter items, ${newList.length} different items");
+    print("analyzing ${subFileParameters.length} subfileParameter items, ${newList.length} different items");
     return ListView(
       children: newList
-          .map((e) => Card(
+          .map((subfileParameter) => Card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      "SubfileParam for ZoomLevel ${subFileParameters.indexOf(e)} and more",
+                      "SubfileParam for ZoomLevel ${subFileParameters.indexOf(subfileParameter)} and more",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Wrap(
                       children: <Widget>[
-                        LabeltextCustom(
-                            label: "BaseZoomLevel",
-                            value: "${e.baseZoomLevel}"),
-                        LabeltextCustom(
-                            label: ", Zoomlevel",
-                            value: " ${e.zoomLevelMin} - ${e.zoomLevelMax}"),
+                        LabeltextCustom(label: "BaseZoomLevel", value: "${subfileParameter.baseZoomLevel}"),
+                        LabeltextCustom(label: ", Zoomlevel", value: " ${subfileParameter.zoomLevelMin} - ${subfileParameter.zoomLevelMax}"),
                       ],
                     ),
                     Wrap(
                       children: <Widget>[
-                        LabeltextCustom(
-                            label: "boundaryTileHorizontal",
-                            value:
-                                "${e.boundaryTileLeft} - ${e.boundaryTileRight}"),
-                        LabeltextCustom(
-                            label: ", boundaryTileVertical",
-                            value:
-                                "${e.boundaryTileTop} - ${e.boundaryTileBottom}"),
+                        LabeltextCustom(label: "boundaryTileHorizontal", value: "${subfileParameter.boundaryTileLeft} - ${subfileParameter.boundaryTileRight}"),
+                        LabeltextCustom(label: ", boundaryTileVertical", value: "${subfileParameter.boundaryTileTop} - ${subfileParameter.boundaryTileBottom}"),
                       ],
                     ),
                     Wrap(
                       children: <Widget>[
-                        LabeltextCustom(
-                            label: "blocksWidth", value: "${e.blocksWidth}"),
-                        LabeltextCustom(
-                            label: ", blocksHeight",
-                            value: "${e.blocksHeight}"),
-                        LabeltextCustom(
-                            label: ", numberOfBlocks",
-                            value: "${e.numberOfBlocks}"),
+                        LabeltextCustom(label: "blocksWidth", value: "${subfileParameter.blocksWidth}"),
+                        LabeltextCustom(label: ", blocksHeight", value: "${subfileParameter.blocksHeight}"),
+                        LabeltextCustom(label: ", numberOfBlocks", value: "${subfileParameter.numberOfBlocks}"),
                       ],
                     ),
                     Wrap(
                       children: <Widget>[
-                        LabeltextCustom(
-                            label: "startAddress",
-                            value: "0x${e.startAddress.toRadixString(16)}"),
-                        LabeltextCustom(
-                          label: ", subFileSize",
-                          value: "0x${e.subFileSize.toRadixString(16)}",
-                          fontColor: e.startAddress + e.subFileSize >
-                                  (mapFile.getMapHeaderInfo().fileSize ?? 0) - 1
-                              ? Colors.red
-                              : null,
-                        ),
+                        LabeltextCustom(label: "Tile startAddress", value: "0x${subfileParameter.startAddress.toRadixString(16)}"),
+                        LabeltextCustom(label: ", subFileSize", value: "0x${subfileParameter.subFileSize.toRadixString(16)}"),
                       ],
                     ),
                     Wrap(
@@ -104,18 +73,16 @@ class SubfileParamsPage extends StatelessWidget {
                             children: <Widget>[
                               LabeltextCustom(
                                   label: "Tile index Start - End",
-                                  value:
-                                      "0x${e.indexStartAddress.toRadixString(16)} - 0x${e.indexEndAddress.toRadixString(16)}"),
+                                  value: "0x${subfileParameter.indexStartAddress.toRadixString(16)} - 0x${subfileParameter.indexEndAddress.toRadixString(16)}"),
                               const Icon(Icons.more_horiz),
                             ],
                           ),
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    TileindexPage(
+                                builder: (BuildContext context) => TileindexPage(
                                   mapFile: mapFile,
-                                  subFileParameter: e,
+                                  subFileParameter: subfileParameter,
                                 ),
                               ),
                             );
@@ -135,31 +102,31 @@ class SubfileParamsPage extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (BuildContext context) => BlockPage(
                               mapFile: mapFile,
-                              subFileParameter: e,
+                              subFileParameter: subfileParameter,
                             ),
                           ),
                         );
                       },
                     ),
-                    InkWell(
-                      child: const Row(
-                        children: <Widget>[
-                          Text("Pois and ways"),
-                          Icon(Icons.more_horiz),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (BuildContext context) => PoiWayListPage(
-                              mapFile: mapFile,
-                              subFileParameter: e,
-                              renderTheme: renderTheme,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    // InkWell(
+                    //   child: const Row(
+                    //     children: <Widget>[
+                    //       Text("Pois and ways"),
+                    //       Icon(Icons.more_horiz),
+                    //     ],
+                    //   ),
+                    //   onTap: () {
+                    //     Navigator.of(context).push(
+                    //       MaterialPageRoute(
+                    //         builder: (BuildContext context) => PoiWayListPage(
+                    //           mapFile: mapFile,
+                    //           subFileParameter: e,
+                    //           renderTheme: renderTheme,
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                   ],
                 ),
               ))

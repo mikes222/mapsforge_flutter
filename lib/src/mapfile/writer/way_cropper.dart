@@ -1,28 +1,36 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_simplify_filter.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 
-import '../../../datastore.dart';
-
 class WayCropper {
+  final _log = Logger('WayCropper');
+
   final double maxDeviationPixel;
 
   WayCropper({required this.maxDeviationPixel});
 
-  Wayholder cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
-    List<List<ILatLong>> newLatLongs = [];
-    wayholder.way.latLongs.forEach((test) {
-      List<ILatLong> toAdd = _optimizeWaypoints(Waypath(test), boundingBox, maxZoomlevel);
-      if (toAdd.length >= 2) newLatLongs.add(toAdd);
-    });
-    Way way = Way(wayholder.way.layer, wayholder.way.tags, newLatLongs, wayholder.way.labelPosition);
-    newLatLongs = [];
-    wayholder.otherOuters.forEach((test) {
-      List<ILatLong> toAdd = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
-      if (toAdd.length >= 2) newLatLongs.add(toAdd);
-    });
+  Wayholder? cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
+    List<Waypath> inner = wayholder.innerRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
+      ..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> closedOuters = wayholder.closedOutersRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
+      ..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> openOuters = wayholder.openOutersRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
+      ..removeWhere((Waypath test) => test.isEmpty);
+
+    if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
+
+    if (closedOuters.isEmpty && openOuters.isEmpty) {
+      // only inner is set, move the first inner to the respective outer
+      Waypath waypath = inner.removeAt(0);
+      if (waypath.isClosedWay())
+        closedOuters.add(waypath);
+      else
+        openOuters.add(waypath);
+    }
+
     // return a new wayholder instance
-    return wayholder.cloneWith(way: way, otherOuters: newLatLongs.map((toElement) => Waypath(toElement)).toList());
+    return wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
   }
 
   /// Optimiert eine Liste von Wegpunkten, indem unnötige Punkte entfernt werden,
@@ -31,24 +39,24 @@ class WayCropper {
   /// @param waypoints Die Liste der Wegpunkte.
   /// @param tileBoundary Die Tile-Boundary (Bounding Box).
   /// @return Die optimierte Liste der Wegpunkte.
-  List<ILatLong> _optimizeWaypoints(Waypath waypoints, BoundingBox tileBoundary, int maxZoomlevel) {
-    if (waypoints.isEmpty) return [];
+  Waypath _optimizeWaypoints(Waypath waypath, BoundingBox tileBoundary, int maxZoomlevel) {
+    if (waypath.isEmpty) return Waypath.empty();
 
-    BoundingBox wayBoundingBox = waypoints.boundingBox;
+    BoundingBox wayBoundingBox = waypath.boundingBox;
     // all points inside the tile boundary
     if (tileBoundary.containsBoundingBox(wayBoundingBox)) {
-      if (waypoints.length > 32767) {
+      if (waypath.length > 32767) {
         // many waypoints? simplify them.
         WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
-        List<ILatLong> result = simplifyFilter.reduceWayEnsureMax(waypoints.path);
-        print("${waypoints.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
+        Waypath result = simplifyFilter.reduceWayEnsureMax(waypath);
+        //_log.info("${waypath.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
         return result;
       }
-      return waypoints.path;
+      return waypath;
     }
 
     // no intersection, ignore these points
-    if (!tileBoundary.intersects(wayBoundingBox)) return [];
+    if (!tileBoundary.intersects(wayBoundingBox)) return Waypath.empty();
 
     List<ILatLong> optimizedWaypoints = [];
     ILatLong? previousWaypoint;
@@ -58,7 +66,7 @@ class WayCropper {
     var lastEntryDirection = -1;
     var lastExitDirection = -1;
 
-    waypoints.path.forEach((waypoint) {
+    waypath.path.forEach((waypoint) {
       bool isInside = tileBoundary.containsLatLong(waypoint);
 
       if (isInside) {
@@ -67,7 +75,7 @@ class WayCropper {
           final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint!, waypoint, tileBoundary);
           if (firstEntryDirection == -1) firstEntryDirection = direction;
           lastEntryDirection = direction;
-          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypoints.path);
+          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypath.path);
           optimizedWaypoints.add(intersectionPoint!);
         }
         optimizedWaypoints.add(waypoint);
@@ -85,7 +93,7 @@ class WayCropper {
             // yes, they intersect (twice)
             if (firstEntryDirection == -1) firstEntryDirection = direction;
             lastEntryDirection = direction;
-            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypoints.path);
+            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypath.path);
             optimizedWaypoints.add(intersectionPoint);
             // and now find the exit point. Search in opposite direction to find
             // the exit point nearest to the current waypoint
@@ -101,52 +109,66 @@ class WayCropper {
       previousIsInside = isInside;
     });
 
-    // Check if it is a closed way and the new way is not closed
-    if (waypoints.isClosedWay()) {
-      // Step 1: Find out if the center of the tile is inside or outside of the original way
-      bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypoints.path);
-      if (optimizedWaypoints.isEmpty && !isInside) {
-        // no intersection, ignore these points
-        return [];
+    if (!waypath.isClosedWay()) {
+      // never touched the tile boundary
+      if (optimizedWaypoints.isEmpty) return Waypath.empty();
+      // original waypath was NOT closed, so we are done.
+      if (optimizedWaypoints.length > 32767) {
+        // many waypoints? simplify them.
+        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
+        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
+        return result;
       }
-      if (optimizedWaypoints.isEmpty) {
-        // original is a closed way but never intersected with the tile, that means
-        // it is surrounding the tile. This is different to the original since we create areas for each tile. This is also the reason why
-        // we do not support zoomlevels smaller than base-zoomlevel per subfile. In such cases the system combines for example 4 tiles to one
-        // and we would draw 4 squares (with strokes) whereas we should only draw the fill and no strokes.
-        optimizedWaypoints.add(tileBoundary.getLeftUpper());
-        optimizedWaypoints.add(tileBoundary.getRightUpper());
-        optimizedWaypoints.add(tileBoundary.getRightLower());
-        optimizedWaypoints.add(tileBoundary.getLeftLower());
-        optimizedWaypoints.add(tileBoundary.getLeftUpper());
-        return optimizedWaypoints;
-      }
-      if (LatLongUtils.isClosedWay(optimizedWaypoints)) {
-        if (optimizedWaypoints.first != optimizedWaypoints.last) {
-          // make sure the way is closed even if first and last points are a tiny bit apart
-          optimizedWaypoints.add(optimizedWaypoints.first);
-        }
-        // everything ok
-        return optimizedWaypoints;
-      }
-      // if start and end would be inside the tile we would have a closed way. So both must be outside
-      // find how we should close the way:
-      // Step 2: Temporary close the way and find out if the center of the tile is inside or outside of the new way
-      List<ILatLong> tempWaypoints = List.from(optimizedWaypoints);
-      _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, waypoints.path);
-      // close the temporary way
-      tempWaypoints.add(tempWaypoints.first);
-      bool isInsideNew = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), tempWaypoints);
-      if (isInside == isInsideNew) {
-        // perfect, both are inside or outside
-        return tempWaypoints;
-      }
-      // We have to close it the other way around
-      _addCornersOtherWay(lastExitDirection, firstEntryDirection, optimizedWaypoints, tileBoundary);
-      optimizedWaypoints.add(optimizedWaypoints.first);
-      return optimizedWaypoints;
+      return Waypath(optimizedWaypoints);
     }
-    return optimizedWaypoints;
+    // Step 1: Find out if the center of the tile is inside or outside of the original way
+    bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
+    if (optimizedWaypoints.isEmpty && !isInside) {
+      // no intersection, ignore these points
+      return Waypath.empty();
+    }
+    if (optimizedWaypoints.isEmpty) {
+      // original is a closed way but never intersected with the tile, that means
+      // it is surrounding the tile. This is different to the original since we create areas for each tile. This is also the reason why
+      // we do not support zoomlevels smaller than base-zoomlevel per subfile. In such cases the system combines for example 4 tiles to one
+      // and we would draw 4 squares (with strokes) whereas we should only draw the fill and no strokes.
+      optimizedWaypoints.add(tileBoundary.getLeftUpper());
+      optimizedWaypoints.add(tileBoundary.getRightUpper());
+      optimizedWaypoints.add(tileBoundary.getRightLower());
+      optimizedWaypoints.add(tileBoundary.getLeftLower());
+      optimizedWaypoints.add(tileBoundary.getLeftUpper());
+      return Waypath(optimizedWaypoints);
+    }
+    if (LatLongUtils.isClosedWay(optimizedWaypoints)) {
+      if (optimizedWaypoints.first != optimizedWaypoints.last) {
+        // make sure the way is closed even if first and last points are a tiny bit apart
+        optimizedWaypoints.add(optimizedWaypoints.first);
+      }
+      // everything ok
+      assert(optimizedWaypoints.length >= 3);
+      assert(optimizedWaypoints.length <= 32767);
+      return Waypath(optimizedWaypoints);
+    }
+    // if start and end would be inside the tile we would have a closed way. So both must be outside
+    // find how we should close the way:
+    // Step 2: Temporary close the way and find out if the center of the tile is inside or outside of the new way
+    List<ILatLong> tempWaypoints = List.from(optimizedWaypoints);
+    _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, waypath.path);
+    // close the temporary way
+    tempWaypoints.add(tempWaypoints.first);
+    bool isInsideNew = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), tempWaypoints);
+    if (isInside == isInsideNew) {
+      // perfect, both are inside or outside
+      assert(tempWaypoints.length >= 3);
+      assert(tempWaypoints.length <= 32767);
+      return Waypath(tempWaypoints);
+    }
+    // We have to close it the other way around
+    _addCornersOtherWay(lastExitDirection, firstEntryDirection, optimizedWaypoints, tileBoundary);
+    optimizedWaypoints.add(optimizedWaypoints.first);
+    assert(optimizedWaypoints.length >= 3);
+    assert(optimizedWaypoints.length <= 32767);
+    return Waypath(optimizedWaypoints);
   }
 
   void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary, List<ILatLong> waypoints) {

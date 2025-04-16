@@ -382,25 +382,33 @@ class LatLongUtils {
     });
   }
 
-  /// adds the [otherLatLongs] to [latlongs] in the correct order. Returns true if successful
-  static bool combine(List<ILatLong> latlongs, List<ILatLong> otherLatLongs) {
-    if (LatLongUtils.isNear(latlongs.first, otherLatLongs.last)) {
+  static String printWaypaths(List<Waypath> waypaths) {
+    if (waypaths.length <= 20) {
+      return "${waypaths.map((toElement) => "${toElement.length}").toList()}";
+    }
+    return "${waypaths.take(20).map((toElement) => "${toElement.length}").toList()} (${waypaths.length} items)";
+  }
+
+  /// adds the [otherLatLongs] to [firstWaypath] in the correct order. Returns true if successful. Note that [firstWaypath] may be changed whereas
+  /// [otherLatLongs] is never gonna be changed.
+  static bool combine(Waypath firstWaypath, List<ILatLong> otherLatLongs) {
+    if (LatLongUtils.isNear(firstWaypath.first, otherLatLongs.last)) {
       // add to the start of this list
-      latlongs.removeAt(0);
-      latlongs.insertAll(0, otherLatLongs);
+      firstWaypath.removeAt(0);
+      firstWaypath.insertAll(0, otherLatLongs);
       return true;
-    } else if (LatLongUtils.isNear(latlongs.last, otherLatLongs.first)) {
+    } else if (LatLongUtils.isNear(firstWaypath.last, otherLatLongs.first)) {
       // add to end of this list
-      latlongs.addAll(otherLatLongs.skip(1));
+      firstWaypath.addAll(otherLatLongs.skip(1));
       return true;
-    } else if (LatLongUtils.isNear(latlongs.first, otherLatLongs.first)) {
+    } else if (LatLongUtils.isNear(firstWaypath.first, otherLatLongs.first)) {
       // reversed order, add to start of the list in reversed order
-      latlongs.removeAt(0);
-      latlongs.insertAll(0, otherLatLongs.reversed);
+      firstWaypath.removeAt(0);
+      firstWaypath.insertAll(0, otherLatLongs.reversed);
       return true;
-    } else if (LatLongUtils.isNear(latlongs.last, otherLatLongs.last)) {
+    } else if (LatLongUtils.isNear(firstWaypath.last, otherLatLongs.last)) {
       // reversed order, add to end of the list in reversed order
-      latlongs.addAll(otherLatLongs.reversed.skip(1));
+      firstWaypath.addAll(otherLatLongs.reversed.skip(1));
       return true;
     } else {
       return false;

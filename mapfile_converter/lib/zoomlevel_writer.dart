@@ -36,17 +36,12 @@ class ZoomlevelWriter {
       if (subfileCreator.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
       subfileCreator.addPoidata(zoomlevelRange, nodelist);
     });
-    // SubfileFiller subfileFiller =
-    //     SubfileFiller(subfileCreator.zoomlevelRange, subfileCreator.boundingBox);
     List<Future> wayholderFutures = [];
     wayHolders.forEach((ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist) {
       if (wayholderlist.isEmpty) return;
+      if (subfileCreator.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
+      if (subfileCreator.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
       wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholderlist, mapfileWriter.mapHeaderInfo.tilePixelSize));
-      // List<Wayholder> wayholders = subfileFiller.prepareWays(
-      //     subfileCreator.zoomlevelRange,
-      //     zoomlevelRange,
-      //     List.from(wayholderlist));
-      //subfileCreator.addWaydata(zoomlevelRange, wayholders);
     });
     await Future.wait(wayholderFutures);
     subfileCreator.statistics();

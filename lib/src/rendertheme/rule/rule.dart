@@ -25,8 +25,7 @@ abstract class Rule {
         instructions = InstructionInstructions(
             renderInstructionNodes: ruleBuilder.renderInstructionNodes,
             renderInstructionOpenWays: ruleBuilder.renderInstructionOpenWays,
-            renderInstructionClosedWays:
-                ruleBuilder.renderInstructionClosedWays),
+            renderInstructionClosedWays: ruleBuilder.renderInstructionClosedWays),
         subRules = [],
         cat = ruleBuilder.cat {
     ruleBuilder.ruleBuilderStack.forEach((ruleBuilder) {
@@ -35,8 +34,7 @@ abstract class Rule {
     });
   }
 
-  Rule.create(
-      Rule oldRule, List<Rule> subs, ShapeInstructions shapeInstructions)
+  Rule.create(Rule oldRule, List<Rule> subs, ShapeInstructions shapeInstructions)
       : cat = oldRule.cat,
         closedMatcher = oldRule.closedMatcher,
         elementMatcher = oldRule.elementMatcher,
@@ -74,9 +72,7 @@ abstract class Rule {
       if (sub != null) subs.add(sub);
     });
 
-    ShapeInstructions shapeInstructions =
-        (instructions as InstructionInstructions)
-            .createShapeInstructions(zoomlevel);
+    ShapeInstructions shapeInstructions = (instructions as InstructionInstructions).createShapeInstructions(zoomlevel);
 
     if (shapeInstructions.isEmpty() && subs.isEmpty) return null;
 
@@ -89,8 +85,7 @@ abstract class Rule {
   bool matchesForZoomlevelRange(List<Tag> tags);
 
   /// finds all Shapes for a given node but does NOT check if the rul
-  void matchNode(final Tile tile, List<Shape> matchingList,
-      NodeProperties nodeProperties) {
+  void matchNode(final Tile tile, List<Shape> matchingList, NodeProperties nodeProperties) {
     if (matches(nodeProperties.tags, tile.indoorLevel)) {
       matchingList.addAll((instructions as ShapeInstructions).shapeNodes);
       subRules.forEach((element) {
@@ -143,8 +138,8 @@ abstract class Rule {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeOpenWay(Way way) {
-    if (!matchesForZoomlevelRange(way.tags)) return null;
+  ZoomlevelRange? getZoomlevelRangeOpenWay(List<Tag> tags) {
+    if (!matchesForZoomlevelRange(tags)) return null;
 
     bool supported = instructions.hasInstructionsOpenWays();
     // this rule supports the argument. Return this subrule which is the
@@ -152,7 +147,7 @@ abstract class Rule {
     if (supported) return zoomlevelRange;
     ZoomlevelRange? result;
     subRules.forEach((element) {
-      ZoomlevelRange? range = element.getZoomlevelRangeOpenWay(way);
+      ZoomlevelRange? range = element.getZoomlevelRangeOpenWay(tags);
       if (range != null) {
         if (result == null) {
           result = range;
@@ -166,8 +161,8 @@ abstract class Rule {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeClosedWay(Way way) {
-    if (!matchesForZoomlevelRange(way.tags)) return null;
+  ZoomlevelRange? getZoomlevelRangeClosedWay(List<Tag> tags) {
+    if (!matchesForZoomlevelRange(tags)) return null;
 
     bool supported = instructions.hasInstructionsClosedWays();
     // this rule supports the argument. Return this subrule which is the
@@ -177,7 +172,7 @@ abstract class Rule {
     }
     ZoomlevelRange? result;
     subRules.forEach((element) {
-      ZoomlevelRange? range = element.getZoomlevelRangeClosedWay(way);
+      ZoomlevelRange? range = element.getZoomlevelRangeClosedWay(tags);
       if (range != null) {
         if (result == null) {
           result = range;

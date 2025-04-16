@@ -6,16 +6,17 @@ Usage: mapfile_converter convert [arguments]
 -h, --help                           Print this usage information.
 -r, --rendertheme                    Render theme filename
 (defaults to "rendertheme.xml")
--s, --sourcefiles (mandatory)         Source filename (PBF file)
+-s, --sourcefiles (mandatory)        Source filenames (PBF or osm files), separated by #
 -d, --destinationfile (mandatory)    Destination filename (mapfile or osm)
--z, --zoomlevels                     Comma-separated zoomlevels. The last one is the max zoomlevel
-(defaults to "0,5,9,13,16,20")
--b, --boundary                       Boundary in minLat,minLong,maxLat,maxLong order. If omitted the boundary of the source file is used
+-z, --zoomlevels                     Comma-separated zoomlevels. The last one is the max zoomlevel, separator=#
+(defaults to "0#5#9#13#16#20")
+-b, --boundary                       Boundary in minLat,minLong,maxLat,maxLong order. If omitted the boundary of the source file is used, separator=#
 -f, --[no-]debug                     Writes debug information in the mapfile
 -m, --maxdeviation                   Max deviation in pixels to simplify ways
 (defaults to "5")
--g, --maxgap                         Max gap in meters to connect ways 
+-g, --maxgap                         Max gap in meters to connect ways
 (defaults to "200")
+
 
 ## Explanation
 
@@ -58,23 +59,31 @@ Note that the program creates temporary files in the current directory so it mus
 
 Documentation is not yet done.
 
-## Examples
+## Examples 
+
+Getting help:
+
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --help
+
+Converting monaco from [geofabrik](https://download.geofabrik.de/europe/monaco.html) to mapfile:
+
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=monaco-latest.osm.pbf --dart-entrypoint-args --destinationfile=monaco.map
 
 Converting coastal information from pbf to osm:
 
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=lowres_coast.osm --dart-entrypoint-args --maxgap=10000
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=lowres_coast.osm --dart-entrypoint-args --maxgap=20000
 
 Converting coastal information from osm to mapfile:
 
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=lowres_coast.osm --dart-entrypoint-args --destinationfile=lowres_coast.map --dart-entrypoint-args --maxgap=10000 --dart-entrypoint-args --zoomlevels=0#5#9#12
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=lowres_coast.osm --dart-entrypoint-args --destinationfile=lowres_coast.map --dart-entrypoint-args --zoomlevels=0#5#9#12
 
 Converting 2 pbf files to mapfile:
 
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_default_44_12.pbf#map_lowres_coast.pbf --dart-entrypoint-args --destinationfile=test.map --dart-entrypoint-args --maxgap=100
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_default_44_12.pbf#lowres_coast.osm --dart-entrypoint-args --destinationfile=test.map --dart-entrypoint-args --maxgap=100
 
-type 
+## ProtoC support
 
-    flutter run --dart-entrypoint-args --help
+    flutter pub global activate protoc_plugin
 
-for more infos.
+    C:\Users\micro\AppData\Local\Pub\Cache\bin\protoc-gen-dart.bat
 

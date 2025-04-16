@@ -549,24 +549,10 @@ main() async {
     // DisplayModel is needed for the tilesize
     DisplayModel();
     SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), const BoundingBox(-90, -180, 90, 180), 10);
-    Wayholder wayholder = Wayholder(way);
+    Wayholder wayholder = Wayholder.fromWay(way);
     List<Wayholder> wayholders = subfileFiller.prepareWays(const ZoomlevelRange(0, 20), [wayholder]);
-    way = wayholders.first.way;
-    way.latLongs.forEach((latlongs) {
-      List<String> results = [];
-      String result = "";
-      latlongs.forEach((latlong) {
-        result += "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
-        if (result.length > 250) {
-          results.add(result);
-          result = "";
-        }
-      });
-      if (result.isNotEmpty) results.add(result);
-      results.forEach((action) {
-        print("  $action");
-      });
-    });
+    wayholder = wayholders.first;
+    LatLongUtils.printLatLongs(way);
     assert(way.latLongs[0].length == 35, "wrong size: ${way.latLongs[0].length}");
     boundingBox = BoundingBox.fromLatLongs(way.latLongs[0]);
     assert(boundingBox == const BoundingBox(43.516536, 7.409028, 43.751917, 7.532992), "Bounding box is wrong: $boundingBox");

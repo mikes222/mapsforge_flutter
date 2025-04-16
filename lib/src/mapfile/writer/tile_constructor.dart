@@ -166,12 +166,8 @@ class TileConstructor {
         if (tile.getBoundingBox().intersects(wayBoundingBox) ||
             tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
             wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
-          Wayholder wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
-          if (wayCropped.way.latLongs.isNotEmpty) {
-            assert(
-                wayCropped.way.latLongs[0].length <= 32767, "${wayCropped.way.latLongs[0].length} too much for $wayCropped, former $wayholder for tile $tile");
-            newWayinfo.addWayholder(wayCropped);
-          }
+          Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
+          if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
         }
       });
       result[zoomlevel] = newWayinfo;

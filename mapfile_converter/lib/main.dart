@@ -111,10 +111,10 @@ class ConvertCommand extends Command {
 
         if (boundingBox != null) {
           int countPoi = pbfAnalyzer.pois.length;
-          int countWay = pbfAnalyzer.ways.length;
+          int countWay = pbfAnalyzer.ways.length + pbfAnalyzer.waysMerged.length;
           pbfAnalyzer.filterByBoundingBox(boundingBox);
           _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-          _log.info("Removed ${countWay - pbfAnalyzer.ways.length} ways because they are out of boundary");
+          _log.info("Removed ${countWay - pbfAnalyzer.ways.length - pbfAnalyzer.waysMerged.length} ways because they are out of boundary");
         }
 
         boundingBox ??= pbfAnalyzer.boundingBox!;
@@ -129,10 +129,10 @@ class ConvertCommand extends Command {
 
         if (boundingBox != null) {
           int countPoi = pbfAnalyzer.pois.length;
-          int countWay = pbfAnalyzer.ways.length;
+          int countWay = pbfAnalyzer.ways.length + pbfAnalyzer.waysMerged.length;
           pbfAnalyzer.filterByBoundingBox(boundingBox);
           _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-          _log.info("Removed ${countWay - pbfAnalyzer.ways.length} ways because they are out of boundary");
+          _log.info("Removed ${countWay - pbfAnalyzer.ways.length - pbfAnalyzer.waysMerged.length} ways because they are out of boundary");
         }
 
         /// Now start exporting the data to a mapfile
@@ -148,13 +148,9 @@ class ConvertCommand extends Command {
     /// Simplify the data: Remove small areas, simplify ways
     RenderthemeFilter renderthemeFilter = RenderthemeFilter();
     Map<ZoomlevelRange, List<PointOfInterest>> poiZoomlevels = renderthemeFilter.filterNodes(pois, renderTheme);
-    // pois.forEach((zoomlevelRange, nodelist) {
-    //   _log.info("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
-    // });
     Map<ZoomlevelRange, List<Wayholder>> wayZoomlevels = renderthemeFilter.filterWays(ways, renderTheme);
-    // ways.forEach((zoomlevelRange, waylist) {
-    //   _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
-    // });
+    pois.clear();
+    ways.clear();
 
     _log.info("Writing ${argResults!.option("destinationfile")!}");
     if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".osm")) {
@@ -164,15 +160,25 @@ class ConvertCommand extends Command {
           osmWriter.writeNode(poi.position, poi.tags);
         }
       }
+      poiZoomlevels.clear();
       for (var wayholders in wayZoomlevels.values) {
         for (var wayholder in wayholders) {
-          osmWriter.writeWay(wayholder.way, wayholder.otherOuters);
+          osmWriter.writeWay(wayholder);
         }
       }
+      wayZoomlevels.clear();
       await osmWriter.close();
     } else {
       List<String> zoomlevelsString = _split(argResults!.option("zoomlevels")!);
       List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
+      poiZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
+      wayZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
+      poiZoomlevels.forEach((zoomlevelRange, nodelist) {
+        _log.info("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
+      });
+      wayZoomlevels.forEach((zoomlevelRange, waylist) {
+        _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
+      });
 
       MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
         boundingBox: boundingBox!,

@@ -90,9 +90,8 @@ class SubfileCreator {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
     Wayinfo wayinfo = _wayinfos[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    for (Wayholder wayholder in wayholders) {
-      wayinfo.setWaydata(wayholder.way);
-    }
+    //print("Adding ${wayholders.length} ways to zoomlevelRange $zoomlevelRange for baseZoomLevel $baseZoomLevel");
+    wayinfo.addWayholders(wayholders);
   }
 
   void analyze(List<Tagholder> poiTagholders, List<Tagholder> wayTagholders, String? languagesPreference) {
@@ -230,7 +229,15 @@ class SubfileCreator {
     int tileCount = (_maxX - _minX + 1) * (_maxY - _minY + 1);
     int poiCount = _poiinfos.values.fold(0, (int combine, Poiinfo poiinfo) => combine + poiinfo.count);
     int wayCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.count);
-    _log.info("$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount");
+    int pathCount = _wayinfos.values.fold(
+        0,
+        (combine, wayinfo) =>
+            combine +
+            wayinfo.wayholders.fold(
+                0, (combine, wayholder) => combine + 1 + wayholder.innerRead.length + wayholder.openOutersRead.length + wayholder.closedOutersRead.length));
+    int nodeCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
+    _log.info(
+        "$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount with ${wayCount != 0 ? (pathCount / wayCount).toStringAsFixed(1) : "n/a"} paths and ${pathCount != 0 ? (nodeCount / pathCount).toStringAsFixed(1) : "n/a"} nodes per path");
   }
 }
 
@@ -295,23 +302,38 @@ class Wayinfo {
 
   Wayinfo();
 
-  addWayholder(Wayholder wayholder) {
-    assert(content == null);
-    wayholders.add(wayholder);
-    ++count;
+  int get nodeCount {
+    int result = 0;
+    wayholders.forEach((Wayholder wayholder) {
+      result += wayholder.innerRead.fold(0, (combine, test) => combine + test.length);
+      result += wayholder.openOutersRead.fold(0, (combine, test) => combine + test.length);
+      result += wayholder.closedOutersRead.fold(0, (combine, test) => combine + test.length);
+    });
+    return result;
   }
 
-  void setWaydata(Way way) {
+  void addWayholder(Wayholder wayholder) {
     assert(content == null);
-    Wayholder wayholder = Wayholder(way);
+    assert(wayholder.openOutersRead.isNotEmpty || wayholder.closedOutersRead.isNotEmpty);
     wayholders.add(wayholder);
     ++count;
+    //count += wayholder.openOuters.length + wayholder.closedOuters.length;
   }
 
-  Wayholder? searchWayholder(Way way) {
+  void addWayholders(List<Wayholder> wayholders) {
+    wayholders.forEach((test) {
+      assert(test.openOutersRead.isNotEmpty || test.closedOutersRead.isNotEmpty);
+    });
     assert(content == null);
-    return wayholders.firstWhereOrNull((test) => test.way == way);
+    this.wayholders.addAll(wayholders);
+    count += wayholders.length;
+    //count += wayholders.fold(0, (combine, test) => combine + test.openOuters.length + test.closedOuters.length);
   }
+
+  // Wayholder? searchWayholder(Way way) {
+  //   assert(content == null);
+  //   return wayholders.firstWhereOrNull((test) => test.way == way);
+  // }
 
   void analyze(List<Tagholder> tagholders, String? languagesPreference) {
     assert(content == null);

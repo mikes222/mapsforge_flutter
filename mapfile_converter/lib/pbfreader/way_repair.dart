@@ -16,67 +16,14 @@ class WayRepair {
   void repairClosed(Wayholder wayholder) {
     /*double maxGap =*/
     _repair(wayholder);
-    if (!LatLongUtils.isClosedWay(wayholder.way.latLongs[0])) {
-      if (Projection.distance(wayholder.way.latLongs[0].first, wayholder.way.latLongs[0].last) <= maxGapMeter) {
-        wayholder.way.latLongs[0].add(wayholder.way.latLongs[0].first);
-      }
-    }
-    for (var waypath in wayholder.otherOuters) {
-      if (!waypath.isClosedWay()) {
-        if (Projection.distance(waypath.first, waypath.last) <= maxGapMeter) {
-          waypath.add(waypath.first);
-        }
+    for (Waypath waypath in List.from(wayholder.openOutersRead)) {
+      if (Projection.distance(waypath.first, waypath.last) <= maxGapMeter) {
+        waypath.add(waypath.first);
+        wayholder.openOutersRemove(waypath);
+        wayholder.closedOutersAdd(waypath);
       }
     }
     // print("Could not close $wayholder, because it exceeds the max gap");
-  }
-
-  void connect(Wayholder wayholder) {
-    if (wayholder.otherOuters.length > 5000) {
-      // calculate the spanning boundingbox
-      BoundingBox boundingBox = BoundingBox.fromLatLongs(wayholder.way.latLongs[0]);
-      for (Waypath wayFirst in wayholder.otherOuters) {
-        boundingBox = boundingBox.extendBoundingBox(wayFirst.boundingBox);
-      }
-      // create 101*101 clusters to combine the ways inbetween a cluster before trying to combine the rest. This should speed up the process
-      int clusterSplitCount = 100;
-      while (true) {
-        int count = wayholder.otherOuters.length;
-        _connectCluster(wayholder, boundingBox, clusterSplitCount);
-        if (count == wayholder.otherOuters.length && clusterSplitCount < 10) break;
-        clusterSplitCount -= 7;
-        if (clusterSplitCount <= 1) break;
-        //print("After connect: ${wayholder.otherOuters.length}, clusterSplit: $clusterSplitCount");
-      }
-    }
-    while (true) {
-      int count = wayholder.otherOuters.length;
-      _ConnectCluster connectCluster = _ConnectCluster(wayholder, Waypath(wayholder.way.latLongs[0]), wayholder.otherOuters);
-      connectCluster.connect();
-      if (count == wayholder.otherOuters.length) break;
-    }
-  }
-
-  void _connectCluster(Wayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
-    double latDiff = boundingBox.maxLatitude - boundingBox.minLatitude;
-    double lonDiff = boundingBox.maxLongitude - boundingBox.minLongitude;
-
-    Map<String, _ConnectCluster> clusters = {};
-    for (Waypath wayFirst in wayholder.otherOuters) {
-      double latKey = (wayFirst.boundingBox.maxLatitude - boundingBox.minLatitude) / (latDiff) * clusterSplitCount;
-      double lonKey = (wayFirst.boundingBox.maxLongitude - boundingBox.minLongitude) / (lonDiff) * clusterSplitCount;
-      String key = "${latKey.round()}_${lonKey.round()}";
-      if (!clusters.containsKey(key)) {
-        //print("Creating cluster $key $boundingBox, ${wayFirst.boundingBox}");
-        clusters[key] = _ConnectCluster(wayholder, Waypath(wayholder.way.latLongs[0]), []);
-      }
-      clusters[key]!.waypaths.add(wayFirst);
-    }
-    clusters.forEach((key, value) {
-      //print("Cluster start $key");
-      value.connect();
-    });
-    clusters.clear();
   }
 
   double _repair(Wayholder wayholder) {
@@ -116,18 +63,14 @@ class WayRepair {
 
   Set<_Gap> _findGaps(Wayholder wayholder) {
     Set<_Gap> gaps = {};
-    Waypath wayFirst = Waypath(wayholder.way.latLongs[0]);
-    if (!wayFirst.isClosedWay()) {
-      for (Waypath waySecond in wayholder.otherOuters) {
-        if (waySecond.isClosedWay()) continue;
-        _addGaps(wayFirst, waySecond, gaps);
-      }
-    }
-    for (Waypath wayFirst in wayholder.otherOuters) {
-      if (wayFirst.isClosedWay()) continue;
-      for (Waypath waySecond in wayholder.otherOuters) {
-        if (wayFirst == waySecond) continue;
-        if (waySecond.isClosedWay()) continue;
+    for (Waypath wayFirst in wayholder.openOutersWrite) {
+      bool start = false;
+      for (Waypath waySecond in wayholder.openOutersWrite) {
+        if (wayFirst == waySecond) {
+          start = true;
+          continue;
+        }
+        if (!start) continue;
         _addGaps(wayFirst, waySecond, gaps);
       }
     }
@@ -141,9 +84,13 @@ class WayRepair {
     if (smallest.appendFirstWay != null) {
       smallest.firstWay.add(smallest.appendFirstWay!);
     }
-    bool ok = LatLongUtils.combine(smallest.firstWay.pathForModification, smallest.secondWay.path);
+    bool ok = LatLongUtils.combine(smallest.firstWay, smallest.secondWay.path);
     if (ok) {
-      wayholder.otherOuters.remove(smallest.secondWay);
+      wayholder.openOutersRemove(smallest.secondWay);
+      if (smallest.firstWay.isClosedWay()) {
+        wayholder.openOutersRemove(smallest.firstWay);
+        wayholder.closedOutersAdd(smallest.firstWay);
+      }
       gaps.remove(smallest);
       gaps.removeWhere((test) => test.secondWay == smallest.firstWay);
       gaps.removeWhere((test) => test.firstWay == smallest.firstWay);
@@ -164,10 +111,15 @@ class WayRepair {
 
   void _addGaps(Waypath wayFirst, Waypath waySecond, Set<_Gap> gaps) {
     // make sure there is a gap between the two ways
-    assert(wayFirst.first != waySecond.first, "First: ${wayFirst.first} (${wayFirst.length}), Second: ${waySecond.first} (${waySecond.length})");
+    assert(
+      wayFirst.first != waySecond.first,
+      "First: ${wayFirst.first} (${wayFirst.length}), Second: ${waySecond.first} (${waySecond.length}), first is closed: ${wayFirst.isClosedWay()}, second is closed: ${waySecond.isClosedWay()}",
+    );
     assert(wayFirst.first != waySecond.last, "First: ${wayFirst.first} (${wayFirst.length}), Second: ${waySecond.last}  (${waySecond.length})");
     assert(wayFirst.last != waySecond.first);
     assert(wayFirst.last != waySecond.last);
+    assert(!wayFirst.isClosedWay(), "WayFecond should not be closed $wayFirst");
+    assert(!waySecond.isClosedWay(), "WaySecond should not be closed $waySecond");
     gaps.add(_Gap(wayFirst.first, waySecond.first, wayFirst, waySecond, waySecond.first, null));
     gaps.add(_Gap(wayFirst.first, waySecond.last, wayFirst, waySecond, waySecond.last, null));
     gaps.add(_Gap(wayFirst.last, waySecond.last, wayFirst, waySecond, null, waySecond.last));
@@ -211,58 +163,5 @@ class _Gap {
   @override
   String toString() {
     return '_Gap{prependFirstWay: $prependFirstWay, first: $first, appendFirstWay: $appendFirstWay, second: $second, gap: $gapSquared}';
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-class _ConnectCluster {
-  final Wayholder wayholder;
-
-  final Waypath masterWaypath;
-
-  final List<Waypath> waypaths;
-
-  _ConnectCluster(this.wayholder, this.masterWaypath, this.waypaths);
-
-  void connect() {
-    Waypath wayFirst = masterWaypath;
-    if (!wayFirst.isClosedWay()) {
-      for (Waypath waySecond in List.from(waypaths)) {
-        if (waySecond.isClosedWay()) continue;
-        _connect(wayFirst, waySecond);
-      }
-    }
-    for (Waypath wayFirst in List.from(waypaths)) {
-      // if already merged
-      if (wayFirst.isEmpty) continue;
-      if (wayFirst.isClosedWay()) continue;
-      bool start = false;
-      for (Waypath waySecond in List.from(waypaths)) {
-        if (wayFirst == waySecond) {
-          start = true;
-          continue;
-        }
-        if (!start) {
-          continue;
-        }
-        if (waySecond.isEmpty) continue;
-        if (waySecond.isClosedWay()) continue;
-        if (wayFirst.boundingBox.intersects(waySecond.boundingBox)) {
-          _connect(wayFirst, waySecond);
-        }
-      }
-      //print("remaining: ${waypaths.length}");
-    }
-  }
-
-  void _connect(Waypath wayFirst, Waypath waySecond) {
-    bool ok = LatLongUtils.combine(wayFirst.pathForModification, waySecond.path);
-    if (ok) {
-      wayholder.otherOuters.remove(waySecond);
-      waypaths.remove(waySecond);
-      // save memory and inform the class that it is no longer needed
-      waySecond.clear();
-    }
   }
 }

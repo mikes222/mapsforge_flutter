@@ -333,6 +333,6 @@ class BoundingBox {
 
   @override
   String toString() {
-    return 'BoundingBox{minLatitude: $minLatitude, minLongitude: $minLongitude, maxLatitude: $maxLatitude, maxLongitude: $maxLongitude}';
+    return 'BoundingBox{minLatitude: ${minLatitude.toStringAsFixed(6)}, minLongitude: ${minLongitude.toStringAsFixed(6)}, maxLatitude: ${maxLatitude.toStringAsFixed(6)}, maxLongitude: ${maxLongitude.toStringAsFixed(6)}}';
   }
 }

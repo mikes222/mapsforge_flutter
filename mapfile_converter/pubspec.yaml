@@ -19,9 +19,6 @@ dependencies:
   mapsforge_flutter:
    path: ../
 
-  # to generate a unique id
-  uuid: ^4.5.1
-
   # MIT License
   # for reading and writing osm files
   xml: ^6.5.0

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/tagholder_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 
@@ -8,39 +9,168 @@ import 'mapfile_writer.dart';
 
 /// Holds one way and its tags
 class Wayholder with TagholderMixin {
-  Way way;
-
   int tileBitmask = 0xffff;
+
+  // The master path. It will be extracted from _closedOuters or _openOuters shortly before writing the data to the file.
+  Waypath? _master;
+
+  /// Innner ways of the master (normally they are all closed)
+  List<Waypath> _inner = [];
+
+  // outer ways which are closed
+  List<Waypath> _closedOuters = [];
 
   /// PBF supports relations with multiple outer ways. Mapfile requires to
   /// store this outer ways as additional Way data blocks and split it into
   /// several ways - all with the same way properties - when reading the file.
-  List<Waypath> otherOuters = [];
+  List<Waypath> _openOuters = [];
 
+  /// This way is already merged with another way and hence should not be written to the file.
   bool mergedWithOtherWay = false;
 
+  /// The position of the area label (may be null).
+  ILatLong? labelPosition;
+
+  /// The tags of this way.
+  List<Tag> tags = [];
+
+  /// The layer of this way + 5 (to avoid negative values).
+  int layer = 0;
+
+  /// Cache for the bounding box of the way
   BoundingBox? _boundingBox;
 
-  Wayholder(this.way) {}
+  Wayholder() {}
 
-  Wayholder cloneWith({Way? way, List<Waypath>? otherOuters}) {
-    Wayholder result = Wayholder(way ?? this.way);
-    result.otherOuters = otherOuters ?? this.otherOuters;
+  /// Creates a new wayholder from a existing way. Note that the existing way may NOT contain any path (if created from a OsmRelation)
+  Wayholder.fromWay(Way way) {
+    _inner = way.latLongs.skip(1).map((toElement) => Waypath(toElement)).toList();
+    _closedOuters = [];
+    _openOuters = [];
+    if (way.latLongs.isNotEmpty) {
+      if (LatLongUtils.isClosedWay(way.latLongs[0])) {
+        _closedOuters.add(Waypath(way.latLongs[0]));
+      } else {
+        _openOuters.add(Waypath(way.latLongs[0]));
+      }
+    }
+
+    tags = way.tags;
+    layer = way.layer;
+    labelPosition = way.labelPosition;
+  }
+
+  Wayholder cloneWith({List<Waypath>? inner, List<Waypath>? closedOuters, List<Waypath>? openOuters}) {
+    Wayholder result = Wayholder();
+    result._closedOuters = closedOuters ?? List.from(this._closedOuters);
+    result._openOuters = openOuters ?? List.from(this._openOuters);
+    result._inner = inner ?? List.from(this._inner);
     result.tileBitmask = this.tileBitmask;
-    result.tagholders = this.tagholders;
+    result.labelPosition = this.labelPosition;
+    result.tags = List.from(this.tags);
+    result.layer = this.layer;
+    result.mergedWithOtherWay = this.mergedWithOtherWay;
     result.featureElevation = this.featureElevation;
     result.featureHouseNumber = this.featureHouseNumber;
     result.featureName = this.featureName;
     result.featureRef = this.featureRef;
-    result.mergedWithOtherWay = this.mergedWithOtherWay;
     result.languagesPreference = this.languagesPreference;
-    result.tagholders = this.tagholders;
+    result.tagholders = List.from(this.tagholders);
     return result;
   }
 
+  List<Waypath> get innerRead => _inner;
+  List<Waypath> get closedOutersRead => _closedOuters;
+  List<Waypath> get openOutersRead => _openOuters;
+
+  List<Waypath> get innerWrite {
+    _boundingBox = null;
+    return _inner;
+  }
+
+  List<Waypath> get closedOutersWrite {
+    _boundingBox = null;
+    return _closedOuters;
+  }
+
+  void closedOutersAdd(Waypath waypath) {
+    assert(waypath.isClosedWay());
+    assert(waypath.length > 2);
+    _boundingBox = null;
+    _closedOuters.add(waypath);
+  }
+
+  void closedOutersAddAll(List<Waypath> waypaths) {
+    assert(!waypaths.any((waypath) => !waypath.isClosedWay()));
+    assert(!waypaths.any((waypath) => waypath.length <= 2));
+    _boundingBox = null;
+    _closedOuters.addAll(waypaths);
+  }
+
+  void closedOutersRemove(Waypath waypath) {
+    bool ok = _closedOuters.remove(waypath);
+    if (ok) {
+      _boundingBox = null;
+    }
+  }
+
+  List<Waypath> get openOutersWrite {
+    _boundingBox = null;
+    return _openOuters;
+  }
+
+  void openOutersAdd(Waypath waypath) {
+    assert(!waypath.isClosedWay());
+    _boundingBox = null;
+    _openOuters.add(waypath);
+  }
+
+  void openOutersAddAll(List<Waypath> waypaths) {
+    assert(!waypaths.any((waypath) => waypath.isClosedWay()));
+    _boundingBox = null;
+    _openOuters.addAll(waypaths);
+  }
+
+  void openOutersRemove(Waypath waypath) {
+    bool ok = _openOuters.remove(waypath);
+    if (ok) {
+      _boundingBox = null;
+    }
+  }
+
+  bool mayMoveToClosed(Waypath waypath) {
+    assert(_openOuters.contains(waypath));
+    if (waypath.isClosedWay()) {
+      _openOuters.remove(waypath);
+      _closedOuters.add(waypath);
+      return true;
+    }
+    return false;
+  }
+
   BoundingBox get boundingBoxCached {
-    _boundingBox ??= way.getBoundingBox();
+    if (_boundingBox != null) return _boundingBox!;
+    assert(_closedOuters.isNotEmpty || _openOuters.isNotEmpty || _master != null, "No bounding box available for ${this.toStringWithoutNames()}");
+    _boundingBox = _master != null
+        ? _master!.boundingBox
+        : _closedOuters.isNotEmpty
+            ? _closedOuters.first.boundingBox
+            : _openOuters.first.boundingBox;
+    _closedOuters.forEach((action) => _boundingBox = _boundingBox!.extendBoundingBox(action.boundingBox));
+    _openOuters.forEach((action) => _boundingBox = _boundingBox!.extendBoundingBox(action.boundingBox));
     return _boundingBox!;
+  }
+
+  bool hasTag(String key) {
+    return tags.firstWhereOrNull((test) => test.key == key) != null;
+  }
+
+  bool hasTagValue(String key, String value) {
+    return tags.firstWhereOrNull((test) => test.key == key && test.value == value) != null;
+  }
+
+  String? getTag(String key) {
+    return tags.firstWhereOrNull((test) => test.key == key)?.value;
   }
 
   /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
@@ -53,35 +183,37 @@ class Wayholder with TagholderMixin {
   /// @param enlargementInMeter amount of pixels that is used to enlarge the bounding box of the way and the tiles in the mapping
   ///                           process
   /// @return a 16 bit short value that represents the information which of the sub tiles needs to include the way
-  void _computeBitmask(Way way, Tile tile, final int enlargementInMeter) {
+  void _computeBitmask(Tile tile) {
     List<Tile> subtiles = tile.getGrandchilds();
 
     tileBitmask = 0;
     int tileCounter = 1 << 15;
-    BoundingBox boundingBox = way.getBoundingBox();
+    BoundingBox boundingBox = boundingBoxCached;
     for (Tile subtile in subtiles) {
       if (subtile.getBoundingBox().intersects(boundingBox) ||
           subtile.getBoundingBox().containsBoundingBox(boundingBox) ||
           boundingBox.containsBoundingBox(subtile.getBoundingBox())) {
         tileBitmask |= tileCounter;
       }
-      // print(
-      //     "$tile -> $subtile 0x${tileBitmask.toRadixString(16)} $tileCounter");
       tileCounter = tileCounter >> 1;
     }
+    // if (tile.zoomLevel <= 4) {
+    //   print("$tile 0x${tileBitmask.toRadixString(16)} for ${this.toStringWithoutNames()} $boundingBoxCached");
+    //   _closedOuters.where((test) => test.length < 3).forEach((test) => print("  test in compute: $test ${test.path}"));
+    // }
   }
 
   void analyze(List<Tagholder> tagholders, String? languagesPreference) {
     if (languagesPreference != null) super.languagesPreference.addAll(languagesPreference.split(","));
-    analyzeTags(way.tags, tagholders);
+    analyzeTags(tags, tagholders);
   }
 
   /// can be done when the tags are sorted
   Writebuffer writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
-    _computeBitmask(way, tile, 0);
+    _computeBitmask(tile);
     Writebuffer writebuffer3 = Writebuffer();
     _writeWaySignature(debugFile, writebuffer3);
-    Writebuffer writebuffer = _writeWayPropertyAndWayData(way, tileLatitude, tileLongitude);
+    Writebuffer writebuffer = _writeWayPropertyAndWayData(tileLatitude, tileLongitude);
     // get the size of the way (VBE-U)
     writebuffer3.appendUnsignedInt(writebuffer.length);
     writebuffer3.appendWritebuffer(writebuffer);
@@ -90,13 +222,22 @@ class Wayholder with TagholderMixin {
 
   void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
-      writebuffer.appendStringWithoutLength("---WayStart${way.hashCode}---".padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
+      writebuffer.appendStringWithoutLength("---WayStart${hashCode}---".padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
     }
   }
 
-  Writebuffer _writeWayPropertyAndWayData(Way way, double tileLatitude, double tileLongitude) {
-    assert(way.latLongs.isNotEmpty);
+  Waypath _extractMaster() {
+    if (_closedOuters.isNotEmpty) {
+      _master = _closedOuters.reduce((a, b) => a.length > b.length ? a : b);
+      _closedOuters.remove(_master);
+      return _master!;
+    }
+    _master = _openOuters.reduce((a, b) => a.length > b.length ? a : b);
+    _openOuters.remove(_master);
+    return _master!;
+  }
 
+  Writebuffer _writeWayPropertyAndWayData(double tileLatitude, double tileLongitude) {
     Writebuffer writebuffer = Writebuffer();
 
     /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2
@@ -107,11 +248,13 @@ class Wayholder with TagholderMixin {
 
     int specialByte = 0;
     // bit 1-4 represent the layer
-    specialByte |= ((way.layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
+    specialByte |= ((layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
     // bit 5-8 represent the number of tag IDs
     specialByte |= (tagholders.length & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
     writebuffer.appendInt1(specialByte);
     writeTags(writebuffer);
+
+    Waypath _master = _extractMaster();
 
     // get the feature bitmask (1 byte)
     int featureByte = 0;
@@ -119,23 +262,21 @@ class Wayholder with TagholderMixin {
     if (featureName != null) featureByte |= MapfileHelper.POI_FEATURE_NAME;
     if (featureHouseNumber != null) featureByte |= MapfileHelper.POI_FEATURE_HOUSE_NUMBER;
     if (featureRef != null) featureByte |= MapfileHelper.WAY_FEATURE_REF;
-    bool featureLabelPosition = way.labelPosition != null;
+    bool featureLabelPosition = labelPosition != null;
     if (featureLabelPosition) featureByte |= MapfileHelper.WAY_FEATURE_LABEL_POSITION;
     // number of way data blocks or false if we have only 1
-    bool featureWayDataBlocksByte = otherOuters.isNotEmpty;
+    bool featureWayDataBlocksByte = _openOuters.isNotEmpty | _closedOuters.isNotEmpty;
     if (featureWayDataBlocksByte) featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
 
     Writebuffer singleWritebuffer = Writebuffer();
-    _writeSingleDeltaEncoding(singleWritebuffer, way.latLongs, tileLatitude, tileLongitude);
-    otherOuters.forEach((Waypath outer) {
-      _writeSingleDeltaEncoding(singleWritebuffer, [outer.path], tileLatitude, tileLongitude);
-    });
+    _writeSingleDeltaEncoding(singleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
+    _closedOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
+    _openOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
 
     Writebuffer doubleWritebuffer = Writebuffer();
-    _writeDoubleDeltaEncoding(doubleWritebuffer, way.latLongs, tileLatitude, tileLongitude);
-    otherOuters.forEach((Waypath outer) {
-      _writeDoubleDeltaEncoding(doubleWritebuffer, [outer.path], tileLatitude, tileLongitude);
-    });
+    _writeDoubleDeltaEncoding(doubleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
+    _closedOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
+    _openOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
 
     bool featureWayDoubleDeltaEncoding = doubleWritebuffer.length < singleWritebuffer.length;
     if (featureWayDoubleDeltaEncoding) featureByte |= MapfileHelper.WAY_FEATURE_DOUBLE_DELTA_ENCODING;
@@ -153,12 +294,13 @@ class Wayholder with TagholderMixin {
     }
 
     if (featureLabelPosition) {
-      writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(way.labelPosition!.latitude - way.latLongs[0][0].latitude));
-      writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(way.labelPosition!.longitude - way.latLongs[0][0].longitude));
+      ILatLong first = _master.first;
+      writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(labelPosition!.latitude - first.latitude));
+      writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(labelPosition!.longitude - first.longitude));
     }
 
     if (featureWayDataBlocksByte) {
-      writebuffer.appendUnsignedInt(otherOuters.length + 1);
+      writebuffer.appendUnsignedInt(_closedOuters.length + _openOuters.length + 1);
     }
 
     if (featureWayDoubleDeltaEncoding)
@@ -169,17 +311,20 @@ class Wayholder with TagholderMixin {
   }
 
   /// Way data block
-  void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<List<ILatLong>> latLongs, double tileLatitude, double tileLongitude) {
+  void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
-    writebuffer.appendUnsignedInt(latLongs.length);
-    for (List<ILatLong> waySegment in latLongs) {
-      assert(waySegment.length <= 32767, "${waySegment.length} too much for $this");
+    if (waypaths.isEmpty) return;
+    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${this.toStringWithoutNames()}");
+    writebuffer.appendUnsignedInt(waypaths.length);
+    for (Waypath waypath in waypaths) {
+      assert(waypath.length >= 2, "${waypath.length} too little for ${this.toStringWithoutNames()}");
+      assert(waypath.length <= 32767, "${waypath.length} too much for ${this.toStringWithoutNames()}");
       // amount of way nodes of this way (see docu)
-      writebuffer.appendUnsignedInt(waySegment.length);
+      writebuffer.appendUnsignedInt(waypath.length);
       bool first = true;
       double previousLatitude = 0;
       double previousLongitude = 0;
-      for (ILatLong coordinate in waySegment) {
+      for (ILatLong coordinate in waypath.path) {
         if (first) {
           previousLatitude = coordinate.latitude - tileLatitude;
           previousLongitude = coordinate.longitude - tileLongitude;
@@ -201,20 +346,23 @@ class Wayholder with TagholderMixin {
   }
 
   /// Way data block
-  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, List<List<ILatLong>> latLongs, double tileLatitude, double tileLongitude) {
+  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
-    writebuffer.appendUnsignedInt(latLongs.length);
-    for (List<ILatLong> waySegment in latLongs) {
-      assert(waySegment.length <= 32767, "${waySegment.length} too much for $this");
-      // amount of way nodes of this way (see docu)
-      writebuffer.appendUnsignedInt(waySegment.length);
+    if (waypaths.isEmpty) return;
+    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${this.toStringWithoutNames()}");
+    writebuffer.appendUnsignedInt(waypaths.length);
+    for (Waypath waypath in waypaths) {
+      assert(waypath.length >= 2, "${waypath.length} too little for ${this.toStringWithoutNames()}");
+      assert(waypath.length <= 32767, "${waypath.length} too much for ${this.toStringWithoutNames()}");
+// amount of way nodes of this way (see docu)
+      writebuffer.appendUnsignedInt(waypath.length);
       bool first = true;
       // I had to switch to int because I had rounding errors which summed up so that a closed waypoint was not recognized as closed anymore
       int previousLatitude = 0;
       int previousLongitude = 0;
       int previousLatitudeDelta = 0;
       int previousLongitudeDelta = 0;
-      for (ILatLong coordinate in waySegment) {
+      for (ILatLong coordinate in waypath.path) {
         if (first) {
           previousLatitude = LatLongUtils.degreesToMicrodegrees(coordinate.latitude - tileLatitude);
           previousLongitude = LatLongUtils.degreesToMicrodegrees(coordinate.longitude - tileLongitude);
@@ -243,6 +391,10 @@ class Wayholder with TagholderMixin {
 
   @override
   String toString() {
-    return 'Wayholder{tileBitmask: 0x${tileBitmask.toRadixString(16)}, otherOuters: ${otherOuters.length}, mergedWithOtherWay: $mergedWithOtherWay}, way $way';
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, mergedWithOtherWay: $mergedWithOtherWay, labelPosition: $labelPosition, tags: $tags}';
+  }
+
+  String toStringWithoutNames() {
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, mergedWithOtherWay: $mergedWithOtherWay, labelPosition: $labelPosition, tags: ${tags.where((test) => test.key?.startsWith("name:") == false && test.key?.startsWith("official_name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
   }
 }

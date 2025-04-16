@@ -29,8 +29,7 @@ class RenderTheme {
   /// ZoomLevel dependent (iterative) list of rules
   final Map<int, RenderthemeLevel> renderthemeLevels = {};
 
-  List<RenderinstructionHillshading> hillShadings =
-      []; // NOPMD specific interface for trimToSize
+  List<RenderinstructionHillshading> hillShadings = []; // NOPMD specific interface for trimToSize
 
   late final String forHash;
 
@@ -94,8 +93,7 @@ class RenderTheme {
    * @param zoomLevel   the zoom level to which this is applied.
    */
   RenderthemeLevel prepareZoomlevel(int zoomlevel) {
-    if (renderthemeLevels.containsKey(zoomlevel))
-      return renderthemeLevels[zoomlevel]!;
+    if (renderthemeLevels.containsKey(zoomlevel)) return renderthemeLevels[zoomlevel]!;
     List<Rule> rules = [];
     for (Rule rule in rulesList) {
       Rule? r = rule.matchForZoomlevel(zoomlevel);
@@ -149,13 +147,11 @@ class RenderTheme {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeWay(Way way) {
-    bool isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
+  ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, List<Tag> tags) {
+    bool isClosedWay = waypath.isClosedWay();
     ZoomlevelRange? result;
     rulesList.forEach((rule) {
-      ZoomlevelRange? range = isClosedWay
-          ? rule.getZoomlevelRangeClosedWay(way)
-          : rule.getZoomlevelRangeOpenWay(way);
+      ZoomlevelRange? range = isClosedWay ? rule.getZoomlevelRangeClosedWay(tags) : rule.getZoomlevelRangeOpenWay(tags);
       if (range != null) {
         if (result == null) {
           result = range;

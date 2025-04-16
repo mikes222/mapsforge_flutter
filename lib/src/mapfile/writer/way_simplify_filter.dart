@@ -1,10 +1,13 @@
+import 'package:logging/logging.dart';
+
 import '../../../core.dart';
-import '../../../datastore.dart';
 import '../../../maps.dart';
 import '../../../special.dart';
 import '../../utils/douglas_peucker_latlong.dart';
 
 class WaySimplifyFilter {
+  final _log = Logger('WaySimplifyFilter');
+
   final DouglasPeuckerLatLong dpl = DouglasPeuckerLatLong();
 
   final PixelProjection projection;
@@ -22,41 +25,46 @@ class WaySimplifyFilter {
   }
 
   Wayholder reduce(Wayholder wayholder) {
-    List<List<ILatLong>> newLatLongs = [];
-    for (List<ILatLong> latLongs in wayholder.way.latLongs) {
-      newLatLongs.add(reduceWay(latLongs));
-    }
-    Wayholder result = wayholder.cloneWith(way: Way(wayholder.way.layer, wayholder.way.tags, newLatLongs, wayholder.way.labelPosition));
-
-    newLatLongs = [];
-    for (Waypath latLongs in wayholder.otherOuters) {
-      newLatLongs.add(reduceWay(latLongs.path));
-    }
-    result.otherOuters = newLatLongs.map((toElement) => Waypath(toElement)).toList();
+    List<Waypath> inner = wayholder.innerRead.map((e) => reduceWay(e)).toList();
+    List<Waypath> closedOuters = wayholder.closedOutersRead.map((e) {
+      var result = reduceWay(e);
+      if (result.length == 2) {
+        // this object is so tiny that it gets reduced to 2 points, remove it.
+        return Waypath.empty();
+      }
+      return result;
+    }).toList()
+      ..removeWhere((test) => test.isEmpty);
+    List<Waypath> openOuters = wayholder.openOutersRead.map((e) => reduceWay(e)).toList();
+    Wayholder result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
     return result;
   }
 
-  List<ILatLong> reduceWay(List<ILatLong> latLongs) {
-    if (latLongs.length <= 5) {
-      return latLongs;
+  Waypath reduceWay(Waypath waypath) {
+    if (waypath.length <= 5) {
+      return waypath;
     }
-    List<ILatLong> res1 = dpl.simplify(latLongs, maxDeviationLatLong);
-    // if (res1.length > 32767) {
-    //   print("${res1.length} too much at zoomlevel ${projection.scalefactor.zoomlevel} and $maxDeviationPixel ($maxDeviationLatLong) and $boundingBox");
-    // }
-    return res1;
+    List<ILatLong> res1 = dpl.simplify(waypath.path, maxDeviationLatLong);
+    assert(res1.isNotEmpty);
+    if (res1.length > 32767) {
+      _log.info("${res1.length} too much at zoomlevel ${projection.scalefactor.zoomlevel} and $maxDeviationPixel ($maxDeviationLatLong) and $boundingBox");
+    }
+    assert(res1.length >= 2);
+    if (LatLongUtils.isClosedWay(res1)) assert(res1.length > 2);
+    return Waypath(res1);
   }
 
-  List<ILatLong> reduceWayEnsureMax(List<ILatLong> latLongs) {
-    if (latLongs.length <= 5) {
-      return latLongs;
+  Waypath reduceWayEnsureMax(Waypath waypath) {
+    if (waypath.length <= 5) {
+      return waypath;
     }
-    return _reduceWayEnsureMax(latLongs, maxDeviationLatLong);
+    return _reduceWayEnsureMax(waypath, maxDeviationLatLong);
   }
 
-  List<ILatLong> _reduceWayEnsureMax(List<ILatLong> latLongs, double maxDeviation) {
-    List<ILatLong> res1 = dpl.simplify(latLongs, maxDeviation);
-    if (res1.length > 32767) return _reduceWayEnsureMax(latLongs, maxDeviation + maxDeviationLatLong);
-    return res1;
+  Waypath _reduceWayEnsureMax(Waypath waypath, double maxDeviation) {
+    List<ILatLong> res1 = dpl.simplify(waypath.path, maxDeviation);
+    if (res1.length > 32767) return _reduceWayEnsureMax(waypath, maxDeviation + maxDeviationLatLong);
+    assert(res1.length > 2);
+    return Waypath(res1);
   }
 }

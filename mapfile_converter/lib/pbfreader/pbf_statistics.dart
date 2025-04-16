@@ -70,7 +70,7 @@ class PbfStatistics {
       if (latLongs[0].length >= 2) {
         Way? way = converter.createWay(osmWay, latLongs);
         if (way != null) {
-          _wayHolders[osmWay.id] = Wayholder(way);
+          _wayHolders[osmWay.id] = Wayholder.fromWay(way);
           way.tags.forEach((Tag tag) {
             increment(_wayTags, tag, latLongs[0].length);
           });

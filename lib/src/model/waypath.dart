@@ -3,12 +3,24 @@ import 'package:mapsforge_flutter/core.dart';
 class Waypath {
   final List<ILatLong> _path;
 
+  /// cached marker if this way is a closed way
   bool? _closed;
 
   // cached bounding box
   BoundingBox? _boundingBox;
 
-  Waypath(this._path);
+  Waypath(this._path) : assert(_path.isNotEmpty);
+
+  Waypath clone() {
+    Waypath result = Waypath(List.from(_path));
+    result._closed = _closed;
+    result._boundingBox = _boundingBox;
+    return result;
+  }
+
+  Waypath.empty()
+      : _path = [],
+        _closed = false;
 
   int get length => _path.length;
 
@@ -40,8 +52,27 @@ class Waypath {
     _boundingBox = null;
   }
 
+  void insertAll(int index, Iterable<ILatLong> latLongs) {
+    _path.insertAll(index, latLongs);
+    _closed = null;
+    _boundingBox = null;
+  }
+
   void add(ILatLong latLong) {
     _path.add(latLong);
+    _closed = null;
+    _boundingBox = null;
+  }
+
+  void addAll(Iterable<ILatLong> latLongs) {
+    _path.addAll(latLongs);
+    _closed = null;
+    _boundingBox = null;
+  }
+
+  void removeAt(int index) {
+    _path.removeAt(index);
+    assert(_path.isNotEmpty);
     _closed = null;
     _boundingBox = null;
   }
@@ -59,9 +90,15 @@ class Waypath {
   // for debugging purposes: return a copy of the path
   List<ILatLong> get path => _path; //List.from(_path);
 
+  /// Returns the path and clears the cached properties so that we have to recreate them next time.
   List<ILatLong> get pathForModification {
     _closed = null;
     _boundingBox = null;
     return _path;
+  }
+
+  @override
+  String toString() {
+    return 'Waypath{_path: ${_path.length} items, _closed: $_closed, _boundingBox: $_boundingBox}';
   }
 }

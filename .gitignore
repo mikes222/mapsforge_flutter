@@ -82,3 +82,4 @@ test.map
 mapfile_converter/linux/
 mapfile_converter/windows/.gitignore
 mapfile_converter/windows/
+example/assets/render_themes/lightrender.xml
