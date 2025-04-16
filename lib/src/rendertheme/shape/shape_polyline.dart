@@ -17,6 +17,7 @@ class ShapePolyline extends Shape with PaintSrcMixin, BitmapSrcMixin {
   Scale scale = Scale.STROKE;
 
   double dy = 0;
+  String? id;
 
   ShapePolyline.base(int level) : super.base(level: level);
 
