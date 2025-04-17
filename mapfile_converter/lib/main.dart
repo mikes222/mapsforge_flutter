@@ -111,16 +111,15 @@ class ConvertCommand extends Command {
 
         if (boundingBox != null) {
           int countPoi = pbfAnalyzer.pois.length;
-          int countWay = pbfAnalyzer.ways.length + pbfAnalyzer.waysMerged.length;
-          pbfAnalyzer.filterByBoundingBox(boundingBox);
+          int countWay = await pbfAnalyzer.filterByBoundingBox(boundingBox);
           _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-          _log.info("Removed ${countWay - pbfAnalyzer.ways.length - pbfAnalyzer.waysMerged.length} ways because they are out of boundary");
+          _log.info("Removed ${countWay} ways because they are out of boundary");
         }
 
         boundingBox ??= pbfAnalyzer.boundingBox!;
         pbfAnalyzer.statistics();
         pois.addAll(pbfAnalyzer.pois);
-        ways.addAll(pbfAnalyzer.ways);
+        ways.addAll(await pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
         pbfAnalyzer.clear();
       } else {
@@ -129,17 +128,16 @@ class ConvertCommand extends Command {
 
         if (boundingBox != null) {
           int countPoi = pbfAnalyzer.pois.length;
-          int countWay = pbfAnalyzer.ways.length + pbfAnalyzer.waysMerged.length;
-          pbfAnalyzer.filterByBoundingBox(boundingBox);
+          int countWay = await pbfAnalyzer.filterByBoundingBox(boundingBox);
           _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-          _log.info("Removed ${countWay - pbfAnalyzer.ways.length - pbfAnalyzer.waysMerged.length} ways because they are out of boundary");
+          _log.info("Removed ${countWay} ways because they are out of boundary");
         }
 
         /// Now start exporting the data to a mapfile
         boundingBox ??= pbfAnalyzer.boundingBox!;
         pbfAnalyzer.statistics();
         pois.addAll(pbfAnalyzer.pois);
-        ways.addAll(pbfAnalyzer.ways);
+        ways.addAll(await pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
         pbfAnalyzer.clear();
       }

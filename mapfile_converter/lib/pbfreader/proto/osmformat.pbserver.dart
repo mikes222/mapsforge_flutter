@@ -1,8 +1,8 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/proto/osmformat.proto
+//  source: lib/pbfreader/proto/osmformat.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names
@@ -11,3 +11,4 @@
 // ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 export 'osmformat.pb.dart';
+

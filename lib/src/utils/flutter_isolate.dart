@@ -95,6 +95,14 @@ class FlutterIsolateInstance {
     return instance;
   }
 
+  /// Starts a new isolate and handles the instance parameters to the constructor method of the isolate.
+  /// Next step is to perform execution with [compute]. This is an alternative to [isolateCompute] and should only be used if the
+  /// parameters needed to do the work in the isolate are static for each compute and are big/expensive.
+  static Future<FlutterIsolateInstance> createInstance({required CreateInstanceFunction createInstance, required Object instanceParams}) async {
+    FlutterIsolateInstance instance = await FlutterIsolateInstance._create(createInstance, instanceParams);
+    return instance;
+  }
+
   /// Performs a single computation in an isolate and disposes the isolate afterwards.
   static Future<V> isolateCompute<V, R>(EntryPoint<V, R> entryPoint, R request) async {
     FlutterIsolateInstance instance = await FlutterIsolateInstance._create(null, null);

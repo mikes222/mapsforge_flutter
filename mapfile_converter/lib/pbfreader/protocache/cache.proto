@@ -1,0 +1,26 @@
+message CacheWay {
+  repeated sint64 lat = 9 [packed = true]; // DELTA coded, optional
+  repeated sint64 lon = 10 [packed = true]; // DELTA coded, optional
+}
+
+message CacheLabel {
+  required sint64 lat = 8;
+  required sint64 lon = 9;
+}
+
+
+message CacheWayholder {
+  // Parallel arrays for tags
+  repeated string tagkeys = 2;
+  repeated string tagvals = 3;
+
+  repeated CacheWay innerways = 4;
+  repeated CacheWay closedways = 5;
+  repeated CacheWay openways = 6;
+
+  optional CacheLabel label = 11; // DELTA coded, optional
+
+  required  int32 layer = 13;
+  required  int32 tileBitmask = 14;
+  required  bool mergedWithOtherWay = 15;
+}

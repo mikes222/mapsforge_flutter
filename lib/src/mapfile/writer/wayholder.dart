@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/tagholder_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
@@ -268,17 +270,32 @@ class Wayholder with TagholderMixin {
     bool featureWayDataBlocksByte = _openOuters.isNotEmpty | _closedOuters.isNotEmpty;
     if (featureWayDataBlocksByte) featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
 
+    bool? expectDouble = null;
+    // less than 10 coordinates? Use singe encoding
+    int sum = sumCount();
+    if (sum <= 30)
+      expectDouble = false;
+    else if (sum >= 100) expectDouble = true;
+
     Writebuffer singleWritebuffer = Writebuffer();
-    _writeSingleDeltaEncoding(singleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
-    _closedOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
-    _openOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
+    if (expectDouble == null || !expectDouble) {
+      _writeSingleDeltaEncoding(singleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
+      _closedOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
+      _openOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
+    }
 
     Writebuffer doubleWritebuffer = Writebuffer();
-    _writeDoubleDeltaEncoding(doubleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
-    _closedOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
-    _openOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
+    if (expectDouble == null || expectDouble) {
+      _writeDoubleDeltaEncoding(doubleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
+      _closedOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
+      _openOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
+    }
 
-    bool featureWayDoubleDeltaEncoding = doubleWritebuffer.length < singleWritebuffer.length;
+    bool featureWayDoubleDeltaEncoding = singleWritebuffer.length == 0
+        ? true
+        : doubleWritebuffer.length == 0
+            ? false
+            : doubleWritebuffer.length < singleWritebuffer.length;
     if (featureWayDoubleDeltaEncoding) featureByte |= MapfileHelper.WAY_FEATURE_DOUBLE_DELTA_ENCODING;
 
     writebuffer.appendInt1(featureByte);
@@ -307,8 +324,17 @@ class Wayholder with TagholderMixin {
       writebuffer.appendWritebuffer(doubleWritebuffer);
     else
       writebuffer.appendWritebuffer(singleWritebuffer);
+
+    if (expectDouble == null) {
+      ioSink ??= File("debug.txt").openWrite();
+      ioSink!.writeln(
+          "$featureWayDoubleDeltaEncoding ${singleWritebuffer.length} ${doubleWritebuffer.length} ${singleWritebuffer.length - doubleWritebuffer.length} ${this.toStringWithoutNames()} ${this._master?.length}");
+    }
+
     return writebuffer;
   }
+
+  static IOSink? ioSink;
 
   /// Way data block
   void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
@@ -387,6 +413,14 @@ class Wayholder with TagholderMixin {
         }
       }
     }
+  }
+
+  int sumCount() {
+    return (_closedOuters.fold(0, (idx, combine) => idx + combine.length) +
+                _openOuters.fold(0, (idx, combine) => idx + combine.length) +
+                _inner.fold(0, (idx, combine) => idx + combine.length))
+            .toInt() +
+        (_master?.length ?? 0);
   }
 
   @override

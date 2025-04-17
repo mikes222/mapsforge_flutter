@@ -5,8 +5,7 @@ import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/proto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfreader/proto/osmformat.pb.dart';
 import 'package:mapsforge_flutter/core.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
-import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
+import 'package:mapsforge_flutter/special.dart';
 
 /// Reads data from a PBF file.
 class PbfReader {

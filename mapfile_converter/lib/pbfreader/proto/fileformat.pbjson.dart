@@ -1,8 +1,8 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/proto/fileformat.proto
+//  source: lib/pbfreader/proto/fileformat.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -52,3 +52,4 @@ const BlobHeader$json = {
 final $typed_data.Uint8List blobHeaderDescriptor = $convert.base64Decode(
     'CgpCbG9iSGVhZGVyEhIKBHR5cGUYASACKAlSBHR5cGUSHAoJaW5kZXhkYXRhGAIgASgMUglpbm'
     'RleGRhdGESGgoIZGF0YXNpemUYAyACKAVSCGRhdGFzaXpl');
+

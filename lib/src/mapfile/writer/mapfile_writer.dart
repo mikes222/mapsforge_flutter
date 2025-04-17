@@ -20,7 +20,7 @@ class MapfileWriter {
 
   final List<Tagholder> wayTags = [];
 
-  final MapfileSink _sink;
+  final SinkWithCounter _sink;
 
   final MapHeaderInfo mapHeaderInfo;
 
@@ -29,7 +29,7 @@ class MapfileWriter {
   final List<SubfileCreator> subfileCreators = [];
 
   MapfileWriter({required this.filename, required this.mapHeaderInfo})
-      : _sink = MapfileSink(File(filename).openWrite()),
+      : _sink = SinkWithCounter(File(filename).openWrite()),
         _zoomlevelRange = mapHeaderInfo.zoomlevelRange {}
 
   Future<void> close() async {
@@ -108,25 +108,6 @@ class MapfileWriter {
       String value = "${tagholder.tag.key}=${tagholder.tag.value}";
       writebuffer.appendString(value);
     }
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-class MapfileSink {
-  final IOSink sink;
-
-  int written = 0;
-
-  MapfileSink(this.sink);
-
-  Future<void> close() async {
-    await sink.close();
-  }
-
-  void add(List<int> buffer) {
-    sink.add(buffer);
-    written += buffer.length;
   }
 }
 

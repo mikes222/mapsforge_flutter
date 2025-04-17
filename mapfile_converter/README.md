@@ -83,7 +83,16 @@ Converting 2 pbf files to mapfile:
 
 ## ProtoC support
 
+Download protoc-30.2-win64.zip from https://github.com/protocolbuffers/protobuf/releases/tag/v30.2
+
+copy the files to c:\develop\proto
+
+add C:\Users\micro\AppData\Local\Pub\Cache\bin to your path
+
+restart android studio
+
     flutter pub global activate protoc_plugin
 
-    C:\Users\micro\AppData\Local\Pub\Cache\bin\protoc-gen-dart.bat
+    cd mapsforge_converter
 
+    \develop\protoc\bin\protoc.exe --dart_out=. lib\pbfreader\proto\fileformat.proto

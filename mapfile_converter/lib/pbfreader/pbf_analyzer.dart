@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/large_data_splitter.dart';
+import 'package:mapfile_converter/pbfreader/cachefile.dart';
 import 'package:mapfile_converter/pbfreader/pbf_data.dart';
 import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
 import 'package:mapfile_converter/pbfreader/way_connect.dart';
@@ -25,7 +28,7 @@ class PbfAnalyzer {
 
   final Map<int, _PoiHolder> _nodeHolders = {};
 
-  final Map<int, Wayholder> _wayHolders = {};
+  final Map<int, WayholderUnion> _wayHolders = {};
 
   final List<Wayholder> _wayHoldersMerged = [];
 
@@ -49,7 +52,14 @@ class PbfAnalyzer {
 
   List<PointOfInterest> get pois => _nodeHolders.values.map((e) => e.pointOfInterest).toList();
 
-  List<Wayholder> get ways => _wayHolders.values.map((e) => e).toList();
+  Future<List<Wayholder>> get ways async {
+    List<Wayholder> result = [];
+    for (var e in _wayHolders.values) {
+      Wayholder wayholder = await e.get();
+      result.add(wayholder);
+    }
+    return result;
+  }
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
@@ -75,7 +85,7 @@ class PbfAnalyzer {
     PbfAnalyzer pbfAnalyzer = PbfAnalyzer(maxGapMeter: maxGapMeter, ruleAnalyzer: ruleAnalyzer);
     await pbfAnalyzer.readToMemory(readbufferSource, length);
     await pbfAnalyzer.analyze();
-    pbfAnalyzer.removeSuperflous();
+    await pbfAnalyzer.removeSuperflous();
     //    print("rule: ${ruleAnalyzer.closedWayValueinfos()}");
     //    print("rule neg: ${ruleAnalyzer.closedWayNegativeValueinfos()}");
     return pbfAnalyzer;
@@ -98,7 +108,7 @@ class PbfAnalyzer {
     });
     boundingBox = osmReader.boundingBox;
     await analyze();
-    removeSuperflous();
+    await removeSuperflous();
   }
 
   Future<void> analyze() async {
@@ -107,7 +117,7 @@ class PbfAnalyzer {
     _nodeHolders.removeWhere((key, value) => value.pointOfInterest.tags.isEmpty);
     nodesWithoutTagsRemoved = count - _nodeHolders.length;
 
-    _mergeRelationsToWays();
+    await _mergeRelationsToWays();
 
     WayRepair wayRepair = WayRepair(maxGapMeter);
     for (var wayholder in _wayHoldersMerged) {
@@ -124,7 +134,7 @@ class PbfAnalyzer {
       }
     }
     List<Wayholder> wayholders =
-        _wayHolders.values
+        (await ways)
             .where((test) => test.hasTagValue("natural", "coastline"))
             //            .where((test) => test.closedOuters.isEmpty)
             //            .where((test) => test.openOuters.isEmpty)
@@ -152,20 +162,27 @@ class PbfAnalyzer {
     }
   }
 
-  void removeSuperflous() {
+  Future<void> removeSuperflous() async {
     // remove ways with less than 2 points (this is not a way)
     int count = _wayHolders.length;
-    _wayHolders.forEach((key, Wayholder wayholder) {
-      wayholder.closedOutersWrite.removeWhere((test) => test.length <= 2);
-    });
+    // _wayHolders.forEach((key, Wayholder wayholder) {
+    //   wayholder.closedOutersWrite.removeWhere((test) => test.length <= 2);
+    // });
     closedWaysWithLessNodesRemoved = count - _wayHolders.length;
 
     count = _wayHolders.length;
-    _wayHolders.removeWhere((id, Wayholder test) => test.innerRead.isEmpty && test.openOutersRead.isEmpty && test.closedOutersRead.isEmpty);
+    //    _wayHolders.removeWhere((id, Wayholder test) => test.innerRead.isEmpty && test.openOutersRead.isEmpty && test.closedOutersRead.isEmpty);
     waysWithoutNodesRemoved = count - _wayHolders.length;
 
     count = _wayHolders.length;
-    _wayHolders.removeWhere((id, Wayholder test) => test.mergedWithOtherWay);
+    //    _wayHolders.removeWhere((id, Wayholder test) => test.mergedWithOtherWay);
+    for (var entry in Map.from(_wayHolders).entries) {
+      var id = entry.key;
+      var wayHolder = await entry.value.get();
+      if (wayHolder.mergedWithOtherWay) {
+        _wayHolders.remove(id);
+      }
+    }
     waysMergedCount = count - _wayHolders.length;
   }
 
@@ -190,7 +207,7 @@ class PbfAnalyzer {
         Way? way = converter.createWay(osmWay, latLongs);
         if (way != null) {
           assert(!_wayHolders.containsKey(osmWay.id));
-          _wayHolders[osmWay.id] = Wayholder.fromWay(way);
+          _wayHolders[osmWay.id] = WayholderUnion(Wayholder.fromWay(way));
         }
       }
     }
@@ -210,12 +227,12 @@ class PbfAnalyzer {
 
     _log.info("${nodeNotFound.length} nodes not found, ${wayNotFound.length} ways not found");
     _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}, total relation-way count: ${waysMerged.length}");
-    // print(
-    //     "Total way reference count: $count, no reference found: $noWayRefFound");
   }
 
-  void _mergeRelationsToWays() {
-    relations.forEach((key, relation) {
+  Future<void> _mergeRelationsToWays() async {
+    for (var entry in relations.entries) {
+      var key = entry.key;
+      var relation = entry.value;
       List<Wayholder> outers = [];
       List<Wayholder> inners = [];
       ILatLong? labelPosition;
@@ -227,12 +244,12 @@ class PbfAnalyzer {
             labelPosition = pointOfInterest.position;
           }
         } else if (member.role == "outer" && member.memberType == MemberType.way) {
-          Wayholder? wayHolder = _searchWayHolder(member.memberId);
+          Wayholder? wayHolder = await _searchWayHolder(member.memberId);
           if (wayHolder != null) {
             outers.add(wayHolder);
           }
         } else if (member.role == "inner" && member.memberType == MemberType.way) {
-          Wayholder? wayHolder = _searchWayHolder(member.memberId);
+          Wayholder? wayHolder = await _searchWayHolder(member.memberId);
           if (wayHolder != null) {
             inners.add(wayHolder);
           }
@@ -270,7 +287,7 @@ class PbfAnalyzer {
         // assertions to make sure the outer wayholders are as they should be
         for (Wayholder outerWayholder in outers) {
           assert(outerWayholder.innerRead.isEmpty);
-          assert(outerWayholder.openOutersRead.length + outerWayholder.closedOutersRead.length == 1);
+          assert(outerWayholder.openOutersRead.length + outerWayholder.closedOutersRead.length == 1, outerWayholder.toStringWithoutNames());
         }
         // add closed ways
         for (Wayholder remainingOuterFirst in List.from(outers)) {
@@ -295,8 +312,13 @@ class PbfAnalyzer {
               continue;
             }
             assert(remainingOuterFirst.openOutersRead.isNotEmpty, "First value should have at least one open way: $remainingOuterFirst");
+            bool start = false;
             for (Wayholder remainingOuterSecond in List.from(outers)) {
-              if (remainingOuterFirst == remainingOuterSecond) continue;
+              if (remainingOuterFirst == remainingOuterSecond) {
+                start = true;
+                continue;
+              }
+              if (!start) continue;
               if (merged.contains(remainingOuterFirst) || merged.contains(remainingOuterSecond)) {
                 continue;
               }
@@ -316,15 +338,7 @@ class PbfAnalyzer {
                 outers.remove(remainingOuterSecond);
                 merged.add(remainingOuterSecond);
                 remainingOuterFirst.mayMoveToClosed(remainingOuterFirst.openOutersRead.first);
-                // if (remainingOuterFirst.openOutersRead.first.isClosedWay()) {
-                //   mergedWayholder.closedOutersAdd(remainingOuterFirst.openOutersRead.first.clone());
-                //   remainingOuterFirst.openOutersRemove(remainingOuterFirst.openOutersRead.first);
-                //   remainingOuterFirst.closedOutersAdd(remainingOuterFirst.openOutersRead.first);
-                //   remainingOuterFirst.mergedWithOtherWay = true;
-                //   outers.remove(remainingOuterFirst);
-                //   merged.add(remainingOuterFirst);
-                // }
-                if (remainingOuterFirst.openOutersWrite.isEmpty) {
+                if (remainingOuterFirst.openOutersRead.isEmpty) {
                   // seems it is now a closed way, skip to the next way
                   break;
                 }
@@ -358,7 +372,7 @@ class PbfAnalyzer {
           _wayHoldersMerged.add(mergedWayholder);
         }
       }
-    });
+    }
   }
 
   bool _appendLatLongs(OsmRelation osmRelation, Waypath master, Waypath other) {
@@ -415,8 +429,8 @@ class PbfAnalyzer {
     return null;
   }
 
-  Wayholder? _searchWayHolder(int id) {
-    Wayholder? wayHolder = _wayHolders[id];
+  Future<Wayholder?> _searchWayHolder(int id) async {
+    Wayholder? wayHolder = await _wayHolders[id]?.get();
     if (wayHolder != null) {
       return wayHolder;
     }
@@ -436,22 +450,30 @@ class PbfAnalyzer {
     relations.clear();
     nodeNotFound.clear();
     wayNotFound.clear();
+    WayholderUnion.dispose();
   }
 
-  void filterByBoundingBox(BoundingBox boundingBox) {
-    _nodeHolders.removeWhere((zoomlevel, test) => !boundingBox.containsLatLong(test.pointOfInterest.position));
-    _wayHolders.removeWhere(
-      (zoomlevel, test) =>
-          !boundingBox.intersects(test.boundingBoxCached) &&
-          !boundingBox.containsBoundingBox(test.boundingBoxCached) &&
-          !test.boundingBoxCached.containsBoundingBox(boundingBox),
-    );
+  Future<int> filterByBoundingBox(BoundingBox boundingBox) async {
+    _nodeHolders.removeWhere((id, test) => !boundingBox.containsLatLong(test.pointOfInterest.position));
+    int count = _wayHoldersMerged.length;
     _wayHoldersMerged.removeWhere(
       (test) =>
           !boundingBox.intersects(test.boundingBoxCached) &&
           !boundingBox.containsBoundingBox(test.boundingBoxCached) &&
           !test.boundingBoxCached.containsBoundingBox(boundingBox),
     );
+    count = count - _wayHoldersMerged.length;
+    for (var entry in Map.from(_wayHolders).entries) {
+      var id = entry.key;
+      var wayHolder = await entry.value.get();
+      if (!boundingBox.intersects(wayHolder.boundingBoxCached) &&
+          !boundingBox.containsBoundingBox(wayHolder.boundingBoxCached) &&
+          !wayHolder.boundingBoxCached.containsBoundingBox(boundingBox)) {
+        _wayHolders.remove(id);
+        ++count;
+      }
+    }
+    return count;
   }
 }
 
@@ -524,4 +546,96 @@ class PbfAnalyzerConverter {
     if (layer > 10) layer = 10;
     return layer;
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class WayholderUnion {
+  Wayholder? _wayholder;
+
+  _Temp? _temp;
+
+  static String? _filename;
+
+  static SinkWithCounter? _sinkWithCounter;
+
+  static ReadbufferFile? _readbufferFile;
+
+  static int _count = 0;
+
+  WayholderUnion(this._wayholder) {
+    ++_count;
+    if (_count < 10000) {
+      return;
+    }
+    if (_wayholder!.sumCount() > 1000000) {
+      // do not send large wayholders to file
+      return;
+    }
+    _toFile();
+  }
+
+  void _toFile() {
+    assert(_wayholder != null);
+    if (_temp == null) {
+      CacheFile cacheFile = CacheFile();
+      Uint8List uint8list = cacheFile.toFile(_wayholder!);
+      if (uint8list.length > 10000000) {
+        print("Lenght: ${uint8list.length} for ${_wayholder!.toString()}");
+      }
+      _filename ??= "temp_${DateTime.timestamp().millisecondsSinceEpoch}.bin";
+      _sinkWithCounter ??= SinkWithCounter(File(_filename!).openWrite());
+      int pos = _sinkWithCounter!.written;
+      _sinkWithCounter!.add(uint8list);
+      _temp = _Temp(pos: pos, length: uint8list.length);
+    }
+    _wayholder = null;
+    --_count;
+  }
+
+  Future<Wayholder> _fromFile() async {
+    assert(_temp != null);
+    _readbufferFile ??= ReadbufferFile(_filename!, capacity: 10);
+    await _sinkWithCounter!.flush();
+    Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(_temp!.pos, _temp!.length);
+    Uint8List uint8list = readbuffer.getBuffer(0, _temp!.length);
+    CacheFile cacheFile = CacheFile();
+    assert(uint8list.length == _temp!.length);
+    _wayholder = cacheFile.fromFile(uint8list);
+    ++_count;
+    return _wayholder!;
+  }
+
+  Future<Wayholder> get() async {
+    if (_wayholder != null) return _wayholder!;
+    return _fromFile();
+  }
+
+  static void dispose() {
+    _readbufferFile?.dispose();
+    _readbufferFile = null;
+    _sinkWithCounter?.close().then((a) {
+      if (_filename != null) {
+        try {
+          File(_filename!).deleteSync();
+        } catch (_) {
+          // do nothing
+        } finally {
+          _filename = null;
+        }
+      }
+    });
+    _sinkWithCounter = null;
+    _count = 0;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _Temp {
+  final int pos;
+
+  final int length;
+
+  _Temp({required this.pos, required this.length});
 }

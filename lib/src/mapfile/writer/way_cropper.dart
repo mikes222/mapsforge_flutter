@@ -146,7 +146,11 @@ class WayCropper {
       }
       // everything ok
       assert(optimizedWaypoints.length >= 3);
-      assert(optimizedWaypoints.length <= 32767);
+      if (optimizedWaypoints.length > 32767) {
+        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
+        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
+        return result;
+      }
       return Waypath(optimizedWaypoints);
     }
     // if start and end would be inside the tile we would have a closed way. So both must be outside

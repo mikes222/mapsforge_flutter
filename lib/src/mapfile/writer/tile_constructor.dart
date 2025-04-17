@@ -1,6 +1,7 @@
 import 'dart:math' as Math;
 import 'dart:typed_data';
 
+import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_cropper.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
@@ -13,28 +14,30 @@ import '../../utils/flutter_isolate.dart';
 
 @pragma("vm:entry-point")
 class IsolateTileConstructor {
-  late final FlutterIsolateInstancePool _isolateInstancePool;
+  late final FlutterIsolateInstance _isolateInstance;
 
-  IsolateTileConstructor(
-      bool debugFile, Map<int, Poiinfo> poiinfos, Map<int, Wayinfo> wayinfos, ZoomlevelRange zoomlevelRange, double maxDeviationPixel, int tileCountX) {
-    _isolateInstancePool = FlutterIsolateInstancePool(
-        maxInstances: 4,
-        createInstance: createInstance,
-        instanceParams: _TileConstructorInstanceRequest(
-            debugFile: debugFile,
-            poiinfos: poiinfos,
-            wayinfos: wayinfos,
-            zoomlevelRange: zoomlevelRange,
-            maxDeviationPixel: maxDeviationPixel,
-            tileCountX: tileCountX));
+  IsolateTileConstructor._();
+
+  static Future<IsolateTileConstructor> create(
+      bool debugFile, Map<int, Poiinfo> poiinfos, Map<int, Wayinfo> wayinfos, ZoomlevelRange zoomlevelRange, double maxDeviationPixel, int tileCountX) async {
+    _TileConstructorInstanceRequest _request = _TileConstructorInstanceRequest(
+        debugFile: debugFile,
+        poiinfos: poiinfos,
+        wayinfos: wayinfos,
+        zoomlevelRange: zoomlevelRange,
+        maxDeviationPixel: maxDeviationPixel,
+        tileCountX: tileCountX);
+    IsolateTileConstructor _instance = IsolateTileConstructor._();
+    _instance._isolateInstance = await FlutterIsolateInstance.createInstance(createInstance: createInstance, instanceParams: _request);
+    return _instance;
   }
 
   void dispose() {
-    _isolateInstancePool.dispose();
+    _isolateInstance.dispose();
   }
 
   Future<Uint8List> writeTile(Tile tile) async {
-    return await _isolateInstancePool.compute(writeTileStatic, _TileConstructorRequest(tile: tile));
+    return await _isolateInstance.compute(writeTileStatic, _TileConstructorRequest(tile: tile));
   }
 
   /// This is the instance variable. Note that it is a different instance in each isolate.
@@ -51,6 +54,52 @@ class IsolateTileConstructor {
 
   @pragma('vm:entry-point')
   static Future<Uint8List> writeTileStatic(_TileConstructorRequest request) async {
+    return _tileConstructor!.writeTile(request.tile);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+@pragma("vm:entry-point")
+class IsolatePoolTileConstructor {
+  late final FlutterIsolateInstancePool _isolateInstancePool;
+
+  IsolatePoolTileConstructor(
+      bool debugFile, Map<int, Poiinfo> poiinfos, Map<int, Wayinfo> wayinfos, ZoomlevelRange zoomlevelRange, double maxDeviationPixel, int tileCountX) {
+    _isolateInstancePool = FlutterIsolateInstancePool(
+        maxInstances: 6,
+        createInstance: createPoolInstance,
+        instanceParams: _TileConstructorInstanceRequest(
+            debugFile: debugFile,
+            poiinfos: poiinfos,
+            wayinfos: wayinfos,
+            zoomlevelRange: zoomlevelRange,
+            maxDeviationPixel: maxDeviationPixel,
+            tileCountX: tileCountX));
+  }
+
+  void dispose() {
+    _isolateInstancePool.dispose();
+  }
+
+  Future<Uint8List> writeTile(Tile tile) async {
+    return await _isolateInstancePool.compute(writePoolTileStatic, _TileConstructorRequest(tile: tile));
+  }
+
+  /// This is the instance variable. Note that it is a different instance in each isolate.
+  static TileConstructor? _tileConstructor;
+
+  @pragma('vm:entry-point')
+  static void createPoolInstance(Object object) {
+    _TileConstructorInstanceRequest request = object as _TileConstructorInstanceRequest;
+    _tileConstructor ??=
+        TileConstructor(request.debugFile, request.poiinfos, request.wayinfos, request.zoomlevelRange, request.maxDeviationPixel, request.tileCountX);
+    // init displaymodel since it is used for PixelProjection in WaySimplifyFilter in WayCropper
+    DisplayModel();
+  }
+
+  @pragma('vm:entry-point')
+  static Future<Uint8List> writePoolTileStatic(_TileConstructorRequest request) async {
     return _tileConstructor!.writeTile(request.tile);
   }
 }
@@ -102,87 +151,33 @@ class TileConstructor {
 
   final bool debugFile;
 
-  Map<int, Poiinfo> poiinfos = {};
+  final _PoiWayInfos _poiWayInfos;
 
-  Map<int, Wayinfo> wayinfos = {};
+  SimpleCache _cache = SimpleCache(capacity: 1);
 
-  Map<int, Poiinfo> _poiinfosPrefiltered = {};
-
-  Map<int, Wayinfo> _wayinfosPrefiltered = {};
-
-  BoundingBox _poiBoundingBox = BoundingBox.fromLatLongs([const LatLong(0, 0)]);
-
-  BoundingBox _wayBoundingBox = BoundingBox.fromLatLongs([const LatLong(0, 0)]);
+  BoundingBox _boundingBox = BoundingBox.fromLatLongs([const LatLong(0, 0)]);
 
   ZoomlevelRange zoomlevelRange;
 
   final int tileCountX;
 
-  TileConstructor(this.debugFile, this.poiinfos, this.wayinfos, this.zoomlevelRange, this.maxDeviationPixel, this.tileCountX);
+  TileConstructor(this.debugFile, Map<int, Poiinfo> poiinfos, Map<int, Wayinfo> wayinfos, this.zoomlevelRange, this.maxDeviationPixel, this.tileCountX)
+      : _poiWayInfos = _PoiWayInfos(poiinfos, wayinfos);
 
-  Map<int, Poiinfo> _filterPoisForTilePrefiltered(Tile tile) {
-    Map<int, Poiinfo> result = {};
-    _poiinfosPrefiltered.forEach((zoomlevel, poiinfo) {
-      Poiinfo newPoiinfo = Poiinfo();
-      poiinfo.poiholders.forEach((poiholder) {
-        if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
-          newPoiinfo.addPoiholder(poiholder);
-        }
-      });
-      result[zoomlevel] = newPoiinfo;
-    });
-    return result;
-  }
-
-  Map<int, Poiinfo> _filterPoisForTile(Tile tile) {
-    if (_poiBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
-      return _filterPoisForTilePrefiltered(tile);
-    }
-    Tile tile2 = Tile(Math.min(tile.tileX + tileCountX, Tile.getMaxTileNumber(tile.zoomLevel)), tile.tileY, tile.zoomLevel, tile.indoorLevel);
-    BoundingBox tileBoundingBox = tile.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
-    Map<int, Poiinfo> result = {};
-    poiinfos.forEach((zoomlevel, poiinfo) {
+  _PoiWayInfos _prefilter(Tile tile, BoundingBox tileBoundingBox) {
+    Map<int, Poiinfo> resultPoi = {};
+    _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       Poiinfo newPoiinfo = Poiinfo();
       poiinfo.poiholders.forEach((poiholder) {
         if (tileBoundingBox.containsLatLong(poiholder.poi.position)) {
           newPoiinfo.addPoiholder(poiholder);
         }
       });
-      result[zoomlevel] = newPoiinfo;
+      resultPoi[zoomlevel] = newPoiinfo;
     });
-    _poiinfosPrefiltered = result;
-    _poiBoundingBox = tileBoundingBox;
-    return _filterPoisForTilePrefiltered(tile);
-  }
 
-  Map<int, Wayinfo> _filterWaysForTilePrefiltered(Tile tile) {
-    Map<int, Wayinfo> result = {};
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: maxDeviationPixel);
-    BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
-    _wayinfosPrefiltered.forEach((zoomlevel, wayinfo) {
-      Wayinfo newWayinfo = Wayinfo();
-      wayinfo.wayholders.forEach((wayholder) {
-        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (tile.getBoundingBox().intersects(wayBoundingBox) ||
-            tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
-            wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
-          Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
-          if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
-        }
-      });
-      result[zoomlevel] = newWayinfo;
-    });
-    return result;
-  }
-
-  Map<int, Wayinfo> _filterWaysForTile(Tile tile) {
-    if (_wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
-      return _filterWaysForTilePrefiltered(tile);
-    }
-    Tile tile2 = Tile(Math.min(tile.tileX + 10, Tile.getMaxTileNumber(tile.zoomLevel)), tile.tileY, tile.zoomLevel, tile.indoorLevel);
-    BoundingBox tileBoundingBox = tile.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
-    Map<int, Wayinfo> result = {};
-    wayinfos.forEach((zoomlevel, wayinfo) {
+    Map<int, Wayinfo> resultWay = {};
+    _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
       Wayinfo newWayinfo = Wayinfo();
       wayinfo.wayholders.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
@@ -210,11 +205,53 @@ class TileConstructor {
           newWayinfo.addWayholder(wayholder);
         }
       });
-      result[zoomlevel] = newWayinfo;
+      resultWay[zoomlevel] = newWayinfo;
     });
-    _wayinfosPrefiltered = result;
-    _wayBoundingBox = tileBoundingBox;
-    return _filterWaysForTilePrefiltered(tile);
+    _boundingBox = tileBoundingBox;
+    _PoiWayInfos poiWayInfos = _PoiWayInfos(resultPoi, resultWay);
+    return poiWayInfos;
+  }
+
+  _PoiWayInfos _filterPrefiltered(_PoiWayInfos poiWayInfos, Tile tile) {
+    Map<int, Poiinfo> resultPoi = {};
+    poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
+      Poiinfo newPoiinfo = Poiinfo();
+      poiinfo.poiholders.forEach((poiholder) {
+        if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
+          newPoiinfo.addPoiholder(poiholder);
+        }
+      });
+      resultPoi[zoomlevel] = newPoiinfo;
+    });
+    Map<int, Wayinfo> resultWay = {};
+    WayCropper wayCropper = WayCropper(maxDeviationPixel: maxDeviationPixel);
+    BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
+    poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
+      Wayinfo newWayinfo = Wayinfo();
+      wayinfo.wayholders.forEach((wayholder) {
+        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
+        if (tile.getBoundingBox().intersects(wayBoundingBox) ||
+            tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
+            wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
+          Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
+          if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
+        }
+      });
+      resultWay[zoomlevel] = newWayinfo;
+    });
+    return _PoiWayInfos(resultPoi, resultWay);
+  }
+
+  Future<_PoiWayInfos> _filterForTile(Tile tile) async {
+    if (_boundingBox.containsBoundingBox(tile.getBoundingBox())) {
+      _PoiWayInfos poiWayInfos = await _cache.getOrProduce(_boundingBox, (v) async => _prefilter(tile, _boundingBox));
+      return _filterPrefiltered(poiWayInfos, tile);
+    } else {
+      Tile tile2 = Tile(Math.min(tile.tileX + tileCountX, Tile.getMaxTileNumber(tile.zoomLevel)), tile.tileY, tile.zoomLevel, tile.indoorLevel);
+      BoundingBox tileBoundingBox = tile.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
+      _PoiWayInfos poiWayInfos = await _cache.getOrProduce(tileBoundingBox, (v) async => _prefilter(tile, tileBoundingBox));
+      return _filterPrefiltered(poiWayInfos, tile);
+    }
   }
 
   /// Processes the block signature, if present.
@@ -237,16 +274,15 @@ class TileConstructor {
     }
   }
 
-  Uint8List writeTile(Tile tile) {
+  Future<Uint8List> writeTile(Tile tile) async {
     Writebuffer writebuffer = Writebuffer();
 //    Timing timing = Timing(log: _log);
-    Map<int, Poiinfo> poisPerZoomlevel = _filterPoisForTile(tile);
-    Map<int, Wayinfo> waysPerZoomlevel = _filterWaysForTile(tile);
+    _PoiWayInfos poiWayInfos = await _filterForTile(tile);
     // timing.lap(1000,
     //     "tile: $tile, poiCount: ${poisPerZoomlevel.values.fold(0, (count, combine) => count + combine.count)}, wayCount: ${waysPerZoomlevel.values.fold(0, (count, combine) => count + combine.count)}");
     _writeTileHeaderSignature(tile, writebuffer);
 
-    _writeZoomtable(tile, writebuffer, poisPerZoomlevel, waysPerZoomlevel);
+    _writeZoomtable(tile, writebuffer, poiWayInfos.poiinfos, poiWayInfos.wayinfos);
 
     MercatorProjection projection = MercatorProjection.fromZoomlevel(tile.zoomLevel);
     double tileLatitude = projection.tileYToLatitude(tile.tileY);
@@ -255,23 +291,33 @@ class TileConstructor {
     // the offset to the first way in the block
     int firstWayOffset = 0;
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      Poiinfo poiinfo = poisPerZoomlevel[zoomlevel]!;
+      Poiinfo poiinfo = poiWayInfos.poiinfos[zoomlevel]!;
       poiinfo.writePoidata(debugFile, tileLatitude, tileLongitude);
       firstWayOffset += poiinfo.content!.length;
     }
     writebuffer.appendUnsignedInt(firstWayOffset);
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      Poiinfo poiinfo = poisPerZoomlevel[zoomlevel]!;
+      Poiinfo poiinfo = poiWayInfos.poiinfos[zoomlevel]!;
       writebuffer.appendUint8(poiinfo.content!);
       poiinfo.content = null;
       poiinfo.poiholders.clear();
     }
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      Wayinfo wayinfo = waysPerZoomlevel[zoomlevel]!;
+      Wayinfo wayinfo = poiWayInfos.wayinfos[zoomlevel]!;
       wayinfo.writeWaydata(debugFile, tile, tileLatitude, tileLongitude);
       writebuffer.appendUint8(wayinfo.content!);
       wayinfo.content = null;
     }
     return writebuffer.getUint8List();
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _PoiWayInfos {
+  Map<int, Poiinfo> poiinfos = {};
+
+  Map<int, Wayinfo> wayinfos = {};
+
+  _PoiWayInfos(this.poiinfos, this.wayinfos);
 }

@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'mapfile_writer.dart';
-
 class Writebuffer {
   static final int ENHANCE_BUFFER_BYTES = 10000;
 
@@ -14,7 +12,7 @@ class Writebuffer {
 
   int _bufferLength = ENHANCE_BUFFER_BYTES;
 
-  void writeToSink(MapfileSink sink) {
+  void writeToSink(SinkWithCounter sink) {
     sink.add(_bufferData);
   }
 
@@ -216,5 +214,28 @@ class Writebuffer {
 
   Uint8List getUint8List() {
     return Uint8List.fromList(_bufferData);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class SinkWithCounter {
+  final IOSink sink;
+
+  int written = 0;
+
+  SinkWithCounter(this.sink);
+
+  Future<void> close() async {
+    await sink.close();
+  }
+
+  void add(List<int> buffer) {
+    sink.add(buffer);
+    written += buffer.length;
+  }
+
+  Future<void> flush() async {
+    return sink.flush();
   }
 }

@@ -118,7 +118,8 @@ class SubfileCreator {
       int diff = DateTime.now().millisecondsSinceEpoch - started;
       if (diff > 1000 * 120) {
         // more than one minute
-        _log.info("Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel");
+        _log.info(
+            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${(processedTiles / diff * 1000).toStringAsFixed(1)} tiles/sec)");
         started = DateTime.now().millisecondsSinceEpoch;
       }
     }
@@ -153,15 +154,24 @@ class SubfileCreator {
 
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel) async {
     Timing timing = Timing(log: _log);
-    IsolateTileConstructor tileConstructor = IsolateTileConstructor(debugFile, _poiinfos, _wayinfos, zoomlevelRange, maxDeviationPixel, (_maxX - _minX + 1));
+    List<IsolateTileConstructor> tileConstructor = [];
+    final int instanceCount = 6;
+    final int iterationCount = 10;
+    for (int i = 0; i < instanceCount; ++i)
+      tileConstructor.add(
+          await IsolateTileConstructor.create(debugFile, _poiinfos, _wayinfos, zoomlevelRange, maxDeviationPixel, Math.min(_maxX - _minX + 1, iterationCount)));
     List<Future> futures = [];
+    int current = 0;
+    int counter = 0;
     await _processAsync("preparing tiles", (tile) async {
-      Future future = _future(tileConstructor, tile);
+      Future future = _future(tileConstructor[current], tile);
       futures.add(future);
-      // if (futures.length >= 200) {
-      //   await Future.wait(futures);
-      //   futures.clear();
-      // }
+      ++counter;
+      if (counter >= iterationCount) {
+        counter = 0;
+        ++current;
+        current = current % instanceCount;
+      }
     }, (int processedTiles, int sumTiles) async {
       await Future.wait(futures);
       futures.clear();
@@ -170,7 +180,7 @@ class SubfileCreator {
       }
     });
     await tileBuffer.writeComplete();
-    tileConstructor.dispose();
+    for (int i = 0; i < instanceCount; ++i) tileConstructor[i].dispose();
     timing.lap(1000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
   }
 
@@ -218,7 +228,7 @@ class SubfileCreator {
     return result;
   }
 
-  Future<void> writeTiles(bool debugFile, MapfileSink ioSink) async {
+  Future<void> writeTiles(bool debugFile, SinkWithCounter ioSink) async {
     await _processAsync("writing tiles", (tile) async {
       Uint8List contentForTile = await tileBuffer.getAndRemove(tile);
       ioSink.add(contentForTile);
@@ -305,9 +315,7 @@ class Wayinfo {
   int get nodeCount {
     int result = 0;
     wayholders.forEach((Wayholder wayholder) {
-      result += wayholder.innerRead.fold(0, (combine, test) => combine + test.length);
-      result += wayholder.openOutersRead.fold(0, (combine, test) => combine + test.length);
-      result += wayholder.closedOutersRead.fold(0, (combine, test) => combine + test.length);
+      result += wayholder.sumCount();
     });
     return result;
   }
@@ -363,7 +371,7 @@ class TileBuffer {
 
   Map<Tile, int> _sizes = {};
 
-  MapfileSink? _ioSink;
+  SinkWithCounter? _ioSink;
 
   ReadbufferFile? _readbufferFile;
 
@@ -427,7 +435,7 @@ class TileBuffer {
 
   void cacheToDisk(int processedTiles, int sumTiles) {
     if (_writebufferForTiles.isEmpty) return;
-    _ioSink ??= MapfileSink(File(_filename).openWrite());
+    _ioSink ??= SinkWithCounter(File(_filename).openWrite());
     _writebufferForTiles.forEach((tile, content) {
       _TempfileIndex tempfileIndex = _TempfileIndex(_ioSink!.written, content.length);
       _indexes[tile] = tempfileIndex;

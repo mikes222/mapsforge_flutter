@@ -37,7 +37,11 @@ main() async {
 
     RenderthemeFilter simplifier = RenderthemeFilter();
     Map<ZoomlevelRange, List<PointOfInterest>> pois = simplifier.filterNodes(pbfAnalyzer.pois, renderTheme);
-    Map<ZoomlevelRange, List<Wayholder>> ways = simplifier.filterWays(pbfAnalyzer.ways..addAll(pbfAnalyzer.waysMerged), renderTheme);
+    Map<ZoomlevelRange, List<Wayholder>> ways = simplifier.filterWays(
+      await pbfAnalyzer.ways
+        ..addAll(pbfAnalyzer.waysMerged),
+      renderTheme,
+    );
     // prepare render theme
 
     // prepare the mapfile writer

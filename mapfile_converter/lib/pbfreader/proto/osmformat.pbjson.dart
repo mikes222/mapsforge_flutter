@@ -1,8 +1,8 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/proto/osmformat.proto
+//  source: lib/pbfreader/proto/osmformat.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -17,51 +17,14 @@ import 'dart:typed_data' as $typed_data;
 const HeaderBlock$json = {
   '1': 'HeaderBlock',
   '2': [
-    {
-      '1': 'bbox',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.OSMPBF.HeaderBBox',
-      '10': 'bbox'
-    },
-    {
-      '1': 'required_features',
-      '3': 4,
-      '4': 3,
-      '5': 9,
-      '10': 'requiredFeatures'
-    },
-    {
-      '1': 'optional_features',
-      '3': 5,
-      '4': 3,
-      '5': 9,
-      '10': 'optionalFeatures'
-    },
+    {'1': 'bbox', '3': 1, '4': 1, '5': 11, '6': '.OSMPBF.HeaderBBox', '10': 'bbox'},
+    {'1': 'required_features', '3': 4, '4': 3, '5': 9, '10': 'requiredFeatures'},
+    {'1': 'optional_features', '3': 5, '4': 3, '5': 9, '10': 'optionalFeatures'},
     {'1': 'writingprogram', '3': 16, '4': 1, '5': 9, '10': 'writingprogram'},
     {'1': 'source', '3': 17, '4': 1, '5': 9, '10': 'source'},
-    {
-      '1': 'osmosis_replication_timestamp',
-      '3': 32,
-      '4': 1,
-      '5': 3,
-      '10': 'osmosisReplicationTimestamp'
-    },
-    {
-      '1': 'osmosis_replication_sequence_number',
-      '3': 33,
-      '4': 1,
-      '5': 3,
-      '10': 'osmosisReplicationSequenceNumber'
-    },
-    {
-      '1': 'osmosis_replication_base_url',
-      '3': 34,
-      '4': 1,
-      '5': 9,
-      '10': 'osmosisReplicationBaseUrl'
-    },
+    {'1': 'osmosis_replication_timestamp', '3': 32, '4': 1, '5': 3, '10': 'osmosisReplicationTimestamp'},
+    {'1': 'osmosis_replication_sequence_number', '3': 33, '4': 1, '5': 3, '10': 'osmosisReplicationSequenceNumber'},
+    {'1': 'osmosis_replication_base_url', '3': 34, '4': 1, '5': 9, '10': 'osmosisReplicationBaseUrl'},
   ],
 };
 
@@ -96,40 +59,12 @@ final $typed_data.Uint8List headerBBoxDescriptor = $convert.base64Decode(
 const PrimitiveBlock$json = {
   '1': 'PrimitiveBlock',
   '2': [
-    {
-      '1': 'stringtable',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.OSMPBF.StringTable',
-      '10': 'stringtable'
-    },
-    {
-      '1': 'primitivegroup',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.OSMPBF.PrimitiveGroup',
-      '10': 'primitivegroup'
-    },
-    {
-      '1': 'granularity',
-      '3': 17,
-      '4': 1,
-      '5': 5,
-      '7': '100',
-      '10': 'granularity'
-    },
+    {'1': 'stringtable', '3': 1, '4': 2, '5': 11, '6': '.OSMPBF.StringTable', '10': 'stringtable'},
+    {'1': 'primitivegroup', '3': 2, '4': 3, '5': 11, '6': '.OSMPBF.PrimitiveGroup', '10': 'primitivegroup'},
+    {'1': 'granularity', '3': 17, '4': 1, '5': 5, '7': '100', '10': 'granularity'},
     {'1': 'lat_offset', '3': 19, '4': 1, '5': 3, '7': '0', '10': 'latOffset'},
     {'1': 'lon_offset', '3': 20, '4': 1, '5': 3, '7': '0', '10': 'lonOffset'},
-    {
-      '1': 'date_granularity',
-      '3': 18,
-      '4': 1,
-      '5': 5,
-      '7': '1000',
-      '10': 'dateGranularity'
-    },
+    {'1': 'date_granularity', '3': 18, '4': 1, '5': 5, '7': '1000', '10': 'dateGranularity'},
   ],
 };
 
@@ -147,31 +82,10 @@ const PrimitiveGroup$json = {
   '1': 'PrimitiveGroup',
   '2': [
     {'1': 'nodes', '3': 1, '4': 3, '5': 11, '6': '.OSMPBF.Node', '10': 'nodes'},
-    {
-      '1': 'dense',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.OSMPBF.DenseNodes',
-      '10': 'dense'
-    },
+    {'1': 'dense', '3': 2, '4': 1, '5': 11, '6': '.OSMPBF.DenseNodes', '10': 'dense'},
     {'1': 'ways', '3': 3, '4': 3, '5': 11, '6': '.OSMPBF.Way', '10': 'ways'},
-    {
-      '1': 'relations',
-      '3': 4,
-      '4': 3,
-      '5': 11,
-      '6': '.OSMPBF.Relation',
-      '10': 'relations'
-    },
-    {
-      '1': 'changesets',
-      '3': 5,
-      '4': 3,
-      '5': 11,
-      '6': '.OSMPBF.ChangeSet',
-      '10': 'changesets'
-    },
+    {'1': 'relations', '3': 4, '4': 3, '5': 11, '6': '.OSMPBF.Relation', '10': 'relations'},
+    {'1': 'changesets', '3': 5, '4': 3, '5': 11, '6': '.OSMPBF.ChangeSet', '10': 'changesets'},
   ],
 };
 
@@ -192,8 +106,8 @@ const StringTable$json = {
 };
 
 /// Descriptor for `StringTable`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List stringTableDescriptor =
-    $convert.base64Decode('CgtTdHJpbmdUYWJsZRIMCgFzGAEgAygMUgFz');
+final $typed_data.Uint8List stringTableDescriptor = $convert.base64Decode(
+    'CgtTdHJpbmdUYWJsZRIMCgFzGAEgAygMUgFz');
 
 @$core.Deprecated('Use infoDescriptor instead')
 const Info$json = {
@@ -286,8 +200,8 @@ const ChangeSet$json = {
 };
 
 /// Descriptor for `ChangeSet`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List changeSetDescriptor =
-    $convert.base64Decode('CglDaGFuZ2VTZXQSDgoCaWQYASACKANSAmlk');
+final $typed_data.Uint8List changeSetDescriptor = $convert.base64Decode(
+    'CglDaGFuZ2VTZXQSDgoCaWQYASACKANSAmlk');
 
 @$core.Deprecated('Use nodeDescriptor instead')
 const Node$json = {
@@ -334,14 +248,7 @@ const DenseNodes$json = {
       '8': {'2': true},
       '10': 'id',
     },
-    {
-      '1': 'denseinfo',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.OSMPBF.DenseInfo',
-      '10': 'denseinfo'
-    },
+    {'1': 'denseinfo', '3': 5, '4': 1, '5': 11, '6': '.OSMPBF.DenseInfo', '10': 'denseinfo'},
     {
       '1': 'lat',
       '3': 8,
@@ -499,3 +406,4 @@ final $typed_data.Uint8List relationDescriptor = $convert.base64Decode(
     'CXJvbGVzX3NpZBgIIAMoBUICEAFSCHJvbGVzU2lkEhoKBm1lbWlkcxgJIAMoEkICEAFSBm1lbW'
     'lkcxI1CgV0eXBlcxgKIAMoDjIbLk9TTVBCRi5SZWxhdGlvbi5NZW1iZXJUeXBlQgIQAVIFdHlw'
     'ZXMiLQoKTWVtYmVyVHlwZRIICgROT0RFEAASBwoDV0FZEAESDAoIUkVMQVRJT04QAg==');
+

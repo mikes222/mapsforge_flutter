@@ -6,7 +6,6 @@ import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffer.dart';
 import 'package:mapsforge_flutter/src/mapfile/readbuffersource.dart';
-import 'package:mapsforge_flutter/src/parameters.dart';
 
 import '../utils/timing.dart';
 
@@ -31,8 +30,8 @@ class ReadbufferFile implements ReadbufferSource {
 
   int _position = 0;
 
-  ReadbufferFile(this.filename) {
-    _cache = LruCache(storage: _storage, capacity: 500);
+  ReadbufferFile(this.filename, {int capacity = 500}) {
+    _cache = LruCache(storage: _storage, capacity: capacity);
   }
 
   @override
@@ -71,6 +70,7 @@ class ReadbufferFile implements ReadbufferSource {
     return Readbuffer.from(readbuffer);
   }
 
+  @override
   Future<void> setPosition(int position) async {
     String cacheKey = "$_position--1";
     _cache.remove(cacheKey);
@@ -87,7 +87,7 @@ class ReadbufferFile implements ReadbufferSource {
     assert(length > 0);
     assert(position >= 0);
     // ensure that the read buffer is large enough
-    assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
+    //assert(length <= Parameters.MAXIMUM_BUFFER_SIZE);
 
     String cacheKey = "$position-$length";
 
