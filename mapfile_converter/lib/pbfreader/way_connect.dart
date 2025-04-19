@@ -27,9 +27,10 @@ class WayConnect {
     }
     while (true) {
       int count = wayholder.openOutersRead.length;
+      if (count <= 1) break;
       _ConnectCluster connectCluster = _ConnectCluster(wayholder, wayholder.openOutersWrite);
       connectCluster.connect(100);
-      _log.info("Connecting cluster: from $count to ${wayholder.openOutersRead.length}");
+      //_log.info("Connecting cluster: from $count to ${wayholder.openOutersRead.length}");
       if (count == wayholder.openOutersRead.length) break;
     }
   }

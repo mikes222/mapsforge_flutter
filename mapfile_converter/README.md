@@ -61,7 +61,7 @@ Documentation is not yet done.
 
 ## Examples 
 
-Getting help:
+Getting help: 
 
     flutter run --dart-entrypoint-args convert --dart-entrypoint-args --help
 

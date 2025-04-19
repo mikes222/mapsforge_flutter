@@ -47,6 +47,7 @@ class OsmWriter {
   }
 
   void writeWay(Wayholder wayholder) {
+    assert(wayholder.tags.isNotEmpty);
     _Way _way = _Way(wayholder.tags);
     for (var waypath in wayholder.innerRead) {
       List<int> nodes = _writeNodesForWay(waypath);
@@ -127,23 +128,45 @@ class OsmWriter {
     return _nextId++;
   }
 
+  bool _relationNeeded(_Way way) {
+    assert(way.tags.isNotEmpty, "way must have tags $way");
+    if (way.wayIds.length == 1 && way.outerWayIds.isEmpty) {
+      return false;
+    }
+    if (way.wayIds.isEmpty && way.outerWayIds.length == 1) {
+      return false;
+    }
+    // cover the case where we do not yet have written the ways to the file.
+    if (way.nodes.length == 1 && way.outerNodes.isEmpty) {
+      return false;
+    }
+    if (way.nodes.isEmpty && way.outerNodes.length == 1) {
+      return false;
+    }
+    return true;
+  }
+
+  /// writes all ways from the list to a given sink. The sink may be a temporary file or the destination file. Stores ways which needs relations in a
+  /// relation-list. Clears the way list.
   void _writeWays(IOSink sink) {
     for (var way in _ways) {
       List<int> wayIds = [];
+      // the conditions are changing in the for loop, so check before
+      bool relationNeeded = _relationNeeded(way);
       for (List<int> nodes in way.nodes) {
-        wayIds.add(_writeWay(nodes, way.nodes.length == 1 && way.outerNodes.isEmpty ? way.tags : [], sink));
+        wayIds.add(_writeWay(nodes, !relationNeeded ? way.tags : [], sink));
       }
       way.addWayIds(wayIds);
       wayIds.clear();
       for (List<int> nodes in way.outerNodes) {
-        wayIds.add(_writeWay(nodes, [], sink));
+        wayIds.add(_writeWay(nodes, !relationNeeded ? way.tags : [], sink));
       }
       way.addOuterWayIds(wayIds);
       way.nodes.clear();
       way.outerNodes.clear();
     }
     // remove if we have only one way and no outer way (we do not need a relation then)
-    _ways.removeWhere((test) => test.wayIds.length == 1 && test.outerWayIds.isEmpty);
+    _ways.removeWhere((way) => !_relationNeeded(way));
     _relations.addAll(_ways);
     _ways.clear();
   }
@@ -199,8 +222,10 @@ class _Way {
 
   final List<Tag> tags;
 
+  /// The ids of the ways for this relation. The first way is the master, all others should be inner ways
   List<int> wayIds = [];
 
+  /// The ids of other ways that are outer ways. They share the tags but have different ways.
   List<int> outerWayIds = [];
 
   _Way(this.tags);
@@ -219,5 +244,10 @@ class _Way {
 
   void addOuterWayIds(List<int> wayIds) {
     outerWayIds.addAll(wayIds);
+  }
+
+  @override
+  String toString() {
+    return '_Way{nodes: $nodes, outerNodes: $outerNodes, tags: $tags, wayIds: $wayIds, outerWayIds: $outerWayIds}';
   }
 }

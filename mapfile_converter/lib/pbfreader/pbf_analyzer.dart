@@ -128,7 +128,7 @@ class PbfAnalyzer {
           wayholder.hasTag("leisure") ||
           wayholder.hasTag("natural") ||
           wayholder.hasTagValue("indoor", "corridor")) {
-        wayRepair.repairClosed(wayholder);
+        wayRepair.repairClosed(wayholder, boundingBox);
       } else {
         wayRepair.repairOpen(wayholder);
       }
@@ -150,15 +150,21 @@ class PbfAnalyzer {
         coast.mergedWithOtherWay = true;
       });
       int count = mergedWayholder.openOutersRead.length + mergedWayholder.closedOutersRead.length;
-      _log.info("Connecting and repairing coastline: $count ways");
+      int counts =
+          mergedWayholder.openOutersRead.fold(0, (value, element) => value + element.length) +
+          mergedWayholder.closedOutersRead.fold(0, (value, element) => value + element.length);
+      _log.info("Connecting and repairing coastline: $count ways with $counts nodes");
       WayConnect wayConnect = WayConnect();
       wayConnect.connect(mergedWayholder);
       //_log.info("Repairing coastline");
-      wayRepair.repairClosed(mergedWayholder);
+      wayRepair.repairClosed(mergedWayholder, boundingBox);
       int count2 = mergedWayholder.openOutersRead.length + mergedWayholder.closedOutersRead.length;
+      int counts2 =
+          mergedWayholder.openOutersRead.fold(0, (value, element) => value + element.length) +
+          mergedWayholder.closedOutersRead.fold(0, (value, element) => value + element.length);
       LargeDataSplitter largeDataSplitter = LargeDataSplitter();
       largeDataSplitter.split(_wayHoldersMerged, mergedWayholder);
-      _log.info("Repairing coastline: reduced from $count to $count2 ways");
+      _log.info("Repairing coastline: reduced from $count to $count2 ways with $counts2 nodes");
     }
   }
 
@@ -192,19 +198,18 @@ class PbfAnalyzer {
       if (pointOfInterest != null) _nodeHolders[osmNode.id] = _PoiHolder(pointOfInterest);
     }
     for (var osmWay in blockData.ways) {
-      List<List<ILatLong>> latLongs = [];
-      latLongs.add([]);
+      List<ILatLong> latLongs = [];
       for (var ref in osmWay.refs) {
         if (nodeNotFound.contains(ref)) {
           continue;
         }
         PointOfInterest? pointOfInterest = _searchPoi(ref);
         if (pointOfInterest != null) {
-          latLongs[0].add(pointOfInterest.position);
+          latLongs.add(pointOfInterest.position);
         }
       }
-      if (latLongs[0].length >= 2) {
-        Way? way = converter.createWay(osmWay, latLongs);
+      if (latLongs.length >= 2) {
+        Way? way = converter.createWay(osmWay, [latLongs]);
         if (way != null) {
           assert(!_wayHolders.containsKey(osmWay.id));
           _wayHolders[osmWay.id] = WayholderUnion(Wayholder.fromWay(way));
@@ -230,8 +235,8 @@ class PbfAnalyzer {
   }
 
   Future<void> _mergeRelationsToWays() async {
+    WayConnect wayConnect = WayConnect();
     for (var entry in relations.entries) {
-      var key = entry.key;
       var relation = entry.value;
       List<Wayholder> outers = [];
       List<Wayholder> inners = [];
@@ -261,16 +266,6 @@ class PbfAnalyzer {
           return;
         }
         Wayholder mergedWayholder = Wayholder.fromWay(mergedWay);
-        bool debug = false;
-        // if (mergedWay.hasTagValue("name", "Port de Fontvieille")) {
-        //   debug = true;
-        // }
-        if (debug) {
-          print("Found ${mergedWayholder.toStringWithoutNames()} with ${outers.length} outers and ${inners.length} inners for relation ${relation.id}");
-          outers.forEach((outer) {
-            print("  ${outer.toStringWithoutNames()}");
-          });
-        }
 
         for (Wayholder innerWayholder in inners) {
           assert(innerWayholder.innerRead.isEmpty);
@@ -288,108 +283,16 @@ class PbfAnalyzer {
         for (Wayholder outerWayholder in outers) {
           assert(outerWayholder.innerRead.isEmpty);
           assert(outerWayholder.openOutersRead.length + outerWayholder.closedOutersRead.length == 1, outerWayholder.toStringWithoutNames());
+          if (outerWayholder.closedOutersRead.isNotEmpty) mergedWayholder.closedOutersWrite.add(outerWayholder.closedOutersRead.first.clone());
+          if (outerWayholder.openOutersRead.isNotEmpty) mergedWayholder.openOutersWrite.add(outerWayholder.openOutersRead.first.clone());
+          outerWayholder.mergedWithOtherWay = true;
         }
-        // add closed ways
-        for (Wayholder remainingOuterFirst in List.from(outers)) {
-          if (remainingOuterFirst.closedOutersRead.isNotEmpty) {
-            mergedWayholder.closedOutersAdd(remainingOuterFirst.closedOutersRead.first.clone());
-            remainingOuterFirst.mergedWithOtherWay = true;
-            outers.remove(remainingOuterFirst);
-          }
-        }
-        // Append the remaining outers to each other
-        int iterations = 0;
-        while (true) {
-          int count = outers.length;
-          ++iterations;
-          List<Wayholder> merged = [];
-          for (Wayholder remainingOuterFirst in List.from(outers)) {
-            if (remainingOuterFirst.closedOutersRead.isNotEmpty) {
-              mergedWayholder.closedOutersAdd(remainingOuterFirst.closedOutersRead.first.clone());
-              remainingOuterFirst.mergedWithOtherWay = true;
-              outers.remove(remainingOuterFirst);
-              merged.add(remainingOuterFirst);
-              continue;
-            }
-            assert(remainingOuterFirst.openOutersRead.isNotEmpty, "First value should have at least one open way: $remainingOuterFirst");
-            bool start = false;
-            for (Wayholder remainingOuterSecond in List.from(outers)) {
-              if (remainingOuterFirst == remainingOuterSecond) {
-                start = true;
-                continue;
-              }
-              if (!start) continue;
-              if (merged.contains(remainingOuterFirst) || merged.contains(remainingOuterSecond)) {
-                continue;
-              }
-              if (remainingOuterSecond.closedOutersRead.isNotEmpty) {
-                mergedWayholder.closedOutersAdd(remainingOuterSecond.closedOutersRead.first.clone());
-                remainingOuterSecond.mergedWithOtherWay = true;
-                outers.remove(remainingOuterSecond);
-                merged.add(remainingOuterSecond);
-                continue;
-              }
-              bool appended = _appendLatLongs(relation, remainingOuterFirst.openOutersWrite.first, remainingOuterSecond.openOutersWrite.first);
-              if (appended) {
-                if (debug) {
-                  print("outer appended ${remainingOuterSecond.toStringWithoutNames()} to ${remainingOuterFirst.toStringWithoutNames()}");
-                }
-                remainingOuterSecond.mergedWithOtherWay = true;
-                outers.remove(remainingOuterSecond);
-                merged.add(remainingOuterSecond);
-                remainingOuterFirst.mayMoveToClosed(remainingOuterFirst.openOutersRead.first);
-                if (remainingOuterFirst.openOutersRead.isEmpty) {
-                  // seems it is now a closed way, skip to the next way
-                  break;
-                }
-              }
-            }
-          }
-          if (outers.length == count) break;
-        }
-
-        if (debug) {
-          print("$iterations iterations needed to combine. ${outers.length} outers left");
-        }
-        // add the remaining outer ways. They use the same properties as the master way
-        // but will be treated as separate ways when reading the mapfile
-        for (Wayholder remainingOuter in outers) {
-          assert(remainingOuter.closedOutersRead.isEmpty);
-          //assert(!remainingOuter.openOutersRead.first.isClosedWay(), "Outer way is closed ${remainingOuter}");
-          if (remainingOuter.openOutersRead.first.isClosedWay()) {
-            mergedWayholder.closedOutersAdd(remainingOuter.openOutersRead.first.clone());
-          } else {
-            mergedWayholder.openOutersAdd(remainingOuter.openOutersRead.first.clone());
-          }
-          remainingOuter.mergedWithOtherWay = true;
-          if (debug) {
-            print(
-              "  remaining: $remainingOuter with first: ${remainingOuter.openOutersRead.first} and last: ${remainingOuter.openOutersRead.last}, closed: ${remainingOuter.openOutersRead.first.isClosedWay()}",
-            );
-          }
-        }
+        wayConnect.connect(mergedWayholder);
         if (mergedWayholder.closedOutersRead.isNotEmpty || mergedWayholder.openOutersRead.isNotEmpty) {
           _wayHoldersMerged.add(mergedWayholder);
         }
       }
     }
-  }
-
-  bool _appendLatLongs(OsmRelation osmRelation, Waypath master, Waypath other) {
-    if (master.isEmpty) {
-      master.addAll(other.path);
-      return true;
-    }
-    assert(!master.isClosedWay());
-
-    // int count = otherLatLongs.fold(
-    //     0, (value, combine) => latlongs.contains(combine) ? ++value : value);
-    // // return true because it is already merged
-    // // if (count == otherLatLongs.length) return true;
-    // if (count > 1)
-    //   print(
-    //       "${other.toStringWithoutNames()} has $count latlongs in common with ${master.toStringWithoutNames()}");
-    return LatLongUtils.combine(master, other.path);
   }
 
   void _relationReferences(OsmRelation osmRelation) {

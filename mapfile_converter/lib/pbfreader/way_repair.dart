@@ -13,7 +13,7 @@ class WayRepair {
     _repair(wayholder);
   }
 
-  void repairClosed(Wayholder wayholder) {
+  void repairClosed(Wayholder wayholder, BoundingBox? boundingBox) {
     /*double maxGap =*/
     _repair(wayholder);
     for (Waypath waypath in List.from(wayholder.openOutersRead)) {
@@ -21,9 +21,43 @@ class WayRepair {
         waypath.add(waypath.first);
         wayholder.openOutersRemove(waypath);
         wayholder.closedOutersAdd(waypath);
+      } else {
+        // maybe both ends are at the boundary, we should connect anyway then.
+        if (boundingBox != null) {
+          bool ok = _repairAtBoundary(boundingBox, boundingBox.getRightUpper(), boundingBox.getRightLower(), wayholder, waypath);
+          if (!ok) ok = _repairAtBoundary(boundingBox, boundingBox.getRightLower(), boundingBox.getLeftLower(), wayholder, waypath);
+          if (!ok) ok = _repairAtBoundary(boundingBox, boundingBox.getLeftLower(), boundingBox.getLeftUpper(), wayholder, waypath);
+          if (!ok) ok = _repairAtBoundary(boundingBox, boundingBox.getLeftUpper(), boundingBox.getRightUpper(), wayholder, waypath);
+        }
       }
     }
     // print("Could not close $wayholder, because it exceeds the max gap");
+  }
+
+  bool _repairAtBoundary(BoundingBox boundingBox, ILatLong first, ILatLong second, Wayholder wayholder, Waypath waypath) {
+    ILatLong nearestPoint = LatLongUtils.nearestSegmentPoint(
+      first.longitude,
+      first.latitude,
+      second.longitude,
+      second.latitude,
+      waypath.first.longitude,
+      waypath.first.latitude,
+    );
+    if (Projection.distance(nearestPoint, waypath.first) > maxGapMeter) return false;
+    nearestPoint = LatLongUtils.nearestSegmentPoint(
+      first.longitude,
+      first.latitude,
+      second.longitude,
+      second.latitude,
+      waypath.last.longitude,
+      waypath.last.latitude,
+    );
+    if (Projection.distance(nearestPoint, waypath.last) > maxGapMeter) return false;
+    // both are near the right border, connect them
+    waypath.add(waypath.first);
+    wayholder.openOutersRemove(waypath);
+    wayholder.closedOutersAdd(waypath);
+    return true;
   }
 
   double _repair(Wayholder wayholder) {

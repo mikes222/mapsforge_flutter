@@ -2,6 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
 
+/// Splits wayholders with many closedOuters into smaller wayholders. Clusters the new wayholders geographically.
 class LargeDataSplitter {
   static final _log = new Logger('LargeDataSplitter');
 
@@ -18,7 +19,7 @@ class LargeDataSplitter {
       while (true) {
         int count = wayholder.closedOutersRead.length;
         _connectClusterMulti(_wayHoldersMerged, wayholder, wayholder.boundingBoxCached, clusterSplitCount);
-        _log.info("Splitting cluster: from $count to ${wayholder.closedOutersRead.length}, clusterSplit: $clusterSplitCount");
+        _log.info("Splitting cluster from $count to ${wayholder.closedOutersRead.length} closed outer ways, clusterSplitCount: $clusterSplitCount");
         if (wayholder.closedOutersRead.length < 500000) {
           clusterSplitCount = (clusterSplitCount * 0.6).round();
         } else {
@@ -29,9 +30,11 @@ class LargeDataSplitter {
       }
     }
     int count = wayholder.closedOutersRead.length;
-    _connectClusterMulti(_wayHoldersMerged, wayholder, wayholder.boundingBoxCached, 1);
-    _log.info("Splitting cluster: from $count to ${wayholder.closedOutersRead.length}");
-    if (wayholder.closedOutersRead.isNotEmpty) _wayHoldersMerged.add(wayholder);
+    if (count > 150) {
+      _connectClusterMulti(_wayHoldersMerged, wayholder, wayholder.boundingBoxCached, 1);
+      _log.info("Splitting cluster from $count to ${wayholder.closedOutersRead.length} closed outer ways");
+      if (wayholder.closedOutersRead.isNotEmpty) _wayHoldersMerged.add(wayholder);
+    }
   }
 
   /// splits the open ways into several clusters and connects them cluster by cluster
@@ -60,10 +63,10 @@ class LargeDataSplitter {
 
   void splitSimple(List<Wayholder> _wayHoldersMerged, Wayholder mergedWayholder) {
     // todo cluster the ways geographically so that we quickly can rule out ways which do not belong to a geographical area
-    while (mergedWayholder.closedOutersRead.length > 700) {
+    while (mergedWayholder.closedOutersRead.length > 300) {
       // too many ways, split it.
-      List<Waypath> closedOuters = mergedWayholder.closedOutersRead.take(500).toList();
-      mergedWayholder.closedOutersWrite.removeRange(0, 500);
+      List<Waypath> closedOuters = mergedWayholder.closedOutersRead.take(200).toList();
+      mergedWayholder.closedOutersWrite.removeRange(0, 200);
       Wayholder newWayholder = mergedWayholder.cloneWith(inner: [], openOuters: [], closedOuters: closedOuters);
       _wayHoldersMerged.add(newWayholder);
     }
@@ -91,7 +94,8 @@ class _Cluster {
         _wayHoldersMerged.add(newWayholder);
         return;
       }
-      Waypath wayFirst = waypaths.removeAt(0);
+      Waypath wayFirst = waypaths.first;
+      waypaths.remove(wayFirst);
       ILatLong leftUpper = wayFirst.boundingBox.getLeftUpper();
       List<Waypath> ways = [wayFirst];
 

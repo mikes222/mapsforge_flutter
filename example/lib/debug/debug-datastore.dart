@@ -68,6 +68,10 @@ class DebugDatastore extends MarkerDataStore {
         fillColor: 0x802be690, // greenish
         radius: 6);
     addMarker(circleMarker);
+    // latLongs.skip(1).forEach((element) {
+    //   circleMarker = CircleMarker(center: element, displayModel: displayModel, strokeColor: 0xffff0000, radius: 10);
+    //   addMarker(circleMarker);
+    // });
     await _createWayMarker(latLongs, idx, way, true);
     circleMarker = CircleMarker(center: latLongs.last, displayModel: displayModel, fillColor: 0x80e97656, radius: 4);
     addMarker(circleMarker);

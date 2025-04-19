@@ -1,3 +1,4 @@
+import 'dart:math' as Math;
 import 'dart:math';
 
 import 'package:mapsforge_flutter/core.dart';
@@ -49,6 +50,11 @@ class BoundingBox {
     // Projection.checkLatitude(maxLatitude);
     // Projection.checkLongitude(maxLongitude);
     return BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+  }
+
+  factory BoundingBox.from2(ILatLong first, ILatLong second) {
+    return BoundingBox(Math.min(first.latitude, second.latitude), Math.min(first.longitude, second.longitude), Math.max(first.latitude, second.latitude),
+        Math.max(first.longitude, second.longitude));
   }
 
   /// @param latitude  the latitude coordinate in degrees.

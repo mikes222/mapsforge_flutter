@@ -47,8 +47,8 @@ class LatLongUtils {
    * libGDX (Apache 2.0)
    */
   static double distanceSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
-    Mappoint nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
-    return sqrt(pow(nearest.x - pointX, 2) + pow(nearest.y - pointY, 2));
+    LatLong nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
+    return sqrt(pow(nearest.longitude - pointX, 2) + pow(nearest.latitude - pointY, 2));
   }
 
   /**
@@ -116,15 +116,15 @@ class LatLongUtils {
    * <p>
    * libGDX (Apache 2.0)
    */
-  static Mappoint nearestSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
+  static LatLong nearestSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
     double length2 = xDiff * xDiff + yDiff * yDiff;
-    if (length2 == 0) return Mappoint(startX, startY);
+    if (length2 == 0) return LatLong(startX, startY);
     double t = ((pointX - startX) * (endX - startX) + (pointY - startY) * (endY - startY)) / length2;
-    if (t < 0) return Mappoint(startX, startY);
-    if (t > 1) return Mappoint(endX, endY);
-    return Mappoint(startX + t * (endX - startX), startY + t * (endY - startY));
+    if (t < 0) return LatLong(startX, startY);
+    if (t > 1) return LatLong(endX, endY);
+    return LatLong(startX + t * (endX - startX), startY + t * (endY - startY));
   }
 
   /**
@@ -382,7 +382,7 @@ class LatLongUtils {
     });
   }
 
-  static String printWaypaths(List<Waypath> waypaths) {
+  static String printWaypaths(Iterable<Waypath> waypaths) {
     if (waypaths.length <= 20) {
       return "${waypaths.map((toElement) => "${toElement.length}").toList()}";
     }

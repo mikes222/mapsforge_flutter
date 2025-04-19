@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/tagholder_mixin.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
@@ -325,16 +323,8 @@ class Wayholder with TagholderMixin {
     else
       writebuffer.appendWritebuffer(singleWritebuffer);
 
-    if (expectDouble == null) {
-      ioSink ??= File("debug.txt").openWrite();
-      ioSink!.writeln(
-          "$featureWayDoubleDeltaEncoding ${singleWritebuffer.length} ${doubleWritebuffer.length} ${singleWritebuffer.length - doubleWritebuffer.length} ${this.toStringWithoutNames()} ${this._master?.length}");
-    }
-
     return writebuffer;
   }
-
-  static IOSink? ioSink;
 
   /// Way data block
   void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {

@@ -1,3 +1,6 @@
+import 'dart:collection';
+
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_simplify_filter.dart';
@@ -22,7 +25,8 @@ class WayCropper {
 
     if (closedOuters.isEmpty && openOuters.isEmpty) {
       // only inner is set, move the first inner to the respective outer
-      Waypath waypath = inner.removeAt(0);
+      Waypath waypath = inner.first;
+      inner.remove(waypath);
       if (waypath.isClosedWay())
         closedOuters.add(waypath);
       else
@@ -66,7 +70,34 @@ class WayCropper {
     var lastEntryDirection = -1;
     var lastExitDirection = -1;
 
-    waypath.path.forEach((waypoint) {
+    List<ILatLong> path = waypath.path;
+    // if (path.length > 10) {
+    //   path = _reduceOutside(waypath, tileBoundary);
+    // }
+    if (path.isEmpty) {
+      // no points inside the tile boundary
+      if (!waypath.isClosedWay()) {
+        // original path is NOT a closed way so we can return an empty path
+        return Waypath.empty();
+      }
+      // original is a closed way but never intersected with the tile, that means
+      // it is surrounding the tile. This is different to the original since we create areas for each tile. This is also the reason why
+      // we do not support zoomlevels smaller than base-zoomlevel per subfile. In such cases the system combines for example 4 tiles to one
+      // and we would draw 4 squares (with strokes) whereas we should only draw the fill and no strokes.
+      // Step 1: Find out if the center of the tile is inside or outside of the original way
+      bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
+      if (!isInside) {
+        // no intersection, ignore these points
+        return Waypath.empty();
+      }
+      optimizedWaypoints.add(tileBoundary.getLeftUpper());
+      optimizedWaypoints.add(tileBoundary.getRightUpper());
+      optimizedWaypoints.add(tileBoundary.getRightLower());
+      optimizedWaypoints.add(tileBoundary.getLeftLower());
+      optimizedWaypoints.add(tileBoundary.getLeftUpper());
+      return Waypath(optimizedWaypoints);
+    }
+    path.forEach((waypoint) {
       bool isInside = tileBoundary.containsLatLong(waypoint);
 
       if (isInside) {
@@ -75,7 +106,7 @@ class WayCropper {
           final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint!, waypoint, tileBoundary);
           if (firstEntryDirection == -1) firstEntryDirection = direction;
           lastEntryDirection = direction;
-          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypath.path);
+          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, path);
           optimizedWaypoints.add(intersectionPoint!);
         }
         optimizedWaypoints.add(waypoint);
@@ -88,12 +119,17 @@ class WayCropper {
           lastExitDirection = direction;
         } else if (previousWaypoint != null && !previousIsInside) {
           // both are outside but they may intersect the tile
+          // BoundingBox intersect = BoundingBox.from2(previousWaypoint!, waypoint);
+          // if (!tileBoundary.intersects(intersect)) {
+          //   // no intersection, this should be a quick test
+          //   return;
+          // }
           final (intersectionPoint, direction) = _findIntersectionPointOutside(previousWaypoint!, waypoint, tileBoundary);
           if (intersectionPoint != null) {
             // yes, they intersect (twice)
             if (firstEntryDirection == -1) firstEntryDirection = direction;
             lastEntryDirection = direction;
-            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, waypath.path);
+            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, path);
             optimizedWaypoints.add(intersectionPoint);
             // and now find the exit point. Search in opposite direction to find
             // the exit point nearest to the current waypoint
@@ -146,6 +182,7 @@ class WayCropper {
       }
       // everything ok
       assert(optimizedWaypoints.length >= 3);
+
       if (optimizedWaypoints.length > 32767) {
         WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
         Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
@@ -157,7 +194,7 @@ class WayCropper {
     // find how we should close the way:
     // Step 2: Temporary close the way and find out if the center of the tile is inside or outside of the new way
     List<ILatLong> tempWaypoints = List.from(optimizedWaypoints);
-    _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, waypath.path);
+    _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, path);
     // close the temporary way
     tempWaypoints.add(tempWaypoints.first);
     bool isInsideNew = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), tempWaypoints);
@@ -173,6 +210,49 @@ class WayCropper {
     assert(optimizedWaypoints.length >= 3);
     assert(optimizedWaypoints.length <= 32767);
     return Waypath(optimizedWaypoints);
+  }
+
+  /// I want to reduce the nodes outside the boundary. Would be cool to remove a couple of nodes at once because all nodes in this slice are
+  /// outside the given tile. Unfortunately this is not working for now.
+  List<ILatLong> _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
+    List<ILatLong> result = [];
+    Queue<_QueueEntry> queue = Queue();
+    List<ILatLong> points = waypath.path;
+    bool addFirst = false;
+    if (waypath.isClosedWay()) {
+      queue.add(_QueueEntry(1, points.length - 2));
+      addFirst = true;
+    } else {
+      queue.add(_QueueEntry(0, points.length - 1));
+    }
+
+    while (queue.isNotEmpty) {
+      _QueueEntry current = queue.removeFirst();
+
+      if (current.end == current.start + 1) {
+        BoundingBox boundingBox = BoundingBox.from2(points[current.start], points[current.end]);
+        if (tileBoundary.intersects(boundingBox)) {
+          result.add(points[current.start]);
+          result.add(points[current.end]);
+        }
+      } else {
+        BoundingBox boundingBox = BoundingBox.fromLatLongs(points.slice(current.start, current.end + 1));
+        if (tileBoundary.intersects(boundingBox)) {
+          int middle = (current.start + current.end) ~/ 2;
+          queue.addFirst(_QueueEntry(middle, current.end));
+          queue.addFirst(_QueueEntry(current.start, middle));
+        } else {
+          // this is the magic. A portion of the way is outside the tile. We could remove 100s of nodes at once.
+          if (current.end < points.length - 1) queue.addFirst(_QueueEntry(current.end, current.end + 1));
+          if (current.start > 0) queue.addFirst(_QueueEntry(current.start - 1, current.start));
+        }
+      }
+    }
+    if (addFirst && result.isNotEmpty) {
+      result.insert(0, waypath.path.first);
+      result.add(waypath.path.first);
+    }
+    return result;
   }
 
   void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary, List<ILatLong> waypoints) {
@@ -495,4 +575,14 @@ class WayCropper {
 
     return (null, -1);
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _QueueEntry {
+  final int start;
+
+  final int end;
+
+  _QueueEntry(this.start, this.end);
 }

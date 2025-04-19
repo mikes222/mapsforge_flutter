@@ -2,10 +2,12 @@ import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_cropper.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
+import 'package:mapsforge_flutter/src/utils/timing.dart';
 
 import '../../../core.dart';
 import '../../../maps.dart';
@@ -141,6 +143,8 @@ class _TileConstructorRequest {
 
 /// Constructs a single tile.
 class TileConstructor {
+  final _log = new Logger('TileConstructor');
+
   /// depending on the thickest line we draw we have to extend the margin so that
   /// a surrounding area is not visible in the tile.
   /// On the other side we may include more waypoints even if they are not visible
@@ -153,7 +157,7 @@ class TileConstructor {
 
   final _PoiWayInfos _poiWayInfos;
 
-  SimpleCache _cache = SimpleCache(capacity: 1);
+  SimpleCache<BoundingBox, _PoiWayInfos> _cache = SimpleCache(capacity: 1);
 
   BoundingBox _boundingBox = BoundingBox.fromLatLongs([const LatLong(0, 0)]);
 
@@ -161,10 +165,16 @@ class TileConstructor {
 
   final int tileCountX;
 
+  Tile? first;
+
+  int lastRemove = 0;
+
   TileConstructor(this.debugFile, Map<int, Poiinfo> poiinfos, Map<int, Wayinfo> wayinfos, this.zoomlevelRange, this.maxDeviationPixel, this.tileCountX)
       : _poiWayInfos = _PoiWayInfos(poiinfos, wayinfos);
 
   _PoiWayInfos _prefilter(Tile tile, BoundingBox tileBoundingBox) {
+    // before we start prefiltering remove items which are not needed anymore. Do it in the save area of the cache to prevent concurrent execution.
+    _removeOld(tile);
     Map<int, Poiinfo> resultPoi = {};
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       Poiinfo newPoiinfo = Poiinfo();
@@ -242,6 +252,42 @@ class TileConstructor {
     return _PoiWayInfos(resultPoi, resultWay);
   }
 
+  /// Removes ways and pois which are not needed anymore. We remember the first tile and since the tiles comes in order we can remove everything
+  /// which is contained in the boundary referenced by the first tile and the most current one. Do this just once in a while.
+  void _removeOld(Tile newTile) {
+    if (newTile == first) return;
+    if (lastRemove == 0) {
+      lastRemove = DateTime.now().millisecondsSinceEpoch;
+      return;
+    }
+    // cleanup every 20 mins
+    if (DateTime.now().millisecondsSinceEpoch - lastRemove < 1000 * 60 * 15) return;
+    Timing timing = Timing(log: _log);
+    BoundingBox boundingBox = newTile.getBoundingBox().extendBoundingBox(first!.getBoundingBox());
+    int poicountBefore = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
+    _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
+      List.from(poiinfo.poiholders).forEach((poiholder) {
+        if (boundingBox.containsLatLong(poiholder.poi.position)) {
+          poiinfo.poiholders.remove(poiholder);
+        }
+      });
+    });
+    int poicountAfter = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
+    timing.lap(200, "Removed old values $poicountBefore -> $poicountAfter");
+    int waycountBefore = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
+    _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
+      List.from(wayinfo.wayholders).forEach((wayholder) {
+        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
+        if (boundingBox.containsBoundingBox(wayBoundingBox)) {
+          wayinfo.wayholders.remove(wayholder);
+        }
+      });
+    });
+    int waycountAfter = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
+    timing.lap(200, "Removed old values $poicountBefore -> $poicountAfter, $waycountBefore -> $waycountAfter");
+    lastRemove = DateTime.now().millisecondsSinceEpoch;
+  }
+
   Future<_PoiWayInfos> _filterForTile(Tile tile) async {
     if (_boundingBox.containsBoundingBox(tile.getBoundingBox())) {
       _PoiWayInfos poiWayInfos = await _cache.getOrProduce(_boundingBox, (v) async => _prefilter(tile, _boundingBox));
@@ -275,11 +321,9 @@ class TileConstructor {
   }
 
   Future<Uint8List> writeTile(Tile tile) async {
+    first ??= tile;
     Writebuffer writebuffer = Writebuffer();
-//    Timing timing = Timing(log: _log);
     _PoiWayInfos poiWayInfos = await _filterForTile(tile);
-    // timing.lap(1000,
-    //     "tile: $tile, poiCount: ${poisPerZoomlevel.values.fold(0, (count, combine) => count + combine.count)}, wayCount: ${waysPerZoomlevel.values.fold(0, (count, combine) => count + combine.count)}");
     _writeTileHeaderSignature(tile, writebuffer);
 
     _writeZoomtable(tile, writebuffer, poiWayInfos.poiinfos, poiWayInfos.wayinfos);

@@ -105,6 +105,7 @@ class SubfileCreator {
 
   Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess = null]) async {
     int started = DateTime.now().millisecondsSinceEpoch;
+    int lastProcessedTiles = 0;
     int sumTiles = (_maxY - _minY + 1) * (_maxX - _minX + 1);
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
       for (int tileX = _minX; tileX <= _maxX; ++tileX) {
@@ -116,17 +117,19 @@ class SubfileCreator {
         await lineProcess(processedTiles, sumTiles);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
-      if (diff > 1000 * 120) {
-        // more than one minute
+      if (diff >= 1000 * 120) {
+        // more than two minutes
         _log.info(
-            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${(processedTiles / diff * 1000).toStringAsFixed(1)} tiles/sec)");
+            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec)");
         started = DateTime.now().millisecondsSinceEpoch;
+        lastProcessedTiles = processedTiles;
       }
     }
   }
 
   void _processSync(String title, Function(Tile tile) process, [Function(int processedTiles, int sumTiles)? lineProcess = null]) {
     int started = DateTime.now().millisecondsSinceEpoch;
+    int lastProcessedTiles = 0;
     int sumTiles = (_maxY - _minY + 1) * (_maxX - _minX + 1);
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
       for (int tileX = _minX; tileX <= _maxX; ++tileX) {
@@ -138,10 +141,12 @@ class SubfileCreator {
         lineProcess(processedTiles, sumTiles);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
-      if (diff > 1000 * 120) {
-        // more than one minute
-        _log.info("Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for %title at baseZoomLevel $baseZoomLevel.");
+      if (diff >= 1000 * 120) {
+        // more than two minutes
+        _log.info(
+            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for %title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec).");
         started = DateTime.now().millisecondsSinceEpoch;
+        lastProcessedTiles = processedTiles;
       }
     }
   }
@@ -173,10 +178,12 @@ class SubfileCreator {
         current = current % instanceCount;
       }
     }, (int processedTiles, int sumTiles) async {
-      await Future.wait(futures);
-      futures.clear();
-      if (sumTiles > 2000) {
-        tileBuffer.cacheToDisk(processedTiles, sumTiles);
+      if (futures.length > 1000 || processedTiles == sumTiles) {
+        await Future.wait(futures);
+        futures.clear();
+        if (sumTiles > 2000) {
+          tileBuffer.cacheToDisk(processedTiles, sumTiles);
+        }
       }
     });
     await tileBuffer.writeComplete();
@@ -255,7 +262,7 @@ class SubfileCreator {
 
 /// All pois for one zoomlevel.
 class Poiinfo {
-  List<Poiholder> poiholders = [];
+  Set<Poiholder> poiholders = {};
 
   Uint8List? content;
 
@@ -304,7 +311,7 @@ class Poiinfo {
 
 /// All ways for one zoomlevel.
 class Wayinfo {
-  List<Wayholder> wayholders = [];
+  Set<Wayholder> wayholders = {};
 
   Uint8List? content;
 
