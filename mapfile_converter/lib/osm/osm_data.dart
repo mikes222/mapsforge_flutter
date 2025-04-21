@@ -2,12 +2,12 @@ import 'package:mapsforge_flutter/core.dart';
 
 /// Holds data returned from the PbfReader. These data must be converted
 /// to PointOfInterest and Way objects before being used.
-class PbfData {
+class OsmData {
   final List<OsmNode> nodes;
   final List<OsmWay> ways;
   final List<OsmRelation> relations;
 
-  PbfData({required this.nodes, required this.ways, required this.relations});
+  OsmData({required this.nodes, required this.ways, required this.relations});
 
   @override
   String toString() {
@@ -29,12 +29,7 @@ sealed class _OsmPrimitive {
 /// OSM node
 class OsmNode extends _OsmPrimitive implements ILatLong {
   /// OsmNode default constructor
-  const OsmNode({
-    required super.id,
-    required super.tags,
-    required this.latitude,
-    required this.longitude,
-  });
+  const OsmNode({required super.id, required super.tags, required this.latitude, required this.longitude});
 
   /// Latitude
   @override
@@ -83,11 +78,7 @@ class OsmRelationMember {
   /// The role of the member. Note that not all roles are yet defined in the enum
   final String role;
 
-  const OsmRelationMember({
-    required this.memberId,
-    required this.memberType,
-    required this.role,
-  });
+  const OsmRelationMember({required this.memberId, required this.memberType, required this.role});
 
   @override
   String toString() {
@@ -100,11 +91,7 @@ class OsmRelationMember {
 /// OSM relation
 class OsmRelation extends _OsmPrimitive {
   /// OsmRelation default constructor
-  const OsmRelation({
-    required super.id,
-    required super.tags,
-    required this.members,
-  });
+  const OsmRelation({required super.id, required super.tags, required this.members});
 
   /// List of ids of the members that make up the relation
   /// Should be the same length as [types]

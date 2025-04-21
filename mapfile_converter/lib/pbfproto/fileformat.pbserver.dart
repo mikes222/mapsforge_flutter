@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/protocache/cache.proto
+//  source: lib/pbfreader/pbfproto/fileformat.pbfproto
 //
 // @dart = 3.3
 
@@ -10,5 +10,4 @@
 // ignore_for_file: non_constant_identifier_names, prefer_final_fields
 // ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
-export 'cache.pb.dart';
-
+export 'fileformat.pb.dart';

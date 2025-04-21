@@ -51,7 +51,7 @@ class WayCropper {
     if (tileBoundary.containsBoundingBox(wayBoundingBox)) {
       if (waypath.length > 32767) {
         // many waypoints? simplify them.
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
+        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
         Waypath result = simplifyFilter.reduceWayEnsureMax(waypath);
         //_log.info("${waypath.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
         return result;
@@ -151,7 +151,7 @@ class WayCropper {
       // original waypath was NOT closed, so we are done.
       if (optimizedWaypoints.length > 32767) {
         // many waypoints? simplify them.
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
+        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
         Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
         return result;
       }
@@ -184,7 +184,7 @@ class WayCropper {
       assert(optimizedWaypoints.length >= 3);
 
       if (optimizedWaypoints.length > 32767) {
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel, wayBoundingBox);
+        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
         Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
         return result;
       }

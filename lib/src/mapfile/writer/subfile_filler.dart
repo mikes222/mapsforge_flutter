@@ -8,14 +8,12 @@ import '../../utils/flutter_isolate.dart';
 
 @pragma("vm:entry-point")
 class IsolateSubfileFiller {
-  Future<List<Wayholder>> prepareWays(
-      ZoomlevelRange subfileZoomlevelRange, BoundingBox subfileBoundingBox, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders, int tilePixelSize,
+  Future<List<Wayholder>> prepareWays(ZoomlevelRange subfileZoomlevelRange, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders, int tilePixelSize,
       [double maxDeviation = 10]) async {
     return await FlutterIsolateInstance.isolateCompute(
         prepareWaysStatic,
         _SubfileFillerRequest(
             subfileZoomlevelRange: subfileZoomlevelRange,
-            subfileBoundingBox: subfileBoundingBox,
             zoomlevelRange: zoomlevelRange,
             wayholders: wayholders,
             tilePixelSize: tilePixelSize,
@@ -25,7 +23,7 @@ class IsolateSubfileFiller {
   @pragma('vm:entry-point')
   static Future<List<Wayholder>> prepareWaysStatic(_SubfileFillerRequest request) async {
     DisplayModel(tilesize: request.tilePixelSize);
-    SubfileFiller subfileFiller = SubfileFiller(request.subfileZoomlevelRange, request.subfileBoundingBox, request.maxDeviation);
+    SubfileFiller subfileFiller = SubfileFiller(request.subfileZoomlevelRange, request.maxDeviation);
     return subfileFiller.prepareWays(request.zoomlevelRange, request.wayholders);
   }
 }
@@ -34,8 +32,6 @@ class IsolateSubfileFiller {
 
 class _SubfileFillerRequest {
   final ZoomlevelRange subfileZoomlevelRange;
-
-  final BoundingBox subfileBoundingBox;
 
   final ZoomlevelRange zoomlevelRange;
 
@@ -46,12 +42,7 @@ class _SubfileFillerRequest {
   final double maxDeviation;
 
   _SubfileFillerRequest(
-      {required this.subfileZoomlevelRange,
-      required this.subfileBoundingBox,
-      required this.zoomlevelRange,
-      required this.wayholders,
-      required this.tilePixelSize,
-      required this.maxDeviation});
+      {required this.subfileZoomlevelRange, required this.zoomlevelRange, required this.wayholders, required this.tilePixelSize, required this.maxDeviation});
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,9 +56,9 @@ class SubfileFiller {
 
   final double maxDeviation;
 
-  SubfileFiller(this.subfileZoomlevelRange, BoundingBox subfileBoundingBox, this.maxDeviation) {
-    sizeFilter = WaySizeFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation, subfileBoundingBox);
-    simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation, subfileBoundingBox);
+  SubfileFiller(this.subfileZoomlevelRange, this.maxDeviation) {
+    sizeFilter = WaySizeFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation);
+    simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation);
   }
 
   List<Wayholder> prepareWays(

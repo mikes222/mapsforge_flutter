@@ -39,8 +39,6 @@ class SubfileCreator {
 
   final ZoomlevelRange zoomlevelRange;
 
-  final BoundingBox boundingBox;
-
   final MapHeaderInfo mapHeaderInfo;
 
   Map<int, Poiinfo> _poiinfos = {};
@@ -59,12 +57,12 @@ class SubfileCreator {
 
   late final TileBuffer tileBuffer;
 
-  SubfileCreator({required this.baseZoomLevel, required this.zoomlevelRange, required this.boundingBox, required this.mapHeaderInfo}) {
+  SubfileCreator({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo}) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
-    _minX = projection.longitudeToTileX(boundingBox.minLongitude);
-    _maxX = projection.longitudeToTileX(boundingBox.maxLongitude);
-    _minY = projection.latitudeToTileY(boundingBox.maxLatitude);
-    _maxY = projection.latitudeToTileY(boundingBox.minLatitude);
+    _minX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.minLongitude);
+    _maxX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.maxLongitude);
+    _minY = projection.latitudeToTileY(mapHeaderInfo.boundingBox.maxLatitude);
+    _maxY = projection.latitudeToTileY(mapHeaderInfo.boundingBox.minLatitude);
     tileBuffer = TileBuffer(baseZoomLevel);
 
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {

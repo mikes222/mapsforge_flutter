@@ -9,13 +9,13 @@ class WaySizeFilter {
 
   final double filterSizePixels;
 
-  late final double maxDeviationLatLong;
+  double? maxDeviationLatLong;
 
-  WaySizeFilter(int zoomlevel, this.filterSizePixels, BoundingBox boundingBox) : projection = PixelProjection(zoomlevel) {
-    maxDeviationLatLong = projection.latitudeDiffPerPixel((boundingBox.minLatitude + boundingBox.maxLatitude) / 2, filterSizePixels);
-  }
+  WaySizeFilter(int zoomlevel, this.filterSizePixels) : projection = PixelProjection(zoomlevel) {}
 
   Wayholder? filter(Wayholder wayholder) {
+    maxDeviationLatLong =
+        projection.latitudeDiffPerPixel((wayholder.boundingBoxCached.minLatitude + wayholder.boundingBoxCached.maxLatitude) / 2, filterSizePixels);
     int count = wayholder.innerRead.length + wayholder.openOutersRead.length + wayholder.closedOutersRead.length;
     List<Waypath> inner = wayholder.innerRead.map((e) => _shouldFilter(e)).toList().where((test) => test != null).map((test) => test!).toList();
     List<Waypath> closedOuters = wayholder.closedOutersRead.map((e) => _shouldFilter(e)).toList().where((test) => test != null).map((test) => test!).toList();
@@ -32,8 +32,8 @@ class WaySizeFilter {
 
   Waypath? _shouldFilter(Waypath waypath) {
     BoundingBox boundingBox = waypath.boundingBox;
-    if ((boundingBox.maxLatitude - boundingBox.minLatitude).abs() > maxDeviationLatLong) return waypath;
-    if ((boundingBox.maxLongitude - boundingBox.minLongitude).abs() > maxDeviationLatLong) return waypath;
+    if ((boundingBox.maxLatitude - boundingBox.minLatitude).abs() > maxDeviationLatLong!) return waypath;
+    if ((boundingBox.maxLongitude - boundingBox.minLongitude).abs() > maxDeviationLatLong!) return waypath;
     return null;
   }
 }

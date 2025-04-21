@@ -208,6 +208,20 @@ class Wayholder with TagholderMixin {
     analyzeTags(tags, tagholders);
   }
 
+  /// moves the inner ways to the outer ways if no outer ways exists anymore
+  void moveInnerToOuter() {
+    if (innerRead.isNotEmpty && openOutersRead.isEmpty && closedOutersRead.isEmpty) {
+      for (var inner in innerRead) {
+        if (inner.isClosedWay()) {
+          closedOutersWrite.add(inner);
+        } else {
+          openOutersWrite.add(inner);
+        }
+      }
+      innerWrite.clear();
+    }
+  }
+
   /// can be done when the tags are sorted
   Writebuffer writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
     _computeBitmask(tile);

@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/proto/osmformat.proto
+//  source: lib/pbfreader/pbfproto/osmformat.pbfproto
 //
 // @dart = 3.3
 
@@ -62,26 +62,24 @@ class HeaderBlock extends $pb.GeneratedMessage {
   factory HeaderBlock.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory HeaderBlock.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HeaderBlock', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..aOM<HeaderBBox>(1, _omitFieldNames ? '' : 'bbox', subBuilder: HeaderBBox.create)
-    ..pPS(4, _omitFieldNames ? '' : 'requiredFeatures')
-    ..pPS(5, _omitFieldNames ? '' : 'optionalFeatures')
-    ..aOS(16, _omitFieldNames ? '' : 'writingprogram')
-    ..aOS(17, _omitFieldNames ? '' : 'source')
-    ..aInt64(32, _omitFieldNames ? '' : 'osmosisReplicationTimestamp')
-    ..aInt64(33, _omitFieldNames ? '' : 'osmosisReplicationSequenceNumber')
-    ..aOS(34, _omitFieldNames ? '' : 'osmosisReplicationBaseUrl')
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'HeaderBlock', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..aOM<HeaderBBox>(1, _omitFieldNames ? '' : 'bbox', subBuilder: HeaderBBox.create)
+        ..pPS(4, _omitFieldNames ? '' : 'requiredFeatures')
+        ..pPS(5, _omitFieldNames ? '' : 'optionalFeatures')
+        ..aOS(16, _omitFieldNames ? '' : 'writingprogram')
+        ..aOS(17, _omitFieldNames ? '' : 'source')
+        ..aInt64(32, _omitFieldNames ? '' : 'osmosisReplicationTimestamp')
+        ..aInt64(33, _omitFieldNames ? '' : 'osmosisReplicationSequenceNumber')
+        ..aOS(34, _omitFieldNames ? '' : 'osmosisReplicationBaseUrl');
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   HeaderBlock clone() => HeaderBlock()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   HeaderBlock copyWith(void Function(HeaderBlock) updates) => super.copyWith((message) => updates(message as HeaderBlock)) as HeaderBlock;
 
   $pb.BuilderInfo get info_ => _i;
@@ -97,7 +95,10 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   HeaderBBox get bbox => $_getN(0);
   @$pb.TagNumber(1)
-  set bbox(HeaderBBox v) { $_setField(1, v); }
+  set bbox(HeaderBBox v) {
+    $_setField(1, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasBbox() => $_has(0);
   @$pb.TagNumber(1)
@@ -115,7 +116,10 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   $core.String get writingprogram => $_getSZ(3);
   @$pb.TagNumber(16)
-  set writingprogram($core.String v) { $_setString(3, v); }
+  set writingprogram($core.String v) {
+    $_setString(3, v);
+  }
+
   @$pb.TagNumber(16)
   $core.bool hasWritingprogram() => $_has(3);
   @$pb.TagNumber(16)
@@ -124,7 +128,10 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   $core.String get source => $_getSZ(4);
   @$pb.TagNumber(17)
-  set source($core.String v) { $_setString(4, v); }
+  set source($core.String v) {
+    $_setString(4, v);
+  }
+
   @$pb.TagNumber(17)
   $core.bool hasSource() => $_has(4);
   @$pb.TagNumber(17)
@@ -136,7 +143,10 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(32)
   $fixnum.Int64 get osmosisReplicationTimestamp => $_getI64(5);
   @$pb.TagNumber(32)
-  set osmosisReplicationTimestamp($fixnum.Int64 v) { $_setInt64(5, v); }
+  set osmosisReplicationTimestamp($fixnum.Int64 v) {
+    $_setInt64(5, v);
+  }
+
   @$pb.TagNumber(32)
   $core.bool hasOsmosisReplicationTimestamp() => $_has(5);
   @$pb.TagNumber(32)
@@ -146,7 +156,10 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(33)
   $fixnum.Int64 get osmosisReplicationSequenceNumber => $_getI64(6);
   @$pb.TagNumber(33)
-  set osmosisReplicationSequenceNumber($fixnum.Int64 v) { $_setInt64(6, v); }
+  set osmosisReplicationSequenceNumber($fixnum.Int64 v) {
+    $_setInt64(6, v);
+  }
+
   @$pb.TagNumber(33)
   $core.bool hasOsmosisReplicationSequenceNumber() => $_has(6);
   @$pb.TagNumber(33)
@@ -156,7 +169,10 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(34)
   $core.String get osmosisReplicationBaseUrl => $_getSZ(7);
   @$pb.TagNumber(34)
-  set osmosisReplicationBaseUrl($core.String v) { $_setString(7, v); }
+  set osmosisReplicationBaseUrl($core.String v) {
+    $_setString(7, v);
+  }
+
   @$pb.TagNumber(34)
   $core.bool hasOsmosisReplicationBaseUrl() => $_has(7);
   @$pb.TagNumber(34)
@@ -189,22 +205,20 @@ class HeaderBBox extends $pb.GeneratedMessage {
   factory HeaderBBox.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory HeaderBBox.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HeaderBBox', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'left', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'right', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'top', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'bottom', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'HeaderBBox', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'left', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'right', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'top', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'bottom', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   HeaderBBox clone() => HeaderBBox()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   HeaderBBox copyWith(void Function(HeaderBBox) updates) => super.copyWith((message) => updates(message as HeaderBBox)) as HeaderBBox;
 
   $pb.BuilderInfo get info_ => _i;
@@ -220,7 +234,10 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get left => $_getI64(0);
   @$pb.TagNumber(1)
-  set left($fixnum.Int64 v) { $_setInt64(0, v); }
+  set left($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasLeft() => $_has(0);
   @$pb.TagNumber(1)
@@ -229,7 +246,10 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get right => $_getI64(1);
   @$pb.TagNumber(2)
-  set right($fixnum.Int64 v) { $_setInt64(1, v); }
+  set right($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasRight() => $_has(1);
   @$pb.TagNumber(2)
@@ -238,7 +258,10 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get top => $_getI64(2);
   @$pb.TagNumber(3)
-  set top($fixnum.Int64 v) { $_setInt64(2, v); }
+  set top($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasTop() => $_has(2);
   @$pb.TagNumber(3)
@@ -247,7 +270,10 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $fixnum.Int64 get bottom => $_getI64(3);
   @$pb.TagNumber(4)
-  set bottom($fixnum.Int64 v) { $_setInt64(3, v); }
+  set bottom($fixnum.Int64 v) {
+    $_setInt64(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasBottom() => $_has(3);
   @$pb.TagNumber(4)
@@ -288,24 +314,22 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   factory PrimitiveBlock.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PrimitiveBlock.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimitiveBlock', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..aQM<StringTable>(1, _omitFieldNames ? '' : 'stringtable', subBuilder: StringTable.create)
-    ..pc<PrimitiveGroup>(2, _omitFieldNames ? '' : 'primitivegroup', $pb.PbFieldType.PM, subBuilder: PrimitiveGroup.create)
-    ..a<$core.int>(17, _omitFieldNames ? '' : 'granularity', $pb.PbFieldType.O3, defaultOrMaker: 100)
-    ..a<$core.int>(18, _omitFieldNames ? '' : 'dateGranularity', $pb.PbFieldType.O3, defaultOrMaker: 1000)
-    ..aInt64(19, _omitFieldNames ? '' : 'latOffset')
-    ..aInt64(20, _omitFieldNames ? '' : 'lonOffset')
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimitiveBlock', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..aQM<StringTable>(1, _omitFieldNames ? '' : 'stringtable', subBuilder: StringTable.create)
+        ..pc<PrimitiveGroup>(2, _omitFieldNames ? '' : 'primitivegroup', $pb.PbFieldType.PM, subBuilder: PrimitiveGroup.create)
+        ..a<$core.int>(17, _omitFieldNames ? '' : 'granularity', $pb.PbFieldType.O3, defaultOrMaker: 100)
+        ..a<$core.int>(18, _omitFieldNames ? '' : 'dateGranularity', $pb.PbFieldType.O3, defaultOrMaker: 1000)
+        ..aInt64(19, _omitFieldNames ? '' : 'latOffset')
+        ..aInt64(20, _omitFieldNames ? '' : 'lonOffset');
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   PrimitiveBlock clone() => PrimitiveBlock()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   PrimitiveBlock copyWith(void Function(PrimitiveBlock) updates) => super.copyWith((message) => updates(message as PrimitiveBlock)) as PrimitiveBlock;
 
   $pb.BuilderInfo get info_ => _i;
@@ -321,7 +345,10 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   StringTable get stringtable => $_getN(0);
   @$pb.TagNumber(1)
-  set stringtable(StringTable v) { $_setField(1, v); }
+  set stringtable(StringTable v) {
+    $_setField(1, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasStringtable() => $_has(0);
   @$pb.TagNumber(1)
@@ -336,7 +363,10 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   $core.int get granularity => $_getI(2, 100);
   @$pb.TagNumber(17)
-  set granularity($core.int v) { $_setSignedInt32(2, v); }
+  set granularity($core.int v) {
+    $_setSignedInt32(2, v);
+  }
+
   @$pb.TagNumber(17)
   $core.bool hasGranularity() => $_has(2);
   @$pb.TagNumber(17)
@@ -346,7 +376,10 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(18)
   $core.int get dateGranularity => $_getI(3, 1000);
   @$pb.TagNumber(18)
-  set dateGranularity($core.int v) { $_setSignedInt32(3, v); }
+  set dateGranularity($core.int v) {
+    $_setSignedInt32(3, v);
+  }
+
   @$pb.TagNumber(18)
   $core.bool hasDateGranularity() => $_has(3);
   @$pb.TagNumber(18)
@@ -356,7 +389,10 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(19)
   $fixnum.Int64 get latOffset => $_getI64(4);
   @$pb.TagNumber(19)
-  set latOffset($fixnum.Int64 v) { $_setInt64(4, v); }
+  set latOffset($fixnum.Int64 v) {
+    $_setInt64(4, v);
+  }
+
   @$pb.TagNumber(19)
   $core.bool hasLatOffset() => $_has(4);
   @$pb.TagNumber(19)
@@ -365,7 +401,10 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(20)
   $fixnum.Int64 get lonOffset => $_getI64(5);
   @$pb.TagNumber(20)
-  set lonOffset($fixnum.Int64 v) { $_setInt64(5, v); }
+  set lonOffset($fixnum.Int64 v) {
+    $_setInt64(5, v);
+  }
+
   @$pb.TagNumber(20)
   $core.bool hasLonOffset() => $_has(5);
   @$pb.TagNumber(20)
@@ -403,23 +442,21 @@ class PrimitiveGroup extends $pb.GeneratedMessage {
   factory PrimitiveGroup.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PrimitiveGroup.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimitiveGroup', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..pc<Node>(1, _omitFieldNames ? '' : 'nodes', $pb.PbFieldType.PM, subBuilder: Node.create)
-    ..aOM<DenseNodes>(2, _omitFieldNames ? '' : 'dense', subBuilder: DenseNodes.create)
-    ..pc<Way>(3, _omitFieldNames ? '' : 'ways', $pb.PbFieldType.PM, subBuilder: Way.create)
-    ..pc<Relation>(4, _omitFieldNames ? '' : 'relations', $pb.PbFieldType.PM, subBuilder: Relation.create)
-    ..pc<ChangeSet>(5, _omitFieldNames ? '' : 'changesets', $pb.PbFieldType.PM, subBuilder: ChangeSet.create)
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimitiveGroup', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..pc<Node>(1, _omitFieldNames ? '' : 'nodes', $pb.PbFieldType.PM, subBuilder: Node.create)
+        ..aOM<DenseNodes>(2, _omitFieldNames ? '' : 'dense', subBuilder: DenseNodes.create)
+        ..pc<Way>(3, _omitFieldNames ? '' : 'ways', $pb.PbFieldType.PM, subBuilder: Way.create)
+        ..pc<Relation>(4, _omitFieldNames ? '' : 'relations', $pb.PbFieldType.PM, subBuilder: Relation.create)
+        ..pc<ChangeSet>(5, _omitFieldNames ? '' : 'changesets', $pb.PbFieldType.PM, subBuilder: ChangeSet.create);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   PrimitiveGroup clone() => PrimitiveGroup()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   PrimitiveGroup copyWith(void Function(PrimitiveGroup) updates) => super.copyWith((message) => updates(message as PrimitiveGroup)) as PrimitiveGroup;
 
   $pb.BuilderInfo get info_ => _i;
@@ -438,7 +475,10 @@ class PrimitiveGroup extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   DenseNodes get dense => $_getN(1);
   @$pb.TagNumber(2)
-  set dense(DenseNodes v) { $_setField(2, v); }
+  set dense(DenseNodes v) {
+    $_setField(2, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasDense() => $_has(1);
   @$pb.TagNumber(2)
@@ -474,20 +514,18 @@ class StringTable extends $pb.GeneratedMessage {
   factory StringTable.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory StringTable.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StringTable', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..p<$core.List<$core.int>>(1, _omitFieldNames ? '' : 's', $pb.PbFieldType.PY)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'StringTable', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..p<$core.List<$core.int>>(1, _omitFieldNames ? '' : 's', $pb.PbFieldType.PY)
+        ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   StringTable clone() => StringTable()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   StringTable copyWith(void Function(StringTable) updates) => super.copyWith((message) => updates(message as StringTable)) as StringTable;
 
   $pb.BuilderInfo get info_ => _i;
@@ -539,25 +577,23 @@ class Info extends $pb.GeneratedMessage {
   factory Info.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Info.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Info', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.O3, defaultOrMaker: -1)
-    ..aInt64(2, _omitFieldNames ? '' : 'timestamp')
-    ..aInt64(3, _omitFieldNames ? '' : 'changeset')
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.OU3)
-    ..aOB(6, _omitFieldNames ? '' : 'visible')
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'Info', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..a<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.O3, defaultOrMaker: -1)
+        ..aInt64(2, _omitFieldNames ? '' : 'timestamp')
+        ..aInt64(3, _omitFieldNames ? '' : 'changeset')
+        ..a<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.O3)
+        ..a<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.OU3)
+        ..aOB(6, _omitFieldNames ? '' : 'visible')
+        ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Info clone() => Info()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   Info copyWith(void Function(Info) updates) => super.copyWith((message) => updates(message as Info)) as Info;
 
   $pb.BuilderInfo get info_ => _i;
@@ -573,7 +609,10 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.int get version => $_getI(0, -1);
   @$pb.TagNumber(1)
-  set version($core.int v) { $_setSignedInt32(0, v); }
+  set version($core.int v) {
+    $_setSignedInt32(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasVersion() => $_has(0);
   @$pb.TagNumber(1)
@@ -582,7 +621,10 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get timestamp => $_getI64(1);
   @$pb.TagNumber(2)
-  set timestamp($fixnum.Int64 v) { $_setInt64(1, v); }
+  set timestamp($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasTimestamp() => $_has(1);
   @$pb.TagNumber(2)
@@ -591,7 +633,10 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get changeset => $_getI64(2);
   @$pb.TagNumber(3)
-  set changeset($fixnum.Int64 v) { $_setInt64(2, v); }
+  set changeset($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasChangeset() => $_has(2);
   @$pb.TagNumber(3)
@@ -600,7 +645,10 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.int get uid => $_getIZ(3);
   @$pb.TagNumber(4)
-  set uid($core.int v) { $_setSignedInt32(3, v); }
+  set uid($core.int v) {
+    $_setSignedInt32(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasUid() => $_has(3);
   @$pb.TagNumber(4)
@@ -609,7 +657,10 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.int get userSid => $_getIZ(4);
   @$pb.TagNumber(5)
-  set userSid($core.int v) { $_setUnsignedInt32(4, v); }
+  set userSid($core.int v) {
+    $_setUnsignedInt32(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasUserSid() => $_has(4);
   @$pb.TagNumber(5)
@@ -626,7 +677,10 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool get visible => $_getBF(5);
   @$pb.TagNumber(6)
-  set visible($core.bool v) { $_setBool(5, v); }
+  set visible($core.bool v) {
+    $_setBool(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasVisible() => $_has(5);
   @$pb.TagNumber(6)
@@ -668,25 +722,23 @@ class DenseInfo extends $pb.GeneratedMessage {
   factory DenseInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DenseInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DenseInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..p<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.K3)
-    ..p<$fixnum.Int64>(2, _omitFieldNames ? '' : 'timestamp', $pb.PbFieldType.KS6)
-    ..p<$fixnum.Int64>(3, _omitFieldNames ? '' : 'changeset', $pb.PbFieldType.KS6)
-    ..p<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.KS3)
-    ..p<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.KS3)
-    ..p<$core.bool>(6, _omitFieldNames ? '' : 'visible', $pb.PbFieldType.KB)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'DenseInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..p<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.K3)
+        ..p<$fixnum.Int64>(2, _omitFieldNames ? '' : 'timestamp', $pb.PbFieldType.KS6)
+        ..p<$fixnum.Int64>(3, _omitFieldNames ? '' : 'changeset', $pb.PbFieldType.KS6)
+        ..p<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.KS3)
+        ..p<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.KS3)
+        ..p<$core.bool>(6, _omitFieldNames ? '' : 'visible', $pb.PbFieldType.KB)
+        ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   DenseInfo clone() => DenseInfo()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   DenseInfo copyWith(void Function(DenseInfo) updates) => super.copyWith((message) => updates(message as DenseInfo)) as DenseInfo;
 
   $pb.BuilderInfo get info_ => _i;
@@ -741,19 +793,17 @@ class ChangeSet extends $pb.GeneratedMessage {
   factory ChangeSet.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChangeSet.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangeSet', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangeSet', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   ChangeSet clone() => ChangeSet()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   ChangeSet copyWith(void Function(ChangeSet) updates) => super.copyWith((message) => updates(message as ChangeSet)) as ChangeSet;
 
   $pb.BuilderInfo get info_ => _i;
@@ -769,7 +819,10 @@ class ChangeSet extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -810,24 +863,22 @@ class Node extends $pb.GeneratedMessage {
   factory Node.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Node.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Node', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
-    ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
-    ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
-    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'Node', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
+        ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
+        ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
+        ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Node clone() => Node()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   Node copyWith(void Function(Node) updates) => super.copyWith((message) => updates(message as Node)) as Node;
 
   $pb.BuilderInfo get info_ => _i;
@@ -843,7 +894,10 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -859,7 +913,10 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   Info get info => $_getN(3);
   @$pb.TagNumber(4)
-  set info(Info v) { $_setField(4, v); }
+  set info(Info v) {
+    $_setField(4, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasInfo() => $_has(3);
   @$pb.TagNumber(4)
@@ -870,7 +927,10 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $fixnum.Int64 get lat => $_getI64(4);
   @$pb.TagNumber(8)
-  set lat($fixnum.Int64 v) { $_setInt64(4, v); }
+  set lat($fixnum.Int64 v) {
+    $_setInt64(4, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasLat() => $_has(4);
   @$pb.TagNumber(8)
@@ -879,7 +939,10 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $fixnum.Int64 get lon => $_getI64(5);
   @$pb.TagNumber(9)
-  set lon($fixnum.Int64 v) { $_setInt64(5, v); }
+  set lon($fixnum.Int64 v) {
+    $_setInt64(5, v);
+  }
+
   @$pb.TagNumber(9)
   $core.bool hasLon() => $_has(5);
   @$pb.TagNumber(9)
@@ -916,24 +979,22 @@ class DenseNodes extends $pb.GeneratedMessage {
   factory DenseNodes.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DenseNodes.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DenseNodes', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..p<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.KS6)
-    ..aOM<DenseInfo>(5, _omitFieldNames ? '' : 'denseinfo', subBuilder: DenseInfo.create)
-    ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
-    ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6)
-    ..p<$core.int>(10, _omitFieldNames ? '' : 'keysVals', $pb.PbFieldType.K3)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'DenseNodes', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..p<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.KS6)
+        ..aOM<DenseInfo>(5, _omitFieldNames ? '' : 'denseinfo', subBuilder: DenseInfo.create)
+        ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
+        ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6)
+        ..p<$core.int>(10, _omitFieldNames ? '' : 'keysVals', $pb.PbFieldType.K3)
+        ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   DenseNodes clone() => DenseNodes()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   DenseNodes copyWith(void Function(DenseNodes) updates) => super.copyWith((message) => updates(message as DenseNodes)) as DenseNodes;
 
   $pb.BuilderInfo get info_ => _i;
@@ -952,7 +1013,10 @@ class DenseNodes extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   DenseInfo get denseinfo => $_getN(1);
   @$pb.TagNumber(5)
-  set denseinfo(DenseInfo v) { $_setField(5, v); }
+  set denseinfo(DenseInfo v) {
+    $_setField(5, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasDenseinfo() => $_has(1);
   @$pb.TagNumber(5)
@@ -1009,25 +1073,23 @@ class Way extends $pb.GeneratedMessage {
   factory Way.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Way.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Way', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
-    ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
-    ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
-    ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'refs', $pb.PbFieldType.KS6)
-    ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
-    ..p<$fixnum.Int64>(10, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6)
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'Way', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
+        ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
+        ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
+        ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'refs', $pb.PbFieldType.KS6)
+        ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
+        ..p<$fixnum.Int64>(10, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Way clone() => Way()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   Way copyWith(void Function(Way) updates) => super.copyWith((message) => updates(message as Way)) as Way;
 
   $pb.BuilderInfo get info_ => _i;
@@ -1043,7 +1105,10 @@ class Way extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1059,7 +1124,10 @@ class Way extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   Info get info => $_getN(3);
   @$pb.TagNumber(4)
-  set info(Info v) { $_setField(4, v); }
+  set info(Info v) {
+    $_setField(4, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasInfo() => $_has(3);
   @$pb.TagNumber(4)
@@ -1121,25 +1189,24 @@ class Relation extends $pb.GeneratedMessage {
   factory Relation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Relation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Relation', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
-    ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
-    ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
-    ..p<$core.int>(8, _omitFieldNames ? '' : 'rolesSid', $pb.PbFieldType.K3)
-    ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'memids', $pb.PbFieldType.KS6)
-    ..pc<Relation_MemberType>(10, _omitFieldNames ? '' : 'types', $pb.PbFieldType.KE, valueOf: Relation_MemberType.valueOf, enumValues: Relation_MemberType.values, defaultEnumValue: Relation_MemberType.NODE)
-  ;
+  static final $pb.BuilderInfo _i =
+      $pb.BuilderInfo(_omitMessageNames ? '' : 'Relation', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
+        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+        ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
+        ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
+        ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
+        ..p<$core.int>(8, _omitFieldNames ? '' : 'rolesSid', $pb.PbFieldType.K3)
+        ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'memids', $pb.PbFieldType.KS6)
+        ..pc<Relation_MemberType>(10, _omitFieldNames ? '' : 'types', $pb.PbFieldType.KE,
+            valueOf: Relation_MemberType.valueOf, enumValues: Relation_MemberType.values, defaultEnumValue: Relation_MemberType.NODE);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Relation clone() => Relation()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   Relation copyWith(void Function(Relation) updates) => super.copyWith((message) => updates(message as Relation)) as Relation;
 
   $pb.BuilderInfo get info_ => _i;
@@ -1155,7 +1222,10 @@ class Relation extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1171,7 +1241,10 @@ class Relation extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   Info get info => $_getN(3);
   @$pb.TagNumber(4)
-  set info(Info v) { $_setField(4, v); }
+  set info(Info v) {
+    $_setField(4, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasInfo() => $_has(3);
   @$pb.TagNumber(4)
@@ -1189,7 +1262,6 @@ class Relation extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   $pb.PbList<Relation_MemberType> get types => $_getList(6);
 }
-
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

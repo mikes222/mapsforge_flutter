@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/mapfile/zoomlevel_writer.dart';
+import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
-import 'package:mapfile_converter/pbfreader/pbf_analyzer.dart';
-import 'package:mapfile_converter/pbfreader/pbf_statistics.dart';
-import 'package:mapfile_converter/rendertheme_filter.dart';
+import 'package:mapfile_converter/pbf_statistics.dart';
 import 'package:mapfile_converter/rule_reader.dart';
-import 'package:mapfile_converter/zoomlevel_writer.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/special.dart';
@@ -97,7 +97,7 @@ class ConvertCommand extends Command {
     RuleReader ruleReader = RuleReader();
     final (ruleAnalyzer, renderTheme) = await ruleReader.readFile(argResults!.option("rendertheme")!);
 
-    BoundingBox? boundingBox = _parseBoundingBoxFromCli();
+    BoundingBox? finalBoundingBox = _parseBoundingBoxFromCli();
 
     List<PointOfInterest> pois = [];
     List<Wayholder> ways = [];
@@ -106,17 +106,14 @@ class ConvertCommand extends Command {
     for (var sourcefile in sourcefiles) {
       _log.info("Reading $sourcefile, please wait...");
       if (sourcefile.toLowerCase().endsWith(".osm")) {
-        PbfAnalyzer pbfAnalyzer = PbfAnalyzer(ruleAnalyzer: ruleAnalyzer, maxGapMeter: double.parse(argResults!.option("maxgap")!));
-        await pbfAnalyzer.readOsmToMemory(sourcefile);
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readOsmFile(
+          sourcefile,
+          ruleAnalyzer,
+          maxGapMeter: double.parse(argResults!.option("maxgap")!),
+          finalBoundingBox: finalBoundingBox,
+        );
 
-        if (boundingBox != null) {
-          int countPoi = pbfAnalyzer.pois.length;
-          int countWay = await pbfAnalyzer.filterByBoundingBox(boundingBox);
-          _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-          _log.info("Removed ${countWay} ways because they are out of boundary");
-        }
-
-        boundingBox ??= pbfAnalyzer.boundingBox!;
+        finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         pbfAnalyzer.statistics();
         pois.addAll(pbfAnalyzer.pois);
         ways.addAll(await pbfAnalyzer.ways);
@@ -124,17 +121,15 @@ class ConvertCommand extends Command {
         pbfAnalyzer.clear();
       } else {
         /// Read and analyze PBF file
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(sourcefile, ruleAnalyzer, maxGapMeter: double.parse(argResults!.option("maxgap")!));
-
-        if (boundingBox != null) {
-          int countPoi = pbfAnalyzer.pois.length;
-          int countWay = await pbfAnalyzer.filterByBoundingBox(boundingBox);
-          _log.info("Removed ${countPoi - pbfAnalyzer.pois.length} pois because they are out of boundary");
-          _log.info("Removed ${countWay} ways because they are out of boundary");
-        }
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(
+          sourcefile,
+          ruleAnalyzer,
+          maxGapMeter: double.parse(argResults!.option("maxgap")!),
+          finalBoundingBox: finalBoundingBox,
+        );
 
         /// Now start exporting the data to a mapfile
-        boundingBox ??= pbfAnalyzer.boundingBox!;
+        finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         pbfAnalyzer.statistics();
         pois.addAll(pbfAnalyzer.pois);
         ways.addAll(await pbfAnalyzer.ways);
@@ -152,7 +147,7 @@ class ConvertCommand extends Command {
 
     _log.info("Writing ${argResults!.option("destinationfile")!}");
     if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".osm")) {
-      OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, boundingBox!);
+      OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
       for (var pois2 in poiZoomlevels.values) {
         for (var poi in pois2) {
           osmWriter.writeNode(poi.position, poi.tags);
@@ -179,7 +174,7 @@ class ConvertCommand extends Command {
       });
 
       MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
-        boundingBox: boundingBox!,
+        boundingBox: finalBoundingBox!,
         debugFile: argResults!.flag("debug"),
         zoomlevelRange: ZoomlevelRange(zoomlevels.first, zoomlevels.last),
         //languagesPreference: "ja,es",
@@ -194,7 +189,7 @@ class ConvertCommand extends Command {
           await zoomlevelWriter.writeZoomlevel(
             mapfileWriter,
             mapHeaderInfo,
-            boundingBox,
+            finalBoundingBox,
             previousZoomlevel,
             zoomlevel == zoomlevels.last ? zoomlevel : zoomlevel - 1,
             wayZoomlevels,

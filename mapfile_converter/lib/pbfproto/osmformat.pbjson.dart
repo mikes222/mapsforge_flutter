@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/proto/osmformat.proto
+//  source: lib/pbfreader/pbfproto/osmformat.pbfproto
 //
 // @dart = 3.3
 
@@ -29,8 +29,7 @@ const HeaderBlock$json = {
 };
 
 /// Descriptor for `HeaderBlock`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List headerBlockDescriptor = $convert.base64Decode(
-    'CgtIZWFkZXJCbG9jaxImCgRiYm94GAEgASgLMhIuT1NNUEJGLkhlYWRlckJCb3hSBGJib3gSKw'
+final $typed_data.Uint8List headerBlockDescriptor = $convert.base64Decode('CgtIZWFkZXJCbG9jaxImCgRiYm94GAEgASgLMhIuT1NNUEJGLkhlYWRlckJCb3hSBGJib3gSKw'
     'oRcmVxdWlyZWRfZmVhdHVyZXMYBCADKAlSEHJlcXVpcmVkRmVhdHVyZXMSKwoRb3B0aW9uYWxf'
     'ZmVhdHVyZXMYBSADKAlSEG9wdGlvbmFsRmVhdHVyZXMSJgoOd3JpdGluZ3Byb2dyYW0YECABKA'
     'lSDndyaXRpbmdwcm9ncmFtEhYKBnNvdXJjZRgRIAEoCVIGc291cmNlEkIKHW9zbW9zaXNfcmVw'
@@ -51,8 +50,7 @@ const HeaderBBox$json = {
 };
 
 /// Descriptor for `HeaderBBox`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List headerBBoxDescriptor = $convert.base64Decode(
-    'CgpIZWFkZXJCQm94EhIKBGxlZnQYASACKBJSBGxlZnQSFAoFcmlnaHQYAiACKBJSBXJpZ2h0Eh'
+final $typed_data.Uint8List headerBBoxDescriptor = $convert.base64Decode('CgpIZWFkZXJCQm94EhIKBGxlZnQYASACKBJSBGxlZnQSFAoFcmlnaHQYAiACKBJSBXJpZ2h0Eh'
     'AKA3RvcBgDIAIoElIDdG9wEhYKBmJvdHRvbRgEIAIoElIGYm90dG9t');
 
 @$core.Deprecated('Use primitiveBlockDescriptor instead')
@@ -69,8 +67,7 @@ const PrimitiveBlock$json = {
 };
 
 /// Descriptor for `PrimitiveBlock`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List primitiveBlockDescriptor = $convert.base64Decode(
-    'Cg5QcmltaXRpdmVCbG9jaxI1CgtzdHJpbmd0YWJsZRgBIAIoCzITLk9TTVBCRi5TdHJpbmdUYW'
+final $typed_data.Uint8List primitiveBlockDescriptor = $convert.base64Decode('Cg5QcmltaXRpdmVCbG9jaxI1CgtzdHJpbmd0YWJsZRgBIAIoCzITLk9TTVBCRi5TdHJpbmdUYW'
     'JsZVILc3RyaW5ndGFibGUSPgoOcHJpbWl0aXZlZ3JvdXAYAiADKAsyFi5PU01QQkYuUHJpbWl0'
     'aXZlR3JvdXBSDnByaW1pdGl2ZWdyb3VwEiUKC2dyYW51bGFyaXR5GBEgASgFOgMxMDBSC2dyYW'
     '51bGFyaXR5EiAKCmxhdF9vZmZzZXQYEyABKAM6ATBSCWxhdE9mZnNldBIgCgpsb25fb2Zmc2V0'
@@ -90,8 +87,7 @@ const PrimitiveGroup$json = {
 };
 
 /// Descriptor for `PrimitiveGroup`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List primitiveGroupDescriptor = $convert.base64Decode(
-    'Cg5QcmltaXRpdmVHcm91cBIiCgVub2RlcxgBIAMoCzIMLk9TTVBCRi5Ob2RlUgVub2RlcxIoCg'
+final $typed_data.Uint8List primitiveGroupDescriptor = $convert.base64Decode('Cg5QcmltaXRpdmVHcm91cBIiCgVub2RlcxgBIAMoCzIMLk9TTVBCRi5Ob2RlUgVub2RlcxIoCg'
     'VkZW5zZRgCIAEoCzISLk9TTVBCRi5EZW5zZU5vZGVzUgVkZW5zZRIfCgR3YXlzGAMgAygLMgsu'
     'T1NNUEJGLldheVIEd2F5cxIuCglyZWxhdGlvbnMYBCADKAsyEC5PU01QQkYuUmVsYXRpb25SCX'
     'JlbGF0aW9ucxIxCgpjaGFuZ2VzZXRzGAUgAygLMhEuT1NNUEJGLkNoYW5nZVNldFIKY2hhbmdl'
@@ -106,8 +102,7 @@ const StringTable$json = {
 };
 
 /// Descriptor for `StringTable`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List stringTableDescriptor = $convert.base64Decode(
-    'CgtTdHJpbmdUYWJsZRIMCgFzGAEgAygMUgFz');
+final $typed_data.Uint8List stringTableDescriptor = $convert.base64Decode('CgtTdHJpbmdUYWJsZRIMCgFzGAEgAygMUgFz');
 
 @$core.Deprecated('Use infoDescriptor instead')
 const Info$json = {
@@ -123,8 +118,7 @@ const Info$json = {
 };
 
 /// Descriptor for `Info`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List infoDescriptor = $convert.base64Decode(
-    'CgRJbmZvEhwKB3ZlcnNpb24YASABKAU6Ai0xUgd2ZXJzaW9uEhwKCXRpbWVzdGFtcBgCIAEoA1'
+final $typed_data.Uint8List infoDescriptor = $convert.base64Decode('CgRJbmZvEhwKB3ZlcnNpb24YASABKAU6Ai0xUgd2ZXJzaW9uEhwKCXRpbWVzdGFtcBgCIAEoA1'
     'IJdGltZXN0YW1wEhwKCWNoYW5nZXNldBgDIAEoA1IJY2hhbmdlc2V0EhAKA3VpZBgEIAEoBVID'
     'dWlkEhkKCHVzZXJfc2lkGAUgASgNUgd1c2VyU2lkEhgKB3Zpc2libGUYBiABKAhSB3Zpc2libG'
     'U=');
@@ -185,8 +179,7 @@ const DenseInfo$json = {
 };
 
 /// Descriptor for `DenseInfo`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List denseInfoDescriptor = $convert.base64Decode(
-    'CglEZW5zZUluZm8SHAoHdmVyc2lvbhgBIAMoBUICEAFSB3ZlcnNpb24SIAoJdGltZXN0YW1wGA'
+final $typed_data.Uint8List denseInfoDescriptor = $convert.base64Decode('CglEZW5zZUluZm8SHAoHdmVyc2lvbhgBIAMoBUICEAFSB3ZlcnNpb24SIAoJdGltZXN0YW1wGA'
     'IgAygSQgIQAVIJdGltZXN0YW1wEiAKCWNoYW5nZXNldBgDIAMoEkICEAFSCWNoYW5nZXNldBIU'
     'CgN1aWQYBCADKBFCAhABUgN1aWQSHQoIdXNlcl9zaWQYBSADKBFCAhABUgd1c2VyU2lkEhwKB3'
     'Zpc2libGUYBiADKAhCAhABUgd2aXNpYmxl');
@@ -200,8 +193,7 @@ const ChangeSet$json = {
 };
 
 /// Descriptor for `ChangeSet`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List changeSetDescriptor = $convert.base64Decode(
-    'CglDaGFuZ2VTZXQSDgoCaWQYASACKANSAmlk');
+final $typed_data.Uint8List changeSetDescriptor = $convert.base64Decode('CglDaGFuZ2VTZXQSDgoCaWQYASACKANSAmlk');
 
 @$core.Deprecated('Use nodeDescriptor instead')
 const Node$json = {
@@ -231,8 +223,7 @@ const Node$json = {
 };
 
 /// Descriptor for `Node`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List nodeDescriptor = $convert.base64Decode(
-    'CgROb2RlEg4KAmlkGAEgAigSUgJpZBIWCgRrZXlzGAIgAygNQgIQAVIEa2V5cxIWCgR2YWxzGA'
+final $typed_data.Uint8List nodeDescriptor = $convert.base64Decode('CgROb2RlEg4KAmlkGAEgAigSUgJpZBIWCgRrZXlzGAIgAygNQgIQAVIEa2V5cxIWCgR2YWxzGA'
     'MgAygNQgIQAVIEdmFscxIgCgRpbmZvGAQgASgLMgwuT1NNUEJGLkluZm9SBGluZm8SEAoDbGF0'
     'GAggAigSUgNsYXQSEAoDbG9uGAkgAigSUgNsb24=');
 
@@ -277,8 +268,7 @@ const DenseNodes$json = {
 };
 
 /// Descriptor for `DenseNodes`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List denseNodesDescriptor = $convert.base64Decode(
-    'CgpEZW5zZU5vZGVzEhIKAmlkGAEgAygSQgIQAVICaWQSLwoJZGVuc2VpbmZvGAUgASgLMhEuT1'
+final $typed_data.Uint8List denseNodesDescriptor = $convert.base64Decode('CgpEZW5zZU5vZGVzEhIKAmlkGAEgAygSQgIQAVICaWQSLwoJZGVuc2VpbmZvGAUgASgLMhEuT1'
     'NNUEJGLkRlbnNlSW5mb1IJZGVuc2VpbmZvEhQKA2xhdBgIIAMoEkICEAFSA2xhdBIUCgNsb24Y'
     'CSADKBJCAhABUgNsb24SHwoJa2V5c192YWxzGAogAygFQgIQAVIIa2V5c1ZhbHM=');
 
@@ -332,8 +322,7 @@ const Way$json = {
 };
 
 /// Descriptor for `Way`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List wayDescriptor = $convert.base64Decode(
-    'CgNXYXkSDgoCaWQYASACKANSAmlkEhYKBGtleXMYAiADKA1CAhABUgRrZXlzEhYKBHZhbHMYAy'
+final $typed_data.Uint8List wayDescriptor = $convert.base64Decode('CgNXYXkSDgoCaWQYASACKANSAmlkEhYKBGtleXMYAiADKA1CAhABUgRrZXlzEhYKBHZhbHMYAy'
     'ADKA1CAhABUgR2YWxzEiAKBGluZm8YBCABKAsyDC5PU01QQkYuSW5mb1IEaW5mbxIWCgRyZWZz'
     'GAggAygSQgIQAVIEcmVmcxIUCgNsYXQYCSADKBJCAhABUgNsYXQSFAoDbG9uGAogAygSQgIQAV'
     'IDbG9u');
@@ -400,10 +389,8 @@ const Relation_MemberType$json = {
 };
 
 /// Descriptor for `Relation`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List relationDescriptor = $convert.base64Decode(
-    'CghSZWxhdGlvbhIOCgJpZBgBIAIoA1ICaWQSFgoEa2V5cxgCIAMoDUICEAFSBGtleXMSFgoEdm'
+final $typed_data.Uint8List relationDescriptor = $convert.base64Decode('CghSZWxhdGlvbhIOCgJpZBgBIAIoA1ICaWQSFgoEa2V5cxgCIAMoDUICEAFSBGtleXMSFgoEdm'
     'FscxgDIAMoDUICEAFSBHZhbHMSIAoEaW5mbxgEIAEoCzIMLk9TTVBCRi5JbmZvUgRpbmZvEh8K'
     'CXJvbGVzX3NpZBgIIAMoBUICEAFSCHJvbGVzU2lkEhoKBm1lbWlkcxgJIAMoEkICEAFSBm1lbW'
     'lkcxI1CgV0eXBlcxgKIAMoDjIbLk9TTVBCRi5SZWxhdGlvbi5NZW1iZXJUeXBlQgIQAVIFdHlw'
     'ZXMiLQoKTWVtYmVyVHlwZRIICgROT0RFEAASBwoDV0FZEAESDAoIUkVMQVRJT04QAg==');
-

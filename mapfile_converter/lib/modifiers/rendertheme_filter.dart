@@ -28,6 +28,7 @@ class RenderthemeFilter {
     Map<ZoomlevelRange, List<Wayholder>> result = {};
     int noRangeWays = 0;
     for (var wayHolder in ways) {
+      assert(wayHolder.closedOutersRead.isNotEmpty || wayHolder.openOutersRead.isNotEmpty, "way must have at least one outer $wayHolder");
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(
         wayHolder.closedOutersRead.isNotEmpty ? wayHolder.closedOutersRead.first : wayHolder.openOutersRead.first,
         wayHolder.tags,

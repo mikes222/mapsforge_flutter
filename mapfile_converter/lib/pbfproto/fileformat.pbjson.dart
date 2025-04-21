@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/proto/fileformat.proto
+//  source: lib/pbfreader/pbfproto/fileformat.pbfproto
 //
 // @dart = 3.3
 
@@ -33,8 +33,7 @@ const Blob$json = {
 };
 
 /// Descriptor for `Blob`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List blobDescriptor = $convert.base64Decode(
-    'CgRCbG9iEhAKA3JhdxgBIAEoDFIDcmF3EhkKCHJhd19zaXplGAIgASgFUgdyYXdTaXplEhsKCX'
+final $typed_data.Uint8List blobDescriptor = $convert.base64Decode('CgRCbG9iEhAKA3JhdxgBIAEoDFIDcmF3EhkKCHJhd19zaXplGAIgASgFUgdyYXdTaXplEhsKCX'
     'psaWJfZGF0YRgDIAEoDFIIemxpYkRhdGESGwoJbHptYV9kYXRhGAQgASgMUghsem1hRGF0YRIy'
     'ChNPQlNPTEVURV9iemlwMl9kYXRhGAUgASgMQgIYAVIRT0JTT0xFVEVCemlwMkRhdGE=');
 
@@ -49,7 +48,5 @@ const BlobHeader$json = {
 };
 
 /// Descriptor for `BlobHeader`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List blobHeaderDescriptor = $convert.base64Decode(
-    'CgpCbG9iSGVhZGVyEhIKBHR5cGUYASACKAlSBHR5cGUSHAoJaW5kZXhkYXRhGAIgASgMUglpbm'
+final $typed_data.Uint8List blobHeaderDescriptor = $convert.base64Decode('CgpCbG9iSGVhZGVyEhIKBHR5cGUYASACKAlSBHR5cGUSHAoJaW5kZXhkYXRhGAIgASgMUglpbm'
     'RleGRhdGESGgoIZGF0YXNpemUYAyACKAVSCGRhdGFzaXpl');
-

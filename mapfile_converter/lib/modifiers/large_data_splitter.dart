@@ -4,9 +4,9 @@ import 'package:mapsforge_flutter/special.dart';
 
 /// Splits wayholders with many closedOuters into smaller wayholders. Clusters the new wayholders geographically.
 class LargeDataSplitter {
-  static final _log = new Logger('LargeDataSplitter');
+  static final _log = Logger('LargeDataSplitter');
 
-  void split(List<Wayholder> _wayHoldersMerged, Wayholder wayholder) {
+  void split(List<Wayholder> wayHoldersMerged, Wayholder wayholder) {
     if (wayholder.closedOutersRead.length > 1000) {
       // calculate the spanning boundingbox
       BoundingBox boundingBox = wayholder.closedOutersRead.first.boundingBox;
@@ -18,7 +18,7 @@ class LargeDataSplitter {
       int clusterSplitCount = (wayholder.closedOutersRead.length / 50).round();
       while (true) {
         int count = wayholder.closedOutersRead.length;
-        _connectClusterMulti(_wayHoldersMerged, wayholder, wayholder.boundingBoxCached, clusterSplitCount);
+        _connectClusterMulti(wayHoldersMerged, wayholder, wayholder.boundingBoxCached, clusterSplitCount);
         _log.info("Splitting cluster from $count to ${wayholder.closedOutersRead.length} closed outer ways, clusterSplitCount: $clusterSplitCount");
         if (wayholder.closedOutersRead.length < 500000) {
           clusterSplitCount = (clusterSplitCount * 0.6).round();
@@ -31,9 +31,9 @@ class LargeDataSplitter {
     }
     int count = wayholder.closedOutersRead.length;
     if (count > 150) {
-      _connectClusterMulti(_wayHoldersMerged, wayholder, wayholder.boundingBoxCached, 1);
+      _connectClusterMulti(wayHoldersMerged, wayholder, wayholder.boundingBoxCached, 1);
       _log.info("Splitting cluster from $count to ${wayholder.closedOutersRead.length} closed outer ways");
-      if (wayholder.closedOutersRead.isNotEmpty) _wayHoldersMerged.add(wayholder);
+      if (wayholder.closedOutersRead.isNotEmpty) wayHoldersMerged.add(wayholder);
     }
   }
 

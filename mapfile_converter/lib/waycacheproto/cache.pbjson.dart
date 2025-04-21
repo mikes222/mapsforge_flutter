@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/protocache/cache.proto
+//  source: lib/pbfreader/waycacheproto/cache.pbfproto
 //
 // @dart = 3.3
 
@@ -37,8 +37,7 @@ const CacheWay$json = {
 };
 
 /// Descriptor for `CacheWay`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cacheWayDescriptor = $convert.base64Decode(
-    'CghDYWNoZVdheRIUCgNsYXQYCSADKBJCAhABUgNsYXQSFAoDbG9uGAogAygSQgIQAVIDbG9u');
+final $typed_data.Uint8List cacheWayDescriptor = $convert.base64Decode('CghDYWNoZVdheRIUCgNsYXQYCSADKBJCAhABUgNsYXQSFAoDbG9uGAogAygSQgIQAVIDbG9u');
 
 @$core.Deprecated('Use cacheLabelDescriptor instead')
 const CacheLabel$json = {
@@ -50,8 +49,7 @@ const CacheLabel$json = {
 };
 
 /// Descriptor for `CacheLabel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cacheLabelDescriptor = $convert.base64Decode(
-    'CgpDYWNoZUxhYmVsEhAKA2xhdBgIIAIoElIDbGF0EhAKA2xvbhgJIAIoElIDbG9u');
+final $typed_data.Uint8List cacheLabelDescriptor = $convert.base64Decode('CgpDYWNoZUxhYmVsEhAKA2xhdBgIIAIoElIDbGF0EhAKA2xvbhgJIAIoElIDbG9u');
 
 @$core.Deprecated('Use cacheWayholderDescriptor instead')
 const CacheWayholder$json = {
@@ -70,11 +68,9 @@ const CacheWayholder$json = {
 };
 
 /// Descriptor for `CacheWayholder`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cacheWayholderDescriptor = $convert.base64Decode(
-    'Cg5DYWNoZVdheWhvbGRlchIYCgd0YWdrZXlzGAIgAygJUgd0YWdrZXlzEhgKB3RhZ3ZhbHMYAy'
+final $typed_data.Uint8List cacheWayholderDescriptor = $convert.base64Decode('Cg5DYWNoZVdheWhvbGRlchIYCgd0YWdrZXlzGAIgAygJUgd0YWdrZXlzEhgKB3RhZ3ZhbHMYAy'
     'ADKAlSB3RhZ3ZhbHMSJwoJaW5uZXJ3YXlzGAQgAygLMgkuQ2FjaGVXYXlSCWlubmVyd2F5cxIp'
     'CgpjbG9zZWR3YXlzGAUgAygLMgkuQ2FjaGVXYXlSCmNsb3NlZHdheXMSJQoIb3BlbndheXMYBi'
     'ADKAsyCS5DYWNoZVdheVIIb3BlbndheXMSIQoFbGFiZWwYCyABKAsyCy5DYWNoZUxhYmVsUgVs'
     'YWJlbBIUCgVsYXllchgNIAIoBVIFbGF5ZXISIAoLdGlsZUJpdG1hc2sYDiACKAVSC3RpbGVCaX'
     'RtYXNrEi4KEm1lcmdlZFdpdGhPdGhlcldheRgPIAIoCFISbWVyZ2VkV2l0aE90aGVyV2F5');
-

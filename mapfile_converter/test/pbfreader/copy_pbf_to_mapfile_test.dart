@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/pbfreader/pbf_analyzer.dart';
-import 'package:mapfile_converter/rendertheme_filter.dart';
+import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
 import 'package:mapfile_converter/rule_reader.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
@@ -67,24 +67,19 @@ main() async {
     // zoomLevelMin: 12,
 
     // write the subfiles
-    SubfileCreator subfileCreator = SubfileCreator(
-      mapHeaderInfo: mapHeaderInfo,
-      baseZoomLevel: 0,
-      boundingBox: boundingBox,
-      zoomlevelRange: const ZoomlevelRange(0, 8),
-    );
+    SubfileCreator subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 0, zoomlevelRange: const ZoomlevelRange(0, 8));
     await fillSubfile(mapfileWriter, subfileCreator, pois, ways, _log);
     timing.lap(1000, "Subfile 1 completed");
 
-    subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 9, boundingBox: boundingBox, zoomlevelRange: const ZoomlevelRange(9, 12));
+    subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 9, zoomlevelRange: const ZoomlevelRange(9, 12));
     await fillSubfile(mapfileWriter, subfileCreator, pois, ways, _log);
     timing.lap(1000, "Subfile 2 completed");
 
-    subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 13, boundingBox: boundingBox, zoomlevelRange: const ZoomlevelRange(13, 15));
+    subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 13, zoomlevelRange: const ZoomlevelRange(13, 15));
     await fillSubfile(mapfileWriter, subfileCreator, pois, ways, _log);
     timing.lap(1000, "Subfile 3 completed");
 
-    subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 16, boundingBox: boundingBox, zoomlevelRange: const ZoomlevelRange(16, 20));
+    subfileCreator = SubfileCreator(mapHeaderInfo: mapHeaderInfo, baseZoomLevel: 16, zoomlevelRange: const ZoomlevelRange(16, 20));
     await fillSubfile(mapfileWriter, subfileCreator, pois, ways, _log);
     timing.lap(1000, "Subfile 4 completed");
 
@@ -127,13 +122,7 @@ Future<void> fillSubfile(
 }
 
 Future<void> _isolate(SubfileCreator subfileCreator, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist, int tilePixelSize) async {
-  List<Wayholder> wayholders = await IsolateSubfileFiller().prepareWays(
-    subfileCreator.zoomlevelRange,
-    subfileCreator.boundingBox,
-    zoomlevelRange,
-    wayholderlist,
-    tilePixelSize,
-  );
+  List<Wayholder> wayholders = await IsolateSubfileFiller().prepareWays(subfileCreator.zoomlevelRange, zoomlevelRange, wayholderlist, tilePixelSize);
   subfileCreator.addWaydata(zoomlevelRange, wayholders);
 }
 

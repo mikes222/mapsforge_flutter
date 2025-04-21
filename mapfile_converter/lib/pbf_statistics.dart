@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/pbfreader/pbf_analyzer.dart';
-import 'package:mapfile_converter/pbfreader/pbf_data.dart';
-import 'package:mapfile_converter/pbfreader/pbf_reader.dart';
+import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/special.dart';
@@ -41,13 +41,13 @@ class PbfStatistics {
     PbfReader pbfReader = PbfReader();
     await pbfReader.open(readbufferSource);
     while (readbufferSource.getPosition() < sourceLength) {
-      PbfData blockData = await pbfReader.readBlobData(readbufferSource);
+      OsmData blockData = await pbfReader.readBlobData(readbufferSource);
       await _analyze1Block(blockData);
     }
     boundingBox = pbfReader.calculateBounds();
   }
 
-  Future<void> _analyze1Block(PbfData blockData) async {
+  Future<void> _analyze1Block(OsmData blockData) async {
     //print(blockData);
     blockData.nodes.forEach((osmNode) {
       PointOfInterest? pointOfInterest = converter.createNode(osmNode);

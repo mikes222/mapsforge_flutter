@@ -1,8 +1,6 @@
 import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
-import '../graphics/filter.dart';
-
 /// Encapsulates the display characteristics for a MapView, such as tile size and background color. The size of map tiles
 /// is used to adapt to devices with differing pixel densities and users with different preferences: The larger the tile,
 /// the larger everything is rendered, the effect is one of effectively stretching everything. The default device
@@ -43,8 +41,6 @@ class DisplayModel {
   final double maxTextWidthFactor;
 
   int backgroundColor;
-
-  Filter filter = Filter.NONE;
 
   late double maxTextWidth;
 
@@ -89,13 +85,6 @@ class DisplayModel {
    */
   int getBackgroundColor() {
     return backgroundColor;
-  }
-
-  /**
-   * Color filtering in map rendering.
-   */
-  Filter getFilter() {
-    return this.filter;
   }
 
   /**
@@ -145,13 +134,6 @@ class DisplayModel {
    */
   void setBackgroundColor(int color) {
     this.backgroundColor = color;
-  }
-
-  /**
-   * Color filtering in map rendering.
-   */
-  void setFilter(Filter filter) {
-    this.filter = filter;
   }
 
   void _setMaxTextWidth() {

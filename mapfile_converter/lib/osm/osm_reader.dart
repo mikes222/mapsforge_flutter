@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:xml/xml_events.dart';
 
-import '../pbfreader/pbf_data.dart';
+import 'osm_data.dart';
 
 class OsmReader {
   final _log = Logger('OsmReader');
@@ -28,11 +28,11 @@ class OsmReader {
     _events = inputStream.transform(utf8.decoder).toXmlEvents().normalizeEvents().flatten();
   }
 
-  Future<void> readOsmFile(Function(PbfData) callback) async {
+  Future<void> readOsmFile(Function(OsmData) callback) async {
     await _readStream(callback);
   }
 
-  Future<void> _readStream(Function(PbfData) callback) async {
+  Future<void> _readStream(Function(OsmData) callback) async {
     await for (final event in _events) {
       //print("event: ${event}");
       if (event is XmlStartElementEvent) {
@@ -129,10 +129,10 @@ class OsmReader {
     _sendData(callback, true);
   }
 
-  void _sendData(Function(PbfData) callback, bool force) {
+  void _sendData(Function(OsmData) callback, bool force) {
     if (force || _nodes.length >= 1000000 || _ways.length >= 100000 || _relations.length >= 1000) {
       //print("callback: ${nodes.length} ${ways.length} ${relations.length}");
-      final pbfData = PbfData(nodes: _nodes.values.toList(), ways: _ways.values.toList(), relations: _relations.values.toList());
+      final pbfData = OsmData(nodes: _nodes.values.toList(), ways: _ways.values.toList(), relations: _relations.values.toList());
       _nodes.clear();
       _ways.clear();
       _relations.clear();

@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/proto/osmformat.proto
+//  source: lib/pbfreader/pbfproto/osmformat.pbfproto
 //
 // @dart = 3.3
 
@@ -18,7 +18,7 @@ class Relation_MemberType extends $pb.ProtobufEnum {
   static const Relation_MemberType WAY = Relation_MemberType._(1, _omitEnumNames ? '' : 'WAY');
   static const Relation_MemberType RELATION = Relation_MemberType._(2, _omitEnumNames ? '' : 'RELATION');
 
-  static const $core.List<Relation_MemberType> values = <Relation_MemberType> [
+  static const $core.List<Relation_MemberType> values = <Relation_MemberType>[
     NODE,
     WAY,
     RELATION,
@@ -29,6 +29,5 @@ class Relation_MemberType extends $pb.ProtobufEnum {
 
   const Relation_MemberType._(super.v, super.n);
 }
-
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

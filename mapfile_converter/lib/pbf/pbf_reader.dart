@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:mapfile_converter/pbfreader/pbf_data.dart';
-import 'package:mapfile_converter/pbfreader/proto/fileformat.pb.dart';
-import 'package:mapfile_converter/pbfreader/proto/osmformat.pb.dart';
+import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
+import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
 
@@ -30,7 +30,7 @@ class PbfReader {
     return BlobResult(blobHeader, blobOutput);
   }
 
-  Future<PbfData> readBlobData(ReadbufferSource readbufferSource) async {
+  Future<OsmData> readBlobData(ReadbufferSource readbufferSource) async {
     // length of the blob header
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
@@ -93,7 +93,7 @@ class PbfReader {
     return bounds;
   }
 
-  PbfData readBlock(List<int> blobOutput) {
+  OsmData readBlock(List<int> blobOutput) {
     final block = PrimitiveBlock.fromBuffer(blobOutput);
     List<String> stringTable = block.stringtable.s.map((s) => utf8.decode(s)).toList();
     final latOffset = block.latOffset.toInt();
@@ -181,7 +181,7 @@ class PbfReader {
         }
       }
     }
-    return PbfData(nodes: nodes, ways: ways, relations: relations);
+    return OsmData(nodes: nodes, ways: ways, relations: relations);
   }
 
   Map<String, String> _parseParallelTags(List<int> keys, List<int> values, List<String> stringTable) {

@@ -19,7 +19,6 @@ class ZoomlevelWriter {
     SubfileCreator subfileCreator = SubfileCreator(
       mapHeaderInfo: mapHeaderInfo,
       baseZoomLevel: minZoomlevel,
-      boundingBox: boundingBox,
       zoomlevelRange: ZoomlevelRange(minZoomlevel, maxZoomlevel),
     );
     await _fillSubfile(mapfileWriter, subfileCreator, pois, ways);
@@ -51,7 +50,6 @@ class ZoomlevelWriter {
   Future<void> _isolate(SubfileCreator subfileCreator, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist, int tilePixelSize) async {
     List<Wayholder> wayholders = await IsolateSubfileFiller().prepareWays(
       subfileCreator.zoomlevelRange,
-      subfileCreator.boundingBox,
       zoomlevelRange,
       wayholderlist,
       tilePixelSize,

@@ -1,5 +1,5 @@
-import 'package:mapfile_converter/pbfreader/pbf_analyzer.dart';
-import 'package:mapfile_converter/pbfreader/pbf_data.dart';
+import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
 

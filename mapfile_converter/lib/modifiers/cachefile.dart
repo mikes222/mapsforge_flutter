@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
-import 'package:mapfile_converter/pbfreader/protocache/cache.pb.dart';
+import 'package:mapfile_converter/waycacheproto/cache.pb.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
 

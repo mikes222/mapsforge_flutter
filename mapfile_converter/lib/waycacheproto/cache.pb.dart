@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: lib/pbfreader/protocache/cache.proto
+//  source: lib/pbfreader/waycacheproto/cache.pbfproto
 //
 // @dart = 3.3
 
@@ -37,18 +37,15 @@ class CacheWay extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CacheWay', createEmptyInstance: create)
     ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
     ..p<$fixnum.Int64>(10, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   CacheWay clone() => CacheWay()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   CacheWay copyWith(void Function(CacheWay) updates) => super.copyWith((message) => updates(message as CacheWay)) as CacheWay;
 
   $pb.BuilderInfo get info_ => _i;
@@ -88,18 +85,15 @@ class CacheLabel extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CacheLabel', createEmptyInstance: create)
     ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-  ;
+    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO);
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   CacheLabel clone() => CacheLabel()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   CacheLabel copyWith(void Function(CacheLabel) updates) => super.copyWith((message) => updates(message as CacheLabel)) as CacheLabel;
 
   $pb.BuilderInfo get info_ => _i;
@@ -115,7 +109,10 @@ class CacheLabel extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $fixnum.Int64 get lat => $_getI64(0);
   @$pb.TagNumber(8)
-  set lat($fixnum.Int64 v) { $_setInt64(0, v); }
+  set lat($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasLat() => $_has(0);
   @$pb.TagNumber(8)
@@ -124,7 +121,10 @@ class CacheLabel extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $fixnum.Int64 get lon => $_getI64(1);
   @$pb.TagNumber(9)
-  set lon($fixnum.Int64 v) { $_setInt64(1, v); }
+  set lon($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(9)
   $core.bool hasLon() => $_has(1);
   @$pb.TagNumber(9)
@@ -186,18 +186,15 @@ class CacheWayholder extends $pb.GeneratedMessage {
     ..aOM<CacheLabel>(11, _omitFieldNames ? '' : 'label', subBuilder: CacheLabel.create)
     ..a<$core.int>(13, _omitFieldNames ? '' : 'layer', $pb.PbFieldType.Q3)
     ..a<$core.int>(14, _omitFieldNames ? '' : 'tileBitmask', $pb.PbFieldType.Q3, protoName: 'tileBitmask')
-    ..a<$core.bool>(15, _omitFieldNames ? '' : 'mergedWithOtherWay', $pb.PbFieldType.QB, protoName: 'mergedWithOtherWay')
-  ;
+    ..a<$core.bool>(15, _omitFieldNames ? '' : 'mergedWithOtherWay', $pb.PbFieldType.QB, protoName: 'mergedWithOtherWay');
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   CacheWayholder clone() => CacheWayholder()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   CacheWayholder copyWith(void Function(CacheWayholder) updates) => super.copyWith((message) => updates(message as CacheWayholder)) as CacheWayholder;
 
   $pb.BuilderInfo get info_ => _i;
@@ -229,7 +226,10 @@ class CacheWayholder extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   CacheLabel get label => $_getN(5);
   @$pb.TagNumber(11)
-  set label(CacheLabel v) { $_setField(11, v); }
+  set label(CacheLabel v) {
+    $_setField(11, v);
+  }
+
   @$pb.TagNumber(11)
   $core.bool hasLabel() => $_has(5);
   @$pb.TagNumber(11)
@@ -240,7 +240,10 @@ class CacheWayholder extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   $core.int get layer => $_getIZ(6);
   @$pb.TagNumber(13)
-  set layer($core.int v) { $_setSignedInt32(6, v); }
+  set layer($core.int v) {
+    $_setSignedInt32(6, v);
+  }
+
   @$pb.TagNumber(13)
   $core.bool hasLayer() => $_has(6);
   @$pb.TagNumber(13)
@@ -249,7 +252,10 @@ class CacheWayholder extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   $core.int get tileBitmask => $_getIZ(7);
   @$pb.TagNumber(14)
-  set tileBitmask($core.int v) { $_setSignedInt32(7, v); }
+  set tileBitmask($core.int v) {
+    $_setSignedInt32(7, v);
+  }
+
   @$pb.TagNumber(14)
   $core.bool hasTileBitmask() => $_has(7);
   @$pb.TagNumber(14)
@@ -258,13 +264,15 @@ class CacheWayholder extends $pb.GeneratedMessage {
   @$pb.TagNumber(15)
   $core.bool get mergedWithOtherWay => $_getBF(8);
   @$pb.TagNumber(15)
-  set mergedWithOtherWay($core.bool v) { $_setBool(8, v); }
+  set mergedWithOtherWay($core.bool v) {
+    $_setBool(8, v);
+  }
+
   @$pb.TagNumber(15)
   $core.bool hasMergedWithOtherWay() => $_has(8);
   @$pb.TagNumber(15)
   void clearMergedWithOtherWay() => $_clearField(15);
 }
-
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

@@ -548,7 +548,7 @@ main() async {
 
     // DisplayModel is needed for the tilesize
     DisplayModel();
-    SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), const BoundingBox(-90, -180, 90, 180), 10);
+    SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), 10);
     Wayholder wayholder = Wayholder.fromWay(way);
     List<Wayholder> wayholders = subfileFiller.prepareWays(const ZoomlevelRange(0, 20), [wayholder]);
     wayholder = wayholders.first;
