@@ -87,9 +87,9 @@ class _Cluster {
     while (waypaths.length >= maxClusterSize) {
       if (waypaths.length < maxClusterSize * 1.5) {
         // take all items
-        waypaths.forEach((action) {
+        for (var action in waypaths) {
           wayholder.closedOutersRemove(action);
-        });
+        }
         Wayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: waypaths);
         _wayHoldersMerged.add(newWayholder);
         return;

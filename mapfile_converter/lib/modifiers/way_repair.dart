@@ -17,10 +17,6 @@ class WayRepair {
     /*double maxGap =*/
     _repair(wayholder);
     for (Waypath waypath in List.from(wayholder.openOutersRead)) {
-      if (wayholder.hasTagValue("name", "Balaton")) {
-        double distance = Projection.distance(waypath.first, waypath.last);
-        print("distance: $distance / $maxGapMeter for $wayholder ${waypath.first} ${waypath.last} $boundingBox");
-      }
       if (Projection.distance(waypath.first, waypath.last) <= maxGapMeter) {
         waypath.add(waypath.first);
         wayholder.openOutersRemove(waypath);
@@ -47,10 +43,6 @@ class WayRepair {
       waypath.first.longitude,
       waypath.first.latitude,
     );
-    if (wayholder.hasTagValue("name", "Balaton")) {
-      double distance = Projection.distance(nearestPoint, waypath.first);
-      print("  distance1: $distance / $maxGapMeter for $wayholder ${waypath.first} ${waypath.last} $boundingBox");
-    }
     if (Projection.distance(nearestPoint, waypath.first) > maxGapMeter) return false;
     nearestPoint = LatLongUtils.nearestSegmentPoint(
       first.longitude,
@@ -60,10 +52,6 @@ class WayRepair {
       waypath.last.longitude,
       waypath.last.latitude,
     );
-    if (wayholder.hasTagValue("name", "Balaton")) {
-      double distance = Projection.distance(nearestPoint, waypath.last);
-      print("  distance2: $distance / $maxGapMeter for $wayholder ${waypath.first} ${waypath.last} $boundingBox");
-    }
     if (Projection.distance(nearestPoint, waypath.last) > maxGapMeter) return false;
     // both are near the right border, connect them
     waypath.add(waypath.first);

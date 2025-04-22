@@ -22,9 +22,7 @@ class MapViewPage2 extends StatefulWidget {
 
   final Datastore? datastore;
 
-  const MapViewPage2(
-      {Key? key, required this.mapFileData, required this.datastore})
-      : super(key: key);
+  const MapViewPage2({Key? key, required this.mapFileData, this.datastore}) : super(key: key);
 
   @override
   MapViewPageState2 createState() => MapViewPageState2();
@@ -52,21 +50,17 @@ class MapViewPageState2 extends State<MapViewPage2> {
       // it down by half when viewing them. This increases the resolution of the tiles.
       // Also consider to use MediaQuery.of(context).devicePixelRatio for an even
       // better resolution.
-      displayModel = DisplayModel(deviceScaleFactor: 2);
+      displayModel = DisplayModel(deviceScaleFactor: 2, backgroundColor: 0xffB3DDFF);
     } else {
       // all online tiles are in 256*256 pixels size. So we set the tilesize to accordingly
-      displayModel =
-          DisplayModel(deviceScaleFactor: 2, tilesize: (256 / 2).round());
+      displayModel = DisplayModel(deviceScaleFactor: 2, tilesize: (256 / 2).round());
     }
 
     /// For the offline-maps we need a cache for all the tiny symbols in the map
     symbolCache = widget.mapFileData.relativePathPrefix != null
-        ? FileSymbolCache(
-            imageLoader: ImageRelativeLoader(
-                relativePathPrefix: widget.mapFileData.relativePathPrefix!))
+        ? FileSymbolCache(imageLoader: ImageRelativeLoader(relativePathPrefix: widget.mapFileData.relativePathPrefix!))
         : FileSymbolCache();
-    markerdemoDatastore = MarkerdemoDatastore(
-        symbolCache: symbolCache, displayModel: displayModel);
+    markerdemoDatastore = MarkerdemoDatastore(symbolCache: symbolCache, displayModel: displayModel);
   }
 
   @override
@@ -104,14 +98,12 @@ class MapViewPageState2 extends State<MapViewPage2> {
 
   /// Executes the selected action of the popup menu.
   Future<void> _handleMenuItemSelect(String value) async {
-    RenderTheme renderTheme =
-        await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
+    RenderTheme renderTheme = await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
     switch (value) {
       case 'Debug':
         await Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (BuildContext context) =>
-                MapHeaderPage(widget.mapFileData, renderTheme),
+            builder: (BuildContext context) => MapHeaderPage(widget.mapFileData, renderTheme),
           ),
         );
         break;
@@ -124,9 +116,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
         displayModel: displayModel,
         createMapModel: () async {
           /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-          return widget.mapFileData.mapType == MAPTYPE.OFFLINE
-              ? await _createOfflineMapModel()
-              : await _createOnlineMapModel();
+          return widget.mapFileData.mapType == MAPTYPE.OFFLINE ? await _createOfflineMapModel() : await _createOnlineMapModel();
         },
         createViewModel: () async {
           return _createViewModel();
@@ -145,16 +135,14 @@ class MapViewPageState2 extends State<MapViewPage2> {
     );
 
     if (widget.mapFileData.indoorZoomOverlay)
-      viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel,
-          indoorLevels: widget.mapFileData.indoorLevels));
+      viewModel.addOverlay(IndoorlevelZoomOverlay(viewModel, indoorLevels: widget.mapFileData.indoorLevels));
     else
       viewModel.addOverlay(ZoomOverlay(viewModel));
     viewModel.addOverlay(DistanceOverlay(viewModel));
     //viewModel.addOverlay(DemoOverlay(viewModel: viewModel));
 
     // set default position
-    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat,
-        widget.mapFileData.initialPositionLong);
+    viewModel.setMapViewPosition(widget.mapFileData.initialPositionLat, widget.mapFileData.initialPositionLong);
     viewModel.setZoomLevel(widget.mapFileData.initialZoomLevel);
     viewModel.observeMoveAroundStart.listen((event) {
       // Demo: If the user tries to move around a marker
@@ -179,12 +167,10 @@ class MapViewPageState2 extends State<MapViewPage2> {
 
   Future<MapModel> _createOfflineMapModel() async {
     /// Prepare the Themebuilder. This instructs the renderer how to draw the images
-    RenderTheme renderTheme =
-        await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
+    RenderTheme renderTheme = await RenderThemeBuilder.create(displayModel, widget.mapFileData.theme);
 
     /// instantiate the job renderer. This renderer is the core of the system and renders the tile-bitmaps
-    final JobRenderer jobRenderer = MapDataStoreRenderer(
-        widget.datastore!, renderTheme, symbolCache, false);
+    final JobRenderer jobRenderer = MapDataStoreRenderer(widget.datastore!, renderTheme, symbolCache, false);
 
     /// and now it is similar to online rendering.
 
@@ -193,8 +179,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     if (kIsWeb) {
       bitmapCache = await WebTileBitmapCache.create(jobRenderer.getRenderKey());
     } else {
-      bitmapCache =
-          await FileTileBitmapCache.create(jobRenderer.getRenderKey());
+      bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
     }
 
     /// Now we can glue together and instantiate the mapModel and the viewModel. The former holds the
@@ -206,26 +191,21 @@ class MapViewPageState2 extends State<MapViewPage2> {
       symbolCache: symbolCache,
     );
     mapModel.markerDataStores.add(markerdemoDatastore);
-    if (debug)
-      mapModel.markerDataStores.add(
-          DebugDatastore(symbolCache: symbolCache, displayModel: displayModel));
+    if (debug) mapModel.markerDataStores.add(DebugDatastore(symbolCache: symbolCache, displayModel: displayModel));
 
     return mapModel;
   }
 
   Future<MapModel> _createOnlineMapModel() async {
     /// instantiate the job renderer. This renderer is the core of the system and retrieves or renders the tile-bitmaps
-    JobRenderer jobRenderer = widget.mapFileData.mapType == MAPTYPE.OSM
-        ? MapOnlineRendererWeb()
-        : ArcGisOnlineRenderer();
+    JobRenderer jobRenderer = widget.mapFileData.mapType == MAPTYPE.OSM ? MapOnlineRendererWeb() : ArcGisOnlineRenderer();
 
     /// provide the cache for the tile-bitmaps. In Web-mode we use an in-memory-cache
     final TileBitmapCache bitmapCache;
     if (kIsWeb) {
       bitmapCache = MemoryTileBitmapCache.create();
     } else {
-      bitmapCache =
-          await FileTileBitmapCache.create(jobRenderer.getRenderKey());
+      bitmapCache = await FileTileBitmapCache.create(jobRenderer.getRenderKey());
     }
 
     /// Now we can glue together and instantiate the mapModel and the viewModel. The former holds the

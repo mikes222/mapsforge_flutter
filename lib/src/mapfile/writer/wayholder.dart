@@ -62,9 +62,9 @@ class Wayholder with TagholderMixin {
 
   Wayholder cloneWith({List<Waypath>? inner, List<Waypath>? closedOuters, List<Waypath>? openOuters}) {
     Wayholder result = Wayholder();
-    result._closedOuters = closedOuters ?? List.from(this._closedOuters);
-    result._openOuters = openOuters ?? List.from(this._openOuters);
-    result._inner = inner ?? List.from(this._inner);
+    result._closedOuters = closedOuters ?? this._closedOuters.map((toElement) => toElement.clone()).toList();
+    result._openOuters = openOuters ?? this._openOuters.map((toElement) => toElement.clone()).toList();
+    result._inner = inner ?? this._inner.map((toElement) => toElement.clone()).toList();
     result.tileBitmask = this.tileBitmask;
     result.labelPosition = this.labelPosition;
     result.tags = List.from(this.tags);
@@ -86,6 +86,11 @@ class Wayholder with TagholderMixin {
   List<Waypath> get innerWrite {
     _boundingBox = null;
     return _inner;
+  }
+
+  void innerAddAll(List<Waypath> waypaths) {
+    _boundingBox = null;
+    _inner.addAll(waypaths);
   }
 
   List<Waypath> get closedOutersWrite {

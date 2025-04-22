@@ -57,15 +57,13 @@ class MapList extends StatelessWidget {
             if (element.mapType != MAPTYPE.OFFLINE) {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      MapViewPage2(mapFileData: element, datastore: null),
+                  builder: (BuildContext context) => MapViewPage2(mapFileData: element),
                 ),
               );
             } else {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      MapDownloadPage(mapFileData: element),
+                  builder: (BuildContext context) => MapDownloadPage(mapFileData: element),
                 ),
               );
             }
@@ -76,8 +74,7 @@ class MapList extends StatelessWidget {
   }
 
   /// Constructs a clickable [Card] element.
-  Card _buildCard(BuildContext context, String caption, action,
-      [bool enabled = true]) {
+  Card _buildCard(BuildContext context, String caption, action, [bool enabled = true]) {
     return Card(
       margin: const EdgeInsets.only(top: 7, bottom: 7),
       elevation: 4,
@@ -101,8 +98,7 @@ class MapList extends StatelessWidget {
         MemoryTileBitmapCache.purgeAllCaches();
         break;
       case 'delete_map_files':
-        List<String> paths =
-            await (await FileMgr().getLocalPathHandler("")).getFiles();
+        List<String> paths = await (await FileMgr().getLocalPathHandler("")).getFiles();
         for (String path in paths) {
           if (await FileSystemEntity.isFile(path)) {
             await File(path).delete();

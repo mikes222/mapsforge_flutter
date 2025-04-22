@@ -49,7 +49,7 @@ maxdeviation:
 
 Maximum deviation allowed in pixels to simplify ways. If a way consists of many nodes we try to remove some nodes as long as the new way does not deviate more from the original way than specified by maxdeviation.
 
-maxgap:
+maxgap: 
 
 Maximum gap in meters to be allowed to "close" open ways. 
 

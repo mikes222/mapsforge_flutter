@@ -165,9 +165,9 @@ class PbfAnalyzer {
       Wayholder mergedWayholder = wayholders.first.cloneWith();
       wayholders.first.mergedWithOtherWay = true;
       wayholders.skip(1).forEach((coast) {
-        mergedWayholder.innerWrite.addAll(coast.innerRead);
-        mergedWayholder.openOutersAddAll(coast.openOutersRead);
-        mergedWayholder.closedOutersAddAll(coast.closedOutersRead);
+        mergedWayholder.innerAddAll(coast.innerRead.map((toElement) => toElement.clone()).toList());
+        mergedWayholder.openOutersAddAll(coast.openOutersRead.map((toElement) => toElement.clone()).toList());
+        mergedWayholder.closedOutersAddAll(coast.closedOutersRead.map((toElement) => toElement.clone()).toList());
         coast.mergedWithOtherWay = true;
       });
       int count = mergedWayholder.openOutersRead.length + mergedWayholder.closedOutersRead.length;
@@ -185,7 +185,7 @@ class PbfAnalyzer {
           mergedWayholder.closedOutersRead.fold(0, (value, element) => value + element.length);
       LargeDataSplitter largeDataSplitter = LargeDataSplitter();
       largeDataSplitter.split(_wayHoldersMerged, mergedWayholder);
-      _log.info("Repairing coastline: reduced from $count to $count2 ways with $counts2 nodes");
+      _log.info("Connecting and repairing coastline: reduced to $count2 ways with $counts2 nodes");
     }
   }
 
@@ -255,6 +255,8 @@ class PbfAnalyzer {
         Way? way = converter.createWay(osmWay, [latLongs]);
         if (way != null) {
           assert(!_wayHolders.containsKey(osmWay.id));
+          assert(way.latLongs.isNotEmpty);
+          assert(way.latLongs[0].length >= 2);
           _wayHolders[osmWay.id] = WayholderUnion(Wayholder.fromWay(way));
         }
       }
@@ -331,9 +333,6 @@ class PbfAnalyzer {
           if (outerWayholder.closedOutersRead.isNotEmpty) mergedWayholder.closedOutersWrite.add(outerWayholder.closedOutersRead.first.clone());
           if (outerWayholder.openOutersRead.isNotEmpty) mergedWayholder.openOutersWrite.add(outerWayholder.openOutersRead.first.clone());
           outerWayholder.mergedWithOtherWay = true;
-        }
-        if (mergedWayholder.hasTagValue("name", "Balaton")) {
-          print("found merged wayholder balaton $mergedWayholder");
         }
         wayConnect.connect(mergedWayholder);
         if (mergedWayholder.closedOutersRead.isNotEmpty || mergedWayholder.openOutersRead.isNotEmpty) {
@@ -446,6 +445,7 @@ class PbfAnalyzer {
           !wayHolder.boundingBoxCached.containsBoundingBox(boundingBox)) {
         _wayHolders.remove(id);
         ++count;
+        continue;
       }
       wayHolder.innerWrite.removeWhere(
         (test) =>

@@ -41,7 +41,7 @@ class WayConnect {
     double lonDiff = boundingBox.maxLongitude - boundingBox.minLongitude;
 
     Map<String, _ConnectCluster> clusters = {};
-    for (Waypath wayFirst in wayholder.openOutersWrite) {
+    for (Waypath wayFirst in wayholder.openOutersRead) {
       double latKey = (wayFirst.boundingBox.maxLatitude - boundingBox.minLatitude) / (latDiff) * clusterSplitCount;
       double lonKey = (wayFirst.boundingBox.maxLongitude - boundingBox.minLongitude) / (lonDiff) * clusterSplitCount;
       String key = "${latKey.round()}_${lonKey.round()}";
