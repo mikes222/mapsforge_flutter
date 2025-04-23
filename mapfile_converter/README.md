@@ -7,7 +7,7 @@ Usage: mapfile_converter convert [arguments]
 -r, --rendertheme                    Render theme filename
 (defaults to "rendertheme.xml")
 -s, --sourcefiles (mandatory)        Source filenames (PBF or osm files), separated by #
--d, --destinationfile (mandatory)    Destination filename (mapfile or osm)
+-d, --destinationfile (mandatory)    Destination filename (mapfile PBF or osm)
 -z, --zoomlevels                     Comma-separated zoomlevels. The last one is the max zoomlevel, separator=#
 (defaults to "0#5#9#13#16#20")
 -b, --boundary                       Boundary in minLat,minLong,maxLat,maxLong order. If omitted the boundary of the source file is used, separator=#
@@ -26,7 +26,7 @@ sourcefiles:
 
 destinationfile:
 
-path to the destinationfile. mapfile or osm is currently supported.
+path to the destinationfile. mapfile, pbf or osm is currently supported.
 
 rendertheme:
 
@@ -59,11 +59,39 @@ Note that the program creates temporary files in the current directory so it mus
 
 Documentation is not yet done.
 
+## Compile and run
+
+Download and install flutter, depending on your Operating system
+
+    apt-get install flutter
+
+Download the git repository:
+
+    git clone https://mikes222/mapsforge_flutter
+
+Enter the directory:
+
+    cd mapsforge_flutter/mapsforge_converter
+
+Compile:
+    
+    flutter create .
+    flutter run
+
+Now you can access the executable directly: mapsforge_flutter/mapsforge_converter/build/windows/x64/runner/Debug/mapfile_converter.exe for windows
+Or mapsforge_flutter/mapsforge_converter/build/linux/x64/debug/bundle/mapfile_converter for linux
+
 ## Examples 
 
-Getting help: 
+These examples are meant to be run from the mapsforge_converter directory for debugging purposes. When executing the binary directly you do not need to specify the ``--dart-entrypoint-args`` argument.
+
+Getting help (from development environment): 
 
     flutter run --dart-entrypoint-args convert --dart-entrypoint-args --help
+
+Getting help (direct execution of the resulting binary):
+
+    mapsforge_flutter/mapsforge_converter/build/linux/x64/debug/bundle/mapfile_converter convert --help
 
 Converting monaco from [geofabrik](https://download.geofabrik.de/europe/monaco.html) to mapfile:
 

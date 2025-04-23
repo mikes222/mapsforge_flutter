@@ -71,9 +71,9 @@ class WayCropper {
     var lastExitDirection = -1;
 
     List<ILatLong> path = waypath.path;
-    // if (path.length > 10) {
-    //   path = _reduceOutside(waypath, tileBoundary);
-    // }
+    if (path.length > 20) {
+      path = _reduceOutside(waypath, tileBoundary);
+    }
     if (path.isEmpty) {
       // no points inside the tile boundary
       if (!waypath.isClosedWay()) {
@@ -212,29 +212,23 @@ class WayCropper {
     return Waypath(optimizedWaypoints);
   }
 
-  /// I want to reduce the nodes outside the boundary. Would be cool to remove a couple of nodes at once because all nodes in this slice are
-  /// outside the given tile. Unfortunately this is not working for now.
+  /// Reduces the nodes outside the given boundary.
   List<ILatLong> _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
+    if (tileBoundary.containsBoundingBox(waypath.boundingBox)) return waypath.path;
     List<ILatLong> result = [];
     Queue<_QueueEntry> queue = Queue();
     List<ILatLong> points = waypath.path;
-    bool addFirst = false;
-    if (waypath.isClosedWay()) {
-      queue.add(_QueueEntry(1, points.length - 2));
-      addFirst = true;
-    } else {
-      queue.add(_QueueEntry(0, points.length - 1));
-    }
+    queue.add(_QueueEntry(0, points.length - 1));
 
     while (queue.isNotEmpty) {
       _QueueEntry current = queue.removeFirst();
 
       if (current.end == current.start + 1) {
-        BoundingBox boundingBox = BoundingBox.from2(points[current.start], points[current.end]);
-        if (tileBoundary.intersects(boundingBox)) {
-          result.add(points[current.start]);
-          result.add(points[current.end]);
-        }
+        // this section consists of only 2 points (1 line). Both endpoints may be necessary even if the line does not intersect. This is for example if
+        // one of these endpoints is the first endpoint outside of the tile.
+//        BoundingBox boundingBox = BoundingBox.from2(points[current.start], points[current.end]);
+        result.add(points[current.start]);
+        result.add(points[current.end]);
       } else {
         BoundingBox boundingBox = BoundingBox.fromLatLongs(points.slice(current.start, current.end + 1));
         if (tileBoundary.intersects(boundingBox)) {
@@ -243,14 +237,10 @@ class WayCropper {
           queue.addFirst(_QueueEntry(current.start, middle));
         } else {
           // this is the magic. A portion of the way is outside the tile. We could remove 100s of nodes at once.
-          if (current.end < points.length - 1) queue.addFirst(_QueueEntry(current.end, current.end + 1));
-          if (current.start > 0) queue.addFirst(_QueueEntry(current.start - 1, current.start));
+          result.add(points[current.start]);
+          result.add(points[current.end]);
         }
       }
-    }
-    if (addFirst && result.isNotEmpty) {
-      result.insert(0, waypath.path.first);
-      result.add(waypath.path.first);
     }
     return result;
   }

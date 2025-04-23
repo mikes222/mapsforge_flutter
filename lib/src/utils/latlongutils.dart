@@ -17,6 +17,8 @@ class LatLongUtils {
   /// Conversion factor from degrees to microdegrees and vice versa.
   static final double CONVERSION_FACTOR = 1000000.0;
 
+  static final double NANO_CONVERSION_FACTOR = 1000000000.0;
+
   static final String DELIMITER = ",";
 
   LatLongUtils._();
@@ -109,6 +111,16 @@ class LatLongUtils {
   /// @return the coordinate in degrees.
   static int degreesToMicrodegrees(double coordinate) {
     return (coordinate * CONVERSION_FACTOR).round();
+  }
+
+  /// Converts a coordinate from nanodegrees (degrees * 10^9) to degrees. No validation is performed.
+  static double nanodegreesToDegrees(int coordinate) {
+    return coordinate / NANO_CONVERSION_FACTOR;
+  }
+
+  /// Converts a coordinate from degrees to nanodegrees (degrees * 10^9). No validation is performed.
+  static int degreesToNanodegrees(double coordinate) {
+    return (coordinate * NANO_CONVERSION_FACTOR).round();
   }
 
   /**

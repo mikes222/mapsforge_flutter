@@ -79,9 +79,35 @@ class Wayholder with TagholderMixin {
     return result;
   }
 
-  List<Waypath> get innerRead => _inner;
-  List<Waypath> get closedOutersRead => _closedOuters;
-  List<Waypath> get openOutersRead => _openOuters;
+  List<Waypath> get innerRead {
+    List<Waypath> result = _inner;
+    assert(() {
+      // in debug mode return an unmodifiable list to find violations
+      result = List.unmodifiable(result);
+      return true;
+    }());
+    return result;
+  }
+
+  List<Waypath> get closedOutersRead {
+    List<Waypath> result = _closedOuters;
+    assert(() {
+      // in debug mode return an unmodifiable list to find violations
+      result = List.unmodifiable(result);
+      return true;
+    }());
+    return result;
+  }
+
+  List<Waypath> get openOutersRead {
+    List<Waypath> result = _openOuters;
+    assert(() {
+      // in debug mode return an unmodifiable list to find violations
+      result = List.unmodifiable(result);
+      return true;
+    }());
+    return result;
+  }
 
   List<Waypath> get innerWrite {
     _boundingBox = null;

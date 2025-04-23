@@ -88,7 +88,15 @@ class Waypath {
   bool get isNotEmpty => _path.isNotEmpty;
 
   // for debugging purposes: return a copy of the path
-  List<ILatLong> get path => _path; //List.from(_path);
+  List<ILatLong> get path {
+    List<ILatLong> result = _path;
+    assert(() {
+      // in debug mode return an unmodifiable list to find violations
+      result = List.unmodifiable(result);
+      return true;
+    }());
+    return result;
+  }
 
   /// Returns the path and clears the cached properties so that we have to recreate them next time.
   List<ILatLong> get pathForModification {

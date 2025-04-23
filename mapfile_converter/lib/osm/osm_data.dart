@@ -75,7 +75,7 @@ class OsmRelationMember {
   /// The type of the member
   final MemberType memberType;
 
-  /// The role of the member. Note that not all roles are yet defined in the enum
+  /// The role of the member.
   final String role;
 
   const OsmRelationMember({required this.memberId, required this.memberType, required this.role});

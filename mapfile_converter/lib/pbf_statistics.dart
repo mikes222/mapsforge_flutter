@@ -15,25 +15,37 @@ class PbfStatistics {
 
   final Map<int, Wayholder> _wayHolders = {};
 
-  Map<int, OsmRelation> relations = {};
+  final Map<int, OsmRelation> _relations = {};
 
-  Map<String, _Tagholder> _nodeTags = {};
+  final Map<String, _Tagholder> _nodeTags = {};
 
-  Map<String, _Tagholder> _wayTags = {};
+  final Map<String, _Tagholder> _wayTags = {};
 
-  Map<String, _Tagholder> _relationTags = {};
+  final Map<String, _Tagholder> _relationTags = {};
+
+  int nodeNotFound = 0;
+
+  int wayNotFound = 0;
+
+  int wayTooLessNodes = 0;
+
+  int wayNoTag = 0;
+
+  int relationNoTags = 0;
 
   BoundingBox? boundingBox;
 
   static Future<PbfStatistics> readFile(String filename) async {
     ReadbufferSource readbufferSource = ReadbufferFile(filename);
-    return readSource(readbufferSource);
+    PbfStatistics statistics = await readSource(readbufferSource);
+    readbufferSource.dispose();
+    return statistics;
   }
 
   static Future<PbfStatistics> readSource(ReadbufferSource readbufferSource) async {
     int sourceLength = await readbufferSource.length();
     PbfStatistics pbfStatistics = PbfStatistics();
-    pbfStatistics.readToMemory(readbufferSource, sourceLength);
+    await pbfStatistics.readToMemory(readbufferSource, sourceLength);
     return pbfStatistics;
   }
 
@@ -45,51 +57,114 @@ class PbfStatistics {
       await _analyze1Block(blockData);
     }
     boundingBox = pbfReader.calculateBounds();
+    analyze();
+  }
+
+  void analyze() {
+    _relations.forEach((id, osmRelation) {
+      for (var member in osmRelation.members) {
+        switch (member.memberType) {
+          case MemberType.node:
+            if (!_nodeHolders.containsKey(member.memberId)) {
+              ++nodeNotFound;
+            }
+            break;
+          case MemberType.way:
+            if (!_wayHolders.containsKey(member.memberId)) {
+              ++wayNotFound;
+            }
+            break;
+          case MemberType.relation:
+            break;
+        }
+      }
+    });
   }
 
   Future<void> _analyze1Block(OsmData blockData) async {
-    //print(blockData);
-    blockData.nodes.forEach((osmNode) {
+    _log.info(blockData);
+    for (var osmNode in blockData.nodes) {
       PointOfInterest? pointOfInterest = converter.createNode(osmNode);
+      //print("node: ${pointOfInterest}");
       if (pointOfInterest != null) {
+        assert(!_nodeHolders.containsKey(osmNode.id), "node already exists ${osmNode.id} -> ${_nodeHolders[osmNode.id]}");
         _nodeHolders[osmNode.id] = pointOfInterest;
-        pointOfInterest.tags.forEach((Tag tag) {
-          increment(_nodeTags, tag, 1);
-        });
+        for (var tag in pointOfInterest.tags) {
+          _increment(_nodeTags, tag, 1);
+        }
       }
-    });
-    blockData.ways.forEach((osmWay) {
-      List<List<ILatLong>> latLongs = [];
-      latLongs.add([]);
-      osmWay.refs.forEach((ref) {
+    }
+    for (var osmWay in blockData.ways) {
+      List<ILatLong> latLongs = [];
+      for (var ref in osmWay.refs) {
         PointOfInterest? pointOfInterest = _searchPoi(ref);
         if (pointOfInterest != null) {
-          latLongs[0].add(pointOfInterest.position);
-        }
-      });
-      if (latLongs[0].length >= 2) {
-        Way? way = converter.createWay(osmWay, latLongs);
-        if (way != null) {
-          _wayHolders[osmWay.id] = Wayholder.fromWay(way);
-          way.tags.forEach((Tag tag) {
-            increment(_wayTags, tag, latLongs[0].length);
-          });
+          latLongs.add(pointOfInterest.position);
+        } else {
+          ++nodeNotFound;
         }
       }
-    });
-    blockData.relations.forEach((osmRelation) {
-      relations[osmRelation.id] = osmRelation;
+      if (latLongs.length >= 2) {
+        Way? way = converter.createWay(osmWay, [latLongs]);
+        if (way != null) {
+          assert(!_wayHolders.containsKey(osmWay.id));
+          _wayHolders[osmWay.id] = Wayholder.fromWay(way);
+          for (var tag in way.tags) {
+            _increment(_wayTags, tag, latLongs.length);
+          }
+        } else {
+          ++wayNoTag;
+        }
+      } else {
+        ++wayTooLessNodes;
+      }
+    }
+    for (var osmRelation in blockData.relations) {
+      assert(!_relations.containsKey(osmRelation.id));
+      _relations[osmRelation.id] = osmRelation;
       Way? relationWay = converter.createMergedWay(osmRelation);
       if (relationWay != null) {
-        relationWay.tags.forEach((Tag tag) {
-          increment(_relationTags, tag, 1);
-        });
+        for (var tag in relationWay.tags) {
+          _increment(_relationTags, tag, 1);
+        }
+      } else {
+        ++relationNoTags;
       }
-    });
+    }
   }
 
-  void increment(Map<String, _Tagholder> tagholders, Tag tag, int items) {
-    String key = "${tag.key!}=${tag.value}";
+  void _increment(Map<String, _Tagholder> tagholders, Tag tag, int items) {
+    String tagkey = tag.key!;
+    String tagvalue = tag.value!;
+    if (tagkey == "name") {
+      tagkey = "name";
+      tagvalue = "*";
+    }
+    if (tagkey == "int_name") {
+      tagkey = "int_name";
+      tagvalue = "*";
+    }
+    if (tagkey == "loc_name") {
+      tagkey = "loc_name";
+      tagvalue = "*";
+    }
+    if (tagkey == "official_name") {
+      tagkey = "official_name";
+      tagvalue = "*";
+    }
+    if (tagkey.startsWith("name:")) {
+      tagkey = "name:*";
+      tagvalue = "*";
+    }
+    if (tagkey.startsWith("official_name:")) {
+      tagkey = "official_name:*";
+      tagvalue = "*";
+    }
+    if (tagkey == "ref") {
+      tagkey = "ref";
+      tagvalue = "*";
+    }
+    String key = "$tagkey=$tagvalue";
     if (!tagholders.containsKey(key)) {
       tagholders[key] = _Tagholder(key);
     }
@@ -109,7 +184,10 @@ class PbfStatistics {
     if (boundingBox != null) {
       _log.info(boundingBox);
     }
-    _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}, total relation count: ${relations.length}");
+    _log.info(
+      "$nodeNotFound nodes not found, $wayNotFound ways not found, $wayTooLessNodes ways have too less nodes, $wayNoTag ways without tags, $relationNoTags relations without tags",
+    );
+    _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}, total relation count: ${_relations.length}");
     List<_Tagholder> tagholders = _nodeTags.values.toList();
     tagholders.sort((a, b) => b.count.compareTo(a.count));
     _log.info(("Most used Tags for nodes:"));

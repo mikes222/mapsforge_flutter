@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
 
 class RenderthemeFilter {
-  final _log = new Logger('Simplifier');
+  final _log = new Logger('RenderthemeFilter');
 
   Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<PointOfInterest> pois, RenderTheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel

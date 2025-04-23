@@ -6,6 +6,7 @@ import 'package:mapfile_converter/mapfile/zoomlevel_writer.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
+import 'package:mapfile_converter/pbf/pbf_writer.dart';
 import 'package:mapfile_converter/pbf_statistics.dart';
 import 'package:mapfile_converter/rule_reader.dart';
 import 'package:mapsforge_flutter/core.dart';
@@ -74,7 +75,7 @@ class ConvertCommand extends Command {
   ConvertCommand() {
     argParser.addOption("rendertheme", abbr: "r", defaultsTo: "rendertheme.xml", help: "Render theme filename");
     argParser.addOption("sourcefiles", abbr: "s", help: "Source filenames (PBF or osm files), separated by #", mandatory: true);
-    argParser.addOption("destinationfile", abbr: "d", help: "Destination filename (mapfile or osm)", mandatory: true);
+    argParser.addOption("destinationfile", abbr: "d", help: "Destination filename (mapfile, PBF or osm)", mandatory: true);
     argParser.addOption(
       "zoomlevels",
       abbr: "z",
@@ -94,8 +95,10 @@ class ConvertCommand extends Command {
   @override
   Future<void> run() async {
     /// Read and analyze render theme
+    List<String> zoomlevelsString = _split(argResults!.option("zoomlevels")!);
+    List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
     RuleReader ruleReader = RuleReader();
-    final (ruleAnalyzer, renderTheme) = await ruleReader.readFile(argResults!.option("rendertheme")!);
+    final (ruleAnalyzer, renderTheme) = await ruleReader.readFile(argResults!.option("rendertheme")!, maxZoomLevel: zoomlevels.last);
 
     BoundingBox? finalBoundingBox = _parseBoundingBoxFromCli();
 
@@ -161,9 +164,22 @@ class ConvertCommand extends Command {
       }
       wayZoomlevels.clear();
       await osmWriter.close();
+    } else if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".pbf")) {
+      PbfWriter pbfWriter = PbfWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
+      for (var pois2 in poiZoomlevels.values) {
+        for (var poi in pois2) {
+          await pbfWriter.writeNode(poi.position, poi.tags);
+        }
+      }
+      poiZoomlevels.clear();
+      for (var wayholders in wayZoomlevels.values) {
+        for (var wayholder in wayholders) {
+          await pbfWriter.writeWay(wayholder);
+        }
+      }
+      wayZoomlevels.clear();
+      await pbfWriter.close();
     } else {
-      List<String> zoomlevelsString = _split(argResults!.option("zoomlevels")!);
-      List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
       poiZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
       wayZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
       poiZoomlevels.forEach((zoomlevelRange, nodelist) {
