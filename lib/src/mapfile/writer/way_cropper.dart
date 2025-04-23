@@ -37,6 +37,30 @@ class WayCropper {
     return wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
   }
 
+  Wayholder? cropOutsideWay(Wayholder wayholder, BoundingBox boundingBox) {
+    List<Waypath> inner = wayholder.innerRead.map((test) => Waypath(_reduceOutside(test, boundingBox))).toList()..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> closedOuters = wayholder.closedOutersRead.map((test) => Waypath(_reduceOutside(test, boundingBox))).toList()
+      ..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> openOuters = wayholder.openOutersRead.map((test) => Waypath(_reduceOutside(test, boundingBox))).toList()
+      ..removeWhere((Waypath test) => test.isEmpty);
+
+    if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
+
+    if (closedOuters.isEmpty && openOuters.isEmpty) {
+      // only inner is set, move the first inner to the respective outer
+      Waypath waypath = inner.first;
+      inner.remove(waypath);
+      if (waypath.isClosedWay())
+        closedOuters.add(waypath);
+      else
+        openOuters.add(waypath);
+    }
+
+    // return a new wayholder instance
+    Wayholder? result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
+    return result;
+  }
+
   /// Optimiert eine Liste von Wegpunkten, indem unnötige Punkte entfernt werden,
   /// während der Teil des Weges innerhalb der Tile-Boundary erhalten bleibt.
   ///

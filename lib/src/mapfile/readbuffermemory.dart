@@ -49,4 +49,7 @@ class ReadbufferMemory extends ReadbufferSource {
   Stream<List<int>> get inputStream {
     return Stream.value(content);
   }
+
+  @override
+  void freeRessources() {}
 }

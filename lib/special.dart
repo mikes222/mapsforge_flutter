@@ -15,3 +15,4 @@ export 'src/mapfile/writer/writebuffer.dart';
 export 'src/model/zoomlevel_range.dart';
 export 'src/rendertheme/rule/rule.dart';
 export 'src/rendertheme/rule/rule_analyzer.dart';
+export 'src/utils/flutter_isolate.dart';

@@ -106,8 +106,8 @@ Converting coastal information from osm to mapfile:
     flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=lowres_coast.osm --dart-entrypoint-args --destinationfile=lowres_coast.map --dart-entrypoint-args --zoomlevels=0#5#9#12
 
 Converting 2 pbf files to mapfile:
-
-    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_default_44_12.pbf#lowres_coast.osm --dart-entrypoint-args --destinationfile=test.map --dart-entrypoint-args --maxgap=100 --dart-entrypoint-args --boundary=44#12#46#14
+ 
+    flutter run --dart-entrypoint-args convert --dart-entrypoint-args --rendertheme=../example/assets/render_themes/lightrender.xml --dart-entrypoint-args --sourcefiles=map_default_44_12.pbf#lowres_coast.pbf --dart-entrypoint-args --destinationfile=test.map --dart-entrypoint-args --maxgap=100 --dart-entrypoint-args --boundary=44#12#46#14
 
 ## ProtoC support
 

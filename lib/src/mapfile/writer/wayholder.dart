@@ -315,7 +315,7 @@ class Wayholder with TagholderMixin {
 
     bool? expectDouble = null;
     // less than 10 coordinates? Use singe encoding
-    int sum = sumCount();
+    int sum = nodeCount();
     if (sum <= 30)
       expectDouble = false;
     else if (sum >= 100) expectDouble = true;
@@ -450,12 +450,16 @@ class Wayholder with TagholderMixin {
     }
   }
 
-  int sumCount() {
+  int nodeCount() {
     return (_closedOuters.fold(0, (idx, combine) => idx + combine.length) +
                 _openOuters.fold(0, (idx, combine) => idx + combine.length) +
                 _inner.fold(0, (idx, combine) => idx + combine.length))
             .toInt() +
         (_master?.length ?? 0);
+  }
+
+  int pathCount() {
+    return _closedOuters.length + _openOuters.length + _inner.length + (_master != null ? 1 : 0);
   }
 
   @override

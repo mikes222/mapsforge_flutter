@@ -314,7 +314,7 @@ class TileConstructor {
       Poiinfo poiinfo = poisPerZoomlevel[queryZoomLevel]!;
       Wayinfo wayinfo = waysPerZoomlevel[queryZoomLevel]!;
       int poiCount = poiinfo.count;
-      int wayCount = wayinfo.count;
+      int wayCount = wayinfo.wayCount;
       writebuffer.appendUnsignedInt(poiCount);
       writebuffer.appendUnsignedInt(wayCount);
     }

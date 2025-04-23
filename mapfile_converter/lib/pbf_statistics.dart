@@ -50,10 +50,10 @@ class PbfStatistics {
   }
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
-    PbfReader pbfReader = PbfReader();
-    await pbfReader.open(readbufferSource);
-    while (readbufferSource.getPosition() < sourceLength) {
-      OsmData blockData = await pbfReader.readBlobData(readbufferSource);
+    PbfReader pbfReader = PbfReader(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    while (true) {
+      OsmData? blockData = await pbfReader.readBlobData();
+      if (blockData == null) break;
       await _analyze1Block(blockData);
     }
     boundingBox = pbfReader.calculateBounds();

@@ -36,11 +36,15 @@ class ReadbufferFile implements ReadbufferSource {
 
   @override
   void dispose() {
+    freeRessources();
+    _cache.clear();
+  }
+
+  void freeRessources() {
     _resource?.close();
     _resource = null;
     _resourceAts.forEach((action) => action.close());
     _resourceAts.clear();
-    _cache.clear();
   }
 
   /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If

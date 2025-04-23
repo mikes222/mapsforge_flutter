@@ -9,6 +9,7 @@ import 'package:mapsforge_flutter/src/mapfile/readbufferfile.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/mapfile_writer.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/poiholder.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/tile_constructor.dart';
+import 'package:mapsforge_flutter/src/mapfile/writer/way_cropper.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/writebuffer.dart';
 import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
@@ -89,7 +90,16 @@ class SubfileCreator {
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
     Wayinfo wayinfo = _wayinfos[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
     //print("Adding ${wayholders.length} ways to zoomlevelRange $zoomlevelRange for baseZoomLevel $baseZoomLevel");
-    wayinfo.addWayholders(wayholders);
+    WayCropper wayCropper = WayCropper(maxDeviationPixel: 5);
+    if (tileCount >= 100) {
+      // one tile may span over the boundary of the mapfile, so do not crop
+      for (Wayholder wayholder in wayholders) {
+        Wayholder? wayCropped = wayCropper.cropOutsideWay(wayholder, mapHeaderInfo.boundingBox);
+        if (wayCropped != null) wayinfo.addWayholder(wayCropped);
+      }
+    } else {
+      wayinfo.addWayholders(wayholders);
+    }
   }
 
   void analyze(List<Tagholder> poiTagholders, List<Tagholder> wayTagholders, String? languagesPreference) {
@@ -104,7 +114,6 @@ class SubfileCreator {
   Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess = null]) async {
     int started = DateTime.now().millisecondsSinceEpoch;
     int lastProcessedTiles = 0;
-    int sumTiles = (_maxY - _minY + 1) * (_maxX - _minX + 1);
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
       for (int tileX = _minX; tileX <= _maxX; ++tileX) {
         Tile tile = Tile(tileX, tileY, baseZoomLevel, 0);
@@ -112,13 +121,13 @@ class SubfileCreator {
       }
       int processedTiles = (tileY - _minY + 1) * (_maxX - _minX + 1);
       if (lineProcess != null) {
-        await lineProcess(processedTiles, sumTiles);
+        await lineProcess(processedTiles, tileCount);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
       if (diff >= 1000 * 120) {
         // more than two minutes
         _log.info(
-            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec)");
+            "Processed ${(processedTiles / tileCount * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec)");
         started = DateTime.now().millisecondsSinceEpoch;
         lastProcessedTiles = processedTiles;
       }
@@ -128,7 +137,6 @@ class SubfileCreator {
   void _processSync(String title, Function(Tile tile) process, [Function(int processedTiles, int sumTiles)? lineProcess = null]) {
     int started = DateTime.now().millisecondsSinceEpoch;
     int lastProcessedTiles = 0;
-    int sumTiles = (_maxY - _minY + 1) * (_maxX - _minX + 1);
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
       for (int tileX = _minX; tileX <= _maxX; ++tileX) {
         Tile tile = Tile(tileX, tileY, baseZoomLevel, 0);
@@ -136,13 +144,13 @@ class SubfileCreator {
       }
       int processedTiles = (tileY - _minY + 1) * (_maxX - _minX + 1);
       if (lineProcess != null) {
-        lineProcess(processedTiles, sumTiles);
+        lineProcess(processedTiles, tileCount);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
       if (diff >= 1000 * 120) {
         // more than two minutes
         _log.info(
-            "Processed ${(processedTiles / sumTiles * 100).round()}% of tiles for %title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec).");
+            "Processed ${(processedTiles / tileCount * 100).round()}% of tiles for %title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec).");
         started = DateTime.now().millisecondsSinceEpoch;
         lastProcessedTiles = processedTiles;
       }
@@ -200,7 +208,7 @@ class SubfileCreator {
     _writeIndexHeaderSignature(debugFile, _writebufferTileIndex!);
     // todo find out how to do this
     bool coveredByWater = false;
-    int offset = _writebufferTileIndex!.length + 5 * (_maxX - _minX + 1) * (_maxY - _minY + 1);
+    int offset = _writebufferTileIndex!.length + 5 * tileCount;
     int firstOffset = offset;
     _processSync("writing tile index", (tile) {
       _writeTileIndexEntry(_writebufferTileIndex!, coveredByWater, offset);
@@ -240,16 +248,13 @@ class SubfileCreator {
     });
   }
 
+  int get tileCount => (_maxX - _minX + 1) * (_maxY - _minY + 1);
+
   void statistics() {
-    int tileCount = (_maxX - _minX + 1) * (_maxY - _minY + 1);
     int poiCount = _poiinfos.values.fold(0, (int combine, Poiinfo poiinfo) => combine + poiinfo.count);
-    int wayCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.count);
-    int pathCount = _wayinfos.values.fold(
-        0,
-        (combine, wayinfo) =>
-            combine +
-            wayinfo.wayholders.fold(
-                0, (combine, wayholder) => combine + 1 + wayholder.innerRead.length + wayholder.openOutersRead.length + wayholder.closedOutersRead.length));
+    int wayCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
+    int pathCount =
+        _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayholders.fold(0, (combine, wayholder) => combine + wayholder.pathCount()));
     int nodeCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
     _log.info(
         "$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount with ${wayCount != 0 ? (pathCount / wayCount).toStringAsFixed(1) : "n/a"} paths and ${pathCount != 0 ? (nodeCount / pathCount).toStringAsFixed(1) : "n/a"} nodes per path");
@@ -313,14 +318,14 @@ class Wayinfo {
 
   Uint8List? content;
 
-  int count = 0;
+  int wayCount = 0;
 
   Wayinfo();
 
   int get nodeCount {
     int result = 0;
     wayholders.forEach((Wayholder wayholder) {
-      result += wayholder.sumCount();
+      result += wayholder.nodeCount();
     });
     return result;
   }
@@ -329,7 +334,7 @@ class Wayinfo {
     assert(content == null);
     assert(wayholder.openOutersRead.isNotEmpty || wayholder.closedOutersRead.isNotEmpty);
     wayholders.add(wayholder);
-    ++count;
+    ++wayCount;
     //count += wayholder.openOuters.length + wayholder.closedOuters.length;
   }
 
@@ -339,7 +344,7 @@ class Wayinfo {
     });
     assert(content == null);
     this.wayholders.addAll(wayholders);
-    count += wayholders.length;
+    wayCount += wayholders.length;
     //count += wayholders.fold(0, (combine, test) => combine + test.openOuters.length + test.closedOuters.length);
   }
 

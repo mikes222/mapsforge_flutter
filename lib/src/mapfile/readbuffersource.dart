@@ -8,6 +8,9 @@ abstract class ReadbufferSource {
   /// closes the underlying file
   void dispose();
 
+  /// frees the underlying files. This is meant to be used when sending to an isolate
+  void freeRessources();
+
   /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
   /// the capacity of the read buffer is too small, a larger one is created automatically.
   ///

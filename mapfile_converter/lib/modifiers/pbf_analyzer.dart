@@ -115,13 +115,17 @@ class PbfAnalyzer {
   }
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
-    PbfReader pbfReader = PbfReader();
-    await pbfReader.open(readbufferSource);
-    while (readbufferSource.getPosition() < sourceLength) {
-      OsmData pbfData = await pbfReader.readBlobData(readbufferSource);
-      await _analyze1Block(pbfData);
+    readbufferSource.freeRessources();
+    IsolatePbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    List<Future> futures = [];
+    while (true) {
+      OsmData? pbfData = await pbfReader.readBlobData();
+      if (pbfData == null) break;
+      futures.add(_analyze1Block(pbfData));
     }
-    boundingBox = pbfReader.calculateBounds();
+    await Future.wait(futures);
+    boundingBox = await pbfReader.calculateBounds();
+    pbfReader.dispose();
   }
 
   Future<void> readOsmToMemory(String filename) async {
@@ -562,7 +566,7 @@ class WayholderUnion {
     if (_count < 10000) {
       return;
     }
-    if (_wayholder!.sumCount() > 1000000) {
+    if (_wayholder!.nodeCount() > 1000000) {
       // do not send large wayholders to file
       return;
     }

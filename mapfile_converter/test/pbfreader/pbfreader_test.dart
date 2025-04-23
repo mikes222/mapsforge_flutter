@@ -16,10 +16,10 @@ main() async {
     ByteData byteData = await TestAssetBundle().load("monaco-latest.osm.pbf");
     Uint8List data = byteData.buffer.asUint8List();
     ReadbufferSource readbufferSource = ReadbufferMemory(data);
-    PbfReader pbfReader = PbfReader();
-    await pbfReader.open(readbufferSource);
-    while (readbufferSource.getPosition() < data.length) {
-      OsmData blockData = await pbfReader.readBlobData(readbufferSource);
+    PbfReader pbfReader = PbfReader(readbufferSource: readbufferSource, sourceLength: data.length);
+    while (true) {
+      OsmData? blockData = await pbfReader.readBlobData();
+      if (blockData == null) break;
       print(blockData);
     }
   });
@@ -28,10 +28,10 @@ main() async {
     _initLogging();
     ReadbufferSource readbufferSource = ReadbufferFile(TestAssetBundle().correctFilename("monaco-latest.osm.pbf"));
     int length = await readbufferSource.length();
-    PbfReader pbfReader = PbfReader();
-    await pbfReader.open(readbufferSource);
-    while (readbufferSource.getPosition() < length) {
-      OsmData blockData = await pbfReader.readBlobData(readbufferSource);
+    PbfReader pbfReader = PbfReader(readbufferSource: readbufferSource, sourceLength: length);
+    while (true) {
+      OsmData? blockData = await pbfReader.readBlobData();
+      if (blockData == null) break;
       print(blockData);
     }
   });
@@ -41,10 +41,9 @@ main() async {
     ByteData byteData = await TestAssetBundle().load("monaco-latest.osm.pbf");
     Uint8List data = byteData.buffer.asUint8List();
     ReadbufferSource readbufferSource = ReadbufferMemory(data);
-    PbfReader pbfReader = PbfReader();
-    await pbfReader.open(readbufferSource);
+    PbfReader pbfReader = PbfReader(readbufferSource: readbufferSource, sourceLength: data.length);
     while (readbufferSource.getPosition() < data.length) {
-      await pbfReader.skipBlob(readbufferSource);
+      await pbfReader.skipBlob();
       print("Skipped block");
     }
   });

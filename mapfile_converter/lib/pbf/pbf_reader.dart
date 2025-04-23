@@ -7,11 +7,74 @@ import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/special.dart';
 
+@pragma("vm:entry-point")
+class IsolatePbfReader {
+  late final FlutterIsolateInstance _isolateInstance;
+
+  IsolatePbfReader._();
+
+  static Future<IsolatePbfReader> create({required ReadbufferSource readbufferSource, required int sourceLength}) async {
+    _PbfReaderInstanceRequest _request = _PbfReaderInstanceRequest(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    IsolatePbfReader _instance = IsolatePbfReader._();
+    _instance._isolateInstance = await FlutterIsolateInstance.createInstance(createInstance: createInstance, instanceParams: _request);
+    return _instance;
+  }
+
+  void dispose() {
+    _isolateInstance.dispose();
+  }
+
+  Future<OsmData?> readBlobData() async {
+    return await _isolateInstance.compute(readBlobDataStatic, Object());
+  }
+
+  Future<BoundingBox?> calculateBounds() async {
+    return await _isolateInstance.compute(calculateBoundsStatic, Object());
+  }
+
+  /// This is the instance variable. Note that it is a different instance in each isolate.
+  static PbfReader? _pbfReader;
+
+  @pragma('vm:entry-point')
+  static void createInstance(Object object) {
+    _PbfReaderInstanceRequest request = object as _PbfReaderInstanceRequest;
+    _pbfReader ??= PbfReader(readbufferSource: request.readbufferSource, sourceLength: request.sourceLength);
+  }
+
+  @pragma('vm:entry-point')
+  static Future<OsmData?> readBlobDataStatic(_) async {
+    return _pbfReader!.readBlobData();
+  }
+
+  @pragma('vm:entry-point')
+  static Future<BoundingBox?> calculateBoundsStatic(_) async {
+    return _pbfReader!.calculateBounds();
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _PbfReaderInstanceRequest {
+  final ReadbufferSource readbufferSource;
+
+  final int sourceLength;
+
+  _PbfReaderInstanceRequest({required this.readbufferSource, required this.sourceLength});
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 /// Reads data from a PBF file.
 class PbfReader {
   HeaderBlock? headerBlock;
 
-  Future<BlobResult> readBlob(ReadbufferSource readbufferSource) async {
+  final ReadbufferSource readbufferSource;
+
+  final int sourceLength;
+
+  PbfReader({required this.readbufferSource, required this.sourceLength});
+
+  Future<BlobResult> _readBlob() async {
     // length of the blob header
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
@@ -30,7 +93,9 @@ class PbfReader {
     return BlobResult(blobHeader, blobOutput);
   }
 
-  Future<OsmData> readBlobData(ReadbufferSource readbufferSource) async {
+  Future<OsmData?> readBlobData() async {
+    await _open();
+    if (readbufferSource.getPosition() >= sourceLength) return null;
     // length of the blob header
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
@@ -46,11 +111,12 @@ class PbfReader {
     final blob = Blob.fromBuffer(readbuffer.getBuffer(0, blobLength));
     final blobOutput = ZLibDecoder().convert(blob.zlibData);
     assert(blobOutput.length == blob.rawSize);
-    return readBlock(blobOutput);
+    return _readBlock(blobOutput);
   }
 
-  Future<void> skipBlob(ReadbufferSource readbufferSource) async {
+  Future<void> skipBlob() async {
     // length of the blob header
+    await _open();
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
     readbuffer = await readbufferSource.readFromFile(blobHeaderLength);
@@ -60,8 +126,9 @@ class PbfReader {
     await readbufferSource.setPosition(readbufferSource.getPosition() + blobLength);
   }
 
-  Future<void> open(ReadbufferSource readbufferSource) async {
-    final blobResult = await readBlob(readbufferSource);
+  Future<void> _open() async {
+    if (headerBlock != null) return;
+    final blobResult = await _readBlob();
     if (blobResult.blobHeader.type != 'OSMHeader') {
       throw Exception("Invalid file format OSMHeader expected");
     }
@@ -93,7 +160,7 @@ class PbfReader {
     return bounds;
   }
 
-  OsmData readBlock(List<int> blobOutput) {
+  OsmData _readBlock(List<int> blobOutput) {
     final block = PrimitiveBlock.fromBuffer(blobOutput);
     List<String> stringTable = block.stringtable.s.map((s) => utf8.decode(s)).toList();
     final latOffset = block.latOffset.toInt();
