@@ -60,7 +60,11 @@ class _ZoomOverlayState extends State<ZoomOverlay>
   @override
   Widget build(BuildContext context) {
     _fadeAnimationController.forward();
-    
+
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    final fillColor = Theme.of(context).buttonTheme.colorScheme?.surface ?? 
+      (brightness == Brightness.light ? Colors.white : Colors.black);
+
     return Positioned(
       top: widget.top != null ? max(widget.top!, toolbarSpacing) : null,
       right: (widget.right == null && widget.left == null)
@@ -86,7 +90,7 @@ class _ZoomOverlayState extends State<ZoomOverlay>
             RawMaterialButton(
               onPressed: () => widget.viewModel.zoomIn(),
               elevation: 2.0,
-              fillColor: Colors.white,
+              fillColor: fillColor,
               child: const Icon(Icons.add),
               padding: const EdgeInsets.all(10.0),
               shape: const CircleBorder(),
@@ -97,7 +101,7 @@ class _ZoomOverlayState extends State<ZoomOverlay>
             RawMaterialButton(
               onPressed: () => widget.viewModel.zoomOut(),
               elevation: 2.0,
-              fillColor: Colors.white,
+              fillColor: fillColor,
               child: const Icon(Icons.remove),
               padding: const EdgeInsets.all(10.0),
               shape: const CircleBorder(),
