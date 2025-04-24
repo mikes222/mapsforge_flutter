@@ -246,6 +246,8 @@ See [doc/build_indoor_map_files.md](doc/build_indoor_map_files.md)
 
 See [doc/render_indoor_elements.md](doc/render_indoor_elements.md)
 
+See [doc/overlay.md](doc/overlay.md)
+
 ## Important
 
 If your app requires an internet connection, consider using a simpler online mapping library instead. mapsforge_flutter is optimized for offline maps.

@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_example/mapfileanalyze/mapheaderpage.dart';
 import 'package:mapsforge_example/markerdemo-contextmenubuilder.dart';
 import 'package:mapsforge_example/markerdemo-datastore.dart';
-import 'package:mapsforge_example/rotation-overlay.dart';
+import 'package:mapsforge_example/rotation-slider-overlay.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/datastore.dart';
 import 'package:mapsforge_flutter/maps.dart';
+import 'package:mapsforge_flutter/overlay.dart';
 
 import 'debug/debug-contextmenubuilder.dart';
 import 'debug/debug-datastore.dart';
@@ -162,6 +163,7 @@ class MapViewPageState2 extends State<MapViewPage2> {
     });
     // used to demo the rotation-feature
     viewModel.addOverlay(RotationOverlay(viewModel));
+    viewModel.addOverlay(RotationSliderOverlay(viewModel));
     return viewModel;
   }
 

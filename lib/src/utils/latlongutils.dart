@@ -132,11 +132,11 @@ class LatLongUtils {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
     double length2 = xDiff * xDiff + yDiff * yDiff;
-    if (length2 == 0) return LatLong(startX, startY);
+    if (length2 == 0) return LatLong(startY, startX);
     double t = ((pointX - startX) * (endX - startX) + (pointY - startY) * (endY - startY)) / length2;
-    if (t < 0) return LatLong(startX, startY);
-    if (t > 1) return LatLong(endX, endY);
-    return LatLong(startX + t * (endX - startX), startY + t * (endY - startY));
+    if (t < 0) return LatLong(startY, startX);
+    if (t > 1) return LatLong(endY, endX);
+    return LatLong(startY + t * (endY - startY), startX + t * (endX - startX));
   }
 
   /**

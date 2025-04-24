@@ -40,8 +40,7 @@ class MapViewPosition {
 
 //  Dimension? _lastMapDimension;
 
-  MapViewPosition(this._latitude, this._longitude, this.zoomLevel,
-      this.indoorLevel, this._rotation)
+  MapViewPosition(this._latitude, this._longitude, this.zoomLevel, this.indoorLevel, this._rotation)
       : scale = 1,
         focalPoint = null,
         _rotationRadian = Projection.degToRadian(_rotation),
@@ -59,8 +58,7 @@ class MapViewPosition {
         focalPoint = null,
         _projection = PixelProjection(old.zoomLevel + 1);
 
-  MapViewPosition.zoomInAround(
-      MapViewPosition old, double latitude, double longitude)
+  MapViewPosition.zoomInAround(MapViewPosition old, double latitude, double longitude)
       : _latitude = latitude,
         _longitude = longitude,
         zoomLevel = old.zoomLevel + 1,
@@ -93,8 +91,7 @@ class MapViewPosition {
         focalPoint = null,
         _projection = PixelProjection(max(zoomLevel, 0));
 
-  MapViewPosition.zoomAround(
-      MapViewPosition old, double latitude, double longitude, int zoomLevel)
+  MapViewPosition.zoomAround(MapViewPosition old, double latitude, double longitude, int zoomLevel)
       : _latitude = latitude,
         _longitude = longitude,
         this.zoomLevel = max(zoomLevel, 0),
@@ -178,28 +175,19 @@ class MapViewPosition {
         focalPoint = null,
         _rotationRadian = Projection.degToRadian(_rotation),
         _center = old._center,
-        assert(_rotation >= 0 && _rotation < 360);
+        assert(_rotation >= 0 && _rotation < 360, "rotation must be between 0 and 360: $_rotation");
 
-  // MapViewPosition.setLeftUpper(
-  //     MapViewPosition old, double left, double upper)
-  //     : zoomLevel = old.zoomLevel,
-  //       indoorLevel = old.indoorLevel,
-  //       _rotation = old._rotation,
-  //       _rotationRadian = old._rotationRadian,
-  //       scale = old.scale,
-  //       focalPoint = old.focalPoint,
-  //       _projection = old._projection {
-  //   //calculateBoundingBox(tileSize, viewSize);
-  //   _leftUpper = Mappoint(
-  //       min(max(left, -mapDimension.width / 2),
-  //           _projection.mapsize - mapDimension.width / 2),
-  //       min(max(upper, -mapDimension.height / 2),
-  //           _projection.mapsize - mapDimension.height / 2));
-  //
-  //   ILatLong latLong = _projection.pixelToLatLong(_leftUpper!.x + mapDimension.width / 2, _leftUpper!.y + mapDimension.height / 2);
-  //   _latitude = latLong.latitude;
-  //   _longitude = latLong.longitude;
-  // }
+  MapViewPosition.rotateDelta(MapViewPosition old, double rotationDelta)
+      : _latitude = old._latitude,
+        _longitude = old._longitude,
+        zoomLevel = old.zoomLevel,
+        indoorLevel = old.indoorLevel,
+        _rotation = Projection.normalizeRotation(old._rotation + rotationDelta),
+        _projection = old._projection,
+        scale = old.scale,
+        focalPoint = null,
+        _rotationRadian = Projection.degToRadian(old._rotation + rotationDelta),
+        _center = old._center;
 
   MapViewPosition.setCenter(MapViewPosition old, double x, double y)
       : zoomLevel = old.zoomLevel,
@@ -209,8 +197,7 @@ class MapViewPosition {
         scale = old.scale,
         focalPoint = null,
         _projection = old._projection {
-    _center = Mappoint(min(max(x, 0), _projection.mapsize + 0.0),
-        min(max(y, 0), _projection.mapsize + 0.0));
+    _center = Mappoint(min(max(x, 0), _projection.mapsize + 0.0), min(max(y, 0), _projection.mapsize + 0.0));
 
     _latitude = _projection.pixelYToLatitude(y);
     _longitude = _projection.pixelXToLongitude(x);
@@ -285,13 +272,7 @@ class MapViewPosition {
           scale == other.scale;
 
   @override
-  int get hashCode =>
-      _latitude.hashCode ^
-      _longitude.hashCode ^
-      zoomLevel.hashCode ^
-      _rotation.hashCode ^
-      indoorLevel.hashCode << 5 ^
-      scale.hashCode;
+  int get hashCode => _latitude.hashCode ^ _longitude.hashCode ^ zoomLevel.hashCode ^ _rotation.hashCode ^ indoorLevel.hashCode << 5 ^ scale.hashCode;
 
   @override
   String toString() {

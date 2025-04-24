@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
@@ -16,9 +17,6 @@ class _RotationOverlayState extends State<RotationOverlay> {
 
   // The baseline average angle (in degrees) computed from pointers.
   double? _baselineAngle;
-
-  // The cumulative rotation (in degrees).
-  double _currentRotation = 0.0;
 
   /// Normalize an angle to the range [0, 360).
   double _normalizeRotation(double rotation) {
@@ -73,9 +71,8 @@ class _RotationOverlayState extends State<RotationOverlay> {
             } else if (delta < -180) {
               delta += 360;
             }
-            _currentRotation = _normalizeRotation(_currentRotation + delta);
             _baselineAngle = newAverageAngle;
-            widget.viewModel.rotate(_currentRotation);
+            widget.viewModel.rotateDelta(delta);
           }
         }
       },

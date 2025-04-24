@@ -45,32 +45,24 @@ class ViewModel {
 
   /// Receives events when the user taps for a longer period at the same position of the screen. This could mean either that the user wants
   /// to drag something around or that the user performs a long-tap. In the latter case a [observeMoveAroundCancel] event will be sent.
-  Stream<MoveAroundEvent> get observeMoveAroundStart =>
-      _injectMoveAroundStart.stream;
+  Stream<MoveAroundEvent> get observeMoveAroundStart => _injectMoveAroundStart.stream;
 
   Subject<MoveAroundEvent> _injectMoveAroundCancel = PublishSubject();
 
   /// Receives events to denotes that a user just wanted to long-press at the same position. Cancels a "move-around" start event.
-  Stream<MoveAroundEvent> get observeMoveAroundCancel =>
-      _injectMoveAroundCancel.stream;
+  Stream<MoveAroundEvent> get observeMoveAroundCancel => _injectMoveAroundCancel.stream;
 
   Subject<MoveAroundEvent> _injectMoveAroundUpdate = PublishSubject();
 
   /// Receives events to denote that the user moves an object around
-  Stream<MoveAroundEvent> get observeMoveAroundUpdate =>
-      _injectMoveAroundUpdate.stream;
+  Stream<MoveAroundEvent> get observeMoveAroundUpdate => _injectMoveAroundUpdate.stream;
 
   Subject<MoveAroundEvent> _injectMoveAroundEnd = PublishSubject();
 
   /// Receives events when the user ended a drag'n'drop event
-  Stream<MoveAroundEvent> get observeMoveAroundEnd =>
-      _injectMoveAroundEnd.stream;
+  Stream<MoveAroundEvent> get observeMoveAroundEnd => _injectMoveAroundEnd.stream;
 
-  ViewModel(
-      {this.contextMenuBuilder = const DefaultContextMenuBuilder(),
-      required this.displayModel,
-      Widget? noPositionView,
-      this.overlays}) {
+  ViewModel({this.contextMenuBuilder = const DefaultContextMenuBuilder(), required this.displayModel, Widget? noPositionView, this.overlays}) {
     this.noPositionView = noPositionView ?? const NoPositionView();
     viewScaleFactor = displayModel.deviceScaleFactor;
     //_mapDimension = Dimension(100 * viewScaleFactor, 100 * viewScaleFactor);
@@ -94,44 +86,27 @@ class ViewModel {
 
   void setMapViewPosition(double latitude, double longitude) {
     if (_mapViewPosition != null) {
-      if (_mapViewPosition!.latitude == latitude &&
-          _mapViewPosition!.longitude == longitude) return;
-      MapViewPosition newPosition = MapViewPosition(
-          latitude,
-          longitude,
-          _mapViewPosition!.zoomLevel,
-          _mapViewPosition!.indoorLevel,
-          _mapViewPosition!.rotation);
+      if (_mapViewPosition!.latitude == latitude && _mapViewPosition!.longitude == longitude) return;
+      MapViewPosition newPosition =
+          MapViewPosition(latitude, longitude, _mapViewPosition!.zoomLevel, _mapViewPosition!.indoorLevel, _mapViewPosition!.rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(
-          latitude,
-          longitude,
-          displayModel.DEFAULT_ZOOM,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.DEFAULT_ROTATION);
+      MapViewPosition newPosition =
+          MapViewPosition(latitude, longitude, displayModel.DEFAULT_ZOOM, displayModel.DEFAULT_INDOOR_LEVEL, displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
   }
 
-  void setMapViewPositionAndRotation(
-      double latitude, double longitude, double rotation) {
+  void setMapViewPositionAndRotation(double latitude, double longitude, double rotation) {
     if (_mapViewPosition != null) {
-      if (_mapViewPosition!.latitude == latitude &&
-          _mapViewPosition!.longitude == longitude) return;
-      MapViewPosition newPosition = MapViewPosition(latitude, longitude,
-          _mapViewPosition!.zoomLevel, _mapViewPosition!.indoorLevel, rotation);
+      if (_mapViewPosition!.latitude == latitude && _mapViewPosition!.longitude == longitude) return;
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, _mapViewPosition!.zoomLevel, _mapViewPosition!.indoorLevel, rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(
-          latitude,
-          longitude,
-          displayModel.DEFAULT_ZOOM,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          rotation);
+      MapViewPosition newPosition = MapViewPosition(latitude, longitude, displayModel.DEFAULT_ZOOM, displayModel.DEFAULT_INDOOR_LEVEL, rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -139,8 +114,7 @@ class ViewModel {
 
   void zoomIn() {
     if (_mapViewPosition == null) return;
-    if (_mapViewPosition!.zoomLevel >= displayModel.zoomlevelRange.zoomlevelMax)
-      return;
+    if (_mapViewPosition!.zoomLevel >= displayModel.zoomlevelRange.zoomlevelMax) return;
     MapViewPosition newPosition = MapViewPosition.zoomIn(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
@@ -148,10 +122,8 @@ class ViewModel {
 
   void zoomInAround(double latitude, double longitude) {
     if (_mapViewPosition == null) return;
-    if (_mapViewPosition!.zoomLevel >= displayModel.zoomlevelRange.zoomlevelMax)
-      return;
-    MapViewPosition newPosition =
-        MapViewPosition.zoomInAround(_mapViewPosition!, latitude, longitude);
+    if (_mapViewPosition!.zoomLevel >= displayModel.zoomlevelRange.zoomlevelMax) return;
+    MapViewPosition newPosition = MapViewPosition.zoomInAround(_mapViewPosition!, latitude, longitude);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
@@ -165,20 +137,16 @@ class ViewModel {
   }
 
   MapViewPosition setZoomLevel(int zoomLevel) {
-    if (zoomLevel > displayModel.zoomlevelRange.zoomlevelMax)
-      zoomLevel = displayModel.zoomlevelRange.zoomlevelMax;
+    if (zoomLevel > displayModel.zoomlevelRange.zoomlevelMax) zoomLevel = displayModel.zoomlevelRange.zoomlevelMax;
     if (zoomLevel < 0) zoomLevel = 0;
     if (_mapViewPosition != null) {
-      if (_mapViewPosition!.zoomLevel == zoomLevel &&
-          _mapViewPosition!.scale == 1) return _mapViewPosition!;
-      MapViewPosition newPosition =
-          MapViewPosition.zoom(_mapViewPosition!, zoomLevel);
+      if (_mapViewPosition!.zoomLevel == zoomLevel && _mapViewPosition!.scale == 1) return _mapViewPosition!;
+      MapViewPosition newPosition = MapViewPosition.zoom(_mapViewPosition!, zoomLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel,
-          displayModel.DEFAULT_INDOOR_LEVEL, displayModel.DEFAULT_ROTATION);
+      MapViewPosition newPosition = MapViewPosition(null, null, zoomLevel, displayModel.DEFAULT_INDOOR_LEVEL, displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -187,11 +155,9 @@ class ViewModel {
 
   MapViewPosition zoomAround(double latitude, double longitude, int zoomLevel) {
     assert(_mapViewPosition != null);
-    if (zoomLevel > displayModel.zoomlevelRange.zoomlevelMax)
-      zoomLevel = displayModel.zoomlevelRange.zoomlevelMax;
+    if (zoomLevel > displayModel.zoomlevelRange.zoomlevelMax) zoomLevel = displayModel.zoomlevelRange.zoomlevelMax;
     if (zoomLevel < 0) zoomLevel = 0;
-    MapViewPosition newPosition = MapViewPosition.zoomAround(
-        _mapViewPosition!, latitude, longitude, zoomLevel);
+    MapViewPosition newPosition = MapViewPosition.zoomAround(_mapViewPosition!, latitude, longitude, zoomLevel);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
     return newPosition;
@@ -199,36 +165,27 @@ class ViewModel {
 
   void indoorLevelUp() {
     if (_mapViewPosition == null) return;
-    MapViewPosition newPosition =
-        MapViewPosition.indoorLevelUp(_mapViewPosition!);
+    MapViewPosition newPosition = MapViewPosition.indoorLevelUp(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   void indoorLevelDown() {
     if (_mapViewPosition == null) return;
-    MapViewPosition newPosition =
-        MapViewPosition.indoorLevelDown(_mapViewPosition!);
+    MapViewPosition newPosition = MapViewPosition.indoorLevelDown(_mapViewPosition!);
     _mapViewPosition = newPosition;
     _injectPosition.add(newPosition);
   }
 
   MapViewPosition setIndoorLevel(int indoorLevel) {
     if (_mapViewPosition != null) {
-      if (_mapViewPosition!.indoorLevel == indoorLevel)
-        return _mapViewPosition!;
-      MapViewPosition newPosition =
-          MapViewPosition.setIndoorLevel(_mapViewPosition!, indoorLevel);
+      if (_mapViewPosition!.indoorLevel == indoorLevel) return _mapViewPosition!;
+      MapViewPosition newPosition = MapViewPosition.setIndoorLevel(_mapViewPosition!, indoorLevel);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(
-          null,
-          null,
-          displayModel.DEFAULT_ZOOM,
-          indoorLevel,
-          displayModel.DEFAULT_ROTATION);
+      MapViewPosition newPosition = MapViewPosition(null, null, displayModel.DEFAULT_ZOOM, indoorLevel, displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
@@ -250,37 +207,23 @@ class ViewModel {
     if ((scale - 1).abs() < 0.01) return _mapViewPosition;
     if (_mapViewPosition != null) {
       //print("Scaling ${_mapViewPosition.zoomLevel} * $scale");
-      if (Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) *
-              scale <
-          1) {
+      if (Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) * scale < 1) {
         // zoom out until we reached zoomlevel 0
-        scale =
-            1 / Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
+        scale = 1 / Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
       } else {
-        double scaleFactor =
-            Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) *
-                scale;
-        if (scaleFactor >
-            Scalefactor.zoomlevelToScalefactor(
-                displayModel.zoomlevelRange.zoomlevelMax)) {
+        double scaleFactor = Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel) * scale;
+        if (scaleFactor > Scalefactor.zoomlevelToScalefactor(displayModel.zoomlevelRange.zoomlevelMax)) {
           // zoom in until we reach the maximum zoom level, limit the zoom then
-          scale = Scalefactor.zoomlevelToScalefactor(
-                  displayModel.zoomlevelRange.zoomlevelMax) /
-              Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
+          scale =
+              Scalefactor.zoomlevelToScalefactor(displayModel.zoomlevelRange.zoomlevelMax) / Scalefactor.zoomlevelToScalefactor(_mapViewPosition!.zoomLevel);
         }
       }
-      MapViewPosition newPosition =
-          MapViewPosition.scaleAround(_mapViewPosition!, focalPoint, scale);
+      MapViewPosition newPosition = MapViewPosition.scaleAround(_mapViewPosition!, focalPoint, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
       return newPosition;
     } else {
-      MapViewPosition newPosition = MapViewPosition(
-          null,
-          null,
-          displayModel.DEFAULT_ZOOM,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.DEFAULT_ROTATION);
+      MapViewPosition newPosition = MapViewPosition(null, null, displayModel.DEFAULT_ZOOM, displayModel.DEFAULT_INDOOR_LEVEL, displayModel.DEFAULT_ROTATION);
       newPosition = MapViewPosition.scaleAround(newPosition, null, scale);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
@@ -290,53 +233,37 @@ class ViewModel {
 
   void rotate(double rotation) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition =
-          MapViewPosition.rotate(_mapViewPosition!, rotation);
+      MapViewPosition newPosition = MapViewPosition.rotate(_mapViewPosition!, rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
-      MapViewPosition newPosition = MapViewPosition(
-          null,
-          null,
-          displayModel.DEFAULT_ZOOM - 1,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          rotation);
+      MapViewPosition newPosition = MapViewPosition(null, null, displayModel.DEFAULT_ZOOM - 1, displayModel.DEFAULT_INDOOR_LEVEL, rotation);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
   }
 
-  // void setLeftUpper(double left, double upper) {
-  //   if (_mapViewPosition != null) {
-  //     MapViewPosition newPosition = MapViewPosition.setLeftUpper(
-  //         _mapViewPosition!, left, upper);
-  //     _mapViewPosition = newPosition;
-  //     _injectPosition.add(newPosition);
-  //   } else {
-  //     MapViewPosition newPosition = MapViewPosition(
-  //         null,
-  //         null,
-  //         displayModel.DEFAULT_ZOOM - 1,
-  //         displayModel.DEFAULT_INDOOR_LEVEL,
-  //         displayModel.DEFAULT_ROTATION);
-  //     _mapViewPosition = newPosition;
-  //     _injectPosition.add(newPosition);
-  //   }
-  // }
-
-  void setCenter(double x, double y) {
+  void rotateDelta(double rotationDelta) {
     if (_mapViewPosition != null) {
-      MapViewPosition newPosition =
-          MapViewPosition.setCenter(_mapViewPosition!, x, y);
+      MapViewPosition newPosition = MapViewPosition.rotateDelta(_mapViewPosition!, rotationDelta);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     } else {
       MapViewPosition newPosition = MapViewPosition(
-          null,
-          null,
-          displayModel.DEFAULT_ZOOM - 1,
-          displayModel.DEFAULT_INDOOR_LEVEL,
-          displayModel.DEFAULT_ROTATION);
+          null, null, displayModel.DEFAULT_ZOOM - 1, displayModel.DEFAULT_INDOOR_LEVEL, rotationDelta < 0 ? 360 + rotationDelta : rotationDelta);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    }
+  }
+
+  void setCenter(double x, double y) {
+    if (_mapViewPosition != null) {
+      MapViewPosition newPosition = MapViewPosition.setCenter(_mapViewPosition!, x, y);
+      _mapViewPosition = newPosition;
+      _injectPosition.add(newPosition);
+    } else {
+      MapViewPosition newPosition =
+          MapViewPosition(null, null, displayModel.DEFAULT_ZOOM - 1, displayModel.DEFAULT_INDOOR_LEVEL, displayModel.DEFAULT_ROTATION);
       _mapViewPosition = newPosition;
       _injectPosition.add(newPosition);
     }
@@ -435,12 +362,7 @@ class TapEvent implements ILatLong {
 
   PixelProjection get projection => _projection!;
 
-  const TapEvent(
-      {required this.latitude,
-      required this.longitude,
-      required PixelProjection projection,
-      required this.mappoint})
-      : _projection = projection;
+  const TapEvent({required this.latitude, required this.longitude, required PixelProjection projection, required this.mappoint}) : _projection = projection;
 
   const TapEvent.clear()
       : latitude = 0,
@@ -463,11 +385,7 @@ class MoveAroundEvent extends TapEvent {
     required double longitude,
     required PixelProjection projection,
     required Mappoint mappoint,
-  }) : super(
-            latitude: latitude,
-            longitude: longitude,
-            projection: projection,
-            mappoint: mappoint);
+  }) : super(latitude: latitude, longitude: longitude, projection: projection, mappoint: mappoint);
 }
 
 /////////////////////////////////////////////////////////////////////////////

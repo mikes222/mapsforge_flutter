@@ -24,9 +24,7 @@ dependencies:
   convert: ^3.1.2
 
   # MIT License
-  ecache: ^2.0.4
-  #    git:
-  #      url: https://github.com/mikes222/dcache
+  ecache: ^2.0.5
   #  path: ../ecache
 
   # execution_queue: ^1.2.0
