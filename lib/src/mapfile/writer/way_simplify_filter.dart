@@ -25,15 +25,7 @@ class WaySimplifyFilter {
     maxDeviationLatLong =
         projection.latitudeDiffPerPixel((wayholder.boundingBoxCached.minLatitude + wayholder.boundingBoxCached.maxLatitude) / 2, maxDeviationPixel);
     List<Waypath> inner = wayholder.innerRead.map((e) => _reduceWay(e)).toList();
-    List<Waypath> closedOuters = wayholder.closedOutersRead.map((e) {
-      var result = _reduceWay(e);
-      if (result.length == 2) {
-        // this object is so tiny that it gets reduced to 2 points, remove it.
-        return Waypath.empty();
-      }
-      return result;
-    }).toList()
-      ..removeWhere((test) => test.isEmpty);
+    List<Waypath> closedOuters = wayholder.closedOutersRead.map((e) => _reduceWay(e)).toList()..removeWhere((test) => test.length <= 3);
     List<Waypath> openOuters = wayholder.openOutersRead.map((e) => _reduceWay(e)).toList();
     Wayholder result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
     return result;

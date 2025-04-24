@@ -4,10 +4,10 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/graphics/display.dart';
 import 'package:mapsforge_flutter/src/model/maprectangle.dart';
 import 'package:mapsforge_flutter/src/renderer/paintmixin.dart';
+import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
 
 /// A marker which draws a circle specified by its center as lat/lon and by its radius in pixels.
-class CircleMarker<T> extends BasicPointMarker<T>
-    with PaintMixin, CaptionMixin {
+class CircleMarker<T> extends BasicPointMarker<T> with PaintMixin, CaptionMixin {
   late final double radius;
 
   final int? percent;
@@ -44,6 +44,7 @@ class CircleMarker<T> extends BasicPointMarker<T>
     setStrokeColorFromNumber(strokeColor);
     setStrokeWidth(strokeWidth * displayModel.getScaleFactor());
     this.radius = radius * displayModel.getScaleFactor();
+    symbolFinder.add("poi", _CircleShapeSymbol.base(getRadius(0)));
   }
 
   @override
@@ -53,9 +54,7 @@ class CircleMarker<T> extends BasicPointMarker<T>
 
   @override
   bool shouldPaint(BoundingBox boundary, int zoomLevel) {
-    return minZoomLevel <= zoomLevel &&
-        maxZoomLevel >= zoomLevel &&
-        boundary.contains(latLong.latitude, latLong.longitude);
+    return minZoomLevel <= zoomLevel && maxZoomLevel >= zoomLevel && boundary.contains(latLong.latitude, latLong.longitude);
   }
 
   ///
@@ -73,16 +72,9 @@ class CircleMarker<T> extends BasicPointMarker<T>
 
   @override
   void renderBitmap(MapCanvas flutterCanvas, MarkerContext markerContext) {
+    flutterCanvas.drawCircle((mappoint.x - markerContext.mapCenter.x), (mappoint.y - markerContext.mapCenter.y), radius, getFillPaint(markerContext.zoomLevel));
     flutterCanvas.drawCircle(
-        (mappoint.x - markerContext.mapCenter.x),
-        (mappoint.y - markerContext.mapCenter.y),
-        radius,
-        getFillPaint(markerContext.zoomLevel));
-    flutterCanvas.drawCircle(
-        (mappoint.x - markerContext.mapCenter.x),
-        (mappoint.y - markerContext.mapCenter.y),
-        radius,
-        getStrokePaint(markerContext.zoomLevel));
+        (mappoint.x - markerContext.mapCenter.x), (mappoint.y - markerContext.mapCenter.y), radius, getStrokePaint(markerContext.zoomLevel));
   }
 
   double getRadius(int zoomLevel) {
@@ -94,7 +86,19 @@ class CircleMarker<T> extends BasicPointMarker<T>
   bool isTapped(TapEvent tapEvent) {
     Mappoint p2 = tapEvent.projection.latLonToPixel(latLong);
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
-    return p2.distance(tapped) <=
-        getRadius(tapEvent.projection.scalefactor.zoomlevel);
+    return p2.distance(tapped) <= getRadius(tapEvent.projection.scalefactor.zoomlevel);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _CircleShapeSymbol extends ShapeSymbol {
+  final double radius;
+
+  _CircleShapeSymbol.base(this.radius) : super.base(0);
+
+  @override
+  MapRectangle calculateBoundary() {
+    return MapRectangle(-radius, -radius, radius, radius);
   }
 }

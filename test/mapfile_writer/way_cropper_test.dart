@@ -19,6 +19,7 @@ main() async {
     _initLogging();
 
     MemoryDatastore datastore = MemoryDatastore();
+    // this is the casino in monaco
     List<ILatLong> points = [
       const LatLong(43.727158, 7.414372),
       const LatLong(43.727378, 7.414080), // 01, clockwise outside

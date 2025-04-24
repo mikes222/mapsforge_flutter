@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter/src/model/tile.dart';
 ///
 ///
 main() async {
-  test("MultimapDatastore without maps", () {
+  test("MultimapDatastore without maps", () async {
     MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
 
     int zoomlevel = 18; //zoomlevel
@@ -15,6 +15,6 @@ main() async {
 
     Tile tile = new Tile(140486, 87975, zoomlevel, indoorLevel);
 
-    expect(dataStore.supportsTile(tile), false);
+    expect(await dataStore.supportsTile(tile), false);
   });
 }

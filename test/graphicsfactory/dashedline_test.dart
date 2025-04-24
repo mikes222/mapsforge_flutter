@@ -22,7 +22,7 @@ void main() {
 
   testWidgets('Dashed lines', (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
-      maxZoomLevel: 14,
+      maxZoomLevel: 16,
     );
 
     int l = 0;
@@ -30,8 +30,7 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
@@ -54,15 +53,13 @@ void main() {
       //                         stroke-width="0.8" />
 
       Tile tile = new Tile(x, y, zoomlevel, l);
-      expect(datastore.supportsTile(tile), true);
+      expect(await datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, equals(1));
       Job mapGeneratorJob = new Job(tile, false);
-      MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
-      JobResult jobResult =
-          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertToImage();
     }));
@@ -88,13 +85,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     //await tester.pump();
-    await expectLater(
-        find.byType(RawImage), matchesGoldenFile('dashedline.png'));
+    await expectLater(find.byType(RawImage), matchesGoldenFile('dashedline.png'));
   });
 
   testWidgets('Tunnel lines (tunnel)', (WidgetTester tester) async {
     final DisplayModel displayModel = DisplayModel(
-      maxZoomLevel: 14,
+      maxZoomLevel: 16,
     );
 
     int l = 0;
@@ -102,8 +98,7 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder();
 
     var img = await (tester.runAsync(() async {
@@ -115,17 +110,9 @@ void main() {
       // <line stroke="#66320D" stroke-dasharray="20,5,8,5" stroke-linecap="butt" stroke-width="1.2" />
       datastore.addWay(const Way(
           0,
+          [Tag('highway', 'primary'), Tag('tunnel', 'yes'), Tag('oneway', 'yes')],
           [
-            Tag('highway', 'primary'),
-            Tag('tunnel', 'yes'),
-            Tag('oneway', 'yes')
-          ],
-          [
-            [
-              LatLong(45.96, 17.953),
-              LatLong(46.0006, 18.0006),
-              LatLong(45.991, 17.958)
-            ]
+            [LatLong(45.96, 17.953), LatLong(46.0006, 18.0006), LatLong(45.991, 17.958)]
           ],
           null));
 
@@ -135,15 +122,13 @@ void main() {
       //                 stroke-width="1.5" />
 
       Tile tile = new Tile(x, y, zoomlevel, l);
-      expect(datastore.supportsTile(tile), true);
+      expect(await datastore.supportsTile(tile), true);
       DatastoreReadResult result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, equals(1));
       Job mapGeneratorJob = new Job(tile, false);
-      MapDataStoreRenderer _dataStoreRenderer =
-          MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
 
-      JobResult jobResult =
-          (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertToImage();
     }));
@@ -169,8 +154,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     //await tester.pump();
-    await expectLater(
-        find.byType(RawImage), matchesGoldenFile('tunnelline.png'));
+    await expectLater(find.byType(RawImage), matchesGoldenFile('tunnelline.png'));
   });
 }
 

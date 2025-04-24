@@ -15,8 +15,7 @@ import '../testhelper.dart';
 void main() {
   testWidgets('Renders a poimarker', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -40,8 +39,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,
@@ -65,8 +63,7 @@ void main() {
 
   testWidgets('Renders a poimarker bottom-center', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -91,8 +88,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,
@@ -114,11 +110,9 @@ void main() {
         goldenfile: 'poimarker_bottomcenter.png');
   });
 
-  testWidgets('Renders a poimarker bottom-center with text',
-      (WidgetTester tester) async {
+  testWidgets('Renders a poimarker bottom-center with text', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -143,8 +137,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,
@@ -166,11 +159,9 @@ void main() {
         goldenfile: 'poimarker_bottomcenter_text.png');
   });
 
-  testWidgets('Renders a poimarker bottom-center with text above',
-      (WidgetTester tester) async {
+  testWidgets('Renders a poimarker bottom-center with text above', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -185,10 +176,7 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-    )..addCaption(
-        caption: "PoiMarker with text",
-        displayModel: displayModel,
-        position: Position.ABOVE);
+    )..addCaption(caption: "PoiMarker with text", displayModel: displayModel, position: Position.ABOVE);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -198,8 +186,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,
@@ -221,11 +208,9 @@ void main() {
         goldenfile: 'poimarker_bottomcenter_text_above.png');
   });
 
-  testWidgets('Renders a poimarker bottom-center with text left',
-      (WidgetTester tester) async {
+  testWidgets('Renders a poimarker bottom-center with text left', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -240,10 +225,7 @@ void main() {
       width: 200,
       height: 200,
       position: Position.BELOW,
-    )..addCaption(
-        caption: "PoiMarker with text",
-        displayModel: displayModel,
-        position: Position.LEFT);
+    )..addCaption(caption: "PoiMarker with text", displayModel: displayModel, position: Position.LEFT);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -253,8 +235,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,
@@ -278,8 +259,7 @@ void main() {
 
   testWidgets('Renders a poimarker with text', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -301,8 +281,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,
@@ -324,11 +303,9 @@ void main() {
         goldenfile: 'poimarker_text.png');
   });
 
-  testWidgets('Renders a poimarker with multiple captions',
-      (WidgetTester tester) async {
+  testWidgets('Renders a poimarker with multiple captions', (WidgetTester tester) async {
     ILatLong latLong = const LatLong(46, 18);
-    SymbolCache symbolCache = FileSymbolCache(
-        imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
+    SymbolCache symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle()));
 
     final DisplayModel displayModel = DisplayModel(
       maxZoomLevel: 14,
@@ -342,16 +319,8 @@ void main() {
       src: "jar:symbols/tourist/view_point.svg",
     )
       ..addCaption(caption: "Markercaption", displayModel: displayModel)
-      ..addCaption(
-          caption: "Markercaption",
-          displayModel: displayModel,
-          fontSize: 16,
-          position: Position.ABOVE)
-      ..addCaption(
-          caption: "Markercaption",
-          displayModel: displayModel,
-          fontSize: 8,
-          position: Position.RIGHT);
+      ..addCaption(caption: "Markercaption", displayModel: displayModel, fontSize: 16, position: Position.ABOVE)
+      ..addCaption(caption: "Markercaption", displayModel: displayModel, fontSize: 8, position: Position.RIGHT);
     await tester.runAsync(() async {
       await circleMarker.initResources(symbolCache);
     });
@@ -361,8 +330,7 @@ void main() {
       viewModel.mapViewPosition!.zoomLevel,
       viewModel.mapViewPosition!.projection,
       viewModel.mapViewPosition!.rotationRadian,
-      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01,
-          latLong.latitude + 0.01, latLong.longitude + 0.01),
+      BoundingBox(latLong.latitude - 0.01, latLong.longitude - 0.01, latLong.latitude + 0.01, latLong.longitude + 0.01),
     );
     SingleMarkerPainter painter = SingleMarkerPainter(
       markerContext: markerContext,

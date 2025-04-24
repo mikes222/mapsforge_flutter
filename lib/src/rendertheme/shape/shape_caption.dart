@@ -32,9 +32,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
   ShapeCaption.base(int level) : super.base(level: level);
 
-  ShapeCaption.scale(
-      ShapeCaption base, int zoomLevel, SymbolFinder symbolFinder)
-      : super.scale(base, zoomLevel) {
+  ShapeCaption.scale(ShapeCaption base, int zoomLevel, SymbolFinder symbolFinder) : super.scale(base, zoomLevel) {
     paintSrcMixinScale(base, zoomLevel);
     textSrcMixinScale(base, zoomLevel);
     gap = base.gap;
@@ -47,8 +45,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
 
     if (zoomLevel >= strokeMinZoomLevel) {
       int zoomLevelDiff = zoomLevel - strokeMinZoomLevel + 1;
-      double scaleFactor =
-          pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      double scaleFactor = pow(PaintMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       gap = gap * scaleFactor;
       dy = dy * scaleFactor;
     }
@@ -75,13 +72,9 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     //return boundary!;
   }
 
-  MapRectangle calculateBoundaryWithSymbol(
-      double fontWidth, double fontHeight) {
-    // print(
-    //     "shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $fontWidth, $fontHeight");
-
-    MapRectangle? symbolBoundary =
-        symbolHolder?.shapeSymbol?.calculateBoundary();
+  MapRectangle calculateBoundaryWithSymbol(double fontWidth, double fontHeight) {
+    MapRectangle? symbolBoundary = symbolHolder?.shapeSymbol?.calculateBoundary();
+//    print("shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $fontWidth, $fontHeight, boundary: $symbolBoundary");
     if (position == Position.CENTER && symbolBoundary != null) {
       // sensible defaults: below if symbolContainer is present, center if not
       position = Position.BELOW;
@@ -99,61 +92,35 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     switch (position) {
       case Position.AUTO:
       case Position.CENTER:
-        this.boundary =
-            MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
+        this.boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
         break;
       case Position.BELOW:
-        this.boundary = MapRectangle(
-            -halfWidth,
-            symbolBoundary.bottom + 0 + this.gap + dy,
-            halfWidth,
-            symbolBoundary.bottom + fontHeight + this.gap + dy);
+        this.boundary = MapRectangle(-halfWidth, symbolBoundary.bottom + 0 + this.gap + dy, halfWidth, symbolBoundary.bottom + fontHeight + this.gap + dy);
         break;
       case Position.BELOW_LEFT:
-        this.boundary = MapRectangle(
-            symbolBoundary.left - fontWidth - this.gap,
-            symbolBoundary.bottom + 0 + this.gap + dy,
-            symbolBoundary.left - 0 - this.gap,
+        this.boundary = MapRectangle(symbolBoundary.left - fontWidth - this.gap, symbolBoundary.bottom + 0 + this.gap + dy, symbolBoundary.left - 0 - this.gap,
             symbolBoundary.bottom + fontHeight + this.gap + dy);
         break;
       case Position.BELOW_RIGHT:
-        this.boundary = MapRectangle(
-            symbolBoundary.right + 0 + this.gap,
-            symbolBoundary.bottom + 0 + this.gap + dy,
-            symbolBoundary.right + fontWidth + this.gap,
-            symbolBoundary.bottom + fontHeight + this.gap + dy);
+        this.boundary = MapRectangle(symbolBoundary.right + 0 + this.gap, symbolBoundary.bottom + 0 + this.gap + dy,
+            symbolBoundary.right + fontWidth + this.gap, symbolBoundary.bottom + fontHeight + this.gap + dy);
         break;
       case Position.ABOVE:
-        this.boundary = MapRectangle(
-            -halfWidth,
-            symbolBoundary.top - fontHeight - this.gap + dy,
-            halfWidth,
-            symbolBoundary.top - 0 - this.gap + dy);
+        this.boundary = MapRectangle(-halfWidth, symbolBoundary.top - fontHeight - this.gap + dy, halfWidth, symbolBoundary.top - 0 - this.gap + dy);
         break;
       case Position.ABOVE_LEFT:
-        this.boundary = MapRectangle(
-            symbolBoundary.left - fontWidth - this.gap,
-            symbolBoundary.top - fontHeight - this.gap + dy,
-            symbolBoundary.left - 0 - this.gap,
-            symbolBoundary.top + 0 - this.gap + dy);
+        this.boundary = MapRectangle(symbolBoundary.left - fontWidth - this.gap, symbolBoundary.top - fontHeight - this.gap + dy,
+            symbolBoundary.left - 0 - this.gap, symbolBoundary.top + 0 - this.gap + dy);
         break;
       case Position.ABOVE_RIGHT:
-        this.boundary = MapRectangle(
-            symbolBoundary.right + 0 + this.gap,
-            symbolBoundary.top - fontHeight - this.gap + dy,
-            symbolBoundary.right + fontWidth + this.gap,
-            symbolBoundary.top + 0 - this.gap + dy);
+        this.boundary = MapRectangle(symbolBoundary.right + 0 + this.gap, symbolBoundary.top - fontHeight - this.gap + dy,
+            symbolBoundary.right + fontWidth + this.gap, symbolBoundary.top + 0 - this.gap + dy);
         break;
       case Position.LEFT:
-        this.boundary = MapRectangle(symbolBoundary.left - fontWidth - this.gap,
-            -halfHeight, symbolBoundary.left - 0 - this.gap, halfHeight);
+        this.boundary = MapRectangle(symbolBoundary.left - fontWidth - this.gap, -halfHeight, symbolBoundary.left - 0 - this.gap, halfHeight);
         break;
       case Position.RIGHT:
-        this.boundary = MapRectangle(
-            symbolBoundary.right + 0 + this.gap,
-            -halfHeight,
-            symbolBoundary.right + fontHeight + this.gap,
-            halfHeight);
+        this.boundary = MapRectangle(symbolBoundary.right + 0 + this.gap, -halfHeight, symbolBoundary.right + fontHeight + this.gap, halfHeight);
         break;
     }
     return boundary!;
@@ -177,8 +144,7 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     }
 
     //print("Rendering caption $caption for $nodeProperties");
-    renderContext.labels
-        .add(NodeRenderInfo(nodeProperties, this)..caption = caption);
+    renderContext.labels.add(NodeRenderInfo(nodeProperties, this)..caption = caption);
   }
 
   @override
@@ -189,7 +155,6 @@ class ShapeCaption extends Shape with PaintSrcMixin, TextSrcMixin {
     }
 
     //print("caption $caption");
-    renderContext.labels
-        .add(WayRenderInfo(wayProperties, this)..caption = caption);
+    renderContext.labels.add(WayRenderInfo(wayProperties, this)..caption = caption);
   }
 }

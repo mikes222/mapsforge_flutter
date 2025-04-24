@@ -7,12 +7,9 @@ import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
 
 main() async {
-  final _log = new Logger('CopyPbfToMapfileTest');
-
   testWidgets("Reduce number of points", (WidgetTester tester) async {
     _initLogging();
 
-    MemoryDatastore datastore = MemoryDatastore();
     List<ILatLong> points = [
       const LatLong(43.536831, 7.532992),
       const LatLong(43.535270, 7.530473),
@@ -535,12 +532,12 @@ main() async {
       const LatLong(43.538996, 7.532144),
       const LatLong(43.536831, 7.532992)
     ];
-    points.forEach((latlong) {
-      int len = points.where((test) => test == latlong).length;
-      if (len > 1) {
-        print("Found duplicate: $latlong $len");
-      }
-    });
+    // points.forEach((latlong) {
+    //   int len = points.where((test) => test == latlong).length;
+    //   if (len > 1) {
+    //     print("Found duplicate: $latlong $len");
+    //   }
+    // });
     Way way = Way(0, [const Tag("admin_level", "2")], [points], null);
     assert(points.length == 520, "Length is wrong: ${points.length}");
     BoundingBox boundingBox = BoundingBox.fromLatLongs(points);
@@ -552,8 +549,8 @@ main() async {
     Wayholder wayholder = Wayholder.fromWay(way);
     List<Wayholder> wayholders = subfileFiller.prepareWays(const ZoomlevelRange(0, 20), [wayholder]);
     wayholder = wayholders.first;
-    LatLongUtils.printLatLongs(way);
-    assert(way.latLongs[0].length == 35, "wrong size: ${way.latLongs[0].length}");
+    //LatLongUtils.printLatLongs(way);
+    assert(wayholder.closedOutersRead[0].length == 28, "wrong size: It should reduce from 520 to 28, but have ${wayholder.closedOutersRead[0].length}");
     boundingBox = BoundingBox.fromLatLongs(way.latLongs[0]);
     assert(boundingBox == const BoundingBox(43.516536, 7.409028, 43.751917, 7.532992), "Bounding box is wrong: $boundingBox");
   });
