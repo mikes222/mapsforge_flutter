@@ -387,6 +387,8 @@ class TileBuffer {
 
   late final String _filename;
 
+  int _length = 0;
+
   TileBuffer(int baseZoomlevel) {
     _filename = "temp_${DateTime.now().millisecondsSinceEpoch}_${baseZoomlevel}.tmp";
   }
@@ -402,11 +404,13 @@ class TileBuffer {
     _writebufferForTiles.clear();
     _indexes.clear();
     _sizes.clear();
+    _length = 0;
   }
 
   void set(Tile tile, Uint8List content) {
     _writebufferForTiles[tile] = content;
     _sizes[tile] = content.length;
+    _length += content.length;
   }
 
   /// Returns the content of the tile. Assumes that the order of retrieval is exactly
@@ -445,6 +449,8 @@ class TileBuffer {
 
   void cacheToDisk(int processedTiles, int sumTiles) {
     if (_writebufferForTiles.isEmpty) return;
+    // less than 10MB? keep in memory
+    if (_length < 10000000) return;
     _ioSink ??= SinkWithCounter(File(_filename).openWrite());
     _writebufferForTiles.forEach((tile, content) {
       _TempfileIndex tempfileIndex = _TempfileIndex(_ioSink!.written, content.length);
