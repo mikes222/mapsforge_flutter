@@ -1,95 +1,96 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/core.dart';
 
+/// Two‐finger rotation overlay that never blocks pan/zoom,
+/// but eases the rotation by blending 30% of the delta each move.
 class RotationOverlay extends StatefulWidget {
   final ViewModel viewModel;
-  const RotationOverlay(this.viewModel, {super.key});
+
+  /// degrees of twist before we start rotating
+  final double thresholdDeg;
+
+  /// 0.0 = no smoothing (instant), 1.0 = full smoothing (never move)
+  final double smoothing;
+
+  const RotationOverlay(
+    this.viewModel, {
+    Key? key,
+    this.thresholdDeg = 10.0,
+    this.smoothing = 0.3,
+  }) : super(key: key);
 
   @override
   _RotationOverlayState createState() => _RotationOverlayState();
 }
 
 class _RotationOverlayState extends State<RotationOverlay> {
-  // Store active pointer positions.
-  final Map<int, Offset> _pointerPositions = {};
-
-  // The baseline average angle (in degrees) computed from pointers.
+  final Map<int, Offset> _points = {};
   double? _baselineAngle;
+  double _rawHeading = 0.0; 
+  double _displayHeading = 0.0;
 
-  /// Normalize an angle to the range [0, 360).
-  double _normalizeRotation(double rotation) {
-    double normalized = rotation % 360;
-    return normalized < 0 ? normalized + 360 : normalized;
-  }
-
-  /// Compute the average angle (in degrees) of all pointers.
-  /// The average angle is computed by first determining the centroid of all pointers
-  /// and then averaging the angles (via vector addition) from the centroid to each pointer.
-  double _computeAverageAngle(Map<int, Offset> pointers) {
-    if (pointers.isEmpty) return 0.0;
-    // Compute centroid.
-    double sumX = 0, sumY = 0;
-    for (var pos in pointers.values) {
-      sumX += pos.dx;
-      sumY += pos.dy;
-    }
-    final centroid = Offset(sumX / pointers.length, sumY / pointers.length);
-
-    double sumSin = 0, sumCos = 0;
-    for (var pos in pointers.values) {
-      double angle = atan2(pos.dy - centroid.dy, pos.dx - centroid.dx);
-      sumSin += sin(angle);
-      sumCos += cos(angle);
-    }
-    double avgAngle = atan2(sumSin, sumCos);
-    // Convert to degrees and normalize.
-    return _normalizeRotation(avgAngle * 180 / pi);
+  double _normalize(double deg) {
+    deg %= 360;
+    return deg < 0 ? deg + 360 : deg;
   }
 
   @override
   Widget build(BuildContext context) {
     return Listener(
       behavior: HitTestBehavior.translucent,
-      onPointerDown: (event) {
-        _pointerPositions[event.pointer] = event.position;
-        // When three or more pointers are active, compute the average baseline angle.
-        if (_pointerPositions.length >= 3) {
-          _baselineAngle = _computeAverageAngle(_pointerPositions);
+      onPointerDown: (e) {
+        _points[e.pointer] = e.position;
+        if (_points.length == 2) {
+          // both the raw & display start from the map's current heading
+          _rawHeading = widget.viewModel.mapViewPosition?.rotation ?? 0.0;
+          _displayHeading = _rawHeading;
+          _baselineAngle = _computeTwoFingerAngle();
         }
       },
-      onPointerMove: (event) {
-        if (_pointerPositions.containsKey(event.pointer)) {
-          _pointerPositions[event.pointer] = event.position;
-          if (_pointerPositions.length >= 3 && _baselineAngle != null) {
-            double newAverageAngle = _computeAverageAngle(_pointerPositions);
-            double delta = newAverageAngle - _baselineAngle!;
-            // Handle the wrap-around at 360°.
-            if (delta > 180) {
-              delta -= 360;
-            } else if (delta < -180) {
-              delta += 360;
-            }
-            _baselineAngle = newAverageAngle;
-            widget.viewModel.rotateDelta(delta);
-          }
+      onPointerMove: (e) {
+        if (!_points.containsKey(e.pointer)) return;
+        _points[e.pointer] = e.position;
+        if (_points.length == 2 && _baselineAngle != null) {
+          final newAngle = _computeTwoFingerAngle();
+          var delta = newAngle - _baselineAngle!;
+          if (delta > 180) delta -= 360;
+          if (delta < -180) delta += 360;
+
+          // only start rotating once you exceed the threshold
+          if (delta.abs() < widget.thresholdDeg) return;
+
+          // accumulate raw heading
+          _rawHeading = _normalize(_rawHeading + delta);
+          _baselineAngle = newAngle;
+
+          // exponential smoothing towards rawHeading
+          _displayHeading += (_rawHeading - _displayHeading) * widget.smoothing;
+
+          widget.viewModel.rotate(_displayHeading);
         }
       },
-      onPointerUp: (event) {
-        _pointerPositions.remove(event.pointer);
-        if (_pointerPositions.length < 3) {
-          _baselineAngle = null;
-        }
+      onPointerUp: (e) {
+        _points.remove(e.pointer);
+        if (_points.length < 2) _baselineAngle = null;
       },
-      onPointerCancel: (event) {
-        _pointerPositions.remove(event.pointer);
-        if (_pointerPositions.length < 3) {
-          _baselineAngle = null;
-        }
+      onPointerCancel: (e) {
+        _points.remove(e.pointer);
+        if (_points.length < 2) _baselineAngle = null;
       },
-      // Only intercept touches when three or more pointers are active.
-      child: _pointerPositions.length >= 3 ? Container(color: Colors.transparent) : IgnorePointer(child: Container(color: Colors.transparent)),
+      child: const SizedBox.expand(),
     );
+  }
+
+  double _computeTwoFingerAngle() {
+    final pts = _points.values.toList();
+    final center = Offset(
+      (pts[0].dx + pts[1].dx) / 2,
+      (pts[0].dy + pts[1].dy) / 2,
+    );
+    final a0 = atan2(pts[0].dy - center.dy, pts[0].dx - center.dx);
+    final a1 = atan2(pts[1].dy - center.dy, pts[1].dx - center.dx);
+    // average the two angles and convert to degrees
+    return _normalize(((a0 + a1) / 2) * 180 / pi);
   }
 }
