@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/marker.dart';
+import 'package:mapsforge_flutter/overlay.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,6 +23,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+      ),
+      themeMode: ThemeMode.system,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -99,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
       symbolCache: symbolCache,
       displayModel: displayModel,
     ));
+    viewModel.addOverlay(ZoomOverlay(viewModel));
     return viewModel;
   }
 
