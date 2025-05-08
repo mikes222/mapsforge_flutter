@@ -1,23 +1,19 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter/core.dart';
+import 'package:mapsforge_flutter/src/model/viewmodel.dart';
 
 /// Two‐finger rotation overlay that never blocks pan/zoom,
-/// but eases the rotation by blending 30% of the delta each move.
+/// and uses ViewModel.rotateDelta() to apply each twist incrementally.
 class RotationOverlay extends StatefulWidget {
   final ViewModel viewModel;
 
   /// degrees of twist before we start rotating
   final double thresholdDeg;
 
-  /// 0.0 = no smoothing (instant), 1.0 = full smoothing (never move)
-  final double smoothing;
-
   const RotationOverlay(
     this.viewModel, {
     Key? key,
     this.thresholdDeg = 10.0,
-    this.smoothing = 0.3,
   }) : super(key: key);
 
   @override
@@ -27,12 +23,21 @@ class RotationOverlay extends StatefulWidget {
 class _RotationOverlayState extends State<RotationOverlay> {
   final Map<int, Offset> _points = {};
   double? _baselineAngle;
-  double _rawHeading = 0.0; 
-  double _displayHeading = 0.0;
+  bool _rotating = false;
 
   double _normalize(double deg) {
     deg %= 360;
     return deg < 0 ? deg + 360 : deg;
+  }
+
+  double _twoFingerAngle() {
+    final pts = _points.values.toList();
+    final cx = (pts[0].dx + pts[1].dx) / 2;
+    final cy = (pts[0].dy + pts[1].dy) / 2;
+    final a0 = atan2(pts[0].dy - cy, pts[0].dx - cx);
+    final a1 = atan2(pts[1].dy - cy, pts[1].dx - cx);
+    // average, converted to degrees
+    return _normalize(((a0 + a1) / 2) * 180 / pi);
   }
 
   @override
@@ -42,55 +47,51 @@ class _RotationOverlayState extends State<RotationOverlay> {
       onPointerDown: (e) {
         _points[e.pointer] = e.position;
         if (_points.length == 2) {
-          // both the raw & display start from the map's current heading
-          _rawHeading = widget.viewModel.mapViewPosition?.rotation ?? 0.0;
-          _displayHeading = _rawHeading;
-          _baselineAngle = _computeTwoFingerAngle();
+          _baselineAngle = _twoFingerAngle();
+          _rotating = false;
         }
       },
       onPointerMove: (e) {
         if (!_points.containsKey(e.pointer)) return;
         _points[e.pointer] = e.position;
+
         if (_points.length == 2 && _baselineAngle != null) {
-          final newAngle = _computeTwoFingerAngle();
+          final newAngle = _twoFingerAngle();
           var delta = newAngle - _baselineAngle!;
           if (delta > 180) delta -= 360;
           if (delta < -180) delta += 360;
 
-          // only start rotating once you exceed the threshold
-          if (delta.abs() < widget.thresholdDeg) return;
+          // threshold guard
+          if (!_rotating) {
+            if (delta.abs() > widget.thresholdDeg) {
+              _rotating = true;
+            } else {
+              return; // still just pinch/drag
+            }
+          }
 
-          // accumulate raw heading
-          _rawHeading = _normalize(_rawHeading + delta);
+          // apply only the incremental twist
+          widget.viewModel.rotateDelta(delta);
+
+          // reset baseline for the next small delta
           _baselineAngle = newAngle;
-
-          // exponential smoothing towards rawHeading
-          _displayHeading += (_rawHeading - _displayHeading) * widget.smoothing;
-
-          widget.viewModel.rotate(_displayHeading);
         }
       },
       onPointerUp: (e) {
         _points.remove(e.pointer);
-        if (_points.length < 2) _baselineAngle = null;
+        if (_points.length < 2) {
+          _rotating = false;
+          _baselineAngle = null;
+        }
       },
       onPointerCancel: (e) {
         _points.remove(e.pointer);
-        if (_points.length < 2) _baselineAngle = null;
+        if (_points.length < 2) {
+          _rotating = false;
+          _baselineAngle = null;
+        }
       },
       child: const SizedBox.expand(),
     );
-  }
-
-  double _computeTwoFingerAngle() {
-    final pts = _points.values.toList();
-    final center = Offset(
-      (pts[0].dx + pts[1].dx) / 2,
-      (pts[0].dy + pts[1].dy) / 2,
-    );
-    final a0 = atan2(pts[0].dy - center.dy, pts[0].dx - center.dx);
-    final a1 = atan2(pts[1].dy - center.dy, pts[1].dx - center.dx);
-    // average the two angles and convert to degrees
-    return _normalize(((a0 + a1) / 2) * 180 / pi);
   }
 }
