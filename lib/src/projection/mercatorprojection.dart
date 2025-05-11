@@ -41,8 +41,11 @@ class MercatorProjection implements Projection {
   /// @return the tile X number of the longitude value.
   @override
   int longitudeToTileX(double longitude) {
-    if (longitude == 180) {
-      return (_maxTileCount - 1).floor();
+    if (longitude >= 180) {
+      return _maxTileCount - 1;
+    }
+    if (longitude <= -180) {
+      return 0;
     }
     int result = ((longitude + 180) / 360 * _scalefactor.scalefactor).floor();
     return result;
@@ -87,6 +90,12 @@ class MercatorProjection implements Projection {
   /// @return the tile Y number of the latitude value.
   @override
   int latitudeToTileY(double latitude) {
+    if (latitude >= 90) {
+      return _maxTileCount - 1;
+    }
+    if (latitude <= -90) {
+      return 0;
+    }
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;
     double sinLatitude = sin(latitude * pi180);

@@ -51,8 +51,8 @@ class Tile {
   /// @param zoomLevel the zoom level of the tile.
   /// @throws IllegalArgumentException if any of the parameters is invalid.
   Tile(this.tileX, this.tileY, this.zoomLevel, this.indoorLevel)
-      : assert(tileX >= 0),
-        assert(tileY >= 0),
+      : assert(tileX >= 0, "tileX $tileX must not be negative"),
+        assert(tileY >= 0, "tileY $tileY must not be negative"),
         assert(zoomLevel >= 0) {
     assert(tileX <= getMaxTileNumber(zoomLevel), "$tileX > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");
     assert(tileY <= getMaxTileNumber(zoomLevel), "$tileY > ${getMaxTileNumber(zoomLevel)} for zoomlevel $zoomLevel");

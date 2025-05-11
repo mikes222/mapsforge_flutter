@@ -16,8 +16,12 @@ class RenderthemeFilter {
         ++noRangeNodes;
         return;
       }
-      if (nodes[range] == null) nodes[range] = [];
-      nodes[range]!.add(pointOfInterest);
+      List<PointOfInterest>? bag = nodes[range];
+      if (bag == null) {
+        bag = [];
+        nodes[range] = bag;
+      }
+      bag.add(pointOfInterest);
     });
     _log.info("Removed $noRangeNodes nodes because we would never draw them according to the render theme");
     return nodes;
@@ -37,8 +41,12 @@ class RenderthemeFilter {
         ++noRangeWays;
         continue;
       }
-      if (result[range] == null) result[range] = [];
-      result[range]!.add(wayHolder);
+      List<Wayholder>? bag = result[range];
+      if (bag == null) {
+        bag = [];
+        result[range] = bag;
+      }
+      bag.add(wayHolder);
     }
     _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
 

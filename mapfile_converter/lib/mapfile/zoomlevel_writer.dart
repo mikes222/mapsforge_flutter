@@ -7,7 +7,7 @@ class ZoomlevelWriter {
 
   ZoomlevelWriter(this.maxDeviationSize);
 
-  Future<void> writeZoomlevel(
+  Future<SubfileCreator> writeZoomlevel(
     MapfileWriter mapfileWriter,
     MapHeaderInfo mapHeaderInfo,
     BoundingBox boundingBox,
@@ -21,11 +21,13 @@ class ZoomlevelWriter {
       baseZoomLevel: minZoomlevel,
       zoomlevelRange: ZoomlevelRange(minZoomlevel, maxZoomlevel),
     );
-    await _fillSubfile(mapfileWriter, subfileCreator, pois, ways);
+    await _fillSubfile(mapfileWriter.mapHeaderInfo.tilePixelSize, subfileCreator, pois, ways);
+    mapfileWriter.subfileCreators.add(subfileCreator);
+    return subfileCreator;
   }
 
   Future<void> _fillSubfile(
-    MapfileWriter mapfileWriter,
+    int tilePixelSize,
     SubfileCreator subfileCreator,
     Map<ZoomlevelRange, List<PointOfInterest>> nodes,
     Map<ZoomlevelRange, List<Wayholder>> wayHolders,
@@ -40,11 +42,9 @@ class ZoomlevelWriter {
       if (wayholderlist.isEmpty) return;
       if (subfileCreator.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
       if (subfileCreator.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholderlist, mapfileWriter.mapHeaderInfo.tilePixelSize));
+      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholderlist, tilePixelSize));
     });
     await Future.wait(wayholderFutures);
-    subfileCreator.statistics();
-    mapfileWriter.subfileCreators.add(subfileCreator);
   }
 
   Future<void> _isolate(SubfileCreator subfileCreator, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist, int tilePixelSize) async {

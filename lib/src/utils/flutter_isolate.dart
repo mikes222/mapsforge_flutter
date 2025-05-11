@@ -10,6 +10,10 @@ typedef Future<V> EntryPoint<V, R>(R request);
 
 /// always annotate your entry point with
 /// ``@pragma('vm:entry-point')``
+typedef Future<Stream<V>> StreamEntryPoint<V, R>(R request);
+
+/// always annotate your entry point with
+/// ``@pragma('vm:entry-point')``
 typedef void CreateInstanceFunction(Object object);
 
 //////////////////////////////////////////////////////////////////////////////
@@ -71,11 +75,13 @@ class FlutterIsolateInstancePool {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// One instance for an isolate. Do not instantiate directly. Use [FlutterIsolateInstance.isolateCompute] instead.
 class FlutterIsolateInstance {
   SendPort? _sendPort;
 
   Isolate? _isolate;
 
+  // complete() will be called if the isolate is ready to receive commands.
   Completer _isolateCompleter = Completer();
 
   Map<int, _FlutterProcess> _flutterProcesses = {};
@@ -111,6 +117,16 @@ class FlutterIsolateInstance {
     return result;
   }
 
+  /// Calls a method in an isolate which returns a stream of data.
+  static Future<Stream<V>> isolateComputeStream<V, R>(StreamEntryPoint<V, R> entryPoint, R request) async {
+    FlutterIsolateInstance instance = await FlutterIsolateInstance._create(null, null);
+    Stream<V> result = instance.computeStream(entryPoint, request);
+    instance.dispose();
+    return result;
+  }
+
+  /// The first entry point called in the isolate. It establishes the communication with the main isolate, instantiates the isolate's class if necessary and
+  /// waits for computational commands.
   @pragma('vm:entry-point')
   static Future<void> isolateEntryPoint(_IsolateInitInstanceParams isolateInitParams) async {
     // Open the ReceivePort to listen for incoming messages
@@ -125,24 +141,42 @@ class FlutterIsolateInstance {
       createInstance!(instanceParams);
     }
 
-    // Listen for messages
+    // Listen for messages from main isolate and returns the results.
     await for (var data in receivePort) {
       if (data is _IsolateRequestInstanceParams) {
         try {
           final entryPointHandle = CallbackHandle.fromRawHandle(data.entryPointHandle);
           final entryPoint = PluginUtilities.getCallbackFromHandle(entryPointHandle);
           entryPoint!(data.parameter).then((result) {
+            // return result to main isolate
             isolateInitParams.sendPort.send(_IsolateReplyInstanceParams(id: data.id, result: result));
           });
         } catch (error, stacktrace) {
-          isolateInitParams.sendPort.send(_IsolateReplyInstanceParams.error(id: data.id, error: error, stacktrace: stacktrace));
+          // return error to main isolate
+          isolateInitParams.sendPort.send(_IsolateErrorInstanceParams.error(id: data.id, error: error, stacktrace: stacktrace));
+        }
+      } else if (data is _IsolateRequestStreamParams) {
+        try {
+          final entryPointHandle = CallbackHandle.fromRawHandle(data.entryPointHandle);
+          final entryPoint = PluginUtilities.getCallbackFromHandle(entryPointHandle);
+          Stream stream = await entryPoint!(data.parameter);
+          print("stream: ${stream.runtimeType}");
+          stream.listen((result) {
+            print("result: ${result.runtimeType}");
+            // return result to main isolate
+            isolateInitParams.sendPort.send(_IsolateStatusInstanceParams(id: data.id, result: result));
+          });
+        } catch (error, stacktrace) {
+          // return error to main isolate
+          print("Error: ${error.toString()}, ${stacktrace.toString()} ,${error.runtimeType} ,${stacktrace.runtimeType}");
+          isolateInitParams.sendPort.send(_IsolateErrorInstanceParams.error(id: data.id, error: error, stacktrace: stacktrace));
         }
       }
     }
     return;
   }
 
-  /// Starts a new isolate. Do not call this directly. Use [isolateCompute] instead.
+  /// Starts a new isolate. Do not call this directly. Use [isolateCompute] instead. This runs in the main isolate.
   Future<void> start(CreateInstanceFunction? createInstance, Object? instanceParams) async {
     ReceivePort receivePort = ReceivePort();
     int? createInstanceHandle;
@@ -150,13 +184,12 @@ class FlutterIsolateInstance {
 
     _IsolateInitInstanceParams initParams = _IsolateInitInstanceParams(receivePort.sendPort, createInstanceHandle, instanceParams);
     _isolate = await Isolate.spawn<_IsolateInitInstanceParams>(isolateEntryPoint, initParams);
-    // let the listener run in background
-    //print("start sendport=$_sendPort vor listen");
+    // let the listener run in background of the main isolate
     unawaited(_listenToIsolate(receivePort));
-    //print("start sendport=$_sendPort nach listen");
     return _isolateCompleter.future;
   }
 
+  /// listen to the results of an isolate. This method runs in the main isolate.
   Future<void> _listenToIsolate(ReceivePort receivePort) async {
     await for (var data in receivePort) {
       //tileCache.addTileBitmap(job.tile, tileBitmap);
@@ -165,6 +198,30 @@ class FlutterIsolateInstance {
         // Receive the SendPort from the Isolate
         _sendPort = data;
         _isolateCompleter.complete();
+      } else if (data is _IsolateErrorInstanceParams) {
+        _IsolateErrorInstanceParams result = data;
+        _FlutterProcess? flutterProcess = _flutterProcesses.remove(result.id);
+        if (flutterProcess == null) {
+          print("Error: flutterProcess with id ${result.id} not found");
+          continue;
+        }
+        if (flutterProcess is _FlutterStatusProcess) {
+          flutterProcess.subject.addError(result.error, result.stacktrace);
+          await flutterProcess.dispose();
+        } else {
+          flutterProcess._completer.completeError(result.error, result.stacktrace);
+        }
+      } else if (data is _IsolateStatusInstanceParams) {
+        _IsolateStatusInstanceParams result = data;
+        _FlutterProcess? flutterProcess = _flutterProcesses[result.id];
+        if (flutterProcess == null) {
+          print("Error: flutterProcess with id ${result.id} not found");
+          continue;
+        }
+        if (flutterProcess is _FlutterStatusProcess) {
+          // send the status or ignore it if we have not started it a statusProcess
+          flutterProcess.subject.add(result.result);
+        }
       } else if (data is _IsolateReplyInstanceParams) {
         _IsolateReplyInstanceParams result = data;
         _FlutterProcess? flutterProcess = _flutterProcesses.remove(result.id);
@@ -172,16 +229,14 @@ class FlutterIsolateInstance {
           print("Error: flutterProcess with id ${result.id} not found");
           continue;
         }
-        if (result.error != null) {
-          flutterProcess._completer.completeError(result.error, result.stacktrace);
-        }
         flutterProcess._completer.complete(result.result);
       }
     }
   }
 
-  /// Performs a single computation in an isolate. Do not call this method
+  /// Starts a single computation in an isolate. Do not call this method
   /// directly. Use [isolateCompute] instead.
+  /// This method runs in the main isolate.
   Future<V> compute<V, R>(EntryPoint<V, R> entryPoint, R request) {
     assert(_sendPort != null, "wait until start() is done");
     final entryPointHandle = PluginUtilities.getCallbackHandle(entryPoint)!.toRawHandle();
@@ -190,6 +245,17 @@ class FlutterIsolateInstance {
     _IsolateRequestInstanceParams<R> params = _IsolateRequestInstanceParams(flutterProcess._id, entryPointHandle, request);
     _sendPort!.send(params);
     return flutterProcess._completer.future;
+  }
+
+  /// Starts a stream computation in an isolate. Do not call this method directly. Use [isolateComputeStream] instead. This method runs in the main isolate.
+  Stream<V> computeStream<V, R>(StreamEntryPoint<V, R> entryPoint, R request) {
+    assert(_sendPort != null, "wait until start() is done");
+    final entryPointHandle = PluginUtilities.getCallbackHandle(entryPoint)!.toRawHandle();
+    _FlutterStatusProcess<V> flutterProcess = _FlutterStatusProcess();
+    _flutterProcesses[flutterProcess._id] = flutterProcess;
+    _IsolateRequestStreamParams<R> params = _IsolateRequestStreamParams(flutterProcess._id, entryPointHandle, request);
+    _sendPort!.send(params);
+    return flutterProcess.subject.stream;
   }
 }
 
@@ -203,6 +269,19 @@ class _FlutterProcess<V> {
   Completer<V> _completer = Completer<V>();
 
   _FlutterProcess();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+/// Used if the method to be called returns a stream of data, e.g. Statusmessages. The _completer of the superclass is not used.
+class _FlutterStatusProcess<V> extends _FlutterProcess<V> {
+  final Subject<V> subject = PublishSubject();
+
+  _FlutterStatusProcess();
+
+  Future<void> dispose() async {
+    await subject.close();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -229,22 +308,51 @@ class _IsolateRequestInstanceParams<R> {
   _IsolateRequestInstanceParams(this.id, this.entryPointHandle, this.parameter);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
+class _IsolateRequestStreamParams<R> {
+  final int entryPointHandle;
+
+  final R parameter;
+
+  final int id;
+
+  _IsolateRequestStreamParams(this.id, this.entryPointHandle, this.parameter);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
+/// Sends the result of the isolate to the main isolate.
 class _IsolateReplyInstanceParams<V> {
   final int id;
 
   final V? result;
 
+  const _IsolateReplyInstanceParams({required this.id, this.result});
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+/// Sends the status of the isolate to the main isolate but does NOT end the computation
+class _IsolateStatusInstanceParams<V> {
+  final int id;
+
+  final V? result;
+
+  const _IsolateStatusInstanceParams({required this.id, this.result});
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+/// Sends an error to the main isolate.
+class _IsolateErrorInstanceParams {
+  final int id;
+
   final dynamic error;
 
   final dynamic stacktrace;
 
-  const _IsolateReplyInstanceParams({required this.id, this.result})
-      : error = null,
-        stacktrace = null;
-
-  const _IsolateReplyInstanceParams.error({required this.id, this.error, this.stacktrace}) : result = null;
+  const _IsolateErrorInstanceParams.error({required this.id, this.error, this.stacktrace});
 
   @override
   String toString() {

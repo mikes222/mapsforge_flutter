@@ -64,6 +64,9 @@ class SubfileCreator {
     _maxX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.maxLongitude);
     _minY = projection.latitudeToTileY(mapHeaderInfo.boundingBox.maxLatitude);
     _maxY = projection.latitudeToTileY(mapHeaderInfo.boundingBox.minLatitude);
+
+    assert(_minX >= 0, "minX $_minX < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
+    assert(_minY >= 0, "minY $_minY < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
     tileBuffer = TileBuffer(baseZoomLevel);
 
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
@@ -167,10 +170,14 @@ class SubfileCreator {
     Timing timing = Timing(log: _log);
     List<IsolateTileConstructor> tileConstructor = [];
     final int instanceCount = 6;
-    final int iterationCount = 10;
+    // each instance must process this number of consecutive tiles
+    final int iterationCount = 20;
     for (int i = 0; i < instanceCount; ++i)
       tileConstructor.add(
           await IsolateTileConstructor.create(debugFile, _poiinfos, _wayinfos, zoomlevelRange, maxDeviationPixel, Math.min(_maxX - _minX + 1, iterationCount)));
+    // the isolates now hove the infos, we can remove them from memory here
+    _poiinfos.clear();
+    _wayinfos.clear();
     List<Future> futures = [];
     int current = 0;
     int counter = 0;
@@ -187,13 +194,12 @@ class SubfileCreator {
       if (futures.length > 1000 || processedTiles == sumTiles) {
         await Future.wait(futures);
         futures.clear();
-        if (sumTiles > 2000) {
-          tileBuffer.cacheToDisk(processedTiles, sumTiles);
-        }
+        tileBuffer.cacheToDisk(processedTiles, sumTiles);
       }
     });
     await tileBuffer.writeComplete();
     for (int i = 0; i < instanceCount; ++i) tileConstructor[i].dispose();
+    tileConstructor.clear();
     timing.lap(1000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
   }
 
@@ -217,8 +223,6 @@ class SubfileCreator {
     });
     assert(firstOffset == _writebufferTileIndex!.length,
         "$firstOffset != ${_writebufferTileIndex!.length} with debug=$debugFile and baseZoomLevel=$baseZoomLevel");
-    _poiinfos.clear();
-    _wayinfos.clear();
     return _writebufferTileIndex!;
   }
 
@@ -390,7 +394,7 @@ class TileBuffer {
   int _length = 0;
 
   TileBuffer(int baseZoomlevel) {
-    _filename = "temp_${DateTime.now().millisecondsSinceEpoch}_${baseZoomlevel}.tmp";
+    _filename = "tiles_${DateTime.now().millisecondsSinceEpoch}_${baseZoomlevel}.tmp";
   }
 
   void dispose() {
@@ -416,7 +420,8 @@ class TileBuffer {
   /// Returns the content of the tile. Assumes that the order of retrieval is exactly
   /// the same as the order of storage.
   Future<Uint8List> get(Tile tile) async {
-    if (_writebufferForTiles.containsKey(tile)) return _writebufferForTiles[tile]!;
+    Uint8List? result = _writebufferForTiles[tile];
+    if (result != null) return result;
 
     await writeComplete();
     if (_readbufferFile != null) {
@@ -428,9 +433,10 @@ class TileBuffer {
   }
 
   Future<Uint8List> getAndRemove(Tile tile) async {
-    if (_writebufferForTiles.containsKey(tile)) {
+    Uint8List? result = _writebufferForTiles.remove(tile);
+    if (result != null) {
       _sizes.remove(tile);
-      return _writebufferForTiles.remove(tile)!;
+      return result;
     }
     if (_ioSink != null || _readbufferFile != null) {
       Uint8List result = await get(tile);
@@ -458,6 +464,7 @@ class TileBuffer {
       _ioSink!.add(content);
     });
     _writebufferForTiles.clear();
+    _length = 0;
   }
 
   Future<void> writeComplete() async {

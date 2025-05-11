@@ -578,10 +578,7 @@ class WayholderUnion {
     if (_temp == null) {
       CacheFile cacheFile = CacheFile();
       Uint8List uint8list = cacheFile.toFile(_wayholder!);
-      if (uint8list.length > 10000000) {
-        print("Lenght: ${uint8list.length} for ${_wayholder!.toString()}");
-      }
-      _filename ??= "temp_${DateTime.timestamp().millisecondsSinceEpoch}.bin";
+      _filename ??= "ways_${DateTime.timestamp().millisecondsSinceEpoch}.tmp";
       _sinkWithCounter ??= SinkWithCounter(File(_filename!).openWrite());
       int pos = _sinkWithCounter!.written;
       _sinkWithCounter!.add(uint8list);

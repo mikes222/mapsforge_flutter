@@ -90,6 +90,7 @@ class ConvertCommand extends Command {
     argParser.addFlag("debug", abbr: "f", defaultsTo: false, help: "Writes debug information in the mapfile");
     argParser.addOption("maxdeviation", abbr: "m", help: "Max deviation in pixels to simplify ways", defaultsTo: "5");
     argParser.addOption("maxgap", abbr: "g", help: "Max gap in meters to connect ways", defaultsTo: "200");
+    argParser.addFlag("quiet", abbr: "q", defaultsTo: false, help: "Quiet mode, less output");
   }
 
   @override
@@ -117,7 +118,7 @@ class ConvertCommand extends Command {
         );
 
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
-        pbfAnalyzer.statistics();
+        if (!argResults!.flag("quiet")) pbfAnalyzer.statistics();
         pois.addAll(pbfAnalyzer.pois);
         ways.addAll(await pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
@@ -133,7 +134,7 @@ class ConvertCommand extends Command {
 
         /// Now start exporting the data to a mapfile
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
-        pbfAnalyzer.statistics();
+        if (!argResults!.flag("quiet")) pbfAnalyzer.statistics();
         pois.addAll(pbfAnalyzer.pois);
         ways.addAll(await pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
@@ -182,12 +183,16 @@ class ConvertCommand extends Command {
     } else {
       poiZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
       wayZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
-      poiZoomlevels.forEach((zoomlevelRange, nodelist) {
-        _log.info("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
-      });
-      wayZoomlevels.forEach((zoomlevelRange, waylist) {
-        _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
-      });
+      if (!argResults!.flag("quiet")) {
+        poiZoomlevels.forEach((zoomlevelRange, nodelist) {
+          _log.info("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
+        });
+      }
+      if (!argResults!.flag("quiet")) {
+        wayZoomlevels.forEach((zoomlevelRange, waylist) {
+          _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
+        });
+      }
 
       MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
         boundingBox: finalBoundingBox!,
@@ -202,7 +207,7 @@ class ConvertCommand extends Command {
       ZoomlevelWriter zoomlevelWriter = ZoomlevelWriter(double.parse(argResults!.option("maxdeviation")!));
       for (int zoomlevel in zoomlevels) {
         if (previousZoomlevel != null) {
-          await zoomlevelWriter.writeZoomlevel(
+          SubfileCreator subfileCreator = await zoomlevelWriter.writeZoomlevel(
             mapfileWriter,
             mapHeaderInfo,
             finalBoundingBox,
@@ -211,6 +216,7 @@ class ConvertCommand extends Command {
             wayZoomlevels,
             poiZoomlevels,
           );
+          if (!argResults!.flag("quiet")) subfileCreator.statistics();
         }
         previousZoomlevel = zoomlevel;
       }
@@ -227,7 +233,7 @@ class ConvertCommand extends Command {
     if (argResults!.option("boundary") != null) {
       List<String> coordinatesString = _split(argResults!.option("boundary")!);
       if (coordinatesString.length != 4) {
-        _log.info("Invalid boundary ${argResults!.option("boundary")}");
+        _log.warning("Invalid boundary ${argResults!.option("boundary")}");
         return null;
       }
       List<double> coordinates = coordinatesString.map((toElement) => double.parse(toElement)).toList();
