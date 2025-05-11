@@ -84,7 +84,7 @@ main() async {
     timing.lap(1000, "Subfile 4 completed");
 
     // now start with writing the actual file
-    await mapfileWriter.write(5);
+    await mapfileWriter.write(5, 6);
     await mapfileWriter.close();
 
     timing.lap(1000, "Process completed");

@@ -91,6 +91,7 @@ class ConvertCommand extends Command {
     argParser.addOption("maxdeviation", abbr: "m", help: "Max deviation in pixels to simplify ways", defaultsTo: "5");
     argParser.addOption("maxgap", abbr: "g", help: "Max gap in meters to connect ways", defaultsTo: "200");
     argParser.addFlag("quiet", abbr: "q", defaultsTo: false, help: "Quiet mode, less output");
+    argParser.addOption("isolates", abbr: "i", defaultsTo: "6", help: "Number of isolates to use, less isolates reduces performance but also memory usage");
   }
 
   @override
@@ -222,7 +223,7 @@ class ConvertCommand extends Command {
       }
 
       /// Write everything to the file and close the file
-      await mapfileWriter.write(double.parse(argResults!.option("maxdeviation")!));
+      await mapfileWriter.write(double.parse(argResults!.option("maxdeviation")!), int.parse(argResults!.option("isolates")!));
       await mapfileWriter.close();
     }
     _log.info("Process completed");

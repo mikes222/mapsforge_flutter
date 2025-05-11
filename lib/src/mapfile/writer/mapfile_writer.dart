@@ -46,7 +46,7 @@ class MapfileWriter {
 
   /// Writes the mapfile to the given sink.
   /// @param maxDeviationPixel The maximum deviation in pixels if we need to simplify a polygon because only 32767 points are supported in a polygon.
-  Future<void> write(double maxDeviationPixel) async {
+  Future<void> write(double maxDeviationPixel, int instanceCount) async {
     //createSubfiles();
 
     assert(subfileCreators.isNotEmpty);
@@ -63,7 +63,7 @@ class MapfileWriter {
     Writebuffer writebufferHeader = mapfileHeaderWriter.write(writebuffer.length + 1 + 19 * subfileCreators.length);
 
     for (SubfileCreator subfileCreator in subfileCreators) {
-      await subfileCreator.prepareTiles(mapHeaderInfo.debugFile, maxDeviationPixel);
+      await subfileCreator.prepareTiles(mapHeaderInfo.debugFile, maxDeviationPixel, instanceCount);
     }
     // amount of zoom intervals
     writebuffer.appendInt1(subfileCreators.length);

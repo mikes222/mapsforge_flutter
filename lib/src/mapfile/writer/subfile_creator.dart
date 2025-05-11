@@ -166,10 +166,9 @@ class SubfileCreator {
     }
   }
 
-  Future<void> prepareTiles(bool debugFile, double maxDeviationPixel) async {
+  Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     Timing timing = Timing(log: _log);
     List<IsolateTileConstructor> tileConstructor = [];
-    final int instanceCount = 6;
     // each instance must process this number of consecutive tiles
     final int iterationCount = 20;
     for (int i = 0; i < instanceCount; ++i)
