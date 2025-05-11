@@ -437,15 +437,17 @@ class TileBuffer {
       _sizes.remove(tile);
       return result;
     }
-    if (_ioSink != null || _readbufferFile != null) {
-      Uint8List result = await get(tile);
-      _sizes.remove(tile);
-      _indexes.remove(tile);
-      if (_indexes.isEmpty) dispose();
-      return result;
-    }
+    assert(_ioSink != null || _readbufferFile != null);
+    await writeComplete();
+    assert(_readbufferFile != null);
+    _TempfileIndex? tempfileIndex = _indexes[tile];
+    assert(tempfileIndex != null, "indexes for $tile not found");
+    Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex!.position, tempfileIndex.length);
+    result = readbuffer.getBuffer(0, tempfileIndex.length);
     _sizes.remove(tile);
-    return _writebufferForTiles.remove(tile)!;
+    _indexes.remove(tile);
+    //if (_indexes.isEmpty) dispose();
+    return result;
   }
 
   int getLength(Tile tile) {
