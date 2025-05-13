@@ -91,10 +91,10 @@ class MercatorProjection implements Projection {
   @override
   int latitudeToTileY(double latitude) {
     if (latitude >= 90) {
-      return _maxTileCount - 1;
+      return 0;
     }
     if (latitude <= -90) {
-      return 0;
+      return _maxTileCount - 1;
     }
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;
