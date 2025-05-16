@@ -142,8 +142,9 @@ class TileindexPage extends StatelessWidget {
           ++taglessPois;
         } else {
           res.add(Wrap(spacing: 10, children: [
-            Text("Zoomlelel: $zoomlevel, POI: Layer: ${pointOfInterest.layer}, tags: ${pointOfInterest.tags}"),
-            Text("${pointOfInterest.position.latitude}/${pointOfInterest.position.longitude}", style: const TextStyle(fontSize: 10), maxLines: 5),
+            Text("Zoomlelel: $zoomlevel, POI: Layer: ${pointOfInterest.layer}, tags: ${pointOfInterest.printTags()}"),
+            Text("${pointOfInterest.position.latitude.toStringAsFixed(6)}/${pointOfInterest.position.longitude.toStringAsFixed(6)}",
+                style: const TextStyle(fontSize: 10), maxLines: 5),
           ]));
         }
       }
@@ -171,7 +172,7 @@ class TileindexPage extends StatelessWidget {
                 spacing: 10,
                 children: [
                   Text(
-                      "$i, $index, 0x${(subFileParameter.startAddress + offset + pos).toRadixString(16)}: Zoomlelel: $zoomlevel, ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}Way: Layer: ${way.layer}, latLongs: ${way.latLongs.map((toElement) => toElement.length).toList()}, tags: ${way.tags}",
+                      "$i, $index, 0x${(subFileParameter.startAddress + offset + pos).toRadixString(16)}: Zoomlelel: $zoomlevel, ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}Way: Layer: ${way.layer}, latLongs: ${way.latLongs.map((toElement) => toElement.length).toList()}, tags: ${way.printTags()}",
                       maxLines: 5),
                   Text(
                     "${way.getBoundingBox()}",

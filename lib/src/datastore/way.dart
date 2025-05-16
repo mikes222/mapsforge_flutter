@@ -49,12 +49,16 @@ class Way {
     return BoundingBox.fromLatLongs(latLongs[0]);
   }
 
+  String printTags() {
+    return tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",");
+  }
+
   @override
   String toString() {
-    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",")}}';
+    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${printTags()}';
   }
 
   String toStringWithoutNames() {
-    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${tags.where((test) => test.key?.startsWith("name:") == false && test.key?.startsWith("official_name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}}';
+    return 'Way{labelPosition: $labelPosition, latLongs: ${latLongs.map((toElement) => "${toElement.length}").toList()}, layer: $layer, tags: ${Tag.tagsWithoutNames(tags)}';
   }
 }

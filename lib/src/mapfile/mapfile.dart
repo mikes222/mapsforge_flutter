@@ -60,7 +60,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<DatastoreReadResult?> readLabelsSingleStatic(_MapfileReadSingleRequest request) async {
-    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    mapFile ??= await MapFile.from(request.filename, 0, request.preferredLanguage);
     return mapFile!.readLabelsSingle(request.tile);
   }
 
@@ -78,7 +78,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<DatastoreReadResult?> readMapDataSingleStatic(_MapfileReadSingleRequest request) async {
-    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    mapFile ??= await MapFile.from(request.filename, 0, request.preferredLanguage);
     return mapFile!.readMapDataSingle(request.tile);
   }
 
@@ -102,7 +102,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<bool> supportsTileStatic(_MapfileSupportsTileRequest request) async {
-    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    mapFile ??= await MapFile.from(request.filename, 0, request.preferredLanguage);
     return mapFile!.supportsTile(request.tile);
   }
 
@@ -114,7 +114,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<BoundingBox> getBoundingBoxStatic(_MapfileBoundingBoxRequest request) async {
-    mapFile ??= await MapFile.from(request.filename, 0, "en");
+    mapFile ??= await MapFile.from(request.filename, 0, request.preferredLanguage);
     return mapFile!.getBoundingBox();
   }
 }
@@ -627,8 +627,8 @@ class MapFile extends MapDataStore {
 
   @override
   Future<bool> supportsTile(Tile tile) async {
-    if (!zoomlevelRange.matches(tile.zoomLevel)) return false;
     await _lateOpen();
+    if (!zoomlevelRange.matches(tile.zoomLevel)) return false;
     return tile.getBoundingBox().intersects(getMapHeaderInfo().boundingBox);
   }
 

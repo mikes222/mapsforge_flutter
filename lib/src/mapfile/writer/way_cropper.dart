@@ -270,254 +270,69 @@ class WayCropper {
   }
 
   void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary, List<ILatLong> waypoints) {
-    switch (lastExitDirection) {
+    // we had no exit from our tile, so we do not need to add any corners
+    if (lastExitDirection == -1) return;
+    // always assume last exit on the top. We rotate the corners if this is not the case.
+    int entryDiffDirection = (newEntryDirection - lastExitDirection + 4) % 4;
+    switch (entryDiffDirection) {
       case 0:
-        // exit top (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            break;
-          case 1:
-            // entry right
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            break;
-          case 2:
-            // entry bottom, left or right? This approach does NOT work in any circumstance but it should make the code a bit better
-            if (LatLongUtils.isPointInPolygon(tileBoundary.getRightUpper(), waypoints) ||
-                LatLongUtils.isPointInPolygon(tileBoundary.getRightLower(), waypoints)) {
-              optimizedWaypoints.add(tileBoundary.getRightUpper());
-              optimizedWaypoints.add(tileBoundary.getRightLower());
-            } else {
-              optimizedWaypoints.add(tileBoundary.getLeftUpper());
-              optimizedWaypoints.add(tileBoundary.getLeftLower());
-            }
-            break;
-          case 3:
-            // entry left
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            break;
-          case -1:
-            break;
-        }
+        // entry top
         break;
       case 1:
-        // exit right (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            break;
-          case 1:
-            // entry right
-            break;
-          case 2:
-            // entry bottom
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            break;
-          case 3:
-            // entry left
-            if (LatLongUtils.isPointInPolygon(tileBoundary.getRightUpper(), waypoints) ||
-                LatLongUtils.isPointInPolygon(tileBoundary.getLeftUpper(), waypoints)) {
-              optimizedWaypoints.add(tileBoundary.getRightUpper());
-              optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            } else {
-              optimizedWaypoints.add(tileBoundary.getRightLower());
-              optimizedWaypoints.add(tileBoundary.getLeftLower());
-            }
-            break;
-          case -1:
-            break;
-        }
+        // entry right
+        optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
         break;
       case 2:
-        // exit bottom (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            if (LatLongUtils.isPointInPolygon(tileBoundary.getRightLower(), waypoints) ||
-                LatLongUtils.isPointInPolygon(tileBoundary.getRightUpper(), waypoints)) {
-              optimizedWaypoints.add(tileBoundary.getRightLower());
-              optimizedWaypoints.add(tileBoundary.getRightUpper());
-            } else {
-              optimizedWaypoints.add(tileBoundary.getLeftLower());
-              optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            }
-            break;
-          case 1:
-            // entry right
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            break;
-          case 2:
-            // entry bottom
-            break;
-          case 3:
-            // entry left
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case -1:
-            break;
+        // entry bottom, left or right? This approach does NOT work in any circumstance but it should make the code a bit better
+        if (LatLongUtils.isPointInPolygon(tileBoundary.getRightUpperRotate(lastExitDirection), waypoints) ||
+            LatLongUtils.isPointInPolygon(tileBoundary.getRightLowerRotate(lastExitDirection), waypoints)) {
+          optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
+          optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
+        } else {
+          optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
+          optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
         }
         break;
       case 3:
-        // exit left (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            break;
-          case 1:
-            // entry right
-            if (LatLongUtils.isPointInPolygon(tileBoundary.getLeftLower(), waypoints) ||
-                LatLongUtils.isPointInPolygon(tileBoundary.getRightLower(), waypoints)) {
-              optimizedWaypoints.add(tileBoundary.getLeftLower());
-              optimizedWaypoints.add(tileBoundary.getRightLower());
-            } else {
-              optimizedWaypoints.add(tileBoundary.getLeftUpper());
-              optimizedWaypoints.add(tileBoundary.getRightUpper());
-            }
-            break;
-          case 2:
-            // entry bottom
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case 3:
-            // entry left
-            break;
-          case -1:
-            break;
-        }
+        // entry left
+        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
         break;
       case -1:
+        break;
     }
   }
 
   void _addCornersOtherWay(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary) {
-    switch (lastExitDirection) {
+    // we had no exit from our tile, so we do not need to add any corners
+    if (lastExitDirection == -1) return;
+    int entryDiffDirection = (newEntryDirection - lastExitDirection + 4) % 4;
+    switch (entryDiffDirection) {
       case 0:
-        // exit top (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            break;
-          case 1:
-            // entry right
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            break;
-          case 2:
-            // entry bottom
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case 3:
-            // entry left
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case -1:
-            break;
-        }
+        // entry top
+        optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
         break;
       case 1:
-        // exit right (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            break;
-          case 1:
-            // entry right
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            break;
-          case 2:
-            // entry bottom
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case 3:
-            // entry left
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case -1:
-            break;
-        }
+        // entry right
+        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
         break;
       case 2:
-        // exit bottom (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            break;
-          case 1:
-            // entry right
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            break;
-          case 2:
-            // entry bottom
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case 3:
-            // entry left
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            break;
-          case -1:
-            break;
-        }
+        // entry bottom
+        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
         break;
       case 3:
-        // exit left (from exit to entry)
-        switch (newEntryDirection) {
-          case 0:
-            // entry top
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            break;
-          case 1:
-            // entry right
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            break;
-          case 2:
-            // entry bottom
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            break;
-          case 3:
-            // entry left
-            optimizedWaypoints.add(tileBoundary.getLeftUpper());
-            optimizedWaypoints.add(tileBoundary.getRightUpper());
-            optimizedWaypoints.add(tileBoundary.getRightLower());
-            optimizedWaypoints.add(tileBoundary.getLeftLower());
-            break;
-          case -1:
-            break;
-        }
+        // entry left
+        optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
         break;
       case -1:
+        break;
     }
   }
 

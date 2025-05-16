@@ -14,13 +14,11 @@ class WayRepair {
   }
 
   void repairClosed(Wayholder wayholder, BoundingBox? boundingBox) {
-    /*double maxGap =*/
     _repair(wayholder);
     for (Waypath waypath in List.from(wayholder.openOutersRead)) {
       if (Projection.distance(waypath.first, waypath.last) <= maxGapMeter) {
         waypath.add(waypath.first);
-        wayholder.openOutersRemove(waypath);
-        wayholder.closedOutersAdd(waypath);
+        wayholder.mayMoveToClosed(waypath);
       } else {
         // maybe both ends are at the boundary, we should connect anyway then.
         if (boundingBox != null) {
@@ -31,7 +29,12 @@ class WayRepair {
         }
       }
     }
-    // print("Could not close $wayholder, because it exceeds the max gap");
+    // if (wayholder.hasTagValue("name", "Balaton")) {
+    //   print("repairClosed: Balaton ${wayholder.toStringWithoutNames()}");
+    //   if (open != null) {
+    //     print("  first: ${open.first}, last: ${open.last}, closed: ${open.isClosedWay()}, gap: ${Projection.distance(open.first, open.last)}");
+    //   }
+    // }
   }
 
   bool _repairAtBoundary(BoundingBox boundingBox, ILatLong first, ILatLong second, Wayholder wayholder, Waypath waypath) {
@@ -55,8 +58,7 @@ class WayRepair {
     if (Projection.distance(nearestPoint, waypath.last) > maxGapMeter) return false;
     // both are near the right border, connect them
     waypath.add(waypath.first);
-    wayholder.openOutersRemove(waypath);
-    wayholder.closedOutersAdd(waypath);
+    wayholder.mayMoveToClosed(waypath);
     return true;
   }
 

@@ -34,10 +34,8 @@ mixin BitmapMixin {
 
   @mustCallSuper
   void dispose() {
-    if (this.bitmap != null) {
-      bitmap!.dispose();
-      bitmap = null;
-    }
+    bitmap?.dispose();
+    bitmap = null;
     bitmapPaint = null;
   }
 
@@ -58,13 +56,9 @@ mixin BitmapMixin {
     }
     try {
       //_log.info("$bitmapWidth - $bitmapHeight --> $bitmapPercent");
-      bitmap = await symbolCache.getOrCreateSymbol(
-          bitmapSrc!, bitmapWidth.round(), bitmapHeight.round());
-      if (bitmap == null ||
-          bitmap!.getWidth() == 0 ||
-          bitmap!.getHeight() == 0) {
-        _log.warning(
-            "bitmap $bitmapSrc not found or no width/height, ignoring");
+      bitmap = await symbolCache.getOrCreateSymbol(bitmapSrc!, bitmapWidth.round(), bitmapHeight.round());
+      if (bitmap == null || bitmap!.getWidth() == 0 || bitmap!.getHeight() == 0) {
+        _log.warning("bitmap $bitmapSrc not found or no width/height, ignoring");
         bitmap = null;
         bitmapInvalid = true;
         return;

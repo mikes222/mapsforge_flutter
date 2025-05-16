@@ -53,11 +53,12 @@ maxgap:
 
 Maximum gap in meters to be allowed to "close" open ways. 
 
+languagesPreference:
+
+List of languages which should be included in the output file. If omitted all available languages from the inputfile are included. This property can shrink the destination filesize significantly.
 
 Note that the program creates temporary files in the current directory so it must have write access to the current directory.
 
-
-Documentation is not yet done.
 
 ## Compile and run
 

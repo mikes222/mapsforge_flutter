@@ -117,10 +117,8 @@ class FlutterPaint implements MapPaint {
     //   ..[5] = devicePixelRatio
     //   ..[10] = 1.0
     //   ..[15] = 2.0;
-    Float64List deviceTransform =
-        Float64List.fromList(mat.Matrix4.identity().storage);
-    paint.shader = ui.ImageShader(
-        img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
+    Float64List deviceTransform = Float64List.fromList(mat.Matrix4.identity().storage);
+    paint.shader = ui.ImageShader(img, ui.TileMode.repeated, ui.TileMode.repeated, deviceTransform);
     img.dispose();
   }
 

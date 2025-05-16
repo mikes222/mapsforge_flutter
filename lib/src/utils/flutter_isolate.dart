@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// always annotate your entry point with
@@ -75,7 +76,32 @@ class FlutterIsolateInstancePool {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// One instance for an isolate. Do not instantiate directly. Use [FlutterIsolateInstance.isolateCompute] instead.
+/// One instance for an isolate. Easiest approach: Implement your class without isolate.
+///
+/// class MyClass {
+///   void perform(int param) {
+///       print("Implementation");
+///   }
+/// }
+///
+/// If this works create a new class.
+///
+/// @pragma('vm:entry-point')
+/// class IsolateMyClass {
+///
+///   void perform(int param) {
+///       FlutterIsolateInstance.isolateCompute(performStatic, param);
+///   }
+///
+///   @pragma('vm:entry-point')
+///   void performStatic(int param) {
+///       MyClass instance = MyClass();
+///       instance.perform(param);
+///   }
+/// }
+///
+/// There is also the possibility to create MyClass with paramters beforehand and calling the perform method multiple times for the same isolate.
+///
 class FlutterIsolateInstance {
   SendPort? _sendPort;
 
@@ -89,7 +115,6 @@ class FlutterIsolateInstance {
   FlutterIsolateInstance._();
 
   void dispose() {
-    //_receivePort?.close();
     _isolate?.kill();
     _isolate = null;
     _sendPort = null;
@@ -121,7 +146,11 @@ class FlutterIsolateInstance {
   static Future<Stream<V>> isolateComputeStream<V, R>(StreamEntryPoint<V, R> entryPoint, R request) async {
     FlutterIsolateInstance instance = await FlutterIsolateInstance._create(null, null);
     Stream<V> result = instance.computeStream(entryPoint, request);
-    instance.dispose();
+    result.doOnDone(() {
+      instance.dispose();
+    }).doOnError((error, stacktrace) {
+      instance.dispose();
+    });
     return result;
   }
 
@@ -129,6 +158,8 @@ class FlutterIsolateInstance {
   /// waits for computational commands.
   @pragma('vm:entry-point')
   static Future<void> isolateEntryPoint(_IsolateInitInstanceParams isolateInitParams) async {
+    // some methods (e.g. getTemporaryDirectory()) does not work without this initialization
+    BackgroundIsolateBinaryMessenger.ensureInitialized(isolateInitParams.rootIsolateToken);
     // Open the ReceivePort to listen for incoming messages
     var receivePort = new ReceivePort();
     // Send message to other Isolate and inform it about this receiver
@@ -160,11 +191,11 @@ class FlutterIsolateInstance {
           final entryPointHandle = CallbackHandle.fromRawHandle(data.entryPointHandle);
           final entryPoint = PluginUtilities.getCallbackFromHandle(entryPointHandle);
           Stream stream = await entryPoint!(data.parameter);
-          print("stream: ${stream.runtimeType}");
           stream.listen((result) {
-            print("result: ${result.runtimeType}");
             // return result to main isolate
-            isolateInitParams.sendPort.send(_IsolateStatusInstanceParams(id: data.id, result: result));
+            isolateInitParams.sendPort.send(_IsolateStreamInstanceParams(id: data.id, result: result));
+          }, onDone: () {
+            isolateInitParams.sendPort.send(_IsolateStreamInstanceParams(id: data.id, result: null, isDone: true));
           });
         } catch (error, stacktrace) {
           // return error to main isolate
@@ -182,7 +213,8 @@ class FlutterIsolateInstance {
     int? createInstanceHandle;
     if (createInstance != null) createInstanceHandle = PluginUtilities.getCallbackHandle(createInstance)!.toRawHandle();
 
-    _IsolateInitInstanceParams initParams = _IsolateInitInstanceParams(receivePort.sendPort, createInstanceHandle, instanceParams);
+    _IsolateInitInstanceParams initParams =
+        _IsolateInitInstanceParams(ServicesBinding.rootIsolateToken!, receivePort.sendPort, createInstanceHandle, instanceParams);
     _isolate = await Isolate.spawn<_IsolateInitInstanceParams>(isolateEntryPoint, initParams);
     // let the listener run in background of the main isolate
     unawaited(_listenToIsolate(receivePort));
@@ -205,22 +237,26 @@ class FlutterIsolateInstance {
           print("Error: flutterProcess with id ${result.id} not found");
           continue;
         }
-        if (flutterProcess is _FlutterStatusProcess) {
+        if (flutterProcess is _FlutterStreamProcess) {
           flutterProcess.subject.addError(result.error, result.stacktrace);
           await flutterProcess.dispose();
         } else {
           flutterProcess._completer.completeError(result.error, result.stacktrace);
         }
-      } else if (data is _IsolateStatusInstanceParams) {
-        _IsolateStatusInstanceParams result = data;
+      } else if (data is _IsolateStreamInstanceParams) {
+        _IsolateStreamInstanceParams result = data;
         _FlutterProcess? flutterProcess = _flutterProcesses[result.id];
         if (flutterProcess == null) {
           print("Error: flutterProcess with id ${result.id} not found");
           continue;
         }
-        if (flutterProcess is _FlutterStatusProcess) {
-          // send the status or ignore it if we have not started it a statusProcess
-          flutterProcess.subject.add(result.result);
+        if (flutterProcess is _FlutterStreamProcess) {
+          if (result.isDone) {
+            await flutterProcess.subject.close();
+          } else {
+            // send the status or ignore it if we have not started it a statusProcess
+            flutterProcess.subject.add(result.result);
+          }
         }
       } else if (data is _IsolateReplyInstanceParams) {
         _IsolateReplyInstanceParams result = data;
@@ -251,9 +287,10 @@ class FlutterIsolateInstance {
   Stream<V> computeStream<V, R>(StreamEntryPoint<V, R> entryPoint, R request) {
     assert(_sendPort != null, "wait until start() is done");
     final entryPointHandle = PluginUtilities.getCallbackHandle(entryPoint)!.toRawHandle();
-    _FlutterStatusProcess<V> flutterProcess = _FlutterStatusProcess();
+    _FlutterStreamProcess<V> flutterProcess = _FlutterStreamProcess();
     _flutterProcesses[flutterProcess._id] = flutterProcess;
     _IsolateRequestStreamParams<R> params = _IsolateRequestStreamParams(flutterProcess._id, entryPointHandle, request);
+
     _sendPort!.send(params);
     return flutterProcess.subject.stream;
   }
@@ -274,10 +311,10 @@ class _FlutterProcess<V> {
 //////////////////////////////////////////////////////////////////////////////
 
 /// Used if the method to be called returns a stream of data, e.g. Statusmessages. The _completer of the superclass is not used.
-class _FlutterStatusProcess<V> extends _FlutterProcess<V> {
+class _FlutterStreamProcess<V> extends _FlutterProcess<V> {
   final Subject<V> subject = PublishSubject();
 
-  _FlutterStatusProcess();
+  _FlutterStreamProcess();
 
   Future<void> dispose() async {
     await subject.close();
@@ -287,13 +324,15 @@ class _FlutterStatusProcess<V> extends _FlutterProcess<V> {
 //////////////////////////////////////////////////////////////////////////////
 
 class _IsolateInitInstanceParams {
+  final RootIsolateToken rootIsolateToken;
+
   final SendPort sendPort;
 
   final Object? object;
 
   final int? createInstanceHandle;
 
-  _IsolateInitInstanceParams(this.sendPort, this.createInstanceHandle, this.object);
+  _IsolateInitInstanceParams(this.rootIsolateToken, this.sendPort, this.createInstanceHandle, this.object);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -334,12 +373,14 @@ class _IsolateReplyInstanceParams<V> {
 /////////////////////////////////////////////////////////////////////////////
 
 /// Sends the status of the isolate to the main isolate but does NOT end the computation
-class _IsolateStatusInstanceParams<V> {
+class _IsolateStreamInstanceParams<V> {
   final int id;
 
   final V? result;
 
-  const _IsolateStatusInstanceParams({required this.id, this.result});
+  final bool isDone;
+
+  const _IsolateStreamInstanceParams({required this.id, this.result, this.isDone = false});
 }
 
 /////////////////////////////////////////////////////////////////////////////

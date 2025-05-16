@@ -13,9 +13,9 @@ class PbfStatistics {
 
   final Map<int, PointOfInterest> _nodeHolders = {};
 
-  final Map<int, Wayholder> _wayHolders = {};
+  final Map<int, StatsWayholder> _wayHolders = {};
 
-  final Map<int, OsmRelation> _relations = {};
+  final Map<int, StatsRelation> _relations = {};
 
   final Map<String, _Tagholder> _nodeTags = {};
 
@@ -61,8 +61,8 @@ class PbfStatistics {
   }
 
   void analyze() {
-    _relations.forEach((id, osmRelation) {
-      for (var member in osmRelation.members) {
+    _relations.forEach((id, relationHolder) {
+      for (var member in relationHolder.osmRelation.members) {
         switch (member.memberType) {
           case MemberType.node:
             if (!_nodeHolders.containsKey(member.memberId)) {
@@ -70,8 +70,13 @@ class PbfStatistics {
             }
             break;
           case MemberType.way:
-            if (!_wayHolders.containsKey(member.memberId)) {
+            StatsWayholder? wayholder = _wayHolders[member.memberId];
+            if (wayholder == null) {
+              relationHolder.wayNotFound++;
               ++wayNotFound;
+            } else {
+              relationHolder.nodesNotFound += wayholder.nodesNotFound;
+              relationHolder.nodes += wayholder.way.refs.length;
             }
             break;
           case MemberType.relation:
@@ -94,34 +99,30 @@ class PbfStatistics {
         }
       }
     }
-    for (var osmWay in blockData.ways) {
+    for (OsmWay osmWay in blockData.ways) {
       List<ILatLong> latLongs = [];
+      int nodesNotFound = 0;
       for (var ref in osmWay.refs) {
         PointOfInterest? pointOfInterest = _searchPoi(ref);
         if (pointOfInterest != null) {
           latLongs.add(pointOfInterest.position);
         } else {
           ++nodeNotFound;
+          ++nodesNotFound;
         }
       }
-      if (latLongs.length >= 2) {
-        Way? way = converter.createWay(osmWay, [latLongs]);
-        if (way != null) {
-          assert(!_wayHolders.containsKey(osmWay.id));
-          _wayHolders[osmWay.id] = Wayholder.fromWay(way);
-          for (var tag in way.tags) {
-            _increment(_wayTags, tag, latLongs.length);
-          }
-        } else {
-          ++wayNoTag;
-        }
-      } else {
+      assert(!_wayHolders.containsKey(osmWay.id));
+      _wayHolders[osmWay.id] = StatsWayholder(osmWay, osmWay.refs.length, nodesNotFound);
+      for (var tag in osmWay.tags.entries) {
+        _increment(_wayTags, Tag(tag.key, tag.value), latLongs.length);
+      }
+      if (latLongs.length < 2) {
         ++wayTooLessNodes;
       }
     }
     for (var osmRelation in blockData.relations) {
       assert(!_relations.containsKey(osmRelation.id));
-      _relations[osmRelation.id] = osmRelation;
+      _relations[osmRelation.id] = StatsRelation(osmRelation);
       Way? relationWay = converter.createMergedWay(osmRelation);
       if (relationWay != null) {
         for (var tag in relationWay.tags) {
@@ -209,6 +210,32 @@ class PbfStatistics {
       _log.info("  ${tagholder.key}: ${tagholder.count}");
     });
   }
+
+  void find(String? toFind) {
+    if (toFind == null || toFind == "") return;
+    List<String> v = toFind.split("=");
+    String key = v[0];
+    String? value = v.length == 2 ? v[1] : null;
+    if (value == null) {
+      _log.info("Searching for key $key");
+    } else {
+      _log.info("Searching for key $key and value $value");
+    }
+
+    List<PointOfInterest> nodes = _nodeHolders.values.where((test) => value != null ? test.hasTagValue(key, value) : test.hasTag(key)).toList();
+    nodes.forEach((action) {
+      _log.info("Found node ${action.toStringWithoutNames()}");
+    });
+    List<StatsWayholder> ways = _wayHolders.values.where((test) => value != null ? test.way.hasTagValue(key, value) : test.way.hasTag(key)).toList();
+    ways.forEach((action) {
+      _log.info("Found way ${action.toStringWithoutNames()}");
+    });
+    List<StatsRelation> relations =
+        _relations.values.where((test) => value != null ? test.osmRelation.hasTagValue(key, value) : test.osmRelation.hasTag(key)).toList();
+    relations.forEach((action) {
+      _log.info("Found relation ${action.toStringWithoutNames()}");
+    });
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -225,5 +252,43 @@ class _Tagholder {
   @override
   String toString() {
     return "count: $count";
+  }
+
+  String toStringWithoutNames() {
+    return "count: $count";
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class StatsWayholder {
+  final OsmWay way;
+
+  final int originalNodeCount;
+
+  final int nodesNotFound;
+
+  StatsWayholder(this.way, this.originalNodeCount, this.nodesNotFound);
+
+  String toStringWithoutNames() {
+    return "way: ${way.toStringWithoutNames()}, nodeCount: $originalNodeCount, nodesNotFound: $nodesNotFound";
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class StatsRelation {
+  final OsmRelation osmRelation;
+
+  int wayNotFound = 0;
+
+  int nodesNotFound = 0;
+
+  int nodes = 0;
+
+  StatsRelation(this.osmRelation);
+
+  String toStringWithoutNames() {
+    return "relation: ${osmRelation.toStringWithoutNames()}, nodes: $nodes, wayNotFound: $wayNotFound, nodesNotFound: $nodesNotFound";
   }
 }

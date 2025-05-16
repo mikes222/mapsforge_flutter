@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -51,6 +52,7 @@ class StatisticsCommand extends Command {
 
   StatisticsCommand() {
     argParser.addOption("sourcefile", abbr: "s", help: "Source filename (PBF file)", mandatory: true);
+    argParser.addOption("find", abbr: "f", help: "Find items with the given tag", mandatory: false);
   }
 
   @override
@@ -58,6 +60,7 @@ class StatisticsCommand extends Command {
     _log.info("Calculating, please wait...");
     PbfStatistics pbfStatistics = await PbfStatistics.readFile(argResults!.option("sourcefile")!);
     pbfStatistics.statistics();
+    pbfStatistics.find(argResults!.option("find"));
   }
 }
 
@@ -92,6 +95,7 @@ class ConvertCommand extends Command {
     argParser.addOption("maxgap", abbr: "g", help: "Max gap in meters to connect ways", defaultsTo: "200");
     argParser.addFlag("quiet", abbr: "q", defaultsTo: false, help: "Quiet mode, less output");
     argParser.addOption("isolates", abbr: "i", defaultsTo: "6", help: "Number of isolates to use, less isolates reduces performance but also memory usage");
+    argParser.addOption("languagesPreference", abbr: "l", defaultsTo: "", help: "List of languages to use, separated by #");
   }
 
   @override
@@ -185,13 +189,15 @@ class ConvertCommand extends Command {
       poiZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
       wayZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
       if (!argResults!.flag("quiet")) {
-        poiZoomlevels.forEach((zoomlevelRange, nodelist) {
-          _log.info("ZoomlevelRange: $zoomlevelRange, nodes: ${nodelist.length}");
+        SplayTreeMap treeMap = SplayTreeMap.from(poiZoomlevels, (a, b) => a.zoomlevelMin.compareTo(b.zoomlevelMin));
+        treeMap.forEach((zoomlevelRange, nodelist) {
+          _log.info("Nodes: ZoomlevelRange: $zoomlevelRange, ${nodelist.length}");
         });
       }
       if (!argResults!.flag("quiet")) {
-        wayZoomlevels.forEach((zoomlevelRange, waylist) {
-          _log.info("ZoomlevelRange: $zoomlevelRange, ways: ${waylist.length}");
+        SplayTreeMap treeMap = SplayTreeMap.from(wayZoomlevels, (a, b) => a.zoomlevelMin.compareTo(b.zoomlevelMin));
+        treeMap.forEach((zoomlevelRange, waylist) {
+          _log.info("Ways: ZoomlevelRange: $zoomlevelRange, ${waylist.length}");
         });
       }
 
@@ -199,7 +205,7 @@ class ConvertCommand extends Command {
         boundingBox: finalBoundingBox!,
         debugFile: argResults!.flag("debug"),
         zoomlevelRange: ZoomlevelRange(zoomlevels.first, zoomlevels.last),
-        //languagesPreference: "ja,es",
+        languagesPreference: argResults!.option("languagesPreference")! == "" ? null : argResults!.option("languagesPreference")!,
       );
       MapfileWriter mapfileWriter = MapfileWriter(filename: argResults!.option("destinationfile")!, mapHeaderInfo: mapHeaderInfo);
 

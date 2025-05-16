@@ -22,6 +22,17 @@ sealed class _OsmPrimitive {
 
   final int id;
   final Map<String, String> tags;
+
+  bool hasTag(String key) {
+    if (!tags.containsKey(key)) return false;
+    return true;
+  }
+
+  bool hasTagValue(String key, String value) {
+    if (!tags.containsKey(key)) return false;
+    if (tags[key] == value) return true;
+    return false;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,6 +54,11 @@ class OsmNode extends _OsmPrimitive implements ILatLong {
   String toString() {
     return 'OsmNode{id: $id, tags: $tags, lat: $latitude, lon: $longitude}';
   }
+
+  String toStringWithoutNames() {
+    List<Tag> ts = tags.entries.map((entry) => Tag(entry.key, entry.value)).toList();
+    return 'OsmNode{id: $id, tags: ${Tag.tagsWithoutNames(ts)}, lat: $latitude, lon: $longitude}';
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,6 +74,11 @@ class OsmWay extends _OsmPrimitive {
   @override
   String toString() {
     return 'OsmWay{id: $id, tags: $tags, refs: $refs}';
+  }
+
+  String toStringWithoutNames() {
+    List<Tag> ts = tags.entries.map((entry) => Tag(entry.key, entry.value)).toList();
+    return 'OsmWay{id: $id, tags: ${Tag.tagsWithoutNames(ts)}, refs: ${refs.length}';
   }
 }
 
@@ -103,6 +124,7 @@ class OsmRelation extends _OsmPrimitive {
   }
 
   String toStringWithoutNames() {
-    return 'OsmRelation{id: $id, members: ${members.length}, tags: ${tags.entries.where((test) => test.key.startsWith("name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+    List<Tag> ts = tags.entries.map((entry) => Tag(entry.key, entry.value)).toList();
+    return 'OsmRelation{id: $id, members: ${members.length}, tags: ${Tag.tagsWithoutNames(ts)}';
   }
 }

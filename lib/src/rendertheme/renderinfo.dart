@@ -42,8 +42,7 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
 
   RenderInfo(this.shape);
 
-  void render(MapCanvas canvas, PixelProjection projection, Mappoint reference,
-      [double rotationRadian = 0]);
+  void render(MapCanvas canvas, PixelProjection projection, Mappoint reference, [double rotationRadian = 0]);
 
   MapRectangle getBoundaryAbsolute(PixelProjection projection);
 
@@ -77,8 +76,8 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
     switch (shape.getShapeType()) {
       case "Area":
         shapePaint = ShapePaintArea(shape as ShapeArea) as ShapePaint<T>;
-        shape.shapePaint = shapePaint;
         await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         ++created;
         break;
       case "Caption":
@@ -86,8 +85,7 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         /// we need to calculate the boundary for the caption. Remember that we cannot
         /// use ui code in isolates but here we are back again from isolates so we can
         /// calculate the width/height of the caption.
-        shapePaint = ShapePaintCaption(shape as ShapeCaption, caption: caption!)
-            as ShapePaint<T>;
+        shapePaint = ShapePaintCaption(shape as ShapeCaption, caption: caption!) as ShapePaint<T>;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
         break;
@@ -100,36 +98,31 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
       //   shapePaint = ShapePaintHillshading(shape as ShapeHillshading) as ShapePaint<T>;
       //   break;
       case "Linesymbol":
-        shapePaint =
-            ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
-        shape.shapePaint = shapePaint;
+        shapePaint = ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
         await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         ++created;
         break;
       case "Pathtext":
-        shapePaint =
-            ShapePaintPathtext(shape as ShapePathtext, caption!, stringPath!)
-                as ShapePaint<T>;
+        shapePaint = ShapePaintPathtext(shape as ShapePathtext, caption!, stringPath!) as ShapePaint<T>;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
         break;
       case "Polyline":
         // same as area but for open ways
-        shapePaint =
-            ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
-        shape.shapePaint = shapePaint;
+        shapePaint = ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
         await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         ++created;
         break;
       case "Symbol":
         shapePaint = ShapePaintSymbol(shape as ShapeSymbol) as ShapePaint<T>;
-        shape.shapePaint = shapePaint;
         await shapePaint!.init(symbolCache);
+        shape.shapePaint = shapePaint;
         ++created;
         break;
       default:
-        print(
-            "cannot find ShapePaint for ${shape.getShapeType()} of type ${shape.runtimeType}");
+        print("cannot find ShapePaint for ${shape.getShapeType()} of type ${shape.runtimeType}");
     }
   }
 

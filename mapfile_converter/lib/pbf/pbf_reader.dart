@@ -14,10 +14,10 @@ class IsolatePbfReader {
   IsolatePbfReader._();
 
   static Future<IsolatePbfReader> create({required ReadbufferSource readbufferSource, required int sourceLength}) async {
-    _PbfReaderInstanceRequest _request = _PbfReaderInstanceRequest(readbufferSource: readbufferSource, sourceLength: sourceLength);
-    IsolatePbfReader _instance = IsolatePbfReader._();
-    _instance._isolateInstance = await FlutterIsolateInstance.createInstance(createInstance: createInstance, instanceParams: _request);
-    return _instance;
+    _PbfReaderInstanceRequest request = _PbfReaderInstanceRequest(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    IsolatePbfReader instance = IsolatePbfReader._();
+    instance._isolateInstance = await FlutterIsolateInstance.createInstance(createInstance: createInstance, instanceParams: request);
+    return instance;
   }
 
   void dispose() {

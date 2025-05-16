@@ -54,12 +54,7 @@ class Tag implements Comparable<Tag> {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Tag &&
-          runtimeType == other.runtimeType &&
-          key == other.key &&
-          value == other.value;
+  bool operator ==(Object other) => identical(this, other) || other is Tag && runtimeType == other.runtimeType && key == other.key && value == other.value;
 
   @override
   int get hashCode => key.hashCode ^ value.hashCode;
@@ -67,5 +62,15 @@ class Tag implements Comparable<Tag> {
   @override
   String toString() {
     return 'Tag{key: $key, value: $value}';
+  }
+
+  static String tagsWithoutNames(List<Tag> tags) {
+    String result = '';
+    tags.forEach((tag) {
+      if (tag.key!.startsWith("name:") || tag.key!.startsWith("official_name") || tag.key!.startsWith("alt_name") || tag.key!.startsWith("int_name")) return;
+      if (result.isNotEmpty) result += ",";
+      result += "${tag.key}=${tag.value}";
+    });
+    return result;
   }
 }

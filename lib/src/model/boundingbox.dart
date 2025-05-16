@@ -112,6 +112,70 @@ class BoundingBox {
 
   ILatLong getRightCenter() => LatLong(minLatitude + (maxLatitude - minLatitude) / 2, maxLongitude);
 
+  ILatLong getLeftUpperRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getLeftUpper();
+      case 1:
+        return getRightUpper();
+      case 2:
+        return getRightLower();
+      case 3:
+        return getLeftLower();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
+  ILatLong getRightUpperRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getRightUpper();
+      case 1:
+        return getRightLower();
+      case 2:
+        return getLeftLower();
+      case 3:
+        return getLeftUpper();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
+  ILatLong getRightLowerRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getRightLower();
+      case 1:
+        return getLeftLower();
+      case 2:
+        return getLeftUpper();
+      case 3:
+        return getRightUpper();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
+  ILatLong getLeftLowerRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getLeftLower();
+      case 1:
+        return getLeftUpper();
+      case 2:
+        return getRightUpper();
+      case 3:
+        return getRightLower();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
   /**
    * Creates a BoundingBox extended up to coordinates (but does not cross date line/poles).
    *

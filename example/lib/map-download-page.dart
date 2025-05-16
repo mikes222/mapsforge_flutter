@@ -20,8 +20,7 @@ import 'map-file-data.dart';
 class MapDownloadPage extends StatefulWidget {
   final MapFileData mapFileData;
 
-  const MapDownloadPage({Key? key, required this.mapFileData})
-      : super(key: key);
+  const MapDownloadPage({Key? key, required this.mapFileData}) : super(key: key);
 
   @override
   MapDownloadPageState createState() => MapDownloadPageState();
@@ -76,16 +75,12 @@ class MapDownloadPageState extends State<MapDownloadPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               CircularProgressIndicator(
-                value: downloadProgress == null || downloadProgress == 1
-                    ? null
-                    : downloadProgress,
+                value: downloadProgress == null || downloadProgress == 1 ? null : downloadProgress,
               ),
               const SizedBox(height: 20),
               Center(
                 child: Text(
-                  downloadProgress == null || downloadProgress == 1
-                      ? "Loading"
-                      : "Downloading ${(downloadProgress! * 100).round()} %",
+                  downloadProgress == null || downloadProgress == 1 ? "Loading" : "Downloading ${(downloadProgress! * 100).round()} %",
                 ),
               ),
             ],
@@ -108,16 +103,14 @@ class MapDownloadPageState extends State<MapDownloadPage> {
       //await MapFile.from(pathHandler.getPath(fileName), null, null);
       await _startMap(mapFile);
     } else if (widget.mapFileData.url.startsWith("http")) {
-      bool ok = await FileMgr().downloadToFile2(
-          widget.mapFileData.url, pathHandler.getPath(fileName));
+      bool ok = await FileMgr().downloadToFile2(widget.mapFileData.url, pathHandler.getPath(fileName));
       if (!ok) {
         error = "Error while putting the downloadrequest in the queue";
         if (mounted) setState(() {});
       }
     } else {
       ByteData data = await rootBundle.load(widget.mapFileData.url);
-      List<int> bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await File(pathHandler.getPath(fileName)).writeAsBytes(bytes);
       final Datastore mapFile = IsolateMapfile(pathHandler.getPath(fileName));
       await _startMap(mapFile);
@@ -127,16 +120,14 @@ class MapDownloadPageState extends State<MapDownloadPage> {
   Future<void> _switchToMap(List<int>? content) async {
     if (content != null) {
       // file downloaded into memory
-      MapFile mapFile =
-          await MapFile.using(Uint8List.fromList(content), null, null);
+      MapFile mapFile = await MapFile.using(Uint8List.fromList(content), null, null);
       await _startMap(mapFile);
     } else {
       // file is here, hope that _prepareOfflineMap() is happy and prepares the map for us.
       String fileName = widget.mapFileData.fileName;
 
       PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-      final IsolateMapfile mapFile =
-          IsolateMapfile(pathHandler.getPath(fileName), null);
+      final IsolateMapfile mapFile = IsolateMapfile(pathHandler.getPath(fileName));
       await _startMap(mapFile);
     }
   }
@@ -144,8 +135,7 @@ class MapDownloadPageState extends State<MapDownloadPage> {
   Future<void> _startMap(Datastore mapFile) async {
     await Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (BuildContext context) =>
-            MapViewPage2(mapFileData: widget.mapFileData, datastore: mapFile),
+        builder: (BuildContext context) => MapViewPage2(mapFileData: widget.mapFileData, datastore: mapFile),
       ),
     );
     mapFile.dispose();

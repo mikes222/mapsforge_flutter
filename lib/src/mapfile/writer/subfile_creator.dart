@@ -199,7 +199,7 @@ class SubfileCreator {
     await tileBuffer.writeComplete();
     for (int i = 0; i < instanceCount; ++i) tileConstructor[i].dispose();
     tileConstructor.clear();
-    timing.lap(1000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
+    timing.lap(10000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
   }
 
   Future<void> _future(IsolateTileConstructor tileConstructor, Tile tile) async {

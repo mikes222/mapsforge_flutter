@@ -65,6 +65,17 @@ class PbfAnalyzer {
     return result;
   }
 
+  Future<List<Wayholder>> get waysCoastline async {
+    List<Wayholder> result = [];
+    for (var e in _wayHolders.values) {
+      if (e.coastLine) {
+        Wayholder wayholder = await e.get();
+        result.add(wayholder);
+      }
+    }
+    return result;
+  }
+
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
   PbfAnalyzer._({this.maxGapMeter = 200, required RuleAnalyzer ruleAnalyzer}) {
@@ -93,7 +104,8 @@ class PbfAnalyzer {
     int length = await readbufferSource.length();
     PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, ruleAnalyzer: ruleAnalyzer);
     await pbfAnalyzer.readToMemory(readbufferSource, length);
-    await pbfAnalyzer.analyze(finalBoundingBox);
+    // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
+    await pbfAnalyzer.analyze();
     if (finalBoundingBox != null) {
       await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
     }
@@ -106,7 +118,8 @@ class PbfAnalyzer {
   static Future<PbfAnalyzer> readOsmFile(String filename, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200, BoundingBox? finalBoundingBox}) async {
     PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, ruleAnalyzer: ruleAnalyzer);
     await pbfAnalyzer.readOsmToMemory(filename);
-    await pbfAnalyzer.analyze(finalBoundingBox);
+    // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
+    await pbfAnalyzer.analyze();
     if (finalBoundingBox != null) {
       await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
     }
@@ -136,7 +149,7 @@ class PbfAnalyzer {
     boundingBox = osmReader.boundingBox;
   }
 
-  Future<void> analyze(BoundingBox? finalBoundingBox) async {
+  Future<void> analyze() async {
     /// nodes are done, remove superflous nodes to free memory
     int count = _nodeHolders.length;
     _nodeHolders.removeWhere((key, value) => value.pointOfInterest.tags.isEmpty);
@@ -153,17 +166,13 @@ class PbfAnalyzer {
           wayholder.hasTag("leisure") ||
           wayholder.hasTag("natural") ||
           wayholder.hasTagValue("indoor", "corridor")) {
-        wayRepair.repairClosed(wayholder, finalBoundingBox);
+        wayRepair.repairClosed(wayholder, boundingBox);
       } else {
         wayRepair.repairOpen(wayholder);
       }
     }
-    List<Wayholder> wayholders =
-        (await ways)
-            .where((test) => test.hasTagValue("natural", "coastline"))
-            //            .where((test) => test.closedOuters.isEmpty)
-            //            .where((test) => test.openOuters.isEmpty)
-            .toList();
+    List<Wayholder> wayholders = await waysCoastline;
+    //    wayholders = wayholders.where((test) => test.hasTagValue("natural", "coastline")).toList();
     if (wayholders.isNotEmpty) {
       // Coastline is hardly connected. Try to connect the items now.
       Wayholder mergedWayholder = wayholders.first.cloneWith();
@@ -178,7 +187,7 @@ class PbfAnalyzer {
       int counts =
           mergedWayholder.openOutersRead.fold(0, (value, element) => value + element.length) +
           mergedWayholder.closedOutersRead.fold(0, (value, element) => value + element.length);
-      _log.info("Connecting and repairing coastline: $count ways with $counts nodes");
+      //_log.info("Connecting and repairing coastline: $count ways with $counts nodes");
       WayConnect wayConnect = WayConnect();
       wayConnect.connect(mergedWayholder);
       //_log.info("Repairing coastline");
@@ -189,24 +198,26 @@ class PbfAnalyzer {
           mergedWayholder.closedOutersRead.fold(0, (value, element) => value + element.length);
       LargeDataSplitter largeDataSplitter = LargeDataSplitter();
       largeDataSplitter.split(_wayHoldersMerged, mergedWayholder);
-      _log.info("Connecting and repairing coastline: reduced to $count2 ways with $counts2 nodes");
+      if (count2 != count || counts2 != counts) {
+        _log.info("Connecting and repairing coastline: from $count to $count2 ways and from $counts to $counts2 nodes");
+      }
     }
   }
 
   Future<void> removeSuperflous() async {
     // remove ways with less than 2 points (this is not a way)
     int count = _wayHolders.length + _wayHoldersMerged.length;
-    for (var entry in Map.from(_wayHolders).entries) {
-      Wayholder wayholder = await entry.value.get();
-      // if (wayholder.innerRead.isEmpty && wayholder.openOutersRead.isEmpty && wayholder.closedOutersRead.isEmpty) {
-      //   _wayHolders.remove(entry.key);
-      // }
-    }
-    for (var wayholder in List.from(_wayHoldersMerged)) {
-      // if (wayholder.innerRead.isEmpty && wayholder.openOutersRead.isEmpty && wayholder.closedOutersRead.isEmpty) {
-      //   _wayHoldersMerged.remove(wayholder);
-      // }
-    }
+    //for (var entry in Map.from(_wayHolders).entries) {
+    //Wayholder wayholder = await entry.value.get();
+    // if (wayholder.innerRead.isEmpty && wayholder.openOutersRead.isEmpty && wayholder.closedOutersRead.isEmpty) {
+    //   _wayHolders.remove(entry.key);
+    // }
+    //}
+    //for (var wayholder in List.from(_wayHoldersMerged)) {
+    // if (wayholder.innerRead.isEmpty && wayholder.openOutersRead.isEmpty && wayholder.closedOutersRead.isEmpty) {
+    //   _wayHoldersMerged.remove(wayholder);
+    // }
+    //}
     closedWaysWithLessNodesRemoved = count - _wayHolders.length - _wayHoldersMerged.length;
 
     count = _wayHolders.length + _wayHoldersMerged.length;
@@ -266,7 +277,7 @@ class PbfAnalyzer {
       }
     }
     for (var osmRelation in blockData.relations) {
-      _relationReferences(osmRelation);
+      assert(!relations.containsKey(osmRelation.id));
       relations[osmRelation.id] = osmRelation;
     }
   }
@@ -287,13 +298,12 @@ class PbfAnalyzer {
 
   Future<void> _mergeRelationsToWays() async {
     WayConnect wayConnect = WayConnect();
-    for (var entry in relations.entries) {
-      var relation = entry.value;
+    for (OsmRelation osmRelation in relations.values) {
       List<Wayholder> outers = [];
       List<Wayholder> inners = [];
       ILatLong? labelPosition;
       // search for outer and inner ways and for possible label position
-      for (var member in relation.members) {
+      for (var member in osmRelation.members) {
         if (member.role == "label") {
           PointOfInterest? pointOfInterest = _searchPoi(member.memberId);
           if (pointOfInterest != null) {
@@ -312,9 +322,9 @@ class PbfAnalyzer {
         }
       }
       if (outers.isNotEmpty || inners.isNotEmpty) {
-        Way? mergedWay = converter.createMergedWay(relation);
+        Way? mergedWay = converter.createMergedWay(osmRelation);
         if (mergedWay == null) {
-          return;
+          continue;
         }
         Wayholder mergedWayholder = Wayholder.fromWay(mergedWay);
 
@@ -342,29 +352,6 @@ class PbfAnalyzer {
         if (mergedWayholder.closedOutersRead.isNotEmpty || mergedWayholder.openOutersRead.isNotEmpty) {
           _wayHoldersMerged.add(mergedWayholder);
         }
-      }
-    }
-  }
-
-  void _relationReferences(OsmRelation osmRelation) {
-    for (var member in osmRelation.members) {
-      switch (member.memberType) {
-        case MemberType.node:
-          //          PointOfInterest? pointOfInterest = findPoi(member.memberId);
-          break;
-        case MemberType.way:
-          //Way? way = findWay(member.memberId);
-          break;
-        case MemberType.relation:
-          OsmRelation? relation = relations[member.memberId];
-          if (relation == null) {
-            // print(
-            //     "Relation for $member in relation ${osmRelation.id} not found");
-            //++noWayRefFound;
-            //notFound.add(member);
-            continue;
-          }
-          break;
       }
     }
   }
@@ -553,6 +540,8 @@ class WayholderUnion {
 
   _Temp? _temp;
 
+  bool coastLine = false;
+
   static String? _filename;
 
   static SinkWithCounter? _sinkWithCounter;
@@ -561,9 +550,18 @@ class WayholderUnion {
 
   static int _count = 0;
 
-  WayholderUnion(this._wayholder) {
+  WayholderUnion(Wayholder wayholder) {
     ++_count;
-    if (_count < 10000) {
+    if (wayholder.hasTagValue("natural", "coastline")) {
+      coastLine = true;
+    }
+    _wayholder = wayholder;
+
+    if (_count < 5000) {
+      return;
+    }
+    if (_wayholder!.nodeCount() <= 5) {
+      // keep small ways in memory
       return;
     }
     if (_wayholder!.nodeCount() > 1000000) {

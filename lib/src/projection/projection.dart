@@ -100,7 +100,7 @@ abstract class Projection {
     return result;
   }
 
-  /// Calculates distance with Haversine algorithm.
+  /// Calculates distance in meters with Haversine algorithm.
   ///
   /// Accuracy can be out by 0.3%
   /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)

@@ -42,8 +42,7 @@ class MultiMapDataStore extends MapDataStore {
   /// @param mapDataStore      the mapDataStore to add
   /// @param useStartZoomLevel if true, use the start zoom level of this mapDataStore as the start zoom level
   /// @param useStartPosition  if true, use the start position of this mapDataStore as the start position
-  Future<void> addMapDataStore(Datastore mapDataStore, bool useStartZoomLevel,
-      bool useStartPosition) async {
+  Future<void> addMapDataStore(Datastore mapDataStore, bool useStartZoomLevel, bool useStartPosition) async {
     if (this.mapDatabases.contains(mapDataStore)) {
       throw new Exception("Duplicate map database");
     }
@@ -64,10 +63,8 @@ class MultiMapDataStore extends MapDataStore {
     // }
   }
 
-  Future<void> removeMapDataStore(double minLatitude, double minLongitude,
-      double maxLatitude, double maxLongitude) async {
-    BoundingBox toRemove =
-        BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+  Future<void> removeMapDataStore(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) async {
+    BoundingBox toRemove = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
     this.boundingBox = null;
     for (Datastore datastore in List.from(mapDatabases)) {
       BoundingBox boundingBox = await datastore.getBoundingBox();
@@ -137,28 +134,33 @@ class MultiMapDataStore extends MapDataStore {
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreReadResult> _readLabelsDedup(
-      Tile tile, bool deduplicate) async {
-    DatastoreReadResult mapReadResult =
-        DatastoreReadResult(pointOfInterests: [], ways: []);
-    for (Datastore mdb in mapDatabases) {
-      if ((await mdb.supportsTile(tile))) {
-        //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
-        DatastoreReadResult? result = await mdb.readLabelsSingle(tile);
-        if (result == null) {
-          continue;
+  Future<DatastoreReadResult> _readLabelsDedup(Tile tile, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = DatastoreReadResult(pointOfInterests: [], ways: []);
+    List<Future<DatastoreReadResult?>> futures = [];
+    for (Datastore mdb in List.from(mapDatabases)) {
+      futures.add(() async {
+        if ((await mdb.supportsTile(tile))) {
+          //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
+          DatastoreReadResult? result = await mdb.readLabelsSingle(tile);
+          return result;
         }
-        bool isWater = mapReadResult.isWater & result.isWater;
-        mapReadResult.isWater = isWater;
-        mapReadResult.addDeduplicate(result, deduplicate);
-      }
+        return null;
+      }());
     }
+    List<DatastoreReadResult?> results = await Future.wait(futures);
+    results.forEach((result) {
+      if (result == null) {
+        return;
+      }
+      bool isWater = mapReadResult.isWater & result.isWater;
+      mapReadResult.isWater = isWater;
+      mapReadResult.addDeduplicate(result, deduplicate);
+    });
     return mapReadResult;
   }
 
   @override
-  Future<DatastoreReadResult?> readLabels(
-      Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in mapDatabases) {
@@ -175,14 +177,11 @@ class MultiMapDataStore extends MapDataStore {
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreReadResult> _readLabels(
-      Tile upperLeft, Tile lowerRight, bool deduplicate) async {
-    DatastoreReadResult mapReadResult =
-        new DatastoreReadResult(pointOfInterests: [], ways: []);
+  Future<DatastoreReadResult> _readLabels(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult(pointOfInterests: [], ways: []);
     for (Datastore mdb in mapDatabases) {
       if ((await mdb.supportsTile(upperLeft))) {
-        DatastoreReadResult? result =
-            await mdb.readLabels(upperLeft, lowerRight);
+        DatastoreReadResult? result = await mdb.readLabels(upperLeft, lowerRight);
         if (result == null) {
           continue;
         }
@@ -213,34 +212,39 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   Future<DatastoreReadResult?> _readMapData(Tile tile, bool deduplicate) async {
-    DatastoreReadResult mapReadResult =
-        new DatastoreReadResult(pointOfInterests: [], ways: []);
-    bool found = false;
+    DatastoreReadResult mapReadResult = new DatastoreReadResult(pointOfInterests: [], ways: []);
+    List<Future<DatastoreReadResult?>> futures = [];
     for (Datastore mdb in List.of(mapDatabases)) {
-      if ((await mdb.supportsTile(tile))) {
-        //_log.info("Tile2 ${tile.toString()} is supported by ${mdb.toString()}");
-        try {
-          DatastoreReadResult? result = await mdb.readMapDataSingle(tile);
-          if (result == null) {
-            continue;
+      try {
+        futures.add(() async {
+          if ((await mdb.supportsTile(tile))) {
+            DatastoreReadResult? result = await mdb.readMapDataSingle(tile);
+            return result;
           }
-          found = true;
-          bool isWater = mapReadResult.isWater & result.isWater;
-          mapReadResult.isWater = isWater;
-          mapReadResult.addDeduplicate(result, deduplicate);
-        } on FileNotFoundException catch (error) {
-          _log.warning("File ${error.filename} missing, removing mapfile now");
-          mapDatabases.remove(mdb);
-        }
+          return null;
+        }());
+      } on FileNotFoundException catch (error) {
+        _log.warning("File ${error.filename} missing, removing mapfile now");
+        mapDatabases.remove(mdb);
       }
+    }
+    bool found = false;
+    List<DatastoreReadResult?> results = await Future.wait(futures);
+    for (DatastoreReadResult? result in results) {
+      if (result == null) {
+        continue;
+      }
+      found = true;
+      bool isWater = mapReadResult.isWater & result.isWater;
+      mapReadResult.isWater = isWater;
+      mapReadResult.addDeduplicate(result, deduplicate);
     }
     if (!found) return null;
     return mapReadResult;
   }
 
   @override
-  Future<DatastoreReadResult> readMapData(
-      Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in mapDatabases) {
@@ -257,16 +261,13 @@ class MultiMapDataStore extends MapDataStore {
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreReadResult> _readMapDataDedup(
-      Tile upperLeft, Tile lowerRight, bool deduplicate) async {
-    DatastoreReadResult mapReadResult =
-        new DatastoreReadResult(pointOfInterests: [], ways: []);
+  Future<DatastoreReadResult> _readMapDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult(pointOfInterests: [], ways: []);
     bool found = false;
     for (Datastore mdb in mapDatabases) {
       if ((await mdb.supportsTile(upperLeft))) {
         //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
-        DatastoreReadResult result =
-            await mdb.readMapData(upperLeft, lowerRight);
+        DatastoreReadResult result = await mdb.readMapData(upperLeft, lowerRight);
         found = true;
         bool isWater = mapReadResult.isWater & result.isWater;
         mapReadResult.isWater = isWater;
@@ -296,8 +297,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   Future<DatastoreReadResult> _readPoiData(Tile tile, bool deduplicate) async {
-    DatastoreReadResult mapReadResult =
-        new DatastoreReadResult(pointOfInterests: [], ways: []);
+    DatastoreReadResult mapReadResult = new DatastoreReadResult(pointOfInterests: [], ways: []);
     for (Datastore mdb in mapDatabases) {
       if ((await mdb.supportsTile(tile))) {
         DatastoreReadResult? result = await mdb.readPoiDataSingle(tile);
@@ -313,8 +313,7 @@ class MultiMapDataStore extends MapDataStore {
   }
 
   @override
-  Future<DatastoreReadResult?> readPoiData(
-      Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     switch (this.dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in mapDatabases) {
@@ -331,14 +330,11 @@ class MultiMapDataStore extends MapDataStore {
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreReadResult> _readPoiDataDedup(
-      Tile upperLeft, Tile lowerRight, bool deduplicate) async {
-    DatastoreReadResult mapReadResult =
-        new DatastoreReadResult(pointOfInterests: [], ways: []);
+  Future<DatastoreReadResult> _readPoiDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+    DatastoreReadResult mapReadResult = new DatastoreReadResult(pointOfInterests: [], ways: []);
     for (Datastore mdb in mapDatabases) {
       if ((await mdb.supportsTile(upperLeft))) {
-        DatastoreReadResult? result =
-            await mdb.readPoiData(upperLeft, lowerRight);
+        DatastoreReadResult? result = await mdb.readPoiData(upperLeft, lowerRight);
         if (result == null) {
           continue;
         }
@@ -360,8 +356,15 @@ class MultiMapDataStore extends MapDataStore {
 
   @override
   Future<bool> supportsTile(Tile tile) async {
+    List<Future<bool>> futures = [];
     for (Datastore mdb in mapDatabases) {
-      if ((await mdb.supportsTile(tile))) {
+      futures.add(() async {
+        return await mdb.supportsTile(tile);
+      }());
+    }
+    List<bool> results = await Future.wait(futures);
+    for (bool result in results) {
+      if (result) {
         return true;
       }
     }
