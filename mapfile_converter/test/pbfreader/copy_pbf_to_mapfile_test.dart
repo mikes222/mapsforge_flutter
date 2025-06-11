@@ -17,8 +17,8 @@ import 'package:mapsforge_flutter/src/utils/timing.dart';
 
 import '../testassetbundle.dart';
 
-main() async {
-  final _log = new Logger('CopyPbfToMapfileTest');
+Future<void> main() async {
+  final _log = Logger('CopyPbfToMapfileTest');
 
   test("Read pbf file and convert it to mapfile", () async {
     _initLogging();
