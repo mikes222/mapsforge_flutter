@@ -100,4 +100,4 @@ flutter:
 
 screenshots:
   - description: "Example map screenshot"
-    path: https:/raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-30-638.jpg
+    path: doc/Screenshot_2021-11-30-13-30-30-638.jpg
