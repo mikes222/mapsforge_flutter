@@ -1,6 +1,6 @@
 name: mapsforge_flutter
 description: Offline maps with pure flutter code. Provides rotation, markers, hillshading and much more.
-version: 3.0.1
+version: 3.0.2
 homepage: https://github.com/mikes222/mapsforge_flutter
 repository: https://github.com/mikes222/mapsforge_flutter
 
