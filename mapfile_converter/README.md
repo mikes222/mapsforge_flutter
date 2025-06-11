@@ -86,7 +86,7 @@ Or mapsforge_flutter/mapsforge_converter/build/linux/x64/debug/bundle/mapfile_co
 
 These examples are meant to be run from the mapsforge_converter directory for debugging purposes. When executing the binary directly you do not need to specify the ``--dart-entrypoint-args`` argument.
 
-Getting help (from development environment): 
+Getting help (from development environment):  
 
     flutter run --dart-entrypoint-args convert --dart-entrypoint-args --help
 

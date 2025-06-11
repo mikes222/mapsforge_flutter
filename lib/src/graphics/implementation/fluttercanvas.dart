@@ -86,8 +86,7 @@ class FlutterCanvas extends MapCanvas {
         //     ui.Paint()..color = Colors.red.withOpacity(0.7));
         // uiCanvas.drawCircle(
         //     const ui.Offset(0, 0), 10, ui.Paint()..color = Colors.green);
-        uiCanvas.drawImage(
-            image, ui.Offset.zero, (paint as FlutterPaint).paint);
+        uiCanvas.drawImage(image, ui.Offset.zero, (paint as FlutterPaint).paint);
         uiCanvas.restore();
         image.dispose();
         ++_bitmapCount;
@@ -102,8 +101,7 @@ class FlutterCanvas extends MapCanvas {
     //     ui.Paint()..color = Colors.red);
     // uiCanvas.drawCircle(
     //     ui.Offset(left, top), 10, ui.Paint()..color = Colors.green);
-    uiCanvas.drawImage(
-        image, ui.Offset(left, top), (paint as FlutterPaint).paint);
+    uiCanvas.drawImage(image, ui.Offset(left, top), (paint as FlutterPaint).paint);
     image.dispose();
     ++_bitmapCount;
   }
@@ -134,16 +132,13 @@ class FlutterCanvas extends MapCanvas {
   @override
   void fillColorFromNumber(int color) {
     ui.Paint paint = ui.Paint()..color = ui.Color(color);
-    this
-        .uiCanvas
-        .drawRect(ui.Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    this.uiCanvas.drawRect(ui.Rect.fromLTWH(0, 0, size.width, size.height), paint);
     ++_actions;
   }
 
   @override
   void setClip(double left, double top, double width, double height) {
-    uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height),
-        doAntiAlias: true);
+    uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height), doAntiAlias: true);
   }
 
   /// Stops the recording and returns a TilePicture object.
@@ -154,8 +149,8 @@ class FlutterCanvas extends MapCanvas {
     ui.Image img = await pic.toImage(size.width.ceil(), size.height.ceil());
     _pictureRecorder = null;
     pic.dispose();
-    return FlutterTilePicture.fromBitmap(img);
-    //return FlutterTilePicture.fromPicture(pic);
+    TilePicture picture = FlutterTilePicture.fromBitmap(img);
+    return picture;
   }
 
   @override
@@ -183,8 +178,7 @@ class FlutterCanvas extends MapCanvas {
 
   @override
   void drawRect(MapRect rect, MapPaint paint) {
-    if (paint.getStrokeDasharray() != null &&
-        paint.getStrokeDasharray()!.length >= 2) {
+    if (paint.getStrokeDasharray() != null && paint.getStrokeDasharray()!.length >= 2) {
       FlutterPath rectPath = FlutterPath();
       rectPath.addRect(rect);
       drawPath(rectPath, paint);
@@ -196,8 +190,7 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  void drawPathText(String text, LineString lineString, Mappoint reference,
-      MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth) {
+  void drawPathText(String text, LineString lineString, Mappoint reference, MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth) {
     if (text.trim().isEmpty) {
       return;
     }
@@ -205,8 +198,7 @@ class FlutterCanvas extends MapCanvas {
       return;
     }
 
-    ParagraphEntry entry =
-        ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
+    ParagraphEntry entry = ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
 
     lineString.segments.forEach((segment) {
       // So text isn't upside down
@@ -215,14 +207,10 @@ class FlutterCanvas extends MapCanvas {
       double diff = (segment.length() - entry.getWidth()) / 2;
       if (doInvert) {
         //start = segment.end.offset(-origin.x, -origin.y);
-        start = segment
-            .pointAlongLineSegment(diff + entry.getWidth())
-            .offset(-reference.x, -reference.y);
+        start = segment.pointAlongLineSegment(diff + entry.getWidth()).offset(-reference.x, -reference.y);
       } else {
         //start = segment.start.offset(-origin.x, -origin.y);
-        start = segment
-            .pointAlongLineSegment(diff)
-            .offset(-reference.x, -reference.y);
+        start = segment.pointAlongLineSegment(diff).offset(-reference.x, -reference.y);
       }
       // print(
       //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
@@ -231,8 +219,7 @@ class FlutterCanvas extends MapCanvas {
     });
   }
 
-  void _drawTextRotated(
-      ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
+  void _drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
     // since the text is rotated, use the textwidth as margin in all directions
     // if (start.x + textwidth < 0 ||
     //     start.y + textwidth < 0 ||
@@ -259,24 +246,18 @@ class FlutterCanvas extends MapCanvas {
 
   /// draws the given [text] so that the center of the text in at the given x/y coordinates
   @override
-  void drawText(String text, double x, double y, MapPaint paint,
-      MapTextPaint mapTextPaint, double maxTextWidth) {
-    ParagraphEntry entry =
-        ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
+  void drawText(String text, double x, double y, MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth) {
+    ParagraphEntry entry = ParagraphCache().getEntry(text, mapTextPaint, paint, maxTextWidth);
     double textwidth = entry.getWidth();
     double textHeight = entry.getHeight();
-    if (x + textwidth / 2 < 0 ||
-        y + entry.getHeight() < 0 ||
-        x - textwidth / 2 > size.width ||
-        y - entry.getHeight() > size.height) return;
+    if (x + textwidth / 2 < 0 || y + entry.getHeight() < 0 || x - textwidth / 2 > size.width || y - entry.getHeight() > size.height) return;
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(x - textwidth / 2, y - textHeight / 2,
     //         entry.getWidth(), entry.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.7));
     // uiCanvas.drawCircle(ui.Offset(x - textwidth / 2, y - textHeight / 2), 10,
     //     ui.Paint()..color = Colors.green);
-    uiCanvas.drawParagraph(
-        entry.paragraph, Offset(x - textwidth / 2, y - textHeight / 2));
+    uiCanvas.drawParagraph(entry.paragraph, Offset(x - textwidth / 2, y - textHeight / 2));
     // uiCanvas.drawCircle(ui.Offset(x, y), 5, ui.Paint()..color = Colors.blue);
     ++_textCount;
   }
@@ -285,8 +266,7 @@ class FlutterCanvas extends MapCanvas {
   void scale(Offset focalPoint, double scale) {
     double diffX = size.width / 2 - focalPoint.dx;
     double diffY = size.height / 2 - focalPoint.dy;
-    uiCanvas.translate((-size.width / 2 + diffX) * (scale - 1),
-        (-size.height / 2 + diffY) * (scale - 1));
+    uiCanvas.translate((-size.width / 2 + diffX) * (scale - 1), (-size.height / 2 + diffY) * (scale - 1));
     // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.
     uiCanvas.scale(scale);
   }
@@ -297,7 +277,7 @@ class FlutterCanvas extends MapCanvas {
   }
 
   @override
-  String debugAction() {
+  String toString() {
     return 'FlutterCanvas{_actions: $_actions, _bitmapCount: $_bitmapCount, _textCount: $_textCount, _pathCount: $_pathCount}';
   }
 }

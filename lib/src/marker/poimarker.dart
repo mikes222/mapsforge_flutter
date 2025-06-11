@@ -76,7 +76,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     if (scaled == null) {
       scaled = ShapeSymbol.scale(base, 0, symbolFinder);
       _lastZoom = 0;
-      shapePaint = ShapePaintSymbol(scaled!);
+      shapePaint = await ShapePaintSymbol.create(scaled!, symbolCache);
       await shapePaint.init(symbolCache);
     }
   }
@@ -90,8 +90,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     base.setBitmapColorFromNumber(color);
   }
 
-  Future<void> setAndLoadBitmapSrc(
-      String bitmapSrc, SymbolCache symbolCache) async {
+  Future<void> setAndLoadBitmapSrc(String bitmapSrc, SymbolCache symbolCache) async {
     base.bitmapSrc = bitmapSrc;
     scaled = null;
     await initResources(symbolCache);
@@ -106,8 +105,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
     renderMarker(
         flutterCanvas: flutterCanvas,
         markerContext: markerContext,
-        coordinatesAbsolute:
-            nodeProperties.getCoordinatesAbsolute(markerContext.projection),
+        coordinatesAbsolute: nodeProperties.getCoordinatesAbsolute(markerContext.projection),
         symbolBoundary: getSymbolBoundary());
   }
 
@@ -143,8 +141,7 @@ class PoiMarker<T> extends BasicPointMarker<T> with CaptionMixin {
       nodeProperties.clearCache();
     }
     _lastZoomLevel = tapEvent.projection.scalefactor.zoomlevel;
-    Mappoint absolute =
-        nodeProperties.getCoordinatesAbsolute(tapEvent.projection);
+    Mappoint absolute = nodeProperties.getCoordinatesAbsolute(tapEvent.projection);
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
     MapRectangle boundary = base.calculateBoundary();
     bool tpd = tapped.x >= absolute.x + boundary.left &&

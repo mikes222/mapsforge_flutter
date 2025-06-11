@@ -61,15 +61,9 @@ mixin class CaptionMixin {
   List<Caption> get captions => _captions;
 
   void renderMarker(
-      {required MapCanvas flutterCanvas,
-      required MarkerContext markerContext,
-      required MapRectangle symbolBoundary,
-      required Mappoint coordinatesAbsolute}) {
+      {required MapCanvas flutterCanvas, required MarkerContext markerContext, required MapRectangle symbolBoundary, required Mappoint coordinatesAbsolute}) {
     _captions.forEach((caption) {
-      caption.renderCaption(
-          flutterCanvas: flutterCanvas,
-          markerContext: markerContext,
-          coordinatesAbsolute: coordinatesAbsolute);
+      caption.renderCaption(flutterCanvas: flutterCanvas, markerContext: markerContext, coordinatesAbsolute: coordinatesAbsolute);
     });
   }
 }
@@ -128,17 +122,14 @@ class Caption {
     base.symbolId = "poi";
   }
 
-  void renderCaption(
-      {required MapCanvas flutterCanvas,
-      required MarkerContext markerContext,
-      required Mappoint coordinatesAbsolute}) {
+  void renderCaption({required MapCanvas flutterCanvas, required MarkerContext markerContext, required Mappoint coordinatesAbsolute}) {
     if (markerContext.zoomLevel < minZoomLevel) return;
     if (markerContext.zoomLevel > maxZoomLevel) return;
 
     if (scaled == null || _lastZoomLevel != markerContext.zoomLevel) {
       scaled = ShapeCaption.scale(base, markerContext.zoomLevel, symbolFinder);
       _lastZoomLevel = markerContext.zoomLevel;
-      shapePaint = ShapePaintCaption(scaled!, caption: _caption);
+      shapePaint = ShapePaintCaption.forMarker(scaled!, caption: _caption);
     }
     // print(
     //     "renderCaption $_caption for $minZoomLevel and $maxZoomLevel at ${markerContext.zoomLevel} $coordinatesAbsolute ${markerContext.mapCenter}");

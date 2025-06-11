@@ -43,11 +43,9 @@ abstract class MapCanvas {
 
   void drawRect(MapRect rect, MapPaint paint);
 
-  void drawPathText(String text, LineString lineString, Mappoint reference,
-      MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth);
+  void drawPathText(String text, LineString lineString, Mappoint reference, MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth);
 
-  void drawText(String text, double x, double y, MapPaint paint,
-      MapTextPaint mapTextPaint, double maxTextWidth);
+  void drawText(String text, double x, double y, MapPaint paint, MapTextPaint mapTextPaint, double maxTextWidth);
 
   void fillColorFromNumber(int color);
 
@@ -56,6 +54,4 @@ abstract class MapCanvas {
   void scale(Offset focalPoint, double scale);
 
   void translate(double dx, double dy);
-
-  String debugAction();
 }

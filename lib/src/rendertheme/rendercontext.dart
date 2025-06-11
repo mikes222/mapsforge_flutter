@@ -1,13 +1,17 @@
 import 'package:collection/collection.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/src/rendertheme/renderinfo.dart';
 import 'package:mapsforge_flutter/src/rendertheme/shape/shape_symbol.dart';
+import 'package:mapsforge_flutter/src/utils/timing.dart';
 
 import '../../core.dart';
 
 /// A RenderContext contains all the information and data to render a map area, it is passed between
 /// calls in order to avoid local data stored in the DatabaseRenderer.
 class RenderContext {
+  static final _log = new Logger('RenderContext');
+
   static final int MAX_DRAWING_LAYERS = 11;
 
   final Tile upperLeft;
@@ -29,8 +33,7 @@ class RenderContext {
 
   final PixelProjection projection;
 
-  RenderContext(this.upperLeft, this.maxLevels)
-      : projection = PixelProjection(upperLeft.zoomLevel) {
+  RenderContext(this.upperLeft, this.maxLevels) : projection = PixelProjection(upperLeft.zoomLevel) {
     this.drawingLayers = _createWayLists();
     currentDrawingLayer = drawingLayers[0];
     clashDrawingLayer = LayerPaintContainer(maxLevels);
@@ -54,31 +57,42 @@ class RenderContext {
   }
 
   Future<void> initDrawingLayers(SymbolCache symbolCache) async {
+    Timing timing = Timing(log: _log);
     List<Future> futures = [];
 
     for (LayerPaintContainer layerPaintContainer in drawingLayers) {
       for (List<RenderInfo> wayList in layerPaintContainer.ways) {
         for (RenderInfo renderInfo in wayList) {
           futures.add(renderInfo.createShapePaint(symbolCache));
+          if (futures.length > 100) {
+            await Future.wait(futures);
+            futures.clear();
+          }
         }
       }
     }
     for (List<RenderInfo> wayList in clashDrawingLayer.ways) {
       for (RenderInfo renderInfo in wayList) {
         futures.add(renderInfo.createShapePaint(symbolCache));
+        if (futures.length > 100) {
+          await Future.wait(futures);
+          futures.clear();
+        }
       }
     }
     for (RenderInfo renderInfo in labels) {
       futures.add(renderInfo.createShapePaint(symbolCache));
+      if (futures.length > 100) {
+        await Future.wait(futures);
+        futures.clear();
+      }
     }
-
     await Future.wait(futures);
-//    print("created: ${RenderInfo.created}");
+    timing.done(100, "initDrawingLayers");
   }
 
   List<LayerPaintContainer> _createWayLists() {
-    List<LayerPaintContainer> result = List.generate(
-        MAX_DRAWING_LAYERS, (int idx) => LayerPaintContainer(maxLevels));
+    List<LayerPaintContainer> result = List.generate(MAX_DRAWING_LAYERS, (int idx) => LayerPaintContainer(maxLevels));
     return result;
   }
 
@@ -87,8 +101,7 @@ class RenderContext {
   }
 
   void reduce() {
-    drawingLayers
-        .forEach((layerPaintContainer) => layerPaintContainer.reduce());
+    drawingLayers.forEach((layerPaintContainer) => layerPaintContainer.reduce());
     drawingLayers.removeWhere((test) => test.ways.isEmpty);
     // int idx = 0;
     // List.of(drawingLayers).forEach((LayerPaintContainer layerPaintContainer) {
@@ -114,8 +127,7 @@ class RenderContext {
       if (renderInfo.caption == null) {
         if (renderInfo.shape is ShapeSymbol) {
           ShapeSymbol shapeSymbol = renderInfo.shape as ShapeSymbol;
-          statLabels["ID: ${shapeSymbol.bitmapSrc}"] =
-              (statLabels["ID: ${shapeSymbol.bitmapSrc}"] ?? 0) + 1;
+          statLabels["ID: ${shapeSymbol.bitmapSrc}"] = (statLabels["ID: ${shapeSymbol.bitmapSrc}"] ?? 0) + 1;
         } else {
           ++nullLabels;
         }
@@ -131,11 +143,9 @@ class RenderContext {
     statLabels.forEach((String key, int value) {
       print("Label ${key} : ${value}");
     });
-    drawingLayers
-        .forEachIndexed((int idx, LayerPaintContainer layerPaintContainer) {
+    drawingLayers.forEachIndexed((int idx, LayerPaintContainer layerPaintContainer) {
       print("DrawingLayer $idx: ${layerPaintContainer.ways.length} levels");
-      layerPaintContainer.ways
-          .forEachIndexed((int idx, List<RenderInfo> renderInfos) {
+      layerPaintContainer.ways.forEachIndexed((int idx, List<RenderInfo> renderInfos) {
         print("  Level $idx: ${renderInfos.length} renderInfos");
         Map<String, int> types = {};
         renderInfos.forEach((RenderInfo renderInfo) {
@@ -149,8 +159,7 @@ class RenderContext {
       });
     });
     print("ClashDrawingLayer: ${clashDrawingLayer.ways.length} levels");
-    clashDrawingLayer.ways
-        .forEachIndexed((int idx, List<RenderInfo> renderInfos) {
+    clashDrawingLayer.ways.forEachIndexed((int idx, List<RenderInfo> renderInfos) {
       print("  Level $idx: ${renderInfos.length} renderInfos");
       Map<String, int> types = {};
       renderInfos.forEach((RenderInfo renderInfo) {

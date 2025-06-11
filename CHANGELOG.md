@@ -1,5 +1,10 @@
 ## next
 
+## 3.0.2 - 
+
+* Introducing mapfile-converter
+* 
+
 ## 3.0.1 - 2025-02-14
 
 * Support for mapfiles running in isolates

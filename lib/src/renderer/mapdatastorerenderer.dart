@@ -6,14 +6,12 @@ import 'package:mapsforge_flutter/src/datastore/datastore.dart';
 import 'package:mapsforge_flutter/src/graphics/tilepicture.dart';
 import 'package:mapsforge_flutter/src/layer/job/job.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
-import 'package:mapsforge_flutter/src/model/tag.dart';
 import 'package:mapsforge_flutter/src/renderer/tiledependencies.dart';
 import 'package:mapsforge_flutter/src/rendertheme/rendercontext.dart';
 import 'package:mapsforge_flutter/src/utils/layerutil.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
 
 import '../rendertheme/renderinfo.dart';
-import '../utils/flutter_isolate.dart';
 import '../utils/timing.dart';
 import 'canvasrasterer.dart';
 import 'datastorereader.dart';
@@ -38,18 +36,9 @@ class MapDataStoreRenderer extends JobRenderer {
 
   TileDependencies? tileDependencies;
 
-  /// true if isolates should be used for reading the mapfile. Isolate is flutter's
-  /// way of using threads. However due to the huge amount of data which must
-  /// be tunneled between the threads isolates are currently slower than working
-  /// directly in the main thread. The only advantage so far is that the main thread
-  /// is not blocked while the data are read.
-  final bool useIsolate;
-
   late DatastoreReader _datastoreReader;
 
-  MapDataStoreRenderer(
-      this.datastore, this.renderTheme, this.symbolCache, this.renderLabels,
-      {this.useIsolate = false}) {
+  MapDataStoreRenderer(this.datastore, this.renderTheme, this.symbolCache, this.renderLabels) {
     if (renderLabels) {
       this.tileDependencies = TileDependencies();
     } else {
@@ -71,51 +60,32 @@ class MapDataStoreRenderer extends JobRenderer {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(Job job) async {
-    Timing timing =
-        Timing(log: _log, active: true, prefix: "${job.tile.toString()} ");
+    Timing timing = Timing(log: _log, active: true, prefix: "${job.tile.toString()} ");
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderthemeLevel renderthemeLevel =
-        this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
+    RenderthemeLevel renderthemeLevel = this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
+    timing.lap(100, "$renderthemeLevel prepareZoomlevel");
 
-    RenderContext? renderContext;
-    if (useIsolate) {
-      renderContext = await FlutterIsolateInstance.isolateCompute(
-          DatastoreReaderIsolate.read,
-          DatastoreReaderIsolateRequest(
-              datastore, job.tile, renderthemeLevel, renderTheme.levels));
-    } else {
-      renderContext = await _datastoreReader.read(
-          datastore, job.tile, renderthemeLevel, renderTheme.levels);
-    }
+    RenderContext? renderContext = await _datastoreReader.read(datastore, job.tile, renderthemeLevel, renderTheme.levels);
 
-    timing.lap(100, "RenderContext ${renderContext} created");
+    //timing.lap(100, "RenderContext ${renderContext} created");
     if (renderContext == null) {
       TilePicture bmp = await createNoDataBitmap(MapsforgeConstants().tileSize);
       return JobResult(bmp, JOBRESULT.UNSUPPORTED);
     }
     await renderContext.initDrawingLayers(symbolCache);
-    timing.lap(100, "RenderContext ${renderContext}  initialized");
     //renderContext.statistics();
-    CanvasRasterer canvasRasterer = CanvasRasterer(
-        MapsforgeConstants().tileSize,
-        MapsforgeConstants().tileSize,
-        "MapDatastoreRenderer ${job.tile.toString()}");
+    CanvasRasterer canvasRasterer = CanvasRasterer(MapsforgeConstants().tileSize, MapsforgeConstants().tileSize, "MapDatastoreRenderer ${job.tile.toString()}");
     canvasRasterer.startCanvasBitmap();
-    Mappoint leftUpper =
-        renderContext.projection.getLeftUpper(renderContext.upperLeft);
+    Mappoint leftUpper = renderContext.projection.getLeftUpper(renderContext.upperLeft);
     //canvasRasterer.canvas.translate(-leftUpper.x, -leftUpper.y);
-    timing.lap(200, "startCanvasBitmap");
     canvasRasterer.drawWays(renderContext, leftUpper);
-    timing.lap(100, "${renderContext.drawingLayers.length} way-layers");
 
-    List<RenderInfo> renderInfos = LayerUtil.collisionFreeOrdered(
-        renderContext.labels, renderContext.projection);
+    List<RenderInfo> renderInfos = LayerUtil.collisionFreeOrdered(renderContext.labels, renderContext.projection);
     renderContext.labels.clear();
     renderContext.labels.addAll(renderInfos);
     for (List<RenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
-      List<RenderInfo> renderInfos =
-          LayerUtil.collisionFreeOrdered(wayList, renderContext.projection);
+      List<RenderInfo> renderInfos = LayerUtil.collisionFreeOrdered(wayList, renderContext.projection);
       wayList.clear();
       wayList.addAll(renderInfos);
     }
@@ -123,40 +93,20 @@ class MapDataStoreRenderer extends JobRenderer {
     int labelCount = 0;
     if (this.renderLabels) {
       _LabelResult labelResult = _processLabels(renderContext);
-      labelCount = labelResult.labelsToDisposeAfterDrawing.length +
-          labelResult.labelsForNeighbours.length;
+      labelCount = labelResult.labelsToDisposeAfterDrawing.length + labelResult.labelsForNeighbours.length;
       //_log.info("Labels to draw: $labelsToDraw");
       // now draw the ways and the labels
-      canvasRasterer.drawMapElements(labelResult.labelsForNeighbours,
-          renderContext.projection, leftUpper, job.tile);
-      canvasRasterer.drawMapElements(labelResult.labelsToDisposeAfterDrawing,
-          renderContext.projection, leftUpper, job.tile);
-      // labelResult.labelsToDisposeAfterDrawing.forEach((element) {
-      //   element.dispose();
-      // });
-      timing.lap(200, "$labelCount labels");
+      canvasRasterer.drawMapElements(labelResult.labelsForNeighbours, renderContext.projection, leftUpper, job.tile);
+      canvasRasterer.drawMapElements(labelResult.labelsToDisposeAfterDrawing, renderContext.projection, leftUpper, job.tile);
       // labelsToDraw.forEach((element) {
       //   _log.info(
       //       "  $element, ${element.boundaryAbsolute!.intersects(renderContext.projection.boundaryAbsolute(job.tile)) ? "intersects" : "non-intersects"}");
       // });
-    } else {
-      // this.labelStore.storeMapItems(
-      //     job.tile, renderContext.labels, renderContext.projection);
-      timing.lap(200, "storeMapItems");
     }
-//    if (!job.labelsOnly && renderContext.renderTheme.hasMapBackgroundOutside()) {
-//      // blank out all areas outside of map
-//      Rectangle insideArea = this.mapDataStore.boundingBox().getPositionRelativeToTile(job.tile);
-//      if (!job.hasAlpha) {
-//        renderContext.canvasRasterer.fillOutsideAreas(renderContext.renderTheme.getMapBackgroundOutside(), insideArea);
-//      } else {
-//        renderContext.canvasRasterer.fillOutsideAreas(Color.TRANSPARENT, insideArea);
-//      }
-//    }
+    timing.lap(100, "RenderContext ${renderContext}  final");
     TilePicture? picture = await canvasRasterer.finalizeCanvasBitmap();
     canvasRasterer.destroy();
-    timing.lap(100,
-        "RenderContext ${renderContext} , $labelCount labels, ${canvasRasterer.canvas.debugAction()}");
+    timing.done(100, "RenderContext ${renderContext} , $labelCount labels, ${canvasRasterer} completed");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(picture, JOBRESULT.NORMAL, renderContext.labels);
@@ -167,22 +117,11 @@ class MapDataStoreRenderer extends JobRenderer {
     Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderthemeLevel renderthemeLevel =
-        this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
+    RenderthemeLevel renderthemeLevel = this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    RenderContext? renderContext;
-    if (useIsolate) {
-      renderContext = await FlutterIsolateInstance.isolateCompute(
-          DatastoreReaderIsolate.readLabels,
-          DatastoreReaderIsolateRequest(
-              datastore, job.tile, renderthemeLevel, renderTheme.levels));
-    } else {
-      renderContext = await _datastoreReader.readLabels(
-          datastore, job.tile, renderthemeLevel, renderTheme.levels);
-    }
+    RenderContext? renderContext = await _datastoreReader.readLabels(datastore, job.tile, renderthemeLevel, renderTheme.levels);
 
-    timing.lap(100,
-        "RenderContext ${renderContext}  for labels for tile ${renderContext?.upperLeft}");
+    timing.lap(100, "RenderContext ${renderContext}  for labels for tile ${renderContext?.upperLeft}");
     if (renderContext == null) {
       return JobResult(null, JOBRESULT.UNSUPPORTED);
     }
@@ -192,12 +131,10 @@ class MapDataStoreRenderer extends JobRenderer {
     for (RenderInfo renderInfo in renderContext.labels) {
       await renderInfo.createShapePaint(symbolCache);
     }
-    List<RenderInfo<Shape>>? renderInfos = LayerUtil.collisionFreeOrdered(
-        renderContext.labels, renderContext.projection);
+    List<RenderInfo<Shape>>? renderInfos = LayerUtil.collisionFreeOrdered(renderContext.labels, renderContext.projection);
     // this.labelStore.storeMapItems(
     //     job.tile, renderContext.labels, renderContext.projection);
-    timing.lap(100,
-        "${renderInfos.length} items from collisionFreeOrdered for labels for tile ${renderContext.upperLeft}");
+    timing.done(100, "${renderInfos.length} items from collisionFreeOrdered for labels for tile ${renderContext.upperLeft}");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult(null, JOBRESULT.NORMAL, renderInfos);
@@ -221,8 +158,7 @@ class MapDataStoreRenderer extends JobRenderer {
     Set<RenderInfo> labelsForNeighbours = {};
 
     // get the overlapping elements for the current tile which were found while rendering the neighbours
-    Set<Dependency>? labelsFromNeighbours =
-        tileDependencies!.getOverlappingElements(renderContext.upperLeft);
+    Set<Dependency>? labelsFromNeighbours = tileDependencies!.getOverlappingElements(renderContext.upperLeft);
     // if a neighbour has already been drawn, the elements drawn that overlap onto the
     // current neighbour should be in the neighbour dependencies, we add them to the labels that
     // need to be drawn onto this neighbour. For the multi-threaded renderer we also need to take
@@ -242,10 +178,8 @@ class MapDataStoreRenderer extends JobRenderer {
     // they already overlap from other tiles [labelsToDraw]. The second one is [renderContext.labels] that contains
     // the elements on this neighbour that do not overlap onto a drawn neighbour.
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
-    List<RenderInfo> toDraw2 = LayerUtil.removeCollisions(
-        renderContext.labels,
-        List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours),
-        renderContext.projection);
+    List<RenderInfo> toDraw2 =
+        LayerUtil.removeCollisions(renderContext.labels, List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours), renderContext.projection);
 
     // We need to get the labels from the adjacent tiles if they have already been drawn
     // as those overlapping items must also be drawn on the current neighbour. They must be drawn regardless
@@ -256,9 +190,7 @@ class MapDataStoreRenderer extends JobRenderer {
     for (RenderInfo element in toDraw2) {
       List<Tile>? added;
       for (Tile neighbour in neighbours) {
-        if (element.intersects(
-            renderContext.projection.boundaryAbsolute(neighbour),
-            renderContext.projection)) {
+        if (element.intersects(renderContext.projection.boundaryAbsolute(neighbour), renderContext.projection)) {
           if (tileDependencies!.isDrawn(neighbour)) {
             // neighbour is drawn and this element intersects with the already
             // drawn neighbour, so we do not want to draw it at all

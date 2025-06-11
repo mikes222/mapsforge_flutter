@@ -1,10 +1,9 @@
+import 'package:isolate_task_queue/isolate_task_queue.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_simplify_filter.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_size_filter.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/wayholder.dart';
 import 'package:mapsforge_flutter/src/model/zoomlevel_range.dart';
-
-import '../../utils/flutter_isolate.dart';
 
 @pragma("vm:entry-point")
 class IsolateSubfileFiller {

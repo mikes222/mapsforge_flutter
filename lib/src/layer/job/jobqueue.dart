@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:isolate_task_queue/isolate_task_queue.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobresult.dart';
 import 'package:mapsforge_flutter/src/layer/job/jobset.dart';
 import 'package:mapsforge_flutter/src/utils/mapsforge_constants.dart';
-import 'package:queue/queue.dart';
 
 import '../../../maps.dart';
 import '../../graphics/tilepicture.dart';
@@ -32,16 +32,16 @@ class JobQueue {
 
   final TileBasedLabelStore labelStore;
 
-  final Queue _executionQueue;
+  final TaskQueue _executionQueue;
 
   JobQueue(this.jobRenderer, this.tileBitmapCache, this.tileBitmapCache1stLevel, [int parallelJobs = 4])
       : labelStore = TileBasedLabelStore(1000),
-        _executionQueue = Queue(parallel: parallelJobs);
+        _executionQueue = ParallelTaskQueue(parallelJobs);
 
   //@override
   void dispose() {
     //super.dispose();
-    _executionQueue.dispose();
+    _executionQueue.cancel();
     _currentJobSet?.dispose();
     _currentJobSet = null;
   }
@@ -55,51 +55,60 @@ class JobQueue {
         TilePicture? tilePicture = tileBitmapCache1stLevel.getTileBitmapSync(job.tile);
         if (tilePicture != null) {
           jobSet.renderJobFinishedPicture(job, tilePicture);
+          unawaited(_addLabelJob(jobSet, job));
         } else {
           tilePicture = await tileBitmapCache?.getTileBitmapAsync(job.tile);
           if (tilePicture != null) {
             tileBitmapCache1stLevel.addTileBitmap(job.tile, tilePicture);
             jobSet.renderJobFinishedPicture(job, tilePicture);
+            unawaited(_addLabelJob(jobSet, job));
           } else {
-            // allow to render multiple jobs concurrently
-            unawaited(_createTilePicture(job, jobSet));
+            try {
+              JobResult jobResult = await _createTilePicture(job, jobSet);
+              jobSet.renderJobFinished(job, jobResult);
+              jobSet.labelJobFinished(job, jobResult.renderInfos ?? []);
+            } catch (error, stackTrace) {
+              _log.warning(error.toString());
+              if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
+              TilePicture bmp = await jobRenderer.createErrorBitmap(MapsforgeConstants().tileSize, error);
+              jobSet.renderJobFinishedPicture(job, bmp);
+              jobSet.labelJobFinished(job, []);
+            }
           }
         }
       });
     });
-    jobSet.labelJobs.forEach((job) {
-      if (_executionQueue.isCancelled) return;
-      _executionQueue.add(() async {
-        if (_currentJobSet != jobSet) return;
+  }
+
+  Future<void> _addLabelJob(JobSet jobSet, Job job) async {
+    if (_executionQueue.isCancelled) return;
+    if (!jobSet.labelJobs.contains(job)) return;
+    await _executionQueue.add(() async {
+      if (_currentJobSet != jobSet) return;
+      List<RenderInfo<Shape>>? renderInfos = labelStore.get(job.tile);
+      if (renderInfos != null) {
+        jobSet.labelJobFinished(job, renderInfos);
+      } else {
         JobResult jobResult = await jobRenderer.retrieveLabels(job);
-        jobSet.labelJobFinished(job, jobResult.renderInfos ?? []);
         labelStore.storeMapItems(job.tile, jobResult.renderInfos ?? []);
-      });
+        jobSet.labelJobFinished(job, jobResult.renderInfos ?? []);
+      }
     });
   }
 
-  Future<void> _createTilePicture(Job job, JobSet jobSet) async {
-    JobResult jobResult;
-    try {
-      jobResult = await jobRenderer.executeJob(job);
-    } catch (error, stackTrace) {
-      _log.warning(error.toString());
-      if (stackTrace.toString().length > 0) _log.warning(stackTrace.toString());
-      TilePicture bmp = await jobRenderer.createErrorBitmap(MapsforgeConstants().tileSize, error);
-      //bmp.incrementRefCount();
-      jobResult = JobResult(bmp, JOBRESULT.ERROR);
-    }
+  Future<JobResult> _createTilePicture(Job job, JobSet jobSet) async {
+    JobResult jobResult = await jobRenderer.executeJob(job);
     if (jobResult.result == JOBRESULT.NORMAL) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.picture!);
       tileBitmapCache?.addTileBitmap(job.tile, jobResult.picture!);
+      labelStore.storeMapItems(job.tile, jobResult.renderInfos ?? []);
     }
     if (/*jobResult.result == JOBRESULT.ERROR ||*/
         jobResult.result == JOBRESULT.UNSUPPORTED) {
       tileBitmapCache1stLevel.addTileBitmap(job.tile, jobResult.picture!);
+      labelStore.storeMapItems(job.tile, jobResult.renderInfos ?? []);
     }
-    jobSet.renderJobFinished(job, jobResult);
-
-    labelStore.storeMapItems(job.tile, jobResult.renderInfos ?? []);
+    return jobResult;
   }
 
   // remove all jobs which can be fulfilled via the 1st level caches
@@ -127,6 +136,7 @@ class JobQueue {
 
     final tiles = _createTiles(mapViewPosition: mapViewPosition, tileDimension: tileDimension);
 
+    _executionQueue.clear();
     JobSet jobSet = JobSet(
         boundingBox: mapViewPosition.projection.boundingBoxOfTileNumbers(tileDimension.top, tileDimension.left, tileDimension.bottom, tileDimension.right),
         tileDimension: tileDimension,
@@ -136,7 +146,7 @@ class JobQueue {
     _currentJobSet?.dispose();
     _currentJobSet = jobSet;
     processJobset(jobSet);
-    timing.lap(50, "${jobSet.renderJobs.length} missing tiles");
+    timing.done(50, "${jobSet.renderJobs.length} missing tiles");
     return jobSet;
   }
 

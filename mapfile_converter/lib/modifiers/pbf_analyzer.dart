@@ -588,7 +588,7 @@ class WayholderUnion {
 
   Future<Wayholder> _fromFile() async {
     assert(_temp != null);
-    _readbufferFile ??= ReadbufferFile(_filename!, capacity: 10);
+    _readbufferFile ??= ReadbufferFile(_filename!);
     await _sinkWithCounter!.flush();
     Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(_temp!.pos, _temp!.length);
     Uint8List uint8list = readbuffer.getBuffer(0, _temp!.length);

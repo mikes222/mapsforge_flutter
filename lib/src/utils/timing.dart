@@ -23,4 +23,15 @@ class Timing {
       return true;
     }());
   }
+
+  void done(int maxms, String text) {
+    // this code will only executed in debug mode. See also https://stackoverflow.com/questions/56537718/what-does-assert-do-in-dart
+    assert(() {
+      if (!active) return true;
+      int time = DateTime.now().millisecondsSinceEpoch;
+      int diff = time - _start;
+      if (diff > maxms) log.info("${prefix ?? ""}DONE $diff ms: $text");
+      return true;
+    }());
+  }
 }

@@ -268,8 +268,10 @@ class RuleBuilder {
     XmlUtils.checkMandatoryAttribute(elementName, V, this.values);
 
     if (zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) {
-      throw new Exception(
-          "ZoomMin ${zoomlevelRange.zoomlevelMin} > ZoomMax ${zoomlevelRange.zoomlevelMax} for rule with $keys and $values and childs ${ruleBuilderStack.toString()}");
+      // we cannot throw an exception. The xml file may contain a rule with zoomMin > e.g. 12 but we only allow e.g. zoomMax 9 in displayModel. The xml is NOT
+      // invalid in that case
+      // throw new Exception(
+      //     "ZoomMin ${zoomlevelRange.zoomlevelMin} > ZoomMax ${zoomlevelRange.zoomlevelMax} for rule with $keys and $values and childs ${ruleBuilderStack.toString()}");
     }
   }
 

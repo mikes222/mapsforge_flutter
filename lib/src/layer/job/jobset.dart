@@ -6,7 +6,6 @@ import '../../../core.dart';
 import '../../graphics/tilepicture.dart';
 import '../../model/tile_dimension.dart';
 import '../../rendertheme/renderinfo.dart';
-import '../../rendertheme/shape/shape.dart';
 
 ///
 /// A JobSet is a collection of one or more jobs which belongs together. When the map should be shown on screen,
@@ -46,13 +45,10 @@ class JobSet extends ChangeNotifier {
 
   final Mappoint _center;
 
-  JobSet({required this.boundingBox,
-    required List<Job> jobs,
-    required Mappoint center,
-    required this.tileDimension})
+  JobSet({required this.boundingBox, required List<Job> jobs, required Mappoint center, required this.tileDimension})
       : assert(jobs.length > 0),
         _renderJobs = jobs,
-        _labelJobs = []..addAll(jobs),
+        _labelJobs = List.from(jobs),
         indoorLevel = jobs.first.tile.indoorLevel,
         zoomLevel = jobs.first.tile.zoomLevel,
         _center = center;
@@ -169,11 +165,11 @@ class JobSet extends ChangeNotifier {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is JobSet &&
-              runtimeType == other.runtimeType &&
-              boundingBox == other.boundingBox &&
-              indoorLevel == other.indoorLevel &&
-              zoomLevel == other.zoomLevel;
+      other is JobSet &&
+          runtimeType == other.runtimeType &&
+          boundingBox == other.boundingBox &&
+          indoorLevel == other.indoorLevel &&
+          zoomLevel == other.zoomLevel;
 
   @override
   int get hashCode => boundingBox.hashCode ^ indoorLevel.hashCode;

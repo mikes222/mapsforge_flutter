@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:logging/logging.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   print("Starting testExecutable");
   TestWidgetsFlutterBinding.ensureInitialized();
-  await loadAppFonts();
+  //await loadAppFonts();
   _initLogging();
   return testMain();
 }

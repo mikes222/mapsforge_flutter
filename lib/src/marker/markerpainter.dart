@@ -27,8 +27,7 @@ class MarkerPainter extends CustomPainter {
       markerContext.boundingBox,
       markerContext.zoomLevel,
     );
-    timing.lap(50,
-        "retrieving ${markers.length} markers at zoomlevel ${markerContext.zoomLevel} from $dataStore for ${markerContext.boundingBox}");
+    timing.lap(50, "retrieving ${markers.length} markers at zoomlevel ${markerContext.zoomLevel} from $dataStore for ${markerContext.boundingBox}");
 
     if (markers.length > 0) {
       // print(
@@ -45,16 +44,13 @@ class MarkerPainter extends CustomPainter {
         element.render(flutterCanvas, markerContext);
       });
     }
-    timing.lap(50,
-        "retrieving and rendering ${markers.length} markers at zoomlevel ${markerContext.zoomLevel} from $dataStore");
+    timing.done(50, "retrieving and rendering ${markers.length} markers at zoomlevel ${markerContext.zoomLevel} from $dataStore");
   }
 
   @override
   bool shouldRepaint(MarkerPainter oldDelegate) {
-    if (oldDelegate.markerContext.boundingBox != markerContext.boundingBox)
-      return true;
-    if (oldDelegate.markerContext.zoomLevel != markerContext.zoomLevel)
-      return true;
+    if (oldDelegate.markerContext.boundingBox != markerContext.boundingBox) return true;
+    if (oldDelegate.markerContext.zoomLevel != markerContext.zoomLevel) return true;
     return false;
   }
 

@@ -87,7 +87,7 @@ main() async {
     await mapfileWriter.write(5, 6);
     await mapfileWriter.close();
 
-    timing.lap(1000, "Process completed");
+    timing.done(1000, "Process completed");
   });
 }
 

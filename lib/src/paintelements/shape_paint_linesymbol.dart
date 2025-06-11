@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:isolate_task_queue/isolate_task_queue.dart';
 import 'package:mapsforge_flutter/core.dart';
 import 'package:mapsforge_flutter/src/model/relative_mappoint.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
@@ -17,34 +18,38 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
 
   ResourceBitmap? bitmap;
 
-  ShapePaintLinesymbol(ShapeLinesymbol shape) : super(shape) {
+  static TaskQueue _taskQueue = SimpleTaskQueue();
+
+  ShapePaintLinesymbol._(ShapeLinesymbol shape) : super(shape) {
     fill = createPaint(style: Style.FILL);
   }
 
   @override
   Future<void> init(SymbolCache symbolCache) async {
-    bitmap = await createBitmap(
-        symbolCache: symbolCache,
-        bitmapSrc: shape.bitmapSrc!,
-        bitmapWidth: shape.getBitmapWidth(),
-        bitmapHeight: shape.getBitmapHeight());
+    bitmap =
+        await createBitmap(symbolCache: symbolCache, bitmapSrc: shape.bitmapSrc!, bitmapWidth: shape.getBitmapWidth(), bitmapHeight: shape.getBitmapHeight());
+  }
+
+  static Future<ShapePaintLinesymbol> create(ShapeLinesymbol shape, SymbolCache symbolCache) async {
+    return _taskQueue.add(() async {
+      if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintLinesymbol;
+      ShapePaintLinesymbol shapePaint = ShapePaintLinesymbol._(shape);
+      await shapePaint.init(symbolCache);
+      shape.shapePaint = shapePaint;
+      return shapePaint;
+    });
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
-      [double rotationRadian = 0]) {}
+  void renderNode(MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference, [double rotationRadian = 0]) {}
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint reference,
-      [double rotationRadian = 0]) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties, PixelProjection projection, Mappoint reference, [double rotationRadian = 0]) {
     if (bitmap == null) return;
 
     int skipPixels = shape.repeatStart.round();
 
-    List<List<Mappoint>> coordinatesAbsolute =
-        wayProperties.getCoordinatesAbsolute(projection);
+    List<List<Mappoint>> coordinatesAbsolute = wayProperties.getCoordinatesAbsolute(projection);
 
     List<Mappoint?> outerList = coordinatesAbsolute[0];
 
@@ -80,8 +85,7 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
           theta = atan2(currentY - previousY, currentX - previousX);
         }
 
-        RelativeMappoint relative = Mappoint(previousX, previousY)
-            .offset(-reference.x, -reference.y + shape.dy);
+        RelativeMappoint relative = Mappoint(previousX, previousY).offset(-reference.x, -reference.y + shape.dy);
 
         MapRectangle boundary = shape.calculateBoundary();
 
@@ -98,12 +102,7 @@ class ShapePaintLinesymbol extends ShapePaint<ShapeLinesymbol> {
         // print(
         //     "drawing ${bitmap} at ${point.x + boundary.left} / ${point.y + boundary.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
         //print(StackTrace.current);
-        canvas.drawBitmap(
-            bitmap: bitmap!,
-            matrix: matrix,
-            left: relative.x + boundary.left,
-            top: relative.y + boundary.top,
-            paint: fill);
+        canvas.drawBitmap(bitmap: bitmap!, matrix: matrix, left: relative.x + boundary.left, top: relative.y + boundary.top, paint: fill);
 
         // check if the symbolContainer should only be rendered once
         if (!shape.repeat) {

@@ -2,6 +2,7 @@ import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
+import 'package:isolate_task_queue/isolate_task_queue.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/subfile_creator.dart';
 import 'package:mapsforge_flutter/src/mapfile/writer/way_cropper.dart';
@@ -12,7 +13,6 @@ import 'package:mapsforge_flutter/src/utils/timing.dart';
 import '../../../core.dart';
 import '../../../maps.dart';
 import '../../model/zoomlevel_range.dart';
-import '../../utils/flutter_isolate.dart';
 
 @pragma("vm:entry-point")
 class IsolateTileConstructor {
@@ -284,7 +284,7 @@ class TileConstructor {
       });
     });
     int waycountAfter = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
-    timing.lap(200, "Removed old way values $poicountBefore -> $poicountAfter, $waycountBefore -> $waycountAfter");
+    timing.done(200, "Removed old way values $poicountBefore -> $poicountAfter, $waycountBefore -> $waycountAfter");
     lastRemove = DateTime.now().millisecondsSinceEpoch;
   }
 

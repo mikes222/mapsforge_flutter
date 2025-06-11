@@ -99,7 +99,7 @@ class MapDownloadPageState extends State<MapDownloadPage> {
     PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
     if (await pathHandler.exists(fileName)) {
       // file already exists locally, start now
-      final Datastore mapFile = IsolateMapfile(pathHandler.getPath(fileName));
+      final Datastore mapFile = await IsolateMapfile.create(pathHandler.getPath(fileName));
       //await MapFile.from(pathHandler.getPath(fileName), null, null);
       await _startMap(mapFile);
     } else if (widget.mapFileData.url.startsWith("http")) {
@@ -112,7 +112,7 @@ class MapDownloadPageState extends State<MapDownloadPage> {
       ByteData data = await rootBundle.load(widget.mapFileData.url);
       List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await File(pathHandler.getPath(fileName)).writeAsBytes(bytes);
-      final Datastore mapFile = IsolateMapfile(pathHandler.getPath(fileName));
+      final Datastore mapFile = await IsolateMapfile.create(pathHandler.getPath(fileName));
       await _startMap(mapFile);
     }
   }
@@ -127,7 +127,7 @@ class MapDownloadPageState extends State<MapDownloadPage> {
       String fileName = widget.mapFileData.fileName;
 
       PathHandler pathHandler = await FileMgr().getLocalPathHandler("");
-      final IsolateMapfile mapFile = IsolateMapfile(pathHandler.getPath(fileName));
+      final Datastore mapFile = await IsolateMapfile.create(pathHandler.getPath(fileName));
       await _startMap(mapFile);
     }
   }

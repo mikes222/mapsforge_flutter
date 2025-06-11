@@ -75,9 +75,7 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
     }
     switch (shape.getShapeType()) {
       case "Area":
-        shapePaint = ShapePaintArea(shape as ShapeArea) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
-        shape.shapePaint = shapePaint;
+        shapePaint = await ShapePaintArea.create(shape as ShapeArea, symbolCache) as ShapePaint<T>;
         ++created;
         break;
       case "Caption":
@@ -85,40 +83,33 @@ abstract class RenderInfo<T extends Shape> implements Comparable<RenderInfo> {
         /// we need to calculate the boundary for the caption. Remember that we cannot
         /// use ui code in isolates but here we are back again from isolates so we can
         /// calculate the width/height of the caption.
-        shapePaint = ShapePaintCaption(shape as ShapeCaption, caption: caption!) as ShapePaint<T>;
+        shapePaint = await ShapePaintCaption.create(shape as ShapeCaption, symbolCache, caption: caption!) as ShapePaint<T>;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
         break;
       case "Circle":
-        shapePaint = ShapePaintCircle(shape as ShapeCircle) as ShapePaint<T>;
-        shape.shapePaint = shapePaint;
+        shapePaint = await ShapePaintCircle.create(shape as ShapeCircle, symbolCache) as ShapePaint<T>;
         ++created;
         break;
       // case "Hillshading":
       //   shapePaint = ShapePaintHillshading(shape as ShapeHillshading) as ShapePaint<T>;
       //   break;
       case "Linesymbol":
-        shapePaint = ShapePaintLinesymbol(shape as ShapeLinesymbol) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
-        shape.shapePaint = shapePaint;
+        shapePaint = await ShapePaintLinesymbol.create(shape as ShapeLinesymbol, symbolCache) as ShapePaint<T>;
         ++created;
         break;
       case "Pathtext":
-        shapePaint = ShapePaintPathtext(shape as ShapePathtext, caption!, stringPath!) as ShapePaint<T>;
+        shapePaint = await ShapePaintPathtext.create(shape as ShapePathtext, symbolCache, caption!, stringPath!) as ShapePaint<T>;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
         break;
       case "Polyline":
         // same as area but for open ways
-        shapePaint = ShapePaintPolyline(shape as ShapePolyline) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
-        shape.shapePaint = shapePaint;
+        shapePaint = await ShapePaintPolyline.create(shape as ShapePolyline, symbolCache) as ShapePaint<T>;
         ++created;
         break;
       case "Symbol":
-        shapePaint = ShapePaintSymbol(shape as ShapeSymbol) as ShapePaint<T>;
-        await shapePaint!.init(symbolCache);
-        shape.shapePaint = shapePaint;
+        shapePaint = await ShapePaintSymbol.create(shape as ShapeSymbol, symbolCache) as ShapePaint<T>;
         ++created;
         break;
       default:

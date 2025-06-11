@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:isolate_task_queue/isolate_task_queue.dart';
 import 'package:mapsforge_flutter/maps.dart';
 import 'package:mapsforge_flutter/special.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
@@ -11,9 +12,9 @@ import '../rendertheme/wayproperties.dart';
 class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   late final MapPaint? stroke;
 
-  //final bool debug = true;
+  static TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintPolyline(ShapePolyline shapePolyline) : super(shapePolyline) {
+  ShapePaintPolyline._(ShapePolyline shapePolyline) : super(shapePolyline) {
     if (!shapePolyline.isStrokeTransparent() || shapePolyline.bitmapSrc != null)
       stroke = createPaint(
           style: Style.STROKE,
@@ -24,14 +25,21 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
           strokeDashArray: shapePolyline.strokeDashArray);
   }
 
+  static Future<ShapePaintPolyline> create(ShapePolyline shape, SymbolCache symbolCache) async {
+    return _taskQueue.add(() async {
+      if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintPolyline;
+      ShapePaintPolyline shapePaint = ShapePaintPolyline._(shape);
+      await shapePaint.init(symbolCache);
+      shape.shapePaint = shapePaint;
+      return shapePaint;
+    });
+  }
+
   @override
   Future<void> init(SymbolCache symbolCache) async {
     if (shape.bitmapSrc != null) {
-      ResourceBitmap? bitmap = await createBitmap(
-          symbolCache: symbolCache,
-          bitmapSrc: shape.bitmapSrc!,
-          bitmapWidth: shape.getBitmapWidth(),
-          bitmapHeight: shape.getBitmapHeight());
+      ResourceBitmap? bitmap =
+          await createBitmap(symbolCache: symbolCache, bitmapSrc: shape.bitmapSrc!, bitmapWidth: shape.getBitmapWidth(), bitmapHeight: shape.getBitmapHeight());
       if (bitmap != null) {
         if (shape.isStrokeTransparent()) {
           // for bitmaps set the stroke color so that the bitmap is drawn
@@ -44,12 +52,9 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   }
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint reference,
-      [double rotationRadian = 0]) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties, PixelProjection projection, Mappoint reference, [double rotationRadian = 0]) {
     if (stroke == null) return;
-    MapPath path = calculatePath(
-        wayProperties.getCoordinatesAbsolute(projection), reference, shape.dy);
+    MapPath path = calculatePath(wayProperties.getCoordinatesAbsolute(projection), reference, shape.dy);
     canvas.drawPath(path, stroke!);
 
     // if (debug) {
@@ -64,7 +69,5 @@ class ShapePaintPolyline extends ShapePaint<ShapePolyline> {
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
-      [double rotationRadian = 0]) {}
+  void renderNode(MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference, [double rotationRadian = 0]) {}
 }

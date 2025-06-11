@@ -1,3 +1,4 @@
+import 'package:isolate_task_queue/isolate_task_queue.dart';
 import 'package:mapsforge_flutter/src/paintelements/shape_paint.dart';
 import 'package:mapsforge_flutter/src/paintelements/waydecorator.dart';
 
@@ -25,12 +26,10 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
 
   final String caption;
 
-  ShapePaintPathtext(
-      ShapePathtext shapePathtext, this.caption, LineString stringPath)
-      : super(shapePathtext) {
-    if (!shapePathtext.isFillTransparent())
-      paintFront =
-          createPaint(style: Style.FILL, color: shapePathtext.fillColor);
+  static TaskQueue _taskQueue = SimpleTaskQueue();
+
+  ShapePaintPathtext._(ShapePathtext shapePathtext, this.caption, LineString stringPath) : super(shapePathtext) {
+    if (!shapePathtext.isFillTransparent()) paintFront = createPaint(style: Style.FILL, color: shapePathtext.fillColor);
     if (!shapePathtext.isStrokeTransparent())
       paintBack = createPaint(
           style: Style.STROKE,
@@ -39,13 +38,19 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
           cap: shapePathtext.strokeCap,
           join: shapePathtext.strokeJoin,
           strokeDashArray: shapePathtext.strokeDashArray);
-    mapTextPaint = createTextPaint(
-        fontFamily: shapePathtext.fontFamily,
-        fontStyle: shapePathtext.fontStyle,
-        fontSize: shapePathtext.fontSize);
-    back = ParagraphCache()
-        .getEntry(caption, mapTextPaint, paintBack!, shape.maxTextWidth);
+    mapTextPaint = createTextPaint(fontFamily: shapePathtext.fontFamily, fontStyle: shapePathtext.fontStyle, fontSize: shapePathtext.fontSize);
+    back = ParagraphCache().getEntry(caption, mapTextPaint, paintBack!, shape.maxTextWidth);
     fullPath = WayDecorator.reducePathForText(stringPath, back.getWidth());
+  }
+
+  static Future<ShapePaintPathtext> create(ShapePathtext shape, SymbolCache symbolCache, String caption, LineString stringPath) async {
+    return _taskQueue.add(() async {
+      //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintPathtext;
+      ShapePaintPathtext shapePaint = ShapePaintPathtext._(shape, caption, stringPath);
+      //await shapePaint.init(symbolCache);
+      //shape.shapePaint = shapePaint;
+      return shapePaint;
+    });
   }
 
   @override
@@ -63,21 +68,13 @@ class ShapePaintPathtext extends ShapePaint<ShapePathtext> {
   }
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties,
-      PixelProjection projection, Mappoint reference,
-      [double rotationRadian = 0]) {
+  void renderWay(MapCanvas canvas, WayProperties wayProperties, PixelProjection projection, Mappoint reference, [double rotationRadian = 0]) {
     if (fullPath.segments.isEmpty) return;
 
-    if (paintBack != null)
-      canvas.drawPathText(caption, fullPath, reference, this.paintBack!,
-          mapTextPaint, shape.maxTextWidth);
-    if (paintFront != null)
-      canvas.drawPathText(caption, fullPath, reference, this.paintFront!,
-          mapTextPaint, shape.maxTextWidth);
+    if (paintBack != null) canvas.drawPathText(caption, fullPath, reference, this.paintBack!, mapTextPaint, shape.maxTextWidth);
+    if (paintFront != null) canvas.drawPathText(caption, fullPath, reference, this.paintFront!, mapTextPaint, shape.maxTextWidth);
   }
 
   @override
-  void renderNode(
-      MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference,
-      [double rotationRadian = 0]) {}
+  void renderNode(MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference, [double rotationRadian = 0]) {}
 }
