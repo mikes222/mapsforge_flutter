@@ -1,0 +1,267 @@
+name: simplified_example
+description: A new Flutter project.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+  mapsforge_flutter:
+    path: ..
+
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^5.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
+
+  assets:
+   - assets/indoorUB-ext.map
+   - assets/render_themes/
+   - assets/icons/
+   - packages/mapsforge_flutter/assets/patterns/dark_farmland.svg
+   - packages/mapsforge_flutter/assets/patterns/dark_military.png
+   - packages/mapsforge_flutter/assets/patterns/coniferous.svg
+   - packages/mapsforge_flutter/assets/patterns/coniferous_and_deciduous.svg
+   - packages/mapsforge_flutter/assets/patterns/deciduous.svg
+   - packages/mapsforge_flutter/assets/patterns/farmland.svg
+   - packages/mapsforge_flutter/assets/patterns/grass.svg
+   - packages/mapsforge_flutter/assets/patterns/hills.svg
+   - packages/mapsforge_flutter/assets/patterns/quarry.svg
+   - packages/mapsforge_flutter/assets/patterns/scrub.svg
+   - packages/mapsforge_flutter/assets/patterns/swamp.svg
+   - packages/mapsforge_flutter/assets/patterns/access-destination.png
+   - packages/mapsforge_flutter/assets/patterns/access-private.png
+   - packages/mapsforge_flutter/assets/patterns/arrow.png
+   - packages/mapsforge_flutter/assets/patterns/cemetery.png
+   - packages/mapsforge_flutter/assets/patterns/deciduous.svg
+   - packages/mapsforge_flutter/assets/patterns/dot.png
+   - packages/mapsforge_flutter/assets/patterns/farmland.svg
+   - packages/mapsforge_flutter/assets/patterns/grass.svg
+   - packages/mapsforge_flutter/assets/patterns/hills.svg
+   - packages/mapsforge_flutter/assets/patterns/marsh.png
+   - packages/mapsforge_flutter/assets/patterns/military.png
+   - packages/mapsforge_flutter/assets/patterns/nature-reserve.png
+   - packages/mapsforge_flutter/assets/patterns/pike.png
+   - packages/mapsforge_flutter/assets/patterns/quarry.svg
+   - packages/mapsforge_flutter/assets/patterns/rail.png
+   - packages/mapsforge_flutter/assets/patterns/scrub.svg
+   - packages/mapsforge_flutter/assets/patterns/swamp.svg
+   - packages/mapsforge_flutter/assets/patterns/wood-coniferous.png
+   - packages/mapsforge_flutter/assets/patterns/wood-deciduous.png
+   - packages/mapsforge_flutter/assets/patterns/wood-mixed.png
+   - packages/mapsforge_flutter/assets/symbols/bench.svg
+   - packages/mapsforge_flutter/assets/symbols/cable_car.svg
+   - packages/mapsforge_flutter/assets/symbols/chair_lift.svg
+   - packages/mapsforge_flutter/assets/symbols/dot_black.svg
+   - packages/mapsforge_flutter/assets/symbols/dot_blue.svg
+   - packages/mapsforge_flutter/assets/symbols/dot_blue_dark.svg
+   - packages/mapsforge_flutter/assets/symbols/dot_magenta.svg
+   - packages/mapsforge_flutter/assets/symbols/dot_white.svg
+   - packages/mapsforge_flutter/assets/symbols/gondola.svg
+   - packages/mapsforge_flutter/assets/symbols/oneway.svg
+   - packages/mapsforge_flutter/assets/symbols/peak.svg
+   - packages/mapsforge_flutter/assets/symbols/railway-crossing-small.svg
+   - packages/mapsforge_flutter/assets/symbols/railway-crossing.svg
+   - packages/mapsforge_flutter/assets/symbols/traffic_signal.svg
+   - packages/mapsforge_flutter/assets/symbols/volcano.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/alpinehut.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/camping.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/caravan_park.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/chalet.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/hostel.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/hotel2.svg
+   - packages/mapsforge_flutter/assets/symbols/accommodation/shelter2.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/firestation3.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/fountain2.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/library.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/playground.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/police2.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/post_box.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/post_office.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/recycling.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/telephone.svg
+   - packages/mapsforge_flutter/assets/symbols/amenity/toilets.svg
+   - packages/mapsforge_flutter/assets/symbols/barrier/blocks.svg
+   - packages/mapsforge_flutter/assets/symbols/barrier/bollard.svg
+   - packages/mapsforge_flutter/assets/symbols/barrier/cycle_barrier.svg
+   - packages/mapsforge_flutter/assets/symbols/barrier/gate.svg
+   - packages/mapsforge_flutter/assets/symbols/barrier/lift_gate.svg
+   - packages/mapsforge_flutter/assets/symbols/barrier/stile.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/amenity/fountain2.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/amenity/library.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/amenity/toilets.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/money/atm2.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/archaeological2.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/attraction.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/castle2.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/cinema2.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/information.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/memorial.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/monument.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/museum.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/ruin.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/theatre.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/view_point.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/windmill.svg
+   - packages/mapsforge_flutter/assets/symbols/custom/tourist/zoo.svg
+   - packages/mapsforge_flutter/assets/symbols/education/nursery3.svg
+   - packages/mapsforge_flutter/assets/symbols/education/school.svg
+   - packages/mapsforge_flutter/assets/symbols/education/university.svg
+   - packages/mapsforge_flutter/assets/symbols/food/bar.svg
+   - packages/mapsforge_flutter/assets/symbols/food/biergarten.svg
+   - packages/mapsforge_flutter/assets/symbols/food/cafe.svg
+   - packages/mapsforge_flutter/assets/symbols/food/drinkingtap.svg
+   - packages/mapsforge_flutter/assets/symbols/food/fastfood.svg
+   - packages/mapsforge_flutter/assets/symbols/food/pub.svg
+   - packages/mapsforge_flutter/assets/symbols/food/restaurant.svg
+   - packages/mapsforge_flutter/assets/symbols/health/doctors2.svg
+   - packages/mapsforge_flutter/assets/symbols/health/hospital.svg
+   - packages/mapsforge_flutter/assets/symbols/health/pharmacy.svg
+   - packages/mapsforge_flutter/assets/symbols/money/atm2.svg
+   - packages/mapsforge_flutter/assets/symbols/money/bank2.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/buddhist.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/christian.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/hindu.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/islamic.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/jewish.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/shinto.svg
+   - packages/mapsforge_flutter/assets/symbols/place_of_worship/unknown.svg
+   - packages/mapsforge_flutter/assets/symbols/poi/cave.svg
+   - packages/mapsforge_flutter/assets/symbols/poi/embassy2.svg
+   - packages/mapsforge_flutter/assets/symbols/poi/mountain_pass.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/alcohol.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/bakery.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/bicycle.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/book.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/butcher.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/car_repair.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/convenience.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/diy.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/greengrocer.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/laundrette.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/marketplace.svg
+   - packages/mapsforge_flutter/assets/symbols/shopping/supermarket.svg
+   - packages/mapsforge_flutter/assets/symbols/sport/golf.svg
+   - packages/mapsforge_flutter/assets/symbols/sport/shooting.svg
+   - packages/mapsforge_flutter/assets/symbols/sport/soccer.svg
+   - packages/mapsforge_flutter/assets/symbols/sport/stadium.svg
+   - packages/mapsforge_flutter/assets/symbols/sport/swimming_outdoor.svg
+   - packages/mapsforge_flutter/assets/symbols/sport/tennis.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/archaeological2.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/attraction.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/castle2.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/cinema2.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/information.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/memorial.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/monument.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/museum.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/picnic.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/ruin.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/theatre.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/view_point.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/windmill.svg
+   - packages/mapsforge_flutter/assets/symbols/tourist/zoo.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/airport2.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/bus_station.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/bus_stop.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/fuel.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/helicopter.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/lighthouse.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/parking.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/parking_private.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/rental_bicycle.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/slipway.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/traffic_lights.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/train_station2.svg
+   - packages/mapsforge_flutter/assets/symbols/transport/tram_stop.svg
+   - packages/mapsforge_flutter/assets/symbols/water/weir.svg
+   - packages/mapsforge_flutter/assets/symbols/windsock.svg
+   - packages/mapsforge_flutter/assets/symbols/viewpoint.svg
+
+  fonts:
+   - family: serif
+     fonts:
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerif.otf
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerifBold.otf
+         weight: 700
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerifBoldItalic.otf
+         style: italic
+         weight: 700
+       - asset: packages/mapsforge_flutter/assets/fonts/FreeSerifItalic.otf
+         style: italic
