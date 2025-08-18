@@ -16,13 +16,7 @@ abstract class MapDataStore extends Datastore {
   /// @param language the preferred language or null if default language is used.
   /// Make sure the language is trim()-ed and toLowerCase()-ed and not empty like so:
   /// super((language?.trim().toLowerCase().isEmpty ?? true) ? null : language?.trim().toLowerCase())
-  const MapDataStore(String? language) : preferredLanguage = language;
-
-  /// Returns the timestamp of the data used to render a specific tile.
-  ///
-  /// @param tile A tile.
-  /// @return the timestamp of the data used to render the tile
-  Future<int?> getDataTimestamp(Tile tile);
+  const MapDataStore(this.preferredLanguage);
 
   /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
   /// It is permissible for the MapDataStore to return more data.

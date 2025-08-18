@@ -67,7 +67,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<DatastoreReadResult?> _readLabelsSingleStatic(_MapfileReadSingleRequest request) async {
-    mapFile ??= await MapFile.from(filename, 0, preferredLanguage);
+    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     return mapFile!.readLabelsSingle(request.tile);
   }
 
@@ -85,7 +85,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<DatastoreReadResult?> _readMapDataSingleStatic(_MapfileReadSingleRequest request) async {
-    mapFile ??= await MapFile.from(filename, 0, preferredLanguage);
+    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     return mapFile!.readMapDataSingle(request.tile);
   }
 
@@ -109,7 +109,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<bool> _supportsTileStatic(_MapfileSupportsTileRequest request) async {
-    mapFile ??= await MapFile.from(filename, 0, preferredLanguage);
+    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     return mapFile!.supportsTile(request.tile);
   }
 
@@ -121,7 +121,7 @@ class IsolateMapfile implements Datastore {
 
   @pragma('vm:entry-point')
   static Future<BoundingBox> _getBoundingBoxStatic(_MapfileBoundingBoxRequest request) async {
-    mapFile ??= await MapFile.from(filename, 0, preferredLanguage);
+    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     return mapFile!.getBoundingBox();
   }
 }
@@ -200,8 +200,6 @@ class MapFile extends MapDataStore {
 
   int _fileSize = -1;
 
-  final int? timestamp;
-
   ZoomlevelRange zoomlevelRange = const ZoomlevelRange.standard();
 
   late final MapfileInfo _mapFileInfo;
@@ -214,15 +212,15 @@ class MapFile extends MapDataStore {
 
   final Cache<String, Readbuffer> _cache = LfuCache(storage: StatisticsStorage(), capacity: 100);
 
-  static Future<MapFile> from(String filename, int? timestamp, String? language, {ReadbufferSource? source}) async {
-    MapFile mapFile = MapFile._(timestamp, language);
-    await mapFile._init(source != null ? source : ReadbufferFile(filename));
+  static Future<MapFile> createFromFile({required String filename, String? preferredLanguage, ReadbufferSource? source}) async {
+    MapFile mapFile = MapFile._(preferredLanguage);
+    await mapFile._init(source ?? ReadbufferFile(filename));
     return mapFile;
   }
 
-  static Future<MapFile> using(Uint8List content, int? timestamp, String? language) async {
-    assert(content.length > 0);
-    MapFile mapFile = MapFile._(timestamp, language);
+  static Future<MapFile> createFromContent({required Uint8List content, String? preferredLanguage}) async {
+    assert(content.isNotEmpty);
+    MapFile mapFile = MapFile._(preferredLanguage);
     await mapFile._initContent(content);
     return mapFile;
   }
@@ -232,7 +230,7 @@ class MapFile extends MapDataStore {
   /// @param filename the filename of the mapfile.
   /// @param language       the language to use (may be null).
   /// @throws MapFileException if the given map file channel is null or invalid.
-  MapFile._(this.timestamp, String? language) : super((language?.trim().toLowerCase().isEmpty ?? true) ? null : language?.trim().toLowerCase());
+  MapFile._(String? preferredLanguage) : super((preferredLanguage?.trim().toLowerCase().isEmpty ?? true) ? null : preferredLanguage?.trim().toLowerCase());
 
   Future<MapFile> _init(ReadbufferSource source) async {
     _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
@@ -248,24 +246,13 @@ class MapFile extends MapDataStore {
 
   @override
   String toString() {
-    return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileInfo, timestamp: $timestamp, zoomlevelRange: $zoomlevelRange, readBufferSource: $readBufferSource}';
+    return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileInfo, zoomlevelRange: $zoomlevelRange, readBufferSource: $readBufferSource}';
   }
 
   @override
   void dispose() {
     _databaseIndexCache.dispose();
     readBufferSource.dispose();
-  }
-
-  /**
-   * Returns the creation timestamp of the map file.
-   *
-   * @param tile not used, as all tiles will shared the same creation date.
-   * @return the creation timestamp inside the map file.
-   */
-  @override
-  Future<int?> getDataTimestamp(Tile tile) {
-    return Future.value(this.timestamp);
   }
 
   /**

@@ -11,7 +11,7 @@ class RuleReader {
   }
 
   Future<(RuleAnalyzer, RenderTheme)> readSource(String content) async {
-    RenderTheme renderTheme = RenderThemeBuilder.parse(content);
+    RenderTheme renderTheme = RenderThemeBuilder.createFromString(content);
     RuleAnalyzer ruleAnalyzer = RuleAnalyzer();
     for (Rule rule in renderTheme.rulesList) {
       ruleAnalyzer.apply(rule);
