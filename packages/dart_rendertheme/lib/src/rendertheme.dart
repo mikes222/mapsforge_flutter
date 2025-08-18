@@ -33,7 +33,7 @@ class RenderTheme {
    * @return the number of distinct drawing levels required by this RenderTheme.
    */
   int getLevels() {
-    return this.levels;
+    return levels;
   }
 
   /**
@@ -77,10 +77,6 @@ class RenderTheme {
   //   return renderthemeLevel;
   // }
 
-  void addRule(Rule rule) {
-    this.rulesList.add(rule);
-  }
-
   void complete() {
     //    this.rulesList.trimToSize();
     //    this.hillShadings.trimToSize();
@@ -90,25 +86,21 @@ class RenderTheme {
   }
 
   void traverseRules(RuleVisitor visitor) {
-    rulesList.forEach((rule) {
+    for (var rule in rulesList) {
       rule.apply(visitor);
-    });
+    }
   }
 
   /// Returns the widest possible zoomrange which may accept the given argument.
-  /// Returns null if if the argument will never accepted.
+  /// Returns null if the argument is never accepted.
   ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
     ZoomlevelRange? result;
-    rulesList.forEach((rule) {
+    for (var rule in rulesList) {
       ZoomlevelRange? range = rule.getZoomlevelRangeNode(pointOfInterest);
       if (range != null) {
-        if (result == null) {
-          result = range;
-        } else {
-          result = result!.widenTo(range);
-        }
+        result = result?.widenTo(range) ?? range;
       }
-    });
+    }
     return result;
   }
 
@@ -117,16 +109,12 @@ class RenderTheme {
   ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, List<Tag> tags) {
     bool isClosedWay = waypath.isClosedWay();
     ZoomlevelRange? result;
-    rulesList.forEach((rule) {
+    for (var rule in rulesList) {
       ZoomlevelRange? range = isClosedWay ? rule.getZoomlevelRangeClosedWay(tags) : rule.getZoomlevelRangeOpenWay(tags);
       if (range != null) {
-        if (result == null) {
-          result = range;
-        } else {
-          result = result!.widenTo(range);
-        }
+        result = result?.widenTo(range) ?? range;
       }
-    });
+    }
     return result;
   }
 }

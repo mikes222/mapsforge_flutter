@@ -29,8 +29,8 @@ class PositiveRule extends Rule {
   }
 
   @override
-  bool matchesForZoomlevelRange(List<Tag> tags) {
-    return keyMatcher.matchesTagList(tags) && this.valueMatcher.matchesTagList(tags);
+  bool matchesTags(List<Tag> tags) {
+    return keyMatcher.matchesTagList(tags) && valueMatcher.matchesTagList(tags);
   }
 
   @override

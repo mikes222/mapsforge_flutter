@@ -4,13 +4,14 @@ import 'package:dart_common/src/model/ilatlong.dart';
 import 'package:dart_common/src/model/tag.dart';
 import 'package:dart_common/src/utils/list_helper.dart';
 
-/// An immutable container for all data associated with a single way or area (closed way).
+/// An immutable container for all data associated with a single way or area (closed way). These data comes from the mapfile. Do NOT add any data here.
 class Way {
   /// The position of the area label (may be null).
   final ILatLong? labelPosition;
 
   /// The geographical coordinates of the way nodes. The first item is the outer way whereas succeeding item
   /// always represents inner ways.
+  /// todo replace with class-structure to make it easier to understand
   final List<List<ILatLong>> latLongs;
 
   /// The layer of this way + 5 (to avoid negative values).

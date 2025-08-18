@@ -4,15 +4,17 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
+import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/mapfile/zoomlevel_writer.dart';
+import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';
+import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
 import 'package:mapfile_converter/pbf/pbf_writer.dart';
 
-import 'pbf_statistics.dart';
-import 'rule_reader.dart';
+import '../lib/runner/pbf_statistics.dart';
 
 void main(List<String> arguments) async {
   _initLogging();
@@ -51,6 +53,7 @@ class StatisticsCommand extends Command {
   String get name => "statistics";
 
   StatisticsCommand() {
+    argParser.addOption("rendertheme", abbr: "r", help: "Render theme filename for filtering tags", mandatory: false);
     argParser.addOption("sourcefile", abbr: "s", help: "Source filename (PBF file)", mandatory: true);
     argParser.addOption("find", abbr: "f", help: "Find items with the given tag", mandatory: false);
   }
@@ -58,7 +61,24 @@ class StatisticsCommand extends Command {
   @override
   Future<void> run() async {
     _log.info("Calculating, please wait...");
-    PbfStatistics pbfStatistics = await PbfStatistics.readFile(argResults!.option("sourcefile")!);
+    DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
+
+    if (argResults!.option("rendertheme") != null) {
+      RenderTheme renderTheme = await RenderThemeBuilder.createFromFile(argResults!.option("rendertheme")!);
+      RuleAnalyzer ruleAnalyzer = RuleAnalyzer();
+      for (Rule rule in renderTheme.rulesList) {
+        ruleAnalyzer.apply(rule);
+      }
+
+      converter = CustomOsmPrimitiveConverter(
+        allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
+        allowedWayTags: ruleAnalyzer.wayValueinfos(),
+        negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
+        negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
+        keys: ruleAnalyzer.keys,
+      );
+    }
+    PbfStatistics pbfStatistics = await PbfStatistics.readFile(argResults!.option("sourcefile")!, converter);
     pbfStatistics.statistics();
     pbfStatistics.find(argResults!.option("find"));
   }
@@ -76,7 +96,7 @@ class ConvertCommand extends Command {
   String get name => "convert";
 
   ConvertCommand() {
-    argParser.addOption("rendertheme", abbr: "r", defaultsTo: "rendertheme.xml", help: "Render theme filename");
+    argParser.addOption("rendertheme", abbr: "r", help: "Render theme filename", mandatory: false);
     argParser.addOption("sourcefiles", abbr: "s", help: "Source filenames (PBF or osm files), separated by #", mandatory: true);
     argParser.addOption("destinationfile", abbr: "d", help: "Destination filename (mapfile, PBF or osm)", mandatory: true);
     argParser.addOption(
@@ -103,8 +123,25 @@ class ConvertCommand extends Command {
     /// Read and analyze render theme
     List<String> zoomlevelsString = _split(argResults!.option("zoomlevels")!);
     List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
-    RuleReader ruleReader = RuleReader();
-    final (ruleAnalyzer, renderTheme) = await ruleReader.readFile(argResults!.option("rendertheme")!);
+
+    DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
+    RenderTheme? renderTheme;
+
+    if (argResults!.option("rendertheme") != null) {
+      renderTheme = await RenderThemeBuilder.createFromFile(argResults!.option("rendertheme")!);
+      RuleAnalyzer ruleAnalyzer = RuleAnalyzer();
+      for (Rule rule in renderTheme.rulesList) {
+        ruleAnalyzer.apply(rule);
+      }
+
+      converter = CustomOsmPrimitiveConverter(
+        allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
+        allowedWayTags: ruleAnalyzer.wayValueinfos(),
+        negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
+        negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
+        keys: ruleAnalyzer.keys,
+      );
+    }
 
     BoundingBox? finalBoundingBox = _parseBoundingBoxFromCli();
 
@@ -117,7 +154,7 @@ class ConvertCommand extends Command {
       if (sourcefile.toLowerCase().endsWith(".osm")) {
         PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readOsmFile(
           sourcefile,
-          ruleAnalyzer,
+          converter,
           maxGapMeter: double.parse(argResults!.option("maxgap")!),
           finalBoundingBox: finalBoundingBox,
         );
@@ -132,7 +169,7 @@ class ConvertCommand extends Command {
         /// Read and analyze PBF file
         PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(
           sourcefile,
-          ruleAnalyzer,
+          converter,
           maxGapMeter: double.parse(argResults!.option("maxgap")!),
           finalBoundingBox: finalBoundingBox,
         );
@@ -149,8 +186,12 @@ class ConvertCommand extends Command {
 
     /// Simplify the data: Remove small areas, simplify ways
     RenderthemeFilter renderthemeFilter = RenderthemeFilter();
-    Map<ZoomlevelRange, List<PointOfInterest>> poiZoomlevels = renderthemeFilter.filterNodes(pois, renderTheme);
-    Map<ZoomlevelRange, List<Wayholder>> wayZoomlevels = renderthemeFilter.filterWays(ways, renderTheme);
+    Map<ZoomlevelRange, List<PointOfInterest>> poiZoomlevels = renderTheme != null
+        ? renderthemeFilter.filterNodes(pois, renderTheme)
+        : renderthemeFilter.convertNodes(pois);
+    Map<ZoomlevelRange, List<Wayholder>> wayZoomlevels = renderTheme != null
+        ? renderthemeFilter.filterWays(ways, renderTheme)
+        : renderthemeFilter.convertWays(ways);
     pois.clear();
     ways.clear();
 
@@ -193,9 +234,7 @@ class ConvertCommand extends Command {
         treeMap.forEach((zoomlevelRange, nodelist) {
           _log.info("Nodes: ZoomlevelRange: $zoomlevelRange, ${nodelist.length}");
         });
-      }
-      if (!argResults!.flag("quiet")) {
-        SplayTreeMap treeMap = SplayTreeMap.from(wayZoomlevels, (a, b) => a.zoomlevelMin.compareTo(b.zoomlevelMin));
+        treeMap = SplayTreeMap.from(wayZoomlevels, (a, b) => a.zoomlevelMin.compareTo(b.zoomlevelMin));
         treeMap.forEach((zoomlevelRange, waylist) {
           _log.info("Ways: ZoomlevelRange: $zoomlevelRange, ${waylist.length}");
         });

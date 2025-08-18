@@ -1,14 +1,14 @@
 import 'package:dart_common/buffer.dart';
 import 'package:dart_common/model.dart';
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
 
 class PbfStatistics {
   final _log = Logger('PbfStatistics');
 
-  PbfAnalyzerConverter converter = PbfAnalyzerConverter();
+  final DefaultOsmPrimitiveConverter converter;
 
   final Map<int, PointOfInterest> _nodeHolders = {};
 
@@ -34,16 +34,18 @@ class PbfStatistics {
 
   BoundingBox? boundingBox;
 
-  static Future<PbfStatistics> readFile(String filename) async {
+  PbfStatistics._(this.converter);
+
+  static Future<PbfStatistics> readFile(String filename, DefaultOsmPrimitiveConverter converter) async {
     ReadbufferSource readbufferSource = ReadbufferFile(filename);
-    PbfStatistics statistics = await readSource(readbufferSource);
+    PbfStatistics statistics = await readSource(readbufferSource, converter);
     readbufferSource.dispose();
     return statistics;
   }
 
-  static Future<PbfStatistics> readSource(ReadbufferSource readbufferSource) async {
+  static Future<PbfStatistics> readSource(ReadbufferSource readbufferSource, DefaultOsmPrimitiveConverter converter) async {
     int sourceLength = await readbufferSource.length();
-    PbfStatistics pbfStatistics = PbfStatistics();
+    PbfStatistics pbfStatistics = PbfStatistics._(converter);
     await pbfStatistics.readToMemory(readbufferSource, sourceLength);
     return pbfStatistics;
   }

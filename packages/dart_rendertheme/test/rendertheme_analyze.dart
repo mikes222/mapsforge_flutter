@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:dart_rendertheme/src/rule/rule_analyzer.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
@@ -49,6 +48,18 @@ void main() async {
     print(".......... Keys in renderInstructions");
     print(ruleAnalyzer.keys.join(","));
   });
+
+  test("Print rendertheme", () async {
+    RenderTheme renderTheme = await RenderThemeBuilder.createFromFile("test/defaultrender.xml");
+    printTheme(renderTheme.rulesList, 0);
+  });
+}
+
+void printTheme(List<Rule> rules, int indent) {
+  for (Rule rule in rules) {
+    print("${" ".padLeft(indent)}$rule");
+    printTheme(rule.subRules, indent + 2);
+  }
 }
 
 void printValueInfos(Map<String, ValueInfo> values) {

@@ -23,12 +23,12 @@ class NegativeRule extends Rule {
 
   @override
   bool matches(List<Tag> tags, int indoorLevel) {
-    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) && this.attributeMatcher.matchesTagList(tags);
+    return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) && attributeMatcher.matchesTagList(tags);
   }
 
   @override
-  bool matchesForZoomlevelRange(List<Tag> tags) {
-    return this.attributeMatcher.matchesTagList(tags);
+  bool matchesTags(List<Tag> tags) {
+    return attributeMatcher.matchesTagList(tags);
   }
 
   @override

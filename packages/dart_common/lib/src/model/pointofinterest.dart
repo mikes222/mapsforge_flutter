@@ -12,6 +12,7 @@ class PointOfInterest {
   final ILatLong position;
 
   /// The tags of this POI.
+  /// todo change to TagList so that we can implement better caching
   final List<Tag> tags;
 
   const PointOfInterest(this.layer, this.tags, this.position) : assert(layer >= -5), assert(layer <= 10);

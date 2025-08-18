@@ -20,7 +20,10 @@ abstract class Rule {
     required this.renderInstructionNodes,
     required this.renderInstructionOpenWays,
     required this.renderInstructionClosedWays,
-  });
+  }) : assert(
+         subRules.isNotEmpty ||
+             (subRules.isEmpty && (renderInstructionNodes.isNotEmpty || renderInstructionOpenWays.isNotEmpty || renderInstructionClosedWays.isNotEmpty)),
+       );
 
   void apply(RuleVisitor v) {
     v.apply(this);
@@ -33,36 +36,31 @@ abstract class Rule {
     if (!matchesForZoomLevel(zoomlevel)) {
       return null;
     }
-
-    // todo is this necessary?
-    List<Rule> subs = [];
-    for (var element in subRules) {
-      Rule? sub = element.matchForZoomlevel(zoomlevel);
-      if (sub != null) subs.add(sub);
-    }
-
     return this;
   }
 
+  /// Returns true if the rule matches the given tags and inddor level
   bool matches(List<Tag> tags, int indoorLevel);
 
-  bool matchesForZoomlevelRange(List<Tag> tags);
+  /// Checks the tags if the rule matches, does NOT take the indoorLevel into account.
+  bool matchesTags(List<Tag> tags);
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
     // tag not accepted by this rule.
-    if (!matchesForZoomlevelRange(pointOfInterest.tags)) return null;
+    if (!matchesTags(pointOfInterest.tags)) return null;
+    if (renderInstructionNodes.isNotEmpty) {
+      // this rule supports the argument. Returns this zoomlevel range which is
+      // the widest possible range.
+      return zoomlevelRange;
+    }
 
     ZoomlevelRange? result;
-    for (var element in subRules) {
-      ZoomlevelRange? range = element.getZoomlevelRangeNode(pointOfInterest);
+    for (var rule in subRules) {
+      ZoomlevelRange? range = rule.getZoomlevelRangeNode(pointOfInterest);
       if (range != null) {
-        if (result == null) {
-          result = range;
-        } else {
-          result = result.widenTo(range);
-        }
+        result = result?.widenTo(range) ?? range;
       }
     }
     return result;
@@ -71,17 +69,15 @@ abstract class Rule {
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeOpenWay(List<Tag> tags) {
-    if (!matchesForZoomlevelRange(tags)) return null;
+    if (!matchesTags(tags)) return null;
+
+    if (renderInstructionOpenWays.isNotEmpty) return zoomlevelRange;
 
     ZoomlevelRange? result;
     for (var element in subRules) {
       ZoomlevelRange? range = element.getZoomlevelRangeOpenWay(tags);
       if (range != null) {
-        if (result == null) {
-          result = range;
-        } else {
-          result = result.widenTo(range);
-        }
+        result = result?.widenTo(range) ?? range;
       }
     }
     return result;
@@ -90,17 +86,15 @@ abstract class Rule {
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeClosedWay(List<Tag> tags) {
-    if (!matchesForZoomlevelRange(tags)) return null;
+    if (!matchesTags(tags)) return null;
+
+    if (renderInstructionClosedWays.isNotEmpty) return zoomlevelRange;
 
     ZoomlevelRange? result;
     for (var element in subRules) {
       ZoomlevelRange? range = element.getZoomlevelRangeClosedWay(tags);
       if (range != null) {
-        if (result == null) {
-          result = range;
-        } else {
-          result = result.widenTo(range);
-        }
+        result = result?.widenTo(range) ?? range;
       }
     }
     return result;
@@ -110,6 +104,11 @@ abstract class Rule {
     for (int i = 0, n = subRules.length; i < n; ++i) {
       subRules.elementAt(i).onComplete();
     }
+  }
+
+  @override
+  String toString() {
+    return 'Rule{zoomlevelRange: $zoomlevelRange, renderInstructionNodes: $renderInstructionNodes, renderInstructionOpenWays: $renderInstructionOpenWays, renderInstructionClosedWays: $renderInstructionClosedWays}';
   }
 }
 

@@ -1,15 +1,12 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
 import 'package:dart_common/buffer.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_rendertheme/src/rule/rule_analyzer.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/cachefile.dart';
-import 'package:mapfile_converter/modifiers/custom_tag_modifier.dart';
+import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/large_data_splitter.dart';
 import 'package:mapfile_converter/modifiers/way_connect.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
@@ -20,7 +17,7 @@ import '../osm/osm_reader.dart';
 
 /// Reads data from a pbf file and converts it to PointOfInterest and Way objects
 /// so that they are usable in mapsforge. By implementing your own version of
-/// [PbfAnalyzerConverter] you can control the behavior of the converstion from
+/// [PbfAnalyzerConverter] you can control the behavior of the conversion from
 /// OSM data to PointOfInterest and Way objects.
 class PbfAnalyzer {
   final _log = Logger('PbfAnalyzer');
@@ -53,7 +50,7 @@ class PbfAnalyzer {
 
   BoundingBox? boundingBox;
 
-  PbfAnalyzerConverter converter = PbfAnalyzerConverter();
+  final DefaultOsmPrimitiveConverter converter;
 
   List<PointOfInterest> get pois => _nodeHolders.values.map((e) => e.pointOfInterest).toList();
 
@@ -79,31 +76,28 @@ class PbfAnalyzer {
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
-  PbfAnalyzer._({this.maxGapMeter = 200, required RuleAnalyzer ruleAnalyzer}) {
-    converter = CustomTagModifier(
-      allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
-      allowedWayTags: ruleAnalyzer.wayValueinfos(),
-      negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
-      negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
-      keys: ruleAnalyzer.keys,
-    );
-  }
+  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter});
 
-  static Future<PbfAnalyzer> readFile(String filename, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200, BoundingBox? finalBoundingBox}) async {
+  static Future<PbfAnalyzer> readFile(
+    String filename,
+    DefaultOsmPrimitiveConverter converter, {
+    double maxGapMeter = 200,
+    BoundingBox? finalBoundingBox,
+  }) async {
     ReadbufferSource readbufferSource = ReadbufferFile(filename);
-    PbfAnalyzer result = await readSource(readbufferSource, ruleAnalyzer, maxGapMeter: maxGapMeter, finalBoundingBox: finalBoundingBox);
+    PbfAnalyzer result = await readSource(readbufferSource, converter, maxGapMeter: maxGapMeter, finalBoundingBox: finalBoundingBox);
     readbufferSource.dispose();
     return result;
   }
 
   static Future<PbfAnalyzer> readSource(
     ReadbufferSource readbufferSource,
-    RuleAnalyzer ruleAnalyzer, {
+    DefaultOsmPrimitiveConverter converter, {
     double maxGapMeter = 200,
     BoundingBox? finalBoundingBox,
   }) async {
     int length = await readbufferSource.length();
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, ruleAnalyzer: ruleAnalyzer);
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter);
     await pbfAnalyzer.readToMemory(readbufferSource, length);
     // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
     await pbfAnalyzer.analyze();
@@ -116,8 +110,13 @@ class PbfAnalyzer {
     return pbfAnalyzer;
   }
 
-  static Future<PbfAnalyzer> readOsmFile(String filename, RuleAnalyzer ruleAnalyzer, {double maxGapMeter = 200, BoundingBox? finalBoundingBox}) async {
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, ruleAnalyzer: ruleAnalyzer);
+  static Future<PbfAnalyzer> readOsmFile(
+    String filename,
+    DefaultOsmPrimitiveConverter converter, {
+    double maxGapMeter = 200,
+    BoundingBox? finalBoundingBox,
+  }) async {
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter);
     await pbfAnalyzer.readOsmToMemory(filename);
     // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
     await pbfAnalyzer.analyze();
@@ -285,13 +284,13 @@ class PbfAnalyzer {
 
   void statistics() {
     // remove nodes that do not have any tags.
-    _log.info("Removed $nodesWithoutTagsRemoved nodes because of no tags");
+    if (nodesWithoutTagsRemoved > 0) _log.info("Removed $nodesWithoutTagsRemoved nodes because of no tags");
 
-    _log.info("Removed $waysWithoutNodesRemoved ways because less than 2 nodes");
-    _log.info("Removed $waysMergedCount ways because they have been merged to other ways");
-    _log.info("Removed $closedWaysWithLessNodesRemoved closed ways because they have less than or equals 2 nodes");
+    if (waysWithoutNodesRemoved > 0) _log.info("Removed $waysWithoutNodesRemoved ways because less than 2 nodes");
+    if (waysMergedCount > 0) _log.info("Removed $waysMergedCount ways because they have been merged to other ways");
+    if (closedWaysWithLessNodesRemoved > 0) _log.info("Removed $closedWaysWithLessNodesRemoved closed ways because they have less than or equals 2 nodes");
 
-    _log.info("Removed $nodesFiltered pois and $waysFiltered ways because they are out of boundary");
+    if (nodesFiltered + waysFiltered > 0) _log.info("Removed $nodesFiltered pois and $waysFiltered ways because they are out of boundary");
 
     _log.info("${nodeNotFound.length} nodes not found, ${wayNotFound.length} ways not found");
     _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}, total relation-way count: ${waysMerged.length}");
@@ -475,67 +474,7 @@ class _PoiHolder {
 
 //////////////////////////////////////////////////////////////////////////////
 
-class PbfAnalyzerConverter {
-  PointOfInterest? createNode(OsmNode osmNode) {
-    List<Tag> tags = Tag.from(osmNode.tags);
-    int layer = findLayer(tags);
-    modifyNodeTags(osmNode, tags);
-    // even with no tags the node may belong to a relation, so keep it
-    // convert and round the latlongs to 6 digits after the decimal point. This
-    // helps determining if ways are closed.
-    LatLong latLong = LatLong(_roundDouble(osmNode.latitude, 6), _roundDouble(osmNode.longitude, 6));
-    PointOfInterest pointOfInterest = PointOfInterest(layer, tags, latLong);
-    return pointOfInterest;
-  }
-
-  Way? createWay(OsmWay osmWay, List<List<ILatLong>> latLongs) {
-    List<Tag> tags = Tag.from(osmWay.tags);
-    int layer = findLayer(tags);
-    modifyWayTags(osmWay, tags);
-    // even with no tags the way may belong to a relation, so keep it
-    ILatLong? labelPosition;
-    Way way = Way(layer, tags, latLongs, labelPosition);
-    return way;
-  }
-
-  Way? createMergedWay(OsmRelation relation) {
-    List<Tag> tags = Tag.from(relation.tags);
-    int layer = findLayer(tags);
-    modifyRelationTags(relation, tags);
-    // topmost structure, if we have no tags, we cannot render anything
-    if (tags.isEmpty) return null;
-    ILatLong? labelPosition;
-    Way way = Way(layer, tags, [], labelPosition);
-    return way;
-  }
-
-  double _roundDouble(double value, int places) {
-    num mod = math.pow(10.0, places);
-    return ((value * mod).round().toDouble() / mod);
-  }
-
-  void modifyNodeTags(OsmNode node, List<Tag> tags) {}
-
-  void modifyWayTags(OsmWay way, List<Tag> tags) {}
-
-  void modifyRelationTags(OsmRelation relation, List<Tag> tags) {}
-
-  int findLayer(List<Tag> tags) {
-    Tag? layerTag = tags.firstWhereOrNull((test) => test.key == "layer" && test.value != null);
-    int layer = 0;
-    if (layerTag != null) {
-      layer = int.tryParse(layerTag.value!) ?? 0;
-      tags.remove(layerTag);
-    }
-    // layers from -5 to 10 are allowed, will be stored as 0..15 in the file (4 bit)
-    if (layer < -5) layer = -5;
-    if (layer > 10) layer = 10;
-    return layer;
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
+/// Holds one way in memory or holds a reference to one way in a temp-file
 class WayholderUnion {
   Wayholder? _wayholder;
 
@@ -626,6 +565,7 @@ class WayholderUnion {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// Reference to a way in the tempfile
 class _Temp {
   final int pos;
 

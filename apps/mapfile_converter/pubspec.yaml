@@ -40,7 +40,8 @@ dependencies:
   xml: ^6.6.1
 
 dev_dependencies:
-
   lints: ^6.0.0
-
   test: ^1.26.3
+
+  # test dart executable in isolate
+  process_run: ^1.2.4

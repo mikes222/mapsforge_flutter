@@ -4,17 +4,32 @@ import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:logging/logging.dart';
 
 class RenderthemeFilter {
-  final _log = new Logger('RenderthemeFilter');
+  final _log = Logger('RenderthemeFilter');
+
+  Map<ZoomlevelRange, List<PointOfInterest>> convertNodes(List<PointOfInterest> pois) {
+    ZoomlevelRange range = const ZoomlevelRange.standard();
+    // apply each node/way to the rendertheme and find their min/max zoomlevel
+    Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
+    for (var pointOfInterest in pois) {
+      List<PointOfInterest>? bag = nodes[range];
+      if (bag == null) {
+        bag = [];
+        nodes[range] = bag;
+      }
+      bag.add(pointOfInterest);
+    }
+    return nodes;
+  }
 
   Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<PointOfInterest> pois, RenderTheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
     int noRangeNodes = 0;
-    pois.forEach((pointOfInterest) {
+    for (var pointOfInterest in pois) {
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest);
       if (range == null) {
         ++noRangeNodes;
-        return;
+        continue;
       }
       List<PointOfInterest>? bag = nodes[range];
       if (bag == null) {
@@ -22,9 +37,25 @@ class RenderthemeFilter {
         nodes[range] = bag;
       }
       bag.add(pointOfInterest);
-    });
+    }
     _log.info("Removed $noRangeNodes nodes because we would never draw them according to the render theme");
     return nodes;
+  }
+
+  Map<ZoomlevelRange, List<Wayholder>> convertWays(List<Wayholder> ways) {
+    ZoomlevelRange range = const ZoomlevelRange.standard();
+    // apply each node/way to the rendertheme and find their min/max zoomlevel
+    Map<ZoomlevelRange, List<Wayholder>> result = {};
+    for (var wayHolder in ways) {
+      assert(wayHolder.closedOutersRead.isNotEmpty || wayHolder.openOutersRead.isNotEmpty, "way must have at least one outer $wayHolder");
+      List<Wayholder>? bag = result[range];
+      if (bag == null) {
+        bag = [];
+        result[range] = bag;
+      }
+      bag.add(wayHolder);
+    }
+    return result;
   }
 
   Map<ZoomlevelRange, List<Wayholder>> filterWays(List<Wayholder> ways, RenderTheme renderTheme) {

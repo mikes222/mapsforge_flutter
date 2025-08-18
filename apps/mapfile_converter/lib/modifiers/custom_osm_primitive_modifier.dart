@@ -1,9 +1,10 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/src/rule/rule_analyzer.dart';
-import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 
-class CustomTagModifier extends PbfAnalyzerConverter {
+/// Removes tags from node/ways according to the rules. If no tags remains the correspondig node/way will be discarded
+class CustomOsmPrimitiveConverter extends DefaultOsmPrimitiveConverter {
   final Map<String, ValueInfo> allowedNodeTags;
 
   final Map<String, ValueInfo> allowedWayTags;
@@ -14,7 +15,7 @@ class CustomTagModifier extends PbfAnalyzerConverter {
 
   final Set<String> keys;
 
-  CustomTagModifier({
+  CustomOsmPrimitiveConverter({
     required this.allowedNodeTags,
     required this.allowedWayTags,
     required this.negativeNodeTags,

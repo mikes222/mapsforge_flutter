@@ -7,13 +7,10 @@ class ZoomlevelRange {
   final int zoomlevelMax;
 
   /// Standard zoomlevels are 0..25.
-  const ZoomlevelRange.standard()
-      : zoomlevelMin = 0,
-        zoomlevelMax = 25;
+  const ZoomlevelRange.standard() : zoomlevelMin = 0, zoomlevelMax = 25;
 
   const ZoomlevelRange(this.zoomlevelMin, this.zoomlevelMax)
-      : assert(zoomlevelMin <= zoomlevelMax,
-            "zoomlevelMin ($zoomlevelMin) should less or equal zoomlevelMax ($zoomlevelMax)");
+    : assert(zoomlevelMin <= zoomlevelMax, "zoomlevelMin ($zoomlevelMin) should less or equal zoomlevelMax ($zoomlevelMax)");
 
   /// Returns a new ZoomlevelRange where the minimum zoomlevel is either the given
   /// zoomlevel or the existing one - whichever is bigger.
@@ -29,13 +26,11 @@ class ZoomlevelRange {
 
   /// Returns a new ZoomlevelRange which is equal or smaller than the current one.
   ZoomlevelRange restrictTo(ZoomlevelRange range) {
-    return ZoomlevelRange(Math.max(range.zoomlevelMin, zoomlevelMin),
-        Math.min(range.zoomlevelMax, zoomlevelMax));
+    return ZoomlevelRange(Math.max(range.zoomlevelMin, zoomlevelMin), Math.min(range.zoomlevelMax, zoomlevelMax));
   }
 
   ZoomlevelRange widenTo(ZoomlevelRange range) {
-    return ZoomlevelRange(Math.min(range.zoomlevelMin, zoomlevelMin),
-        Math.max(range.zoomlevelMax, zoomlevelMax));
+    return ZoomlevelRange(Math.min(range.zoomlevelMin, zoomlevelMin), Math.max(range.zoomlevelMax, zoomlevelMax));
   }
 
   /// Returns a zoomlevel which lies guaranteed in the range of this zoomlevel range.
@@ -46,17 +41,14 @@ class ZoomlevelRange {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ZoomlevelRange &&
-          runtimeType == other.runtimeType &&
-          zoomlevelMin == other.zoomlevelMin &&
-          zoomlevelMax == other.zoomlevelMax;
+      other is ZoomlevelRange && runtimeType == other.runtimeType && zoomlevelMin == other.zoomlevelMin && zoomlevelMax == other.zoomlevelMax;
 
   @override
   int get hashCode => zoomlevelMin.hashCode ^ zoomlevelMax.hashCode;
 
   @override
   String toString() {
-    return 'ZoomlevelRange{zoomlevelMin: $zoomlevelMin, zoomlevelMax: $zoomlevelMax}';
+    return 'ZoomlevelRange{$zoomlevelMin - $zoomlevelMax}';
   }
 
   bool matches(int zoomlevel) {
