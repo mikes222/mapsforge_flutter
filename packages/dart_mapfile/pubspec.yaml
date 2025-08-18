@@ -1,0 +1,21 @@
+name: dart_mapfile
+resolution: workspace
+description: A sample command-line application.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.9.0
+
+# Add regular dependencies here.
+dependencies:
+
+  # Workspace
+  dart_common: ^1.0.0
+
+  # Workspace
+  dart_isolate: ^1.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.3

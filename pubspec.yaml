@@ -1,10 +1,27 @@
 name: mapsforge_flutter
 publish_to: none
 environment:
-  sdk: ^3.7.0
-workspace:
+  sdk: ^3.9.0
 dev_dependencies:
-  melos: ^6.3.3
-#  - packages/helper
-#  - packages/client_package
-#  - packages/server_package
+  melos: ^7.0.0
+workspace:
+  - packages/task_queue
+  - packages/dart_isolate
+  - packages/dart_common
+  - packages/dart_mapfile
+  - packages/dart_rendertheme
+  - apps/mapfile_converter
+
+melos:
+  scripts:
+    build:
+      description: Generates dart files
+      run: dart run build_runner build --delete-conflicting-outputs
+      packageFilters:
+        dependsOn: build_runner
+
+    bootstrap:
+      dependencies:
+        ecache: ^2.0.9
+      hooks:
+        post: flutter pub upgrade
