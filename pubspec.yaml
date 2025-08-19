@@ -10,6 +10,7 @@ workspace:
   - packages/dart_common
   - packages/dart_mapfile
   - packages/dart_rendertheme
+  - packages/datastore_renderer
   - apps/mapfile_converter
 
 melos:
@@ -22,6 +23,10 @@ melos:
 
     bootstrap:
       dependencies:
+        # Upgraded for compatibility with dart
         ecache: ^2.0.9
+
+        # flutter_test is not compatible with newer versions currently (08/2025)
+        test: ^1.26.2
       hooks:
         post: flutter pub upgrade

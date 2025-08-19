@@ -5,7 +5,7 @@ import 'package:dart_common/src/model/maprectangle.dart';
 import 'package:dart_common/src/utils/mapsforge_constants.dart';
 
 /// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
-/// with their zoom level. The actual area that a tile covers on a map depends on the underlying map projection.
+/// with their zoom level. Tile 0/0 at zoomlevel 0 represents the whole world. Likewise at zoomlevel 1 Tile 0/0 represents the upper-left quarter of the world.
 class Tile {
   /// The X number of this tile.
   final int tileX;

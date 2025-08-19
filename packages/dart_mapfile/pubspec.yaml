@@ -17,5 +17,7 @@ dependencies:
   dart_isolate: ^1.0.0
 
 dev_dependencies:
+
   lints: ^6.0.0
-  test: ^1.26.3
+
+  test: ^1.26.2
