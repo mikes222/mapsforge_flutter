@@ -24,6 +24,11 @@ class RenderinstructionLinesymbol with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMi
     this.level = level;
   }
 
+  @override
+  String getType() {
+    return "linesymbol";
+  }
+
   void parse(XmlElement rootElement) {
     //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     setRepeatGap(REPEAT_GAP_DEFAULT * MapsforgeSettingsMgr().getFontScaleFactor());
@@ -35,44 +40,55 @@ class RenderinstructionLinesymbol with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMi
       String name = element.name.toString();
       String value = element.value;
 
-      if (RenderInstruction.SRC == name) {
+      if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
-      } else if (RenderInstruction.ALIGN_CENTER == name) {
+      } else if (Renderinstruction.ALIGN_CENTER == name) {
         alignCenter = "true" == (value);
-      } else if (RenderInstruction.DISPLAY == name) {
+      } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.DY == name) {
+      } else if (Renderinstruction.DY == name) {
         setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SCALE == name) {
+      } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) {
           setBitmapMinZoomLevel(65535);
         }
-      } else if (RenderInstruction.POSITION == name) {
+      } else if (Renderinstruction.POSITION == name) {
         position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.REPEAT == name) {
+      } else if (Renderinstruction.REPEAT == name) {
         repeat = "true" == (value);
-      } else if (RenderInstruction.REPEAT_GAP == name) {
+      } else if (Renderinstruction.REPEAT_GAP == name) {
         setRepeatGap(double.parse(value) * MapsforgeSettingsMgr().getFontScaleFactor());
-      } else if (RenderInstruction.REPEAT_START == name) {
+      } else if (Renderinstruction.REPEAT_START == name) {
         repeatStart = double.parse(value) * MapsforgeSettingsMgr().getFontScaleFactor();
-      } else if (RenderInstruction.ROTATE == name) {
+      } else if (Renderinstruction.ROTATE == name) {
         rotate = "true" == (value);
-      } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
+      } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
-      } else if (RenderInstruction.SYMBOL_PERCENT == name) {
+      } else if (Renderinstruction.SYMBOL_PERCENT == name) {
         setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
-      } else if (RenderInstruction.SYMBOL_SCALING == name) {
+      } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
-      } else if (RenderInstruction.SYMBOL_WIDTH == name) {
+      } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw Exception("LineSymbol probs: unknown '$name'");
       }
     });
+  }
+
+  @override
+  RenderinstructionLinesymbol forZoomlevel(int zoomlevel) {
+    RenderinstructionLinesymbol renderinstruction = RenderinstructionLinesymbol(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel)
+      ..repeatSrcMixinScale(this, zoomlevel);
+    renderinstruction.position = position;
+    renderinstruction.alignCenter = alignCenter;
+    return renderinstruction;
   }
 }

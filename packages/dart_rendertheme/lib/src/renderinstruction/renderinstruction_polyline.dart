@@ -19,6 +19,11 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
     this.level = level;
   }
 
+  @override
+  String getType() {
+    return "polyline";
+  }
+
   void parse(XmlElement rootElement) {
     // do not scale bitmap in lines they look ugly
     setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
@@ -30,24 +35,24 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
       String name = element.name.toString();
       String value = element.value;
 
-      if (RenderInstruction.SRC == name) {
+      if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
-      } else if (RenderInstruction.DISPLAY == name) {
+      } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.DY == name) {
+      } else if (Renderinstruction.DY == name) {
         setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SCALE == name) {
+      } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) {
           setBitmapMinZoomLevel(65535);
         }
-      } else if (RenderInstruction.ID == name) {
+      } else if (Renderinstruction.ID == name) {
         id = value;
-      } else if (RenderInstruction.STROKE == name) {
+      } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.STROKE_DASHARRAY == name) {
+      } else if (Renderinstruction.STROKE_DASHARRAY == name) {
         List<double> dashArray = parseFloatArray(name, value);
         if (MapsforgeSettingsMgr().getScaleFactor() != 1) {
           for (int f = 0; f < dashArray.length; ++f) {
@@ -55,19 +60,19 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
           }
         }
         setStrokeDashArray(dashArray);
-      } else if (RenderInstruction.STROKE_LINECAP == name) {
+      } else if (Renderinstruction.STROKE_LINECAP == name) {
         setStrokeCap(Cap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
-      } else if (RenderInstruction.STROKE_LINEJOIN == name) {
+      } else if (Renderinstruction.STROKE_LINEJOIN == name) {
         setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
-      } else if (RenderInstruction.STROKE_WIDTH == name) {
+      } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
+      } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
-      } else if (RenderInstruction.SYMBOL_PERCENT == name) {
+      } else if (Renderinstruction.SYMBOL_PERCENT == name) {
         setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
-      } else if (RenderInstruction.SYMBOL_SCALING == name) {
+      } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
-      } else if (RenderInstruction.SYMBOL_WIDTH == name) {
+      } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw new Exception("element hinich");
@@ -83,5 +88,15 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
     //   dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
     // }
     return dashIntervals;
+  }
+
+  @override
+  RenderinstructionPolyline forZoomlevel(int zoomlevel) {
+    RenderinstructionPolyline renderinstruction = RenderinstructionPolyline(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+    renderinstruction.id = id;
+    return renderinstruction;
   }
 }

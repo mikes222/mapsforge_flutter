@@ -1,4 +1,10 @@
+export 'src/model/cap.dart';
+export 'src/model/join.dart';
+export 'src/model/mapfontfamily.dart';
+export 'src/model/mapfontstyle.dart';
+export 'src/renderinstruction/renderinstruction.dart';
 export 'src/rendertheme.dart';
+export 'src/rendertheme_zoomlevel.dart';
 export 'src/rule/rule.dart';
 export 'src/rule/rule_analyzer.dart';
 export 'src/xml/renderthemebuilder.dart';

@@ -25,19 +25,14 @@ abstract class Rule {
              (subRules.isEmpty && (renderInstructionNodes.isNotEmpty || renderInstructionOpenWays.isNotEmpty || renderInstructionClosedWays.isNotEmpty)),
        );
 
+  Rule? forZoomlevel(int zoomlevel);
+
   void apply(RuleVisitor v) {
     v.apply(this);
   }
 
   /// Returns true if this rule can be applied for the given zoomLevel.
   bool matchesForZoomLevel(int zoomLevel);
-
-  Rule? matchForZoomlevel(int zoomlevel) {
-    if (!matchesForZoomLevel(zoomlevel)) {
-      return null;
-    }
-    return this;
-  }
 
   /// Returns true if the rule matches the given tags and inddor level
   bool matches(List<Tag> tags, int indoorLevel);

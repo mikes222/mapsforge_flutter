@@ -1,6 +1,8 @@
+import 'package:dart_rendertheme/src/model/shape_painter.dart';
+
 /// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
 /// instructions from an xml file. It can be seen like a CSS-file for html.
-abstract class RenderInstruction {
+abstract class Renderinstruction {
   static final String ALIGN_CENTER = "align-center";
   static final String ALL = "all";
   static final String CAT = "cat";
@@ -35,5 +37,9 @@ abstract class RenderInstruction {
   static final String SYMBOL_SCALING = "symbol-scaling";
   static final String SYMBOL_WIDTH = "symbol-width";
 
-  RenderInstruction._();
+  Renderinstruction._();
+
+  String getType();
+
+  ShapePainter? getPainter();
 }

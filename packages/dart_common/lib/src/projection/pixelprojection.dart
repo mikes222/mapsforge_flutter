@@ -2,9 +2,6 @@ import 'dart:math';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_common/src/model/mappoint.dart';
-import 'package:dart_common/src/model/maprectangle.dart';
-import 'package:dart_common/src/model/relative_mappoint.dart';
 import 'package:dart_common/src/utils/mapsforge_constants.dart';
 
 class PixelProjection extends MercatorProjection {
@@ -19,7 +16,7 @@ class PixelProjection extends MercatorProjection {
 
   static final Map<String, double> _pixelDiffCache = {};
 
-  PixelProjection(int zoomLevel) : tileSize = MapsforgeSettingsMgr().tileSize, super.fromZoomlevel(zoomLevel) {
+  PixelProjection(super.zoomLevel) : tileSize = MapsforgeSettingsMgr().tileSize, super.fromZoomlevel() {
     _mapSize = _mapSizeWithScaleFactor();
   }
 
@@ -136,7 +133,7 @@ class PixelProjection extends MercatorProjection {
   RelativeMappoint pixelRelativeToTile(ILatLong latLong, Tile tile) {
     Mappoint mappoint = latLonToPixel(latLong);
     Mappoint tilePoint = getLeftUpper(tile);
-    return mappoint.offset(-tilePoint.x, -tilePoint.y);
+    return mappoint.offset(tilePoint);
   }
 
   /// Calculates the absolute pixel position for a tile and tile size relative to origin
@@ -146,7 +143,7 @@ class PixelProjection extends MercatorProjection {
   /// @return the relative pixel position to the origin values (e.g. for a tile)
   RelativeMappoint pixelRelativeToLeftUpper(ILatLong latLong, Mappoint leftUpper) {
     Mappoint mappoint = latLonToPixel(latLong);
-    return mappoint.offset(-leftUpper.x, -leftUpper.y);
+    return mappoint.offset(leftUpper);
   }
 
   /**

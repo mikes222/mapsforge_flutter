@@ -4,9 +4,7 @@ import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
 
 mixin BitmapSrcMixin {
-  /**
-   * Default size is 20x20px (400px) at baseline mdpi (160dpi).
-   */
+  /// Default size is 20x20px (400px) at baseline mdpi (160dpi).
   static final int DEFAULT_SIZE = 20;
 
   String? bitmapSrc;
@@ -31,10 +29,10 @@ mixin BitmapSrcMixin {
     _color = base._color;
   }
 
-  void bitmapSrcMixinScale(BitmapSrcMixin base, int zoomLevel) {
+  void bitmapSrcMixinScale(BitmapSrcMixin base, int zoomlevel) {
     bitmapSrcMixinClone(base);
-    if (zoomLevel >= _bitmapMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - _bitmapMinZoomLevel + 1;
+    if (zoomlevel >= _bitmapMinZoomLevel) {
+      int zoomLevelDiff = zoomlevel - _bitmapMinZoomLevel + 1;
       double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       _bitmapWidth = (_bitmapWidth * scaleFactor).round();
       _bitmapHeight = (_bitmapHeight * scaleFactor).round();

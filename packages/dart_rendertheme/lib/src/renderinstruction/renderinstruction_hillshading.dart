@@ -18,6 +18,11 @@ class RenderinstructionHillshading with BaseSrcMixin implements RenderInstructio
     this.level = level;
   }
 
+  @override
+  String getType() {
+    return "hillshading";
+  }
+
   void parse(XmlElement rootElement) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
@@ -36,5 +41,16 @@ class RenderinstructionHillshading with BaseSrcMixin implements RenderInstructio
         layer = XmlUtils.parseNonNegativeByte("layer", value);
       }
     });
+  }
+
+  @override
+  RenderinstructionHillshading forZoomlevel(int zoomlevel) {
+    RenderinstructionHillshading renderinstruction = RenderinstructionHillshading(level)..baseSrcMixinScale(this, zoomlevel);
+    renderinstruction.always = always;
+    renderinstruction.layer = layer;
+    renderinstruction.minZoom = minZoom;
+    renderinstruction.maxZoom = maxZoom;
+    renderinstruction.magnitude = magnitude;
+    return renderinstruction;
   }
 }

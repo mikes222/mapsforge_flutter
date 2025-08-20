@@ -1,5 +1,6 @@
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
+import 'package:dart_rendertheme/src/model/shape_painter.dart';
 
 mixin BaseSrcMixin {
   late final int level;
@@ -12,8 +13,22 @@ mixin BaseSrcMixin {
 
   Scale scale = Scale.STROKE;
 
+  ShapePainter? shapePainter;
+
   void setDy(double value) {
     dy = value;
+  }
+
+  void baseSrcMixinClone(BaseSrcMixin base) {
+    level = base.level;
+    display = base.display;
+    priority = base.priority;
+    dy = base.dy;
+    scale = base.scale;
+  }
+
+  void baseSrcMixinScale(BaseSrcMixin base, int zoomlevel) {
+    baseSrcMixinClone(base);
   }
 
   void setScaleFromValue(String value) {
@@ -24,4 +39,6 @@ mixin BaseSrcMixin {
     }
     scale = Scale.STROKE;
   }
+
+  ShapePainter? getPainter() => shapePainter;
 }

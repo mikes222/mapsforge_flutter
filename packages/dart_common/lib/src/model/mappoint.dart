@@ -1,8 +1,9 @@
 import 'dart:math';
 
-import 'package:dart_common/src/model/relative_mappoint.dart';
+import 'package:dart_common/model.dart';
 
-/// A Point represents an immutable pair of double coordinates in screen pixels.
+/// A Point represents an immutable pair of absolute double coordinates in map pixels. 0/0 represents the
+/// upper-left corner of the complete map (=lat/lon 90/-180).
 class Mappoint {
   /// The x coordinate of this point in pixels. Positive values points towards
   /// the right side of the screen.
@@ -18,7 +19,7 @@ class Mappoint {
 
   /// @return the euclidian distance from this point to the given point.
   double distance(Mappoint point) {
-    return sqrt(pow(this.x - point.x, 2) + pow(this.y - point.y, 2));
+    return sqrt(pow(x - point.x, 2) + pow(y - point.y, 2));
   }
 
   @override
@@ -31,18 +32,16 @@ class Mappoint {
     if (0 == dx && 0 == dy) {
       return this;
     }
-    return Mappoint(this.x + dx, this.y + dy);
+    return Mappoint(x + dx, y + dy);
   }
 
-  RelativeMappoint offset(double dx, double dy) {
-    if (0 == dx && 0 == dy) {
-      return RelativeMappoint(x, y);
-    }
-    return RelativeMappoint(this.x + dx, this.y + dy);
+  /// Returns a mappoint which represents a relative offset in map-coordinates
+  RelativeMappoint offset(Mappoint reference) {
+    return RelativeMappoint(x - reference.x, y - reference.y);
   }
 
   @override
   String toString() {
-    return 'Point{x: $x, y: $y}';
+    return 'MapPoint{x: $x, y: $y}';
   }
 }

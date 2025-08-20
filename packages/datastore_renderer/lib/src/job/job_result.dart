@@ -1,5 +1,5 @@
 import 'package:datastore_renderer/src/model/render_info_collection.dart';
-import 'package:datastore_renderer/src/model/tile_picture.dart';
+import 'package:datastore_renderer/src/ui/tile_picture.dart';
 
 class JobResult {
   final TilePicture? _picture;

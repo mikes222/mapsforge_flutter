@@ -10,12 +10,19 @@ import 'package:xml/xml.dart';
 
 ///
 /// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
-/// The [RenderinstructionSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [RenderInstruction] implementations.
+/// The [RenderinstructionSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [Renderinstruction] implementations.
 ///
 class RenderinstructionSymbol with BaseSrcMixin, BitmapSrcMixin implements RenderInstructionNode, RenderInstructionWay {
   String? id;
 
-  RenderinstructionSymbol(int level) {}
+  RenderinstructionSymbol(int level) {
+    this.level = level;
+  }
+
+  @override
+  String getType() {
+    return "symbol";
+  }
 
   void parse(XmlElement rootElement) {
     setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
@@ -24,29 +31,38 @@ class RenderinstructionSymbol with BaseSrcMixin, BitmapSrcMixin implements Rende
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
-      if (RenderInstruction.SRC == name) {
+      if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
-      } else if (RenderInstruction.DISPLAY == name) {
+      } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.DY == name) {
+      } else if (Renderinstruction.DY == name) {
         setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SCALE == name) {
+      } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
-      } else if (RenderInstruction.ID == name) {
+      } else if (Renderinstruction.ID == name) {
         id = value;
-      } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
+      } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
-      } else if (RenderInstruction.SYMBOL_PERCENT == name) {
+      } else if (Renderinstruction.SYMBOL_PERCENT == name) {
         setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
-      } else if (RenderInstruction.SYMBOL_SCALING == name) {
+      } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
-      } else if (RenderInstruction.SYMBOL_WIDTH == name) {
+      } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw Exception("Symbol probs");
       }
     });
+  }
+
+  @override
+  RenderinstructionSymbol forZoomlevel(int zoomlevel) {
+    RenderinstructionSymbol renderinstruction = RenderinstructionSymbol(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel);
+    renderinstruction.id = id;
+    return renderinstruction;
   }
 }

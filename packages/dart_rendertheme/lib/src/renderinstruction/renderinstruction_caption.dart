@@ -35,6 +35,11 @@ class RenderinstructionCaption with BaseSrcMixin, TextSrcMixin, FillColorSrcMixi
     this.level = level;
   }
 
+  @override
+  String getType() {
+    return "caption";
+  }
+
   void parse(XmlElement rootElement) {
     maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
     gap = DEFAULT_GAP * MapsforgeSettingsMgr().getFontScaleFactor();
@@ -45,37 +50,51 @@ class RenderinstructionCaption with BaseSrcMixin, TextSrcMixin, FillColorSrcMixi
       String name = element.name.toString();
       String value = element.value;
 
-      if (RenderInstruction.K == name) {
+      if (Renderinstruction.K == name) {
         textKey = TextKey(value);
-      } else if (RenderInstruction.DISPLAY == name) {
+      } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.DY == name) {
+      } else if (Renderinstruction.DY == name) {
         setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SCALE == name) {
+      } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
-      } else if (RenderInstruction.FILL == name) {
+      } else if (Renderinstruction.FILL == name) {
         setFillColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.FONT_FAMILY == name) {
+      } else if (Renderinstruction.FONT_FAMILY == name) {
         setFontFamily(MapFontFamily.values.firstWhere((v) => v.toString().toLowerCase().contains(value)));
-      } else if (RenderInstruction.FONT_SIZE == name) {
+      } else if (Renderinstruction.FONT_SIZE == name) {
         setFontSize(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getFontScaleFactor());
-      } else if (RenderInstruction.FONT_STYLE == name) {
+      } else if (Renderinstruction.FONT_STYLE == name) {
         setFontStyle(MapFontStyle.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
-      } else if (RenderInstruction.POSITION == name) {
+      } else if (Renderinstruction.POSITION == name) {
         position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.STROKE == name) {
+      } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.STROKE_WIDTH == name) {
+      } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getFontScaleFactor());
-      } else if (RenderInstruction.SYMBOL_ID == name) {
+      } else if (Renderinstruction.SYMBOL_ID == name) {
         symbolId = value;
       } else {
         throw Exception("caption unknwon attribute");
       }
     });
 
-    XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.K, textKey);
+    XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), Renderinstruction.K, textKey);
+  }
+
+  @override
+  RenderinstructionCaption forZoomlevel(int zoomlevel) {
+    RenderinstructionCaption renderinstruction = RenderinstructionCaption(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..textSrcMixinScale(this, zoomlevel)
+      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+    renderinstruction.symbolId = symbolId;
+    renderinstruction.textKey = textKey;
+    renderinstruction.position = position;
+    renderinstruction.gap = gap;
+    return renderinstruction;
   }
 }

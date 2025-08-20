@@ -16,6 +16,7 @@ import 'renderinstruction.dart';
  */
 class RenderinstructionArea with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin implements RenderInstructionWay {
   RenderinstructionArea(int level) : super() {
+    this.level = level;
     // do not scale bitmaps in areas. They look ugly
     setBitmapMinZoomLevel(65535);
     setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
@@ -25,36 +26,50 @@ class RenderinstructionArea with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
-      if (RenderInstruction.SRC == name) {
+      if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
-      } else if (RenderInstruction.DISPLAY == name) {
+      } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.DY == name) {
+      } else if (Renderinstruction.DY == name) {
         setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SCALE == name) {
+      } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) setStrokeMinZoomLevel(665535);
-      } else if (RenderInstruction.FILL == name) {
+      } else if (Renderinstruction.FILL == name) {
         setFillColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.STROKE == name) {
+      } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.STROKE_WIDTH == name) {
+      } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SYMBOL_WIDTH == name) {
+      } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
-      } else if (RenderInstruction.SYMBOL_HEIGHT == name) {
+      } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
-      } else if (RenderInstruction.SYMBOL_PERCENT == name) {
+      } else if (Renderinstruction.SYMBOL_PERCENT == name) {
         setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
-      } else if (RenderInstruction.SYMBOL_SCALING == name) {
+      } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
-      } else if (RenderInstruction.SYMBOL_WIDTH == name) {
+      } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
         throw Exception(name + "=" + value);
       }
     });
+  }
+
+  @override
+  RenderinstructionArea forZoomlevel(int zoomlevel) {
+    return RenderinstructionArea(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel)
+      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+  }
+
+  @override
+  String getType() {
+    return "area";
   }
 }

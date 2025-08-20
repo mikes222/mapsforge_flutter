@@ -18,36 +18,55 @@ class RenderinstructionCircle with BaseSrcMixin, FillColorSrcMixin, StrokeColorS
 
   bool scaleRadius = true;
 
-  RenderinstructionCircle(int level) {}
+  RenderinstructionCircle(int level) {
+    this.level = level;
+  }
+
+  @override
+  String getType() {
+    return "circle";
+  }
 
   void parse(XmlElement rootElement) {
     rootElement.attributes.forEach((element) {
       String name = element.name.toString();
       String value = element.value;
 
-      if (RenderInstruction.RADIUS == name || RenderInstruction.R == name) {
+      if (Renderinstruction.RADIUS == name || Renderinstruction.R == name) {
         radius = XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor();
-      } else if (RenderInstruction.DISPLAY == name) {
+      } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (RenderInstruction.PRIORITY == name) {
+      } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
-      } else if (RenderInstruction.DY == name) {
+      } else if (Renderinstruction.DY == name) {
         setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
-      } else if (RenderInstruction.SCALE == name) {
+      } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
-      } else if (RenderInstruction.FILL == name) {
+      } else if (Renderinstruction.FILL == name) {
         setFillColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.SCALE_RADIUS == name) {
+      } else if (Renderinstruction.SCALE_RADIUS == name) {
         scaleRadius = value == "true";
-      } else if (RenderInstruction.STROKE == name) {
+      } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
-      } else if (RenderInstruction.STROKE_WIDTH == name) {
+      } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
       } else {
         throw Exception("circle probs");
       }
     });
 
-    XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), RenderInstruction.RADIUS, radius);
+    XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), Renderinstruction.RADIUS, radius);
+  }
+
+  @override
+  RenderinstructionCircle forZoomlevel(int zoomlevel) {
+    RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+
+    renderinstruction.radius = radius;
+    renderinstruction.scaleRadius = scaleRadius;
+    return renderinstruction;
   }
 }

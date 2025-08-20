@@ -21,7 +21,7 @@ class RenderthemeFilter {
     return nodes;
   }
 
-  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<PointOfInterest> pois, RenderTheme renderTheme) {
+  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<PointOfInterest> pois, Rendertheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
     int noRangeNodes = 0;
@@ -58,7 +58,7 @@ class RenderthemeFilter {
     return result;
   }
 
-  Map<ZoomlevelRange, List<Wayholder>> filterWays(List<Wayholder> ways, RenderTheme renderTheme) {
+  Map<ZoomlevelRange, List<Wayholder>> filterWays(List<Wayholder> ways, Rendertheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<Wayholder>> result = {};
     int noRangeWays = 0;

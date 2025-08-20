@@ -46,7 +46,7 @@ class RenderThemeBuilder {
   // Constructor now accepts an optional excludeIds parameter.
   RenderThemeBuilder._({this.excludeIds = const {}});
 
-  static RenderTheme createFromString(String content, {Set<String> excludeIds = const {}}) {
+  static Rendertheme createFromString(String content, {Set<String> excludeIds = const {}}) {
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder._(excludeIds: excludeIds);
     renderThemeBuilder._parseXml(content);
     renderThemeBuilder.forHash = "${MapsforgeSettingsMgr().getScaleFactor()}_${MapsforgeSettingsMgr().getFontScaleFactor()}_${MapsforgeSettingsMgr().tileSize}";
@@ -56,7 +56,7 @@ class RenderThemeBuilder {
   /// Builds and returns a rendertheme by loading a rendertheme file. This
   /// is a convienience-function. If desired we can also implement some caching
   /// so that we do not need to parse the same file over and over again.
-  static Future<RenderTheme> createFromFile(String filename, {Set<String> excludeIds = const {}}) async {
+  static Future<Rendertheme> createFromFile(String filename, {Set<String> excludeIds = const {}}) async {
     File file = File(filename);
     List<int> bytes = await file.readAsBytes();
     String content = const Utf8Decoder().convert(bytes);
@@ -64,7 +64,7 @@ class RenderThemeBuilder {
   }
 
   /// @return a new {@code RenderTheme} instance.
-  RenderTheme _build() {
+  Rendertheme _build() {
     assert(ruleBuilderStack.isNotEmpty);
     List<Rule> rules = [];
     for (var ruleBuilder in ruleBuilderStack) {
@@ -73,7 +73,7 @@ class RenderThemeBuilder {
         rules.add(rule);
       }
     }
-    RenderTheme renderTheme = RenderTheme(levels: maxLevel, rulesList: rules);
+    Rendertheme renderTheme = Rendertheme(levels: maxLevel, rulesList: rules);
     return renderTheme;
   }
 

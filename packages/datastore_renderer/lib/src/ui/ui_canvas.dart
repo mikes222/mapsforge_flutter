@@ -1,0 +1,223 @@
+import 'dart:ui' as ui;
+
+import 'package:dart_common/model.dart';
+import 'package:datastore_renderer/src/model/linestring.dart';
+import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
+import 'package:datastore_renderer/src/ui/symbol_image.dart';
+import 'package:datastore_renderer/src/ui/tile_picture.dart';
+import 'package:datastore_renderer/src/ui/ui_matrix.dart';
+import 'package:datastore_renderer/src/ui/ui_paint.dart';
+import 'package:datastore_renderer/src/ui/ui_path.dart';
+import 'package:datastore_renderer/src/ui/ui_rect.dart';
+import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
+
+class UiCanvas {
+  late ui.Canvas _uiCanvas;
+
+  ui.PictureRecorder? _pictureRecorder;
+
+  /// The size of the canvas
+  final ui.Size _size;
+
+  int _actions = 0;
+
+  int _bitmapCount = 0;
+
+  int _textCount = 0;
+
+  int _pathCount = 0;
+
+  UiCanvas(this._uiCanvas, this._size) : _pictureRecorder = null;
+
+  UiCanvas.forRecorder(double width, double height)
+    : _pictureRecorder = ui.PictureRecorder(),
+      _size = ui.Size(width, height),
+      assert(width >= 0),
+      assert(height >= 0) {
+    _uiCanvas = ui.Canvas(_pictureRecorder!);
+    //uiCanvas.clipRect(Rect.fromLTWH(0, 0, width, height), doAntiAlias: true);
+  }
+
+  void dispose() {
+    _pictureRecorder?.endRecording();
+  }
+
+  void drawPicture({required SymbolImage symbolImage, required double left, required double top, required UiPaint paint, UiMatrix? matrix}) {
+    if (matrix != null) {
+      _uiCanvas.save();
+      _uiCanvas.transform(matrix.expose());
+      _uiCanvas.translate(left, top);
+      // uiCanvas.drawRect(
+      //     ui.Rect.fromLTWH(
+      //         0, 0, image.width.toDouble(), image.height.toDouble()),
+      //     ui.Paint()..color = Colors.red.withOpacity(0.7));
+      // uiCanvas.drawCircle(
+      //     const ui.Offset(0, 0), 10, ui.Paint()..color = Colors.green);
+      _uiCanvas.drawImage(symbolImage.expose(), ui.Offset.zero, paint.expose());
+      _uiCanvas.restore();
+      ++_bitmapCount;
+      return;
+    }
+    _uiCanvas.drawImage(symbolImage.expose(), ui.Offset(left, top), paint.expose());
+    ++_bitmapCount;
+  }
+
+  void drawTilePicture({required TilePicture picture, required double left, required double top}) {
+    if (picture.getPicture() != null) {
+      ui.Picture pic = picture.getPicture()!;
+      _uiCanvas.save();
+      _uiCanvas.translate(left, top);
+      //double tileSize = MapsforgeConstants().tileSize;
+      //_uiCanvas.clipRect(ui.Rect.fromLTWH(0, 0, tileSize, tileSize));
+      _uiCanvas.drawPicture(pic);
+      _uiCanvas.restore();
+      //picture.dispose();
+    } else {
+      ui.Image image = picture.getImage()!; //await picture.convertPictureToImage()!;
+      _uiCanvas.drawImage(image, ui.Offset(left, top), ui.Paint());
+      image.dispose();
+    }
+    ++_bitmapCount;
+  }
+
+  void fillColorFromNumber(int color) {
+    ui.Paint paint = ui.Paint()..color = ui.Color(color);
+    _uiCanvas.drawRect(ui.Rect.fromLTWH(0, 0, _size.width, _size.height), paint);
+    ++_actions;
+  }
+
+  void setClip(double left, double top, double width, double height) {
+    _uiCanvas.clipRect(ui.Rect.fromLTWH(left, top, width, height), doAntiAlias: true);
+  }
+
+  /// Stops the recording and returns a TilePicture object.
+  Future<TilePicture> finalizeBitmap() async {
+    ui.Picture pic = _pictureRecorder!.endRecording();
+    // unfortunately working with Picture is too slow because we have to render it each time
+    ui.Image img = await pic.toImage(_size.width.ceil(), _size.height.ceil());
+    _pictureRecorder = null;
+    pic.dispose();
+    TilePicture picture = TilePicture.fromBitmap(img);
+    return picture;
+  }
+
+  void drawCircle(double x, double y, double radius, UiPaint paint) {
+    //_log.info("draw circle at $x $y $radius $paint at ${ui.Offset(x.toDouble(), y.toDouble())}");
+    _uiCanvas.drawCircle(ui.Offset(x, y), radius, paint.expose());
+    ++_actions;
+  }
+
+  void drawLine(double x1, double y1, double x2, double y2, UiPaint paint) {
+    //_log.info("draw line at $x1 $y1 $x2 $y2 $paint}");
+    UiPath path = UiPath()
+      ..moveTo(x1, y1)
+      ..lineTo(x2, y2);
+
+    drawPath(path, paint);
+  }
+
+  void drawPath(UiPath path, UiPaint paint) {
+    path.drawPath(paint, _uiCanvas);
+    ++_pathCount;
+  }
+
+  void drawRect(UiRect rect, UiPaint paint) {
+    if (paint.getStrokeDasharray() != null && paint.getStrokeDasharray()!.length >= 2) {
+      UiPath rectPath = UiPath();
+      rectPath.addRect(rect);
+      drawPath(rectPath, paint);
+    } else {
+      _uiCanvas.drawRect(rect.expose(), paint.expose());
+      ++_actions;
+    }
+  }
+
+  void drawPathText(String text, LineString lineString, Mappoint reference, UiPaint paint, UiTextPaint textPaint, double maxTextWidth) {
+    if (text.trim().isEmpty) {
+      return;
+    }
+    if (paint.isTransparent()) {
+      return;
+    }
+
+    ParagraphEntry entry = ParagraphCache().getEntry(text, textPaint, paint, maxTextWidth);
+
+    lineString.segments.forEach((segment) {
+      // So text isn't upside down
+      bool doInvert = segment.end.x < segment.start.x;
+      RelativeMappoint start;
+      double diff = (segment.length() - entry.getWidth()) / 2;
+      if (doInvert) {
+        //start = segment.end.offset(-origin.x, -origin.y);
+        start = segment.pointAlongLineSegment(diff + entry.getWidth()).offset(reference);
+      } else {
+        //start = segment.start.offset(-origin.x, -origin.y);
+        start = segment.pointAlongLineSegment(diff).offset(reference);
+      }
+      // print(
+      //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
+      _drawTextRotated(entry.paragraph, segment.getTheta(), start);
+      //      len -= segmentLength;
+    });
+  }
+
+  void _drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
+    // since the text is rotated, use the textwidth as margin in all directions
+    // if (start.x + textwidth < 0 ||
+    //     start.y + textwidth < 0 ||
+    //     start.x - textwidth > size.width ||
+    //     start.y - textwidth > size.height) return;
+    //double theta = segment.getTheta();
+
+    // https://stackoverflow.com/questions/51323233/flutter-how-to-rotate-an-image-around-the-center-with-canvas
+    _uiCanvas.save();
+    _uiCanvas.translate(
+      /*translateX +*/
+      reference.x,
+      /*translateY +*/ reference.y,
+    );
+    _uiCanvas.rotate(theta);
+    _uiCanvas.translate(0, -paragraph.height / 2);
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(0, 0, paragraph.longestLine, paragraph.height),
+    //     ui.Paint()..color = Colors.red);
+    // uiCanvas.drawCircle(Offset.zero, 10, ui.Paint()..color = Colors.green);
+    _uiCanvas.drawParagraph(paragraph, ui.Offset.zero);
+    _uiCanvas.restore();
+    ++_textCount;
+  }
+
+  /// draws the given [text] so that the center of the text in at the given x/y coordinates
+  void drawText(String text, double x, double y, UiPaint paint, UiTextPaint textPaint, double maxTextWidth) {
+    ParagraphEntry entry = ParagraphCache().getEntry(text, textPaint, paint, maxTextWidth);
+    double textwidth = entry.getWidth();
+    double textHeight = entry.getHeight();
+    if (x + textwidth / 2 < 0 || y + entry.getHeight() < 0 || x - textwidth / 2 > _size.width || y - entry.getHeight() > _size.height) return;
+    // uiCanvas.drawRect(
+    //     ui.Rect.fromLTWH(x - textwidth / 2, y - textHeight / 2,
+    //         entry.getWidth(), entry.getHeight()),
+    //     ui.Paint()..color = Colors.red.withOpacity(0.7));
+    // uiCanvas.drawCircle(ui.Offset(x - textwidth / 2, y - textHeight / 2), 10,
+    //     ui.Paint()..color = Colors.green);
+    _uiCanvas.drawParagraph(entry.paragraph, ui.Offset(x - textwidth / 2, y - textHeight / 2));
+    // uiCanvas.drawCircle(ui.Offset(x, y), 5, ui.Paint()..color = Colors.blue);
+    ++_textCount;
+  }
+
+  void scale(ui.Offset focalPoint, double scale) {
+    double diffX = _size.width / 2 - focalPoint.dx;
+    double diffY = _size.height / 2 - focalPoint.dy;
+    _uiCanvas.translate((-_size.width / 2 + diffX) * (scale - 1), (-_size.height / 2 + diffY) * (scale - 1));
+    // This method scales starting from the top/left corner. That means that the top-left corner stays at its position and the rest is scaled.
+    _uiCanvas.scale(scale);
+  }
+
+  void translate(double dx, double dy) {
+    _uiCanvas.translate(dx, dy);
+  }
+
+  @override
+  String toString() {
+    return 'FlutterCanvas{_actions: $_actions, _bitmapCount: $_bitmapCount, _textCount: $_textCount, _pathCount: $_pathCount}';
+  }
+}

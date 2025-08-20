@@ -3,11 +3,8 @@ import 'dart:math';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/projection/scalefactor.dart';
-import 'package:logging/logging.dart';
 
 class MercatorProjection implements Projection {
-  static final _log = new Logger('MercatorProjection');
-
   ///
   /// The scalefactor. The scaleFactor is dependent on the zoomLevel (scaleFactor similar to pow(2, zoomLevel) ). The whole world fits into on tile in zoomLevel 0 (=scaleFactor 1).
   final Scalefactor _scalefactor;

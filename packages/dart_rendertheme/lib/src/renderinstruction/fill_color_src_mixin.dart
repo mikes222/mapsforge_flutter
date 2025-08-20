@@ -10,7 +10,7 @@ mixin FillColorSrcMixin {
     fillColor = base.fillColor;
   }
 
-  void fillColorSrcMixinScale(FillColorSrcMixin base, int zoomLevel) {
+  void fillColorSrcMixinScale(FillColorSrcMixin base, int zoomlevel) {
     fillColorSrcMixinClone(base);
   }
 

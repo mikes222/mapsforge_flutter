@@ -28,25 +28,25 @@ mixin TextSrcMixin {
     maxTextWidth = base.maxTextWidth;
   }
 
-  void textSrcMixinScale(TextSrcMixin base, int zoomLevel) {
+  void textSrcMixinScale(TextSrcMixin base, int zoomlevel) {
     textSrcMixinClone(base);
-    if (zoomLevel >= _textMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - _textMinZoomLevel + 1;
+    if (zoomlevel >= _textMinZoomLevel) {
+      int zoomLevelDiff = zoomlevel - _textMinZoomLevel + 1;
       double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
       _fontSize = min(_fontSize * scaleFactor, _maxFontSize);
     }
   }
 
   void setFontFamily(MapFontFamily fontFamily) {
-    this._fontFamily = fontFamily;
+    _fontFamily = fontFamily;
   }
 
   void setFontStyle(MapFontStyle fontStyle) {
-    this._fontStyle = fontStyle;
+    _fontStyle = fontStyle;
   }
 
   void setFontSize(double fontSize) {
-    this._fontSize = fontSize;
+    _fontSize = fontSize;
   }
 
   MapFontStyle get fontStyle => _fontStyle;

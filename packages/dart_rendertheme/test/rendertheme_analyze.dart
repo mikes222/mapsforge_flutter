@@ -12,7 +12,7 @@ void main() async {
 
     Directory directory = Directory.current;
     print("Current directory: $directory");
-    RenderTheme renderTheme = await RenderThemeBuilder.createFromFile("test/defaultrender.xml");
+    Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/defaultrender.xml");
     RuleAnalyzer ruleAnalyzer = RuleAnalyzer();
     for (Rule rule in renderTheme.rulesList) {
       ruleAnalyzer.apply(rule);
@@ -50,7 +50,7 @@ void main() async {
   });
 
   test("Print rendertheme", () async {
-    RenderTheme renderTheme = await RenderThemeBuilder.createFromFile("test/defaultrender.xml");
+    Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/defaultrender.xml");
     printTheme(renderTheme.rulesList, 0);
   });
 }

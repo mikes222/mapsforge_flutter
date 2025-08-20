@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late RenderTheme renderTheme;
+  late Rendertheme renderTheme;
 
   setUpAll(() async {
     _initLogging();

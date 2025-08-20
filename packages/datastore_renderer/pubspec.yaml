@@ -39,9 +39,23 @@ dependencies:
   # Workspace
   dart_common: ^1.0.0
 
+  # Workspace
+  dart_rendertheme: ^1.0.0
+
+  ecache: ^2.0.10
+
+  # for svg files
+  #vector_graphics: ^1.1.19
+
+  # BSD License
+  flutter_svg: ^2.2.0
+
+  # Workspace
+  task_queue: ^1.0.0
+
 dev_dependencies:
-#  flutter_test:
- #   sdk: flutter
+  flutter_test:
+    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

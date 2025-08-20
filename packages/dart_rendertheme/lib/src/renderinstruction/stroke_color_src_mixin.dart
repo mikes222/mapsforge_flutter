@@ -25,7 +25,7 @@ mixin StrokeColorSrcMixin {
 
   void setStrokeWidth(double strokeWidth) {
     assert(strokeWidth >= 0);
-    this._strokeWidth = strokeWidth;
+    _strokeWidth = strokeWidth;
   }
 
   double get strokeWidth => _strokeWidth;
@@ -47,17 +47,17 @@ mixin StrokeColorSrcMixin {
     _strokeMinZoomLevel = base._strokeMinZoomLevel;
   }
 
-  void strokeColorSrcMixinScale(StrokeColorSrcMixin base, int zoomLevel) {
+  void strokeColorSrcMixinScale(StrokeColorSrcMixin base, int zoomlevel) {
     strokeColorSrcMixinClone(base);
-    if (zoomLevel >= _strokeMinZoomLevel) {
-      int zoomLevelDiff = zoomLevel - _strokeMinZoomLevel + 1;
+    if (zoomlevel >= _strokeMinZoomLevel) {
+      int zoomLevelDiff = zoomlevel - _strokeMinZoomLevel + 1;
       double scaleFactor = pow(STROKE_INCREASE, zoomLevelDiff) as double;
       _strokeWidth = _strokeWidth * scaleFactor;
       if (_strokeDashArray != null) {
         List<double> newStrokeDashArray = [];
-        _strokeDashArray!.forEach((element) {
+        for (var element in _strokeDashArray!) {
           newStrokeDashArray.add(element * scaleFactor);
-        });
+        }
         _strokeDashArray = newStrokeDashArray;
       }
     }
@@ -70,18 +70,18 @@ mixin StrokeColorSrcMixin {
   static int transparent() => 0x00000000;
 
   void setStrokeCap(Cap cap) {
-    this._strokeCap = cap;
+    _strokeCap = cap;
   }
 
   void setStrokeJoin(Join join) {
-    this._strokeJoin = join;
+    _strokeJoin = join;
   }
 
   void setStrokeDashArray(List<double>? strokeDashArray) {
-    this._strokeDashArray = strokeDashArray;
+    _strokeDashArray = strokeDashArray;
   }
 
   void setStrokeMinZoomLevel(int strokeMinZoomLevel) {
-    this._strokeMinZoomLevel = strokeMinZoomLevel;
+    _strokeMinZoomLevel = strokeMinZoomLevel;
   }
 }

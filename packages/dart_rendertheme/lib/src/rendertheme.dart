@@ -1,8 +1,9 @@
 import 'package:dart_common/model.dart';
+import 'package:dart_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:dart_rendertheme/src/rule/rule.dart';
 
 /// A RenderTheme defines how ways and nodes are drawn.
-class RenderTheme {
+class Rendertheme {
   static final int MATCHING_CACHE_SIZE = 1024;
 
   /// The rendertheme can set the base stroke with factor
@@ -23,11 +24,11 @@ class RenderTheme {
   final List<Rule> rulesList; // NOPMD we need specific interface
 
   /// ZoomLevel dependent (iterative) list of rules
-  //  final Map<int, RenderthemeLevel> renderthemeLevels = {};
+  final Map<int, RenderthemeZoomlevel> _renderthemeZoomlevels = {};
 
   late final String forHash;
 
-  RenderTheme({required this.levels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside});
+  Rendertheme({required this.levels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside});
 
   /**
    * @return the number of distinct drawing levels required by this RenderTheme.
@@ -57,32 +58,30 @@ class RenderTheme {
     return this.hasBackgroundOutside;
   }
 
-  /**
-   * Scales the stroke width of this RenderTheme by the given factor for a given zoom level
-   *
-   * @param scaleFactor the factor by which the stroke width should be scaled.
-   * @param zoomLevel   the zoom level to which this is applied.
-   */
-  // RenderthemeLevel prepareZoomlevel(int zoomlevel) {
-  //   if (renderthemeLevels.containsKey(zoomlevel)) return renderthemeLevels[zoomlevel]!;
-  //   List<Rule> rules = [];
-  //   for (Rule rule in rulesList) {
-  //     Rule? r = rule.matchForZoomlevel(zoomlevel);
-  //     if (r != null) {
-  //       rules.add(r);
-  //     }
-  //   }
-  //   RenderthemeLevel renderthemeLevel = RenderthemeLevel(rulesList: rules);
-  //   renderthemeLevels[zoomlevel] = renderthemeLevel;
-  //   return renderthemeLevel;
-  // }
+  /// Scales the stroke width of this RenderTheme by the given factor for a given zoom level
+  ///
+  /// @param scaleFactor the factor by which the stroke width should be scaled.
+  /// @param zoomLevel   the zoom level to which this is applied.
+  RenderthemeZoomlevel prepareZoomlevel(int zoomlevel) {
+    if (_renderthemeZoomlevels.containsKey(zoomlevel)) return _renderthemeZoomlevels[zoomlevel]!;
+    List<Rule> rules = [];
+    for (Rule rule in rulesList) {
+      Rule? r = rule.forZoomlevel(zoomlevel);
+      if (r != null) {
+        rules.add(r);
+      }
+    }
+    RenderthemeZoomlevel renderthemeLevel = RenderthemeZoomlevel(rulesList: rules);
+    _renderthemeZoomlevels[zoomlevel] = renderthemeLevel;
+    return renderthemeLevel;
+  }
 
   void complete() {
     //    this.rulesList.trimToSize();
     //    this.hillShadings.trimToSize();
-    rulesList.forEach((element) {
+    for (var element in rulesList) {
       element.onComplete();
-    });
+    }
   }
 
   void traverseRules(RuleVisitor visitor) {

@@ -64,7 +64,7 @@ class StatisticsCommand extends Command {
     DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
 
     if (argResults!.option("rendertheme") != null) {
-      RenderTheme renderTheme = await RenderThemeBuilder.createFromFile(argResults!.option("rendertheme")!);
+      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile(argResults!.option("rendertheme")!);
       RuleAnalyzer ruleAnalyzer = RuleAnalyzer();
       for (Rule rule in renderTheme.rulesList) {
         ruleAnalyzer.apply(rule);
@@ -125,7 +125,7 @@ class ConvertCommand extends Command {
     List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
 
     DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
-    RenderTheme? renderTheme;
+    Rendertheme? renderTheme;
 
     if (argResults!.option("rendertheme") != null) {
       renderTheme = await RenderThemeBuilder.createFromFile(argResults!.option("rendertheme")!);
