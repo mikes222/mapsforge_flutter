@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:dart_common/model.dart';
-import 'package:datastore_renderer/src/model/linesegment.dart';
+import 'package:dart_rendertheme/src/model/linesegment.dart';
 
 /// A list of Linesegments which are segments in screen-pixels.
 class LineString {

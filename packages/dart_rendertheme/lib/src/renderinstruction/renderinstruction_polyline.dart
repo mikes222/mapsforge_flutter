@@ -1,8 +1,13 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/cap.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/join.dart';
+import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
+import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction.dart';
@@ -12,11 +17,21 @@ import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 /// Represents an open polyline on the map.
-class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSrcMixin implements RenderInstructionWay {
+class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, StrokeColorSrcMixin implements RenderinstructionWay {
   String? id;
 
   RenderinstructionPolyline(int level) {
     this.level = level;
+  }
+
+  @override
+  RenderinstructionPolyline forZoomlevel(int zoomlevel) {
+    RenderinstructionPolyline renderinstruction = RenderinstructionPolyline(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+    renderinstruction.id = id;
+    return renderinstruction;
   }
 
   @override
@@ -31,7 +46,7 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
     setBitmapMinZoomLevel(65535);
     //    base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
 
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
 
@@ -75,9 +90,9 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
-        throw new Exception("element hinich");
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
   }
 
   static List<double> parseFloatArray(String name, String dashString) {
@@ -91,12 +106,19 @@ class RenderinstructionPolyline with BaseSrcMixin, BitmapSrcMixin, StrokeColorSr
   }
 
   @override
-  RenderinstructionPolyline forZoomlevel(int zoomlevel) {
-    RenderinstructionPolyline renderinstruction = RenderinstructionPolyline(level)
-      ..baseSrcMixinScale(this, zoomlevel)
-      ..bitmapSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
-    renderinstruction.id = id;
-    return renderinstruction;
+  MapRectangle? getBoundary() {
+    // boundary depends on the area
+    return null;
+  }
+
+  @override
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {}
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
+    if (bitmapSrc == null && isStrokeTransparent()) return;
+    if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
+
+    layerContainer.add(WayRenderInfo<RenderinstructionPolyline>(wayProperties, this));
   }
 }

@@ -7,6 +7,13 @@ class UiMatrix {
 
   UiMatrix() : _matrix4 = Matrix4.identity();
 
+  /// @param theta an angle measured in radians.
+  void rotate(double? theta, {double? pivotX = 0, double? pivotY = 0}) {
+    // this.theta = theta;
+    // this.pivotX = pivotX;
+    // this.pivotY = pivotY;
+  }
+
   /// for Canvas.drawPicture:
   ///         _uiCanvas.translate(left, top);
   //         _uiCanvas.translate(-fm.pivotX!, -fm.pivotY!);

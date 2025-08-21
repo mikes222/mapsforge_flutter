@@ -70,7 +70,7 @@ mixin BitmapSrcMixin {
   }
 
   void setBitmapColorFromNumber(int color) {
-    this._color = color;
+    _color = color;
   }
 
   void setBitmapMinZoomLevel(int bitmapMinZoomLevel) {

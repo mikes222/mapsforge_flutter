@@ -1,4 +1,4 @@
-import 'package:datastore_renderer/src/model/render_info.dart';
+import 'package:dart_rendertheme/src/model/render_info.dart';
 
 class RenderInfoCollection {
   final List<RenderInfo> renderInfos;

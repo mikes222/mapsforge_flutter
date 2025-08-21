@@ -1,6 +1,6 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:datastore_renderer/src/model/nodewayproperties.dart';
+import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 
 /// Properties for one Node (PointOfInterest) read from the datastore. Note that the properties are
 /// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
@@ -8,19 +8,20 @@ import 'package:datastore_renderer/src/model/nodewayproperties.dart';
 class NodeProperties implements NodeWayProperties {
   final PointOfInterest pointOfInterest;
 
-  NodeProperties(this.pointOfInterest);
+  /// a cache for absolute coordinates
+  late Mappoint _coordinatesAbsolute;
+
+  NodeProperties(this.pointOfInterest, PixelProjection projection) {
+    _coordinatesAbsolute = projection.latLonToPixel(pointOfInterest.position);
+  }
 
   int get layer => pointOfInterest.layer;
 
   List<Tag> get tags => pointOfInterest.tags;
 
-  /// a cache for absolute coordinates
-  Mappoint? _coordinatesAbsolute;
-
   /// Returns the absolute coordinates in pixel of this node
-  Mappoint getCoordinatesAbsolute(PixelProjection projection) {
-    _coordinatesAbsolute ??= projection.latLonToPixel(pointOfInterest.position);
-    return _coordinatesAbsolute!;
+  Mappoint getCoordinatesAbsolute() {
+    return _coordinatesAbsolute;
   }
 
   @override

@@ -30,7 +30,7 @@ class RuleAnalyzer extends RuleVisitor {
   }
 
   void analyzeRule(Rule rule, int level) {
-    for (RenderInstructionNode renderInstruction in rule.renderInstructionNodes) {
+    for (RenderinstructionNode renderInstruction in rule.renderinstructionNodes) {
       if (debug) print("${' ' * level * 2}--> Node ${renderInstruction.runtimeType}");
       addNode(rule);
       if (renderInstruction is RenderinstructionCaption) {
@@ -38,7 +38,7 @@ class RuleAnalyzer extends RuleVisitor {
         if (textKey != null) keys.add(textKey);
       }
     }
-    for (RenderInstructionWay renderInstruction in rule.renderInstructionOpenWays) {
+    for (RenderinstructionWay renderInstruction in rule.renderinstructionOpenWays) {
       if (debug) print("${' ' * level * 2}--> Open Way ${renderInstruction.runtimeType}");
       addOpenWay(rule);
       if (renderInstruction is RenderinstructionCaption) {
@@ -49,7 +49,7 @@ class RuleAnalyzer extends RuleVisitor {
         if (textKey != null) keys.add(textKey);
       }
     }
-    for (RenderInstructionWay renderInstruction in rule.renderInstructionClosedWays) {
+    for (RenderinstructionWay renderInstruction in rule.renderinstructionClosedWays) {
       if (debug) print("${' ' * level * 2}--> Closed Way ${renderInstruction.runtimeType}");
       addClosedWay(rule);
       if (renderInstruction is RenderinstructionCaption) {

@@ -10,8 +10,14 @@ environment:
 # Add regular dependencies here.
 dependencies:
 
+  # Enhancement for collections
+  collection: ^1.19.1
+
   # Workspace
   dart_common: ^1.0.0
+
+  # Workspace
+  ecache: ^2.0.10
 
 dev_dependencies:
 

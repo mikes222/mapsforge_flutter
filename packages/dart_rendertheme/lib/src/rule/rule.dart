@@ -1,29 +1,45 @@
+import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
+import 'package:dart_rendertheme/renderinstruction.dart';
 
 abstract class Rule {
+  // parent rule
+  late final Rule? parent;
+
   final String? cat;
   final ZoomlevelRange zoomlevelRange;
   final List<Rule> subRules;
 
-  final List<RenderInstructionNode> renderInstructionNodes;
+  final List<RenderinstructionNode> renderinstructionNodes;
 
-  final List<RenderInstructionWay> renderInstructionOpenWays;
+  final List<RenderinstructionWay> renderinstructionOpenWays;
 
-  final List<RenderInstructionWay> renderInstructionClosedWays;
+  final List<RenderinstructionWay> renderinstructionClosedWays;
 
   Rule({
     this.cat,
     required this.zoomlevelRange,
     required this.subRules,
-    required this.renderInstructionNodes,
-    required this.renderInstructionOpenWays,
-    required this.renderInstructionClosedWays,
+    required this.renderinstructionNodes,
+    required this.renderinstructionOpenWays,
+    required this.renderinstructionClosedWays,
   }) : assert(
          subRules.isNotEmpty ||
-             (subRules.isEmpty && (renderInstructionNodes.isNotEmpty || renderInstructionOpenWays.isNotEmpty || renderInstructionClosedWays.isNotEmpty)),
-       );
+             (subRules.isEmpty && (renderinstructionNodes.isNotEmpty || renderinstructionOpenWays.isNotEmpty || renderinstructionClosedWays.isNotEmpty)),
+       ) {
+    for (var rule in subRules) {
+      rule.parent = this;
+    }
+    for (RenderinstructionNode renderinstruction in renderinstructionNodes) {
+      renderinstruction.secondPass(this);
+    }
+    for (RenderinstructionWay renderinstruction in renderinstructionOpenWays) {
+      renderinstruction.secondPass(this);
+    }
+    for (RenderinstructionWay renderinstruction in renderinstructionClosedWays) {
+      renderinstruction.secondPass(this);
+    }
+  }
 
   Rule? forZoomlevel(int zoomlevel);
 
@@ -45,7 +61,7 @@ abstract class Rule {
   ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
     // tag not accepted by this rule.
     if (!matchesTags(pointOfInterest.tags)) return null;
-    if (renderInstructionNodes.isNotEmpty) {
+    if (renderinstructionNodes.isNotEmpty) {
       // this rule supports the argument. Returns this zoomlevel range which is
       // the widest possible range.
       return zoomlevelRange;
@@ -66,7 +82,7 @@ abstract class Rule {
   ZoomlevelRange? getZoomlevelRangeOpenWay(List<Tag> tags) {
     if (!matchesTags(tags)) return null;
 
-    if (renderInstructionOpenWays.isNotEmpty) return zoomlevelRange;
+    if (renderinstructionOpenWays.isNotEmpty) return zoomlevelRange;
 
     ZoomlevelRange? result;
     for (var element in subRules) {
@@ -83,7 +99,7 @@ abstract class Rule {
   ZoomlevelRange? getZoomlevelRangeClosedWay(List<Tag> tags) {
     if (!matchesTags(tags)) return null;
 
-    if (renderInstructionClosedWays.isNotEmpty) return zoomlevelRange;
+    if (renderinstructionClosedWays.isNotEmpty) return zoomlevelRange;
 
     ZoomlevelRange? result;
     for (var element in subRules) {
@@ -101,9 +117,43 @@ abstract class Rule {
     }
   }
 
+  RenderinstructionSymbol? searchForSymbol(String id) {
+    Renderinstruction? result = renderinstructionNodes.firstWhereOrNull((element) => element is RenderinstructionSymbol && element.id == id);
+    if (result != null) return result as RenderinstructionSymbol;
+    if (parent != null) return parent!.searchForSymbol(id);
+    return null;
+  }
+
+  void matchNode(final Tile tile, List<Renderinstruction> matchingList, PointOfInterest pointOfInterest) {
+    if (matches(pointOfInterest.tags, tile.indoorLevel)) {
+      matchingList.addAll(renderinstructionNodes);
+      for (var element in subRules) {
+        element.matchNode(tile, matchingList, pointOfInterest);
+      }
+    }
+  }
+
+  void matchOpenWay(Way way, Tile tile, List<Renderinstruction> matchingList) {
+    if (matches(way.tags, tile.indoorLevel)) {
+      matchingList.addAll(renderinstructionOpenWays);
+      for (var element in subRules) {
+        element.matchOpenWay(way, tile, matchingList);
+      }
+    }
+  }
+
+  void matchClosedWay(Way way, Tile tile, List<Renderinstruction> matchingList) {
+    if (matches(way.tags, tile.indoorLevel)) {
+      matchingList.addAll(renderinstructionClosedWays);
+      for (var element in subRules) {
+        element.matchClosedWay(way, tile, matchingList);
+      }
+    }
+  }
+
   @override
   String toString() {
-    return 'Rule{zoomlevelRange: $zoomlevelRange, renderInstructionNodes: $renderInstructionNodes, renderInstructionOpenWays: $renderInstructionOpenWays, renderInstructionClosedWays: $renderInstructionClosedWays}';
+    return 'Rule{zoomlevelRange: $zoomlevelRange, renderInstructionNodes: $renderinstructionNodes, renderInstructionOpenWays: $renderinstructionOpenWays, renderInstructionClosedWays: $renderinstructionClosedWays}';
   }
 }
 

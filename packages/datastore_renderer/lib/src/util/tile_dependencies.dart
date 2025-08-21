@@ -1,5 +1,5 @@
 import 'package:dart_common/model.dart';
-import 'package:datastore_renderer/src/model/render_info.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:logging/logging.dart';
 
 /// The TileDependecies class tracks the dependencies between tiles for labels.

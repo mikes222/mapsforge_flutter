@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' as mat;
@@ -12,9 +12,18 @@ class UiPaint {
 
   List<double>? _strokeDasharray;
 
-  UiPaint.stroke() : _paint = ui.Paint()..style = ui.PaintingStyle.stroke;
+  UiPaint.stroke({int? color, double? strokeWidth, Cap? cap, Join? join, List<double>? strokeDasharray})
+    : _paint = ui.Paint()..style = ui.PaintingStyle.stroke {
+    if (color != null) _paint.color = Color(color);
+    if (strokeWidth != null) _paint.strokeWidth = strokeWidth;
+    if (cap != null) setStrokeCap(cap);
+    if (join != null) setStrokeJoin(join);
+    if (strokeDasharray != null) _strokeDasharray = strokeDasharray;
+  }
 
-  UiPaint.fill() : _paint = ui.Paint()..style = ui.PaintingStyle.fill;
+  UiPaint.fill({int? color}) : _paint = ui.Paint()..style = ui.PaintingStyle.fill {
+    if (color != null) _paint.color = Color(color);
+  }
 
   UiPaint.from(UiPaint other) : _paint = ui.Paint() {
     _paint.color = other._paint.color;
@@ -82,6 +91,7 @@ class UiPaint {
     _paint.strokeWidth = strokeWidth;
   }
 
+  /// Sets the shader for this paint. The given symbol will NOT be disposed
   void setBitmapShader(SymbolImage symbolImage) {
     _shaderBitmap = symbolImage;
     _paint.shader = symbolImage.getShader();

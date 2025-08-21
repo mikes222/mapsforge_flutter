@@ -1,50 +1,57 @@
 import 'dart:math';
 
+import 'package:dart_common/model.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
+import 'package:datastore_renderer/src/ui/symbol_image.dart';
+import 'package:datastore_renderer/src/ui/ui_canvas.dart';
+import 'package:datastore_renderer/src/ui/ui_matrix.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
+import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintLinesymbol extends ShapePainter<RenderinstructionLinesymbol> {
+class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
   late final UiPaint fill;
 
-  ResourceBitmap? bitmap;
+  SymbolImage? symbolImage;
 
-  static TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintLinesymbol._(ShapeLinesymbol shape) : super(shape) {
-    fill = createPaint(style: Style.FILL);
+  ShapePaintLinesymbol._(RenderinstructionLinesymbol renderinstruction) : super(renderinstruction) {
+    fill = UiPaint.fill();
   }
 
-  @override
-  Future<void> init(SymbolCache symbolCache) async {
-    bitmap = await createBitmap(
-      symbolCache: symbolCache,
-      bitmapSrc: renderInstruction.bitmapSrc!,
-      bitmapWidth: renderInstruction.getBitmapWidth(),
-      bitmapHeight: renderInstruction.getBitmapHeight(),
+  Future<void> init() async {
+    symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
+      renderinstruction.bitmapSrc!,
+      renderinstruction.getBitmapWidth(),
+      renderinstruction.getBitmapHeight(),
     );
   }
 
-  static Future<ShapePaintLinesymbol> create(ShapeLinesymbol shape, SymbolCache symbolCache) async {
+  void dispose() {
+    symbolImage?.dispose();
+  }
+
+  static Future<ShapePaintLinesymbol> create(RenderinstructionLinesymbol renderinstruction) async {
     return _taskQueue.add(() async {
-      if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintLinesymbol;
-      ShapePaintLinesymbol shapePaint = ShapePaintLinesymbol._(shape);
-      await shapePaint.init(symbolCache);
-      shape.shapePaint = shapePaint;
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePaintLinesymbol;
+      ShapePaintLinesymbol shapePaint = ShapePaintLinesymbol._(renderinstruction);
+      await shapePaint.init();
+      renderinstruction.shapePainter = shapePaint;
       return shapePaint;
     });
   }
 
   @override
-  void renderNode(MapCanvas canvas, Mappoint coordinatesAbsolute, Mappoint reference, [double rotationRadian = 0]) {}
+  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {}
 
   @override
-  void renderWay(MapCanvas canvas, WayProperties wayProperties, PixelProjection projection, Mappoint reference, [double rotationRadian = 0]) {
-    if (bitmap == null) return;
+  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    int skipPixels = renderinstruction.repeatStart.round();
 
-    int skipPixels = renderInstruction.repeatStart.round();
-
-    List<List<Mappoint>> coordinatesAbsolute = wayProperties.getCoordinatesAbsolute(projection);
+    List<List<Mappoint>> coordinatesAbsolute = wayProperties.getCoordinatesAbsolute();
 
     List<Mappoint?> outerList = coordinatesAbsolute[0];
 
@@ -68,43 +75,43 @@ class ShapePaintLinesymbol extends ShapePainter<RenderinstructionLinesymbol> {
       double segmentLengthInPixel = sqrt(diffX * diffX + diffY * diffY);
       segmentLengthRemaining = segmentLengthInPixel.round();
 
-      while (segmentLengthRemaining - skipPixels > renderInstruction.repeatStart) {
+      while (segmentLengthRemaining - skipPixels > renderinstruction.repeatStart) {
         // calculate the percentage of the current segment to skip
         segmentSkipPercentage = skipPixels / segmentLengthRemaining;
 
         // move the previous point forward towards the current point
         previousX += diffX * segmentSkipPercentage;
         previousY += diffY * segmentSkipPercentage;
-        if (renderInstruction.rotate && theta == 0) {
+        if (renderinstruction.rotate && theta == 0) {
           // if we do not rotate theta will be 0, which is correct
           theta = atan2(currentY - previousY, currentX - previousX);
         }
 
-        RelativeMappoint relative = Mappoint(previousX, previousY).offset(-reference.x, -reference.y + renderInstruction.dy);
+        RelativeMappoint relative = Mappoint(previousX, previousY).offset(renderContext.reference).offset(0, renderinstruction.dy);
 
-        MapRectangle boundary = renderInstruction.calculateBoundary();
+        MapRectangle boundary = symbolImage!.getBoundary();
 
-        // if (point.x + boundary.left >= 0 &&
-        //     point.y + boundary.bottom >= 0 &&
-        //     point.x + boundary.right <= leftUpper.x &&
-        //     point.y + boundary.top <= leftUpper.y) {
-        Matrix? matrix;
+        UiMatrix? matrix;
         if (theta != 0) {
-          matrix = GraphicFactory().createMatrix();
+          matrix = UiMatrix();
           matrix.rotate(theta, pivotX: boundary.left, pivotY: boundary.top);
         }
 
         // print(
         //     "drawing ${bitmap} at ${point.x + boundary.left} / ${point.y + boundary.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
         //print(StackTrace.current);
-        canvas.drawBitmap(bitmap: bitmap!, matrix: matrix, left: relative.x + boundary.left, top: relative.y + boundary.top, paint: fill);
+        renderContext.canvas.drawPicture(
+          symbolImage: symbolImage!,
+          matrix: matrix,
+          left: relative.x + boundary.left,
+          top: relative.y + boundary.top,
+          paint: fill,
+        );
 
         // check if the symbolContainer should only be rendered once
-        if (!renderInstruction.repeat) {
-          //   bitmap.dispose();
+        if (!renderinstruction.repeat) {
           return;
         }
-        //    }
 
         // recalculate the distances
         diffX = currentX - previousX;
@@ -114,12 +121,12 @@ class ShapePaintLinesymbol extends ShapePainter<RenderinstructionLinesymbol> {
         segmentLengthRemaining -= skipPixels;
 
         // set the amount of pixels to skip before repeating the symbolContainer
-        skipPixels = renderInstruction.repeatGap.round();
+        skipPixels = renderinstruction.repeatGap.round();
       }
 
       skipPixels -= segmentLengthRemaining;
-      if (skipPixels < renderInstruction.repeatStart) {
-        skipPixels = renderInstruction.repeatStart.round();
+      if (skipPixels < renderinstruction.repeatStart) {
+        skipPixels = renderinstruction.repeatStart.round();
       }
 
       // set the previous way point coordinates for the next loop

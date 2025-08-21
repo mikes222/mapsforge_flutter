@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:dart_common/model.dart';
-import 'package:datastore_renderer/src/model/linestring.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';
 import 'package:datastore_renderer/src/ui/tile_picture.dart';
@@ -11,7 +11,7 @@ import 'package:datastore_renderer/src/ui/ui_path.dart';
 import 'package:datastore_renderer/src/ui/ui_rect.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
 
-class UiCanvas {
+class UiCanvas implements MapCanvas<UiCanvas> {
   late ui.Canvas _uiCanvas;
 
   ui.PictureRecorder? _pictureRecorder;
@@ -215,6 +215,8 @@ class UiCanvas {
   void translate(double dx, double dy) {
     _uiCanvas.translate(dx, dy);
   }
+
+  ui.Canvas expose() => _uiCanvas;
 
   @override
   String toString() {

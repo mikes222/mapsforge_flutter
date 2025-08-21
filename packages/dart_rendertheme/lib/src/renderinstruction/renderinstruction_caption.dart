@@ -1,26 +1,31 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
+import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
 import 'package:dart_rendertheme/src/model/mapfontstyle.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/noderenderinfo.dart';
 import 'package:dart_rendertheme/src/model/position.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
+import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
 import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/text_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/textkey.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-/**
- * Represents a text label on the map.
- * <p/>
- * If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
- * center of which is at the point of the POI. The bitmap itself is never rendered.
- */
-class RenderinstructionCaption with BaseSrcMixin, TextSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin implements RenderInstructionNode, RenderInstructionWay {
+/// Represents a text label on the map.
+/// <p/>
+/// If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
+/// center of which is at the point of the POI. The bitmap itself is never rendered by this class.
+class RenderinstructionCaption extends Renderinstruction
+    with BaseSrcMixin, TextSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin
+    implements RenderinstructionNode, RenderinstructionWay {
   static final double DEFAULT_GAP = 1;
 
   String? symbolId;
@@ -31,13 +36,38 @@ class RenderinstructionCaption with BaseSrcMixin, TextSrcMixin, FillColorSrcMixi
 
   double gap = DEFAULT_GAP;
 
+  /// In the second pass we try to find the corresponding symbol so that we can align the caption relative to this symbol.
+  RenderinstructionSymbol? renderinstructionSymbol;
+
   RenderinstructionCaption(int level) {
     this.level = level;
   }
 
   @override
+  RenderinstructionCaption forZoomlevel(int zoomlevel) {
+    RenderinstructionCaption renderinstruction = RenderinstructionCaption(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..textSrcMixinScale(this, zoomlevel)
+      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+    renderinstruction.symbolId = symbolId;
+    renderinstruction.textKey = textKey;
+    renderinstruction.position = position;
+    renderinstruction.gap = gap;
+    return renderinstruction;
+  }
+
+  @override
   String getType() {
     return "caption";
+  }
+
+  @override
+  void secondPass(Rule rule) {
+    super.secondPass(rule);
+    if (symbolId != null) {
+      renderinstructionSymbol = rule.searchForSymbol(symbolId!);
+    }
   }
 
   void parse(XmlElement rootElement) {
@@ -46,7 +76,7 @@ class RenderinstructionCaption with BaseSrcMixin, TextSrcMixin, FillColorSrcMixi
     setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
     setFontSize(10 * MapsforgeSettingsMgr().getFontScaleFactor());
 
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
 
@@ -77,24 +107,36 @@ class RenderinstructionCaption with BaseSrcMixin, TextSrcMixin, FillColorSrcMixi
       } else if (Renderinstruction.SYMBOL_ID == name) {
         symbolId = value;
       } else {
-        throw Exception("caption unknwon attribute");
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), Renderinstruction.K, textKey);
   }
 
   @override
-  RenderinstructionCaption forZoomlevel(int zoomlevel) {
-    RenderinstructionCaption renderinstruction = RenderinstructionCaption(level)
-      ..baseSrcMixinScale(this, zoomlevel)
-      ..textSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
-    renderinstruction.symbolId = symbolId;
-    renderinstruction.textKey = textKey;
-    renderinstruction.position = position;
-    renderinstruction.gap = gap;
-    return renderinstruction;
+  MapRectangle? getBoundary() {
+    // boundary depends on the text
+    return null;
+  }
+
+  @override
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
+    String? caption = textKey!.getValue(nodeProperties.tags);
+    if (caption == null) {
+      return;
+    }
+    //print("Rendering caption $caption for $nodeProperties");
+    layerContainer.addLabel(NodeRenderInfo(nodeProperties, this)..caption = caption);
+  }
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
+    String? caption = textKey!.getValue(wayProperties.getTags());
+    if (caption == null) {
+      return;
+    }
+
+    layerContainer.addLabel(WayRenderInfo(wayProperties, this)..caption = caption);
   }
 }

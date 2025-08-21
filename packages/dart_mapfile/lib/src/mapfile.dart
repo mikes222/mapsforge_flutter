@@ -5,7 +5,6 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/buffer/readbuffermemory.dart';
 import 'package:dart_common/src/datastore/datastore.dart';
-import 'package:dart_common/src/datastore/datastorereadresult.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
@@ -54,49 +53,49 @@ class IsolateMapfile implements Datastore {
   }
 
   @override
-  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) {
+  Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readLabels
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult?> readLabelsSingle(Tile tile) async {
-    DatastoreReadResult? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
+  Future<DatastoreBundle?> readLabelsSingle(Tile tile) async {
+    DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
     return result;
   }
 
   @pragma('vm:entry-point')
-  static Future<DatastoreReadResult?> _readLabelsSingleStatic(_MapfileReadSingleRequest request) async {
+  static Future<DatastoreBundle?> _readLabelsSingleStatic(_MapfileReadSingleRequest request) async {
     mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     return mapFile!.readLabelsSingle(request.tile);
   }
 
   @override
-  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) {
+  Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readMapData
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult?> readMapDataSingle(Tile tile) async {
-    DatastoreReadResult? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
+  Future<DatastoreBundle?> readMapDataSingle(Tile tile) async {
+    DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
     return result;
   }
 
   @pragma('vm:entry-point')
-  static Future<DatastoreReadResult?> _readMapDataSingleStatic(_MapfileReadSingleRequest request) async {
+  static Future<DatastoreBundle?> _readMapDataSingleStatic(_MapfileReadSingleRequest request) async {
     mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     return mapFile!.readMapDataSingle(request.tile);
   }
 
   @override
-  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) {
+  Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readPoiData
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult?> readPoiDataSingle(Tile tile) {
+  Future<DatastoreBundle?> readPoiDataSingle(Tile tile) {
     // TODO: implement readPoiDataSingle
     throw UnimplementedError();
   }
@@ -281,7 +280,7 @@ class MapFile extends MapDataStore {
     return null;
   }
 
-  PoiWayBundle _processBlock(
+  DatastoreBundle _processBlock(
     QueryParameters queryParameters,
     SubFileParameter subFileParameter,
     BoundingBox boundingBox,
@@ -332,7 +331,7 @@ class MapFile extends MapDataStore {
       }
     }
 
-    return new PoiWayBundle(pois, ways);
+    return DatastoreBundle(pointOfInterests: pois, ways: ways);
   }
 
   /// Processes the block signature, if present.
@@ -353,7 +352,7 @@ class MapFile extends MapDataStore {
   ///
   /// don't make this method private since we are using it in the example APP to analyze mapfiles
   ///
-  Future<DatastoreReadResult> processBlocks(
+  Future<DatastoreBundle> processBlocks(
     ReadbufferSource readBufferSource,
     QueryParameters queryParameters,
     SubFileParameter subFileParameter,
@@ -363,7 +362,7 @@ class MapFile extends MapDataStore {
     bool queryIsWater = true;
     bool queryReadWaterInfo = false;
 
-    DatastoreReadResult mapFileReadResult = new DatastoreReadResult(pointOfInterests: [], ways: []);
+    DatastoreBundle datastoreBundle = DatastoreBundle(pointOfInterests: [], ways: []);
 
     // read and process all blocks from top to bottom and from left to right
     for (int row = queryParameters.fromBlockY; row <= queryParameters.toBlockY; ++row) {
@@ -395,7 +394,7 @@ class MapFile extends MapDataStore {
           _log.warning(
             "invalid current block pointer: 0x${currentBlockPointer.toRadixString(16)} with subFileSize: 0x${subFileParameter.subFileSize.toRadixString(16)} for blocknumber $blockNumber",
           );
-          return mapFileReadResult;
+          return datastoreBundle;
         }
 
         int? nextBlockPointer;
@@ -409,7 +408,7 @@ class MapFile extends MapDataStore {
           if (nextBlockPointer > subFileParameter.subFileSize) {
             _log.warning("invalid next block pointer: $nextBlockPointer");
             _log.warning("sub-file size: ${subFileParameter.subFileSize}");
-            return mapFileReadResult;
+            return datastoreBundle;
           }
         }
 
@@ -417,7 +416,7 @@ class MapFile extends MapDataStore {
         int currentBlockSize = (nextBlockPointer - currentBlockPointer);
         if (currentBlockSize < 0) {
           _log.warning("current block size must not be negative: $currentBlockSize");
-          return mapFileReadResult;
+          return datastoreBundle;
         } else if (currentBlockSize == 0) {
           // the current block is empty, continue with the next block
           continue;
@@ -427,7 +426,7 @@ class MapFile extends MapDataStore {
           continue;
         } else if (currentBlockPointer + currentBlockSize > this._fileSize) {
           _log.warning("current block larger than file size: $currentBlockSize");
-          return mapFileReadResult;
+          return datastoreBundle;
         }
 
         String key = "${subFileParameter.startAddress + currentBlockPointer}-$currentBlockSize";
@@ -440,7 +439,7 @@ class MapFile extends MapDataStore {
         double tileLatitude = subFileParameter.projection.tileYToLatitude((subFileParameter.boundaryTileTop + row));
         double tileLongitude = subFileParameter.projection.tileXToLongitude((subFileParameter.boundaryTileLeft + column));
 
-        PoiWayBundle poiWayBundle = _processBlock(
+        DatastoreBundle poiWayBundle = _processBlock(
           queryParameters,
           subFileParameter,
           boundingBox,
@@ -450,17 +449,17 @@ class MapFile extends MapDataStore {
           Readbuffer.from(readbuffer),
         );
         //_blockCache.set(cacheKey, poiWayBundle);
-        mapFileReadResult.add(poiWayBundle);
+        datastoreBundle.add(poiWayBundle);
       }
     }
 
     // the query is finished, was the water flag set for all blocks?
     if (queryIsWater && queryReadWaterInfo) {
       // Deprecate water tiles rendering
-      mapFileReadResult.isWater = true;
+      datastoreBundle.isWater = true;
     }
 
-    return mapFileReadResult;
+    return datastoreBundle;
   }
 
   /// Reads only labels for tile.
@@ -468,7 +467,7 @@ class MapFile extends MapDataStore {
   /// @param tile tile for which data is requested.
   /// @return label data for the tile.
   @override
-  Future<DatastoreReadResult> readLabelsSingle(Tile tile) async {
+  Future<DatastoreBundle> readLabelsSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.LABELS);
   }
@@ -481,7 +480,7 @@ class MapFile extends MapDataStore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreBundle> readLabels(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.LABELS);
   }
@@ -491,9 +490,9 @@ class MapFile extends MapDataStore {
   /// @param tile defines area and zoom level of read map data.
   /// @return the read map data.
   @override
-  Future<DatastoreReadResult> readMapDataSingle(Tile tile) async {
+  Future<DatastoreBundle> readMapDataSingle(Tile tile) async {
     await _lateOpen();
-    DatastoreReadResult result = await _readMapDataComplete(tile, tile, MapfileSelector.ALL);
+    DatastoreBundle result = await _readMapDataComplete(tile, tile, MapfileSelector.ALL);
     //print("$_storage");
     return result;
   }
@@ -506,7 +505,7 @@ class MapFile extends MapDataStore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.ALL);
   }
@@ -527,7 +526,7 @@ class MapFile extends MapDataStore {
     });
   }
 
-  Future<DatastoreReadResult> _readMapDataComplete(Tile upperLeft, Tile lowerRight, MapfileSelector selector) async {
+  Future<DatastoreBundle> _readMapDataComplete(Tile upperLeft, Tile lowerRight, MapfileSelector selector) async {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(upperLeft.zoomLevel);
     // may happen that upperLeft and lowerRight does not support the tiles but inbetween do
     //assert(supportsTile(upperLeft, projection));
@@ -548,7 +547,7 @@ class MapFile extends MapDataStore {
     queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
     queryParameters.calculateBlocks(subFileParameter);
     timing.lap(100, "readMapDataComplete for query $queryParameters");
-    DatastoreReadResult? result = await processBlocks(
+    DatastoreBundle? result = await processBlocks(
       readBufferSource,
       queryParameters,
       subFileParameter,
@@ -567,7 +566,7 @@ class MapFile extends MapDataStore {
    * @return POI data for the tile.
    */
   @override
-  Future<DatastoreReadResult?> readPoiDataSingle(Tile tile) async {
+  Future<DatastoreBundle?> readPoiDataSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.POIS);
   }
@@ -582,7 +581,7 @@ class MapFile extends MapDataStore {
    * @return map data for the tile.
    */
   @override
-  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.POIS);
   }

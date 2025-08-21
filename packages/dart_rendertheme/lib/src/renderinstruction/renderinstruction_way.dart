@@ -2,8 +2,10 @@ import 'package:dart_rendertheme/rendertheme.dart';
 
 /// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
 /// instructions from an xml file. It can be seen like a CSS-file for html.
-abstract class RenderInstructionWay implements Renderinstruction {
-  RenderInstructionWay();
+abstract class RenderinstructionWay implements Renderinstruction {
+  RenderinstructionWay();
 
-  RenderInstructionWay forZoomlevel(int zoomlevel);
+  /// Creates a copy of itself with the data needed for the given zoomlevel. Note that this should only be called from [Rendertheme]
+  /// and NOT from [RenderthemeZoomlevel]
+  RenderinstructionWay forZoomlevel(int zoomlevel);
 }

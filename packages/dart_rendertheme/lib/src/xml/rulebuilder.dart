@@ -70,9 +70,9 @@ class RuleBuilder {
   Closed closed = Closed.ANY;
   Element element = Element.ANY;
   String? keys;
-  final List<RenderInstructionNode> renderInstructionNodes;
-  final List<RenderInstructionWay> renderInstructionOpenWays;
-  final List<RenderInstructionWay> renderInstructionClosedWays;
+  final List<RenderinstructionNode> renderinstructionNodes;
+  final List<RenderinstructionWay> renderinstructionOpenWays;
+  final List<RenderinstructionWay> renderinstructionClosedWays;
 
   // rules directly below this rule
   final List<RuleBuilder> ruleBuilderStack;
@@ -115,9 +115,9 @@ class RuleBuilder {
     : excludeIds = excludeIds ?? {},
       zoomlevelRange = const ZoomlevelRange.standard(),
       ruleBuilderStack = [],
-      renderInstructionNodes = [],
-      renderInstructionOpenWays = [],
-      renderInstructionClosedWays = [],
+      renderinstructionNodes = [],
+      renderinstructionOpenWays = [],
+      renderinstructionClosedWays = [],
       maxLevel = level {
     closed = Closed.ANY;
     element = Element.ANY;
@@ -153,13 +153,13 @@ class RuleBuilder {
     //   _log.warning(
     //       "Impossible SubRule which has renderInstructionNodess whereas the parent has element way ($this)");
     // }
-    if (element == Element.NODE && renderInstructionNodes.isEmpty && ruleBuilderStack.isEmpty) {
+    if (element == Element.NODE && renderinstructionNodes.isEmpty && ruleBuilderStack.isEmpty) {
       _log.warning("Impossible SubRule which has no renderInstructionNodes whereas the parent has element node ($this)");
     }
-    if (element == Element.WAY && renderInstructionOpenWays.isEmpty && renderInstructionClosedWays.isEmpty && ruleBuilderStack.isEmpty) {
+    if (element == Element.WAY && renderinstructionOpenWays.isEmpty && renderinstructionClosedWays.isEmpty && ruleBuilderStack.isEmpty) {
       _log.warning("Impossible SubRule which has no renderInstructionWays whereas the parent has element way ($this)");
     }
-    if (renderInstructionNodes.isEmpty && renderInstructionOpenWays.isEmpty && renderInstructionClosedWays.isEmpty && ruleBuilderStack.isEmpty) {
+    if (renderinstructionNodes.isEmpty && renderinstructionOpenWays.isEmpty && renderinstructionClosedWays.isEmpty && ruleBuilderStack.isEmpty) {
       _log.warning("Impossible SubRule which has no renderInstructionNodes or renderInstructionWays ($this)");
     }
   }
@@ -178,13 +178,13 @@ class RuleBuilder {
         attributeMatcher: negativeMatcher!,
         zoomlevelRange: zoomlevelRange,
         subRules: rules,
-        renderInstructionNodes: renderInstructionNodes,
-        renderInstructionOpenWays: renderInstructionOpenWays,
-        renderInstructionClosedWays: renderInstructionClosedWays,
+        renderinstructionNodes: renderinstructionNodes,
+        renderinstructionOpenWays: renderinstructionOpenWays,
+        renderinstructionClosedWays: renderinstructionClosedWays,
       );
     }
 
-    if (renderInstructionNodes.isEmpty && renderInstructionOpenWays.isEmpty && renderInstructionClosedWays.isEmpty) {
+    if (renderinstructionNodes.isEmpty && renderinstructionOpenWays.isEmpty && renderinstructionClosedWays.isEmpty) {
       keyMatcher = RuleOptimizer.optimize(keyMatcher, ruleBuilderStack);
       valueMatcher = RuleOptimizer.optimize(valueMatcher, ruleBuilderStack);
     }
@@ -194,9 +194,9 @@ class RuleBuilder {
       valueMatcher: valueMatcher,
       zoomlevelRange: zoomlevelRange,
       subRules: rules,
-      renderInstructionNodes: renderInstructionNodes,
-      renderInstructionOpenWays: renderInstructionOpenWays,
-      renderInstructionClosedWays: renderInstructionClosedWays,
+      renderinstructionNodes: renderinstructionNodes,
+      renderinstructionOpenWays: renderinstructionOpenWays,
+      renderinstructionClosedWays: renderinstructionClosedWays,
     );
   }
 
@@ -454,12 +454,12 @@ class RuleBuilder {
     //    this.elementStack.push(element);
   }
 
-  bool isVisible(RenderInstructionNode renderInstructionNode) {
+  bool isVisible(RenderinstructionNode renderInstructionNode) {
     return true;
     //return this.categories == null || renderInstruction.getCategory() == null || this.categories.contains(renderInstruction.getCategory());
   }
 
-  bool isVisibleWay(RenderInstructionWay renderInstructionWay) {
+  bool isVisibleWay(RenderinstructionWay renderInstructionWay) {
     return true;
     //return this.categories == null || renderInstruction.getCategory() == null || this.categories.contains(renderInstruction.getCategory());
   }
@@ -471,21 +471,21 @@ class RuleBuilder {
     //return this.categories == null || rule.cat == null || this.categories.contains(rule.cat);
   }
 
-  void addRenderingInstructionNode(RenderInstructionNode renderInstructionNode) {
-    renderInstructionNodes.add(renderInstructionNode);
+  void addRenderingInstructionNode(RenderinstructionNode renderInstructionNode) {
+    renderinstructionNodes.add(renderInstructionNode);
   }
 
-  void addRenderingInstructionOpenWay(RenderInstructionWay renderInstructionWay) {
-    renderInstructionOpenWays.add(renderInstructionWay);
+  void addRenderingInstructionOpenWay(RenderinstructionWay renderInstructionWay) {
+    renderinstructionOpenWays.add(renderInstructionWay);
   }
 
-  void addRenderingInstructionClosedWay(RenderInstructionWay renderInstructionWay) {
-    renderInstructionClosedWays.add(renderInstructionWay);
+  void addRenderingInstructionClosedWay(RenderinstructionWay renderInstructionWay) {
+    renderinstructionClosedWays.add(renderInstructionWay);
   }
 
   @override
   String toString() {
-    return 'RuleBuilder{zoomlevelRange: $zoomlevelRange, element: $element, keys: $keys, renderInstructionNodes: $renderInstructionNodes, values: $values}';
+    return 'RuleBuilder{zoomlevelRange: $zoomlevelRange, element: $element, keys: $keys, renderInstructionNodes: $renderinstructionNodes, values: $values}';
   }
 }
 

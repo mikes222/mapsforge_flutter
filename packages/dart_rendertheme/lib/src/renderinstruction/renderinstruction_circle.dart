@@ -1,5 +1,12 @@
+import 'dart:math';
+
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/noderenderinfo.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
@@ -9,10 +16,8 @@ import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
-/**
- * Represents a round area on the map.
- */
-class RenderinstructionCircle with BaseSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin implements RenderInstructionNode {
+/// Represents a round area on the map.
+class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin implements RenderinstructionNode {
   /// the radius of the circle in pixels
   double radius = 10;
 
@@ -23,12 +28,29 @@ class RenderinstructionCircle with BaseSrcMixin, FillColorSrcMixin, StrokeColorS
   }
 
   @override
+  RenderinstructionCircle forZoomlevel(int zoomlevel) {
+    RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+
+    renderinstruction.scaleRadius = scaleRadius;
+    renderinstruction.radius = radius;
+    if (scaleRadius) {
+      int zoomLevelDiff = zoomlevel - 0 + 1;
+      double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      renderinstruction.radius = radius * scaleFactor;
+    }
+    return renderinstruction;
+  }
+
+  @override
   String getType() {
     return "circle";
   }
 
   void parse(XmlElement rootElement) {
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
 
@@ -51,22 +73,23 @@ class RenderinstructionCircle with BaseSrcMixin, FillColorSrcMixin, StrokeColorS
       } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
       } else {
-        throw Exception("circle probs");
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
 
     XmlUtils.checkMandatoryAttribute(rootElement.name.toString(), Renderinstruction.RADIUS, radius);
   }
 
   @override
-  RenderinstructionCircle forZoomlevel(int zoomlevel) {
-    RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
-      ..baseSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
-
-    renderinstruction.radius = radius;
-    renderinstruction.scaleRadius = scaleRadius;
-    return renderinstruction;
+  MapRectangle? getBoundary() {
+    return MapRectangle(-radius, -radius, radius, radius);
   }
+
+  @override
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
+    layerContainer.add(NodeRenderInfo<RenderinstructionCircle>(nodeProperties, this));
+  }
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}
 }

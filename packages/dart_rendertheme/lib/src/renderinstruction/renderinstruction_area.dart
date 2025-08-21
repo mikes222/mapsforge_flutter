@@ -1,6 +1,11 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
+import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
@@ -11,10 +16,10 @@ import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
-/**
- * Represents a closed polygon on the map.
- */
-class RenderinstructionArea with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin implements RenderInstructionWay {
+/// Represents a closed polygon on the map.
+class RenderinstructionArea extends Renderinstruction
+    with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin
+    implements RenderinstructionWay {
   RenderinstructionArea(int level) : super() {
     this.level = level;
     // do not scale bitmaps in areas. They look ugly
@@ -22,8 +27,22 @@ class RenderinstructionArea with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin
     setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
   }
 
+  @override
+  RenderinstructionArea forZoomlevel(int zoomlevel) {
+    return RenderinstructionArea(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel)
+      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeColorSrcMixinScale(this, zoomlevel);
+  }
+
+  @override
+  String getType() {
+    return "area";
+  }
+
   void parse(XmlElement rootElement) {
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
       if (Renderinstruction.SRC == name) {
@@ -54,22 +73,24 @@ class RenderinstructionArea with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
-        throw Exception(name + "=" + value);
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
   }
 
   @override
-  RenderinstructionArea forZoomlevel(int zoomlevel) {
-    return RenderinstructionArea(level)
-      ..baseSrcMixinScale(this, zoomlevel)
-      ..bitmapSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
+  MapRectangle? getBoundary() {
+    // boundary depends on the way
+    return null;
   }
 
   @override
-  String getType() {
-    return "area";
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {}
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
+    if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
+
+    layerContainer.add(WayRenderInfo<RenderinstructionArea>(wayProperties, this));
   }
 }

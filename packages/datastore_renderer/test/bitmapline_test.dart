@@ -1,8 +1,8 @@
 import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_common/src/datastore/memory_datastore.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:datastore_renderer/src/datastore_renderer.dart';
 import 'package:datastore_renderer/src/job/job_request.dart';
 import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +27,7 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     var img = await (tester.runAsync(() async {
-      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/rendertheme.xml");
+      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("defaultrender.xml");
 
       MemoryDatastore datastore = MemoryDatastore();
       // <line src="jar:patterns/access-destination.png" stroke-width="8.0" />
@@ -44,14 +44,14 @@ void main() {
       );
       Tile tile = Tile(x, y, zoomlevel, l);
       expect(await datastore.supportsTile(tile), true);
-      DatastoreReadResult result = await datastore.readMapDataSingle(tile);
+      DatastoreBundle result = await datastore.readMapDataSingle(tile);
       expect(result.ways.length, equals(1));
       JobRequest mapGeneratorJob = JobRequest(tile);
-      MapDataStoreRenderer _dataStoreRenderer = MapDataStoreRenderer(datastore, renderTheme, symbolCache, true);
+      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
 
       JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
-      return await jobResult.picture!.convertToImage();
+      return await jobResult.picture!.convertPictureToImage();
     }));
 
     expect(img, isNotNull);

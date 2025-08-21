@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:dart_common/model.dart';
 import 'package:flutter/material.dart';
 
 /// A wrapper for ui images. Do not forget to dispose() this class after use
@@ -33,6 +34,10 @@ class SymbolImage {
     //   ..[10] = 1.0
     //   ..[15] = 2.0;
     return ui.ImageShader(_image, ui.TileMode.repeated, ui.TileMode.repeated, Matrix4.identity().storage);
+  }
+
+  MapRectangle getBoundary() {
+    return MapRectangle(-_image.width / 2, -_image.height / 2, _image.width / 2, _image.height / 2);
   }
 
   ui.Image expose() => _image;

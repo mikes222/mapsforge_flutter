@@ -3,11 +3,10 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:datastore_renderer/src/model/nodewayproperties.dart';
+import 'package:dart_rendertheme/src/model/linesegment.dart';
+import 'package:dart_rendertheme/src/model/linestring.dart';
+import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 import 'package:datastore_renderer/src/util/douglas_peucker_mappoint.dart';
-
-import '../model/linesegment.dart';
-import '../model/linestring.dart';
 
 /// Properties for one Way as read from the datastore. Note that the properties are
 /// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
@@ -25,29 +24,32 @@ class WayProperties implements NodeWayProperties {
   Mappoint? center;
 
   /// cache for absolute coordinates
-  List<List<Mappoint>>? coordinatesAbsolute;
+  late List<List<Mappoint>> coordinatesAbsolute;
 
   /// cache for the boundary of the way
   MapRectangle? _minMaxMappoint;
 
-  WayProperties(this.way) : layer = max(0, way.layer), isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
+  WayProperties(this.way, PixelProjection projection) : layer = max(0, way.layer), isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]) {
+    _calculateCoordinatesAbsolute(projection);
+  }
 
-  List<List<Mappoint>> getCoordinatesAbsolute(PixelProjection projection) {
-    if (coordinatesAbsolute != null) {
-      return coordinatesAbsolute!;
-    }
+  List<List<Mappoint>> getCoordinatesAbsolute() {
+    return coordinatesAbsolute;
+  }
+
+  List<List<Mappoint>> _calculateCoordinatesAbsolute(PixelProjection projection) {
     coordinatesAbsolute = [];
     way.latLongs.forEachIndexed((int idx, List<ILatLong> outerList) {
       List<Mappoint> mp1 = outerList.map((ILatLong position) => projection.latLonToPixel(position)).toList();
       MapRectangle minMaxMappoint = MapRectangle.from(mp1);
-      if (idx == 0) this._minMaxMappoint = minMaxMappoint;
+      if (idx == 0) _minMaxMappoint = minMaxMappoint;
       if (minMaxMappoint.getWidth() > maxGap || minMaxMappoint.getHeight() > maxGap) {
         if (mp1.length > 6) mp1 = DouglasPeuckerMappoint().simplify(mp1, maxGap);
         // check if the area to draw is too small. This saves 100ms for complex structures
-        coordinatesAbsolute!.add(mp1);
+        coordinatesAbsolute.add(mp1);
       }
     });
-    return coordinatesAbsolute!;
+    return coordinatesAbsolute;
   }
 
   Mappoint getCenterAbsolute(PixelProjection projection) {
@@ -59,8 +61,8 @@ class WayProperties implements NodeWayProperties {
     return _minMaxMappoint!.getCenter();
   }
 
-  LineString? calculateStringPath(PixelProjection projection, double dy) {
-    List<List<Mappoint>> coordinatesAbsolute = getCoordinatesAbsolute(projection);
+  LineString? calculateStringPath(double dy) {
+    List<List<Mappoint>> coordinatesAbsolute = getCoordinatesAbsolute();
 
     if (coordinatesAbsolute.isEmpty || coordinatesAbsolute[0].length < 2) {
       return null;
@@ -92,9 +94,9 @@ class WayProperties implements NodeWayProperties {
     return way.tags;
   }
 
-  MapRectangle getBoundary(PixelProjection projection) {
+  MapRectangle getBoundary() {
     if (_minMaxMappoint != null) return _minMaxMappoint!;
-    List<List<Mappoint>> coordinates = getCoordinatesAbsolute(projection);
+    List<List<Mappoint>> coordinates = getCoordinatesAbsolute();
     if (coordinates.isEmpty) return const MapRectangle.zero();
     if (_minMaxMappoint != null) return _minMaxMappoint!;
     _minMaxMappoint = MapRectangle.from(coordinates[0]);

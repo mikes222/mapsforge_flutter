@@ -1,8 +1,14 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
+import 'package:dart_rendertheme/model.dart';
+import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/noderenderinfo.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
+import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
@@ -12,11 +18,26 @@ import 'package:xml/xml.dart';
 /// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
 /// The [RenderinstructionSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [Renderinstruction] implementations.
 ///
-class RenderinstructionSymbol with BaseSrcMixin, BitmapSrcMixin implements RenderInstructionNode, RenderInstructionWay {
+class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin implements RenderinstructionNode, RenderinstructionWay {
   String? id;
+
+  Position position = Position.CENTER;
+
+  /// The rotation of the symbol. Currently not fully supported
+  double theta = 0;
 
   RenderinstructionSymbol(int level) {
     this.level = level;
+  }
+
+  @override
+  RenderinstructionSymbol forZoomlevel(int zoomlevel) {
+    RenderinstructionSymbol renderinstruction = RenderinstructionSymbol(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel);
+    renderinstruction.id = id;
+    renderinstruction.position = position;
+    return renderinstruction;
   }
 
   @override
@@ -28,7 +49,7 @@ class RenderinstructionSymbol with BaseSrcMixin, BitmapSrcMixin implements Rende
     setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
     setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
 
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
       if (Renderinstruction.SRC == name) {
@@ -52,17 +73,63 @@ class RenderinstructionSymbol with BaseSrcMixin, BitmapSrcMixin implements Rende
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
-        throw Exception("Symbol probs");
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
   }
 
   @override
-  RenderinstructionSymbol forZoomlevel(int zoomlevel) {
-    RenderinstructionSymbol renderinstruction = RenderinstructionSymbol(level)
-      ..baseSrcMixinScale(this, zoomlevel)
-      ..bitmapSrcMixinScale(this, zoomlevel);
-    renderinstruction.id = id;
-    return renderinstruction;
+  MapRectangle? getBoundary() {
+    if (boundary != null) return boundary;
+
+    double halfWidth = getBitmapWidth() / 2;
+    double halfHeight = getBitmapHeight() / 2;
+
+    switch (position) {
+      case Position.AUTO:
+      case Position.CENTER:
+        boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
+        break;
+      case Position.BELOW:
+        boundary = MapRectangle(-halfWidth, 0 + dy, halfWidth, getBitmapHeight() + dy);
+        break;
+      case Position.BELOW_LEFT:
+        boundary = MapRectangle(-getBitmapWidth().toDouble(), 0 + dy, 0, getBitmapHeight() + dy);
+        break;
+      case Position.BELOW_RIGHT:
+        boundary = MapRectangle(0, 0 + dy, getBitmapWidth().toDouble(), getBitmapHeight() + dy);
+        break;
+      case Position.ABOVE:
+        boundary = MapRectangle(-halfWidth, -getBitmapHeight() + dy, halfWidth, 0 + dy);
+        break;
+      case Position.ABOVE_LEFT:
+        boundary = MapRectangle(-getBitmapWidth().toDouble(), -getBitmapHeight() + dy, 0, 0 + dy);
+        break;
+      case Position.ABOVE_RIGHT:
+        boundary = MapRectangle(0, -getBitmapHeight() + dy, getBitmapWidth().toDouble(), 0 + dy);
+        break;
+      case Position.LEFT:
+        boundary = MapRectangle(-getBitmapWidth().toDouble(), -halfHeight + dy, 0, halfHeight + dy);
+        break;
+      case Position.RIGHT:
+        boundary = MapRectangle(0, -halfHeight + dy, getBitmapWidth().toDouble(), halfHeight + dy);
+        break;
+    }
+    return boundary!;
+  }
+
+  @override
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
+    if (bitmapSrc == null) return;
+    layerContainer.addLabel(NodeRenderInfo(nodeProperties, this));
+  }
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
+    if (bitmapSrc == null) return;
+
+    if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
+
+    layerContainer.addClash(WayRenderInfo(wayProperties, this));
   }
 }

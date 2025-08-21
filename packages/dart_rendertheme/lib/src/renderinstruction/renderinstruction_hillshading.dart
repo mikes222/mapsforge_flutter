@@ -1,5 +1,9 @@
+import 'package:dart_common/src/model/maprectangle.dart';
+import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -7,7 +11,7 @@ import 'package:xml/xml.dart';
  * Represents hillshading on a painter algorithm layer/level in the parsed rendertheme
  * (but without a rule, we don't need to increase waymatching complexity here)
  */
-class RenderinstructionHillshading with BaseSrcMixin implements RenderInstructionWay {
+class RenderinstructionHillshading extends Renderinstruction with BaseSrcMixin implements RenderinstructionWay {
   bool always = true;
   int layer = 0;
   int minZoom = 0;
@@ -19,12 +23,23 @@ class RenderinstructionHillshading with BaseSrcMixin implements RenderInstructio
   }
 
   @override
+  RenderinstructionHillshading forZoomlevel(int zoomlevel) {
+    RenderinstructionHillshading renderinstruction = RenderinstructionHillshading(level)..baseSrcMixinScale(this, zoomlevel);
+    renderinstruction.always = always;
+    renderinstruction.layer = layer;
+    renderinstruction.minZoom = minZoom;
+    renderinstruction.maxZoom = maxZoom;
+    renderinstruction.magnitude = magnitude;
+    return renderinstruction;
+  }
+
+  @override
   String getType() {
     return "hillshading";
   }
 
   void parse(XmlElement rootElement) {
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
 
@@ -39,18 +54,20 @@ class RenderinstructionHillshading with BaseSrcMixin implements RenderInstructio
         always = "true" == (value);
       } else if ("layer" == name) {
         layer = XmlUtils.parseNonNegativeByte("layer", value);
+      } else {
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
   }
 
   @override
-  RenderinstructionHillshading forZoomlevel(int zoomlevel) {
-    RenderinstructionHillshading renderinstruction = RenderinstructionHillshading(level)..baseSrcMixinScale(this, zoomlevel);
-    renderinstruction.always = always;
-    renderinstruction.layer = layer;
-    renderinstruction.minZoom = minZoom;
-    renderinstruction.maxZoom = maxZoom;
-    renderinstruction.magnitude = magnitude;
-    return renderinstruction;
+  MapRectangle? getBoundary() {
+    return null;
   }
+
+  @override
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {}
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}
 }

@@ -15,9 +15,9 @@ class PositiveRule extends Rule {
     required this.valueMatcher,
     required super.zoomlevelRange,
     required super.subRules,
-    required super.renderInstructionNodes,
-    required super.renderInstructionOpenWays,
-    required super.renderInstructionClosedWays,
+    required super.renderinstructionNodes,
+    required super.renderinstructionOpenWays,
+    required super.renderinstructionClosedWays,
   });
 
   @override
@@ -26,17 +26,17 @@ class PositiveRule extends Rule {
       return null;
     }
 
-    List<RenderInstructionNode> renderInstructionNodes = [];
-    for (var renderInstruction in super.renderInstructionNodes) {
-      renderInstructionNodes.add(renderInstruction.forZoomlevel(zoomlevel));
+    List<RenderinstructionNode> renderinstructionNodes = [];
+    for (var renderInstruction in super.renderinstructionNodes) {
+      renderinstructionNodes.add(renderInstruction.forZoomlevel(zoomlevel));
     }
-    List<RenderInstructionWay> renderInstructionOpenWays = [];
-    for (var renderInstruction in super.renderInstructionOpenWays) {
-      renderInstructionOpenWays.add(renderInstruction.forZoomlevel(zoomlevel));
+    List<RenderinstructionWay> renderinstructionOpenWays = [];
+    for (var renderInstruction in super.renderinstructionOpenWays) {
+      renderinstructionOpenWays.add(renderInstruction.forZoomlevel(zoomlevel));
     }
-    List<RenderInstructionWay> renderInstructionClosedWays = [];
-    for (var renderInstruction in super.renderInstructionClosedWays) {
-      renderInstructionClosedWays.add(renderInstruction.forZoomlevel(zoomlevel));
+    List<RenderinstructionWay> renderinstructionClosedWays = [];
+    for (var renderInstruction in super.renderinstructionClosedWays) {
+      renderinstructionClosedWays.add(renderInstruction.forZoomlevel(zoomlevel));
     }
     List<Rule> subRules = [];
     for (var subRule in super.subRules) {
@@ -49,9 +49,9 @@ class PositiveRule extends Rule {
       valueMatcher: valueMatcher,
       zoomlevelRange: ZoomlevelRange(zoomlevel, zoomlevel),
       subRules: subRules,
-      renderInstructionNodes: renderInstructionNodes,
-      renderInstructionOpenWays: renderInstructionOpenWays,
-      renderInstructionClosedWays: renderInstructionClosedWays,
+      renderinstructionNodes: renderinstructionNodes,
+      renderinstructionOpenWays: renderinstructionOpenWays,
+      renderinstructionClosedWays: renderinstructionClosedWays,
     );
   }
 

@@ -1,4 +1,3 @@
-import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:test/test.dart';
@@ -10,7 +9,7 @@ import 'package:test/test.dart';
 void main() async {
   late MapFile mapFile;
 
-  late DatastoreReadResult mapReadResult;
+  late DatastoreBundle mapReadResult;
 
   setUpAll(() async {
     mapFile = await MapFile.createFromFile(filename: "test/campus_level.map");
@@ -232,7 +231,7 @@ void main() async {
 }
 
 //General tag detecting function
-bool objectDetected(DatastoreReadResult mapReadResult, String tagname) {
+bool objectDetected(DatastoreBundle mapReadResult, String tagname) {
   bool objectDetector = false;
   //POI's
   for (var poi in mapReadResult.pointOfInterests) {
@@ -251,7 +250,7 @@ bool objectDetected(DatastoreReadResult mapReadResult, String tagname) {
   return objectDetector;
 }
 
-bool indoorDetector(DatastoreReadResult mapReadResult) {
+bool indoorDetector(DatastoreBundle mapReadResult) {
   //help function, that returns true, if Indoor-Data in general is found
   bool indoorPois = false;
   bool indoorWays = false;

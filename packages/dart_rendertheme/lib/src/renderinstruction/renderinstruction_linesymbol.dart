@@ -1,7 +1,12 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/position.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
+import 'package:dart_rendertheme/src/model/wayproperties.dart';
+import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
@@ -12,7 +17,7 @@ import 'package:xml/xml.dart';
 import 'renderinstruction.dart';
 
 /// Represents an icon along a polyline on the map.
-class RenderinstructionLinesymbol with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMixin implements RenderInstructionWay {
+class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMixin implements RenderinstructionWay {
   static final double REPEAT_GAP_DEFAULT = 200;
   static final double REPEAT_START_DEFAULT = 30;
 
@@ -22,6 +27,17 @@ class RenderinstructionLinesymbol with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMi
 
   RenderinstructionLinesymbol(int level) {
     this.level = level;
+  }
+
+  @override
+  RenderinstructionLinesymbol forZoomlevel(int zoomlevel) {
+    RenderinstructionLinesymbol renderinstruction = RenderinstructionLinesymbol(level)
+      ..baseSrcMixinScale(this, zoomlevel)
+      ..bitmapSrcMixinScale(this, zoomlevel)
+      ..repeatSrcMixinScale(this, zoomlevel);
+    renderinstruction.position = position;
+    renderinstruction.alignCenter = alignCenter;
+    return renderinstruction;
   }
 
   @override
@@ -36,7 +52,7 @@ class RenderinstructionLinesymbol with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMi
     setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
     setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
 
-    rootElement.attributes.forEach((element) {
+    for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
 
@@ -76,19 +92,26 @@ class RenderinstructionLinesymbol with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMi
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else {
-        throw Exception("LineSymbol probs: unknown '$name'");
+        throw Exception("Parsing problems $name=$value");
       }
-    });
+    }
   }
 
   @override
-  RenderinstructionLinesymbol forZoomlevel(int zoomlevel) {
-    RenderinstructionLinesymbol renderinstruction = RenderinstructionLinesymbol(level)
-      ..baseSrcMixinScale(this, zoomlevel)
-      ..bitmapSrcMixinScale(this, zoomlevel)
-      ..repeatSrcMixinScale(this, zoomlevel);
-    renderinstruction.position = position;
-    renderinstruction.alignCenter = alignCenter;
-    return renderinstruction;
+  MapRectangle? getBoundary() {
+    // boundary depends on the area
+    return null;
+  }
+
+  @override
+  void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {}
+
+  @override
+  void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
+    if (bitmapSrc == null) return;
+    if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
+
+    //renderContext.labels.add(WayRenderInfo(wayProperties, shape));
+    layerContainer.addClash(WayRenderInfo(wayProperties, this));
   }
 }

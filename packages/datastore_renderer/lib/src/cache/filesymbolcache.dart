@@ -40,7 +40,7 @@ class FileSymbolCache extends SymbolCache {
     _cache.clear();
   }
 
-  //Future? future;
+  // Returns or creates the requested symbol image. The returned image must be dispose()-ed
   @override
   Future<SymbolImage?> getOrCreateSymbol(String? src, int width, int height) async {
     if (src == null || src.isEmpty) {

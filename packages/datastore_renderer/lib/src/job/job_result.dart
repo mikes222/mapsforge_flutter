@@ -1,4 +1,4 @@
-import 'package:datastore_renderer/src/model/render_info_collection.dart';
+import 'package:dart_rendertheme/src/model/render_info_collection.dart';
 import 'package:datastore_renderer/src/ui/tile_picture.dart';
 
 class JobResult {
@@ -13,6 +13,12 @@ class JobResult {
   JobResult.error(this._picture) : _result = JOBRESULT.ERROR, _renderInfo = null;
 
   JobResult.unsupported() : _result = JOBRESULT.NORMAL, _renderInfo = null, _picture = null;
+
+  TilePicture? get picture => _picture;
+
+  JOBRESULT get result => _result;
+
+  RenderInfoCollection? get renderInfo => _renderInfo;
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,6 @@ import 'dart:core';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/src/datastore/datastore.dart';
-import 'package:dart_common/src/datastore/datastorereadresult.dart';
 
 /// Base class for map data retrieval.
 abstract class MapDataStore extends Datastore {
@@ -25,7 +24,7 @@ abstract class MapDataStore extends Datastore {
   /// @param tile tile for which data is requested.
   /// @return label data for the tile.
   @override
-  Future<DatastoreReadResult?> readLabelsSingle(Tile tile) async {
+  Future<DatastoreBundle?> readLabelsSingle(Tile tile) async {
     return readMapDataSingle(tile);
   }
 
@@ -38,15 +37,15 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readLabels(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    DatastoreReadResult result = new DatastoreReadResult(pointOfInterests: [], ways: []);
+    DatastoreBundle result = new DatastoreBundle(pointOfInterests: [], ways: []);
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
-        DatastoreReadResult? r2 = await readLabelsSingle(current);
+        DatastoreBundle? r2 = await readLabelsSingle(current);
         if (r2 != null) result.addDeduplicate(r2, false);
       }
     }
@@ -58,7 +57,7 @@ abstract class MapDataStore extends Datastore {
   /// @param tile tile for which data is requested.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readMapDataSingle(Tile tile);
+  Future<DatastoreBundle?> readMapDataSingle(Tile tile);
 
   /// Reads data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -69,15 +68,15 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    DatastoreReadResult result = DatastoreReadResult(pointOfInterests: [], ways: []);
+    DatastoreBundle result = DatastoreBundle(pointOfInterests: [], ways: []);
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current = Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
-        DatastoreReadResult? r2 = await readMapDataSingle(current);
+        DatastoreBundle? r2 = await readMapDataSingle(current);
         if (r2 != null) result.addDeduplicate(r2, false);
       }
     }
@@ -91,7 +90,7 @@ abstract class MapDataStore extends Datastore {
    * @return poi data for the tile.
    */
   @override
-  Future<DatastoreReadResult?> readPoiDataSingle(Tile tile);
+  Future<DatastoreBundle?> readPoiDataSingle(Tile tile);
 
   /// Reads POI data for an area defined by the tile in the upper left and the tile in
   /// the lower right corner. The default implementation combines the results from
@@ -102,15 +101,15 @@ abstract class MapDataStore extends Datastore {
   /// @param lowerRight tile that defines the lower right corner of the requested area.
   /// @return map data for the tile.
   @override
-  Future<DatastoreReadResult?> readPoiData(Tile upperLeft, Tile lowerRight) async {
+  Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       new Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    DatastoreReadResult result = new DatastoreReadResult(pointOfInterests: [], ways: []);
+    DatastoreBundle result = new DatastoreBundle(pointOfInterests: [], ways: []);
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
         Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
-        DatastoreReadResult? r2 = await readPoiDataSingle(current);
+        DatastoreBundle? r2 = await readPoiDataSingle(current);
         if (r2 != null) result.addDeduplicate(r2, false);
       }
     }

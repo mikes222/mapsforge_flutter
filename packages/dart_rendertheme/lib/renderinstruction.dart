@@ -1,4 +1,3 @@
-export 'src/model/shape_painter.dart';
 export 'src/renderinstruction/renderinstruction.dart';
 export 'src/renderinstruction/renderinstruction_area.dart';
 export 'src/renderinstruction/renderinstruction_caption.dart';

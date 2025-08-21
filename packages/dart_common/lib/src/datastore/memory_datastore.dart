@@ -16,25 +16,25 @@ class MemoryDatastore extends Datastore {
   }
 
   @override
-  Future<DatastoreReadResult> readLabels(Tile upperLeft, Tile lowerRight) {
+  Future<DatastoreBundle> readLabels(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readLabels
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult> readLabelsSingle(Tile tile) {
+  Future<DatastoreBundle> readLabelsSingle(Tile tile) {
     // TODO: implement readLabelsSingle
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult> readMapData(Tile upperLeft, Tile lowerRight) {
+  Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readMapData
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult> readMapDataSingle(Tile tile) {
+  Future<DatastoreBundle> readMapDataSingle(Tile tile) {
     List<PointOfInterest> poiResults = pointOfInterests.where((poi) => tile.getBoundingBox().containsLatLong(poi.position)).toList();
     List<Way> wayResults = [];
     for (Way way in ways) {
@@ -42,17 +42,17 @@ class MemoryDatastore extends Datastore {
         wayResults.add(way);
       }
     }
-    return Future.value(DatastoreReadResult(pointOfInterests: poiResults, ways: wayResults));
+    return Future.value(DatastoreBundle(pointOfInterests: poiResults, ways: wayResults));
   }
 
   @override
-  Future<DatastoreReadResult> readPoiData(Tile upperLeft, Tile lowerRight) {
+  Future<DatastoreBundle> readPoiData(Tile upperLeft, Tile lowerRight) {
     // TODO: implement readPoiData
     throw UnimplementedError();
   }
 
   @override
-  Future<DatastoreReadResult> readPoiDataSingle(Tile tile) {
+  Future<DatastoreBundle> readPoiDataSingle(Tile tile) {
     // TODO: implement readPoiDataSingle
     throw UnimplementedError();
   }

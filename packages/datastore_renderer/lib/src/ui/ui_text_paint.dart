@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 
 /// The properties to draw a text. Normally used in conjunction with a FlutterPaint which defines, color of the text.

@@ -2,18 +2,19 @@ import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/utils.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:dart_rendertheme/src/model/render_info_collection.dart';
 import 'package:datastore_renderer/renderer.dart';
-import 'package:datastore_renderer/src/cache/symbolcache.dart';
 import 'package:datastore_renderer/src/job/job_request.dart';
 import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:datastore_renderer/src/model/render_context.dart';
-import 'package:datastore_renderer/src/model/render_info.dart';
-import 'package:datastore_renderer/src/model/render_info_collection.dart';
+import 'package:datastore_renderer/src/model/ui_render_info.dart';
 import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:datastore_renderer/src/ui/ui_canvas.dart';
 import 'package:datastore_renderer/src/util/datastore_reader.dart';
 import 'package:datastore_renderer/src/util/layerutil.dart';
+import 'package:datastore_renderer/src/util/painter_factory.dart';
 import 'package:datastore_renderer/src/util/tile_dependencies.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -29,8 +30,6 @@ class DatastoreRenderer extends Renderer {
 
   final Rendertheme renderTheme;
 
-  final SymbolCache symbolCache;
-
   /// When using the map heading north we can render the labels onto the images.
   /// However if you want to support rotation the labels should not rotate with
   /// the map so we are not allowed to render the labels onto the images.
@@ -40,7 +39,7 @@ class DatastoreRenderer extends Renderer {
 
   late DatastoreReader _datastoreReader;
 
-  DatastoreRenderer(this.datastore, this.renderTheme, this.symbolCache, this.renderLabels) {
+  DatastoreRenderer(this.datastore, this.renderTheme, this.renderLabels) {
     if (renderLabels) {
       tileDependencies = TileDependencies();
     } else {
@@ -68,23 +67,24 @@ class DatastoreRenderer extends Renderer {
     RenderthemeZoomlevel renderthemeLevel = this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
     timing.lap(100, "$renderthemeLevel prepareZoomlevel");
 
-    RenderContext? renderContext = await _datastoreReader.read(datastore, job.tile, renderthemeLevel, renderTheme.levels);
+    List<LayerContainer>? layerContainers = await _datastoreReader.read(datastore, job.tile, renderthemeLevel, renderTheme.levels);
 
     //timing.lap(100, "RenderContext ${renderContext} created");
-    if (renderContext == null) {
+    if (layerContainers == null) {
       return JobResult.unsupported();
     }
-    await renderContext.initDrawingLayers(symbolCache);
-    //renderContext.statistics();
+
+    await PainterFactory().initDrawingLayers(layerContainers);
     UiCanvas canvas = UiCanvas.forRecorder(MapsforgeSettingsMgr().tileSize, MapsforgeSettingsMgr().tileSize);
-    Mappoint leftUpper = renderContext.projection.getLeftUpper(renderContext.upperLeft);
+    PixelProjection projection = PixelProjection(job.tile.zoomLevel);
+    Mappoint leftUpper = projection.getLeftUpper(job.tile);
     //canvasRasterer.canvas.translate(-leftUpper.x, -leftUpper.y);
     drawWays(canvas, renderContext, leftUpper);
 
     RenderInfoCollection renderInfos = LayerUtil.collisionFreeOrdered(renderContext.labels.renderInfos, renderContext.projection);
     renderContext.labels.clear();
     renderContext.labels.renderInfos.addAll(renderInfos.renderInfos);
-    for (List<RenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
+    for (List<UiRenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
       RenderInfoCollection renderInfos = LayerUtil.collisionFreeOrdered(wayList, renderContext.projection);
       wayList.clear();
       wayList.addAll(renderInfos.renderInfos);
@@ -128,8 +128,8 @@ class DatastoreRenderer extends Renderer {
 
     // unfortunately we need the painter for captions in order to determine the size of the caption. In isolates however we cannot access
     // ui code. We are in an isolate here. We are doomed.
-    for (RenderInfo renderInfo in renderContext.labels.renderInfos) {
-      await renderInfo.createShapePaint(symbolCache);
+    for (UiRenderInfo renderInfo in renderContext.labels.renderInfos) {
+      await renderInfo.createShapePaint();
     }
     RenderInfoCollection renderInfos = LayerUtil.collisionFreeOrdered(renderContext.labels.renderInfos, renderContext.projection);
     // this.labelStore.storeMapItems(
@@ -140,36 +140,34 @@ class DatastoreRenderer extends Renderer {
     return JobResult.normal(null, renderInfos);
   }
 
-  void drawWays(UiCanvas canvas, RenderContext renderContext, Mappoint center) {
+  void drawWays(UiCanvas canvas, List<LayerContainer> drawingLayers, Mappoint center) {
     //print("drawing now ${renderContext.layerWays.length} layers");
-    for (LayerPaintContainer layerPaintContainer in renderContext.drawingLayers) {
+    for (LayerContainer layerContainer in drawingLayers) {
       //print("   drawing now ${layerPaintContainer.ways.length} levels");
-      for (List<RenderInfo> wayList in layerPaintContainer.ways) {
+      for (RenderInfo renderInfo in layerContainer.renderInfoCollection.renderInfos) {
         //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
-        for (RenderInfo element in wayList) {
-          //print("         drawing now ${element}");
-          element.render(canvas, renderContext.projection, center);
-        }
+        renderInfo.shapePainter.renderinstruction;
+        renderInfo.render(canvas, renderContext.projection, center);
       }
     }
-    for (List<RenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
+    for (List<UiRenderInfo> wayList in renderContext.clashDrawingLayer.ways) {
       RenderInfoCollection renderInfos = LayerUtil.collisionFreeOrdered(wayList, renderContext.projection);
       //if (wayList.length > 0) print("      drawing now ${wayList.length} ShapePaintContainers");
-      for (RenderInfo element in renderInfos.renderInfos) {
+      for (UiRenderInfo element in renderInfos.renderInfos) {
         //print("         drawing now ${element}");
         element.render(canvas, renderContext.projection, center);
       }
     }
   }
 
-  void drawMapElements(UiCanvas canvas, Set<RenderInfo> elements, PixelProjection projection, Mappoint center, Tile tile) {
+  void drawMapElements(UiCanvas canvas, Set<UiRenderInfo> elements, PixelProjection projection, Mappoint center, Tile tile) {
     // we have a set of all map elements (needed so we do not draw elements twice),
     // but we need to draw in priority order as we now allow overlaps. So we
     // convert into list, then sort, then draw.
     // draw elements in order of priority: lower priority first, so more important
     // elements will be drawn on top (in case of display=true) items.
-    List<RenderInfo> elementsAsList = elements.toList()..sort();
-    for (RenderInfo element in elementsAsList) {
+    List<UiRenderInfo> elementsAsList = elements.toList()..sort();
+    for (UiRenderInfo element in elementsAsList) {
       // The color filtering takes place in TileLayer
       //print("label to draw now: $element");
       element.render(canvas, projection, center);
@@ -189,9 +187,9 @@ class DatastoreRenderer extends Renderer {
   _LabelResult _processLabels(RenderContext renderContext) {
     // if we are drawing the labels per neighbour, we need to establish which neighbour-overlapping
     // elements need to be drawn.
-    Set<RenderInfo> labelsToDisposeAfterDrawing = {};
+    Set<UiRenderInfo> labelsToDisposeAfterDrawing = {};
 
-    Set<RenderInfo> labelsForNeighbours = {};
+    Set<UiRenderInfo> labelsForNeighbours = {};
 
     // get the overlapping elements for the current tile which were found while rendering the neighbours
     Set<Dependency>? labelsFromNeighbours = tileDependencies!.getOverlappingElements(renderContext.upperLeft);
@@ -214,7 +212,7 @@ class DatastoreRenderer extends Renderer {
     // they already overlap from other tiles [labelsToDraw]. The second one is [renderContext.labels] that contains
     // the elements on this neighbour that do not overlap onto a drawn neighbour.
     // now we go through this list, ordered by priority, to see which can be drawn without clashing.
-    List<RenderInfo> toDraw2 = LayerUtil.removeCollisions(
+    List<UiRenderInfo> toDraw2 = LayerUtil.removeCollisions(
       renderContext.labels.renderInfos,
       List.of(labelsToDisposeAfterDrawing)..addAll(labelsForNeighbours),
       renderContext.projection,
@@ -226,7 +224,7 @@ class DatastoreRenderer extends Renderer {
     Set<Tile> neighbours = renderContext.upperLeft.getNeighbours();
     // update dependencies, add to the dependencies list all the elements that overlap to the
     // neighbouring tiles, first clearing out the cache for this relation.
-    for (RenderInfo element in toDraw2) {
+    for (UiRenderInfo element in toDraw2) {
       List<Tile>? added;
       for (Tile neighbour in neighbours) {
         if (element.intersects(renderContext.projection.boundaryAbsolute(neighbour), renderContext.projection)) {
@@ -272,9 +270,9 @@ class DatastoreRenderer extends Renderer {
 /////////////////////////////////////////////////////////////////////////////
 
 class _LabelResult {
-  final Set<RenderInfo> labelsToDisposeAfterDrawing;
+  final Set<UiRenderInfo> labelsToDisposeAfterDrawing;
 
-  final Set<RenderInfo> labelsForNeighbours;
+  final Set<UiRenderInfo> labelsForNeighbours;
 
   _LabelResult(this.labelsForNeighbours, this.labelsToDisposeAfterDrawing);
 }
