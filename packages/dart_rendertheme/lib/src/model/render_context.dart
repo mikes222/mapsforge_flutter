@@ -1,1 +1,1 @@
-abstract class RenderContext<U> {}
+abstract class RenderContext {}

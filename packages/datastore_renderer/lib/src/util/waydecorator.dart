@@ -3,10 +3,10 @@ import 'package:dart_rendertheme/model.dart';
 class WayDecorator {
   static final double MAX_LABEL_CORNER_ANGLE = 10;
 
-  static LineString reducePathForText(LineString fullPath, double textWidth) {
-    LineString result = LineString();
-    LineString path = LineString();
-    LineString longestPath = LineString();
+  static LineSegmentPath reducePathForText(LineSegmentPath fullPath, double textWidth) {
+    LineSegmentPath result = LineSegmentPath();
+    LineSegmentPath path = LineSegmentPath();
+    LineSegmentPath longestPath = LineSegmentPath();
     for (LineSegment segment in fullPath.segments) {
       if (segment.end == segment.start) {
         continue;
@@ -14,7 +14,7 @@ class WayDecorator {
       if (segment.length() > textWidth) {
         // we found a segment which is long enough so use this instead of all the small segments before
         result.segments.add(segment);
-        path = LineString();
+        path = LineSegmentPath();
         // todo split very long segments to several small segments and draw the text in each
         continue;
       }
@@ -22,14 +22,14 @@ class WayDecorator {
         double cornerAngle = path.segments.last.angleTo(segment);
         if ((cornerAngle).abs() > MAX_LABEL_CORNER_ANGLE) {
           if (longestPath.length() < path.length()) longestPath = path;
-          path = LineString();
+          path = LineSegmentPath();
           continue;
         }
       }
       path.segments.add(segment);
       if (path.length() > textWidth && path.segments.first.start != path.segments.last.end) {
         result.segments.add(LineSegment(path.segments.first.start, path.segments.last.end));
-        path = LineString();
+        path = LineSegmentPath();
       }
     }
     if (result.segments.isEmpty && longestPath.segments.isNotEmpty && longestPath.length() > textWidth * 2 / 3) {

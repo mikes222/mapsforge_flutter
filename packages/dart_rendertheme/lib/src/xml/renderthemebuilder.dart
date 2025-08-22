@@ -71,9 +71,13 @@ class RenderThemeBuilder {
       if (!ruleBuilder.impossible) {
         Rule rule = ruleBuilder.build();
         rules.add(rule);
+        rule.parent = null;
       }
     }
     Rendertheme renderTheme = Rendertheme(levels: maxLevel, rulesList: rules);
+    for (Rule rule in rules) {
+      rule.secondPass();
+    }
     return renderTheme;
   }
 
@@ -181,7 +185,7 @@ class RenderThemeBuilder {
               break;
             } else if ("hillshading" == element.name.toString()) {
               RenderinstructionHillshading hillshading = RenderinstructionHillshading(_level);
-              hillshading.parse(rootElement);
+              hillshading.parse(element);
 
               //      if (this.categories == null || category == null || this.categories.contains(category)) {
               //hillShadings.add(hillshading);

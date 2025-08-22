@@ -1,11 +1,9 @@
-import 'dart:math';
-
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
-import 'package:dart_rendertheme/src/model/noderenderinfo.dart';
+import 'package:dart_rendertheme/src/model/render_info_node.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
@@ -30,6 +28,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
   @override
   RenderinstructionCircle forZoomlevel(int zoomlevel) {
     RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..fillColorSrcMixinScale(this, zoomlevel)
       ..strokeColorSrcMixinScale(this, zoomlevel);
@@ -37,9 +36,10 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
     renderinstruction.scaleRadius = scaleRadius;
     renderinstruction.radius = radius;
     if (scaleRadius) {
-      int zoomLevelDiff = zoomlevel - 0 + 1;
-      double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
-      renderinstruction.radius = radius * scaleFactor;
+      if (zoomlevel >= MapsforgeSettingsMgr().strokeMinZoomlevel) {
+        double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, MapsforgeSettingsMgr().strokeMinZoomlevel);
+        renderinstruction.radius = radius * scaleFactor;
+      }
     }
     return renderinstruction;
   }
@@ -87,7 +87,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
 
   @override
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
-    layerContainer.add(NodeRenderInfo<RenderinstructionCircle>(nodeProperties, this));
+    layerContainer.add(RenderInfoNode<RenderinstructionCircle>(nodeProperties, this));
   }
 
   @override

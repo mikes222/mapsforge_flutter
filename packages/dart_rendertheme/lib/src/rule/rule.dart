@@ -30,6 +30,12 @@ abstract class Rule {
     for (var rule in subRules) {
       rule.parent = this;
     }
+  }
+
+  void secondPass() {
+    for (Rule rule in subRules) {
+      rule.secondPass();
+    }
     for (RenderinstructionNode renderinstruction in renderinstructionNodes) {
       renderinstruction.secondPass(this);
     }

@@ -1,10 +1,7 @@
-import 'dart:math';
-
 import 'package:dart_common/utils.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
 
 mixin RepeatSrcMixin {
-  int _repeatMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevel;
+  final int _repeatMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevelText;
 
   bool repeat = true;
 
@@ -28,8 +25,7 @@ mixin RepeatSrcMixin {
   void repeatSrcMixinScale(RepeatSrcMixin base, int zoomlevel) {
     repeatSrcMixinClone(base);
     if (zoomlevel >= _repeatMinZoomLevel) {
-      int zoomLevelDiff = zoomlevel - _repeatMinZoomLevel + 1;
-      double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _repeatMinZoomLevel);
       repeatGap = base.repeatGap * scaleFactor;
       repeatStart = base.repeatStart * scaleFactor;
     }

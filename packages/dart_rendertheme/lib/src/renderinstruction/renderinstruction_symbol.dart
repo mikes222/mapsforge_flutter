@@ -3,10 +3,8 @@ import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
-import 'package:dart_rendertheme/src/model/nodeproperties.dart';
-import 'package:dart_rendertheme/src/model/noderenderinfo.dart';
-import 'package:dart_rendertheme/src/model/wayproperties.dart';
-import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
+import 'package:dart_rendertheme/src/model/render_info_node.dart';
+import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
@@ -33,6 +31,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   @override
   RenderinstructionSymbol forZoomlevel(int zoomlevel) {
     RenderinstructionSymbol renderinstruction = RenderinstructionSymbol(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel);
     renderinstruction.id = id;
@@ -121,7 +120,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   @override
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
     if (bitmapSrc == null) return;
-    layerContainer.addLabel(NodeRenderInfo(nodeProperties, this));
+    layerContainer.addLabel(RenderInfoNode(nodeProperties, this));
   }
 
   @override
@@ -130,6 +129,6 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
 
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    layerContainer.addClash(WayRenderInfo(wayProperties, this));
+    layerContainer.addLabel(RenderInfoWay(wayProperties, this));
   }
 }

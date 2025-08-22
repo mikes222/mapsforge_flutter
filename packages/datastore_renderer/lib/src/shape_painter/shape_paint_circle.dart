@@ -1,7 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:datastore_renderer/src/ui/ui_canvas.dart';
+import 'package:datastore_renderer/src/model/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:task_queue/task_queue.dart';
@@ -14,7 +14,11 @@ class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
   ShapePaintCircle._(RenderinstructionCircle renderinstruction) : super(renderinstruction) {
-    if (!renderinstruction.isFillTransparent()) fill = UiPaint.fill(color: renderinstruction.fillColor);
+    if (!renderinstruction.isFillTransparent()) {
+      fill = UiPaint.fill(color: renderinstruction.fillColor);
+    } else {
+      fill = null;
+    }
     if (!renderinstruction.isStrokeTransparent()) {
       stroke = UiPaint.stroke(
         color: renderinstruction.strokeColor,
@@ -23,6 +27,8 @@ class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
         join: renderinstruction.strokeJoin,
         strokeDasharray: renderinstruction.strokeDashArray,
       );
+    } else {
+      stroke = null;
     }
   }
 
@@ -37,6 +43,7 @@ class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
 
   @override
   void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference);
     relative = relative.offset(0, renderinstruction.dy);
     if (fill != null) renderContext.canvas.drawCircle(relative.x, relative.y, renderinstruction.radius, fill!);
@@ -45,4 +52,9 @@ class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
 
   @override
   void renderWay(RenderContext renderContext, WayProperties wayProperties) {}
+
+  @override
+  MapRectangle getBoundary() {
+    return renderinstruction.getBoundary()!;
+  }
 }

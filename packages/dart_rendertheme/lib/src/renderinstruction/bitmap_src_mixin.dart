@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
 
@@ -32,8 +30,7 @@ mixin BitmapSrcMixin {
   void bitmapSrcMixinScale(BitmapSrcMixin base, int zoomlevel) {
     bitmapSrcMixinClone(base);
     if (zoomlevel >= _bitmapMinZoomLevel) {
-      int zoomLevelDiff = zoomlevel - _bitmapMinZoomLevel + 1;
-      double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _bitmapMinZoomLevel);
       _bitmapWidth = (_bitmapWidth * scaleFactor).round();
       _bitmapHeight = (_bitmapHeight * scaleFactor).round();
     }

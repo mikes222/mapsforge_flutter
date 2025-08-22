@@ -11,7 +11,7 @@ import 'package:datastore_renderer/src/ui/ui_path.dart';
 import 'package:datastore_renderer/src/ui/ui_rect.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
 
-class UiCanvas implements MapCanvas<UiCanvas> {
+class UiCanvas {
   late ui.Canvas _uiCanvas;
 
   ui.PictureRecorder? _pictureRecorder;
@@ -46,20 +46,12 @@ class UiCanvas implements MapCanvas<UiCanvas> {
     if (matrix != null) {
       _uiCanvas.save();
       _uiCanvas.transform(matrix.expose());
-      _uiCanvas.translate(left, top);
-      // uiCanvas.drawRect(
-      //     ui.Rect.fromLTWH(
-      //         0, 0, image.width.toDouble(), image.height.toDouble()),
-      //     ui.Paint()..color = Colors.red.withOpacity(0.7));
-      // uiCanvas.drawCircle(
-      //     const ui.Offset(0, 0), 10, ui.Paint()..color = Colors.green);
-      _uiCanvas.drawImage(symbolImage.expose(), ui.Offset.zero, paint.expose());
-      _uiCanvas.restore();
-      ++_bitmapCount;
-      return;
     }
     _uiCanvas.drawImage(symbolImage.expose(), ui.Offset(left, top), paint.expose());
     ++_bitmapCount;
+    if (matrix != null) {
+      _uiCanvas.restore();
+    }
   }
 
   void drawTilePicture({required TilePicture picture, required double left, required double top}) {
@@ -132,7 +124,7 @@ class UiCanvas implements MapCanvas<UiCanvas> {
     }
   }
 
-  void drawPathText(String text, LineString lineString, Mappoint reference, UiPaint paint, UiTextPaint textPaint, double maxTextWidth) {
+  void drawPathText(String text, LineSegmentPath lineString, Mappoint reference, UiPaint paint, UiTextPaint textPaint, double maxTextWidth) {
     if (text.trim().isEmpty) {
       return;
     }
@@ -142,7 +134,7 @@ class UiCanvas implements MapCanvas<UiCanvas> {
 
     ParagraphEntry entry = ParagraphCache().getEntry(text, textPaint, paint, maxTextWidth);
 
-    lineString.segments.forEach((segment) {
+    for (var segment in lineString.segments) {
       // So text isn't upside down
       bool doInvert = segment.end.x < segment.start.x;
       RelativeMappoint start;
@@ -158,7 +150,7 @@ class UiCanvas implements MapCanvas<UiCanvas> {
       //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
       _drawTextRotated(entry.paragraph, segment.getTheta(), start);
       //      len -= segmentLength;
-    });
+    }
   }
 
   void _drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {

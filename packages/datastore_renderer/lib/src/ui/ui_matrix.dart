@@ -3,15 +3,20 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 
 class UiMatrix {
-  Matrix4 _matrix4;
+  final Matrix4 _matrix4;
 
   UiMatrix() : _matrix4 = Matrix4.identity();
 
-  /// @param theta an angle measured in radians.
-  void rotate(double? theta, {double? pivotX = 0, double? pivotY = 0}) {
-    // this.theta = theta;
-    // this.pivotX = pivotX;
-    // this.pivotY = pivotY;
+  /// Rotates the matrix around the given pivot points
+  /// @param radians an angle measured in radians.
+  void rotate(double radians, {double pivotX = 0, double pivotY = 0}) {
+    if (pivotX != 0 || pivotY != 0) {
+      _matrix4.translateByDouble(pivotX, pivotY, 0, 1);
+      _matrix4.rotateZ(radians);
+      _matrix4.translateByDouble(-pivotX, -pivotY, 0, 1);
+    } else {
+      _matrix4.rotateZ(radians);
+    }
   }
 
   /// for Canvas.drawPicture:

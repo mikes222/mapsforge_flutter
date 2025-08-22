@@ -16,9 +16,10 @@ class ImageBundleLoader implements ImageLoader {
     // compatibility with mapsforge
     if (src.startsWith(PREFIX_JAR)) {
       src = src.substring(PREFIX_JAR.length);
-      src = "packages/mapsforge_flutter/assets/$src";
+      //      src = "packages/mapsforge_assets/assets/$src";
     }
     if (bundle != null) {
+      //    print("Loading $src");
       ByteData content = await bundle!.load(src);
       return content;
     }

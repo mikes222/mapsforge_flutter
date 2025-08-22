@@ -1,12 +1,9 @@
 import 'package:dart_common/model.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/shape_painter.dart';
 
 mixin BaseSrcMixin {
   late final int level;
-
-  Display display = Display.IFSPACE;
 
   int priority = 0;
 
@@ -27,8 +24,8 @@ mixin BaseSrcMixin {
   }
 
   void baseSrcMixinClone(BaseSrcMixin base) {
-    level = base.level;
-    display = base.display;
+    // level is set via constructor
+    //level = base.level;
     priority = base.priority;
     dy = base.dy;
     scale = base.scale;

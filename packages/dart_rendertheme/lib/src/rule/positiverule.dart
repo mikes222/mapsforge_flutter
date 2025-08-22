@@ -44,6 +44,7 @@ class PositiveRule extends Rule {
       if (rule != null) subRules.add(rule);
     }
 
+    if (subRules.isEmpty && renderinstructionNodes.isEmpty && renderinstructionOpenWays.isEmpty && renderinstructionClosedWays.isEmpty) return null;
     return PositiveRule(
       keyMatcher: keyMatcher,
       valueMatcher: valueMatcher,

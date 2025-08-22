@@ -40,6 +40,15 @@ class Mappoint {
     return RelativeMappoint(x - reference.x, y - reference.y);
   }
 
+  /// Returns the radians to the other object.
+  /// 0 rad if point2 is to the right of point1
+  // π/2 rad if point2 is above point1
+  // -π/2 rad if point2 is below point1
+  // π rad if point2 is directly left of point1
+  double radiansTo(Mappoint other) {
+    return atan2(other.y - y, other.x - x);
+  }
+
   @override
   String toString() {
     return 'MapPoint{x: $x, y: $y}';

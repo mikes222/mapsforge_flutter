@@ -77,11 +77,11 @@ class PainterFactory {
     }
   }
 
-  Future<void> initDrawingLayers(List<LayerContainer> drawingLayers) async {
+  Future<void> initDrawingLayers(LayerContainerCollection layerContainers, bool renderLabels) async {
     Timing timing = Timing(log: _log);
     List<Future> futures = [];
 
-    for (LayerContainer layerContainer in drawingLayers) {
+    for (LayerContainer layerContainer in layerContainers.drawingLayers) {
       for (RenderInfo renderInfo in layerContainer.renderInfoCollection.renderInfos) {
         futures.add(createShapePaint(renderInfo));
         if (futures.length > 100) {
@@ -89,14 +89,16 @@ class PainterFactory {
           futures.clear();
         }
       }
-      for (RenderInfo renderInfo in layerContainer.clashingInfoCollection.renderInfos) {
-        futures.add(createShapePaint(renderInfo));
-        if (futures.length > 100) {
-          await Future.wait(futures);
-          futures.clear();
-        }
+    }
+    for (RenderInfo renderInfo in layerContainers.clashingInfoCollection.renderInfos) {
+      futures.add(createShapePaint(renderInfo));
+      if (futures.length > 100) {
+        await Future.wait(futures);
+        futures.clear();
       }
-      for (RenderInfo renderInfo in layerContainer.labels.renderInfos) {
+    }
+    if (renderLabels) {
+      for (RenderInfo renderInfo in layerContainers.labels.renderInfos) {
         futures.add(createShapePaint(renderInfo));
         if (futures.length > 100) {
           await Future.wait(futures);

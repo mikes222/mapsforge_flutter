@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_rendertheme/src/model/linesegment.dart';
-import 'package:dart_rendertheme/src/model/linestring.dart';
+import 'package:dart_rendertheme/src/model/line_segment.dart';
+import 'package:dart_rendertheme/src/model/line_segment_path.dart';
 import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 import 'package:datastore_renderer/src/util/douglas_peucker_mappoint.dart';
 
@@ -61,7 +61,7 @@ class WayProperties implements NodeWayProperties {
     return _minMaxMappoint!.getCenter();
   }
 
-  LineString? calculateStringPath(double dy) {
+  LineSegmentPath? calculateStringPath(double dy) {
     List<List<Mappoint>> coordinatesAbsolute = getCoordinatesAbsolute();
 
     if (coordinatesAbsolute.isEmpty || coordinatesAbsolute[0].length < 2) {
@@ -78,7 +78,7 @@ class WayProperties implements NodeWayProperties {
       return null;
     }
 
-    LineString fullPath = LineString();
+    LineSegmentPath fullPath = LineSegmentPath();
     for (int i = 1; i < c.length; i++) {
       LineSegment segment = LineSegment(c[i - 1], c[i]);
       fullPath.segments.add(segment);
@@ -94,7 +94,7 @@ class WayProperties implements NodeWayProperties {
     return way.tags;
   }
 
-  MapRectangle getBoundary() {
+  MapRectangle getBoundaryAbsolute() {
     if (_minMaxMappoint != null) return _minMaxMappoint!;
     List<List<Mappoint>> coordinates = getCoordinatesAbsolute();
     if (coordinates.isEmpty) return const MapRectangle.zero();

@@ -4,14 +4,18 @@ import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
+import 'package:datastore_renderer/src/model/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';
 import 'package:datastore_renderer/src/ui/ui_matrix.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:task_queue/task_queue.dart';
 
 class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
+  static final _log = Logger('ShapePaintSymbol');
+
   final bool debug = false;
 
   late final UiPaint fill;
@@ -35,11 +39,15 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
   }
 
   Future<void> init() async {
-    symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
-      renderinstruction.bitmapSrc!,
-      renderinstruction.getBitmapWidth(),
-      renderinstruction.getBitmapHeight(),
-    );
+    try {
+      symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
+        renderinstruction.bitmapSrc!,
+        renderinstruction.getBitmapWidth(),
+        renderinstruction.getBitmapHeight(),
+      );
+    } catch (error) {
+      _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
+    }
   }
 
   void dispose() {
@@ -48,9 +56,10 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
 
   @override
   void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
     //print("paint symbol: $shape ${shape.bitmapSrc}");
-    RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference);
+    RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
     MapRectangle boundary = renderinstruction.getBoundary()!;
     //print("paint symbol boundar: $boundary");
     UiMatrix? matrix;
@@ -80,6 +89,7 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
 
   @override
   void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
     Mappoint point = wayProperties.getCenterAbsolute(renderContext.projection);
     RelativeMappoint relative = point.offset(renderContext.reference);
@@ -95,5 +105,10 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
     //     "drawing ${bitmap} at ${this.xy.x - origin.x + boundary!.left} / ${this.xy.y - origin.y + boundary!.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
     //print(StackTrace.current);
     renderContext.canvas.drawPicture(symbolImage: symbolImage!, matrix: matrix, left: relative.x + boundary.left, top: relative.y + boundary.top, paint: fill);
+  }
+
+  @override
+  MapRectangle getBoundary() {
+    return renderinstruction.getBoundary()!;
   }
 }

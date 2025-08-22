@@ -10,7 +10,7 @@ import 'package:logging/logging.dart';
 
 /// see https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md
 class MapfileWriter {
-  final _log = new Logger('MapfileWriter');
+  static final _log = Logger('MapfileWriter');
 
   final String filename;
 

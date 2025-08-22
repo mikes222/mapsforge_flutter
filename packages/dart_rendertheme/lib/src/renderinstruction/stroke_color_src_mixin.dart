@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/cap.dart';
 import 'package:dart_rendertheme/src/model/join.dart';
@@ -16,8 +14,6 @@ mixin StrokeColorSrcMixin {
   List<double>? _strokeDashArray;
 
   int _strokeMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevel;
-
-  static final double STROKE_INCREASE = 1.5;
 
   void setStrokeColorFromNumber(int color) {
     strokeColor = color;
@@ -50,8 +46,7 @@ mixin StrokeColorSrcMixin {
   void strokeColorSrcMixinScale(StrokeColorSrcMixin base, int zoomlevel) {
     strokeColorSrcMixinClone(base);
     if (zoomlevel >= _strokeMinZoomLevel) {
-      int zoomLevelDiff = zoomlevel - _strokeMinZoomLevel + 1;
-      double scaleFactor = pow(STROKE_INCREASE, zoomLevelDiff) as double;
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _strokeMinZoomLevel);
       _strokeWidth = _strokeWidth * scaleFactor;
       if (_strokeDashArray != null) {
         List<double> newStrokeDashArray = [];

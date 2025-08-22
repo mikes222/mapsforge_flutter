@@ -1,6 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:dart_rendertheme/src/model/display.dart';
 
 /// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
 /// instructions from an xml file. It can be seen like a CSS-file for html.
@@ -39,11 +40,18 @@ abstract class Renderinstruction {
   static final String SYMBOL_SCALING = "symbol-scaling";
   static final String SYMBOL_WIDTH = "symbol-width";
 
+  Display display = Display.IFSPACE;
+
+  void renderinstructionScale(Renderinstruction base, int zoomlevel) {
+    display = base.display;
+  }
+
   String getType();
 
   ShapePainter? getPainter();
 
-  /// Returns the boundary of this object around the center (area) or the poi or null if the boundary cannot be determined.
+  /// Returns the boundary of this object around the center of the area or the poi or null if the boundary cannot be determined (e.g. the center of an area
+  /// depends on the area itself but Renderinstruction has no information about the area. It is just a common template how to render the objects).
   MapRectangle? getBoundary();
 
   /// Checks the nodeProperties and adds itself to the layerContainer if there is something to draw.

@@ -1,8 +1,6 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_common/src/model/mappoint.dart';
-import 'package:dart_common/src/model/maprectangle.dart';
-import 'package:dart_common/src/utils/mapsforge_constants.dart';
+import 'package:dart_common/src/utils/mapsforge_settings_mgr.dart';
 
 /// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
 /// with their zoom level. Tile 0/0 at zoomlevel 0 represents the whole world. Likewise at zoomlevel 1 Tile 0/0 represents the upper-left quarter of the world.
@@ -89,134 +87,118 @@ class Tile {
     return neighbours;
   }
 
-  /**
-   * Returns the tile to the left of this tile.
-   *
-   * @return tile to the left.
-   */
+  /// Returns the tile to the left of this tile.
+  ///
+  /// @return tile to the left.
   Tile getLeft() {
     int x = tileX - 1;
     if (x < 0) {
-      x = getMaxTileNumber(this.zoomLevel);
+      x = getMaxTileNumber(zoomLevel);
     }
-    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel);
+    return Tile(x, tileY, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile to the right of this tile.
-   *
-   * @return tile to the right
-   */
+  /// Returns the tile to the right of this tile.
+  ///
+  /// @return tile to the right
   Tile getRight() {
     int x = tileX + 1;
-    if (x > getMaxTileNumber(this.zoomLevel)) {
+    if (x > getMaxTileNumber(zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, this.tileY, this.zoomLevel, this.indoorLevel);
+    return Tile(x, tileY, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile above this tile.
-   *
-   * @return tile above
-   */
+  /// Returns the tile above this tile.
+  ///
+  /// @return tile above
   Tile getAbove() {
     int y = tileY - 1;
     if (y < 0) {
-      y = getMaxTileNumber(this.zoomLevel);
+      y = getMaxTileNumber(zoomLevel);
     }
-    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel);
+    return Tile(tileX, y, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile below this tile.
-   *
-   * @return tile below
-   */
+  /// Returns the tile below this tile.
+  ///
+  /// @return tile below
 
   Tile getBelow() {
     int y = tileY + 1;
-    if (y > getMaxTileNumber(this.zoomLevel)) {
+    if (y > getMaxTileNumber(zoomLevel)) {
       y = 0;
     }
-    return new Tile(this.tileX, y, this.zoomLevel, this.indoorLevel);
+    return Tile(tileX, y, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile above left
-   *
-   * @return tile above left
-   */
+  /// Returns the tile above left
+  ///
+  /// @return tile above left
   Tile getAboveLeft() {
     int y = tileY - 1;
     int x = tileX - 1;
     if (y < 0) {
-      y = getMaxTileNumber(this.zoomLevel);
+      y = getMaxTileNumber(zoomLevel);
     }
     if (x < 0) {
-      x = getMaxTileNumber(this.zoomLevel);
+      x = getMaxTileNumber(zoomLevel);
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel);
+    return Tile(x, y, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile above right
-   *
-   * @return tile above right
-   */
+  /// Returns the tile above right
+  ///
+  /// @return tile above right
   Tile getAboveRight() {
     int y = tileY - 1;
     int x = tileX + 1;
     if (y < 0) {
-      y = getMaxTileNumber(this.zoomLevel);
+      y = getMaxTileNumber(zoomLevel);
     }
-    if (x > getMaxTileNumber(this.zoomLevel)) {
+    if (x > getMaxTileNumber(zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel);
+    return Tile(x, y, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile below left
-   *
-   * @return tile below left
-   */
+  /// Returns the tile below left
+  ///
+  /// @return tile below left
   Tile getBelowLeft() {
     int y = tileY + 1;
     int x = tileX - 1;
-    if (y > getMaxTileNumber(this.zoomLevel)) {
+    if (y > getMaxTileNumber(zoomLevel)) {
       y = 0;
     }
     if (x < 0) {
-      x = getMaxTileNumber(this.zoomLevel);
+      x = getMaxTileNumber(zoomLevel);
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel);
+    return Tile(x, y, zoomLevel, indoorLevel);
   }
 
-  /**
-   * Returns the tile below right
-   *
-   * @return tile below right
-   */
+  /// Returns the tile below right
+  ///
+  /// @return tile below right
   Tile getBelowRight() {
     int y = tileY + 1;
     int x = tileX + 1;
-    if (y > getMaxTileNumber(this.zoomLevel)) {
+    if (y > getMaxTileNumber(zoomLevel)) {
       y = 0;
     }
-    if (x > getMaxTileNumber(this.zoomLevel)) {
+    if (x > getMaxTileNumber(zoomLevel)) {
       x = 0;
     }
-    return new Tile(x, y, this.zoomLevel, this.indoorLevel);
+    return Tile(x, y, zoomLevel, indoorLevel);
   }
 
   /// @return the parent tile of this tile or null, if the zoom level of this tile is 0.
   Tile? getParent() {
-    if (this.zoomLevel == 0) {
+    if (zoomLevel == 0) {
       return null;
     }
 
-    return Tile((this.tileX / 2).floor(), (this.tileY / 2).floor(), (this.zoomLevel - 1), this.indoorLevel);
+    return Tile((tileX / 2).floor(), (tileY / 2).floor(), (zoomLevel - 1), indoorLevel);
   }
 
   /// Returns the childs of this tile. The first two items are the upper row from left to right, the next two items are the lower row.
@@ -262,7 +244,7 @@ class Tile {
       return 0;
     }
 
-    return this.tileX % 2 + 2 * getParent()!.getShiftX(otherTile);
+    return tileX % 2 + 2 * getParent()!.getShiftX(otherTile);
   }
 
   int getShiftY(Tile otherTile) {
@@ -270,7 +252,7 @@ class Tile {
       return 0;
     }
 
-    return this.tileY % 2 + 2 * getParent()!.getShiftY(otherTile);
+    return tileY % 2 + 2 * getParent()!.getShiftY(otherTile);
   }
 
   BoundingBox getBoundingBox() {

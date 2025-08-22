@@ -1,4 +1,4 @@
-import 'package:datastore_renderer/src/cache/filesymbolcache.dart';
+import 'package:datastore_renderer/src/cache/file_symbol_cache.dart';
 import 'package:datastore_renderer/src/cache/image_bundle_loader.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';

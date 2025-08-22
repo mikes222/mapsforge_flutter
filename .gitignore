@@ -92,3 +92,4 @@ web/
 windows/
 devtools_options.yaml
 *.tmp
+**/coverage/

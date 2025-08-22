@@ -3,9 +3,9 @@ import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
-import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
@@ -30,6 +30,7 @@ class RenderinstructionArea extends Renderinstruction
   @override
   RenderinstructionArea forZoomlevel(int zoomlevel) {
     return RenderinstructionArea(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel)
       ..fillColorSrcMixinScale(this, zoomlevel)
@@ -91,6 +92,6 @@ class RenderinstructionArea extends Renderinstruction
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    layerContainer.add(WayRenderInfo<RenderinstructionArea>(wayProperties, this));
+    layerContainer.add(RenderInfoWay(wayProperties, this));
   }
 }

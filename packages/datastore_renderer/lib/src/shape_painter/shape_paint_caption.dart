@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:datastore_renderer/src/model/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
-import 'package:datastore_renderer/src/ui/ui_canvas.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
@@ -34,7 +34,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
 
   /// The boundary of this object in pixels relative to the center of the
   /// corresponding node or way. This is a cached value.
-  MapRectangle? boundary = null;
+  MapRectangle? boundary;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
@@ -179,6 +179,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
 
   @override
   void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     //print("paint caption: $front $back $shape");
 
     RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
@@ -205,6 +206,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
 
   @override
   void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     RelativeMappoint relative = wayProperties.getCenterAbsolute(renderContext.projection).offset(renderContext.reference).offset(0, renderinstruction.dy);
     //print("paint caption boundar: $boundary $relative ${shape}");
 
@@ -229,5 +231,10 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     if (renderContext.rotationRadian != 0) {
       uiCanvas.restore();
     }
+  }
+
+  @override
+  MapRectangle getBoundary() {
+    return boundary!;
   }
 }

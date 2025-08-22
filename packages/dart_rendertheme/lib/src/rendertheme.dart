@@ -69,9 +69,13 @@ class Rendertheme {
       Rule? r = rule.forZoomlevel(zoomlevel);
       if (r != null) {
         rules.add(r);
+        r.parent = null;
       }
     }
     RenderthemeZoomlevel renderthemeLevel = RenderthemeZoomlevel(rulesList: rules);
+    for (Rule rule in rules) {
+      rule.secondPass();
+    }
     _renderthemeZoomlevels[zoomlevel] = renderthemeLevel;
     return renderthemeLevel;
   }

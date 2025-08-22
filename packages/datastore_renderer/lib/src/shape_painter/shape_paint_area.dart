@@ -1,22 +1,25 @@
+import 'package:dart_common/src/model/maprectangle.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
+import 'package:datastore_renderer/src/model/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_path.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
-import 'package:flutter/material.dart';
 import 'package:task_queue/task_queue.dart';
 
 class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   UiPaint? fill;
 
-  UiPaint? stroke;
+  late final UiPaint? stroke;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
   ShapePaintArea._(RenderinstructionArea renderinstruction) : super(renderinstruction) {
-    if (!renderinstruction.isFillTransparent()) fill = UiPaint.fill(color: renderinstruction.fillColor);
+    if (!renderinstruction.isFillTransparent()) {
+      fill = UiPaint.fill(color: renderinstruction.fillColor);
+    }
     if (!renderinstruction.isStrokeTransparent()) {
       stroke = UiPaint.stroke(
         color: renderinstruction.strokeColor,
@@ -25,6 +28,8 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
         join: renderinstruction.strokeJoin,
         strokeDasharray: renderinstruction.strokeDashArray,
       );
+    } else {
+      stroke = null;
     }
   }
 
@@ -46,23 +51,25 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
         renderinstruction.getBitmapHeight(),
       );
       if (symbolImage == null) return;
-      if (renderinstruction.isFillTransparent()) {
-        // for bitmaps set the stroke color so that the bitmap is drawn
-        fill!.setColor(Colors.black);
-      }
+      fill ??= UiPaint.fill();
       fill!.setBitmapShader(symbolImage);
       symbolImage.dispose();
     }
   }
 
   @override
-  void renderNode(UiRenderContext renderContext, NodeProperties nodeProperties) {}
+  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {}
 
   @override
-  void renderWay(UiRenderContext renderContext, WayProperties wayProperties) {
+  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     UiPath path = calculatePath(wayProperties.getCoordinatesAbsolute(), renderContext.reference, renderinstruction.dy);
-
     if (fill != null) renderContext.canvas.drawPath(path, fill!);
     if (stroke != null) renderContext.canvas.drawPath(path, stroke!);
+  }
+
+  @override
+  MapRectangle getBoundary() {
+    throw UnimplementedError("Nodes not supported");
   }
 }

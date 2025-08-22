@@ -8,13 +8,13 @@ class DatastoreReaderIsolate {
   static DatastoreReader? _reader;
 
   @pragma('vm:entry-point')
-  static Future<List<LayerContainer>?> read(DatastoreReaderIsolateRequest request) async {
+  static Future<LayerContainerCollection?> read(DatastoreReaderIsolateRequest request) async {
     _reader ??= DatastoreReader();
     return _reader!.read(request.datastore, request.tile, request.renderthemeLevel, request.maxLevels);
   }
 
   @pragma('vm:entry-point')
-  static Future<List<LayerContainer>?> readLabels(DatastoreReaderIsolateRequest request) async {
+  static Future<LayerContainerCollection?> readLabels(DatastoreReaderIsolateRequest request) async {
     _reader ??= DatastoreReader();
     return _reader!.readLabels(request.datastore, request.tile, request.renderthemeLevel, request.maxLevels);
   }
@@ -38,7 +38,7 @@ class DatastoreReaderIsolateRequest {
 class DatastoreReader {
   DatastoreReader();
 
-  Future<List<LayerContainer>?> read(Datastore datastore, Tile tile, RenderthemeZoomlevel renderthemeLevel, int maxLevels) async {
+  Future<LayerContainerCollection?> read(Datastore datastore, Tile tile, RenderthemeZoomlevel renderthemeLevel, int maxLevels) async {
     if (!(await datastore.supportsTile(tile))) {
       return null;
     }
@@ -46,28 +46,33 @@ class DatastoreReader {
     if (datastoreBundle == null) {
       return null;
     }
-    List<LayerContainer> drawingLayers = List.generate(LayerContainer.MAX_DRAWING_LAYERS, (int idx) => LayerContainer());
-    _processMapReadResult(drawingLayers, tile, renderthemeLevel, datastoreBundle);
-    return drawingLayers;
+    LayerContainerCollection layerContainerCollection = LayerContainerCollection();
+    _processMapReadResult(layerContainerCollection, tile, renderthemeLevel, datastoreBundle);
+    return layerContainerCollection;
   }
 
-  Future<List<LayerContainer>?> readLabels(Datastore datastore, Tile tile, RenderthemeZoomlevel renderthemeLevel, int maxLevels) async {
+  Future<LayerContainerCollection?> readLabels(Datastore datastore, Tile tile, RenderthemeZoomlevel renderthemeLevel, int maxLevels) async {
     if (!(await datastore.supportsTile(tile))) {
       return null;
     }
     DatastoreBundle? datastoreBundle = await datastore.readLabelsSingle(tile);
     if (datastoreBundle == null) return null;
-    List<LayerContainer> drawingLayers = List.generate(LayerContainer.MAX_DRAWING_LAYERS, (int idx) => LayerContainer());
-    _processMapReadResult(drawingLayers, tile, renderthemeLevel, datastoreBundle);
-    return drawingLayers;
+    LayerContainerCollection layerContainerCollection = LayerContainerCollection();
+    _processMapReadResult(layerContainerCollection, tile, renderthemeLevel, datastoreBundle);
+    return layerContainerCollection;
   }
 
   /// Creates rendering instructions based on the given ways and nodes and the defined rendertheme
-  void _processMapReadResult(List<LayerContainer> drawingLayers, Tile tile, RenderthemeZoomlevel renderthemeLevel, DatastoreBundle datastoreBundle) {
+  void _processMapReadResult(
+    LayerContainerCollection layerContainerCollection,
+    Tile tile,
+    RenderthemeZoomlevel renderthemeLevel,
+    DatastoreBundle datastoreBundle,
+  ) {
     PixelProjection projection = PixelProjection(tile.zoomLevel);
     for (PointOfInterest pointOfInterest in datastoreBundle.pointOfInterests) {
       List<Renderinstruction> renderinstructions = renderthemeLevel.matchNode(tile, pointOfInterest);
-      LayerContainer layerContainer = drawingLayers.elementAt(pointOfInterest.layer);
+      LayerContainer layerContainer = layerContainerCollection.getLayer(pointOfInterest.layer);
       NodeProperties nodeProperties = NodeProperties(pointOfInterest, projection);
       for (Renderinstruction renderinstruction in renderinstructions) {
         renderinstruction.matchNode(layerContainer, nodeProperties);
@@ -78,7 +83,7 @@ class DatastoreReader {
     //    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
     for (Way way in datastoreBundle.ways) {
       WayProperties wayProperties = WayProperties(way, projection);
-      MapRectangle rectangle = wayProperties.getBoundary();
+      MapRectangle rectangle = wayProperties.getBoundaryAbsolute();
       // filter small ways
       if (rectangle.getWidth() < 5 && rectangle.getHeight() < 5) continue;
       if (wayProperties.getCoordinatesAbsolute().isNotEmpty) {
@@ -88,7 +93,7 @@ class DatastoreReader {
         } else {
           renderinstructions = _retrieveShapesForOpenWay(tile, renderthemeLevel, wayProperties);
         }
-        LayerContainer layerContainer = drawingLayers.elementAt(way.layer);
+        LayerContainer layerContainer = layerContainerCollection.getLayer(way.layer);
         for (Renderinstruction renderinstruction in renderinstructions) {
           renderinstruction.matchWay(layerContainer, wayProperties);
         }
@@ -97,6 +102,7 @@ class DatastoreReader {
     // if (mapReadResult.isWater) {
     //   _renderWaterBackground(renderContext);
     // }
+    layerContainerCollection.reduce();
   }
 
   List<Renderinstruction> _retrieveShapesForClosedWay(Tile tile, RenderthemeZoomlevel renderthemeLevel, WayProperties wayProperties) {

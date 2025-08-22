@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
 import 'package:dart_rendertheme/src/model/mapfontstyle.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
 
 mixin TextSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
@@ -31,8 +30,7 @@ mixin TextSrcMixin {
   void textSrcMixinScale(TextSrcMixin base, int zoomlevel) {
     textSrcMixinClone(base);
     if (zoomlevel >= _textMinZoomLevel) {
-      int zoomLevelDiff = zoomlevel - _textMinZoomLevel + 1;
-      double scaleFactor = pow(StrokeColorSrcMixin.STROKE_INCREASE, zoomLevelDiff) as double;
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _textMinZoomLevel);
       _fontSize = min(_fontSize * scaleFactor, _maxFontSize);
     }
   }

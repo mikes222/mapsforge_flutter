@@ -1,7 +1,8 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:datastore_renderer/src/model/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
-import 'package:datastore_renderer/src/ui/ui_canvas.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
@@ -17,13 +18,13 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
 
   late final ParagraphEntry back;
 
-  late LineString fullPath;
+  late LineSegmentPath fullPath;
 
   final String caption;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintPathtext._(RenderinstructionPathtext renderinstruction, this.caption, LineString stringPath) : super(renderinstruction) {
+  ShapePaintPathtext._(RenderinstructionPathtext renderinstruction, this.caption, LineSegmentPath stringPath) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) paintFront = UiPaint.fill(color: renderinstruction.fillColor);
     if (!renderinstruction.isStrokeTransparent()) {
       paintBack = UiPaint.stroke(
@@ -43,7 +44,7 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
     fullPath = WayDecorator.reducePathForText(stringPath, back.getWidth());
   }
 
-  static Future<ShapePaintPathtext> create(RenderinstructionPathtext renderinstruction, String caption, LineString stringPath) async {
+  static Future<ShapePaintPathtext> create(RenderinstructionPathtext renderinstruction, String caption, LineSegmentPath stringPath) async {
     return _taskQueue.add(() async {
       //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintPathtext;
       ShapePaintPathtext shapePaint = ShapePaintPathtext._(renderinstruction, caption, stringPath);
@@ -67,6 +68,7 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
 
   @override
   void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (fullPath.segments.isEmpty) return;
 
     if (paintBack != null) {
@@ -75,5 +77,10 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
     if (paintFront != null) {
       renderContext.canvas.drawPathText(caption, fullPath, renderContext.reference, this.paintFront!, textPaint, renderinstruction.maxTextWidth);
     }
+  }
+
+  @override
+  MapRectangle getBoundary() {
+    throw UnimplementedError("Nodes not supported");
   }
 }

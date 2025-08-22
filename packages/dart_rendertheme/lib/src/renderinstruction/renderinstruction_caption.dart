@@ -7,10 +7,10 @@ import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
 import 'package:dart_rendertheme/src/model/mapfontstyle.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
-import 'package:dart_rendertheme/src/model/noderenderinfo.dart';
 import 'package:dart_rendertheme/src/model/position.dart';
+import 'package:dart_rendertheme/src/model/render_info_node.dart';
+import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
-import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
@@ -46,6 +46,7 @@ class RenderinstructionCaption extends Renderinstruction
   @override
   RenderinstructionCaption forZoomlevel(int zoomlevel) {
     RenderinstructionCaption renderinstruction = RenderinstructionCaption(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..textSrcMixinScale(this, zoomlevel)
       ..fillColorSrcMixinScale(this, zoomlevel)
@@ -126,8 +127,8 @@ class RenderinstructionCaption extends Renderinstruction
     if (caption == null) {
       return;
     }
-    //print("Rendering caption $caption for $nodeProperties");
-    layerContainer.addLabel(NodeRenderInfo(nodeProperties, this)..caption = caption);
+
+    layerContainer.addLabel(RenderInfoNode(nodeProperties, this)..caption = caption);
   }
 
   @override
@@ -137,6 +138,6 @@ class RenderinstructionCaption extends Renderinstruction
       return;
     }
 
-    layerContainer.addLabel(WayRenderInfo(wayProperties, this)..caption = caption);
+    layerContainer.addLabel(RenderInfoWay(wayProperties, this)..caption = caption);
   }
 }

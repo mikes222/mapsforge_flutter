@@ -2,12 +2,12 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
-import 'package:dart_rendertheme/src/model/linestring.dart';
+import 'package:dart_rendertheme/src/model/line_segment_path.dart';
 import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
 import 'package:dart_rendertheme/src/model/mapfontstyle.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
-import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
@@ -40,6 +40,7 @@ class RenderinstructionPathtext extends Renderinstruction
   @override
   RenderinstructionPathtext forZoomlevel(int zoomlevel) {
     RenderinstructionPathtext renderinstruction = RenderinstructionPathtext(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..textSrcMixinScale(this, zoomlevel)
       ..strokeColorSrcMixinScale(this, zoomlevel)
@@ -118,13 +119,13 @@ class RenderinstructionPathtext extends Renderinstruction
       return;
     }
 
-    LineString? stringPath = wayProperties.calculateStringPath(dy);
+    LineSegmentPath? stringPath = wayProperties.calculateStringPath(dy);
     if (stringPath == null || stringPath.segments.isEmpty) {
       return;
     }
 
     layerContainer.addClash(
-      WayRenderInfo(wayProperties, this)
+      RenderInfoWay(wayProperties, this)
         ..caption = caption
         ..stringPath = stringPath,
     );

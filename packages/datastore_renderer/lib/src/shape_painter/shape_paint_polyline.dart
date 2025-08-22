@@ -1,15 +1,19 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
+import 'package:datastore_renderer/src/model/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';
-import 'package:datastore_renderer/src/ui/ui_canvas.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_path.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:task_queue/task_queue.dart';
 
 class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
+  static final _log = Logger('ShapePaintPolyline');
+
   late final UiPaint? stroke;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
@@ -23,6 +27,8 @@ class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
         join: renderinstruction.strokeJoin,
         strokeDasharray: renderinstruction.strokeDashArray,
       );
+    } else {
+      stroke = null;
     }
   }
 
@@ -38,18 +44,22 @@ class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
 
   Future<void> init() async {
     if (renderinstruction.bitmapSrc != null) {
-      SymbolImage? symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
-        renderinstruction.bitmapSrc!,
-        renderinstruction.getBitmapWidth(),
-        renderinstruction.getBitmapHeight(),
-      );
-      if (symbolImage != null) {
-        if (renderinstruction.isStrokeTransparent()) {
-          // for bitmaps set the stroke color so that the bitmap is drawn
-          stroke!.setColor(Colors.black);
+      try {
+        SymbolImage? symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
+          renderinstruction.bitmapSrc!,
+          renderinstruction.getBitmapWidth(),
+          renderinstruction.getBitmapHeight(),
+        );
+        if (symbolImage != null) {
+          if (renderinstruction.isStrokeTransparent()) {
+            // for bitmaps set the stroke color so that the bitmap is drawn
+            stroke!.setColor(Colors.black);
+          }
+          stroke!.setBitmapShader(symbolImage);
+          symbolImage.dispose();
         }
-        stroke!.setBitmapShader(symbolImage);
-        symbolImage.dispose();
+      } catch (error) {
+        _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
       }
     }
   }
@@ -59,8 +69,14 @@ class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
 
   @override
   void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (stroke == null) return;
     UiPath path = calculatePath(wayProperties.getCoordinatesAbsolute(), renderContext.reference, renderinstruction.dy);
     renderContext.canvas.drawPath(path, stroke!);
+  }
+
+  @override
+  MapRectangle getBoundary() {
+    throw UnimplementedError("Nodes not supported");
   }
 }

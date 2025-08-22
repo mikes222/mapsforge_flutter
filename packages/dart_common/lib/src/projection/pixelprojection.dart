@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_common/src/utils/mapsforge_constants.dart';
+import 'package:dart_common/src/utils/mapsforge_settings_mgr.dart';
 
 class PixelProjection extends MercatorProjection {
   /// the size of a tile  in mappixel. Each tile has the same width and height.

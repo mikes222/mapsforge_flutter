@@ -3,7 +3,7 @@ import 'package:dart_common/projection.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/src/ui/ui_canvas.dart';
 
-class UiRenderContext extends RenderContext<UiRenderContext> {
+class UiRenderContext extends RenderContext {
   static final int MAX_DRAWING_LAYERS = 11;
 
   /// The canvas for this rendering

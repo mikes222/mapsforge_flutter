@@ -4,9 +4,9 @@ import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/position.dart';
+import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
-import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
@@ -32,6 +32,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
   @override
   RenderinstructionLinesymbol forZoomlevel(int zoomlevel) {
     RenderinstructionLinesymbol renderinstruction = RenderinstructionLinesymbol(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel)
       ..repeatSrcMixinScale(this, zoomlevel);
@@ -73,8 +74,6 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
         }
       } else if (Renderinstruction.POSITION == name) {
         position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
-      } else if (Renderinstruction.PRIORITY == name) {
-        priority = int.parse(value);
       } else if (Renderinstruction.REPEAT == name) {
         repeat = "true" == (value);
       } else if (Renderinstruction.REPEAT_GAP == name) {
@@ -111,7 +110,6 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
     if (bitmapSrc == null) return;
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    //renderContext.labels.add(WayRenderInfo(wayProperties, shape));
-    layerContainer.addClash(WayRenderInfo(wayProperties, this));
+    layerContainer.addClash(RenderInfoWay(wayProperties, this));
   }
 }

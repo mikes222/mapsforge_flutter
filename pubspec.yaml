@@ -3,7 +3,7 @@ publish_to: none
 environment:
   sdk: ^3.9.0
 dev_dependencies:
-  melos: ^7.0.0
+  melos: ^7.1.0
 workspace:
   - packages/task_queue
   - packages/dart_isolate
@@ -11,6 +11,7 @@ workspace:
   - packages/dart_mapfile
   - packages/dart_rendertheme
   - packages/datastore_renderer
+  - packages/mapsforge_assets
   - apps/mapfile_converter
 
 melos:
@@ -30,3 +31,19 @@ melos:
         test: ^1.26.2
       hooks:
         post: flutter pub upgrade
+
+
+    flutter_test:
+      run: melos exec -c 1 --dir-exists="test" --flutter --fail-fast -- flutter test --no-pub --coverage
+      description: Run Flutter tests for a specific package in this project.
+      select-package:
+        flutter: true
+        dir-exists: test
+
+
+    dart_test:
+      run: melos exec -c 1 --dir-exists="test" --depends-on="test" --fail-fast -- dart test
+      description: Run Dart tests for a specific package in this project.
+      select-package:
+        flutter: false
+        dir-exists: test

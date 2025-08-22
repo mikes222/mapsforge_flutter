@@ -5,9 +5,9 @@ import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/join.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
+import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
-import 'package:dart_rendertheme/src/model/wayrenderinfo.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction.dart';
@@ -27,6 +27,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   @override
   RenderinstructionPolyline forZoomlevel(int zoomlevel) {
     RenderinstructionPolyline renderinstruction = RenderinstructionPolyline(level)
+      ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel)
       ..strokeColorSrcMixinScale(this, zoomlevel);
@@ -119,6 +120,6 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
     if (bitmapSrc == null && isStrokeTransparent()) return;
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    layerContainer.add(WayRenderInfo<RenderinstructionPolyline>(wayProperties, this));
+    layerContainer.add(RenderInfoWay<RenderinstructionPolyline>(wayProperties, this));
   }
 }
