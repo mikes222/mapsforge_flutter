@@ -343,16 +343,6 @@ class MultiMapDataStore extends Datastore {
   }
 
   @override
-  Future<LatLong?> getStartPosition() {
-    return Future.value(startPosition);
-  }
-
-  @override
-  Future<int?> getStartZoomLevel() {
-    return Future.value(startZoomLevel);
-  }
-
-  @override
   Future<BoundingBox> getBoundingBox() async {
     if (boundingBox != null) return boundingBox!;
     for (Datastore datastore in List.from(mapDatabases)) {

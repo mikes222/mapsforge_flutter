@@ -3,8 +3,6 @@ import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
-import 'package:dart_rendertheme/src/model/render_info_node.dart';
-import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';

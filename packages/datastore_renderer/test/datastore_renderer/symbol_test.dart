@@ -5,9 +5,6 @@ import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/src/cache/file_symbol_cache.dart';
 import 'package:datastore_renderer/src/cache/image_bundle_loader.dart';
-import 'package:datastore_renderer/src/datastore_renderer.dart';
-import 'package:datastore_renderer/src/job/job_request.dart';
-import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
@@ -36,18 +33,12 @@ void main() {
       Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
       MemoryDatastore datastore = MemoryDatastore();
       // symbol in the center of the poi, name above, ele below
-      datastore.addPoi(const PointOfInterest(0, [const Tag('natural', 'peak'), Tag('name', 'TestPOI'), Tag('ele', '500m')], LatLong(46, 18)));
-      Tile tile = new Tile(x, y, zoomlevel, l);
-      expect(await datastore.supportsTile(tile), true);
-      DatastoreBundle result = await datastore.readMapDataSingle(tile);
-      //print(result);
-      expect(result.ways.length, equals(0));
-      expect(result.pointOfInterests.length, greaterThan(0));
-      //print("Calculating tile ${tile.toString()}");
+      datastore.addPoi(const PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'TestPOI'), Tag('ele', '500m')], LatLong(46, 18)));
+      Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));

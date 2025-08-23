@@ -22,4 +22,9 @@ abstract class RenderInfo<T extends Renderinstruction> {
   bool intersects(MapRectangle other);
 
   MapRectangle getBoundaryAbsolute();
+
+  @override
+  String toString() {
+    return 'RenderInfo{renderInstruction: $renderInstruction, caption: $caption, shapePainter: $shapePainter}';
+  }
 }

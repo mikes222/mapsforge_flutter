@@ -32,10 +32,6 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
   /// we need to set it later on in the ShapePaintCaption
   double _fontHeight = 0;
 
-  /// The boundary of this object in pixels relative to the center of the
-  /// corresponding node or way. This is a cached value.
-  MapRectangle? boundary;
-
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
   ShapePaintCaption._(RenderinstructionCaption renderinstruction, {required String caption}) : super(renderinstruction) {
@@ -83,98 +79,6 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     if (paintBack != null) back = ParagraphCache().getEntry(caption, textPaint, paintBack!, renderinstruction.maxTextWidth);
     _fontWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
     _fontHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
-    boundary = calculateBoundaryWithSymbol(_fontWidth, _fontHeight);
-    //print("Boundary for $caption is $boundary and ${shape.position}");
-  }
-
-  MapRectangle calculateBoundaryWithSymbol(double fontWidth, double fontHeight) {
-    MapRectangle? symbolBoundary = renderinstruction.renderinstructionSymbol?.getBoundary();
-    //    print("shapeCaption in calculateOffsets pos $position, symbolHolder: $symbolHolder, captionBoundary: $fontWidth, $fontHeight, boundary: $symbolBoundary");
-    if (renderinstruction.position == Position.CENTER && symbolBoundary != null) {
-      // sensible defaults: below if symbolContainer is present, center if not
-      renderinstruction.position = Position.BELOW;
-    }
-
-    if (symbolBoundary == null) {
-      // symbol not available, draw the text at the center
-      renderinstruction.position = Position.CENTER;
-      symbolBoundary = const MapRectangle(0, 0, 0, 0);
-    }
-
-    double halfWidth = fontWidth / 2;
-    double halfHeight = fontHeight / 2;
-
-    switch (renderinstruction.position) {
-      case Position.AUTO:
-      case Position.CENTER:
-        boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
-        break;
-      case Position.BELOW:
-        boundary = MapRectangle(
-          -halfWidth,
-          symbolBoundary.bottom + 0 + renderinstruction.gap + renderinstruction.dy,
-          halfWidth,
-          symbolBoundary.bottom + fontHeight + renderinstruction.gap + renderinstruction.dy,
-        );
-        break;
-      case Position.BELOW_LEFT:
-        boundary = MapRectangle(
-          symbolBoundary.left - fontWidth - renderinstruction.gap,
-          symbolBoundary.bottom + 0 + renderinstruction.gap + renderinstruction.dy,
-          symbolBoundary.left - 0 - renderinstruction.gap,
-          symbolBoundary.bottom + fontHeight + renderinstruction.gap + renderinstruction.dy,
-        );
-        break;
-      case Position.BELOW_RIGHT:
-        boundary = MapRectangle(
-          symbolBoundary.right + 0 + renderinstruction.gap,
-          symbolBoundary.bottom + 0 + renderinstruction.gap + renderinstruction.dy,
-          symbolBoundary.right + fontWidth + renderinstruction.gap,
-          symbolBoundary.bottom + fontHeight + renderinstruction.gap + renderinstruction.dy,
-        );
-        break;
-      case Position.ABOVE:
-        boundary = MapRectangle(
-          -halfWidth,
-          symbolBoundary.top - fontHeight - renderinstruction.gap + renderinstruction.dy,
-          halfWidth,
-          symbolBoundary.top - 0 - renderinstruction.gap + renderinstruction.dy,
-        );
-        break;
-      case Position.ABOVE_LEFT:
-        boundary = MapRectangle(
-          symbolBoundary.left - fontWidth - renderinstruction.gap,
-          symbolBoundary.top - fontHeight - renderinstruction.gap + renderinstruction.dy,
-          symbolBoundary.left - 0 - renderinstruction.gap,
-          symbolBoundary.top + 0 - renderinstruction.gap + renderinstruction.dy,
-        );
-        break;
-      case Position.ABOVE_RIGHT:
-        boundary = MapRectangle(
-          symbolBoundary.right + 0 + renderinstruction.gap,
-          symbolBoundary.top - fontHeight - renderinstruction.gap + renderinstruction.dy,
-          symbolBoundary.right + fontWidth + renderinstruction.gap,
-          symbolBoundary.top + 0 - renderinstruction.gap + renderinstruction.dy,
-        );
-        break;
-      case Position.LEFT:
-        boundary = MapRectangle(
-          symbolBoundary.left - fontWidth - renderinstruction.gap,
-          -halfHeight,
-          symbolBoundary.left - 0 - renderinstruction.gap,
-          halfHeight,
-        );
-        break;
-      case Position.RIGHT:
-        boundary = MapRectangle(
-          symbolBoundary.right + 0 + renderinstruction.gap,
-          -halfHeight,
-          symbolBoundary.right + fontHeight + renderinstruction.gap,
-          halfHeight,
-        );
-        break;
-    }
-    return boundary!;
   }
 
   @override
@@ -191,12 +95,17 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
       uiCanvas.rotate(2 * pi - renderContext.rotationRadian);
       uiCanvas.translate(-relative.dx, -relative.dy);
     }
+    MapRectangle boundary = renderinstruction.calculateBoundaryWithSymbol(
+      renderinstruction.position,
+      back?.getWidth() ?? front?.getWidth() ?? 0,
+      back?.getHeight() ?? front?.getHeight() ?? 0,
+    );
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
     //         boundary.getWidth(), boundary.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
-    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
+    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
+    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
     //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (renderContext.rotationRadian != 0) {
@@ -219,13 +128,18 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
       uiCanvas.translate(-relative.dx, -relative.dy);
     }
 
+    MapRectangle boundary = renderinstruction.calculateBoundaryWithSymbol(
+      renderinstruction.position,
+      back?.getWidth() ?? front?.getWidth() ?? 0,
+      back?.getHeight() ?? front?.getHeight() ?? 0,
+    );
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
     //         boundary.getWidth(), boundary.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.5));
 
-    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
-    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
+    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
+    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
     if (renderContext.rotationRadian != 0) {

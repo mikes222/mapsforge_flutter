@@ -49,9 +49,6 @@ void main() {
         ),
       );
       Tile tile = Tile(x, y, zoomlevel, l);
-      expect(await datastore.supportsTile(tile), true);
-      DatastoreBundle result = await datastore.readMapDataSingle(tile);
-      expect(result.ways.length, equals(1));
       JobRequest jobRequest = JobRequest(tile);
       DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
 

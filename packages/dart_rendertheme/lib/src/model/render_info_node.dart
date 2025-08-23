@@ -45,4 +45,9 @@ class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
     boundaryAbsolute = boundary.shift(mappoint);
     return boundaryAbsolute!;
   }
+
+  @override
+  String toString() {
+    return 'RenderInfoNode{nodeProperties: $nodeProperties, rotateRadians: $rotateRadians, super: ${super.toString()}}';
+  }
 }

@@ -120,7 +120,76 @@ class RenderinstructionCaption extends Renderinstruction
     // boundary depends on the text, so fake it
     double widthEstimated = MapsforgeSettingsMgr().maxTextWidth;
     double heightEstimated = fontSize;
-    return MapRectangle(-widthEstimated / 2, -heightEstimated / 2, widthEstimated / 2, heightEstimated / 2);
+    return calculateBoundaryWithSymbol(position, widthEstimated, heightEstimated);
+  }
+
+  MapRectangle calculateBoundaryWithSymbol(Position pos, double fontWidth, double fontHeight) {
+    MapRectangle? symbolBoundary = renderinstructionSymbol?.getBoundary();
+    if (pos == Position.CENTER && symbolBoundary != null) {
+      // sensible defaults: below if symbolContainer is present, center if not
+      pos = Position.BELOW;
+    }
+
+    if (symbolBoundary == null) {
+      // symbol not available, draw the text at the center
+      pos = Position.CENTER;
+      symbolBoundary = const MapRectangle.zero();
+    }
+
+    double halfWidth = fontWidth / 2;
+    double halfHeight = fontHeight / 2;
+
+    switch (pos) {
+      case Position.AUTO:
+      case Position.CENTER:
+        boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
+        break;
+      case Position.BELOW:
+        boundary = MapRectangle(-halfWidth, symbolBoundary.bottom + 0 + gap + dy, halfWidth, symbolBoundary.bottom + fontHeight + gap + dy);
+        break;
+      case Position.BELOW_LEFT:
+        boundary = MapRectangle(
+          symbolBoundary.left - fontWidth - gap,
+          symbolBoundary.bottom + 0 + gap + dy,
+          symbolBoundary.left - 0 - gap,
+          symbolBoundary.bottom + fontHeight + gap + dy,
+        );
+        break;
+      case Position.BELOW_RIGHT:
+        boundary = MapRectangle(
+          symbolBoundary.right + 0 + gap,
+          symbolBoundary.bottom + 0 + gap + dy,
+          symbolBoundary.right + fontWidth + gap,
+          symbolBoundary.bottom + fontHeight + gap + dy,
+        );
+        break;
+      case Position.ABOVE:
+        boundary = MapRectangle(-halfWidth, symbolBoundary.top - fontHeight - gap + dy, halfWidth, symbolBoundary.top - 0 - gap + dy);
+        break;
+      case Position.ABOVE_LEFT:
+        boundary = MapRectangle(
+          symbolBoundary.left - fontWidth - gap,
+          symbolBoundary.top - fontHeight - gap + dy,
+          symbolBoundary.left - 0 - gap,
+          symbolBoundary.top + 0 - gap + dy,
+        );
+        break;
+      case Position.ABOVE_RIGHT:
+        boundary = MapRectangle(
+          symbolBoundary.right + 0 + gap,
+          symbolBoundary.top - fontHeight - gap + dy,
+          symbolBoundary.right + fontWidth + gap,
+          symbolBoundary.top + 0 - gap + dy,
+        );
+        break;
+      case Position.LEFT:
+        boundary = MapRectangle(symbolBoundary.left - fontWidth - gap, -halfHeight, symbolBoundary.left - 0 - gap, halfHeight);
+        break;
+      case Position.RIGHT:
+        boundary = MapRectangle(symbolBoundary.right + 0 + gap, -halfHeight, symbolBoundary.right + fontHeight + gap, halfHeight);
+        break;
+    }
+    return boundary!;
   }
 
   @override

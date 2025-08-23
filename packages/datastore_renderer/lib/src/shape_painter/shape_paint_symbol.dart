@@ -48,6 +48,7 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
     } catch (error) {
       _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
     }
+    print("symbol is $symbolImage");
   }
 
   void dispose() {

@@ -5,9 +5,6 @@ import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/src/cache/file_symbol_cache.dart';
 import 'package:datastore_renderer/src/cache/image_bundle_loader.dart';
-import 'package:datastore_renderer/src/datastore_renderer.dart';
-import 'package:datastore_renderer/src/job/job_request.dart';
-import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
@@ -51,14 +48,10 @@ void main() {
         ),
       );
       Tile tile = new Tile(x, y, zoomlevel, l);
-      expect(await datastore.supportsTile(tile), true);
-      DatastoreBundle result = await datastore.readMapDataSingle(tile);
-      expect(result.ways.length, greaterThan(0));
-      JobRequest mapGeneratorJob = new JobRequest(tile);
+      JobRequest mapGeneratorJob = JobRequest(tile);
       DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
 
       JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
-      expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));
 

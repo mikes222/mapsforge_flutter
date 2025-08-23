@@ -12,7 +12,7 @@ class JobResult {
 
   JobResult.error(this._picture) : _result = JOBRESULT.ERROR, _renderInfo = null;
 
-  JobResult.unsupported() : _result = JOBRESULT.NORMAL, _renderInfo = null, _picture = null;
+  JobResult.unsupported() : _result = JOBRESULT.UNSUPPORTED, _renderInfo = null, _picture = null;
 
   TilePicture? get picture => _picture;
 

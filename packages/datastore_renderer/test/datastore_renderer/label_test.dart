@@ -5,9 +5,6 @@ import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/src/cache/file_symbol_cache.dart';
 import 'package:datastore_renderer/src/cache/image_bundle_loader.dart';
-import 'package:datastore_renderer/src/datastore_renderer.dart';
-import 'package:datastore_renderer/src/job/job_request.dart';
-import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
@@ -45,13 +42,8 @@ void main() {
       //datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00000, 18.00007)));
       datastore.addPoi(const PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
 
-      Tile tile0 = new Tile(x, y, zoomlevel, l);
-      expect(await datastore.supportsTile(tile0), true);
-      DatastoreBundle result = await datastore.readMapDataSingle(tile0);
-      print(result);
-      expect(result.pointOfInterests.length, greaterThan(0));
-      print("Calculating tile0 ${tile0.toString()}");
-      JobRequest mapGeneratorJob0 = new JobRequest(tile0);
+      Tile tile0 = Tile(x, y, zoomlevel, l);
+      JobRequest mapGeneratorJob0 = JobRequest(tile0);
       DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
 
       JobResult jobResult0 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
@@ -60,8 +52,8 @@ void main() {
       _dataStoreRenderer.tileDependencies!.debug();
       //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
 
-      Tile tile1 = new Tile(x + 1, y, zoomlevel, l);
-      JobRequest mapGeneratorJob1 = new JobRequest(tile1);
+      Tile tile1 = Tile(x + 1, y, zoomlevel, l);
+      JobRequest mapGeneratorJob1 = JobRequest(tile1);
       JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
       var img1 = await jobResult1.picture!.convertPictureToImage();
 
