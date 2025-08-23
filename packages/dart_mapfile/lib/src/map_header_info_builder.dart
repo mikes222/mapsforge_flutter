@@ -72,7 +72,7 @@ class MapHeaderInfoBuilder {
     // get and check the file version (4 bytes)
     int fileVersion = readbuffer.readInt();
     if (fileVersion < SUPPORTED_FILE_VERSION_MIN || fileVersion > SUPPORTED_FILE_VERSION_MAX) {
-      throw new Exception("unsupported file version: $fileVersion");
+      throw Exception("unsupported file version: $fileVersion");
     }
     this.fileVersion = fileVersion;
   }

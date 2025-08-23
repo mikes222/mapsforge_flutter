@@ -3,10 +3,8 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_rendertheme/src/model/line_segment.dart';
-import 'package:dart_rendertheme/src/model/line_segment_path.dart';
 import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
-import 'package:datastore_renderer/src/util/douglas_peucker_mappoint.dart';
+import 'package:dart_rendertheme/src/util/douglas_peucker_mappoint.dart';
 
 /// Properties for one Way as read from the datastore. Note that the properties are
 /// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
@@ -61,31 +59,6 @@ class WayProperties implements NodeWayProperties {
     return _minMaxMappoint!.getCenter();
   }
 
-  LineSegmentPath? calculateStringPath(double dy) {
-    List<List<Mappoint>> coordinatesAbsolute = getCoordinatesAbsolute();
-
-    if (coordinatesAbsolute.isEmpty || coordinatesAbsolute[0].length < 2) {
-      return null;
-    }
-    List<Mappoint> c;
-    if (dy == 0) {
-      c = coordinatesAbsolute[0];
-    } else {
-      c = _parallelPath(coordinatesAbsolute[0], dy);
-    }
-
-    if (c.length < 2) {
-      return null;
-    }
-
-    LineSegmentPath fullPath = LineSegmentPath();
-    for (int i = 1; i < c.length; i++) {
-      LineSegment segment = LineSegment(c[i - 1], c[i]);
-      fullPath.segments.add(segment);
-    }
-    return fullPath;
-  }
-
   int getLayer() {
     return layer;
   }
@@ -106,7 +79,7 @@ class WayProperties implements NodeWayProperties {
   /// Computes a polyline with distance dy parallel to given coordinates.
   /// http://objectmix.com/graphics/132987-draw-parallel-polyline-algorithm-needed.html
   /// distance: positive -> left offset, negative -> right
-  static List<Mappoint> _parallelPath(List<Mappoint> originals, double distance) {
+  static List<Mappoint> parallelPath(List<Mappoint> originals, double distance) {
     int n = originals.length - 1;
     List<Mappoint> u = [];
     List<Mappoint> offsets = [];

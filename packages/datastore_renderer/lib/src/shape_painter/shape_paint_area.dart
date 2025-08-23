@@ -1,4 +1,3 @@
-import 'package:dart_common/src/model/maprectangle.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
@@ -58,18 +57,13 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   }
 
   @override
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {}
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {}
 
   @override
-  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     UiPath path = calculatePath(wayProperties.getCoordinatesAbsolute(), renderContext.reference, renderinstruction.dy);
     if (fill != null) renderContext.canvas.drawPath(path, fill!);
     if (stroke != null) renderContext.canvas.drawPath(path, stroke!);
-  }
-
-  @override
-  MapRectangle getBoundary() {
-    throw UnimplementedError("Nodes not supported");
   }
 }

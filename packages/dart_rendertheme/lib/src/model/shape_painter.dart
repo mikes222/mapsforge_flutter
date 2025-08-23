@@ -1,4 +1,3 @@
-import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 
@@ -8,9 +7,7 @@ abstract class ShapePainter<T extends Renderinstruction> {
 
   ShapePainter(this.renderinstruction);
 
-  MapRectangle getBoundary();
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties);
 
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties);
-
-  void renderWay(RenderContext renderContext, WayProperties wayProperties);
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties);
 }

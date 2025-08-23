@@ -1,10 +1,10 @@
 import 'dart:collection';
 import 'dart:io';
-import 'dart:math' as Math;
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:dart_common/src/buffer/readbuffer.dart';
-import 'package:dart_common/src/buffer/readbuffersource.dart';
+import 'package:dart_common/src/buffer/readbuffer_source.dart';
 import 'package:dart_common/src/utils/timing.dart';
 import 'package:logging/logging.dart';
 
@@ -13,10 +13,10 @@ class ReadbufferFile implements ReadbufferSource {
   static final _log = new Logger('ReadbufferFile');
 
   /// ressource for consecutive reads
-  _ReadBufferFileResource? _resource;
+  _ReadbufferFileResource? _resource;
 
   /// ressource for a specific position
-  Queue<_ReadBufferFileResource> _resourceAts = Queue();
+  final Queue<_ReadbufferFileResource> _resourceAts = Queue();
 
   /// The filename of the underlying file
   final String filename;
@@ -36,7 +36,9 @@ class ReadbufferFile implements ReadbufferSource {
   void freeRessources() {
     _resource?.close();
     _resource = null;
-    _resourceAts.forEach((resource) => resource.close());
+    for (var resource in _resourceAts) {
+      resource.close();
+    }
     _resourceAts.clear();
   }
 
@@ -50,9 +52,9 @@ class ReadbufferFile implements ReadbufferSource {
   Future<Readbuffer> readFromFile(int length) async {
     assert(length > 0);
     Timing timing = Timing(log: _log);
-    _resource ??= _ReadBufferFileResource(filename);
-    Uint8List _bufferData = await _resource!.read(length);
-    Readbuffer result = Readbuffer(_bufferData, _position);
+    _resource ??= _ReadbufferFileResource(filename);
+    Uint8List bufferData = await _resource!.read(length);
+    Readbuffer result = Readbuffer(bufferData, _position);
     timing.done(100, "readFromFile position: $_position, length: $length");
     _position += length;
     return result;
@@ -60,7 +62,7 @@ class ReadbufferFile implements ReadbufferSource {
 
   @override
   Future<void> setPosition(int position) async {
-    _resource ??= _ReadBufferFileResource(filename);
+    _resource ??= _ReadbufferFileResource(filename);
     await _resource!.setPosition(position);
     _position = position;
   }
@@ -71,10 +73,10 @@ class ReadbufferFile implements ReadbufferSource {
     assert(position >= 0);
 
     Timing timing = Timing(log: _log);
-    _ReadBufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadBufferFileResource(filename);
-    Uint8List _bufferData = await resourceAt.readAt(position, length);
+    _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
+    Uint8List bufferData = await resourceAt.readAt(position, length);
     _resourceAts.addLast(resourceAt);
-    Readbuffer result = Readbuffer(_bufferData, position);
+    Readbuffer result = Readbuffer(bufferData, position);
     timing.done(100, "readFromFile at position: $position, length: $length");
     return result;
   }
@@ -82,7 +84,7 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   Future<int> length() async {
     if (_length != null) return _length!;
-    _ReadBufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadBufferFileResource(filename);
+    _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
     _length = await resourceAt.length();
     _resourceAts.addLast(resourceAt);
     assert(_length! >= 0);
@@ -104,7 +106,7 @@ class ReadbufferFile implements ReadbufferSource {
   Stream<List<int>> get inputStream async* {
     int length = await this.length();
     while (_position < length) {
-      int l = Math.min(length - _position, 10000);
+      int l = math.min(length - _position, 10000);
       Readbuffer readbuffer = await readFromFile(l);
       yield readbuffer.getBuffer(0, l);
     }
@@ -113,11 +115,11 @@ class ReadbufferFile implements ReadbufferSource {
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _ReadBufferFileResource {
+class _ReadbufferFileResource {
   /// The Random access file handle to the underlying file
-  RandomAccessFile _raf;
+  final RandomAccessFile _raf;
 
-  _ReadBufferFileResource(String filename) : _raf = File(filename).openSync();
+  _ReadbufferFileResource(String filename) : _raf = File(filename).openSync();
 
   void close() {
     _raf.close();

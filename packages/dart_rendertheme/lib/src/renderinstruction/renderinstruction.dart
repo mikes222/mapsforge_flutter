@@ -50,9 +50,9 @@ abstract class Renderinstruction {
 
   ShapePainter? getPainter();
 
-  /// Returns the boundary of this object around the center of the area or the poi or null if the boundary cannot be determined (e.g. the center of an area
-  /// depends on the area itself but Renderinstruction has no information about the area. It is just a common template how to render the objects).
-  MapRectangle? getBoundary();
+  /// Returns the boundary of this object around the center of the area or the poi. If the boundary cannot determined exactly we need to estimate it.
+  /// This method is used only if the renderinstruction adds itself to label or clash (see [LayerContainer])
+  MapRectangle getBoundary();
 
   /// Checks the nodeProperties and adds itself to the layerContainer if there is something to draw.
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties);

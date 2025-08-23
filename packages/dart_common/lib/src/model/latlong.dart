@@ -1,4 +1,4 @@
-import 'package:dart_common/src/utils/latlongutils.dart';
+import 'package:dart_common/src/utils/latlong_utils.dart';
 
 import 'ilatlong.dart';
 

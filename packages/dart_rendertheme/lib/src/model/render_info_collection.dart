@@ -38,15 +38,15 @@ class RenderInfoCollection {
 
   bool haveSpace(RenderInfo item, List<RenderInfo> list) {
     for (RenderInfo outputElement in list) {
-      try {
-        if (outputElement.clashesWith(item)) {
-          //print("$outputElement --------clashesWith-------- $item");
-          return false;
-        }
-      } catch (error) {
-        // seems we cannot find out if we clash, so just use it for now
-        return true;
+      //      try {
+      if (outputElement.clashesWith(item)) {
+        //print("$outputElement --------clashesWith-------- $item");
+        return false;
       }
+      // } catch (error) {
+      //   // seems we cannot find out if we clash, so just use it for now
+      //   return true;
+      // }
     }
     return true;
   }

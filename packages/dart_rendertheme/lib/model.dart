@@ -11,5 +11,7 @@ export 'src/model/position.dart';
 export 'src/model/render_context.dart';
 export 'src/model/render_info.dart';
 export 'src/model/render_info_collection.dart';
+export 'src/model/render_info_node.dart';
+export 'src/model/render_info_way.dart';
 export 'src/model/shape_painter.dart';
 export 'src/model/wayproperties.dart';

@@ -1,3 +1,5 @@
+import 'package:dart_common/model.dart';
+import 'package:dart_common/projection.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
@@ -65,6 +67,21 @@ void main() {
     final helper = mapFile.getMapfileHelper();
     expect(helper, isNotNull);
     print('Map File Helper: $helper');
+  });
+
+  test('should support tile', () async {
+    int zoomlevel = 18;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
+    Tile tile = Tile(x, y, zoomlevel, 0);
+    final ok = await mapFile.supportsTile(tile);
+    expect(ok, isTrue);
+  });
+
+  test('should not support tile', () async {
+    Tile tile = Tile(140486, 87975, 18, 0);
+    final ok = await mapFile.supportsTile(tile);
+    expect(ok, isFalse);
   });
 
   test('should handle invalid file path', () async {

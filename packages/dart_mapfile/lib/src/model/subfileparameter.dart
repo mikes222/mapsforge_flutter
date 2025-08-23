@@ -1,4 +1,4 @@
-import 'package:dart_common/src/projection/mercatorprojection.dart';
+import 'package:dart_common/src/projection/mercator_projection.dart';
 
 /// Holds all parameters of a sub-file. A subfile is a portion of a map. It is not necessarily dependent on a mapFILE.
 class SubFileParameter {

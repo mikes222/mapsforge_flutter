@@ -19,6 +19,12 @@ dependencies:
   # Workspace
   ecache: ^2.0.10
 
+  # MIT License
+  # for reading the rendertheme xml file
+  # compatibility problems with flutter_svg
+  xml: ^6.5.0
+
+
 dev_dependencies:
 
   lints: ^6.0.0

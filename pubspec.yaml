@@ -12,7 +12,9 @@ workspace:
   - packages/dart_rendertheme
   - packages/datastore_renderer
   - packages/mapsforge_assets
+  - packages/mapsforge_view
   - apps/mapfile_converter
+  - apps/simple_example
 
 melos:
   scripts:

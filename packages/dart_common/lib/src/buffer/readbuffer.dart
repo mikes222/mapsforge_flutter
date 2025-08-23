@@ -62,8 +62,8 @@ class Readbuffer {
   ///
   /// @return the int value.
   int readInt() {
-    this._bufferPosition += 4;
-    return Deserializer.getInt(this._bufferData, this._bufferPosition - 4);
+    _bufferPosition += 4;
+    return Deserializer.getInt(_bufferData, _bufferPosition - 4);
   }
 
   /// Converts eight bytes from the read buffer to a signed long.
@@ -72,8 +72,8 @@ class Readbuffer {
   ///
   /// @return the long value.
   int readLong() {
-    this._bufferPosition += 8;
-    return Deserializer.getLong(this._bufferData, this._bufferPosition - 8);
+    _bufferPosition += 8;
+    return Deserializer.getLong(_bufferData, _bufferPosition - 8);
   }
 
   /// Converts two bytes from the read buffer to a signed int.
@@ -84,7 +84,7 @@ class Readbuffer {
   int readShort() {
     assert(_bufferPosition < _bufferData.length);
     this._bufferPosition += 2;
-    return Deserializer.getShort(this._bufferData, this._bufferPosition - 2);
+    return Deserializer.getShort(_bufferData, _bufferPosition - 2);
   }
 
   List<Tag> readTags(List<Tag> tagsArray, int numberOfTags) {

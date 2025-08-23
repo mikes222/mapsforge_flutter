@@ -2,7 +2,7 @@ import 'package:dart_common/buffer.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_mapfile/src/mapdatastore.dart';
+import 'package:dart_mapfile/src/map_datastore.dart';
 import 'package:dart_mapfile/src/model/mapfile_info.dart';
 import 'package:dart_mapfile/src/model/queryparameters.dart';
 import 'package:logging/logging.dart';
@@ -105,7 +105,7 @@ class MapfileHelper {
     double tileLongitude,
     MapfileSelector selector,
     Readbuffer readBuffer,
-    MapDataStore mapDataStore,
+    MapDatastore mapDataStore,
   ) {
     List<Way> ways = [];
     List<Tag> wayTags = this._mapFileHeader.getMapHeaderInfo().wayTags;
@@ -133,7 +133,7 @@ class MapfileHelper {
     QueryParameters queryParameters,
     double tileLatitude,
     double tileLongitude,
-    MapDataStore mapDataStore,
+    MapDatastore mapDataStore,
     List<Tag> wayTags,
     bool filterRequired,
     BoundingBox wayFilterBbox,
@@ -379,7 +379,7 @@ class MapfileHelper {
     BoundingBox boundingBox,
     bool filterRequired,
     Readbuffer readBuffer,
-    MapDataStore mapDataStore,
+    MapDatastore mapDataStore,
   ) {
     List<PointOfInterest> pois = [];
     List<Tag> poiTags = this._mapFileHeader.getMapHeaderInfo().poiTags;
@@ -397,7 +397,7 @@ class MapfileHelper {
     return pois;
   }
 
-  PointOfInterest read1Poi(Readbuffer readBuffer, double tileLatitude, double tileLongitude, MapDataStore mapDataStore, List<Tag> poiTags) {
+  PointOfInterest read1Poi(Readbuffer readBuffer, double tileLatitude, double tileLongitude, MapDatastore mapDataStore, List<Tag> poiTags) {
     if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
       // get and check the POI signature
       String signaturePoi = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);

@@ -58,7 +58,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
+        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.ID == name) {
@@ -78,8 +78,8 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   }
 
   @override
-  MapRectangle? getBoundary() {
-    if (boundary != null) return boundary;
+  MapRectangle getBoundary() {
+    if (boundary != null) return boundary!;
 
     double halfWidth = getBitmapWidth() / 2;
     double halfHeight = getBitmapHeight() / 2;

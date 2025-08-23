@@ -19,6 +19,11 @@ class JobResult {
   JOBRESULT get result => _result;
 
   RenderInfoCollection? get renderInfo => _renderInfo;
+
+  @override
+  String toString() {
+    return 'JobResult{_picture: $_picture, _result: $_result, _renderInfo: $_renderInfo}';
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

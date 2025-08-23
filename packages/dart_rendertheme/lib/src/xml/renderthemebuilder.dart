@@ -49,7 +49,8 @@ class RenderThemeBuilder {
   static Rendertheme createFromString(String content, {Set<String> excludeIds = const {}}) {
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder._(excludeIds: excludeIds);
     renderThemeBuilder._parseXml(content);
-    renderThemeBuilder.forHash = "${MapsforgeSettingsMgr().getScaleFactor()}_${MapsforgeSettingsMgr().getFontScaleFactor()}_${MapsforgeSettingsMgr().tileSize}";
+    renderThemeBuilder.forHash =
+        "${MapsforgeSettingsMgr().getUserScaleFactor()}_${MapsforgeSettingsMgr().getFontScaleFactor()}_${MapsforgeSettingsMgr().tileSize}";
     return renderThemeBuilder._build();
   }
 

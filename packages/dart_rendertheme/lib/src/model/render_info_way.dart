@@ -19,7 +19,7 @@ class RenderInfoWay<T extends Renderinstruction> extends RenderInfo<T> {
 
   @override
   void render(RenderContext renderContext) {
-    shapePainter!.renderWay(renderContext, wayProperties);
+    shapePainter!.renderWay(this, renderContext, wayProperties);
   }
 
   /// Returns if MapElementContainers clash with each other

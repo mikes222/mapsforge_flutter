@@ -88,7 +88,7 @@ class RenderinstructionCaption extends Renderinstruction
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
+        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.FILL == name) {
@@ -116,9 +116,11 @@ class RenderinstructionCaption extends Renderinstruction
   }
 
   @override
-  MapRectangle? getBoundary() {
-    // boundary depends on the text
-    return null;
+  MapRectangle getBoundary() {
+    // boundary depends on the text, so fake it
+    double widthEstimated = MapsforgeSettingsMgr().maxTextWidth;
+    double heightEstimated = fontSize;
+    return MapRectangle(-widthEstimated / 2, -heightEstimated / 2, widthEstimated / 2, heightEstimated / 2);
   }
 
   @override

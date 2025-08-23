@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dart_common/src/buffer/readbuffer.dart';
-import 'package:dart_common/src/buffer/readbuffersource.dart';
+import 'package:dart_common/src/buffer/readbuffer_source.dart';
 
 class ReadbufferMemory extends ReadbufferSource {
   final Uint8List content;

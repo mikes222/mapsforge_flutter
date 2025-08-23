@@ -58,7 +58,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
+        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) {
@@ -70,9 +70,9 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_DASHARRAY == name) {
         List<double> dashArray = parseFloatArray(name, value);
-        if (MapsforgeSettingsMgr().getScaleFactor() != 1) {
+        if (MapsforgeSettingsMgr().getUserScaleFactor() != 1) {
           for (int f = 0; f < dashArray.length; ++f) {
-            dashArray[f] = dashArray[f] * MapsforgeSettingsMgr().getScaleFactor();
+            dashArray[f] = dashArray[f] * MapsforgeSettingsMgr().getUserScaleFactor();
           }
         }
         setStrokeDashArray(dashArray);
@@ -81,7 +81,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       } else if (Renderinstruction.STROKE_LINEJOIN == name) {
         setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_PERCENT == name) {
@@ -107,9 +107,9 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   }
 
   @override
-  MapRectangle? getBoundary() {
+  MapRectangle getBoundary() {
     // boundary depends on the area
-    return null;
+    throw UnimplementedError();
   }
 
   @override

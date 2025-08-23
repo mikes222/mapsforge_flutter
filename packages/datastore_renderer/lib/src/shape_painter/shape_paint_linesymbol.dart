@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
@@ -52,97 +50,38 @@ class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
   }
 
   @override
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {}
-
-  @override
-  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (symbolImage == null) return;
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
-    int skipPixels = renderinstruction.repeatStart.round();
+    if (renderInfo is! RenderInfoNode) throw Exception("renderInfo is not RenderInfoNode ${renderInfo.runtimeType}");
 
-    List<List<Mappoint>> coordinatesAbsolute = wayProperties.getCoordinatesAbsolute();
-
-    List<Mappoint?> outerList = coordinatesAbsolute[0];
-    if (outerList.length < 2) return;
-
-    // get the first way point coordinates
-    Mappoint previous = outerList[0]!;
-
-    // draw the symbolContainer on each way segment
-    int segmentLengthRemaining;
-    double segmentSkipPercentage;
-
+    Mappoint previous = nodeProperties.getCoordinatesAbsolute();
     MapRectangle boundary = symbolImage!.getBoundary();
 
-    double radians = 0;
+    RelativeMappoint relative = previous.offset(renderContext.reference).offset(0, renderinstruction.dy);
+
+    UiMatrix? matrix;
     if (renderinstruction.rotate) {
       // if we do not rotate theta will be 0, which is correct
-      radians = previous.radiansTo(outerList.last!);
+      double radians = renderInfo.rotateRadians;
+      if (radians != 0) {
+        matrix = UiMatrix();
+        matrix.rotate(radians, pivotX: relative.dx, pivotY: relative.dy);
+      }
     }
 
-    for (int i = 1; i < outerList.length; ++i) {
-      // get the current way point coordinates
-      Mappoint current = outerList[i]!;
+    renderContext.canvas.drawPicture(
+      symbolImage: symbolImage!,
+      matrix: matrix,
+      left: relative.dx + boundary.left,
+      top: relative.dy + boundary.top,
+      paint: fill,
+    );
 
-      // calculate the length of the current segment (Euclidian distance)
-      RelativeMappoint diff = current.offset(previous);
-      double segmentLengthInPixel = sqrt(diff.x * diff.x + diff.y * diff.y);
-      segmentLengthRemaining = segmentLengthInPixel.round();
-
-      while (segmentLengthRemaining - skipPixels > renderinstruction.repeatStart) {
-        // calculate the percentage of the current segment to skip
-        segmentSkipPercentage = skipPixels / segmentLengthRemaining;
-
-        // move the previous point forward towards the current point
-        previous = Mappoint(previous.x + diff.x * segmentSkipPercentage, previous.y + diff.y * segmentSkipPercentage);
-
-        RelativeMappoint relative = previous.offset(renderContext.reference).offset(0, renderinstruction.dy);
-
-        UiMatrix? matrix;
-        if (radians != 0) {
-          matrix = UiMatrix();
-          matrix.rotate(radians, pivotX: relative.x, pivotY: relative.y);
-        }
-
-        renderContext.canvas.drawPicture(
-          symbolImage: symbolImage!,
-          matrix: matrix,
-          left: relative.x + boundary.left,
-          top: relative.y + boundary.top,
-          paint: fill,
-        );
-
-        // renderContext.canvas.drawCircle(relative.x, relative.y, boundary.getWidth() / 2, UiPaint.stroke(color: 0x80ff0000));
-        // renderContext.canvas.drawCircle(relative.x + boundary.left, relative.y + boundary.top, 5, UiPaint.fill(color: 0xffff0000));
-
-        // check if the symbolContainer should only be rendered once
-        if (!renderinstruction.repeat) {
-          return;
-        }
-
-        // recalculate the distances
-        diff = current.offset(previous);
-
-        // recalculate the remaining length of the current segment
-        segmentLengthRemaining -= skipPixels;
-
-        // set the amount of pixels to skip before repeating the symbolContainer
-        skipPixels = renderinstruction.repeatGap.round();
-      }
-
-      skipPixels -= segmentLengthRemaining;
-      if (skipPixels < renderinstruction.repeatStart) {
-        skipPixels = renderinstruction.repeatStart.round();
-      }
-
-      // set the previous way point coordinates for the next loop
-      previous = current;
-    }
-    //bitmap.dispose();
+    // renderContext.canvas.drawCircle(relative.x, relative.y, boundary.getWidth() / 2, UiPaint.stroke(color: 0x80ff0000));
+    // renderContext.canvas.drawCircle(relative.x + boundary.left, relative.y + boundary.top, 5, UiPaint.fill(color: 0xffff0000));
   }
 
   @override
-  MapRectangle getBoundary() {
-    throw UnimplementedError("Nodes not supported");
-  }
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {}
 }

@@ -63,11 +63,9 @@ class UiCanvas {
       //_uiCanvas.clipRect(ui.Rect.fromLTWH(0, 0, tileSize, tileSize));
       _uiCanvas.drawPicture(pic);
       _uiCanvas.restore();
-      //picture.dispose();
     } else {
       ui.Image image = picture.getImage()!; //await picture.convertPictureToImage()!;
       _uiCanvas.drawImage(image, ui.Offset(left, top), ui.Paint());
-      image.dispose();
     }
     ++_bitmapCount;
   }
@@ -148,12 +146,12 @@ class UiCanvas {
       }
       // print(
       //     "$text: segment length ${segment.length()} - word length ${entry.getWidth()} at ${start.x - segment.start.x} / ${start.y - segment.start.y} @ ${segment.getAngle()}");
-      _drawTextRotated(entry.paragraph, segment.getTheta(), start);
+      drawTextRotated(entry.paragraph, segment.getTheta(), start);
       //      len -= segmentLength;
     }
   }
 
-  void _drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
+  void drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
     // since the text is rotated, use the textwidth as margin in all directions
     // if (start.x + textwidth < 0 ||
     //     start.y + textwidth < 0 ||
@@ -165,8 +163,8 @@ class UiCanvas {
     _uiCanvas.save();
     _uiCanvas.translate(
       /*translateX +*/
-      reference.x,
-      /*translateY +*/ reference.y,
+      reference.dx,
+      /*translateY +*/ reference.dy,
     );
     _uiCanvas.rotate(theta);
     _uiCanvas.translate(0, -paragraph.height / 2);

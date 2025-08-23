@@ -25,46 +25,36 @@ class MapRectangle {
     return MapRectangle(left, top, right, bottom);
   }
 
-  /**
-   * @return true if this Rectangle contains the given point, false otherwise.
-   */
+  /// @return true if this Rectangle contains the given point, false otherwise.
   bool contains(Mappoint point) {
-    return this.left <= point.x && this.right >= point.x && this.top <= point.y && this.bottom >= point.y;
+    return left <= point.x && right >= point.x && top <= point.y && bottom >= point.y;
   }
 
-  /**
-   * Enlarges the Rectangle sides individually
-   * @param left left enlargement
-   * @param top top enlargement
-   * @param right right enlargement
-   * @param bottom bottom enlargement
-   * @return
-   */
+  /// Enlarges the Rectangle sides individually
+  /// @param left left enlargement
+  /// @param top top enlargement
+  /// @param right right enlargement
+  /// @param bottom bottom enlargement
+  /// @return
   MapRectangle enlarge(double left, double top, double right, double bottom) {
     return MapRectangle(this.left - left, this.top - top, this.right + right, this.bottom + bottom);
   }
 
   MapRectangle envelope(double padding) {
-    return MapRectangle(this.left - padding, this.top - padding, this.right + padding, this.bottom + padding);
+    return MapRectangle(left - padding, top - padding, right + padding, bottom + padding);
   }
 
-  /**
-   * @return a new Point at the horizontal and vertical center of this Rectangle.
-   */
+  /// @return a new Point at the horizontal and vertical center of this Rectangle.
   Mappoint getCenter() {
     return Mappoint(getCenterX(), getCenterY());
   }
 
-  /**
-   * @return the horizontal center of this Rectangle.
-   */
+  /// @return the horizontal center of this Rectangle.
   double getCenterX() {
     return (left + right) / 2;
   }
 
-  /**
-   * @return the vertical center of this Rectangle.
-   */
+  /// @return the vertical center of this Rectangle.
   double getCenterY() {
     return (top + bottom) / 2;
   }
@@ -77,9 +67,7 @@ class MapRectangle {
     return right - left;
   }
 
-  /**
-   * @return true if this Rectangle intersects with the given Rectangle, false otherwise.
-   */
+  /// @return true if this Rectangle intersects with the given Rectangle, false otherwise.
   bool intersects(MapRectangle rectangle) {
     if (this == rectangle) {
       return true;

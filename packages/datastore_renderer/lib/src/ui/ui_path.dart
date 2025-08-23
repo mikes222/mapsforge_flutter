@@ -59,14 +59,14 @@ class UiPath {
   }
 
   void lineToMappoint(RelativeMappoint point) {
-    _path.lineTo(point.x, point.y);
-    _points.add(Pointinfo(false, point.x, point.y));
+    _path.lineTo(point.dx, point.dy);
+    _points.add(Pointinfo(false, point.dx, point.dy));
     _dashedPaths.clear();
   }
 
   void moveToMappoint(RelativeMappoint point) {
-    _path.moveTo(point.x, point.y);
-    _points.add(Pointinfo(true, point.x, point.y));
+    _path.moveTo(point.dx, point.dy);
+    _points.add(Pointinfo(true, point.dx, point.dy));
     _dashedPaths.clear();
   }
 

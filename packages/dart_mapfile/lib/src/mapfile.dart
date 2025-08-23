@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:dart_common/buffer.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_common/src/buffer/readbuffermemory.dart';
+import 'package:dart_common/src/buffer/readbuffer_memory.dart';
 import 'package:dart_common/src/datastore/datastore.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/indexcache.dart';
-import 'package:dart_mapfile/src/mapdatastore.dart';
+import 'package:dart_mapfile/src/map_datastore.dart';
 import 'package:dart_mapfile/src/mapfile_info_builder.dart';
 import 'package:dart_mapfile/src/model/mapfile_helper.dart';
 import 'package:dart_mapfile/src/model/mapfile_info.dart';
@@ -161,7 +161,7 @@ class _MapfileSupportsTileRequest {
 
 /// A class for reading binary map files.
 /// The mapFile should be disposed if not needed anymore
-class MapFile extends MapDataStore {
+class MapFile extends MapDatastore {
   static final _log = new Logger('MapFile');
 
   /**

@@ -178,7 +178,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
   }
 
   @override
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     //print("paint caption: $front $back $shape");
 
@@ -186,17 +186,17 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     ui.Canvas? uiCanvas = renderContext.canvas.expose();
     if (renderContext.rotationRadian != 0) {
       uiCanvas.save();
-      uiCanvas.translate(relative.x, relative.y);
+      uiCanvas.translate(relative.dx, relative.dy);
       // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
       uiCanvas.rotate(2 * pi - renderContext.rotationRadian);
-      uiCanvas.translate(-relative.x, -relative.y);
+      uiCanvas.translate(-relative.dx, -relative.dy);
     }
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
     //         boundary.getWidth(), boundary.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.x + boundary!.left, relative.y + boundary!.top));
-    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.x + boundary!.left, relative.y + boundary!.top));
+    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
+    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
     // uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
     //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (renderContext.rotationRadian != 0) {
@@ -205,7 +205,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
   }
 
   @override
-  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     RelativeMappoint relative = wayProperties.getCenterAbsolute(renderContext.projection).offset(renderContext.reference).offset(0, renderinstruction.dy);
     //print("paint caption boundar: $boundary $relative ${shape}");
@@ -213,10 +213,10 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     ui.Canvas? uiCanvas = renderContext.canvas.expose();
     if (renderContext.rotationRadian != 0) {
       uiCanvas.save();
-      uiCanvas.translate(relative.x, relative.y);
+      uiCanvas.translate(relative.dx, relative.dy);
       // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
       uiCanvas.rotate(2 * pi - renderContext.rotationRadian);
-      uiCanvas.translate(-relative.x, -relative.y);
+      uiCanvas.translate(-relative.dx, -relative.dy);
     }
 
     // uiCanvas.drawRect(
@@ -224,17 +224,12 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     //         boundary.getWidth(), boundary.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.5));
 
-    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.x + boundary!.left, relative.y + boundary!.top));
-    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.x + boundary!.left, relative.y + boundary!.top));
+    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
+    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary!.left, relative.dy + boundary!.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
     if (renderContext.rotationRadian != 0) {
       uiCanvas.restore();
     }
-  }
-
-  @override
-  MapRectangle getBoundary() {
-    return boundary!;
   }
 }

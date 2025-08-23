@@ -1,0 +1,92 @@
+import 'dart:ui';
+
+import 'package:datastore_renderer/renderer.dart';
+import 'package:mapsforge_view/mapsforge.dart';
+import 'package:rxdart/rxdart.dart';
+
+class MapModel {
+  final Renderer renderer;
+
+  MapPosition? _lastPosition;
+
+  /// Inform a listener about the last known position, hence using the [BehaviorSubject].
+  final Subject<MapPosition> _positionSubject = BehaviorSubject<MapPosition>();
+
+  MapModel({required this.renderer});
+
+  void dispose() {
+    _positionSubject.close();
+  }
+
+  void setPosition(MapPosition position) {
+    _lastPosition = position;
+    _positionSubject.add(position);
+  }
+
+  Stream<MapPosition> get positionStream => _positionSubject.stream;
+
+  void zoomIn() {
+    MapPosition newPosition = _lastPosition!.zoomIn();
+    setPosition(newPosition);
+  }
+
+  void zoomInAround(double latitude, double longitude) {
+    MapPosition newPosition = _lastPosition!.zoomInAround(latitude, longitude);
+    setPosition(newPosition);
+  }
+
+  void zoomOut() {
+    MapPosition newPosition = _lastPosition!.zoomOut();
+    setPosition(newPosition);
+  }
+
+  void zoomTo(int zoomLevel) {
+    MapPosition newPosition = _lastPosition!.zoomTo(zoomLevel);
+    setPosition(newPosition);
+  }
+
+  void zoomToAround(double latitude, double longitude, int zoomLevel) {
+    MapPosition newPosition = _lastPosition!.zoomToAround(latitude, longitude, zoomLevel);
+    setPosition(newPosition);
+  }
+
+  void indoorLevelUp() {
+    MapPosition newPosition = _lastPosition!.indoorLevelUp();
+    setPosition(newPosition);
+  }
+
+  void indoorLevelDown() {
+    MapPosition newPosition = _lastPosition!.indoorLevelDown();
+    setPosition(newPosition);
+  }
+
+  void setIndoorLevel(int level) {
+    MapPosition newPosition = _lastPosition!.withIndoorLevel(level);
+    setPosition(newPosition);
+  }
+
+  void scaleAround(Offset? focalPoint, double scale) {
+    MapPosition newPosition = _lastPosition!.scaleAround(focalPoint, scale);
+    setPosition(newPosition);
+  }
+
+  void moveTo(double latitude, double longitude) {
+    MapPosition newPosition = _lastPosition!.moveTo(latitude, longitude);
+    setPosition(newPosition);
+  }
+
+  void rotateTo(double rotation) {
+    MapPosition newPosition = _lastPosition!.rotateTo(rotation);
+    setPosition(newPosition);
+  }
+
+  void rotateBy(double rotationDelta) {
+    MapPosition newPosition = _lastPosition!.rotateBy(rotationDelta);
+    setPosition(newPosition);
+  }
+
+  void setCenter(double x, double y) {
+    MapPosition newPosition = _lastPosition!.setCenter(x, y);
+    setPosition(newPosition);
+  }
+}

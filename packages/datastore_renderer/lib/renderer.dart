@@ -1,5 +1,9 @@
 export 'src/arcgis_online_renderer.dart';
 export 'src/cache/symbol_cache_mgr.dart';
+export 'src/datastore_renderer.dart';
 export 'src/dummy_renderer.dart';
+export 'src/job/job_request.dart';
+export 'src/job/job_result.dart';
+export 'src/model/ui_render_context.dart';
 export 'src/osm_online_renderer.dart';
 export 'src/renderer.dart';

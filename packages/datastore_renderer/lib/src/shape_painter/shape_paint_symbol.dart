@@ -55,12 +55,12 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
   }
 
   @override
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
     //print("paint symbol: $shape ${shape.bitmapSrc}");
     RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
-    MapRectangle boundary = renderinstruction.getBoundary()!;
+    MapRectangle boundary = renderinstruction.getBoundary();
     //print("paint symbol boundar: $boundary");
     UiMatrix? matrix;
     if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
@@ -78,17 +78,23 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
       // ); //bitmap.debugGetOpenHandleStackTraces();
       ui.Canvas? uiCanvas = renderContext.canvas.expose();
       uiCanvas.drawRect(
-        ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top, boundary.getWidth(), boundary.getHeight()),
+        ui.Rect.fromLTWH(relative.dx + boundary.left, relative.dy + boundary.top, boundary.getWidth(), boundary.getHeight()),
         ui.Paint()..color = Colors.red.withOpacity(0.5),
       );
-      uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10, ui.Paint()..color = Colors.green.withOpacity(0.5));
+      uiCanvas.drawCircle(ui.Offset(relative.dx, relative.dy), 10, ui.Paint()..color = Colors.green.withOpacity(0.5));
     }
 
-    renderContext.canvas.drawPicture(symbolImage: symbolImage!, matrix: matrix, left: relative.x + boundary.left, top: relative.y + boundary.top, paint: fill);
+    renderContext.canvas.drawPicture(
+      symbolImage: symbolImage!,
+      matrix: matrix,
+      left: relative.dx + boundary.left,
+      top: relative.dy + boundary.top,
+      paint: fill,
+    );
   }
 
   @override
-  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
     Mappoint point = wayProperties.getCenterAbsolute(renderContext.projection);
@@ -104,11 +110,12 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
     // print(
     //     "drawing ${bitmap} at ${this.xy.x - origin.x + boundary!.left} / ${this.xy.y - origin.y + boundary!.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
     //print(StackTrace.current);
-    renderContext.canvas.drawPicture(symbolImage: symbolImage!, matrix: matrix, left: relative.x + boundary.left, top: relative.y + boundary.top, paint: fill);
-  }
-
-  @override
-  MapRectangle getBoundary() {
-    return renderinstruction.getBoundary()!;
+    renderContext.canvas.drawPicture(
+      symbolImage: symbolImage!,
+      matrix: matrix,
+      left: relative.dx + boundary.left,
+      top: relative.dy + boundary.top,
+      paint: fill,
+    );
   }
 }

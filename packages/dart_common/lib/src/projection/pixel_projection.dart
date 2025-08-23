@@ -16,7 +16,7 @@ class PixelProjection extends MercatorProjection {
 
   static final Map<String, double> _pixelDiffCache = {};
 
-  PixelProjection(super.zoomLevel) : tileSize = MapsforgeSettingsMgr().tileSize, super.fromZoomlevel() {
+  PixelProjection(super.zoomlevel) : tileSize = MapsforgeSettingsMgr().tileSize, super.fromZoomlevel() {
     _mapSize = _mapSizeWithScaleFactor();
   }
 

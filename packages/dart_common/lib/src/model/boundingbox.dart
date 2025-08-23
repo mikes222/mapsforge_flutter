@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:dart_common/src/model/ilatlong.dart';
 import 'package:dart_common/src/model/latlong.dart';
 import 'package:dart_common/src/projection/projection.dart';
-import 'package:dart_common/src/utils/latlongutils.dart';
+import 'package:dart_common/src/utils/latlong_utils.dart';
 
 /// A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
 class BoundingBox {

@@ -1,4 +1,3 @@
-import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
@@ -65,18 +64,13 @@ class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
   }
 
   @override
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {}
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {}
 
   @override
-  void renderWay(RenderContext renderContext, WayProperties wayProperties) {
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (stroke == null) return;
     UiPath path = calculatePath(wayProperties.getCoordinatesAbsolute(), renderContext.reference, renderinstruction.dy);
     renderContext.canvas.drawPath(path, stroke!);
-  }
-
-  @override
-  MapRectangle getBoundary() {
-    throw UnimplementedError("Nodes not supported");
   }
 }

@@ -42,19 +42,14 @@ class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
   }
 
   @override
-  void renderNode(RenderContext renderContext, NodeProperties nodeProperties) {
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference);
     relative = relative.offset(0, renderinstruction.dy);
-    if (fill != null) renderContext.canvas.drawCircle(relative.x, relative.y, renderinstruction.radius, fill!);
-    if (stroke != null) renderContext.canvas.drawCircle(relative.x, relative.y, renderinstruction.radius, stroke!);
+    if (fill != null) renderContext.canvas.drawCircle(relative.dx, relative.dy, renderinstruction.radius, fill!);
+    if (stroke != null) renderContext.canvas.drawCircle(relative.dx, relative.dy, renderinstruction.radius, stroke!);
   }
 
   @override
-  void renderWay(RenderContext renderContext, WayProperties wayProperties) {}
-
-  @override
-  MapRectangle getBoundary() {
-    return renderinstruction.getBoundary()!;
-  }
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {}
 }

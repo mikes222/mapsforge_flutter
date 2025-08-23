@@ -4,6 +4,10 @@
 [ ] Test the example in the emulator
 [ ] Test the example in the Webbrowser
 [ ] Perform unittests
+
+    melos run dart_test
+    melos run flutter_test
+
 [ ] Update documentation
 [ ] Format source
 

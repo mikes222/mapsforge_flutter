@@ -11,7 +11,7 @@ class MercatorProjection implements Projection {
 
   late final int _maxTileCount;
 
-  MercatorProjection.fromZoomlevel(int zoomLevel) : _scalefactor = Scalefactor.fromZoomlevel(zoomLevel) {
+  MercatorProjection.fromZoomlevel(int zoomlevel) : _scalefactor = Scalefactor.fromZoomlevel(zoomlevel) {
     //_mapSize = _mapSizeWithScaleFactor(_scaleFactor.scalefactor);
     _maxTileCount = _scalefactor.scalefactor.floor();
   }

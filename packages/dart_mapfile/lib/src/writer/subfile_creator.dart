@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:dart_common/buffer.dart';
 import 'package:dart_common/model.dart';
-import 'package:dart_common/src/projection/mercatorprojection.dart';
+import 'package:dart_common/src/projection/mercator_projection.dart';
 import 'package:dart_common/src/utils/timing.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/writer/poiholder.dart';

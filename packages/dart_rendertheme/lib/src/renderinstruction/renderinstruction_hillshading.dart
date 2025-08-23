@@ -63,8 +63,8 @@ class RenderinstructionHillshading extends Renderinstruction with BaseSrcMixin i
   }
 
   @override
-  MapRectangle? getBoundary() {
-    return null;
+  MapRectangle getBoundary() {
+    throw UnimplementedError();
   }
 
   @override

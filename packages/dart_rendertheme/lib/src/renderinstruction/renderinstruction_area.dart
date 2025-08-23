@@ -53,7 +53,7 @@ class RenderinstructionArea extends Renderinstruction
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
+        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) setStrokeMinZoomLevel(665535);
@@ -62,7 +62,7 @@ class RenderinstructionArea extends Renderinstruction
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
@@ -80,9 +80,9 @@ class RenderinstructionArea extends Renderinstruction
   }
 
   @override
-  MapRectangle? getBoundary() {
+  MapRectangle getBoundary() {
     // boundary depends on the way
-    return null;
+    throw UnimplementedError();
   }
 
   @override

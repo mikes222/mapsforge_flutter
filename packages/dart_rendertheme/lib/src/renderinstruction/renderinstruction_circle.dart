@@ -55,13 +55,13 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
       String value = element.value;
 
       if (Renderinstruction.RADIUS == name || Renderinstruction.R == name) {
-        radius = XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor();
+        radius = XmlUtils.parseNonNegativeFloat(name, value);
       } else if (Renderinstruction.DISPLAY == name) {
         display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getScaleFactor());
+        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.FILL == name) {
@@ -71,7 +71,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getUserScaleFactor());
       } else {
         throw Exception("Parsing problems $name=$value");
       }
@@ -81,7 +81,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
   }
 
   @override
-  MapRectangle? getBoundary() {
+  MapRectangle getBoundary() {
     return MapRectangle(-radius, -radius, radius, radius);
   }
 

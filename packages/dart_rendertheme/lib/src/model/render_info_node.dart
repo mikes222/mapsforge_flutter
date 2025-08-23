@@ -6,11 +6,14 @@ import 'package:dart_rendertheme/src/model/display.dart';
 class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
   final NodeProperties nodeProperties;
 
+  /// used for linesymbol
+  double rotateRadians = 0;
+
   RenderInfoNode(this.nodeProperties, T renderInstruction) : super(renderInstruction);
 
   @override
   void render(RenderContext renderContext) {
-    shapePainter!.renderNode(renderContext, nodeProperties);
+    shapePainter!.renderNode(this, renderContext, nodeProperties);
   }
 
   // Returns true if shapes clash with each other
@@ -37,7 +40,7 @@ class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
   @override
   MapRectangle getBoundaryAbsolute() {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
-    MapRectangle boundary = shapePainter!.getBoundary();
+    MapRectangle boundary = renderInstruction.getBoundary();
     Mappoint mappoint = nodeProperties.getCoordinatesAbsolute();
     boundaryAbsolute = boundary.shift(mappoint);
     return boundaryAbsolute!;

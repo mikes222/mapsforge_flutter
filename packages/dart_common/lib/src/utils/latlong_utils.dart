@@ -3,10 +3,8 @@ import 'dart:math';
 import 'package:dart_common/model.dart';
 
 class LatLongUtils {
-  /**
-   * The equatorial radius as defined by the <a href="http://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
-   * ellipsoid</a>. WGS84 is the reference coordinate system used by the Global Positioning System.
-   */
+  /// The equatorial radius as defined by the <a href="http://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
+  /// ellipsoid</a>. WGS84 is the reference coordinate system used by the Global Positioning System.
   static final double EQUATORIAL_RADIUS = 6378137.0;
 
   /// Polar radius of earth is required for distance computation.
@@ -21,13 +19,11 @@ class LatLongUtils {
 
   LatLongUtils._();
 
-  /**
-   * Find if the given point lies within this polygon.
-   * <p>
-   * http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-   *
-   * @return true if this polygon contains the given point, false otherwise.
-   */
+  /// Find if the given point lies within this polygon.
+  /// <p>
+  /// http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+  ///
+  /// @return true if this polygon contains the given point, false otherwise.
   static bool contains(List<ILatLong> latLongs, ILatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
@@ -41,11 +37,9 @@ class LatLongUtils {
     return result;
   }
 
-  /**
-   * Returns the distance between the given segment and point.
-   * <p>
-   * libGDX (Apache 2.0)
-   */
+  /// Returns the distance between the given segment and point.
+  /// <p>
+  /// libGDX (Apache 2.0)
   static double distanceSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
     LatLong nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
     return sqrt(pow(nearest.longitude - pointX, 2) + pow(nearest.latitude - pointY, 2));
@@ -78,11 +72,9 @@ class LatLongUtils {
     return pow(latLong1.longitude - latLong2.longitude, 2).toDouble() + pow(latLong1.latitude - latLong2.latitude, 2);
   }
 
-  /**
-   * Find if this way is closed.
-   *
-   * @return true if this way is closed, false otherwise.
-   */
+  /// Find if this way is closed.
+  ///
+  /// @return true if this way is closed, false otherwise.
   static bool isClosedWay(List<ILatLong> latLongs) {
     if (latLongs.length < 3) return false;
     return isNear(latLongs.first, latLongs.last);
@@ -121,11 +113,9 @@ class LatLongUtils {
     return (coordinate * NANO_CONVERSION_FACTOR).round();
   }
 
-  /**
-   * Returns a point on the segment nearest to the specified point.
-   * <p>
-   * libGDX (Apache 2.0)
-   */
+  /// Returns a point on the segment nearest to the specified point.
+  /// <p>
+  /// libGDX (Apache 2.0)
   static LatLong nearestSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
     double xDiff = endX - startX;
     double yDiff = endY - startY;
@@ -136,81 +126,6 @@ class LatLongUtils {
     if (t > 1) return LatLong(endY, endX);
     return LatLong(startY + t * (endY - startY), startX + t * (endX - startX));
   }
-
-  /**
-   * Parses a given number of comma-separated coordinate values from the supplied string.
-   *
-   * @param coordinatesString   a comma-separated string of coordinate values.
-   * @param numberOfCoordinates the expected number of coordinate values in the string.
-   * @return the coordinate values in the order they have been parsed from the string.
-   * @throws IllegalArgumentException if the string is invalid or does not contain the given number of coordinate values.
-   */
-  //  static List<double> parseCoordinateString(String coordinatesString,
-  //      int numberOfCoordinates) {
-  //    StringTokenizer stringTokenizer = new StringTokenizer(
-  //        coordinatesString, DELIMITER, true);
-  //    bool isDelimiter = true;
-  //    List<String> tokens = new ArrayList<>(numberOfCoordinates);
-  //
-  //    while (stringTokenizer.hasMoreTokens()) {
-  //      String token = stringTokenizer.nextToken();
-  //      isDelimiter = !isDelimiter;
-  //      if (isDelimiter) {
-  //        continue;
-  //      }
-  //
-  //      tokens.add(token);
-  //    }
-  //
-  //    if (isDelimiter) {
-  //      throw new Exception(
-  //          "invalid coordinate delimiter: " + coordinatesString);
-  //    } else if (tokens.length != numberOfCoordinates) {
-  //      throw new Exception(
-  //          "invalid number of coordinate values: " + coordinatesString);
-  //    }
-  //
-  //    List<double> coordinates = new double[numberOfCoordinates];
-  //    for (int i = 0; i < numberOfCoordinates; ++i) {
-  //      coordinates[i] = double.parse(tokens.get(i));
-  //    }
-  //    return coordinates;
-  //  }
-
-  /**
-   * Calculates the zoom level that allows to display the {@link BoundingBox} on a view with the {@link Dimension} and
-   * tile size.
-   *
-   * @param dimension   the {@link Dimension} of the view.
-   * @param boundingBox the {@link BoundingBox} to display.
-   * @param tileSize    the size of the tiles.
-   * @return the zoom level that allows to display the {@link BoundingBox} on a view with the {@link Dimension} and
-   * tile size.
-   */
-  //  static int zoomForBounds(
-  //      Dimension dimension, BoundingBox boundingBox, int tileSize) {
-  //    int mapSize = MercatorProjection.getMapSize(0, tileSize);
-  //    double pixelXMax = MercatorProjection.longitudeToPixelXAtMapSize(
-  //        boundingBox.maxLongitude, mapSize);
-  //    double pixelXMin = MercatorProjection.longitudeToPixelXAtMapSize(
-  //        boundingBox.minLongitude, mapSize);
-  //    double zoomX =
-  //        -1 * log((pixelXMax - pixelXMin).abs() / dimension.width) / log(2);
-  //    double pixelYMax = MercatorProjection.latitudeToPixelYWithMapSize(
-  //        boundingBox.maxLatitude, mapSize);
-  //    double pixelYMin = MercatorProjection.latitudeToPixelYWithMapSize(
-  //        boundingBox.minLatitude, mapSize);
-  //    double zoomY =
-  //        -1 * log((pixelYMax - pixelYMin).abs() / dimension.height) / log(2);
-  //    int zoom = min(zoomX, zoomY).floor();
-  //    if (zoom < 0) {
-  //      return 0;
-  //    }
-  //    if (zoom > 255) {
-  //      return 255;
-  //    }
-  //    return zoom;
-  //  }
 
   /// Determines if a point is inside or outside a polygon.
   ///
@@ -374,8 +289,9 @@ class LatLongUtils {
     return getLineIntersection(line1Start, line1End, line2Start, line2End);
   }
 
+  /// A convenience method to print a list of lat/long pairs
   static void printLatLongs(Way way) {
-    way.latLongs.forEach((latlongs) {
+    for (var latlongs in way.latLongs) {
       List<String> results = [];
       String result = "";
       latlongs.forEach((latlong) {
@@ -389,7 +305,7 @@ class LatLongUtils {
       results.forEach((action) {
         print("  $action");
       });
-    });
+    }
   }
 
   static String printWaypaths(Iterable<Waypath> waypaths) {

@@ -4,7 +4,7 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/src/datastore/datastore.dart';
 
 /// Base class for map data retrieval.
-abstract class MapDataStore extends Datastore {
+abstract class MapDatastore extends Datastore {
   /// the preferred language when extracting labels from this data store. The actual
   /// implementation is up to the concrete implementation, which can also simply ignore
   /// this setting.
@@ -15,7 +15,7 @@ abstract class MapDataStore extends Datastore {
   /// @param language the preferred language or null if default language is used.
   /// Make sure the language is trim()-ed and toLowerCase()-ed and not empty like so:
   /// super((language?.trim().toLowerCase().isEmpty ?? true) ? null : language?.trim().toLowerCase())
-  const MapDataStore(this.preferredLanguage);
+  const MapDatastore(this.preferredLanguage);
 
   /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
   /// It is permissible for the MapDataStore to return more data.

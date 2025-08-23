@@ -8,9 +8,6 @@ abstract class RenderInfo<T extends Renderinstruction> {
   /// The caption to draw. (used by renderinstructionCaption and renderinstructionPathtext)
   String? caption;
 
-  // The lines to draw (used by renderinstructionPathtext)
-  LineSegmentPath? stringPath;
-
   /// The painter to use for this renderinstruction.
   ShapePainter<T>? shapePainter;
 

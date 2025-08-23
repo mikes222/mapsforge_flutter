@@ -54,9 +54,7 @@ class PainterFactory {
         ++created;
         return shapePaint;
       case "pathtext":
-        ShapePainter<T> shapePaint =
-            await ShapePaintPathtext.create(renderInfo.renderInstruction as RenderinstructionPathtext, renderInfo.caption!, renderInfo.stringPath!)
-                as ShapePainter<T>;
+        ShapePainter<T> shapePaint = await ShapePaintPathtext.create(renderInfo.renderInstruction as RenderinstructionPathtext) as ShapePainter<T>;
         renderInfo.shapePainter = shapePaint;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
@@ -97,13 +95,11 @@ class PainterFactory {
         futures.clear();
       }
     }
-    if (renderLabels) {
-      for (RenderInfo renderInfo in layerContainers.labels.renderInfos) {
-        futures.add(createShapePaint(renderInfo));
-        if (futures.length > 100) {
-          await Future.wait(futures);
-          futures.clear();
-        }
+    for (RenderInfo renderInfo in layerContainers.labels.renderInfos) {
+      futures.add(createShapePaint(renderInfo));
+      if (futures.length > 100) {
+        await Future.wait(futures);
+        futures.clear();
       }
     }
     await Future.wait(futures);
