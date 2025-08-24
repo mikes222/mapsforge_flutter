@@ -65,7 +65,7 @@ class TileJobQueue {
     for (Tile tile in tiles) {
       TilePicture? picture = await tileCache.getOrProduce(tile, (Tile tile) async {
         JobResult result = await mapsforgeModel.renderer.executeJob(JobRequest(tile));
-        if (result.picture == null) throw Exception("No picture for $tile");
+        if (result.picture == null) return ImageHelper().createNoDataBitmap();
         // make sure the picture is converted to an image
         Image image = await result.picture!.convertPictureToImage();
         return result.picture!;

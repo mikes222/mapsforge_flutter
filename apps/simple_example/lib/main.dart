@@ -1,3 +1,4 @@
+import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
@@ -73,9 +74,9 @@ class MyHomePage extends StatelessWidget {
     String renderthemeString = await rootBundle.loadString("defaultrender.xml");
     Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-    // Now instantiate our mapModel with the desired parameters
+    // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
     DatastoreRenderer renderer = DatastoreRenderer(mapFile, renderTheme, false);
-    MapModel mapModel = MapModel(renderer: renderer);
+    MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
     // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile.

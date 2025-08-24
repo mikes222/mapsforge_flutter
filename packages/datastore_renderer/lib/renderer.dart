@@ -7,3 +7,4 @@ export 'src/job/job_result.dart';
 export 'src/model/ui_render_context.dart';
 export 'src/osm_online_renderer.dart';
 export 'src/renderer.dart';
+export 'src/util/image_helper.dart';
