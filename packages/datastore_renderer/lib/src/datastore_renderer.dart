@@ -18,7 +18,7 @@ import 'package:logging/logging.dart';
 /// This renderer renders the bitmap for the tiles by using the given [Datastore].
 ///
 class DatastoreRenderer extends Renderer {
-  static final _log = new Logger('MapDataStoreRenderer');
+  static final _log = Logger('DatastoreRenderer');
   static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
   final Datastore datastore;
@@ -69,7 +69,7 @@ class DatastoreRenderer extends Renderer {
       return JobResult.unsupported();
     }
 
-    await PainterFactory().initDrawingLayers(layerContainers, renderLabels);
+    await PainterFactory().initDrawingLayers(layerContainers);
     UiCanvas canvas = UiCanvas.forRecorder(MapsforgeSettingsMgr().tileSize, MapsforgeSettingsMgr().tileSize);
     PixelProjection projection = PixelProjection(job.tile.zoomLevel);
     Mappoint leftUpper = projection.getLeftUpper(job.tile);
@@ -89,10 +89,10 @@ class DatastoreRenderer extends Renderer {
     } else {
       // Returning the canvas with the map but without labels onto it. The labels have to be drawn directly into the view.
     }
-    timing.lap(100, "RenderContext ${renderContext}  final");
+    timing.lap(100, "Data read and prepared");
     TilePicture? picture = await canvas.finalizeBitmap();
     canvas.dispose();
-    timing.done(100, "RenderContext ${renderContext} , $labelCount labels");
+    timing.done(100, "TilePicture created");
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult.normal(picture, layerContainers.labels);
@@ -103,14 +103,21 @@ class DatastoreRenderer extends Renderer {
     Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderthemeZoomlevel renderthemeLevel = this.renderTheme.prepareZoomlevel(job.tile.zoomLevel);
+    RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    LayerContainerCollection? layerContainers = await _datastoreReader.readLabels(datastore, job.tile, renderthemeLevel, renderTheme.levels);
+    LayerContainerCollection? layerContainers = await _datastoreReader.readLabels(
+      datastore,
+      job.tile,
+      job.rightLower ?? job.tile,
+      renderthemeLevel,
+      renderTheme.levels,
+    );
 
     if (layerContainers == null) {
       return JobResult.unsupported();
     }
 
+    await PainterFactory().initDrawingLayers(layerContainers);
     return JobResult.normal(null, layerContainers.labels);
   }
 

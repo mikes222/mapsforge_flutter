@@ -54,7 +54,8 @@ class IsolateMapfile implements Datastore {
 
   @override
   Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) {
-    // TODO: implement readLabels
+    // DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadRequest(upperLeft, lowerRight));
+    // return result;
     throw UnimplementedError();
   }
 
@@ -151,6 +152,16 @@ class _MapfileReadSingleRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+class _MapfileReadRequest {
+  final Tile upperLeft;
+
+  final Tile lowerRight;
+
+  _MapfileReadRequest(this.upperLeft, this.lowerRight);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 class _MapfileSupportsTileRequest {
   final Tile tile;
 
@@ -164,32 +175,22 @@ class _MapfileSupportsTileRequest {
 class MapFile extends MapDatastore {
   static final _log = new Logger('MapFile');
 
-  /**
-   * Bitmask to extract the block offset from an index entry.
-   */
+  /// Bitmask to extract the block offset from an index entry.
   static final int BITMASK_INDEX_OFFSET = 0x7FFFFFFFFF;
 
-  /**
-   * Bitmask to extract the water information from an index entry.
-   */
+  /// Bitmask to extract the water information from an index entry.
   static final int BITMASK_INDEX_WATER = 0x8000000000;
 
-  /**
-   * Default start zoom level.
-   */
+  /// Default start zoom level.
   static final int DEFAULT_START_ZOOM_LEVEL = 12;
 
   /// Amount of cache blocks that the index cache should store.
   static final int INDEX_CACHE_SIZE = 256;
 
-  /**
-   * Error message for an invalid first way offset.
-   */
+  /// Error message for an invalid first way offset.
   static final String INVALID_FIRST_WAY_OFFSET = "invalid first way offset: ";
 
-  /**
-   * Length of the debug signature at the beginning of each block.
-   */
+  /// Length of the debug signature at the beginning of each block.
   static final int SIGNATURE_LENGTH_BLOCK = 32;
 
   /// for debugging purposes
@@ -232,13 +233,13 @@ class MapFile extends MapDatastore {
   MapFile._(String? preferredLanguage) : super((preferredLanguage?.trim().toLowerCase().isEmpty ?? true) ? null : preferredLanguage?.trim().toLowerCase());
 
   Future<MapFile> _init(ReadbufferSource source) async {
-    _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
+    _databaseIndexCache = IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = source;
     return this;
   }
 
   Future<MapFile> _initContent(Uint8List content) async {
-    _databaseIndexCache = new IndexCache(INDEX_CACHE_SIZE);
+    _databaseIndexCache = IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = ReadbufferMemory(content);
     return this;
   }
@@ -254,24 +255,18 @@ class MapFile extends MapDatastore {
     readBufferSource.dispose();
   }
 
-  /**
-   * @return the header data for the current map file.
-   */
+  /// @return the header data for the current map file.
   MapfileInfo getMapFileInfo() {
-    return this._mapFileInfo;
+    return _mapFileInfo;
   }
 
-  /**
-   * @return the metadata for the current map file. Make sure [lateOpen] is
-   * already executed
-   */
+  /// @return the metadata for the current map file. Make sure [lateOpen] is
+  /// already executed
   MapHeaderInfo getMapHeaderInfo() {
-    return this._mapFileInfo.getMapHeaderInfo();
+    return _mapFileInfo.getMapHeaderInfo();
   }
 
-  /**
-   * @return the map file supported languages (may be null).
-   */
+  /// @return the map file supported languages (may be null).
   List<String>? getMapLanguages() {
     String? languagesPreference = getMapHeaderInfo().languagesPreference;
     if (languagesPreference != null && languagesPreference.trim().isNotEmpty) {
@@ -379,7 +374,7 @@ class MapFile extends MapDatastore {
         // }
 
         // get the current index entry
-        int currentBlockIndexEntry = await this._databaseIndexCache.getIndexEntry(subFileParameter, blockNumber, readBufferSource);
+        int currentBlockIndexEntry = await _databaseIndexCache.getIndexEntry(subFileParameter, blockNumber, readBufferSource);
 
         // check if the current query would still return a water tile
         if (queryIsWater) {
@@ -404,7 +399,7 @@ class MapFile extends MapDatastore {
           nextBlockPointer = subFileParameter.subFileSize;
         } else {
           // get and check the next block pointer
-          nextBlockPointer = (await this._databaseIndexCache.getIndexEntry(subFileParameter, blockNumber + 1, readBufferSource)) & BITMASK_INDEX_OFFSET;
+          nextBlockPointer = (await _databaseIndexCache.getIndexEntry(subFileParameter, blockNumber + 1, readBufferSource)) & BITMASK_INDEX_OFFSET;
           if (nextBlockPointer > subFileParameter.subFileSize) {
             _log.warning("invalid next block pointer: $nextBlockPointer");
             _log.warning("sub-file size: ${subFileParameter.subFileSize}");
@@ -424,7 +419,7 @@ class MapFile extends MapDatastore {
           // the current block is too large, continue with the next block
           _log.warning("current block size too large: $currentBlockSize");
           continue;
-        } else if (currentBlockPointer + currentBlockSize > this._fileSize) {
+        } else if (currentBlockPointer + currentBlockSize > _fileSize) {
           _log.warning("current block larger than file size: $currentBlockSize");
           return datastoreBundle;
         }
@@ -522,7 +517,7 @@ class MapFile extends MapDatastore {
       this._mapFileInfo = mapfileInfoBuilder.build();
       _helper = MapfileHelper(_mapFileInfo, preferredLanguage);
       zoomlevelRange = _mapFileInfo.zoomlevelRange;
-      this._fileSize = fileSize;
+      _fileSize = fileSize;
     });
   }
 
@@ -536,11 +531,11 @@ class MapFile extends MapDatastore {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
       throw Exception("upperLeft tile must be above and left of lowerRight tile");
     }
-    QueryParameters queryParameters = new QueryParameters();
-    queryParameters.queryZoomLevel = this._mapFileInfo.getQueryZoomLevel(upperLeft.zoomLevel);
+    QueryParameters queryParameters = QueryParameters();
+    queryParameters.queryZoomLevel = _mapFileInfo.getQueryZoomLevel(upperLeft.zoomLevel);
 
     // get and check the sub-file for the query zoom level
-    SubFileParameter? subFileParameter = this._mapFileInfo.getSubFileParameter(queryParameters.queryZoomLevel);
+    SubFileParameter? subFileParameter = _mapFileInfo.getSubFileParameter(queryParameters.queryZoomLevel);
     if (subFileParameter == null) {
       throw Exception("no sub-file for zoom level: ${queryParameters.queryZoomLevel}");
     }
@@ -559,27 +554,23 @@ class MapFile extends MapDatastore {
     return result;
   }
 
-  /**
-   * Reads only POI data for tile.
-   *
-   * @param tile tile for which data is requested.
-   * @return POI data for the tile.
-   */
+  /// Reads only POI data for tile.
+  ///
+  /// @param tile tile for which data is requested.
+  /// @return POI data for the tile.
   @override
   Future<DatastoreBundle?> readPoiDataSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.POIS);
   }
 
-  /**
-   * Reads POI data for an area defined by the tile in the upper left and the tile in
-   * the lower right corner.
-   * This implementation takes the data storage of a MapFile into account for greater efficiency.
-   *
-   * @param upperLeft  tile that defines the upper left corner of the requested area.
-   * @param lowerRight tile that defines the lower right corner of the requested area.
-   * @return map data for the tile.
-   */
+  /// Reads POI data for an area defined by the tile in the upper left and the tile in
+  /// the lower right corner.
+  /// This implementation takes the data storage of a MapFile into account for greater efficiency.
+  ///
+  /// @param upperLeft  tile that defines the upper left corner of the requested area.
+  /// @param lowerRight tile that defines the lower right corner of the requested area.
+  /// @return map data for the tile.
   @override
   Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
@@ -605,21 +596,17 @@ class MapFile extends MapDatastore {
     return zoomTable;
   }
 
-  /**
-   * Restricts returns of data to zoom level range specified. This can be used to restrict
-   * the use of this map data base when used in MultiMapDatabase settings.
-   *
-   * @param minZoom minimum zoom level supported
-   * @param maxZoom maximum zoom level supported
-   */
+  /// Restricts returns of data to zoom level range specified. This can be used to restrict
+  /// the use of this map data base when used in MultiMapDatabase settings.
+  ///
+  /// @param minZoom minimum zoom level supported
+  /// @param maxZoom maximum zoom level supported
   void restrictToZoomRange(int minZoom, int maxZoom) {
     this.zoomlevelRange = ZoomlevelRange(minZoom, maxZoom);
   }
 
-  /**
-   * @return the default start position for the current map file. Make sure [lateOpen] is
-   * already executed
-   */
+  /// @return the default start position for the current map file. Make sure [lateOpen] is
+  /// already executed
   @override
   Future<LatLong?> getStartPosition() async {
     await _lateOpen();

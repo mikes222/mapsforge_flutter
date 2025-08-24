@@ -1,7 +1,7 @@
 import 'package:dart_common/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/job_queue.dart';
+import 'package:mapsforge_view/src/tile_job_queue.dart';
 import 'package:mapsforge_view/src/tile_painter.dart';
 import 'package:mapsforge_view/src/tile_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
@@ -19,12 +19,12 @@ class TileView extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _TileViewState extends State<TileView> {
-  late final JobQueue jobQueue;
+  late final TileJobQueue jobQueue;
 
   @override
   void initState() {
     super.initState();
-    jobQueue = JobQueue(mapsforgeModel: widget.mapModel);
+    jobQueue = TileJobQueue(mapsforgeModel: widget.mapModel);
   }
 
   @override

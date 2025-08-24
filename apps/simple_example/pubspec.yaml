@@ -48,6 +48,8 @@ dependencies:
   # Workspace
   datastore_renderer: ^1.0.0
 
+  logging: ^1.3.0
+
   # Workspace
   mapsforge_assets: ^1.0.0
 

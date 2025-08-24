@@ -4,9 +4,11 @@ import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 
 void main() {
+  _initLogging();
   runApp(const MyApp());
 }
 
@@ -81,12 +83,22 @@ class MyHomePage extends StatelessWidget {
     mapModel.setPosition(mapPosition);
 
     // For demo purposes we will zoom and rotate after each few seconds.
-    Future.delayed(const Duration(seconds: 15), () {
-      mapModel.zoomIn();
-    });
-    Future.delayed(const Duration(seconds: 30), () {
-      mapModel.rotateTo(20);
-    });
+    // Future.delayed(const Duration(seconds: 15), () {
+    //   mapModel.zoomIn();
+    // });
+    // Future.delayed(const Duration(seconds: 30), () {
+    //   mapModel.rotateTo(20);
+    // });
     return mapModel;
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void _initLogging() {
+  // Print output to console.
+  Logger.root.onRecord.listen((LogRecord r) {
+    print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+  });
+  Logger.root.level = Level.FINEST;
 }

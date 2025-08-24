@@ -1,25 +1,28 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:mapsforge_view/mapsforge.dart';
+import 'package:mapsforge_view/src/cache/memory_label_cache.dart';
+import 'package:mapsforge_view/src/label_set.dart';
 import 'package:mapsforge_view/src/tile_dimension.dart';
-import 'package:mapsforge_view/src/tile_set.dart';
 import 'package:rxdart/rxdart.dart';
 
-class JobQueue {
+class LabelJobQueue {
   final MapModel mapsforgeModel;
 
   MapSize? _size;
 
+  final MemoryLabelCache _cache = MemoryLabelCache.create();
+
   StreamSubscription<MapPosition>? _subscription;
 
-  final Subject<TileSet> _tileStream = PublishSubject<TileSet>();
+  final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
-  JobQueue({required this.mapsforgeModel}) {
+  LabelJobQueue({required this.mapsforgeModel}) {
     _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
       // unawaited
       _positionEvent(position);
@@ -28,7 +31,7 @@ class JobQueue {
 
   void dispose() {
     _subscription?.cancel();
-    _tileStream.close();
+    _labelStream.close();
   }
 
   /// Sets the current size of the mapview so that we know which and how many tiles we need for the whole view
@@ -42,20 +45,19 @@ class JobQueue {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
     TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
-    List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
-
-    TileSet tileSet = TileSet(center: position.getCenter(), mapPosition: position);
-    for (Tile tile in tiles) {
-      JobResult result = await mapsforgeModel.renderer.executeJob(JobRequest(tile));
-      if (result.picture != null) {
-        Image image = await result.picture!.convertPictureToImage();
-        tileSet.images[tile] = result;
-        _tileStream.add(tileSet);
-      }
+    Tile leftUpper = Tile(tileDimension.left, tileDimension.top, position.zoomLevel, position.indoorLevel);
+    Tile rightLower = Tile(tileDimension.right, tileDimension.bottom, position.zoomLevel, position.indoorLevel);
+    RenderInfoCollection? collection = await _cache.getOrProduce(leftUpper, rightLower, (String key) async {
+      JobResult result = await mapsforgeModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
+      if (result.renderInfo == null) throw Exception("No renderInfo for $key");
+      return result.renderInfo!;
+    });
+    if (collection != null) {
+      _labelStream.add(LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: collection));
     }
   }
 
-  Stream<TileSet> get tileStream => _tileStream.stream;
+  Stream<LabelSet> get labelStream => _labelStream.stream;
 
   /// Calculates all tiles needed to display the map on the available view area
   TileDimension _calculateTiles({required MapPosition mapViewPosition, required MapSize screensize}) {
@@ -82,30 +84,5 @@ class JobQueue {
       tileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
     }
     return TileDimension(left: tileLeft, right: tileRight, top: tileTop, bottom: tileBottom);
-  }
-
-  ///
-  /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
-  /// the user (tile in the middle should be created first
-  ///
-  List<Tile> _createTiles({required MapPosition mapPosition, required TileDimension tileDimension}) {
-    int zoomLevel = mapPosition.zoomLevel;
-    int indoorLevel = mapPosition.indoorLevel;
-    Mappoint center = mapPosition.getCenter();
-    // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
-    RelativeMappoint relative = center.offset(Mappoint(MapsforgeSettingsMgr().tileSize / 2, MapsforgeSettingsMgr().tileSize / 2));
-    Map<Tile, double> tileMap = <Tile, double>{};
-    for (int tileY = tileDimension.top; tileY <= tileDimension.bottom; ++tileY) {
-      for (int tileX = tileDimension.left; tileX <= tileDimension.right; ++tileX) {
-        Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
-        Mappoint leftUpper = tile.getLeftUpper();
-        tileMap[tile] = (pow(leftUpper.x - relative.dx, 2) + pow(leftUpper.y - relative.dy, 2)).toDouble();
-      }
-    }
-    //_log.info("$tileTop, $tileBottom, sort ${tileMap.length} items");
-
-    List<Tile> sortedKeys = tileMap.keys.toList(growable: false)..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
-
-    return sortedKeys;
   }
 }

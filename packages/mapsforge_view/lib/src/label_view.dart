@@ -1,9 +1,9 @@
 import 'package:dart_common/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/job_queue.dart';
+import 'package:mapsforge_view/src/label_job_queue.dart';
 import 'package:mapsforge_view/src/label_painter.dart';
-import 'package:mapsforge_view/src/tile_set.dart';
+import 'package:mapsforge_view/src/label_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
 
 /// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
@@ -19,12 +19,12 @@ class LabelView extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _LabelViewState extends State<LabelView> {
-  late final JobQueue jobQueue;
+  late final LabelJobQueue jobQueue;
 
   @override
   void initState() {
     super.initState();
-    jobQueue = JobQueue(mapsforgeModel: widget.mapModel);
+    jobQueue = LabelJobQueue(mapsforgeModel: widget.mapModel);
   }
 
   @override
@@ -43,8 +43,8 @@ class _LabelViewState extends State<LabelView> {
           constraints.maxHeight * MapsforgeSettingsMgr().getDeviceScaleFactor(),
         );
         return StreamBuilder(
-          stream: jobQueue.tileStream,
-          builder: (BuildContext context, AsyncSnapshot<TileSet> snapshot) {
+          stream: jobQueue.labelStream,
+          builder: (BuildContext context, AsyncSnapshot<LabelSet> snapshot) {
             if (snapshot.error != null) {
               print(snapshot.error);
               print(snapshot.stackTrace);

@@ -42,6 +42,13 @@ dependencies:
   # Workspace
   datastore_renderer: ^1.0.0
 
+  # Workspace
+  dart_rendertheme: ^1.0.0
+
+  ecache: ^2.0.10
+
+  logging: ^1.3.0
+
   rxdart: ^0.28.0
 
 dev_dependencies:

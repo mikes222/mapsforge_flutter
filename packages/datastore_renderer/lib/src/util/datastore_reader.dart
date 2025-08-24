@@ -16,7 +16,7 @@ class DatastoreReaderIsolate {
   @pragma('vm:entry-point')
   static Future<LayerContainerCollection?> readLabels(DatastoreReaderIsolateRequest request) async {
     _reader ??= DatastoreReader();
-    return _reader!.readLabels(request.datastore, request.tile, request.renderthemeLevel, request.maxLevels);
+    return _reader!.readLabels(request.datastore, request.tile, request.tile, request.renderthemeLevel, request.maxLevels);
   }
 }
 
@@ -25,10 +25,11 @@ class DatastoreReaderIsolate {
 class DatastoreReaderIsolateRequest {
   final Datastore datastore;
   final Tile tile;
+  final Tile? lowerRight;
   final RenderthemeZoomlevel renderthemeLevel;
   final int maxLevels;
 
-  DatastoreReaderIsolateRequest(this.datastore, this.tile, this.renderthemeLevel, this.maxLevels);
+  DatastoreReaderIsolateRequest(this.datastore, this.tile, this.renderthemeLevel, this.maxLevels, {this.lowerRight});
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,17 +49,25 @@ class DatastoreReader {
     }
     LayerContainerCollection layerContainerCollection = LayerContainerCollection();
     _processMapReadResult(layerContainerCollection, tile, renderthemeLevel, datastoreBundle);
+    layerContainerCollection.clashingInfoCollection.collisionFreeOrdered();
     return layerContainerCollection;
   }
 
-  Future<LayerContainerCollection?> readLabels(Datastore datastore, Tile tile, RenderthemeZoomlevel renderthemeLevel, int maxLevels) async {
-    if (!(await datastore.supportsTile(tile))) {
-      return null;
-    }
-    DatastoreBundle? datastoreBundle = await datastore.readLabelsSingle(tile);
+  Future<LayerContainerCollection?> readLabels(
+    Datastore datastore,
+    Tile leftUpper,
+    Tile rightLower,
+    RenderthemeZoomlevel renderthemeLevel,
+    int maxLevels,
+  ) async {
+    // if (!(await datastore.supportsTile(leftUpper))) {
+    //   return null;
+    // }
+    DatastoreBundle? datastoreBundle = await datastore.readLabels(leftUpper, rightLower);
     if (datastoreBundle == null) return null;
     LayerContainerCollection layerContainerCollection = LayerContainerCollection();
-    _processMapReadResult(layerContainerCollection, tile, renderthemeLevel, datastoreBundle);
+    _processMapReadResult(layerContainerCollection, leftUpper, renderthemeLevel, datastoreBundle);
+    layerContainerCollection.labels.collisionFreeOrdered();
     return layerContainerCollection;
   }
 
@@ -71,7 +80,7 @@ class DatastoreReader {
   ) {
     PixelProjection projection = PixelProjection(tile.zoomLevel);
     for (PointOfInterest pointOfInterest in datastoreBundle.pointOfInterests) {
-      List<Renderinstruction> renderinstructions = renderthemeLevel.matchNode(tile, pointOfInterest);
+      List<Renderinstruction> renderinstructions = renderthemeLevel.matchNode(tile.indoorLevel, pointOfInterest);
       LayerContainer layerContainer = layerContainerCollection.getLayer(pointOfInterest.layer);
       NodeProperties nodeProperties = NodeProperties(pointOfInterest, projection);
       for (Renderinstruction renderinstruction in renderinstructions) {

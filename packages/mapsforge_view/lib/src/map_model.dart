@@ -23,6 +23,8 @@ class MapModel {
     _positionSubject.add(position);
   }
 
+  MapPosition? get lastPosition => _lastPosition;
+
   Stream<MapPosition> get positionStream => _positionSubject.stream;
 
   void zoomIn() {

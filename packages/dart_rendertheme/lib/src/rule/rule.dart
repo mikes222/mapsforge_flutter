@@ -130,11 +130,11 @@ abstract class Rule {
     return null;
   }
 
-  void matchNode(final Tile tile, List<Renderinstruction> matchingList, PointOfInterest pointOfInterest) {
-    if (matches(pointOfInterest.tags, tile.indoorLevel)) {
+  void matchNode(final int indoorLevel, List<Renderinstruction> matchingList, PointOfInterest pointOfInterest) {
+    if (matches(pointOfInterest.tags, indoorLevel)) {
       matchingList.addAll(renderinstructionNodes);
       for (var element in subRules) {
-        element.matchNode(tile, matchingList, pointOfInterest);
+        element.matchNode(indoorLevel, matchingList, pointOfInterest);
       }
     }
   }

@@ -28,8 +28,6 @@ class LayerContainerCollection {
       _labels.renderInfos.addAll(layerContainer.labels.renderInfos);
       layerContainer.labels.clear();
     }
-    _clashingInfoCollection.collisionFreeOrdered();
-    _labels.collisionFreeOrdered();
   }
 
   RenderInfoCollection get clashingInfoCollection => _clashingInfoCollection;

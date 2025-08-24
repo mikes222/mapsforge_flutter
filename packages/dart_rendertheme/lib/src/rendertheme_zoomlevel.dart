@@ -20,8 +20,8 @@ class RenderthemeZoomlevel {
   /// @param renderCallback the callback implementation which will be executed on each match.
   /// @param renderContext
   /// @param poi            the point of interest.
-  List<Renderinstruction> matchNode(final Tile tile, PointOfInterest pointOfInterest) {
-    MatchingCacheKey matchingCacheKey = MatchingCacheKey(pointOfInterest.tags, tile.indoorLevel);
+  List<Renderinstruction> matchNode(final int indoorLevel, PointOfInterest pointOfInterest) {
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(pointOfInterest.tags, indoorLevel);
 
     List<Renderinstruction>? matchingList = nodeMatchingCache[matchingCacheKey];
     if (matchingList == null) {
@@ -29,7 +29,7 @@ class RenderthemeZoomlevel {
       matchingList = [];
 
       for (var element in rulesList) {
-        element.matchNode(tile, matchingList, pointOfInterest);
+        element.matchNode(indoorLevel, matchingList, pointOfInterest);
       }
       nodeMatchingCache[matchingCacheKey] = matchingList;
     }

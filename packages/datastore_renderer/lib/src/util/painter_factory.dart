@@ -75,7 +75,7 @@ class PainterFactory {
     }
   }
 
-  Future<void> initDrawingLayers(LayerContainerCollection layerContainers, bool renderLabels) async {
+  Future<void> initDrawingLayers(LayerContainerCollection layerContainers) async {
     Timing timing = Timing(log: _log);
     List<Future> futures = [];
 
