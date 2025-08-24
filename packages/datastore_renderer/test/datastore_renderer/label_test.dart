@@ -34,27 +34,26 @@ void main() {
 
       MemoryDatastore datastore = MemoryDatastore();
       // to check if the position of the symbol is correct. One cirlce above, one below, one to the right
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle')], LatLong(45.99998, 18.00005)));
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle')], LatLong(46.00006, 18.00005)));
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle')], LatLong(46.00002, 18.00009)));
-      datastore.addPoi(const PointOfInterest(0, [const Tag('natural', 'peak'), Tag('name', 'atLeftTile'), Tag('ele', '5645')], LatLong(46.00002, 18.00005)));
+      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(45.99998, 18.00005)));
+      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00006, 18.00005)));
+      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00002, 18.00009)));
+      datastore.addPoi(const PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'atLeftTile'), Tag('ele', '5645')], LatLong(46.00002, 18.00005)));
 
       //datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00000, 18.00007)));
       datastore.addPoi(const PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
 
       Tile tile0 = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob0 = JobRequest(tile0);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
 
-      JobResult jobResult0 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob0)));
+      JobResult jobResult0 = (await (dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img0 = await jobResult0.picture!.convertPictureToImage();
 
-      _dataStoreRenderer.tileDependencies!.debug();
-      //expect(_dataStoreRenderer.tileDependencies!.overlapData[tile0]!.length, greaterThan(0));
+      dataStoreRenderer.tileDependencies!.debug();
 
       Tile tile1 = Tile(x + 1, y, zoomlevel, l);
       JobRequest mapGeneratorJob1 = JobRequest(tile1);
-      JobResult jobResult1 = (await (_dataStoreRenderer.executeJob(mapGeneratorJob1)));
+      JobResult jobResult1 = (await (dataStoreRenderer.executeJob(mapGeneratorJob1)));
       var img1 = await jobResult1.picture!.convertPictureToImage();
 
       //_dataStoreRenderer.labelStore.debug();

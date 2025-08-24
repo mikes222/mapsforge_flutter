@@ -12,12 +12,12 @@ import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 /// Represents an open polyline on the map.
-class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, StrokeColorSrcMixin implements RenderinstructionWay {
+class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, StrokeSrcMixin implements RenderinstructionWay {
   String? id;
 
   RenderinstructionPolyline(int level) {
@@ -30,7 +30,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
+      ..strokeSrcMixinScale(this, zoomlevel);
     renderinstruction.id = id;
     return renderinstruction;
   }

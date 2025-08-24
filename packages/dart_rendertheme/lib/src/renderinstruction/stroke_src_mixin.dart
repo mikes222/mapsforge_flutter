@@ -2,7 +2,7 @@ import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/cap.dart';
 import 'package:dart_rendertheme/src/model/join.dart';
 
-mixin StrokeColorSrcMixin {
+mixin StrokeSrcMixin {
   int strokeColor = transparent();
 
   double _strokeWidth = 0;
@@ -34,7 +34,7 @@ mixin StrokeColorSrcMixin {
 
   int get strokeMinZoomLevel => _strokeMinZoomLevel;
 
-  void strokeColorSrcMixinClone(StrokeColorSrcMixin base) {
+  void strokeSrcMixinClone(StrokeSrcMixin base) {
     strokeColor = base.strokeColor;
     _strokeWidth = base._strokeWidth;
     _strokeCap = base._strokeCap;
@@ -43,8 +43,8 @@ mixin StrokeColorSrcMixin {
     _strokeMinZoomLevel = base._strokeMinZoomLevel;
   }
 
-  void strokeColorSrcMixinScale(StrokeColorSrcMixin base, int zoomlevel) {
-    strokeColorSrcMixinClone(base);
+  void strokeSrcMixinScale(StrokeSrcMixin base, int zoomlevel) {
+    strokeSrcMixinClone(base);
     if (zoomlevel >= _strokeMinZoomLevel) {
       double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _strokeMinZoomLevel);
       _strokeWidth = _strokeWidth * scaleFactor;

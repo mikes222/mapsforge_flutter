@@ -6,16 +6,16 @@ import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/render_info_node.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
 /// Represents a round area on the map.
-class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin implements RenderinstructionNode {
+class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillSrcMixin, StrokeSrcMixin implements RenderinstructionNode {
   /// the radius of the circle in pixels
   double radius = 10;
 
@@ -30,8 +30,8 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillC
     RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
+      ..fillSrcMixinScale(this, zoomlevel)
+      ..strokeSrcMixinScale(this, zoomlevel);
 
     renderinstruction.scaleRadius = scaleRadius;
     renderinstruction.radius = radius;

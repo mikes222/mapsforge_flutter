@@ -8,18 +8,16 @@ import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
 /// Represents a closed polygon on the map.
-class RenderinstructionArea extends Renderinstruction
-    with BaseSrcMixin, BitmapSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin
-    implements RenderinstructionWay {
+class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, FillSrcMixin, StrokeSrcMixin implements RenderinstructionWay {
   RenderinstructionArea(int level) : super() {
     this.level = level;
     // do not scale bitmaps in areas. They look ugly
@@ -33,8 +31,8 @@ class RenderinstructionArea extends Renderinstruction
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
+      ..fillSrcMixinScale(this, zoomlevel)
+      ..strokeSrcMixinScale(this, zoomlevel);
   }
 
   @override

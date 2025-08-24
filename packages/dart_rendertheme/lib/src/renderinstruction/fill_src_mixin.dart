@@ -1,4 +1,4 @@
-mixin FillColorSrcMixin {
+mixin FillSrcMixin {
   /// For texts the fillColor is the inner color, whereas the strokeColor is the surrounding "frame" of the text
   int fillColor = transparent();
 
@@ -6,12 +6,12 @@ mixin FillColorSrcMixin {
     fillColor = color;
   }
 
-  void fillColorSrcMixinClone(FillColorSrcMixin base) {
+  void fillSrcMixinClone(FillSrcMixin base) {
     fillColor = base.fillColor;
   }
 
-  void fillColorSrcMixinScale(FillColorSrcMixin base, int zoomlevel) {
-    fillColorSrcMixinClone(base);
+  void fillSrcMixinScale(FillSrcMixin base, int zoomlevel) {
+    fillSrcMixinClone(base);
   }
 
   bool isFillTransparent() {

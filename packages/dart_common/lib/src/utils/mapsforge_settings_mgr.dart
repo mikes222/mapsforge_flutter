@@ -14,7 +14,7 @@ class MapsforgeSettingsMgr {
   int strokeMinZoomlevelText = 18;
 
   /// Factor of increasing strokes when zooming in.
-  double _strokeIncreaseFactor = 1.5;
+  double _strokeIncreaseFactor = 1.4;
 
   /// Do NOT scale beyond this factor
   double _strokeMaxScaleFactor = 5;
@@ -90,6 +90,7 @@ class MapsforgeSettingsMgr {
   double calculateScaleFactor(int zoomlevel, int minZoomlevel) {
     int zoomLevelDiff = zoomlevel - minZoomlevel + 1;
     double scaleFactor = pow(_strokeIncreaseFactor, zoomLevelDiff) as double;
-    return min(scaleFactor, _strokeMaxScaleFactor);
+    return scaleFactor;
+    //return min(scaleFactor, _strokeMaxScaleFactor);
   }
 }

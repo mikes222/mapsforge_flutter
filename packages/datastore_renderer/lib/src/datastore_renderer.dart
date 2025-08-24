@@ -88,6 +88,7 @@ class DatastoreRenderer extends Renderer {
       }
     } else {
       // Returning the canvas with the map but without labels onto it. The labels have to be drawn directly into the view.
+      layerContainers.labels.clear();
     }
     timing.lap(100, "Data read and prepared");
     TilePicture? picture = await canvas.finalizeBitmap();

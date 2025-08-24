@@ -1,5 +1,6 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:flutter/cupertino.dart';
@@ -21,8 +22,10 @@ class LabelPainter extends CustomPainter {
       projection: projection,
       rotationRadian: labelSet.mapPosition.rotationRadian,
     );
-    for (var renderInfo in labelSet.renderInfos.renderInfos) {
-      renderInfo.render(renderContext);
+    for (RenderInfoCollection renderInfoCollection in labelSet.renderInfos) {
+      for (var renderInfo in renderInfoCollection.renderInfos) {
+        renderInfo.render(renderContext);
+      }
     }
   }
 

@@ -12,8 +12,8 @@ import 'package:dart_rendertheme/src/model/render_info_node.dart';
 import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/text_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/textkey.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
@@ -24,7 +24,7 @@ import 'package:xml/xml.dart';
 /// If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
 /// center of which is at the point of the POI. The bitmap itself is never rendered by this class.
 class RenderinstructionCaption extends Renderinstruction
-    with BaseSrcMixin, TextSrcMixin, FillColorSrcMixin, StrokeColorSrcMixin
+    with BaseSrcMixin, TextSrcMixin, FillSrcMixin, StrokeSrcMixin
     implements RenderinstructionNode, RenderinstructionWay {
   static final double DEFAULT_GAP = 1;
 
@@ -49,8 +49,8 @@ class RenderinstructionCaption extends Renderinstruction
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..textSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel);
+      ..fillSrcMixinScale(this, zoomlevel)
+      ..strokeSrcMixinScale(this, zoomlevel);
     renderinstruction.symbolId = symbolId;
     renderinstruction.textKey = textKey;
     renderinstruction.position = position;

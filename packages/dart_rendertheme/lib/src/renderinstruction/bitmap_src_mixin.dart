@@ -1,5 +1,5 @@
 import 'package:dart_common/utils.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 
 mixin BitmapSrcMixin {
   /// Default size is 20x20px (400px) at baseline mdpi (160dpi).
@@ -16,7 +16,7 @@ mixin BitmapSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
   int _bitmapMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevel;
 
-  int _color = StrokeColorSrcMixin.transparent();
+  int _color = StrokeSrcMixin.transparent();
 
   void bitmapSrcMixinClone(BitmapSrcMixin base) {
     bitmapSrc = base.bitmapSrc;

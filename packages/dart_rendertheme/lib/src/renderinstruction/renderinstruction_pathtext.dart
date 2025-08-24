@@ -4,10 +4,10 @@ import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/fill_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
 import 'package:dart_rendertheme/src/renderinstruction/repeat_src_mixin.dart';
-import 'package:dart_rendertheme/src/renderinstruction/stroke_color_src_mixin.dart';
+import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/text_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/textkey.dart';
 import 'package:dart_rendertheme/src/util/waydecorator.dart';
@@ -20,7 +20,7 @@ import 'renderinstruction.dart';
  * Represents a text along a polyline on the map.
  */
 class RenderinstructionPathtext extends Renderinstruction
-    with BaseSrcMixin, TextSrcMixin, StrokeColorSrcMixin, FillColorSrcMixin, RepeatSrcMixin
+    with BaseSrcMixin, TextSrcMixin, StrokeSrcMixin, FillSrcMixin, RepeatSrcMixin
     implements RenderinstructionWay {
   static final double REPEAT_GAP_DEFAULT = 100;
   static final double REPEAT_START_DEFAULT = 10;
@@ -41,8 +41,8 @@ class RenderinstructionPathtext extends Renderinstruction
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..textSrcMixinScale(this, zoomlevel)
-      ..strokeColorSrcMixinScale(this, zoomlevel)
-      ..fillColorSrcMixinScale(this, zoomlevel)
+      ..strokeSrcMixinScale(this, zoomlevel)
+      ..fillSrcMixinScale(this, zoomlevel)
       ..repeatSrcMixinScale(this, zoomlevel);
     renderinstruction.textKey = textKey;
     // we need the zoomlevel for calculating the position of the individual texts

@@ -7,7 +7,7 @@ class LabelSet {
 
   final MapPosition mapPosition;
 
-  RenderInfoCollection renderInfos;
+  List<RenderInfoCollection> renderInfos;
 
   LabelSet({required this.center, required this.mapPosition, required this.renderInfos});
 

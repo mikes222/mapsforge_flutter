@@ -50,7 +50,6 @@ class DatastoreReader {
     LayerContainerCollection layerContainerCollection = LayerContainerCollection();
     _processMapReadResult(layerContainerCollection, tile, renderthemeLevel, datastoreBundle);
     layerContainerCollection.clashingInfoCollection.collisionFreeOrdered();
-    layerContainerCollection.labels.clear();
     return layerContainerCollection;
   }
 

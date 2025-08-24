@@ -22,6 +22,9 @@ class LabelJobQueue {
 
   StreamSubscription<MapPosition>? _subscription;
 
+  /// We split the labels into a 5 by 5 tiles matrix and retrieve the labels for these 25 tiles at once.
+  final int _range = 5;
+
   final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
   LabelJobQueue({required this.mapsforgeModel}) {
@@ -56,16 +59,30 @@ class LabelJobQueue {
     _CurrentJob myJob = _CurrentJob(position);
     _currentJob = myJob;
     TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
-    Tile leftUpper = Tile(tileDimension.left, tileDimension.top, position.zoomLevel, position.indoorLevel);
-    Tile rightLower = Tile(tileDimension.right, tileDimension.bottom, position.zoomLevel, position.indoorLevel);
-    RenderInfoCollection? collection = await _cache.getOrProduce(leftUpper, rightLower, (String key) async {
-      JobResult result = await mapsforgeModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
-      if (result.renderInfo == null) throw Exception("No renderInfo for $key");
-      return result.renderInfo!;
-    });
-    if (myJob._abort) return;
-    if (collection != null) {
-      _labelStream.add(LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: collection));
+    int left = tileDimension.left;
+    left = (left / _range).floor() * _range;
+    int top = tileDimension.top;
+    top = (top / _range).floor() * _range;
+    LabelSet labelSet = LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: []);
+    while (true) {
+      while (true) {
+        Tile leftUpper = Tile(left, top, position.zoomLevel, position.indoorLevel);
+        Tile rightLower = Tile(left + _range - 1, top + _range - 1, position.zoomLevel, position.indoorLevel);
+        RenderInfoCollection? collection = await _cache.getOrProduce(leftUpper, rightLower, (String key) async {
+          JobResult result = await mapsforgeModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
+          if (result.renderInfo == null) throw Exception("No renderInfo for $key");
+          return result.renderInfo!;
+        });
+        if (myJob._abort) return;
+        if (collection != null) {
+          labelSet.renderInfos.add(collection);
+          _labelStream.add(labelSet);
+        }
+        left += _range;
+        if (left + _range - 1 > tileDimension.right) break;
+      }
+      top += _range;
+      if (top + _range - 1 > tileDimension.bottom) break;
     }
   }
 
