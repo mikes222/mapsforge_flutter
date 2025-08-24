@@ -72,7 +72,7 @@ build/
 
 # don't check in golden failure output
 **/failures/*.png
-*.lock
+
 *.flutter-plugins-dependencies
 example/android/app/.cxx/
 simplified_example/android/app/.cxx/Debug/yj1057m5/hash_key.txt
