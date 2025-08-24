@@ -62,7 +62,7 @@ class DatastoreRenderer extends Renderer {
     RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(job.tile.zoomLevel);
     timing.lap(100, "$renderthemeLevel prepareZoomlevel");
 
-    LayerContainerCollection? layerContainers = await _datastoreReader.read(datastore, job.tile, renderthemeLevel, renderTheme.levels);
+    LayerContainerCollection? layerContainers = await _datastoreReader.read(datastore, job.tile, renderthemeLevel);
 
     //timing.lap(100, "RenderContext ${renderContext} created");
     if (layerContainers == null) {
@@ -105,19 +105,14 @@ class DatastoreRenderer extends Renderer {
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    LayerContainerCollection? layerContainers = await _datastoreReader.readLabels(
-      datastore,
-      job.tile,
-      job.rightLower ?? job.tile,
-      renderthemeLevel,
-      renderTheme.levels,
-    );
+    LayerContainerCollection? layerContainers = await _datastoreReader.readLabels(datastore, job.tile, job.rightLower ?? job.tile, renderthemeLevel);
 
     if (layerContainers == null) {
       return JobResult.unsupported();
     }
 
     await PainterFactory().initDrawingLayers(layerContainers);
+    timing.done(100, "Retrieve labels for $job completed");
     return JobResult.normal(null, layerContainers.labels);
   }
 

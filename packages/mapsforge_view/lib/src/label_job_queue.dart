@@ -18,12 +18,21 @@ class LabelJobQueue {
 
   final MemoryLabelCache _cache = MemoryLabelCache.create();
 
+  static _CurrentJob? _currentJob;
+
   StreamSubscription<MapPosition>? _subscription;
 
   final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
   LabelJobQueue({required this.mapsforgeModel}) {
     _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
+      if (_currentJob != null &&
+          _currentJob!.position.indoorLevel == position.indoorLevel &&
+          _currentJob!.position.zoomLevel == position.zoomLevel &&
+          _currentJob!.position.getCenter() == position.getCenter()) {
+        return;
+      }
+      _currentJob?.abort();
       // unawaited
       _positionEvent(position);
     });
@@ -44,6 +53,8 @@ class LabelJobQueue {
   Future<void> _positionEvent(MapPosition position) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
+    _CurrentJob myJob = _CurrentJob(position);
+    _currentJob = myJob;
     TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
     Tile leftUpper = Tile(tileDimension.left, tileDimension.top, position.zoomLevel, position.indoorLevel);
     Tile rightLower = Tile(tileDimension.right, tileDimension.bottom, position.zoomLevel, position.indoorLevel);
@@ -52,6 +63,7 @@ class LabelJobQueue {
       if (result.renderInfo == null) throw Exception("No renderInfo for $key");
       return result.renderInfo!;
     });
+    if (myJob._abort) return;
     if (collection != null) {
       _labelStream.add(LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: collection));
     }
@@ -85,4 +97,16 @@ class LabelJobQueue {
     }
     return TileDimension(left: tileLeft, right: tileRight, top: tileTop, bottom: tileBottom);
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _CurrentJob {
+  final MapPosition position;
+
+  bool _abort = false;
+
+  _CurrentJob(this.position);
+
+  void abort() => _abort = true;
 }

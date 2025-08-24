@@ -11,7 +11,7 @@ import 'package:datastore_renderer/src/shape_painter/shape_paint_symbol.dart';
 import 'package:logging/logging.dart';
 
 class PainterFactory {
-  static final _log = Logger('RenderContext');
+  static final _log = Logger('PainterFactory');
 
   int created = 0;
 
@@ -34,8 +34,7 @@ class PainterFactory {
         /// we need to calculate the boundary for the caption. Remember that we cannot
         /// use ui code in isolates but here we are back again from isolates so we can
         /// calculate the width/height of the caption.
-        ShapePainter<T> shapePaint =
-            await ShapePaintCaption.create(renderInfo.renderInstruction as RenderinstructionCaption, caption: renderInfo.caption!) as ShapePainter<T>;
+        ShapePainter<T> shapePaint = await ShapePaintCaption.create(renderInfo.renderInstruction as RenderinstructionCaption) as ShapePainter<T>;
         renderInfo.shapePainter = shapePaint;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint

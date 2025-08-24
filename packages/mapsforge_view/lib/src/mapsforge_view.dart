@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
+import 'package:mapsforge_view/src/gestures/move_gesture_detector.dart';
 import 'package:mapsforge_view/src/label_view.dart';
-import 'package:mapsforge_view/src/move_gesture_detector.dart';
 
 class MapsforgeView extends StatelessWidget {
   final MapModel mapModel;

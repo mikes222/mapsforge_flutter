@@ -20,43 +20,29 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
 
   late UiTextPaint textPaint;
 
-  ParagraphEntry? front;
-
-  ParagraphEntry? back;
-
-  /// The width of the caption. Since we cannot calculate the width in an isolate (ui calls are not allowed)
-  /// we need to set it later on in the ShapePaintCaption
-  double _fontWidth = 0;
-
-  /// The height of the caption. Since we cannot calculate the height in an isolate (ui calls are not allowed)
-  /// we need to set it later on in the ShapePaintCaption
-  double _fontHeight = 0;
-
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintCaption._(RenderinstructionCaption renderinstruction, {required String caption}) : super(renderinstruction) {
-    reinit(caption);
+  ShapePaintCaption._(RenderinstructionCaption renderinstruction) : super(renderinstruction) {
+    reinit();
   }
 
   // ShapePaintCaption.forMarker(ShapeCaption shape, {required String caption}) : super(shape) {
   //   reinit(caption);
   // }
 
-  static Future<ShapePaintCaption> create(RenderinstructionCaption renderinstructionCaption, {required String caption}) async {
+  static Future<ShapePaintCaption> create(RenderinstructionCaption renderinstruction) async {
     return _taskQueue.add(() async {
       //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintCaption;
-      ShapePaintCaption shapePaint = ShapePaintCaption._(renderinstructionCaption, caption: caption);
+      ShapePaintCaption shapePaint = ShapePaintCaption._(renderinstruction);
       //await shapePaint.init(symbolCache);
-      //shape.shapePaint = shapePaint;
+      renderinstruction.shapePainter = shapePaint;
       return shapePaint;
     });
   }
 
-  void reinit(String caption) {
+  void reinit() {
     paintFront = null;
     paintBack = null;
-    front = null;
-    back = null;
     if (!renderinstruction.isFillTransparent()) paintFront = UiPaint.fill(color: renderinstruction.fillColor);
     if (!renderinstruction.isStrokeTransparent()) {
       paintBack = UiPaint.stroke(
@@ -71,14 +57,6 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     textPaint.setFontFamily(renderinstruction.fontFamily);
     textPaint.setFontStyle(renderinstruction.fontStyle);
     textPaint.setTextSize(renderinstruction.fontSize);
-    setCaption(caption);
-  }
-
-  void setCaption(String caption) {
-    if (paintFront != null) front = ParagraphCache().getEntry(caption, textPaint, paintFront!, renderinstruction.maxTextWidth);
-    if (paintBack != null) back = ParagraphCache().getEntry(caption, textPaint, paintBack!, renderinstruction.maxTextWidth);
-    _fontWidth = back?.getWidth() ?? front?.getWidth() ?? 0;
-    _fontHeight = back?.getHeight() ?? front?.getHeight() ?? 0;
   }
 
   @override
@@ -95,6 +73,12 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
       uiCanvas.rotate(2 * pi - renderContext.rotationRadian);
       uiCanvas.translate(-relative.dx, -relative.dy);
     }
+
+    ParagraphEntry? front;
+    ParagraphEntry? back;
+    if (paintFront != null) front = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.maxTextWidth);
+    if (paintBack != null) back = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.maxTextWidth);
+
     MapRectangle boundary = renderinstruction.calculateBoundaryWithSymbol(
       renderinstruction.position,
       back?.getWidth() ?? front?.getWidth() ?? 0,
@@ -104,8 +88,8 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
     //         boundary.getWidth(), boundary.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.5));
-    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
-    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
+    if (back != null) uiCanvas.drawParagraph(back.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
+    if (front != null) uiCanvas.drawParagraph(front.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
     //     ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (renderContext.rotationRadian != 0) {
@@ -128,6 +112,11 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
       uiCanvas.translate(-relative.dx, -relative.dy);
     }
 
+    ParagraphEntry? front;
+    ParagraphEntry? back;
+    if (paintFront != null) front = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.maxTextWidth);
+    if (paintBack != null) back = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.maxTextWidth);
+
     MapRectangle boundary = renderinstruction.calculateBoundaryWithSymbol(
       renderinstruction.position,
       back?.getWidth() ?? front?.getWidth() ?? 0,
@@ -138,8 +127,8 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
     //         boundary.getWidth(), boundary.getHeight()),
     //     ui.Paint()..color = Colors.red.withOpacity(0.5));
 
-    if (back != null) uiCanvas.drawParagraph(back!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
-    if (front != null) uiCanvas.drawParagraph(front!.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
+    if (back != null) uiCanvas.drawParagraph(back.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
+    if (front != null) uiCanvas.drawParagraph(front.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
     // uiCanvas.drawCircle(ui.Offset(this.xy.x - origin.x, this.xy.y - origin.y),
     //     5, ui.Paint()..color = Colors.blue);
     if (renderContext.rotationRadian != 0) {

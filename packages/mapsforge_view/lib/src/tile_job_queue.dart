@@ -21,12 +21,21 @@ class TileJobQueue {
 
   TileCache tileCache = MemoryTileCache.create();
 
+  static _CurrentJob? _currentJob;
+
   StreamSubscription<MapPosition>? _subscription;
 
   final Subject<TileSet> _tileStream = PublishSubject<TileSet>();
 
   TileJobQueue({required this.mapsforgeModel}) {
     _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
+      if (_currentJob != null &&
+          _currentJob!.position.indoorLevel == position.indoorLevel &&
+          _currentJob!.position.zoomLevel == position.zoomLevel &&
+          _currentJob!.position.getCenter() == position.getCenter()) {
+        return;
+      }
+      _currentJob?.abort();
       // unawaited
       _positionEvent(position);
     });
@@ -47,6 +56,8 @@ class TileJobQueue {
   Future<void> _positionEvent(MapPosition position) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
+    _CurrentJob myJob = _CurrentJob(position);
+    _currentJob = myJob;
     TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
     List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
 
@@ -59,6 +70,7 @@ class TileJobQueue {
         Image image = await result.picture!.convertPictureToImage();
         return result.picture!;
       });
+      if (myJob._abort) return;
       if (picture != null) {
         tileSet.images[tile] = JobResult.normal(picture);
         _tileStream.add(tileSet);
@@ -120,4 +132,16 @@ class TileJobQueue {
 
     return sortedKeys;
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _CurrentJob {
+  final MapPosition position;
+
+  bool _abort = false;
+
+  _CurrentJob(this.position);
+
+  void abort() => _abort = true;
 }
