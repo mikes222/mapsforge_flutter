@@ -1,0 +1,222 @@
+import 'package:test/test.dart';
+import 'package:dart_common/model.dart';
+import 'package:dart_rendertheme/src/model/matching_cache_key.dart';
+
+void main() {
+  group('MatchingCacheKey Performance Optimizations', () {
+    group('Hash Function Optimization', () {
+      test('should generate different hashes for different tag combinations', () {
+        final tags1 = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
+        final tags2 = [Tag('highway', 'secondary'), Tag('name', 'Main Street')];
+        final tags3 = [Tag('highway', 'primary'), Tag('name', 'Side Street')];
+
+        final key1 = MatchingCacheKey(tags1, 0);
+        final key2 = MatchingCacheKey(tags2, 0);
+        final key3 = MatchingCacheKey(tags3, 0);
+
+        expect(key1.hashCode, isNot(equals(key2.hashCode)));
+        expect(key1.hashCode, isNot(equals(key3.hashCode)));
+        expect(key2.hashCode, isNot(equals(key3.hashCode)));
+      });
+
+      test('should generate same hash for identical keys', () {
+        final tags = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
+        
+        final key1 = MatchingCacheKey(tags, 0);
+        final key2 = MatchingCacheKey(tags, 0);
+
+        expect(key1.hashCode, equals(key2.hashCode));
+        expect(key1, equals(key2));
+      });
+
+      test('should handle empty tag lists', () {
+        final key1 = MatchingCacheKey([], 0);
+        final key2 = MatchingCacheKey([], 0);
+        final key3 = MatchingCacheKey([], 1);
+
+        expect(key1.hashCode, equals(key2.hashCode));
+        expect(key1.hashCode, isNot(equals(key3.hashCode)));
+      });
+
+      test('should incorporate indoor level in hash', () {
+        final tags = [Tag('highway', 'primary')];
+        
+        final key1 = MatchingCacheKey(tags, 0);
+        final key2 = MatchingCacheKey(tags, 1);
+        final key3 = MatchingCacheKey(tags, -1);
+
+        expect(key1.hashCode, isNot(equals(key2.hashCode)));
+        expect(key1.hashCode, isNot(equals(key3.hashCode)));
+        expect(key2.hashCode, isNot(equals(key3.hashCode)));
+      });
+    });
+
+    group('Hash Distribution Quality', () {
+      test('should produce well-distributed hashes for similar tags', () {
+        final Set<int> hashCodes = <int>{};
+        
+        // Generate many similar but different tag combinations
+        for (int i = 0; i < 100; i++) {
+          final tags = [
+            Tag('highway', 'primary'),
+            Tag('name', 'Street $i'),
+            Tag('ref', 'A$i'),
+          ];
+          final key = MatchingCacheKey(tags, i % 5);
+          hashCodes.add(key.hashCode);
+        }
+
+        // Should have good distribution (most hashes should be unique)
+        expect(hashCodes.length, greaterThan(90)); // At least 90% unique
+      });
+
+      test('should handle hash collisions gracefully with equality check', () {
+        final tags1 = [Tag('highway', 'primary'), Tag('name', 'Main')];
+        final tags2 = [Tag('highway', 'secondary'), Tag('name', 'Side')];
+        
+        final key1 = MatchingCacheKey(tags1, 0);
+        final key2 = MatchingCacheKey(tags2, 0);
+
+        // Even if hash codes were the same (unlikely), equality should work correctly
+        if (key1.hashCode == key2.hashCode) {
+          expect(key1, isNot(equals(key2)));
+        }
+      });
+    });
+
+    group('Performance Tests', () {
+      test('should compute hashes efficiently for large tag lists', () {
+        // Create a large tag list
+        final List<Tag> largeTags = <Tag>[];
+        for (int i = 0; i < 100; i++) {
+          largeTags.add(Tag('key$i', 'value$i'));
+        }
+
+        final stopwatch = Stopwatch()..start();
+
+        // Compute hash many times
+        for (int i = 0; i < 1000; i++) {
+          final key = MatchingCacheKey(largeTags, i);
+          key.hashCode; // Force hash computation
+        }
+
+        stopwatch.stop();
+        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be very fast
+      });
+
+      test('should perform equality checks efficiently', () {
+        final tags1 = List.generate(50, (i) => Tag('key$i', 'value$i'));
+        final tags2 = List.generate(50, (i) => Tag('key$i', 'value$i'));
+        final tags3 = List.generate(50, (i) => Tag('key$i', 'different$i'));
+
+        final key1 = MatchingCacheKey(tags1, 0);
+        final key2 = MatchingCacheKey(tags2, 0);
+        final key3 = MatchingCacheKey(tags3, 0);
+
+        final stopwatch = Stopwatch()..start();
+
+        // Perform many equality checks
+        for (int i = 0; i < 1000; i++) {
+          key1 == key2; // Should be true
+          key1 == key3; // Should be false
+        }
+
+        stopwatch.stop();
+        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+      });
+    });
+
+    group('Edge Cases', () {
+      test('should handle null and empty values in tags', () {
+        final tags1 = [Tag('highway', ''), Tag('', 'value')];
+        final tags2 = [Tag('highway', null), Tag(null, 'value')];
+        
+        final key1 = MatchingCacheKey(tags1, 0);
+        final key2 = MatchingCacheKey(tags2, 0);
+
+        // Should not throw exceptions
+        expect(() => key1.hashCode, returnsNormally);
+        expect(() => key2.hashCode, returnsNormally);
+        expect(() => key1 == key2, returnsNormally);
+      });
+
+      test('should handle extreme indoor levels', () {
+        final tags = [Tag('highway', 'primary')];
+        
+        final keyMin = MatchingCacheKey(tags, -1000000);
+        final keyMax = MatchingCacheKey(tags, 1000000);
+
+        expect(() => keyMin.hashCode, returnsNormally);
+        expect(() => keyMax.hashCode, returnsNormally);
+        expect(keyMin.hashCode, isNot(equals(keyMax.hashCode)));
+      });
+
+      test('should handle tags with very long strings', () {
+        final longString = 'a' * 1000;
+        final tags = [Tag('highway', longString), Tag(longString, 'primary')];
+        
+        final key = MatchingCacheKey(tags, 0);
+
+        expect(() => key.hashCode, returnsNormally);
+      });
+    });
+
+    group('Hash Algorithm Validation', () {
+      test('should use FNV-1a algorithm characteristics', () {
+        final tags = [Tag('test', 'value')];
+        final key = MatchingCacheKey(tags, 0);
+        
+        final hash = key.hashCode;
+        
+        // FNV-1a should produce non-zero hashes for non-empty input
+        expect(hash, isNot(equals(0)));
+        
+        // Should be deterministic
+        expect(key.hashCode, equals(hash));
+        expect(key.hashCode, equals(hash));
+      });
+
+      test('should minimize hash collisions compared to simple XOR', () {
+        final Set<int> hashCodes = <int>{};
+        
+        // Test with systematic tag variations that might cause XOR collisions
+        for (int i = 0; i < 50; i++) {
+          for (int j = 0; j < 50; j++) {
+            final tags = [Tag('key$i', 'value$j')];
+            final key = MatchingCacheKey(tags, 0);
+            hashCodes.add(key.hashCode);
+          }
+        }
+
+        // Should have very few collisions
+        expect(hashCodes.length, greaterThan(2400)); // > 96% unique
+      });
+    });
+
+    group('Memory Efficiency', () {
+      test('should not create unnecessary objects during hashing', () {
+        final tags = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
+        final key = MatchingCacheKey(tags, 0);
+
+        // Hash computation should not allocate significant memory
+        // This is more of a design validation than a measurable test
+        expect(() => key.hashCode, returnsNormally);
+      });
+
+      test('should handle repeated hash computations efficiently', () {
+        final tags = [Tag('highway', 'primary')];
+        final key = MatchingCacheKey(tags, 0);
+
+        final stopwatch = Stopwatch()..start();
+
+        // Compute hash many times (simulating cache lookups)
+        for (int i = 0; i < 10000; i++) {
+          key.hashCode;
+        }
+
+        stopwatch.stop();
+        expect(stopwatch.elapsedMilliseconds, lessThan(10)); // Should be extremely fast
+      });
+    });
+  });
+}

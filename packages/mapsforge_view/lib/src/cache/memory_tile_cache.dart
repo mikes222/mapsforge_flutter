@@ -1,6 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:ecache/ecache.dart';
+import 'package:mapsforge_view/src/cache/spatial_tile_index.dart';
 import 'package:mapsforge_view/src/cache/tile_cache.dart';
 
 ///
@@ -10,8 +11,10 @@ import 'package:mapsforge_view/src/cache/tile_cache.dart';
 class MemoryTileCache extends TileCache {
   static final List<MemoryTileCache> _instances = [];
 
-  final Storage<Tile, TilePicture> storage = WeakReferenceStorage<Tile, TilePicture>();
-  late LruCache<Tile, TilePicture> _cache;
+  late final Storage<Tile, TilePicture> storage;
+  late final LruCache<Tile, TilePicture> _cache;
+
+  final SpatialTileIndex _spatialIndex = SpatialTileIndex(cellSize: 0.1); // 0.1 degree cells
 
   factory MemoryTileCache.create() {
     MemoryTileCache result = MemoryTileCache._();
@@ -20,13 +23,18 @@ class MemoryTileCache extends TileCache {
   }
 
   MemoryTileCache._() {
+    storage = WeakReferenceStorage<Tile, TilePicture>(
+      onEvict: (tile, picture) {
+        _spatialIndex.removeTile(tile);
+      },
+    );
     _cache = LruCache<Tile, TilePicture>(storage: storage, capacity: 1000);
   }
 
   @override
   void dispose() {
-    print("Statistics for MemoryTileBitmapCache: ${_cache.storage.toString()}");
     _cache.clear();
+    _spatialIndex.clear();
     _instances.remove(this);
   }
 
@@ -45,25 +53,32 @@ class MemoryTileCache extends TileCache {
   @override
   void purgeAll() {
     _cache.clear();
+    _spatialIndex.clear();
   }
 
   @override
   void purgeByBoundary(BoundingBox boundingBox) {
-    storage.keys
-        .where((Tile tile) {
-          if (tile.getBoundingBox().intersects(boundingBox)) {
-            return true;
-          }
-          return false;
-        })
-        .forEach((tile) {
-          _cache.remove(tile);
-        });
+    // Ultra-fast boundary-based purging using spatial index
+    // This provides O(log n) performance instead of O(n) iteration
+    final Set<Tile> tilesToRemove = _spatialIndex.getTilesInBoundary(boundingBox);
+
+    // Batch removal to minimize cache operations
+    for (final Tile tile in tilesToRemove) {
+      _cache.remove(tile);
+      _spatialIndex.removeTile(tile);
+    }
   }
 
   @override
-  Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture> Function(Tile) producer) {
-    return _cache.getOrProduce(tile, producer);
+  Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture> Function(Tile) producer) async {
+    final TilePicture? result = await _cache.getOrProduce(tile, producer);
+
+    // Add tile to spatial index when it's successfully cached
+    if (result != null && _cache.get(tile) != null) {
+      _spatialIndex.addTile(tile);
+    }
+
+    return result;
   }
 
   @override

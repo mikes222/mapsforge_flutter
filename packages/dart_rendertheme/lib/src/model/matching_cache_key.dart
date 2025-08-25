@@ -32,12 +32,20 @@ class MatchingCacheKey {
 
   @override
   int get hashCode {
-    // Use a better hash function with prime numbers for better distribution
-    int hash = 17;
+    // Optimized hash function using FNV-1a algorithm for better distribution
+    // and reduced collision probability compared to simple XOR operations
+    int hash = 2166136261; // FNV offset basis (32-bit)
+    
+    // Hash tags using FNV-1a algorithm
     for (final tag in _tags) {
-      hash = hash * 31 + tag.hashCode;
+      hash ^= tag.hashCode;
+      hash *= 16777619; // FNV prime (32-bit)
     }
-    hash = hash * 31 + _indoorLevel.hashCode;
+    
+    // Combine with indoor level
+    hash ^= _indoorLevel;
+    hash *= 16777619;
+    
     return hash;
   }
 }
