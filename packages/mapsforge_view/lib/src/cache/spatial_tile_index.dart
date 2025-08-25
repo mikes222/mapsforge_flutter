@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:math' as Math;
+
 import 'package:dart_common/model.dart';
 
 /// A spatial index for tiles using a grid-based approach to optimize
@@ -13,13 +14,17 @@ class SpatialTileIndex {
   /// Smaller cell sizes provide better spatial resolution but use more memory
   SpatialTileIndex({double cellSize = 1.0}) : _cellSize = cellSize;
 
+  // for testing purposes
+  Map<Tile, Set<String>> get tileToGridCells => _tileToGridCells;
+  Map<String, Set<Tile>> get grid => _grid;
+
   /// Adds a tile to the spatial index
   void addTile(Tile tile) {
     final BoundingBox bounds = tile.getBoundingBox();
     final Set<String> gridCells = _getGridCells(bounds);
-    
+
     _tileToGridCells[tile] = gridCells;
-    
+
     for (final String cell in gridCells) {
       _grid.putIfAbsent(cell, () => HashSet<Tile>()).add(tile);
     }
@@ -45,7 +50,7 @@ class SpatialTileIndex {
   Set<Tile> getTilesInBoundary(BoundingBox boundingBox) {
     final Set<String> gridCells = _getGridCells(boundingBox);
     final Set<Tile> result = HashSet<Tile>();
-    
+
     for (final String cell in gridCells) {
       final Set<Tile>? cellTiles = _grid[cell];
       if (cellTiles != null) {
@@ -57,7 +62,7 @@ class SpatialTileIndex {
         }
       }
     }
-    
+
     return result;
   }
 
@@ -78,16 +83,16 @@ class SpatialTileIndex {
     int totalTiles = 0;
     int maxTilesPerCell = 0;
     int minTilesPerCell = _grid.isNotEmpty ? _grid.values.first.length : 0;
-    
+
     for (final Set<Tile> cellTiles in _grid.values) {
       final int count = cellTiles.length;
       totalTiles += count;
       maxTilesPerCell = Math.max(maxTilesPerCell, count);
       minTilesPerCell = Math.min(minTilesPerCell, count);
     }
-    
+
     final double avgTilesPerCell = _grid.isNotEmpty ? totalTiles / _grid.length : 0.0;
-    
+
     return {
       'totalTiles': tileCount,
       'gridCells': gridCellCount,
@@ -101,18 +106,18 @@ class SpatialTileIndex {
   /// Calculates which grid cells a bounding box spans
   Set<String> _getGridCells(BoundingBox bounds) {
     final Set<String> cells = HashSet<String>();
-    
+
     final int minLatCell = (bounds.minLatitude / _cellSize).floor();
     final int maxLatCell = (bounds.maxLatitude / _cellSize).floor();
     final int minLonCell = (bounds.minLongitude / _cellSize).floor();
     final int maxLonCell = (bounds.maxLongitude / _cellSize).floor();
-    
+
     for (int lat = minLatCell; lat <= maxLatCell; lat++) {
       for (int lon = minLonCell; lon <= maxLonCell; lon++) {
         cells.add('${lat}_${lon}');
       }
     }
-    
+
     return cells;
   }
 }

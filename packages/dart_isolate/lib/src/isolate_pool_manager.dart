@@ -1,6 +1,7 @@
 import 'dart:isolate';
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math' as Math;
 
 import 'package:dart_common/model.dart';
 import 'package:task_queue/task_queue.dart';
@@ -34,8 +35,8 @@ class IsolatePoolManager {
   }
   
   /// Execute Douglas-Peucker simplification using isolate pool
-  Future<List<Mappoint>> simplifyPoints(
-    List<Mappoint> points,
+  Future<List<ILatLong>> simplifyPoints(
+    List<ILatLong> points,
     double tolerance, {
     TaskPriority priority = TaskPriority.normal,
     Duration? timeout,
@@ -50,7 +51,7 @@ class IsolatePoolManager {
     }
     
     // Use task queue to manage isolate execution
-    return _taskQueue.add(
+    return await _taskQueue.add(
       () => _executeInIsolate(points, tolerance),
       priority: priority,
       timeout: timeout,
@@ -58,8 +59,8 @@ class IsolatePoolManager {
   }
   
   /// Execute calculation in available isolate
-  Future<List<Mappoint>> _executeInIsolate(
-    List<Mappoint> points,
+  Future<List<ILatLong>> _executeInIsolate(
+    List<ILatLong> points,
     double tolerance,
   ) async {
     final worker = await _getWorker();
@@ -145,11 +146,11 @@ class IsolatePoolManager {
   }
   
   /// Synchronous Douglas-Peucker for small datasets
-  static List<Mappoint> _douglasPeuckerSync(List<Mappoint> points, double tolerance) {
+  static List<ILatLong> _douglasPeuckerSync(List<ILatLong> points, double tolerance) {
     if (points.length <= 2) return points;
     
     final toleranceSquared = tolerance * tolerance;
-    final result = <Mappoint>[];
+    final result = <ILatLong>[];
     final stack = Queue<_Segment>();
     
     stack.add(_Segment(0, points.length - 1));
@@ -185,16 +186,23 @@ class IsolatePoolManager {
   }
   
   /// Calculate squared perpendicular distance
-  static double _perpendicularDistanceSquared(Mappoint p, Mappoint a, Mappoint b) {
-    if (a.x == b.x && a.y == b.y) {
-      final dx = p.x - a.x;
-      final dy = p.y - a.y;
+  static double _perpendicularDistanceSquared(ILatLong p, ILatLong a, ILatLong b) {
+    final aLat = a.latitude;
+    final aLon = a.longitude;
+    final bLat = b.latitude;
+    final bLon = b.longitude;
+    final pLat = p.latitude;
+    final pLon = p.longitude;
+    
+    if (aLat == bLat && aLon == bLon) {
+      final dx = pLat - aLat;
+      final dy = pLon - aLon;
       return dx * dx + dy * dy;
     }
     
-    final area = (b.x - a.x) * (a.y - p.y) - (a.x - p.x) * (b.y - a.y);
-    final dx = b.x - a.x;
-    final dy = b.y - a.y;
+    final area = (bLat - aLat) * (aLon - pLon) - (aLat - pLat) * (bLon - aLon);
+    final dx = bLat - aLat;
+    final dy = bLon - aLon;
     final abDistSquared = dx * dx + dy * dy;
     
     return (area * area) / abDistSquared;
@@ -227,7 +235,7 @@ class _IsolateWorker {
   });
   
   /// Execute Douglas-Peucker calculation in this isolate
-  Future<List<Mappoint>> execute(List<Mappoint> points, double tolerance) async {
+  Future<List<ILatLong>> execute(List<ILatLong> points, double tolerance) async {
     final replyPort = ReceivePort();
     
     sendPort.send(_IsolateTask(
@@ -237,7 +245,7 @@ class _IsolateWorker {
     ));
     
     try {
-      final result = await replyPort.first as List<Mappoint>;
+      final result = await replyPort.first as List<ILatLong>;
       return result;
     } finally {
       replyPort.close();
@@ -253,7 +261,7 @@ class _IsolateWorker {
 
 /// Task message for isolate communication
 class _IsolateTask {
-  final List<Mappoint> points;
+  final List<ILatLong> points;
   final double tolerance;
   final SendPort replyPort;
   
