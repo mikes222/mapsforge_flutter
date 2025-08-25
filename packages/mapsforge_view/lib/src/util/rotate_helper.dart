@@ -9,7 +9,7 @@ class RotateHelper {
   /// normalizes the given dx/dy coordinates in respect to the orientation.
   /// We rotate the given coordinates so that it behaves like there was NO
   /// rotation at all
-  static PositionInfo? normalize(MapPosition position, ui.Size size, double dx, double dy) {
+  static PositionInfo normalize(MapPosition position, ui.Size size, double dx, double dy) {
     // Mappoint? leftUpper =
     //     viewModel.mapViewPosition?.getLeftUpper(viewModel.mapDimension);
     Mappoint center = position.getCenter();

@@ -9,7 +9,7 @@ import 'package:ecache/ecache.dart';
 class MemoryLabelCache {
   static final List<MemoryLabelCache> _instances = [];
 
-  late LruCache<String, RenderInfoCollection> _cache;
+  late LruCache<Tile, RenderInfoCollection> _cache;
 
   factory MemoryLabelCache.create() {
     MemoryLabelCache result = MemoryLabelCache._();
@@ -30,7 +30,7 @@ class MemoryLabelCache {
   }
 
   MemoryLabelCache._() {
-    _cache = LruCache<String, RenderInfoCollection>(capacity: 100);
+    _cache = LruCache<Tile, RenderInfoCollection>(capacity: 500);
   }
 
   void dispose() {
@@ -57,8 +57,17 @@ class MemoryLabelCache {
     //     });
   }
 
-  Future<RenderInfoCollection?> getOrProduce(Tile leftUpper, Tile rightLower, Future<RenderInfoCollection> Function(String) producer) {
-    String key = "${leftUpper}_$rightLower";
-    return _cache.getOrProduce(key, producer);
+  Future<RenderInfoCollection> getOrProduce(Tile leftUpper, Tile rightLower, Future<RenderInfoCollection> Function(Tile) producer) {
+    return _cache.getOrProduce(leftUpper, producer);
+  }
+
+  RenderInfoCollection? get(Tile tile) {
+    try {
+      return _cache.get(tile);
+    } catch (error) {
+      // Exception: Cannot get a value from a producer since the value is a future and the get() method is synchronously
+      // a value is still in progress, return null
+      return null;
+    }
   }
 }

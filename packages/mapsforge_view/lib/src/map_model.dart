@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:dart_common/model.dart';
+import 'package:dart_common/projection.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:rxdart/rxdart.dart';
@@ -15,10 +16,19 @@ class MapModel {
   /// Inform a listener about the last known position, hence using the [BehaviorSubject].
   final Subject<MapPosition> _positionSubject = BehaviorSubject<MapPosition>();
 
+  final Subject<Object> _manualMoveSubject = PublishSubject<Object>();
+
+  final Subject<TapEvent?> _tapSubject = PublishSubject();
+
+  final Subject<TapEvent> _longTapSubject = PublishSubject();
+
   MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
   void dispose() {
     _positionSubject.close();
+    _manualMoveSubject.close();
+    _tapSubject.close();
+    _longTapSubject.close();
   }
 
   void setPosition(MapPosition position) {
@@ -29,6 +39,28 @@ class MapModel {
   MapPosition? get lastPosition => _lastPosition;
 
   Stream<MapPosition> get positionStream => _positionSubject.stream;
+
+  /// A stream which triggers an event if the user starts to move the map. This can be used to switch off automatic movements
+  Stream<Object> get manualMoveStream => _manualMoveSubject.stream;
+
+  /// A stream which triggers an event if the user taps at the map
+  Stream<TapEvent?> get tapStream => _tapSubject.stream;
+
+  /// A stream which triggers an event if the user long taps at the map
+  Stream<TapEvent> get longTapStream => _longTapSubject.stream;
+
+  void manualMove(Object object) {
+    _manualMoveSubject.add(object);
+  }
+
+  /// sets or clears a tap event. Clearing a tap event usually means that the context menu should not be shown anymore
+  void tap(TapEvent? event) {
+    _tapSubject.add(event);
+  }
+
+  void longTap(TapEvent event) {
+    _longTapSubject.add(event);
+  }
 
   void zoomIn() {
     if (_lastPosition!.zoomLevel == zoomlevelRange.zoomlevelMax) return;
@@ -98,5 +130,32 @@ class MapModel {
   void setCenter(double x, double y) {
     MapPosition newPosition = _lastPosition!.setCenter(x, y);
     setPosition(newPosition);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+/// Event which is triggered when the user taps at the map
+class TapEvent implements ILatLong {
+  // The position of the event in lat direction (north-south)
+  @override
+  final double latitude;
+
+  // The position of the event in lon direction (east-west)
+  @override
+  final double longitude;
+
+  final PixelProjection _projection;
+
+  /// The point of the event in mappixels
+  final Mappoint mappoint;
+
+  PixelProjection get projection => _projection;
+
+  const TapEvent({required this.latitude, required this.longitude, required PixelProjection projection, required this.mappoint}) : _projection = projection;
+
+  @override
+  String toString() {
+    return 'TapEvent{latitude: $latitude, longitude: $longitude, mappoint: $mappoint}';
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/gestures/rotate_helper.dart';
+import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
 class ZoomInGestureDetector extends StatefulWidget {
   final MapModel mapModel;
@@ -69,6 +69,7 @@ class _ZoomInGestureDetectorState extends State<ZoomInGestureDetector> {
             if (doLog) _log.info("onDoubleTap");
             //print("Screensize: ${widget.screensize}");
             _eventHandler?.tapUp(size: constraints.biggest);
+            _eventHandler = null;
           },
           child: const SizedBox.expand(),
         );
@@ -91,8 +92,7 @@ class _DoubleTapEvent {
   void tapUp({TapUpDetails? details, required Size size}) {
     MapPosition? lastPosition = mapModel.lastPosition;
     if (lastPosition == null) return;
-    PositionInfo? positionInfo = RotateHelper.normalize(lastPosition, size, _doubleTapLocalPosition.dx, _doubleTapLocalPosition.dy);
-    if (positionInfo == null) return;
+    PositionInfo positionInfo = RotateHelper.normalize(lastPosition, size, _doubleTapLocalPosition.dx, _doubleTapLocalPosition.dy);
     // interpolate the new center between the old center and where we
     // pressed now. The new center is half-way between our double-pressed point and the old-center
     mapModel.zoomInAround(

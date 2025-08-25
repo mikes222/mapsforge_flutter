@@ -4,7 +4,7 @@ import 'package:dart_common/model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/gestures/rotate_helper.dart';
+import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
 class ScaleGestureDetector extends StatefulWidget {
   final MapModel mapModel;
@@ -83,6 +83,7 @@ class _ScaleGestureDetectorState extends State<ScaleGestureDetector> {
           onScaleEnd: (ScaleEndDetails details) {
             if (doLog) _log.info("onScaleEnd $details");
             _eventHandler?.end(details: details, size: constraints.biggest) ?? true;
+            _eventHandler = null;
           },
           child: const SizedBox.expand(),
         );
@@ -137,8 +138,7 @@ class _ScaleEvent {
       num mult = pow(2, zoomLevelDiff);
       // if (doLog)
       //   _log.info("onScaleEnd zooming now zoomLevelDiff $zoomLevelDiff");
-      PositionInfo? positionInfo = RotateHelper.normalize(mapModel.lastPosition!, size, startLocalFocalPoint.dx, startLocalFocalPoint.dy);
-      if (positionInfo == null) return true;
+      PositionInfo positionInfo = RotateHelper.normalize(mapModel.lastPosition!, size, startLocalFocalPoint.dx, startLocalFocalPoint.dy);
       mapModel.zoomToAround(
         positionInfo.latitude + (mapModel.lastPosition!.latitude! - positionInfo.latitude) / mult,
         positionInfo.longitude + (mapModel.lastPosition!.longitude! - positionInfo.longitude) / mult,

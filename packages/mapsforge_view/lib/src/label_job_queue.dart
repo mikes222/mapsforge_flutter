@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:dart_common/model.dart';
-import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/cache/memory_label_cache.dart';
 import 'package:mapsforge_view/src/label_set.dart';
 import 'package:mapsforge_view/src/tile_dimension.dart';
+import 'package:mapsforge_view/src/util/tile_helper.dart';
 import 'package:rxdart/rxdart.dart';
 
 class LabelJobQueue {
@@ -29,16 +29,20 @@ class LabelJobQueue {
 
   LabelJobQueue({required this.mapsforgeModel}) {
     _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
-      if (_currentJob != null &&
-          _currentJob!.position.indoorLevel == position.indoorLevel &&
-          _currentJob!.position.zoomLevel == position.zoomLevel &&
-          _currentJob!.position.getCenter() == position.getCenter() &&
-          _currentJob!.position.rotation == position.rotation) {
+      if (_currentJob?.position == position) {
         return;
       }
+      TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
+      if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
+        if (_currentJob!._done) {
+          _labelStream.add(_currentJob!.labelSet);
+        } else {
+          // same information to draw, previous job is still running
+          return;
+        }
+      }
       _currentJob?.abort();
-      // unawaited
-      _positionEvent(position);
+      unawaited(_positionEvent(position, tileDimension));
     });
   }
 
@@ -54,67 +58,42 @@ class LabelJobQueue {
 
   MapSize? getSize() => _size;
 
-  Future<void> _positionEvent(MapPosition position) async {
+  Future<void> _positionEvent(MapPosition position, TileDimension tileDimension) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
-    _CurrentJob myJob = _CurrentJob(position);
-    _currentJob = myJob;
-    TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
-    int left = tileDimension.left;
-    left = (left / _range).floor() * _range;
-    int top = tileDimension.top;
-    top = (top / _range).floor() * _range;
     LabelSet labelSet = LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: []);
+    _CurrentJob myJob = _CurrentJob(position, tileDimension, labelSet);
+    _currentJob = myJob;
+    int left = tileDimension.left;
+    int top = tileDimension.top;
+    // find a common base (multiplies of 5) to start with
+    left = (left / _range).floor() * _range;
+    top = (top / _range).floor() * _range;
+    int maxTileNbr = Tile.getMaxTileNumber(position.zoomLevel);
     while (true) {
       while (true) {
         Tile leftUpper = Tile(left, top, position.zoomLevel, position.indoorLevel);
-        Tile rightLower = Tile(left + _range - 1, top + _range - 1, position.zoomLevel, position.indoorLevel);
-        RenderInfoCollection? collection = await _cache.getOrProduce(leftUpper, rightLower, (String key) async {
+        Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomLevel, position.indoorLevel);
+        RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
+          print("Retrieve labels for $tile and $tileDimension");
           JobResult result = await mapsforgeModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
-          if (result.renderInfo == null) throw Exception("No renderInfo for $key");
+          if (result.renderInfo == null) throw Exception("No renderInfo for $tile");
           return result.renderInfo!;
         });
         if (myJob._abort) return;
-        if (collection != null) {
-          labelSet.renderInfos.add(collection);
-          _labelStream.add(labelSet);
-        }
+        labelSet.renderInfos.add(collection);
+        _labelStream.add(labelSet);
         left += _range;
-        if (left + _range - 1 > tileDimension.right) break;
+        if (left > tileDimension.right) break;
       }
       top += _range;
-      if (top + _range - 1 > tileDimension.bottom) break;
+      left = (tileDimension.left / _range).floor() * _range;
+      if (top > tileDimension.bottom) break;
     }
+    myJob._done = true;
   }
 
   Stream<LabelSet> get labelStream => _labelStream.stream;
-
-  /// Calculates all tiles needed to display the map on the available view area
-  TileDimension _calculateTiles({required MapPosition mapViewPosition, required MapSize screensize}) {
-    Mappoint center = mapViewPosition.getCenter();
-    double halfWidth = screensize.width / 2;
-    double halfHeight = screensize.height / 2;
-    if (mapViewPosition.rotation > 2) {
-      // we rotate. Use the max side for both width and height
-      halfWidth = max(halfWidth, halfHeight);
-      halfHeight = halfWidth;
-    }
-    int tileLeft = mapViewPosition.projection.pixelXToTileX(max(center.x - halfWidth, 0));
-    int tileRight = mapViewPosition.projection.pixelXToTileX(min(center.x + halfWidth, mapViewPosition.projection.mapsize.toDouble()));
-    int tileTop = mapViewPosition.projection.pixelYToTileY(max(center.y - halfHeight, 0));
-    int tileBottom = mapViewPosition.projection.pixelYToTileY(min(center.y + halfHeight, mapViewPosition.projection.mapsize.toDouble()));
-    // rising from 0 to 45, then falling to 0 at 90°
-    int degreeDiff = 45 - ((mapViewPosition.rotation) % 90 - 45).round().abs();
-    if (degreeDiff > 5) {
-      // the map is rotated. To avoid empty corners enhance each side by one tile
-      int diff = (MapsforgeSettingsMgr().getDeviceScaleFactor().ceil());
-      tileLeft = max(tileLeft - diff, 0);
-      tileRight = min(tileRight + diff, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
-      tileTop = max(tileTop - diff, 0);
-      tileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
-    }
-    return TileDimension(left: tileLeft, right: tileRight, top: tileTop, bottom: tileBottom);
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -122,9 +101,15 @@ class LabelJobQueue {
 class _CurrentJob {
   final MapPosition position;
 
+  final TileDimension tileDimension;
+
+  final LabelSet labelSet;
+
+  bool _done = false;
+
   bool _abort = false;
 
-  _CurrentJob(this.position);
+  _CurrentJob(this.position, this.tileDimension, this.labelSet);
 
   void abort() => _abort = true;
 }
