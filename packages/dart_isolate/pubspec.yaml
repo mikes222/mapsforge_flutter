@@ -9,7 +9,12 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  #path: ^1.9.0
+
+  # Workspace
+  dart_common: ^1.0.0
+
+  # Workspace
+  task_queue: ^1.0.0
 
   rxdart: ^0.28.0
 

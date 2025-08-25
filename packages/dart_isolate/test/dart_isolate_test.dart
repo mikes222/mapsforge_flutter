@@ -1,4 +1,4 @@
-import 'package:dart_isolate/dart_isolate.dart';
+import 'package:dart_isolate/src/dart_isolate.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
