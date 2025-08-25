@@ -18,13 +18,26 @@ class MatchingCacheKey {
       identical(this, other) ||
       other is MatchingCacheKey &&
           runtimeType == other.runtimeType &&
-          _tags.fold(15, (dynamic previousValue, element) => previousValue ^ element.hashCode) ==
-              other._tags.fold(15, (dynamic previousValue, element) => previousValue ^ element.hashCode) &&
-          _indoorLevel == other._indoorLevel;
+          _indoorLevel == other._indoorLevel &&
+          _tagsEqual(other._tags);
+  
+  /// Optimized tag comparison to avoid repeated hash calculations
+  bool _tagsEqual(List<Tag> otherTags) {
+    if (_tags.length != otherTags.length) return false;
+    for (int i = 0; i < _tags.length; i++) {
+      if (_tags[i] != otherTags[i]) return false;
+    }
+    return true;
+  }
 
   @override
   int get hashCode {
-    int tagHash = _tags.fold<int>(15, ((previousValue, element) => previousValue ^ element.hashCode));
-    return tagHash ^ _indoorLevel.hashCode << 5;
+    // Use a better hash function with prime numbers for better distribution
+    int hash = 17;
+    for (final tag in _tags) {
+      hash = hash * 31 + tag.hashCode;
+    }
+    hash = hash * 31 + _indoorLevel.hashCode;
+    return hash;
   }
 }

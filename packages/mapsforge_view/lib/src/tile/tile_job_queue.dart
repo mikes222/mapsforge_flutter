@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
@@ -11,6 +10,7 @@ import 'package:mapsforge_view/src/tile/tile_dimension.dart';
 import 'package:mapsforge_view/src/tile/tile_set.dart';
 import 'package:mapsforge_view/src/util/tile_helper.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:task_queue/task_queue.dart';
 
 import '../cache/memory_tile_cache.dart';
 
@@ -27,7 +27,19 @@ class TileJobQueue {
 
   final Subject<TileSet> _tileStream = PublishSubject<TileSet>();
 
+  /// Parallel task queue for tile loading optimization
+  late final TaskQueue _tileTaskQueue;
+
+  /// Maximum number of concurrent tile loading operations
+  static const int _maxConcurrentTiles = 4;
+
+  /// Stream emission batching timer
+  Timer? _batchTimer;
+  TileSet? _batchTileset;
+
   TileJobQueue({required this.mapModel}) {
+    _tileTaskQueue = ParallelTaskQueue(_maxConcurrentTiles);
+
     _subscription = mapModel.positionStream.listen((MapPosition position) {
       if (_currentJob?.position == position) {
         return;
@@ -35,7 +47,7 @@ class TileJobQueue {
       TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
       if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
         if (_currentJob!._done) {
-          _tileStream.add(_currentJob!.tileSet);
+          _emitTileSetBatched(_currentJob!.tileSet);
         } else {
           // same information to draw, previous job is still running
           return;
@@ -49,7 +61,10 @@ class TileJobQueue {
   void dispose() {
     _currentJob?.abort();
     _subscription?.cancel();
+    _tileTaskQueue.cancel();
+    _batchTimer?.cancel();
     _tileStream.close();
+    _batchTileset = null;
   }
 
   /// Sets the current size of the mapview so that we know which and how many tiles we need for the whole view
@@ -66,6 +81,7 @@ class TileJobQueue {
     _CurrentJob myJob = _CurrentJob(position, tileDimension, tileSet);
     _currentJob = myJob;
     List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
+
     // retrieve all available tiles from cache
     for (Tile tile in tiles) {
       TilePicture? picture = tileCache.get(tile);
@@ -73,31 +89,62 @@ class TileJobQueue {
     }
     if (myJob._abort) return;
     if (tileSet.images.isNotEmpty) {
-      /// send the available tiles to ui
-      _tileStream.add(tileSet);
+      /// send the available tiles to ui with batching
+      _emitTileSetBatched(tileSet);
     }
 
-    for (Tile tile in tiles) {
-      if (tileSet.images[tile] != null) continue;
-      TilePicture? picture = await tileCache.getOrProduce(tile, (Tile tile) async {
-        JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
-        if (result.picture == null) return ImageHelper().createNoDataBitmap();
-        // make sure the picture is converted to an image
-        /*Image image =*/
-        await result.picture!.convertPictureToImage();
-        return result.picture!;
+    // Load missing tiles in parallel using task queue
+    final missingTiles = tiles.where((tile) => tileSet.images[tile] == null).toList();
+    final futures = <Future<void>>[];
+
+    for (Tile tile in missingTiles) {
+      if (myJob._abort) break;
+
+      final future = _tileTaskQueue.add(() async {
+        if (myJob._abort) return;
+
+        TilePicture? picture = await tileCache.getOrProduce(tile, (Tile tile) async {
+          JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
+          if (result.picture == null) return ImageHelper().createNoDataBitmap();
+          // make sure the picture is converted to an image
+          await result.picture!.convertPictureToImage();
+          return result.picture!;
+        });
+
+        if (myJob._abort) return;
+        if (picture != null) {
+          tileSet.images[tile] = picture;
+          _emitTileSetBatched(tileSet);
+        }
       });
-      if (myJob._abort) return;
-      if (picture != null) {
-        tileSet.images[tile] = picture;
-        _tileStream.add(tileSet);
-        continue;
-      }
+
+      futures.add(future);
     }
-    myJob._done = true;
+
+    // Wait for all tile loading to complete
+    await Future.wait(futures);
+
+    if (!myJob._abort) {
+      myJob._done = true;
+      // Start prefetching neighboring tiles
+      //_prefetchNeighboringTiles(position, tileDimension);
+    }
   }
 
   Stream<TileSet> get tileStream => _tileStream.stream;
+
+  /// Emit tile set with batching to reduce stream emissions
+  void _emitTileSetBatched(TileSet tileSet) {
+    _batchTileset = tileSet;
+    // Set new timer for batching
+    _batchTimer ??= Timer(const Duration(milliseconds: 16), () {
+      // ~60fps
+      _batchTimer = null;
+      if (_batchTileset != null) {
+        _tileStream.add(_batchTileset!);
+      }
+    });
+  }
 
   ///
   /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
@@ -114,7 +161,10 @@ class TileJobQueue {
       for (int tileX = tileDimension.left; tileX <= tileDimension.right; ++tileX) {
         Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
         Mappoint leftUpper = tile.getLeftUpper();
-        tileMap[tile] = (pow(leftUpper.x - relative.dx, 2) + pow(leftUpper.y - relative.dy, 2)).toDouble();
+        // Replace pow() with multiplication for better performance
+        double dx = leftUpper.x - relative.dx;
+        double dy = leftUpper.y - relative.dy;
+        tileMap[tile] = dx * dx + dy * dy;
       }
     }
     //_log.info("$tileTop, $tileBottom, sort ${tileMap.length} items");

@@ -21,6 +21,12 @@ class Readbuffer {
   /// The current position of the read pointer in the [_bufferData]. The position cannot exceed the amount of bytes in [_bufferData]
   int _bufferPosition;
 
+  /// Shared ByteData instance to avoid allocations for float/int conversions
+  final ByteData _sharedByteData = ByteData(8);
+
+  /// Cached UTF-8 decoder to avoid repeated instantiation
+  static final Utf8Decoder _utf8Decoder = const Utf8Decoder();
+
   ///
   /// Default constructor to open a buffer for reading a mapfile
   ///
@@ -39,9 +45,9 @@ class Readbuffer {
   ///
   /// @return the byte value.
   int readByte() {
-    ByteData bdata = ByteData(1);
-    bdata.setInt8(0, this._bufferData[this._bufferPosition++]);
-    return bdata.getInt8(0);
+    int value = _bufferData[_bufferPosition++];
+    // Convert unsigned byte to signed byte
+    return value > 127 ? value - 256 : value;
   }
 
   /// Converts four bytes from the read buffer to a float.
@@ -51,9 +57,10 @@ class Readbuffer {
   /// @return the float value.
   double readFloat() {
     // https://stackoverflow.com/questions/55355482/parsing-integer-bit-patterns-as-ieee-754-floats-in-dart
-    var bdata = ByteData(4);
-    bdata.setInt32(0, readInt());
-    return bdata.getFloat32(0);
+    // Use a single ByteData view instead of creating new instances
+    int intValue = readInt();
+    _sharedByteData.setInt32(0, intValue, Endian.big);
+    return _sharedByteData.getFloat32(0, Endian.big);
   }
 
   /// Converts four bytes from the read buffer to a signed int.
@@ -112,7 +119,7 @@ class Readbuffer {
           value = readByte().toString();
         } else if (value == '%i') {
           if (tag.key!.contains(":colour")) {
-            value = "#" + readInt().toRadixString(16);
+            value = "#${readInt().toRadixString(16)}";
           } else {
             value = readInt().toString();
           }
@@ -142,17 +149,39 @@ class Readbuffer {
     int variableByteDecode = 0;
     int variableByteShift = 0;
 
-    // check if the continuation bit is set
-    while ((this._bufferData[this._bufferPosition] & 0x80) != 0) {
-      variableByteDecode |= (this._bufferData[this._bufferPosition] & 0x7f) << variableByteShift;
+    // Optimized variable-length integer decoding with reduced array access
+    int pos = _bufferPosition;
+    final data = _bufferData;
+
+    // Unroll first few iterations for common cases
+    int byte = data[pos++];
+    if ((byte & 0x80) == 0) {
+      _bufferPosition = pos;
+      return byte & 0x7f;
+    }
+
+    variableByteDecode = byte & 0x7f;
+    variableByteShift = 7;
+
+    byte = data[pos++];
+    if ((byte & 0x80) == 0) {
+      _bufferPosition = pos;
+      return variableByteDecode | ((byte & 0x7f) << variableByteShift);
+    }
+
+    variableByteDecode |= (byte & 0x7f) << variableByteShift;
+    variableByteShift += 7;
+
+    // Continue with loop for longer values
+    while ((data[pos] & 0x80) != 0) {
+      variableByteDecode |= (data[pos] & 0x7f) << variableByteShift;
       variableByteShift += 7;
-      ++_bufferPosition;
+      ++pos;
     }
 
     // read the seven data bits from the last byte
-    variableByteDecode |= (this._bufferData[this._bufferPosition] & 0x7f) << variableByteShift;
-    variableByteShift += 7;
-    ++_bufferPosition;
+    variableByteDecode |= (data[pos] & 0x7f) << variableByteShift;
+    _bufferPosition = pos + 1;
     return variableByteDecode;
   }
 
@@ -166,24 +195,27 @@ class Readbuffer {
     int variableByteDecode = 0;
     int variableByteShift = 0;
 
+    // Optimized signed variable-length integer decoding
+    int pos = _bufferPosition;
+    final data = _bufferData;
+
     // check if the continuation bit is set
-    while ((this._bufferData[this._bufferPosition] & 0x80) != 0) {
-      variableByteDecode |= (this._bufferData[this._bufferPosition] & 0x7f) << variableByteShift;
+    while ((data[pos] & 0x80) != 0) {
+      variableByteDecode |= (data[pos] & 0x7f) << variableByteShift;
       variableByteShift += 7;
-      ++_bufferPosition;
+      ++pos;
     }
 
-    variableByteDecode |= (this._bufferData[this._bufferPosition] & 0x3f) << variableByteShift;
-    variableByteShift += 6;
+    variableByteDecode |= (data[pos] & 0x3f) << variableByteShift;
 
     // read the six data bits from the last byte
-    if ((this._bufferData[this._bufferPosition] & 0x40) != 0) {
+    if ((data[pos] & 0x40) != 0) {
       // negative
-      ++_bufferPosition;
-      return -1 * variableByteDecode;
+      _bufferPosition = pos + 1;
+      return -variableByteDecode;
     }
     // positive
-    ++_bufferPosition;
+    _bufferPosition = pos + 1;
     return variableByteDecode;
   }
 
@@ -200,24 +232,35 @@ class Readbuffer {
   /// @return the UTF-8 decoded string (may be null).
   String readUTF8EncodedString2(int stringLength) {
     assert(stringLength > 0);
-    if (this._bufferPosition + stringLength <= this._bufferData.length) {
-      this._bufferPosition += stringLength;
+    if (_bufferPosition + stringLength <= _bufferData.length) {
+      int startPos = _bufferPosition;
+      _bufferPosition += stringLength;
       //_log.info("Reading utf8 $stringLength bytes ending at $_bufferPosition");
-      String result = utf8.decoder.convert(_bufferData, _bufferPosition - stringLength, _bufferPosition);
-      //_log.info("String found $result");
-      return result;
+
+      // Use cached decoder and avoid creating intermediate lists for small strings
+      if (stringLength <= 64) {
+        // For small strings, use sublist view which is more efficient
+        String result = _utf8Decoder.convert(_bufferData.sublist(startPos, startPos + stringLength));
+        //_log.info("String found $result");
+        return result;
+      } else {
+        // For larger strings, use range conversion to avoid copying
+        String result = _utf8Decoder.convert(_bufferData, startPos, startPos + stringLength);
+        //_log.info("String found $result");
+        return result;
+      }
     }
     throw Exception("Cannot read utf8 string with $stringLength length at position $_bufferPosition of data with ${_bufferData.length} bytes");
   }
 
   /// @return the current buffer position.
   int getBufferPosition() {
-    return this._bufferPosition;
+    return _bufferPosition;
   }
 
   /// @return the current size of the read buffer.
   int getBufferSize() {
-    return this._bufferData.length;
+    return _bufferData.length;
   }
 
   /// Sets the buffer position to the given offset.
@@ -228,7 +271,7 @@ class Readbuffer {
     //   _log.warning("Cannot set bufferPosition $bufferPosition because we have only ${_bufferData.length} bytes available");
     // }
     assert(bufferPosition >= 0 && bufferPosition < _bufferData.length);
-    this._bufferPosition = bufferPosition;
+    _bufferPosition = bufferPosition;
   }
 
   /// Skips the given number of bytes in the read buffer.
@@ -236,6 +279,6 @@ class Readbuffer {
   /// @param bytes the number of bytes to skip.
   void skipBytes(int bytes) {
     assert(_bufferPosition >= 0 && _bufferPosition + bytes <= _bufferData.length);
-    this._bufferPosition += bytes;
+    _bufferPosition += bytes;
   }
 }

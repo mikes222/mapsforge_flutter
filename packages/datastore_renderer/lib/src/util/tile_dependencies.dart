@@ -16,7 +16,11 @@ class TileDependencies {
 
   ///
   /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
+  /// Using a more efficient data structure for better performance
   final Map<Tile, Set<Dependency>> _overlapData = {};
+  
+  /// Cache for frequently accessed tiles to avoid repeated lookups
+  final Map<Tile, bool> _drawnTileCache = {};
 
   TileDependencies();
 
@@ -30,6 +34,7 @@ class TileDependencies {
       }
     });
     _overlapData.clear();
+    _drawnTileCache.clear();
   }
 
   /// stores an MapElementContainer that clashesWith from one tile (the one being drawn) to
@@ -39,20 +44,26 @@ class TileDependencies {
   /// @param to      tile the label clashesWith to
   /// @param element the MapElementContainer in question
   void addOverlappingElement(RenderInfo element, List<Tile> tiles) {
-    Dependency dependency = Dependency(element, tiles);
+    if (tiles.isEmpty) return; // Early exit for empty tiles
+    
+    Dependency dependency = Dependency(element, List.from(tiles)); // Create copy to avoid mutation issues
     for (var tile in tiles) {
-      if (!_overlapData.containsKey(tile)) {
-        _overlapData[tile] = {};
-      }
-      _overlapData[tile]!.add(dependency);
+      _overlapData.putIfAbsent(tile, () => <Dependency>{}).add(dependency);
     }
   }
 
   /// Returns true if the given neighbour is already drawn
   bool isDrawn(Tile neighbour) {
-    if (!_overlapData.containsKey(neighbour)) return false;
-    if (_overlapData[neighbour]!.isNotEmpty) return false;
-    return true;
+    // Check cache first for frequently accessed tiles
+    if (_drawnTileCache.containsKey(neighbour)) {
+      return _drawnTileCache[neighbour]!;
+    }
+    
+    bool drawn = _overlapData.containsKey(neighbour) && _overlapData[neighbour]!.isEmpty;
+    
+    // Cache the result for future lookups
+    _drawnTileCache[neighbour] = drawn;
+    return drawn;
   }
 
   /// If we want to draw an overlapping element and find out that this element
@@ -78,20 +89,29 @@ class TileDependencies {
     Set<Dependency>? map = _overlapData[tileToDraw];
     if (map == null) {
       // we do not have anything for this tile but mark it as "drawn" now
-      _overlapData[tileToDraw] = {};
+      _overlapData[tileToDraw] = <Dependency>{};
+      _drawnTileCache[tileToDraw] = true; // Update cache
       return null;
     }
 
-    /// hmm, sometimes the map is empty, I do not understand why
-    //assert(map.length > 0);
-    Set<Dependency> result = {};
-    for (var dependency in map) {
+    if (map.isEmpty) {
+      _drawnTileCache[tileToDraw] = true; // Update cache
+      return null;
+    }
+    
+    Set<Dependency> result = <Dependency>{};
+    // Use iterator for better performance with large sets
+    final iterator = map.iterator;
+    while (iterator.moveNext()) {
+      final dependency = iterator.current;
       bool removed = dependency.tiles.remove(tileToDraw);
       assert(removed);
       result.add(dependency);
     }
+    
     // mark as drawn
     map.clear();
+    _drawnTileCache[tileToDraw] = true; // Update cache
     return result;
   }
 

@@ -1,5 +1,6 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
+import 'spatial_index.dart';
 
 class LayerUtil {
   static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {
@@ -30,6 +31,12 @@ class LayerUtil {
 
   /// returns the list of elements which can be added without collisions and disposes() elements which cannot be added
   static List<RenderInfo> removeCollisions(List<RenderInfo> addElements, List<RenderInfo> keepElements) {
+    // Use spatial indexing for better performance when dealing with many elements
+    if (addElements.length > 10 || keepElements.length > 10) {
+      return _removeCollisionsWithSpatialIndex(addElements, keepElements);
+    }
+    
+    // Use original algorithm for small lists
     List<RenderInfo> toDraw2 = [];
     for (var newElement in addElements) {
       if (haveSpace(newElement, keepElements)) {
@@ -38,13 +45,28 @@ class LayerUtil {
         //newElement.dispose();
       }
     }
-    // print(
-    //     "Removed ${addElements.length - toDraw2.length} elements out of ${addElements.length}");
-    // if (addElements.length == toDraw2.length && addElements.length > 20) {
-    //   toDraw2.forEach((element) {
-    //     print(" having ${element.boundaryAbsolute} $element");
-    //   });
-    // }
     return toDraw2;
+  }
+  
+  /// Optimized collision removal using spatial indexing
+  static List<RenderInfo> _removeCollisionsWithSpatialIndex(List<RenderInfo> addElements, List<RenderInfo> keepElements) {
+    final spatialIndex = SpatialIndex(cellSize: 128.0);
+    
+    // Add all keep elements to spatial index
+    for (final element in keepElements) {
+      spatialIndex.add(element);
+    }
+    
+    final toDraw = <RenderInfo>[];
+    
+    // Check each new element against spatial index
+    for (final newElement in addElements) {
+      if (!spatialIndex.hasCollision(newElement)) {
+        toDraw.add(newElement);
+        spatialIndex.add(newElement); // Add to index for subsequent collision checks
+      }
+    }
+    
+    return toDraw;
   }
 }

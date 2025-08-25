@@ -7,11 +7,18 @@ class DouglasPeuckerLatLong {
   num _perpendicularDistanceSquared(ILatLong p, ILatLong a, ILatLong b) {
     // Berechne das Quadrat der senkrechten Distanz von Punkt p zur Linie ab
     // zwischen den Punkten a und b.
-    if (a.longitude == b.longitude && a.latitude == b.latitude) {
-      return Math.pow(p.longitude - a.longitude, 2) + Math.pow(p.latitude - a.latitude, 2);
+    double dx = a.longitude - b.longitude;
+    double dy = a.latitude - b.latitude;
+    
+    if (dx == 0 && dy == 0) {
+      // Points a and b are the same, return distance squared to point a
+      double px = p.longitude - a.longitude;
+      double py = p.latitude - a.latitude;
+      return px * px + py * py;
     }
+    
     double area = (b.longitude - a.longitude) * (a.latitude - p.latitude) - (a.longitude - p.longitude) * (b.latitude - a.latitude);
-    num abDistSquared = Math.pow(b.longitude - a.longitude, 2) + Math.pow(b.latitude - a.latitude, 2);
+    double abDistSquared = dx * dx + dy * dy;
     return (area * area) / abDistSquared;
   }
 
