@@ -17,6 +17,17 @@ workspace:
   - apps/simple_example
 
 melos:
+  command:
+    bootstrap:
+      dependencies:
+        # Upgraded for getOrProduceSync()
+        ecache: ^2.0.11
+
+        # flutter_test is not compatible with newer versions currently (08/2025)
+        test: ^1.26.2
+      hooks:
+        post: flutter pub upgrade
+
   scripts:
     build:
       description: Generates dart files
@@ -24,24 +35,12 @@ melos:
       packageFilters:
         dependsOn: build_runner
 
-    bootstrap:
-      dependencies:
-        # Upgraded for getOrProduceSync()
-        ecache: ^2.0.10
-
-        # flutter_test is not compatible with newer versions currently (08/2025)
-        test: ^1.26.2
-      hooks:
-        post: flutter pub upgrade
-
-
     flutter_test:
       run: melos exec -c 1 --dir-exists="test" --flutter --fail-fast -- flutter test --no-pub --coverage
       description: Run Flutter tests for a specific package in this project.
       select-package:
         flutter: true
         dir-exists: test
-
 
     dart_test:
       run: melos exec -c 1 --dir-exists="test" --depends-on="test" --fail-fast -- dart test

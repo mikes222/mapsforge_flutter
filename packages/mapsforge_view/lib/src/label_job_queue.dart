@@ -32,7 +32,8 @@ class LabelJobQueue {
       if (_currentJob != null &&
           _currentJob!.position.indoorLevel == position.indoorLevel &&
           _currentJob!.position.zoomLevel == position.zoomLevel &&
-          _currentJob!.position.getCenter() == position.getCenter()) {
+          _currentJob!.position.getCenter() == position.getCenter() &&
+          _currentJob!.position.rotation == position.rotation) {
         return;
       }
       _currentJob?.abort();

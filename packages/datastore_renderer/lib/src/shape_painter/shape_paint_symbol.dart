@@ -68,7 +68,7 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
       // rotation of the rotationRadian parameter is always in the opposite direction.
       // If the map is moving clockwise we must rotate the symbol counterclockwise
       // to keep it horizontal
-      matrix.rotate(renderinstruction.theta /*+ 2 * pi*/ - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
+      matrix.rotate(renderinstruction.theta - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
       //        matrix.rotate(shapeSymbol.theta);
     }
 
@@ -99,11 +99,11 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
     if (symbolImage == null) return;
     Mappoint point = wayProperties.getCenterAbsolute(renderContext.projection);
     RelativeMappoint relative = point.offset(renderContext.reference);
-    MapRectangle boundary = renderinstruction.getBoundary()!;
+    MapRectangle boundary = renderinstruction.getBoundary();
     UiMatrix? matrix;
-    if (renderinstruction.theta != 0) {
+    if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
       matrix = UiMatrix();
-      matrix.rotate(renderinstruction.theta, pivotX: boundary.left, pivotY: boundary.top);
+      matrix.rotate(renderinstruction.theta - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
     }
 
     //if (bitmap.debugDisposed())

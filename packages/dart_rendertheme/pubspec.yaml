@@ -17,7 +17,7 @@ dependencies:
   dart_common: ^1.0.0
 
   # Workspace
-  ecache: ^2.0.10
+  ecache: ^2.0.11
 
   # MIT License
   # for reading the rendertheme xml file

@@ -67,11 +67,11 @@ class MyHomePage extends StatelessWidget {
     MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
 
     /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-    ByteData mapContent = await rootBundle.load("monaco.map");
+    ByteData mapContent = await rootBundle.load("assets/monaco.map");
     MapFile mapFile = await MapFile.createFromContent(content: mapContent.buffer.asUint8List());
 
     // Read the rendertheme from the assets folder.
-    String renderthemeString = await rootBundle.loadString("defaultrender.xml");
+    String renderthemeString = await rootBundle.loadString("assets/defaultrender.xml");
     Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
     // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.

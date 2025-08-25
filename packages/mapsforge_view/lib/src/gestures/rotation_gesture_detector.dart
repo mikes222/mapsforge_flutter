@@ -5,21 +5,21 @@ import 'package:mapsforge_view/mapsforge.dart';
 
 /// Two‐finger rotation overlay that never blocks pan/zoom,
 /// and uses ViewModel.rotateDelta() to apply each twist incrementally.
-class RotationOverlay extends StatefulWidget {
+class RotationGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 
   /// degrees of twist before we start rotating
   final double thresholdDeg;
 
-  const RotationOverlay({super.key, required this.mapModel, this.thresholdDeg = 10.0});
+  const RotationGestureDetector({super.key, required this.mapModel, this.thresholdDeg = 10.0});
 
   @override
-  _RotationOverlayState createState() => _RotationOverlayState();
+  State<RotationGestureDetector> createState() => _RotationGestureDetectorState();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _RotationOverlayState extends State<RotationOverlay> {
+class _RotationGestureDetectorState extends State<RotationGestureDetector> {
   final Map<int, Offset> _points = {};
   double? _baselineAngle;
   bool _rotating = false;
@@ -31,12 +31,10 @@ class _RotationOverlayState extends State<RotationOverlay> {
 
   double _twoFingerAngle() {
     final pts = _points.values.toList();
-    final cx = (pts[0].dx + pts[1].dx) / 2;
-    final cy = (pts[0].dy + pts[1].dy) / 2;
-    final a0 = atan2(pts[0].dy - cy, pts[0].dx - cx);
-    final a1 = atan2(pts[1].dy - cy, pts[1].dx - cx);
-    // average, converted to degrees
-    return _normalize(((a0 + a1) / 2) * 180 / pi);
+    final theta = atan2(pts[1].dy - pts[0].dy, pts[1].dx - pts[0].dx);
+    // range -pi .. +pi. 0 is from left to right (positive x-axis)
+    // converted to degrees
+    return _normalize(theta * 180 / pi);
   }
 
   @override

@@ -44,7 +44,7 @@ dependencies:
   # Workspace
   dart_rendertheme: ^1.0.0
 
-  ecache: ^2.0.10
+  ecache: ^2.0.11
 
   # for svg files
   #vector_graphics: ^1.1.19

@@ -11,9 +11,9 @@ class UiMatrix {
   /// @param radians an angle measured in radians.
   void rotate(double radians, {double pivotX = 0, double pivotY = 0}) {
     if (pivotX != 0 || pivotY != 0) {
-      _matrix4.translateByDouble(pivotX, pivotY, 0, 1);
-      _matrix4.rotateZ(radians);
       _matrix4.translateByDouble(-pivotX, -pivotY, 0, 1);
+      _matrix4.rotateZ(radians);
+      _matrix4.translateByDouble(pivotX, pivotY, 0, 1);
     } else {
       _matrix4.rotateZ(radians);
     }

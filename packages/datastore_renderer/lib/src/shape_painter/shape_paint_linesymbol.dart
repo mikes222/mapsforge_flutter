@@ -66,7 +66,7 @@ class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
       double radians = renderInfo.rotateRadians;
       if (radians != 0) {
         matrix = UiMatrix();
-        matrix.rotate(radians, pivotX: relative.dx, pivotY: relative.dy);
+        matrix.rotate(radians, pivotX: boundary.left, pivotY: boundary.top);
       }
     }
 
@@ -78,8 +78,8 @@ class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
       paint: fill,
     );
 
-    // renderContext.canvas.drawCircle(relative.x, relative.y, boundary.getWidth() / 2, UiPaint.stroke(color: 0x80ff0000));
-    // renderContext.canvas.drawCircle(relative.x + boundary.left, relative.y + boundary.top, 5, UiPaint.fill(color: 0xffff0000));
+    // renderContext.canvas.drawCircle(relative.dx + boundary.left, relative.dy + boundary.top, 5, UiPaint.fill(color: 0xffff0000));
+    // renderContext.canvas.drawCircle(relative.dx, relative.dy, boundary.getWidth() / 2, UiPaint.stroke(color: 0x80ff0000));
   }
 
   @override

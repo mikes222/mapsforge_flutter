@@ -5,6 +5,7 @@ import 'package:mapsforge_view/src/tile_job_queue.dart';
 import 'package:mapsforge_view/src/tile_painter.dart';
 import 'package:mapsforge_view/src/tile_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
+import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
 /// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
 class TileView extends StatefulWidget {
@@ -37,7 +38,7 @@ class _TileViewState extends State<TileView> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        /// Multiply the mappixels of the view with the scalefactor because the images will be shrinked by that factor while drawing them.
+        /// Multiply the mappixels of the view with the scalefactor because the images will be shrinked by that factor in [TransformWidget].
         jobQueue.setSize(
           constraints.maxWidth * MapsforgeSettingsMgr().getDeviceScaleFactor(),
           constraints.maxHeight * MapsforgeSettingsMgr().getDeviceScaleFactor(),
@@ -46,9 +47,7 @@ class _TileViewState extends State<TileView> {
           stream: jobQueue.tileStream,
           builder: (BuildContext context, AsyncSnapshot<TileSet> snapshot) {
             if (snapshot.error != null) {
-              print(snapshot.error);
-              print(snapshot.stackTrace);
-              return Text("${snapshot.error}", style: TextStyle(color: Theme.of(context).colorScheme.error));
+              return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
             }
             if (snapshot.data != null) {
               return TransformWidget(
@@ -58,7 +57,8 @@ class _TileViewState extends State<TileView> {
                 child: CustomPaint(foregroundPainter: TilePainter(snapshot.data!), child: const SizedBox.expand()),
               );
             }
-            return const Placeholder();
+            // We do not have a position yet or we wait for processing of the first tiles
+            return const Center(child: CircularProgressIndicator());
           },
         );
       },

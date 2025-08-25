@@ -27,11 +27,11 @@ class _MoveGestureDetectorState extends State<MoveGestureDetector> {
 
   final bool doLog = false;
 
-  _MoveEvent? _moveEvent;
+  _MoveEvent? _eventHandler;
 
   @override
   void dispose() {
-    _moveEvent?.dispose();
+    _eventHandler?.dispose();
     super.dispose();
   }
 
@@ -75,7 +75,7 @@ class _MoveGestureDetectorState extends State<MoveGestureDetector> {
         if (doLog) _log.info("onScaleStart $details");
         MapPosition? lastPosition = widget.mapModel.lastPosition;
         if (details.pointerCount == 1 && lastPosition != null) {
-          _moveEvent ??= _MoveEvent(
+          _eventHandler ??= _MoveEvent(
             mapModel: widget.mapModel,
             swipeAbsorption: widget.swipeAbsorption,
             startLocalFocalPoint: details.localFocalPoint,
@@ -85,13 +85,13 @@ class _MoveGestureDetectorState extends State<MoveGestureDetector> {
       },
       onScaleUpdate: (ScaleUpdateDetails details) {
         if (doLog) _log.info("onScaleUpdate $details");
-        _moveEvent?.update(details: details);
+        _eventHandler?.update(details: details);
       },
       onScaleEnd: (ScaleEndDetails details) {
         if (doLog) _log.info("onScaleEnd $details");
-        bool? disposeAllowed = _moveEvent?.end(details: details);
-        if (disposeAllowed ?? false) _moveEvent?.dispose();
-        _moveEvent = null;
+        bool? disposeAllowed = _eventHandler?.end(details: details);
+        if (disposeAllowed ?? false) _eventHandler?.dispose();
+        _eventHandler = null;
       },
       child: const SizedBox.expand(),
     );

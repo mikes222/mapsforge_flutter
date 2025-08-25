@@ -1,5 +1,4 @@
 import 'package:dart_common/model.dart';
-import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/src/tile_set.dart';
@@ -13,11 +12,9 @@ class TilePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     UiCanvas uiCanvas = UiCanvas(canvas, size);
     Mappoint center = tileSet.getCenter();
-    tileSet.images.forEach((Tile tile, JobResult jobResult) {
-      if (jobResult.picture != null) {
-        Mappoint leftUpper = tile.getLeftUpper();
-        uiCanvas.drawTilePicture(picture: jobResult.picture!, left: leftUpper.x - center.x, top: leftUpper.y - center.y);
-      }
+    tileSet.images.forEach((Tile tile, TilePicture picture) {
+      Mappoint leftUpper = tile.getLeftUpper();
+      uiCanvas.drawTilePicture(picture: picture, left: leftUpper.x - center.x, top: leftUpper.y - center.y);
     });
   }
 

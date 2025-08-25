@@ -5,6 +5,7 @@ import 'package:mapsforge_view/src/label_job_queue.dart';
 import 'package:mapsforge_view/src/label_painter.dart';
 import 'package:mapsforge_view/src/label_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
+import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
 /// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
 class LabelView extends StatefulWidget {
@@ -46,9 +47,7 @@ class _LabelViewState extends State<LabelView> {
           stream: jobQueue.labelStream,
           builder: (BuildContext context, AsyncSnapshot<LabelSet> snapshot) {
             if (snapshot.error != null) {
-              print(snapshot.error);
-              print(snapshot.stackTrace);
-              return Text("${snapshot.error}", style: TextStyle(color: Theme.of(context).colorScheme.error));
+              return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
             }
             if (snapshot.data != null) {
               return TransformWidget(
@@ -58,7 +57,8 @@ class _LabelViewState extends State<LabelView> {
                 child: CustomPaint(foregroundPainter: LabelPainter(snapshot.data!), child: const SizedBox.expand()),
               );
             }
-            return const Placeholder();
+            // TileView shows already a circular progress indicator, do not do it twice
+            return const SizedBox.expand();
           },
         );
       },

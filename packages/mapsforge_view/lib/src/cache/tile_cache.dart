@@ -22,4 +22,6 @@ abstract class TileCache {
   /// given [boundingBox] will be purged.
   ///
   void purgeByBoundary(BoundingBox boundingBox);
+
+  TilePicture? get(Tile tile);
 }

@@ -29,19 +29,25 @@ class TileJobQueue {
 
   TileJobQueue({required this.mapsforgeModel}) {
     _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
-      if (_currentJob != null &&
-          _currentJob!.position.indoorLevel == position.indoorLevel &&
-          _currentJob!.position.zoomLevel == position.zoomLevel &&
-          _currentJob!.position.getCenter() == position.getCenter()) {
+      if (_currentJob?.position == position) {
         return;
       }
+      TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
+      if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
+        if (_currentJob!._done) {
+          _tileStream.add(_currentJob!.tileSet);
+        } else {
+          // same information to draw, previous job is still running
+          return;
+        }
+      }
       _currentJob?.abort();
-      // unawaited
-      _positionEvent(position);
+      unawaited(_positionEvent(position, tileDimension));
     });
   }
 
   void dispose() {
+    _currentJob?.abort();
     _subscription?.cancel();
     _tileStream.close();
   }
@@ -53,16 +59,26 @@ class TileJobQueue {
 
   MapSize? getSize() => _size;
 
-  Future<void> _positionEvent(MapPosition position) async {
+  Future<void> _positionEvent(MapPosition position, TileDimension tileDimension) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
-    _CurrentJob myJob = _CurrentJob(position);
-    _currentJob = myJob;
-    TileDimension tileDimension = _calculateTiles(mapViewPosition: position, screensize: _size!);
-    List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
-
     TileSet tileSet = TileSet(center: position.getCenter(), mapPosition: position);
+    _CurrentJob myJob = _CurrentJob(position, tileDimension, tileSet);
+    _currentJob = myJob;
+    List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
+    // retrieve all available tiles from cache
     for (Tile tile in tiles) {
+      TilePicture? picture = tileCache.get(tile);
+      if (picture != null) tileSet.images[tile] = picture;
+    }
+    if (myJob._abort) return;
+    if (tileSet.images.isNotEmpty) {
+      /// send the available tiles to ui
+      _tileStream.add(tileSet);
+    }
+
+    for (Tile tile in tiles) {
+      if (tileSet.images[tile] != null) continue;
       TilePicture? picture = await tileCache.getOrProduce(tile, (Tile tile) async {
         JobResult result = await mapsforgeModel.renderer.executeJob(JobRequest(tile));
         if (result.picture == null) return ImageHelper().createNoDataBitmap();
@@ -72,11 +88,12 @@ class TileJobQueue {
       });
       if (myJob._abort) return;
       if (picture != null) {
-        tileSet.images[tile] = JobResult.normal(picture);
+        tileSet.images[tile] = picture;
         _tileStream.add(tileSet);
         continue;
       }
     }
+    myJob._done = true;
   }
 
   Stream<TileSet> get tileStream => _tileStream.stream;
@@ -139,9 +156,15 @@ class TileJobQueue {
 class _CurrentJob {
   final MapPosition position;
 
+  final TileDimension tileDimension;
+
+  final TileSet tileSet;
+
+  bool _done = false;
+
   bool _abort = false;
 
-  _CurrentJob(this.position);
+  _CurrentJob(this.position, this.tileDimension, this.tileSet);
 
   void abort() => _abort = true;
 }

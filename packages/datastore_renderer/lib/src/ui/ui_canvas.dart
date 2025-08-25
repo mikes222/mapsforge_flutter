@@ -43,13 +43,18 @@ class UiCanvas {
   }
 
   void drawPicture({required SymbolImage symbolImage, required double left, required double top, required UiPaint paint, UiMatrix? matrix}) {
-    if (matrix != null) {
+    if (matrix != null || left != 0 || top != 0) {
       _uiCanvas.save();
+    }
+    if (left != 0 || top != 0) {
+      _uiCanvas.translate(left, top);
+    }
+    if (matrix != null) {
       _uiCanvas.transform(matrix.expose());
     }
-    _uiCanvas.drawImage(symbolImage.expose(), ui.Offset(left, top), paint.expose());
+    _uiCanvas.drawImage(symbolImage.expose(), ui.Offset.zero, paint.expose());
     ++_bitmapCount;
-    if (matrix != null) {
+    if (matrix != null || left != 0 || top != 0) {
       _uiCanvas.restore();
     }
   }
