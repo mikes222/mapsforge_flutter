@@ -22,6 +22,8 @@ class MapModel {
 
   final Subject<TapEvent> _longTapSubject = PublishSubject();
 
+  final Subject<TapEvent> _doubleTapSubject = PublishSubject();
+
   MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
   void dispose() {
@@ -29,6 +31,7 @@ class MapModel {
     _manualMoveSubject.close();
     _tapSubject.close();
     _longTapSubject.close();
+    _doubleTapSubject.close();
   }
 
   void setPosition(MapPosition position) {
@@ -49,6 +52,8 @@ class MapModel {
   /// A stream which triggers an event if the user long taps at the map
   Stream<TapEvent> get longTapStream => _longTapSubject.stream;
 
+  Stream<TapEvent> get doubleTapStream => _doubleTapSubject.stream;
+
   void manualMove(Object object) {
     _manualMoveSubject.add(object);
   }
@@ -60,6 +65,10 @@ class MapModel {
 
   void longTap(TapEvent event) {
     _longTapSubject.add(event);
+  }
+
+  void doubleTap(TapEvent event) {
+    _doubleTapSubject.add(event);
   }
 
   void zoomIn() {
@@ -145,17 +154,28 @@ class TapEvent implements ILatLong {
   @override
   final double longitude;
 
-  final PixelProjection _projection;
+  final PixelProjection projection;
 
   /// The point of the event in mappixels
   final Mappoint mappoint;
 
-  PixelProjection get projection => _projection;
-
-  const TapEvent({required this.latitude, required this.longitude, required PixelProjection projection, required this.mappoint}) : _projection = projection;
+  const TapEvent({required this.latitude, required this.longitude, required this.projection, required this.mappoint});
 
   @override
   String toString() {
     return 'TapEvent{latitude: $latitude, longitude: $longitude, mappoint: $mappoint}';
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+enum TapEventListener {
+  /// listen to single tap events
+  singleTap,
+
+  /// listen to double tap events
+  doubleTap,
+
+  /// listen to long tap events
+  longTap,
 }

@@ -3,18 +3,18 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
-class ZoomInGestureDetector extends StatefulWidget {
+class DoubleTapGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 
-  const ZoomInGestureDetector({super.key, required this.mapModel});
+  const DoubleTapGestureDetector({super.key, required this.mapModel});
 
   @override
-  State<ZoomInGestureDetector> createState() => _ZoomInGestureDetectorState();
+  State<DoubleTapGestureDetector> createState() => _DoubleTapGestureDetectorState();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _ZoomInGestureDetectorState extends State<ZoomInGestureDetector> {
+class _DoubleTapGestureDetectorState extends State<DoubleTapGestureDetector> {
   static final _log = Logger('_MoveGestureDetectorState');
 
   final bool doLog = false;
@@ -95,11 +95,12 @@ class _DoubleTapEvent {
     PositionInfo positionInfo = RotateHelper.normalize(lastPosition, size, _doubleTapLocalPosition.dx, _doubleTapLocalPosition.dy);
     // interpolate the new center between the old center and where we
     // pressed now. The new center is half-way between our double-pressed point and the old-center
-    mapModel.zoomInAround(
-      (positionInfo.latitude - lastPosition.latitude!) / 2 + lastPosition.latitude!,
-      (positionInfo.longitude - lastPosition.longitude!) / 2 + lastPosition.longitude!,
+    TapEvent tapEvent = TapEvent(
+      latitude: positionInfo.latitude,
+      longitude: positionInfo.longitude,
+      projection: mapModel.lastPosition!.projection,
+      mappoint: positionInfo.mappoint,
     );
+    mapModel.doubleTap(tapEvent);
   }
-
-  bool get longPressed => false;
 }

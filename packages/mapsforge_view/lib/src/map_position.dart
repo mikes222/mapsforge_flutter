@@ -278,10 +278,10 @@ class MapPosition {
   PixelProjection get projection => _projection;
 
   /// The latitude of the center of the widget
-  double? get latitude => _latitude;
+  double get latitude => _latitude;
 
   /// The longitude of the center of the widget
-  double? get longitude => _longitude;
+  double get longitude => _longitude;
 
   /// Returns the center of the map in absolute mappixels
   Mappoint getCenter() {

@@ -1,7 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mapsforge_view/src/tile_set.dart';
+import 'package:mapsforge_view/src/tile/tile_set.dart';
 
 class TilePainter extends CustomPainter {
   final TileSet tileSet;

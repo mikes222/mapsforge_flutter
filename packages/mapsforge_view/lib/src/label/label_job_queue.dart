@@ -6,8 +6,8 @@ import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/cache/memory_label_cache.dart';
-import 'package:mapsforge_view/src/label_set.dart';
-import 'package:mapsforge_view/src/tile_dimension.dart';
+import 'package:mapsforge_view/src/label/label_set.dart';
+import 'package:mapsforge_view/src/tile/tile_dimension.dart';
 import 'package:mapsforge_view/src/util/tile_helper.dart';
 import 'package:rxdart/rxdart.dart';
 

@@ -4,7 +4,7 @@ import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mapsforge_view/src/label_set.dart';
+import 'package:mapsforge_view/src/label/label_set.dart';
 
 class LabelPainter extends CustomPainter {
   final LabelSet labelSet;

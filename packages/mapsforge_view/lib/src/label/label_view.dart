@@ -1,9 +1,9 @@
 import 'package:dart_common/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/label_job_queue.dart';
-import 'package:mapsforge_view/src/label_painter.dart';
-import 'package:mapsforge_view/src/label_set.dart';
+import 'package:mapsforge_view/src/label/label_job_queue.dart';
+import 'package:mapsforge_view/src/label/label_painter.dart';
+import 'package:mapsforge_view/src/label/label_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
 import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 

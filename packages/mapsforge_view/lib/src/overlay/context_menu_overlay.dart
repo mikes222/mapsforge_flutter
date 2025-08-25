@@ -14,14 +14,20 @@ class ContextMenuOverlay extends StatelessWidget {
 
   final ContextMenuBuilder? contextMenuBuilder;
 
-  const ContextMenuOverlay({super.key, required this.mapModel, this.contextMenuBuilder});
+  final TapEventListener tapEventListener;
+
+  const ContextMenuOverlay({super.key, required this.mapModel, this.contextMenuBuilder, this.tapEventListener = TapEventListener.singleTap});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return StreamBuilder(
-          stream: mapModel.tapStream,
+          stream: tapEventListener == TapEventListener.doubleTap
+              ? mapModel.doubleTapStream
+              : tapEventListener == TapEventListener.longTap
+              ? mapModel.longTapStream
+              : mapModel.tapStream,
           builder: (BuildContext context, AsyncSnapshot<TapEvent?> snapshot) {
             if (snapshot.hasError) {
               return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);

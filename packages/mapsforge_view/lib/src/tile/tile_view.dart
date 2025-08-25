@@ -1,9 +1,9 @@
 import 'package:dart_common/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/tile_job_queue.dart';
-import 'package:mapsforge_view/src/tile_painter.dart';
-import 'package:mapsforge_view/src/tile_set.dart';
+import 'package:mapsforge_view/src/tile/tile_job_queue.dart';
+import 'package:mapsforge_view/src/tile/tile_painter.dart';
+import 'package:mapsforge_view/src/tile/tile_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
 import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
@@ -25,13 +25,21 @@ class _TileViewState extends State<TileView> {
   @override
   void initState() {
     super.initState();
-    jobQueue = TileJobQueue(mapsforgeModel: widget.mapModel);
+    jobQueue = TileJobQueue(mapModel: widget.mapModel);
   }
 
   @override
   void dispose() {
     jobQueue.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant TileView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.mapModel != widget.mapModel) {
+      throw Exception("MapModel cannot be changed, recreate all classes which uses MapModel.");
+    }
   }
 
   @override

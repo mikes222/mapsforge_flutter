@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/tile_dimension.dart';
+import 'package:mapsforge_view/src/tile/tile_dimension.dart';
 
 class TileHelper {
   /// Calculates all tiles needed to display the map on the available view area

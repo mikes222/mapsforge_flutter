@@ -20,7 +20,7 @@ class MemoryTileCache extends TileCache {
   }
 
   MemoryTileCache._() {
-    _cache = LruCache<Tile, TilePicture>(storage: storage, capacity: 500);
+    _cache = LruCache<Tile, TilePicture>(storage: storage, capacity: 1000);
   }
 
   @override

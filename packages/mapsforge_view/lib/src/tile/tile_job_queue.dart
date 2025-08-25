@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
@@ -8,15 +7,15 @@ import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/cache/tile_cache.dart';
-import 'package:mapsforge_view/src/tile_dimension.dart';
-import 'package:mapsforge_view/src/tile_set.dart';
+import 'package:mapsforge_view/src/tile/tile_dimension.dart';
+import 'package:mapsforge_view/src/tile/tile_set.dart';
 import 'package:mapsforge_view/src/util/tile_helper.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'cache/memory_tile_cache.dart';
+import '../cache/memory_tile_cache.dart';
 
 class TileJobQueue {
-  final MapModel mapsforgeModel;
+  final MapModel mapModel;
 
   MapSize? _size;
 
@@ -28,8 +27,8 @@ class TileJobQueue {
 
   final Subject<TileSet> _tileStream = PublishSubject<TileSet>();
 
-  TileJobQueue({required this.mapsforgeModel}) {
-    _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
+  TileJobQueue({required this.mapModel}) {
+    _subscription = mapModel.positionStream.listen((MapPosition position) {
       if (_currentJob?.position == position) {
         return;
       }
@@ -81,10 +80,11 @@ class TileJobQueue {
     for (Tile tile in tiles) {
       if (tileSet.images[tile] != null) continue;
       TilePicture? picture = await tileCache.getOrProduce(tile, (Tile tile) async {
-        JobResult result = await mapsforgeModel.renderer.executeJob(JobRequest(tile));
+        JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
         if (result.picture == null) return ImageHelper().createNoDataBitmap();
         // make sure the picture is converted to an image
-        Image image = await result.picture!.convertPictureToImage();
+        /*Image image =*/
+        await result.picture!.convertPictureToImage();
         return result.picture!;
       });
       if (myJob._abort) return;

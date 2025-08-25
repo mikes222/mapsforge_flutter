@@ -19,14 +19,31 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'Mapsforge simple example', home: MyHomePage());
+    return MaterialApp(title: 'Mapsforge simple example', home: MyHomePage());
   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _MyHomePageState extends State<MyHomePage> {
+  Future? _createModelFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // FutureBuilder should NOT call the future directly because we would risk creating the model multiple times. Instead this is the first
+    // time we can create the future AND having the context.
+    _createModelFuture ??= createModel(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +56,7 @@ class MyHomePage extends StatelessWidget {
             decoration: BoxDecoration(border: BoxBorder.all(color: Colors.green)),
             // create a future widget to asynchronously create the necessary MapModel
             child: FutureBuilder(
-              future: createModel(context),
+              future: _createModelFuture,
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.error != null) {
                   // an error occured, show it on screen
@@ -74,8 +91,9 @@ class MyHomePage extends StatelessWidget {
     String renderthemeString = await rootBundle.loadString("assets/defaultrender.xml");
     Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-    // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
+    // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
     DatastoreRenderer renderer = DatastoreRenderer(mapFile, renderTheme, false);
+    // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
     MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
