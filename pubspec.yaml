@@ -15,6 +15,7 @@ workspace:
   - packages/mapsforge_view
   - apps/mapfile_converter
   - apps/simple_example
+  - apps/complete_example
 
 melos:
   command:

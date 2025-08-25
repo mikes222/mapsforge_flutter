@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 import 'package:dart_common/utils.dart';
 import 'package:datastore_renderer/src/job/job_request.dart';
 import 'package:datastore_renderer/src/job/job_result.dart';
-import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:datastore_renderer/src/renderer.dart';
+import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:http/http.dart';
 
 ///
@@ -47,6 +47,11 @@ class ArcgisOnlineRenderer extends Renderer {
   @override
   Future<JobResult> retrieveLabels(JobRequest job) {
     return Future.value(JobResult.unsupported());
+  }
+
+  @override
+  bool supportLabels() {
+    return false;
   }
 }
 

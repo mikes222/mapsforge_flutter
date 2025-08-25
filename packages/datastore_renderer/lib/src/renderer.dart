@@ -24,4 +24,6 @@ abstract class Renderer {
   /// exact same image again. The key should be different if the renderer provides different images. This
   /// can be used for light/dark themes or for example when font sizes change.
   String getRenderKey();
+
+  bool supportLabels();
 }

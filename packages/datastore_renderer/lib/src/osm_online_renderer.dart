@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 import 'package:dart_common/utils.dart';
 import 'package:datastore_renderer/src/job/job_request.dart';
 import 'package:datastore_renderer/src/job/job_result.dart';
-import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:datastore_renderer/src/renderer.dart';
+import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:http/http.dart';
 
 ///
@@ -44,5 +44,10 @@ class OsmOnlineRenderer extends Renderer {
   @override
   String getRenderKey() {
     return "osm";
+  }
+
+  @override
+  bool supportLabels() {
+    return false;
   }
 }

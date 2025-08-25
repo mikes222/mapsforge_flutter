@@ -27,7 +27,7 @@ class MapsforgeView extends StatelessWidget {
         ScaleGestureDetector(mapModel: mapModel),
         TapGestureDetector(mapModel: mapModel),
         TileView(mapModel: mapModel),
-        LabelView(mapModel: mapModel),
+        if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
         DistanceOverlay(mapModel: mapModel),
         ZoomOverlay(mapModel: mapModel),
         ZoomInOverlay(mapModel: mapModel),

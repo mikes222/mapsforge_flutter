@@ -9,9 +9,9 @@ import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:datastore_renderer/src/ui/ui_canvas.dart';
 import 'package:datastore_renderer/src/util/datastore_reader.dart';
 import 'package:datastore_renderer/src/util/layerutil.dart';
+import 'package:datastore_renderer/src/util/object_pool.dart';
 import 'package:datastore_renderer/src/util/painter_factory.dart';
 import 'package:datastore_renderer/src/util/tile_dependencies.dart';
-import 'package:datastore_renderer/src/util/object_pool.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
@@ -34,11 +34,11 @@ class DatastoreRenderer extends Renderer {
   TileDependencies? tileDependencies;
 
   late DatastoreReader _datastoreReader;
-  
+
   /// Object pools for performance optimization
   static late ObjectPool<List<RenderInfo>> _renderInfoListPool;
   static late ObjectPool<Set<RenderInfo>> _renderInfoSetPool;
-  
+
   static bool _poolsInitialized = false;
 
   DatastoreRenderer(this.datastore, this.renderTheme, this.renderLabels) {
@@ -50,23 +50,15 @@ class DatastoreRenderer extends Renderer {
     _datastoreReader = DatastoreReader();
     _initializePools();
   }
-  
+
   /// Initialize object pools for better performance
   static void _initializePools() {
     if (_poolsInitialized) return;
-    
-    _renderInfoListPool = ObjectPool<List<RenderInfo>>(
-      factory: () => <RenderInfo>[],
-      reset: (list) => list.clear(),
-      maxSize: 20,
-    );
-    
-    _renderInfoSetPool = ObjectPool<Set<RenderInfo>>(
-      factory: () => <RenderInfo>{},
-      reset: (set) => set.clear(),
-      maxSize: 20,
-    );
-    
+
+    _renderInfoListPool = ObjectPool<List<RenderInfo>>(factory: () => <RenderInfo>[], reset: (list) => list.clear(), maxSize: 20);
+
+    _renderInfoSetPool = ObjectPool<Set<RenderInfo>>(factory: () => <RenderInfo>{}, reset: (set) => set.clear(), maxSize: 20);
+
     _poolsInitialized = true;
   }
 
@@ -153,6 +145,11 @@ class DatastoreRenderer extends Renderer {
     for (RenderInfo renderInfo in layerContainers.clashingInfoCollection.renderInfos) {
       renderInfo.render(renderContext);
     }
+  }
+
+  @override
+  bool supportLabels() {
+    return !renderLabels;
   }
 
   static List<Mappoint> getTilePixelCoordinates(int tileSize) {

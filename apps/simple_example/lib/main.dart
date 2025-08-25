@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   MapModel mapsforgeModel = snapshot.data;
                   return MapsforgeView(mapModel: mapsforgeModel);
                 }
-                // mapModel is still not availabe
+                // mapModel is still not availabe or no position defined
                 return const CircularProgressIndicator();
               },
             ),
@@ -101,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
     MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
     mapModel.setPosition(mapPosition);
 
-    // For demo purposes we will zoom and rotate after each few seconds.
+    // For demo purposes we could zoom and rotate after each few seconds.
     // Future.delayed(const Duration(seconds: 15), () {
     //   mapModel.zoomIn();
     // });
