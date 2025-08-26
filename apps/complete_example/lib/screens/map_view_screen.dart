@@ -140,8 +140,7 @@ Profiler Events: ${report.totalEvents}
       future: _createModelFuture,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.error != null) {
-          // an error occured, show it on screen
-          return Text("${snapshot.error}", style: TextStyle(color: Theme.of(context).colorScheme.error));
+          return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
         }
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
@@ -200,41 +199,6 @@ Profiler Events: ${report.totalEvents}
     return mapModel;
   }
 
-  Widget _buildMapView() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.blue.shade100, Colors.blue.shade300]),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map, size: 120, color: Colors.blue.shade700),
-            const SizedBox(height: 24),
-            Text(
-              'Map View Placeholder',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.blue.shade700, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'This is where the actual mapsforge map view would be rendered',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blue.shade600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'All performance optimizations are active and monitoring',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.blue.shade500),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildPerformanceOverlay() {
     return Positioned(
       top: 16,
@@ -257,51 +221,6 @@ Profiler Events: ${report.totalEvents}
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildConfigurationInfo() {
-    return Positioned(
-      bottom: 16,
-      left: 16,
-      right: 16,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Current Configuration', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              _buildInfoRow('Renderer', widget.configuration.rendererType.displayName),
-              if (widget.configuration.renderTheme != null) _buildInfoRow('Theme', widget.configuration.renderTheme!.displayName),
-              _buildInfoRow('Location', widget.configuration.location.toString()),
-              _buildInfoRow('Map File', widget.configuration.location.mapFileName),
-              _buildInfoRow(
-                'Coordinates',
-                '${widget.configuration.location.centerLatitude.toStringAsFixed(4)}, ${widget.configuration.location.centerLongitude.toStringAsFixed(4)}',
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text('$label:', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
-          ),
-          Expanded(child: Text(value, style: Theme.of(context).textTheme.bodySmall)),
-        ],
       ),
     );
   }

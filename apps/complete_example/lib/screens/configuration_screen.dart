@@ -218,7 +218,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
               },
             ),
             const SizedBox(height: 8),
-            Text('Map file: ${_selectedLocation.mapFileName}', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: 'monospace')),
+            Text('Map file: ${_selectedLocation.url}', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: 'monospace')),
             const SizedBox(height: 4),
             Text(
               'Center: ${_selectedLocation.centerLatitude.toStringAsFixed(4)}, ${_selectedLocation.centerLongitude.toStringAsFixed(4)}',
@@ -277,6 +277,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
 
     return Column(
+      spacing: 16,
       children: [
         SizedBox(
           width: double.infinity,

@@ -27,7 +27,7 @@ enum RenderTheme {
 class MapLocation {
   final String name;
   final String description;
-  final String mapFileName;
+  final String url;
   final double centerLatitude;
   final double centerLongitude;
   final int defaultZoomLevel;
@@ -36,7 +36,7 @@ class MapLocation {
   const MapLocation({
     required this.name,
     required this.description,
-    required this.mapFileName,
+    required this.url,
     required this.centerLatitude,
     required this.centerLongitude,
     required this.defaultZoomLevel,
@@ -45,6 +45,10 @@ class MapLocation {
 
   @override
   String toString() => '$name, $country';
+
+  String getLocalfilename() {
+    return url.split('/').last;
+  }
 }
 
 class AppConfiguration {
@@ -82,7 +86,7 @@ class MapLocations {
     MapLocation(
       name: 'Monaco',
       description: 'Monaco city-state with detailed street mapping',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/monaco.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/monaco.map',
       centerLatitude: 43.7384,
       centerLongitude: 7.4246,
       defaultZoomLevel: 15,
@@ -91,7 +95,7 @@ class MapLocations {
     MapLocation(
       name: 'Berlin',
       description: 'German capital with comprehensive urban mapping',
-      mapFileName: 'berlin.map',
+      url: 'berlin.map',
       centerLatitude: 52.5200,
       centerLongitude: 13.4050,
       defaultZoomLevel: 12,
@@ -100,7 +104,7 @@ class MapLocations {
     MapLocation(
       name: 'Paris',
       description: 'French capital with detailed metropolitan area',
-      mapFileName: 'paris.map',
+      url: 'paris.map',
       centerLatitude: 48.8566,
       centerLongitude: 2.3522,
       defaultZoomLevel: 12,
@@ -109,7 +113,7 @@ class MapLocations {
     MapLocation(
       name: 'Austria',
       description: 'No kangoroos',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/austria.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/austria.map',
       centerLatitude: 48.089415,
       centerLongitude: 16.311374,
       defaultZoomLevel: 12,
@@ -118,7 +122,7 @@ class MapLocations {
     MapLocation(
       name: 'Chemnitz',
       description: 'Chemnitz Uni indoor map',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/Chemnitz Uni.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/Chemnitz Uni.map',
       centerLatitude: 50.81348,
       centerLongitude: 12.92936,
       defaultZoomLevel: 18,
@@ -127,7 +131,7 @@ class MapLocations {
     MapLocation(
       name: 'Sachsen',
       description: 'Sachsen',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/sachsen.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/sachsen.map',
       centerLatitude: 50.81287701030895,
       centerLongitude: 12.94189453125,
       defaultZoomLevel: 12,
@@ -136,7 +140,7 @@ class MapLocations {
     MapLocation(
       name: 'Berlin',
       description: 'Berlin',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/berlin.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/berlin.map',
       centerLatitude: 52.52278,
       centerLongitude: 13.38982,
       defaultZoomLevel: 17,
@@ -145,7 +149,7 @@ class MapLocations {
     MapLocation(
       name: 'Paris',
       description: 'Louvre (indoor)',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/Louvre.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/Louvre.map',
       centerLatitude: 48.86085,
       centerLongitude: 2.33665,
       defaultZoomLevel: 12,
@@ -154,7 +158,7 @@ class MapLocations {
     MapLocation(
       name: 'Paris',
       description: 'ile-de-france',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/ile-de-france.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/ile-de-france.map',
       centerLatitude: 48.86085,
       centerLongitude: 2.33665,
       defaultZoomLevel: 12,
@@ -163,7 +167,7 @@ class MapLocations {
     MapLocation(
       name: 'Sizilia',
       description: 'Contour Sizilia (hillshading)',
-      mapFileName: 'https://dailyflightbuddy.com/mapsforge_examples/sicilia_oam.zip',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/sicilia_oam.zip',
       centerLatitude: 37.5,
       centerLongitude: 14.3,
       defaultZoomLevel: 15,
