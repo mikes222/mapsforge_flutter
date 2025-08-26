@@ -97,7 +97,8 @@ class _MyHomePageState extends State<MyHomePage> {
     MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
-    // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile.
+    // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile if you do not
+    // have a position available.
     MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
     mapModel.setPosition(mapPosition);
 

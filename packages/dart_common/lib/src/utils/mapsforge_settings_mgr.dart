@@ -82,9 +82,12 @@ class MapsforgeSettingsMgr {
     return maxTextWidth;
   }
 
-  set strokeIncreaseFactor(double strokeIncreaseFactor) => _strokeIncreaseFactor = strokeIncreaseFactor;
-
   set strokeMaxScaleFactor(double strokeMaxScaleFactor) => _strokeMaxScaleFactor = strokeMaxScaleFactor;
+
+  set strokeIncreaseFactor(double strokeIncreaseFactor) {
+    assert(strokeIncreaseFactor > 1);
+    _strokeIncreaseFactor = strokeIncreaseFactor;
+  }
 
   /// Many items will be scaled starting at a defined zoomlevel to make them bigger when zooming in. This method calculates the scale factor.
   double calculateScaleFactor(int zoomlevel, int minZoomlevel) {
