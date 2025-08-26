@@ -61,7 +61,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.FILL == name) {
@@ -71,7 +71,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else {
         throw Exception("Parsing problems $name=$value");
       }

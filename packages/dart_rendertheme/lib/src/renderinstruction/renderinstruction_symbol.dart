@@ -19,11 +19,18 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
 
   Position position = Position.CENTER;
 
-  /// The rotation of the symbol. Currently not fully supported
+  /// The rotation of the symbol.
   double theta = 0;
+
+  /// if false (default) the symbol will always drawn in the same direction regardless of the map rotation. For example an exclamation symbol (!) will
+  /// always have the dot points towards the bottom of the screen.
+  /// If true the symbol rotates with the map.
+  bool rotateWithMap = false;
 
   RenderinstructionSymbol(int level) {
     this.level = level;
+    setBitmapPercent(100);
+    setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
   }
 
   @override
@@ -34,6 +41,8 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
       ..bitmapSrcMixinScale(this, zoomlevel);
     renderinstruction.id = id;
     renderinstruction.position = position;
+    renderinstruction.theta = theta;
+    renderinstruction.rotateWithMap = rotateWithMap;
     return renderinstruction;
   }
 
@@ -43,9 +52,6 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   }
 
   void parse(XmlElement rootElement) {
-    setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
-    setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
-
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
@@ -56,7 +62,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.ID == name) {
@@ -64,7 +70,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_PERCENT == name) {
-        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
+        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {

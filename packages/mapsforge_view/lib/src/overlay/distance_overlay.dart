@@ -77,13 +77,13 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
             }
             if (snapshot.data == null) return const SizedBox();
             MapPosition position = snapshot.data!;
-            if (position.zoomLevel != _lastZoomLevel) {
+            if (position.zoomlevel != _lastZoomLevel) {
               // zoomLevel has changed. Enable showing the new ruler
               _lastDisplayed = null;
               _timer?.cancel();
               _timer = null;
               _fadeAnimationController.reset();
-              _lastZoomLevel = position.zoomLevel;
+              _lastZoomLevel = position.zoomlevel;
               _recalc(position);
             }
             // if (_timer != null) {

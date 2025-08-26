@@ -3,8 +3,7 @@ import 'package:dart_common/projection.dart';
 import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 
 /// Properties for one Node (PointOfInterest) read from the datastore. Note that the properties are
-/// dependent on the zoomLevel and pixelsize of the device. Therefore one instance
-/// of NodeProperties can be used for one zoomlevel only.
+/// dependent on the zoomLevel. Therefore one instance of NodeProperties can be used for one zoomlevel only.
 class NodeProperties implements NodeWayProperties {
   final PointOfInterest pointOfInterest;
 

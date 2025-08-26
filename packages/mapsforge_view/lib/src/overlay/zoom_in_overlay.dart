@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
+/// Listens to double-tap events on the map and zooms in around the position of the double tap. The listening event is configurable.
 class ZoomInOverlay extends StatelessWidget {
   final MapModel mapModel;
 
@@ -12,11 +12,7 @@ class ZoomInOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: tapEventListener == TapEventListener.doubleTap
-          ? mapModel.doubleTapStream
-          : tapEventListener == TapEventListener.longTap
-          ? mapModel.longTapStream
-          : mapModel.tapStream,
+      stream: tapEventListener.getStream(mapModel),
       builder: (BuildContext context, AsyncSnapshot<TapEvent?> snapshot) {
         if (snapshot.hasError) {
           return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);

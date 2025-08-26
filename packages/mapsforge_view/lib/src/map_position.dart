@@ -13,7 +13,7 @@ class MapPosition {
   final double _longitude;
 
   /// The current zoomLevel
-  final int zoomLevel;
+  final int zoomlevel;
 
   /// The current indoorLevel
   final int indoorLevel;
@@ -37,7 +37,7 @@ class MapPosition {
   MapPosition._({
     required double latitude,
     required double longitude,
-    required this.zoomLevel,
+    required this.zoomlevel,
     required this.indoorLevel,
     required this.scale,
     required double rotation,
@@ -52,24 +52,24 @@ class MapPosition {
        _center = center,
        _projection = projection;
 
-  MapPosition(this._latitude, this._longitude, this.zoomLevel, [this.indoorLevel = 0, this._rotation = 0])
+  MapPosition(this._latitude, this._longitude, this.zoomlevel, [this.indoorLevel = 0, this._rotation = 0])
     : scale = 1,
       focalPoint = null,
       _rotationRadian = Projection.degToRadian(_rotation),
-      assert(zoomLevel >= 0),
-      _projection = PixelProjection(zoomLevel);
+      assert(zoomlevel >= 0),
+      _projection = PixelProjection(zoomlevel);
 
   MapPosition zoomIn() {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel + 1,
+      zoomlevel: zoomlevel + 1,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
       scale: 1,
       focalPoint: null,
-      projection: PixelProjection(zoomLevel + 1),
+      projection: PixelProjection(zoomlevel + 1),
     );
   }
 
@@ -78,23 +78,23 @@ class MapPosition {
     return MapPosition._(
       latitude: latitude,
       longitude: longitude,
-      zoomLevel: zoomLevel + 1,
+      zoomlevel: zoomlevel + 1,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
       scale: 1,
       focalPoint: null,
-      projection: PixelProjection(zoomLevel + 1),
+      projection: PixelProjection(zoomlevel + 1),
     );
   }
 
   /// Zooms out from the current position.
   MapPosition zoomOut() {
-    final newZoomLevel = max(zoomLevel - 1, 0);
+    final newZoomLevel = max(zoomlevel - 1, 0);
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: newZoomLevel,
+      zoomlevel: newZoomLevel,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -110,7 +110,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: clampedZoom,
+      zoomlevel: clampedZoom,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -126,7 +126,7 @@ class MapPosition {
     return MapPosition._(
       latitude: latitude,
       longitude: longitude,
-      zoomLevel: clampedZoom,
+      zoomlevel: clampedZoom,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -141,7 +141,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel + 1,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -157,7 +157,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel - 1,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -173,7 +173,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: level,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -198,7 +198,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -214,7 +214,7 @@ class MapPosition {
     return MapPosition._(
       latitude: latitude,
       longitude: longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -232,7 +232,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel,
       rotation: rotation,
       rotationRadian: Projection.degToRadian(rotation),
@@ -249,7 +249,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _latitude,
       longitude: _longitude,
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel,
       rotation: newRotation,
       rotationRadian: Projection.degToRadian(newRotation),
@@ -264,7 +264,7 @@ class MapPosition {
     return MapPosition._(
       latitude: _projection.pixelYToLatitude(y),
       longitude: _projection.pixelXToLongitude(x),
-      zoomLevel: zoomLevel,
+      zoomlevel: zoomlevel,
       indoorLevel: indoorLevel,
       rotation: _rotation,
       rotationRadian: _rotationRadian,
@@ -298,6 +298,6 @@ class MapPosition {
 
   @override
   String toString() {
-    return 'MapPosition{_latitude: $_latitude, _longitude: $_longitude, zoomLevel: $zoomLevel, indoorLevel: $indoorLevel, _rotation: $_rotation, focalPoint: $focalPoint, _center: $_center}';
+    return 'MapPosition{_latitude: $_latitude, _longitude: $_longitude, zoomLevel: $zoomlevel, indoorLevel: $indoorLevel, _rotation: $_rotation, focalPoint: $focalPoint, _center: $_center}';
   }
 }

@@ -32,6 +32,11 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
 
   RenderinstructionLinesymbol(int level) {
     this.level = level;
+    //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    setRepeatGap(REPEAT_GAP_DEFAULT);
+    setRepeatStart(REPEAT_START_DEFAULT);
+    setBitmapPercent(100);
+    setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
   }
 
   @override
@@ -54,12 +59,6 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
   }
 
   void parse(XmlElement rootElement) {
-    //initBitmapSrcMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    setRepeatGap(REPEAT_GAP_DEFAULT * MapsforgeSettingsMgr().getFontScaleFactor());
-    repeatStart = REPEAT_START_DEFAULT * MapsforgeSettingsMgr().getFontScaleFactor();
-    setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
-    setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
-
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
@@ -73,7 +72,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) {
@@ -84,15 +83,15 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
       } else if (Renderinstruction.REPEAT == name) {
         repeat = "true" == (value);
       } else if (Renderinstruction.REPEAT_GAP == name) {
-        setRepeatGap(double.parse(value) * MapsforgeSettingsMgr().getFontScaleFactor());
+        setRepeatGap(double.parse(value));
       } else if (Renderinstruction.REPEAT_START == name) {
-        repeatStart = double.parse(value) * MapsforgeSettingsMgr().getFontScaleFactor();
+        setRepeatStart(double.parse(value));
       } else if (Renderinstruction.ROTATE == name) {
         rotate = "true" == (value);
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_PERCENT == name) {
-        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
+        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
@@ -172,7 +171,8 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
               projection,
             ),
             this,
-          )..rotateRadians = radians,
+            rotateRadians: radians,
+          ),
         );
 
         // check if the symbolContainer should only be rendered once

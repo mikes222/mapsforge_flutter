@@ -1,0 +1,25 @@
+import 'package:dart_common/model.dart';
+import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:mapsforge_view/src/marker/abstract_marker.dart';
+
+/// Abstract Marker class for further extensions. This class holds the position of a marker as [ILatLong] and implements the shouldPaint() method.
+abstract class AbstractPoiMarker<T> extends AbstractMarker<T> implements ILatLong, SymbolSearcher {
+  ///
+  /// The position in the map if the current marker is a "point".
+  ///
+  ILatLong latLong;
+
+  AbstractPoiMarker({super.zoomlevelRange, required this.latLong, super.item});
+
+  /// returns true if the marker should be painted. The [boundary] represents the currently visible area
+  @override
+  bool shouldPaint(BoundingBox boundary, int zoomLevel) {
+    return super.shouldPaint(boundary, zoomLevel) && boundary.contains(latLong.latitude, latLong.longitude);
+  }
+
+  @override
+  double get latitude => latLong.latitude;
+
+  @override
+  double get longitude => latLong.longitude;
+}

@@ -22,6 +22,11 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
 
   RenderinstructionPolyline(int level) {
     this.level = level;
+    // do not scale bitmap in lines they look ugly
+    setBitmapPercent(100);
+    //    base.setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    setBitmapMinZoomLevel(65535);
+    //    base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
   }
 
   @override
@@ -41,12 +46,6 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   }
 
   void parse(XmlElement rootElement) {
-    // do not scale bitmap in lines they look ugly
-    setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
-    //    base.setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    setBitmapMinZoomLevel(65535);
-    //    base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
@@ -58,7 +57,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) {
@@ -81,11 +80,11 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       } else if (Renderinstruction.STROKE_LINEJOIN == name) {
         setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_PERCENT == name) {
-        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
+        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {

@@ -5,9 +5,10 @@ import 'package:mapsforge_view/src/label/label_job_queue.dart';
 import 'package:mapsforge_view/src/label/label_painter.dart';
 import 'package:mapsforge_view/src/label/label_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
-import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
-/// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
+/// A view to display the labels. The view updates itself whenever the [MapPosition] changes and new labels are available. This only works if
+/// the renderer supports labels. The labels will NOT be rendered into the tiles but instead drawn separately so that the labels are always
+/// facing in the same orientation.
 class LabelView extends StatefulWidget {
   final MapModel mapModel;
 

@@ -7,9 +7,9 @@ class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
   final NodeProperties nodeProperties;
 
   /// used for linesymbol
-  double rotateRadians = 0;
+  final double rotateRadians;
 
-  RenderInfoNode(this.nodeProperties, T renderInstruction) : super(renderInstruction);
+  RenderInfoNode(this.nodeProperties, T renderinstruction, {this.rotateRadians = 0, super.caption}) : super(renderinstruction);
 
   @override
   void render(RenderContext renderContext) {

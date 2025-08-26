@@ -1,4 +1,5 @@
 import 'package:dart_common/model.dart';
+import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/shape_painter.dart';
 
@@ -20,7 +21,7 @@ mixin BaseSrcMixin {
   MapRectangle? boundary;
 
   void setDy(double value) {
-    dy = value;
+    dy = value * MapsforgeSettingsMgr().getUserScaleFactor();
   }
 
   void baseSrcMixinClone(BaseSrcMixin base) {

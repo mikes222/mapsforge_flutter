@@ -69,11 +69,11 @@ class LabelJobQueue {
     // find a common base (multiplies of 5) to start with
     left = (left / _range).floor() * _range;
     top = (top / _range).floor() * _range;
-    int maxTileNbr = Tile.getMaxTileNumber(position.zoomLevel);
+    int maxTileNbr = Tile.getMaxTileNumber(position.zoomlevel);
     while (true) {
       while (true) {
-        Tile leftUpper = Tile(left, top, position.zoomLevel, position.indoorLevel);
-        Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomLevel, position.indoorLevel);
+        Tile leftUpper = Tile(left, top, position.zoomlevel, position.indoorLevel);
+        Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomlevel, position.indoorLevel);
         RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
           JobResult result = await mapsforgeModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
           if (result.renderInfo == null) throw Exception("No renderInfo for $tile");

@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
+/// Recognizes scale gestures (zoom) and scales the map accordingly.
 class ScaleGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 
@@ -103,7 +104,7 @@ class _ScaleEvent {
 
   final Mappoint startCenter;
 
-  double? lastScale = null;
+  double? lastScale;
 
   Offset? lastFocalPoint;
 
@@ -142,13 +143,13 @@ class _ScaleEvent {
       mapModel.zoomToAround(
         positionInfo.latitude + (mapModel.lastPosition!.latitude! - positionInfo.latitude) / mult,
         positionInfo.longitude + (mapModel.lastPosition!.longitude! - positionInfo.longitude) / mult,
-        mapModel.lastPosition!.zoomLevel + zoomLevelDiff,
+        mapModel.lastPosition!.zoomlevel + zoomLevelDiff,
       );
       //      if (doLog) _log.info("onScaleEnd  resulting in ${newPost.toString()}");
     } else if (lastScale != 1) {
       // no significant zoom. Restore the old zoom
       /*MapViewPosition newPost =*/
-      mapModel.zoomTo(mapModel.lastPosition!.zoomLevel);
+      mapModel.zoomTo(mapModel.lastPosition!.zoomlevel);
       // if (doLog)
       //   _log.info(
       //       "onScaleEnd Restored zoom to ${viewModel.mapViewPosition!.zoomLevel}");

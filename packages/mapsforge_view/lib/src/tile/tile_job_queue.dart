@@ -151,7 +151,7 @@ class TileJobQueue {
   /// the user (tile in the middle should be created first
   ///
   List<Tile> _createTiles({required MapPosition mapPosition, required TileDimension tileDimension}) {
-    int zoomLevel = mapPosition.zoomLevel;
+    int zoomLevel = mapPosition.zoomlevel;
     int indoorLevel = mapPosition.indoorLevel;
     Mappoint center = mapPosition.getCenter();
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile

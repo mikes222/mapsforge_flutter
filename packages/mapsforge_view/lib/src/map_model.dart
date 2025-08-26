@@ -72,19 +72,19 @@ class MapModel {
   }
 
   void zoomIn() {
-    if (_lastPosition!.zoomLevel == zoomlevelRange.zoomlevelMax) return;
+    if (_lastPosition!.zoomlevel == zoomlevelRange.zoomlevelMax) return;
     MapPosition newPosition = _lastPosition!.zoomIn();
     setPosition(newPosition);
   }
 
   void zoomInAround(double latitude, double longitude) {
-    if (_lastPosition!.zoomLevel == zoomlevelRange.zoomlevelMax) return;
+    if (_lastPosition!.zoomlevel == zoomlevelRange.zoomlevelMax) return;
     MapPosition newPosition = _lastPosition!.zoomInAround(latitude, longitude);
     setPosition(newPosition);
   }
 
   void zoomOut() {
-    if (_lastPosition!.zoomLevel == zoomlevelRange.zoomlevelMin) return;
+    if (_lastPosition!.zoomlevel == zoomlevelRange.zoomlevelMin) return;
     MapPosition newPosition = _lastPosition!.zoomOut();
     setPosition(newPosition);
   }
@@ -177,5 +177,16 @@ enum TapEventListener {
   doubleTap,
 
   /// listen to long tap events
-  longTap,
+  longTap;
+
+  Stream<TapEvent?> getStream(MapModel mapModel) {
+    switch (this) {
+      case TapEventListener.singleTap:
+        return mapModel.tapStream;
+      case TapEventListener.doubleTap:
+        return mapModel.doubleTapStream;
+      case TapEventListener.longTap:
+        return mapModel.longTapStream;
+    }
+  }
 }

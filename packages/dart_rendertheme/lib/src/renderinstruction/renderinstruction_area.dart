@@ -1,5 +1,4 @@
 import 'package:dart_common/model.dart';
-import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
@@ -22,7 +21,7 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
     this.level = level;
     // do not scale bitmaps in areas. They look ugly
     setBitmapMinZoomLevel(65535);
-    setBitmapPercent(100 * MapsforgeSettingsMgr().getFontScaleFactor().round());
+    setBitmapPercent(100);
   }
 
   @override
@@ -51,7 +50,7 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
         if (scale == Scale.NONE) setStrokeMinZoomLevel(665535);
@@ -60,13 +59,13 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {
         setBitmapHeight(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_PERCENT == name) {
-        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value) * MapsforgeSettingsMgr().getFontScaleFactor().round());
+        setBitmapPercent(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.SYMBOL_SCALING == name) {
         // no-op
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {

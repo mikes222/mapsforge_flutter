@@ -16,7 +16,7 @@ import 'package:task_queue/task_queue.dart';
 class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
   static final _log = Logger('ShapePaintSymbol');
 
-  final bool debug = false;
+  static const bool debug = false;
 
   late final UiPaint fill;
 
@@ -25,7 +25,7 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
   ShapePaintSymbol._(RenderinstructionSymbol renderinstruction) : super(renderinstruction) {
-    fill = UiPaint.fill();
+    fill = UiPaint.fill(color: renderinstruction.getBitmapColor());
   }
 
   static Future<ShapePaintSymbol> create(RenderinstructionSymbol renderinstruction) async {
@@ -58,18 +58,25 @@ class ShapePaintSymbol extends UiShapePainter<RenderinstructionSymbol> {
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
-    //print("paint symbol: $shape ${shape.bitmapSrc}");
     RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
     MapRectangle boundary = renderinstruction.getBoundary();
-    //print("paint symbol boundar: $boundary");
     UiMatrix? matrix;
-    if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
-      matrix = UiMatrix();
-      // rotation of the rotationRadian parameter is always in the opposite direction.
-      // If the map is moving clockwise we must rotate the symbol counterclockwise
-      // to keep it horizontal
-      matrix.rotate(renderinstruction.theta - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
-      //        matrix.rotate(shapeSymbol.theta);
+    if (renderinstruction.rotateWithMap) {
+      if (renderinstruction.theta != 0) {
+        matrix = UiMatrix();
+        // rotation of the rotationRadian parameter is always in the opposite direction.
+        // If the map is moving clockwise we must rotate the symbol counterclockwise
+        // to keep it horizontal
+        matrix.rotate(renderinstruction.theta, pivotX: boundary.left, pivotY: boundary.top);
+      }
+    } else {
+      if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
+        matrix = UiMatrix();
+        // rotation of the rotationRadian parameter is always in the opposite direction.
+        // If the map is moving clockwise we must rotate the symbol counterclockwise
+        // to keep it horizontal
+        matrix.rotate(renderinstruction.theta - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
+      }
     }
 
     if (debug) {

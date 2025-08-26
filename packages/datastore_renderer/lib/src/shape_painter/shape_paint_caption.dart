@@ -70,7 +70,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
       uiCanvas.save();
       uiCanvas.translate(relative.dx, relative.dy);
       // if the map is rotated 30° clockwise we have to paint the caption -30° (counter-clockwise) so that it is horizontal
-      uiCanvas.rotate(2 * pi - renderContext.rotationRadian);
+      uiCanvas.rotate(-renderContext.rotationRadian);
       uiCanvas.translate(-relative.dx, -relative.dy);
     }
 
@@ -84,6 +84,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
       back?.getWidth() ?? front?.getWidth() ?? 0,
       back?.getHeight() ?? front?.getHeight() ?? 0,
     );
+    //print("paint caption boundar: $boundary ${renderInfo.caption} and symbol ${renderinstruction.renderinstructionSymbol}");
     // uiCanvas.drawRect(
     //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
     //         boundary.getWidth(), boundary.getHeight()),

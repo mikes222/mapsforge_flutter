@@ -15,7 +15,7 @@ import 'package:dart_rendertheme/src/model/wayproperties.dart';
 class RenderInfoWay<T extends Renderinstruction> extends RenderInfo<T> {
   final WayProperties wayProperties;
 
-  RenderInfoWay(this.wayProperties, T renderInstruction) : super(renderInstruction);
+  RenderInfoWay(this.wayProperties, super.renderInstruction, {super.caption});
 
   @override
   void render(RenderContext renderContext) {

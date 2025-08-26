@@ -9,7 +9,10 @@ import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mapsforge_view/gesture.dart';
 import 'package:mapsforge_view/mapsforge.dart';
+import 'package:mapsforge_view/marker.dart';
+import 'package:mapsforge_view/overlay.dart';
 import 'package:mapsforge_view/src/cache/adaptive_memory_tile_cache.dart';
 import 'package:mapsforge_view/src/cache/memory_pressure_monitor.dart';
 import 'package:task_queue/task_queue.dart';
@@ -42,11 +45,14 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   Future? _createModelFuture;
 
+  late PoiMarker poiMarker;
+
   @override
   void initState() {
     super.initState();
     _initializeOptimizations();
     _startPerformanceMonitoring();
+    _createMarker();
   }
 
   @override
@@ -55,6 +61,14 @@ class _MapViewScreenState extends State<MapViewScreen> {
     // FutureBuilder should NOT call the future directly because we would risk creating the model multiple times. Instead this is the first
     // time we can create the future AND having the context.
     _createModelFuture ??= createModel(context);
+  }
+
+  void _createMarker() {
+    poiMarker = PoiMarker(
+      src: "packages/mapsforge_assets/assets/symbols/viewpoint.svg",
+      latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+      rotateWithMap: true,
+    )..addCaption(caption: "PoiMarker");
   }
 
   void _initializeOptimizations() {
@@ -126,13 +140,6 @@ Profiler Events: ${report.totalEvents}
         ],
       ),
       body: _buildMap(),
-      //      body: Stack(
-      //        children: [
-      //          _buildMapView(),
-      //          if (_showPerformanceOverlay) _buildPerformanceOverlay(),
-      //          _buildConfigurationInfo(),
-      //        ],
-      //      ),
     );
   }
 
@@ -145,10 +152,34 @@ Profiler Events: ${report.totalEvents}
         }
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
-          MapModel mapsforgeModel = snapshot.data;
+          MapModel mapModel = snapshot.data;
           return Stack(
             children: [
-              MapsforgeView(mapModel: mapsforgeModel),
+              // move the map
+              MoveGestureDetector(mapModel: mapModel),
+              // rotates the map when two fingers are pressed and rotated
+              RotationGestureDetector(mapModel: mapModel),
+              // scales the map when two fingers are pressed and zoomed
+              ScaleGestureDetector(mapModel: mapModel),
+              // informs mapModel about double tap gestures
+              DoubleTapGestureDetector(mapModel: mapModel),
+              // informs mapModel about short and long taps
+              TapGestureDetector(mapModel: mapModel),
+              // Shows tiles according to the current position
+              TileView(mapModel: mapModel),
+              // Shows labels (and rotate them) according to the current position (if the renderer supports it)
+              if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
+              SingleMarkerOverlay(mapModel: mapModel, marker: poiMarker),
+              // Shows a ruler with distance information in the left-bottom corner of the map
+              DistanceOverlay(mapModel: mapModel),
+              // Shows zoom-in and zoom-out buttons
+              ZoomOverlay(mapModel: mapModel),
+              // listens to double-click events (configurable) and zooms in
+              ZoomInOverlay(mapModel: mapModel),
+              // shows the indoorlevel zoom buttons
+              IndoorlevelOverlay(mapModel: mapModel),
+              // listens to tap events (configurable) and shows a context menu (also configurable)
+              ContextMenuOverlay(mapModel: mapModel),
               if (_showPerformanceOverlay) _buildPerformanceOverlay(),
             ],
           );

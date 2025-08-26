@@ -1,0 +1,149 @@
+import 'package:dart_common/model.dart';
+import 'package:dart_common/projection.dart';
+import 'package:dart_common/utils.dart';
+import 'package:dart_rendertheme/model.dart';
+import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:datastore_renderer/renderer.dart';
+import 'package:datastore_renderer/shape_painter.dart';
+import 'package:mapsforge_view/src/marker/abstract_poi_marker.dart';
+
+mixin class CaptionMixin {
+  final List<Caption> _captions = [];
+
+  Caption addCaption({
+    required String caption,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xffffffff,
+    int fillColor = 0xff000000,
+    double fontSize = 10.0,
+    ZoomlevelRange? zoomlevelRange,
+    Position position = Position.BELOW,
+    double dy = 0,
+    int? strokeMinZoomLevel,
+  }) {
+    Caption cp = Caption(
+      caption: caption,
+      strokeWidth: strokeWidth,
+      strokeColor: strokeColor,
+      fillColor: fillColor,
+      fontSize: fontSize,
+      zoomlevelRange: zoomlevelRange ?? ZoomlevelRange.standard(),
+      position: position,
+      dy: dy,
+      strokeMinZoomLevel: strokeMinZoomLevel,
+      poiMarker: (this as AbstractPoiMarker),
+    );
+    _captions.add(cp);
+    return cp;
+  }
+
+  void removeCaption(Caption caption) {
+    _captions.remove(caption);
+  }
+
+  void removeCaptionPerText(String caption) {
+    _captions.removeWhere((captionObject) => captionObject.caption == caption);
+  }
+
+  bool hasCaptions() {
+    return _captions.isNotEmpty;
+  }
+
+  void removeAllCaptions() {
+    _captions.clear();
+  }
+
+  List<Caption> get captions => _captions;
+
+  void renderCaptions({required UiRenderContext renderContext, required NodeProperties nodeProperties}) {
+    for (var caption in _captions) {
+      caption.render(renderContext: renderContext, nodeProperties: nodeProperties);
+    }
+  }
+
+  Future<void> changeZoomlevelCaptions(int zoomlevel, PixelProjection projection) async {
+    for (var caption in _captions) {
+      await caption.changeZoomlevel(zoomlevel, projection);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class Caption {
+  static final double DEFAULT_GAP = 2;
+
+  String _caption;
+
+  late RenderinstructionCaption renderinstruction;
+
+  final ZoomlevelRange zoomlevelRange;
+
+  RenderInfoNode<RenderinstructionCaption>? renderInfo;
+
+  final AbstractPoiMarker poiMarker;
+
+  Caption({
+    required String caption,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xffffffff,
+    int fillColor = 0xff000000,
+    double fontSize = 10.0,
+    required this.zoomlevelRange,
+    Position position = Position.BELOW,
+    double dy = 0,
+    int? strokeMinZoomLevel,
+    required this.poiMarker,
+  }) : assert(strokeWidth >= 0),
+       _caption = caption {
+    renderinstruction = RenderinstructionCaption(0);
+    renderinstruction.setStrokeWidth(strokeWidth);
+    renderinstruction.setStrokeColorFromNumber(strokeColor);
+    renderinstruction.setFillColorFromNumber(fillColor);
+    renderinstruction.setFontSize(fontSize);
+    renderinstruction.position = position;
+    renderinstruction.maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
+    renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel ?? MapsforgeSettingsMgr().strokeMinZoomlevelText);
+    renderinstruction.dy = dy;
+    renderinstruction.symbolId = "marker";
+  }
+
+  Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
+    //renderInfo?.shapePainter?.dispose();
+    RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    renderinstructionZoomed.secondPass(poiMarker);
+    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], poiMarker.latLong), projection);
+    renderInfo = RenderInfoNode(nodeProperties, renderinstruction.forZoomlevel(zoomlevel), caption: _caption);
+    renderInfo?.shapePainter = await ShapePaintCaption.create(renderinstructionZoomed);
+  }
+
+  void render({required UiRenderContext renderContext, required NodeProperties nodeProperties}) {
+    if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    renderInfo?.render(renderContext);
+  }
+
+  set caption(String caption) {
+    _caption = caption;
+    RenderInfoNode<RenderinstructionCaption> renderInfoNew = RenderInfoNode<RenderinstructionCaption>(
+      renderInfo!.nodeProperties,
+      renderInfo!.renderInstruction,
+      caption: _caption,
+    );
+    renderInfoNew.shapePainter = renderInfo?.shapePainter;
+    renderInfo = renderInfoNew;
+  }
+
+  String get caption => _caption;
+
+  Future<void> setStrokeColorFromNumber(int strokeColor) async {
+    renderinstruction.setStrokeColorFromNumber(strokeColor);
+    renderInfo?.renderInstruction.setStrokeColorFromNumber(strokeColor);
+    renderInfo?.shapePainter = await ShapePaintCaption.create(renderInfo!.renderInstruction);
+  }
+
+  Future<void> setFillColorFromNumber(int fillColor) async {
+    renderinstruction.setFillColorFromNumber(fillColor);
+    renderInfo?.renderInstruction.setFillColorFromNumber(fillColor);
+    renderInfo?.shapePainter = await ShapePaintCaption.create(renderInfo!.renderInstruction);
+  }
+}

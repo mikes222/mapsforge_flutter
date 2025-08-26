@@ -1,7 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/rule/symbol_searcher.dart';
 
 /// A RenderInstruction is a basic graphical primitive to draw a map. It reads the
 /// instructions from an xml file. It can be seen like a CSS-file for html.
@@ -60,5 +60,7 @@ abstract class Renderinstruction {
   /// Checks the wayProperties and adds itself to the layerContainer if there is something to draw.
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties);
 
-  void secondPass(Rule rule) {}
+  /// Captions needs to find their assigned symbol to correctly render themself around the symbol. After all rules has been created a second pass is
+  /// executed where captions are able to find their assigned symbol.
+  void secondPass(SymbolSearcher symbolSearcher) {}
 }

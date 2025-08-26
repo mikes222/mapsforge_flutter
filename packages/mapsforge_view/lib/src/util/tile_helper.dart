@@ -26,9 +26,9 @@ class TileHelper {
       // the map is rotated. To avoid empty corners enhance each side by one tile
       int diff = (MapsforgeSettingsMgr().getDeviceScaleFactor().ceil());
       tileLeft = max(tileLeft - diff, 0);
-      tileRight = min(tileRight + diff, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
+      tileRight = min(tileRight + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
       tileTop = max(tileTop - diff, 0);
-      tileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomLevel));
+      tileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
     }
     return TileDimension(left: tileLeft, right: tileRight, top: tileTop, bottom: tileBottom);
   }

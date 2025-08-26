@@ -79,7 +79,7 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
                   if (!kIsWeb && !_isDownloadStarted) _buildStartDownloadButton(),
                   // Web download info
                   if (kIsWeb && !_isDownloadStarted) _buildWebDownloadProgressInfo(),
-                  if (percent == 100) _buildNavigateToMapButton(),
+                  if (percent == 100 && _errorMessage == null) _buildNavigateToMapButton(),
                   // Retry button
                   if (_errorMessage != null) _buildRetryButton(),
                 ],

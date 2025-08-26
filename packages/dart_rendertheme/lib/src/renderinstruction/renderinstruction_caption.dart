@@ -1,7 +1,6 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
@@ -16,6 +15,7 @@ import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/text_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/textkey.dart';
+import 'package:dart_rendertheme/src/rule/symbol_searcher.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -41,6 +41,10 @@ class RenderinstructionCaption extends Renderinstruction
 
   RenderinstructionCaption(int level) {
     this.level = level;
+    maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
+    gap = DEFAULT_GAP * MapsforgeSettingsMgr().getFontScaleFactor();
+    setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
+    setFontSize(10);
   }
 
   @override
@@ -54,7 +58,10 @@ class RenderinstructionCaption extends Renderinstruction
     renderinstruction.symbolId = symbolId;
     renderinstruction.textKey = textKey;
     renderinstruction.position = position;
-    renderinstruction.gap = gap;
+    if (zoomlevel >= MapsforgeSettingsMgr().strokeMinZoomlevel) {
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, MapsforgeSettingsMgr().strokeMinZoomlevel);
+      renderinstruction.gap = gap * scaleFactor;
+    }
     return renderinstruction;
   }
 
@@ -64,19 +71,14 @@ class RenderinstructionCaption extends Renderinstruction
   }
 
   @override
-  void secondPass(Rule rule) {
-    super.secondPass(rule);
+  void secondPass(SymbolSearcher symbolSearcher) {
+    super.secondPass(symbolSearcher);
     if (symbolId != null) {
-      renderinstructionSymbol = rule.searchForSymbol(symbolId!);
+      renderinstructionSymbol = symbolSearcher.searchForSymbol(symbolId!);
     }
   }
 
   void parse(XmlElement rootElement) {
-    maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
-    gap = DEFAULT_GAP * MapsforgeSettingsMgr().getFontScaleFactor();
-    setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
-    setFontSize(10 * MapsforgeSettingsMgr().getFontScaleFactor());
-
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
@@ -88,7 +90,7 @@ class RenderinstructionCaption extends Renderinstruction
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.FILL == name) {
@@ -96,7 +98,7 @@ class RenderinstructionCaption extends Renderinstruction
       } else if (Renderinstruction.FONT_FAMILY == name) {
         setFontFamily(MapFontFamily.values.firstWhere((v) => v.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.FONT_SIZE == name) {
-        setFontSize(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getFontScaleFactor());
+        setFontSize(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.FONT_STYLE == name) {
         setFontStyle(MapFontStyle.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.POSITION == name) {
@@ -104,7 +106,7 @@ class RenderinstructionCaption extends Renderinstruction
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getFontScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.SYMBOL_ID == name) {
         symbolId = value;
       } else {
@@ -125,6 +127,7 @@ class RenderinstructionCaption extends Renderinstruction
 
   MapRectangle calculateBoundaryWithSymbol(Position pos, double fontWidth, double fontHeight) {
     MapRectangle? symbolBoundary = renderinstructionSymbol?.getBoundary();
+    //    print("captoin: $pos $fontWidth $fontHeight $symbolBoundary for caption $textKey");
     if (pos == Position.CENTER && symbolBoundary != null) {
       // sensible defaults: below if symbolContainer is present, center if not
       pos = Position.BELOW;
@@ -199,7 +202,7 @@ class RenderinstructionCaption extends Renderinstruction
       return;
     }
 
-    layerContainer.addLabel(RenderInfoNode(nodeProperties, this)..caption = caption);
+    layerContainer.addLabel(RenderInfoNode(nodeProperties, this, caption: caption));
   }
 
   @override
@@ -209,6 +212,6 @@ class RenderinstructionCaption extends Renderinstruction
       return;
     }
 
-    layerContainer.addLabel(RenderInfoWay(wayProperties, this)..caption = caption);
+    layerContainer.addLabel(RenderInfoWay(wayProperties, this, caption: caption));
   }
 }

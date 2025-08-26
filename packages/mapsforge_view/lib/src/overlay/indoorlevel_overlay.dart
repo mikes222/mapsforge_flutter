@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/overlay/indoor_level_bar.dart';
 
-class IndoorlevelZoomOverlay extends StatefulWidget {
+class IndoorlevelOverlay extends StatefulWidget {
   final MapModel mapModel;
 
   final Map<int, String?>? indoorLevels;
 
-  IndoorlevelZoomOverlay({required this.mapModel, this.indoorLevels});
+  IndoorlevelOverlay({required this.mapModel, this.indoorLevels});
 
   @override
   State<StatefulWidget> createState() {
-    return _IndoorlevelZoomOverlayState();
+    return _IndoorlevelOverlayState();
   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-class _IndoorlevelZoomOverlayState extends State<IndoorlevelZoomOverlay> with SingleTickerProviderStateMixin {
+class _IndoorlevelOverlayState extends State<IndoorlevelOverlay> with SingleTickerProviderStateMixin {
   final double toolbarSpacing = 15;
 
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
 
   @override
-  IndoorlevelZoomOverlay get widget => super.widget;
+  IndoorlevelOverlay get widget => super.widget;
 
   @override
   void initState() {

@@ -21,7 +21,7 @@ mixin StrokeSrcMixin {
 
   void setStrokeWidth(double strokeWidth) {
     assert(strokeWidth >= 0);
-    _strokeWidth = strokeWidth;
+    _strokeWidth = strokeWidth * MapsforgeSettingsMgr().getUserScaleFactor();
   }
 
   double get strokeWidth => _strokeWidth;

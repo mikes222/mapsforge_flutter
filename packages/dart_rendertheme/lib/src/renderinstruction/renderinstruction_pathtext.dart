@@ -33,6 +33,10 @@ class RenderinstructionPathtext extends Renderinstruction
     this.level = level;
     //initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     //initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
+    maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
+    setRepeatGap(REPEAT_GAP_DEFAULT);
+    setRepeatStart(REPEAT_START_DEFAULT);
+    setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
   }
 
   @override
@@ -56,11 +60,6 @@ class RenderinstructionPathtext extends Renderinstruction
   }
 
   void parse(XmlElement rootElement) {
-    maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
-    repeatGap = REPEAT_GAP_DEFAULT * MapsforgeSettingsMgr().getFontScaleFactor();
-    repeatStart = REPEAT_START_DEFAULT * MapsforgeSettingsMgr().getFontScaleFactor();
-    setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
-
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
       String value = element.value;
@@ -72,7 +71,7 @@ class RenderinstructionPathtext extends Renderinstruction
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
-        setDy(double.parse(value) * MapsforgeSettingsMgr().getUserScaleFactor());
+        setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
       } else if (Renderinstruction.FILL == name) {
@@ -80,21 +79,21 @@ class RenderinstructionPathtext extends Renderinstruction
       } else if (Renderinstruction.FONT_FAMILY == name) {
         setFontFamily(MapFontFamily.values.firstWhere((v) => v.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.FONT_SIZE == name) {
-        setFontSize(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getFontScaleFactor());
+        setFontSize(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.FONT_STYLE == name) {
         setFontStyle(MapFontStyle.values.firstWhere((v) => v.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.REPEAT == name) {
         repeat = value == "true";
       } else if (Renderinstruction.REPEAT_GAP == name) {
-        repeatGap = double.parse(value) * MapsforgeSettingsMgr().getFontScaleFactor();
+        setRepeatGap(double.parse(value));
       } else if (Renderinstruction.REPEAT_START == name) {
-        repeatStart = double.parse(value) * MapsforgeSettingsMgr().getFontScaleFactor();
+        setRepeatStart(double.parse(value));
       } else if (Renderinstruction.ROTATE == name) {
         rotate = value == "true";
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
-        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value) * MapsforgeSettingsMgr().getFontScaleFactor());
+        setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else {
         throw Exception("Parsing problems $name=$value");
       }
@@ -145,18 +144,14 @@ class RenderinstructionPathtext extends Renderinstruction
 
       layerContainer.addClash(
         RenderInfoNode(
-            NodeProperties(
-              PointOfInterest(
-                wayProperties.layer,
-                wayProperties.getTags(),
-                LatLong(projection.pixelYToLatitude(start.y), projection.pixelXToLongitude(start.x)),
-              ),
-              projection,
-            ),
-            this,
-          )
-          ..rotateRadians = segment.getTheta()
-          ..caption = caption,
+          NodeProperties(
+            PointOfInterest(wayProperties.layer, wayProperties.getTags(), LatLong(projection.pixelYToLatitude(start.y), projection.pixelXToLongitude(start.x))),
+            projection,
+          ),
+          this,
+          rotateRadians: segment.getTheta(),
+          caption: caption,
+        ),
       );
     }
 

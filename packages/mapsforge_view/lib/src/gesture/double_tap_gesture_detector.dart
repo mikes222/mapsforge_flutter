@@ -3,6 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
+/// Recognizes double tap gesture and informs [MapModel]
 class DoubleTapGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 

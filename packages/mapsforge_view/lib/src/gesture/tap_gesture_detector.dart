@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
+/// Recognizes short and long taps and informs [MapModel]
 class TapGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 

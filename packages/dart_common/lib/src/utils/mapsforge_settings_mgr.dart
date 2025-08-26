@@ -39,6 +39,9 @@ class MapsforgeSettingsMgr {
 
   late double maxTextWidth;
 
+  /// The maximum allowed zoomlevel. This is a default but can be overruled.
+  static const int defaultMaxZoomlevel = 25;
+
   factory MapsforgeSettingsMgr() {
     if (_instance != null) return _instance!;
     _instance = MapsforgeSettingsMgr._();

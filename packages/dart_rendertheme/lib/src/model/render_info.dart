@@ -6,14 +6,14 @@ abstract class RenderInfo<T extends Renderinstruction> {
   final T renderInstruction;
 
   /// The caption to draw. (used by renderinstructionCaption and renderinstructionPathtext)
-  String? caption;
+  final String? caption;
 
   /// The painter to use for this renderinstruction.
   ShapePainter<T>? shapePainter;
 
   MapRectangle? boundaryAbsolute;
 
-  RenderInfo(this.renderInstruction);
+  RenderInfo(this.renderInstruction, {this.caption});
 
   void render(RenderContext renderContext);
 

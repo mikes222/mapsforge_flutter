@@ -1,5 +1,7 @@
 import 'dart:math' as Math;
 
+import 'package:dart_common/utils.dart';
+
 /// A min/max range of zoomlevels.
 class ZoomlevelRange {
   final int zoomlevelMin;
@@ -7,7 +9,7 @@ class ZoomlevelRange {
   final int zoomlevelMax;
 
   /// Standard zoomlevels are 0..25.
-  const ZoomlevelRange.standard() : zoomlevelMin = 0, zoomlevelMax = 25;
+  const ZoomlevelRange.standard() : zoomlevelMin = 0, zoomlevelMax = MapsforgeSettingsMgr.defaultMaxZoomlevel;
 
   const ZoomlevelRange(this.zoomlevelMin, this.zoomlevelMax)
     : assert(zoomlevelMin <= zoomlevelMax, "zoomlevelMin ($zoomlevelMin) should less or equal zoomlevelMax ($zoomlevelMax)");
@@ -36,6 +38,11 @@ class ZoomlevelRange {
   /// Returns a zoomlevel which lies guaranteed in the range of this zoomlevel range.
   int ensureBounds(int zoomlevel) {
     return Math.max(zoomlevelMin, Math.min(zoomlevelMax, zoomlevel));
+  }
+
+  /// Returns true if the given zoomlevel is within this range.
+  bool isWithin(int zoomlevel) {
+    return zoomlevelMin <= zoomlevel && zoomlevel <= zoomlevelMax;
   }
 
   @override

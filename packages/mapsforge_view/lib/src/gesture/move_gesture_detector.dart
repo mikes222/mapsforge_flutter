@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 
+/// Moves the map around by calling mapModel.setCenter() whenever the user drags the map. Flinging is also supported.
 class MoveGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 

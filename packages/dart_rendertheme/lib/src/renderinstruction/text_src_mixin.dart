@@ -44,7 +44,7 @@ mixin TextSrcMixin {
   }
 
   void setFontSize(double fontSize) {
-    _fontSize = fontSize;
+    _fontSize = fontSize * MapsforgeSettingsMgr().getFontScaleFactor();
   }
 
   MapFontStyle get fontStyle => _fontStyle;

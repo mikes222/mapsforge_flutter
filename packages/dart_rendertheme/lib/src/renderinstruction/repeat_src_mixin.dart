@@ -5,20 +5,24 @@ mixin RepeatSrcMixin {
 
   bool repeat = true;
 
-  late double repeatGap;
+  late double _repeatGap;
 
-  late double repeatStart;
+  late double _repeatStart;
 
   bool rotate = true;
 
   void setRepeatGap(double repeatGap) {
-    this.repeatGap = repeatGap;
+    this._repeatGap = repeatGap * MapsforgeSettingsMgr().getFontScaleFactor();
+  }
+
+  void setRepeatStart(double repeatStart) {
+    this._repeatStart = repeatStart * MapsforgeSettingsMgr().getFontScaleFactor();
   }
 
   void repeatSrcMixinClone(RepeatSrcMixin base) {
     repeat = base.repeat;
-    repeatGap = base.repeatGap;
-    repeatStart = base.repeatStart;
+    _repeatGap = base._repeatGap;
+    _repeatStart = base._repeatStart;
     rotate = base.rotate;
   }
 
@@ -26,8 +30,12 @@ mixin RepeatSrcMixin {
     repeatSrcMixinClone(base);
     if (zoomlevel >= _repeatMinZoomLevel) {
       double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _repeatMinZoomLevel);
-      repeatGap = base.repeatGap * scaleFactor;
-      repeatStart = base.repeatStart * scaleFactor;
+      _repeatGap = base._repeatGap * scaleFactor;
+      _repeatStart = base._repeatStart * scaleFactor;
     }
   }
+
+  double get repeatGap => _repeatGap;
+
+  double get repeatStart => _repeatStart;
 }

@@ -5,13 +5,15 @@ import 'package:dart_common/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/overlay/simple_context_menu.dart';
-import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
 typedef ContextMenuBuilder = Widget Function(ContextMenuInfo info);
 
+/// Listens to tap events on the map and shows a context menu. The event which is being listened is configurable. The context menu to show is also
+/// configurable.
 class ContextMenuOverlay extends StatelessWidget {
   final MapModel mapModel;
 
+  /// The builder for a widget which represents the context menu. The widget must position itself as desired.
   final ContextMenuBuilder? contextMenuBuilder;
 
   final TapEventListener tapEventListener;
@@ -23,11 +25,7 @@ class ContextMenuOverlay extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return StreamBuilder(
-          stream: tapEventListener == TapEventListener.doubleTap
-              ? mapModel.doubleTapStream
-              : tapEventListener == TapEventListener.longTap
-              ? mapModel.longTapStream
-              : mapModel.tapStream,
+          stream: tapEventListener.getStream(mapModel),
           builder: (BuildContext context, AsyncSnapshot<TapEvent?> snapshot) {
             if (snapshot.hasError) {
               return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);

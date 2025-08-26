@@ -1,8 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:dart_rendertheme/src/rule/symbol_searcher.dart';
 
-abstract class Rule {
+abstract class Rule implements SymbolSearcher {
   // parent rule
   late final Rule? parent;
 
