@@ -19,7 +19,9 @@ import '../models/app_models.dart';
 class MapViewScreen extends StatefulWidget {
   final AppConfiguration configuration;
 
-  const MapViewScreen({super.key, required this.configuration});
+  final String? downloadPath;
+
+  const MapViewScreen({super.key, required this.configuration, this.downloadPath});
 
   @override
   State<MapViewScreen> createState() => _MapViewScreenState();
@@ -121,7 +123,6 @@ Profiler Events: ${report.totalEvents}
             },
             tooltip: 'Toggle Performance Overlay',
           ),
-          IconButton(icon: const Icon(Icons.settings), onPressed: () => Navigator.of(context).pop(), tooltip: 'Back to Configuration'),
         ],
       ),
       body: _buildMap(),
@@ -145,7 +146,12 @@ Profiler Events: ${report.totalEvents}
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
           MapModel mapsforgeModel = snapshot.data;
-          return MapsforgeView(mapModel: mapsforgeModel);
+          return Stack(
+            children: [
+              MapsforgeView(mapModel: mapsforgeModel),
+              if (_showPerformanceOverlay) _buildPerformanceOverlay(),
+            ],
+          );
         }
         return const Center(child: CircularProgressIndicator());
       },
@@ -161,8 +167,7 @@ Profiler Events: ${report.totalEvents}
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      ByteData mapContent = await rootBundle.load("assets/monaco.map");
-      MapFile mapFile = await MapFile.createFromContent(content: mapContent.buffer.asUint8List());
+      MapFile mapFile = await MapFile.createFromFile(filename: widget.downloadPath!);
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);

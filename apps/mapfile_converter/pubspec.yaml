@@ -1,6 +1,6 @@
 name: mapfile_converter
 resolution: workspace
-description: A sample command-line application.
+description: A command-line application to convert pbf or osm files to mapfiles or osm files.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 
@@ -30,7 +30,7 @@ dependencies:
   logging: ^1.3.0
 
   # for pbf format
-  protobuf: ^4.1.0
+  protobuf: ^4.2.0
 
   # Workspace
   task_queue: ^1.0.0

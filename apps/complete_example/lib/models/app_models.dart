@@ -147,12 +147,12 @@ class MapLocations {
       country: 'Germany',
     ),
     MapLocation(
-      name: 'Paris',
+      name: 'Louvre',
       description: 'Louvre (indoor)',
       url: 'https://dailyflightbuddy.com/mapsforge_examples/Louvre.map',
       centerLatitude: 48.86085,
       centerLongitude: 2.33665,
-      defaultZoomLevel: 12,
+      defaultZoomLevel: 16,
       country: 'France',
     ),
     MapLocation(

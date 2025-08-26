@@ -5,7 +5,6 @@ Currently the base zoomlevel must be equal to the min zoomlevel.
 Usage: mapfile_converter convert [arguments]
 -h, --help                           Print this usage information.
 -r, --rendertheme                    Render theme filename
-(defaults to "rendertheme.xml")
 -s, --sourcefiles (mandatory)        Source filenames (PBF or osm files), separated by #
 -d, --destinationfile (mandatory)    Destination filename (mapfile PBF or osm)
 -z, --zoomlevels                     Comma-separated zoomlevels. The last one is the max zoomlevel, separator=#
@@ -30,7 +29,7 @@ path to the destinationfile. mapfile, pbf or osm is currently supported.
 
 rendertheme:
 
-path to the render theme file. All information which are not used to draw something according to the render theme is ignored and will be omitted in the output file
+path to the render theme file. All information which are not used to draw something according to the render theme are ignored and will be omitted in the output file.
 
 zoomlevels: 
  
@@ -120,8 +119,8 @@ add C:\Users\micro\AppData\Local\Pub\Cache\bin to your path
 
 restart android studio
 
-    flutter pub global activate protoc_plugin
-
-    cd mapsforge_converter
-
-    \develop\protoc\bin\protoc.exe --dart_out=. lib\pbfreader\proto\fileformat.proto
+````bash
+flutter pub global activate protoc_plugin
+cd mapsforge_converter
+\develop\protoc\bin\protoc.exe --dart_out=. lib\pbfreader\proto\fileformat.proto
+```

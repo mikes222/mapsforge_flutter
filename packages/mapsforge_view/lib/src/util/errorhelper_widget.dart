@@ -29,9 +29,31 @@ class ErrorhelperWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(border: Border.all(color: Colors.red)),
-      padding: const EdgeInsets.all(8),
-      child: Text(error.toString(), style: const TextStyle(color: Colors.red)),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.error, color: Colors.red.shade600, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Error',
+                style: TextStyle(color: Colors.red.shade600, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(error.toString(), style: TextStyle(color: Colors.red.shade700)),
+        ],
+      ),
     );
   }
 }
