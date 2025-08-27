@@ -4,7 +4,7 @@ import 'package:dart_common/projection.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/map_datastore.dart';
 import 'package:dart_mapfile/src/model/mapfile_info.dart';
-import 'package:dart_mapfile/src/model/queryparameters.dart';
+import 'package:dart_mapfile/src/model/query_parameters.dart';
 import 'package:logging/logging.dart';
 
 class MapfileHelper {

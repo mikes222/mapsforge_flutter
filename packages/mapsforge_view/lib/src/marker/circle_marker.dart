@@ -24,6 +24,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     int fillColor = 0x00000000,
     int strokeColor = 0xff000000,
     double strokeWidth = 2.0,
+    int? strokeMinZoomLevel,
   }) {
     renderinstruction = RenderinstructionCircle(0);
     renderinstruction.radius = radius;
@@ -31,6 +32,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     renderinstruction.strokeColor = strokeColor;
     renderinstruction.position = position;
     renderinstruction.setStrokeWidth(strokeWidth);
+    if (strokeMinZoomLevel != null) renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel);
   }
 
   @override
@@ -56,6 +58,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   ///
   @override
   void render(UiRenderContext renderContext) {
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
     renderCaptions(renderContext: renderContext, nodeProperties: renderInfo!.nodeProperties);
 

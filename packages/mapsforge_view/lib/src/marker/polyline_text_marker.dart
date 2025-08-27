@@ -66,6 +66,7 @@ class PolylineTextMarker<T> extends Marker<T> {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderInfo?.render(renderContext);
   }
 

@@ -25,11 +25,13 @@ class PolylineMarker<T> extends Marker<T> {
     int strokeColor = 0xff000000,
     List<double>? strokeDasharray,
     this.path = const [],
+    int? strokeMinZoomLevel,
   }) {
     renderinstruction = RenderinstructionPolyline(0);
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.setStrokeWidth(strokeWidth);
     renderinstruction.setStrokeDashArray(strokeDasharray);
+    if (strokeMinZoomLevel != null) renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel);
   }
 
   @override
@@ -53,6 +55,7 @@ class PolylineMarker<T> extends Marker<T> {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderInfo?.render(renderContext);
   }
 

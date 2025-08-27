@@ -1,5 +1,5 @@
 import 'package:dart_common/model.dart';
-import 'package:dart_mapfile/src/multimapdatastore.dart';
+import 'package:dart_mapfile/src/multimap_datastore.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/cache.dart';
 import 'package:datastore_renderer/renderer.dart';

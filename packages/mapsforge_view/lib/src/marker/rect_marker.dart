@@ -38,6 +38,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
     List<double>? strokeDasharray,
     required this.minLatLon,
     required this.maxLatLon,
+    int? strokeMinZoomLevel,
 
     /// Rotation of the poi in degrees clockwise
     double rotation = 0,
@@ -49,6 +50,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
     renderinstruction.setStrokeWidth(strokeWidth);
     renderinstruction.setStrokeDashArray(strokeDasharray);
     renderinstruction.setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
+    if (strokeMinZoomLevel != null) renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel);
 
     center = LatLong((minLatLon.latitude + maxLatLon.latitude) / 2, (minLatLon.longitude + maxLatLon.longitude) / 2);
   }
@@ -83,6 +85,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderCaptions(renderContext: renderContext, nodeProperties: nodeProperties!);
 
     renderInfo?.render(renderContext);

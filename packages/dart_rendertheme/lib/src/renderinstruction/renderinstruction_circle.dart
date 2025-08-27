@@ -36,8 +36,8 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
     renderinstruction.radius = radius;
     renderinstruction.position = position;
     if (scaleRadius) {
-      if (zoomlevel >= MapsforgeSettingsMgr().strokeMinZoomlevel) {
-        double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, MapsforgeSettingsMgr().strokeMinZoomlevel);
+      if (zoomlevel >= strokeMinZoomLevel) {
+        double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, strokeMinZoomLevel);
         renderinstruction.radius = radius * scaleFactor;
       }
     }

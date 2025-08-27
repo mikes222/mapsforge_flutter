@@ -3,8 +3,8 @@ import 'package:dart_common/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/map_header_info_builder.dart';
 import 'package:dart_mapfile/src/model/mapfile_info.dart';
-import 'package:dart_mapfile/src/model/subfileparameter.dart';
-import 'package:dart_mapfile/src/subfileparameterbuilder.dart';
+import 'package:dart_mapfile/src/model/subfile_parameter.dart';
+import 'package:dart_mapfile/src/subfile_parameter_builder.dart';
 
 class MapfileInfoBuilder {
   /// Magic byte at the beginning of a valid binary map file.

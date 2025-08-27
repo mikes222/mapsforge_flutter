@@ -1,4 +1,4 @@
-import 'package:dart_mapfile/src/model/subfileparameter.dart';
+import 'package:dart_mapfile/src/model/subfile_parameter.dart';
 
 /// An immutable container class which is the key for the index cache.
 class IndexCacheEntryKey {

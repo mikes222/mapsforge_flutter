@@ -89,10 +89,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Read the rendertheme from the assets folder.
     String renderthemeString = await rootBundle.loadString("assets/defaultrender.xml");
-    Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
+    Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
     // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-    DatastoreRenderer renderer = DatastoreRenderer(mapFile, renderTheme, false);
+    DatastoreRenderer renderer = DatastoreRenderer(mapFile, rendertheme, false);
     // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
     MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
 

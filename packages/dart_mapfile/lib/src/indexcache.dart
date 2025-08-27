@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:dart_common/buffer.dart';
 import 'package:dart_common/src/buffer/deserializer.dart';
 import 'package:dart_mapfile/src/indexcacheentrykey.dart';
-import 'package:dart_mapfile/src/model/subfileparameter.dart';
-import 'package:dart_mapfile/src/subfileparameterbuilder.dart';
+import 'package:dart_mapfile/src/model/subfile_parameter.dart';
+import 'package:dart_mapfile/src/subfile_parameter_builder.dart';
 import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 

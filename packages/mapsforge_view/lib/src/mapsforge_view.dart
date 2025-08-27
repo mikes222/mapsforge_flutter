@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
+import 'package:mapsforge_view/src/context_menu/context_menu_overlay.dart';
 import 'package:mapsforge_view/src/gesture/double_tap_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/move_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/rotation_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/scale_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/tap_gesture_detector.dart';
-import 'package:mapsforge_view/src/overlay/context_menu_overlay.dart';
 import 'package:mapsforge_view/src/overlay/distance_overlay.dart';
 import 'package:mapsforge_view/src/overlay/indoorlevel_overlay.dart';
 import 'package:mapsforge_view/src/overlay/zoom_in_overlay.dart';

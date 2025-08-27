@@ -1,10 +1,11 @@
 import 'dart:math';
 
 import 'package:dart_common/model.dart';
+import 'package:dart_common/projection.dart';
 import 'package:dart_common/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/src/overlay/simple_context_menu.dart';
+import 'package:mapsforge_view/src/context_menu/simple_context_menu.dart';
 
 typedef ContextMenuBuilder = Widget Function(ContextMenuInfo info);
 
@@ -72,8 +73,7 @@ class ContextMenuOverlay extends StatelessWidget {
                   halfScreenHeight: halfHeight,
                   diffX: diffX,
                   diffY: diffY,
-                  latitude: event.latitude,
-                  longitude: event.longitude,
+                  event: event,
                 );
                 return contextMenuBuilder != null ? contextMenuBuilder!(contextMenuInfo) : SimpleContextMenu(info: contextMenuInfo);
               },
@@ -98,9 +98,7 @@ class ContextMenuInfo {
 
   final double diffY;
 
-  final double latitude;
-
-  final double longitude;
+  final TapEvent event;
 
   ContextMenuInfo({
     required this.mapModel,
@@ -108,12 +106,19 @@ class ContextMenuInfo {
     required this.halfScreenHeight,
     required this.diffX,
     required this.diffY,
-    required this.latitude,
-    required this.longitude,
+    required this.event,
   });
+
+  ILatLong get latLong => LatLong(event.latitude, event.longitude);
+
+  double get latitude => event.latitude;
+
+  double get longitude => event.longitude;
+
+  PixelProjection get projection => event.projection;
 
   @override
   String toString() {
-    return 'ContextMenuInfo{halfScreenWidth: $halfScreenWidth, halfScreenHeight: $halfScreenHeight, diffX: $diffX, diffY: $diffY, latitude: $latitude, longitude: $longitude}';
+    return 'ContextMenuInfo{halfScreenWidth: $halfScreenWidth, halfScreenHeight: $halfScreenHeight, diffX: $diffX, diffY: $diffY}';
   }
 }

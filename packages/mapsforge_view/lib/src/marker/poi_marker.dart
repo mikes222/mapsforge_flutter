@@ -64,6 +64,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderCaptions(renderContext: renderContext, nodeProperties: renderInfo!.nodeProperties);
 
     renderInfo?.render(renderContext);

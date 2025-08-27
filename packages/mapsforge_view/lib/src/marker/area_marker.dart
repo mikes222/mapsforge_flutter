@@ -26,12 +26,14 @@ class AreaMarker<T> extends Marker<T> {
     int fillColor = 0xff000000,
     List<double>? strokeDasharray,
     this.path = const [],
+    int? strokeMinZoomLevel,
   }) {
     renderinstruction = RenderinstructionArea(0);
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.setStrokeWidth(strokeWidth);
     renderinstruction.setStrokeDashArray(strokeDasharray);
     renderinstruction.setFillColorFromNumber(fillColor);
+    if (strokeMinZoomLevel != null) renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel);
   }
 
   @override
@@ -55,6 +57,7 @@ class AreaMarker<T> extends Marker<T> {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderInfo!.render(renderContext);
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mapsforge_view/src/overlay/context_menu_overlay.dart';
+import 'package:mapsforge_view/src/context_menu/context_menu_overlay.dart';
 
 /// A widget to draw a frame which points to the tapped position.
 class SimpleContextMenuWidget extends StatelessWidget {

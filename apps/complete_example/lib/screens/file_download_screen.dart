@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:complete_example/models/app_models.dart';
 import 'package:complete_example/screens/map_view_screen.dart';
 import 'package:complete_example/services/platform_file_download_service.dart';
-import 'package:complete_example/widgets/download_location_selector.dart';
+import 'package:complete_example/widget/download_location_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_view/mapsforge.dart';

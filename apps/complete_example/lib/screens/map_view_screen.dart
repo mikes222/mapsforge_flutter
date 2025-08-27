@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:complete_example/context_menu/my_context_menu.dart';
+import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/src/performance_profiler.dart';
 import 'package:dart_common/utils.dart';
@@ -47,7 +49,11 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   late Marker marker;
 
-  MarkerDatastore datastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
+  MarkerDatastore markerDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
+
+  MarkerDatastore debugDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
+
+  Datastore? datastore;
 
   @override
   void initState() {
@@ -119,7 +125,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     //   rotateWithMap: true,
     // )..addCaption(caption: "PoiMarker");
 
-    datastore.addMarker(marker);
+    markerDatastore.addMarker(marker);
   }
 
   void _initializeOptimizations() {
@@ -221,7 +227,8 @@ Profiler Events: ${report.totalEvents}
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
               if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
               //SingleMarkerOverlay(mapModel: mapModel, marker: marker),
-              MarkerDatastoreOverlay(mapModel: mapModel, datastore: datastore),
+              MarkerDatastoreOverlay(mapModel: mapModel, datastore: markerDatastore),
+              MarkerDatastoreOverlay(mapModel: mapModel, datastore: debugDatastore),
               // Shows a ruler with distance information in the left-bottom corner of the map
               DistanceOverlay(mapModel: mapModel),
               // Shows zoom-in and zoom-out buttons
@@ -231,7 +238,20 @@ Profiler Events: ${report.totalEvents}
               // shows the indoorlevel zoom buttons
               IndoorlevelOverlay(mapModel: mapModel),
               // listens to tap events (configurable) and shows a context menu (also configurable)
-              ContextMenuOverlay(mapModel: mapModel),
+              ContextMenuOverlay(
+                mapModel: mapModel,
+                contextMenuBuilder: (info) {
+                  return MyContextMenu(
+                    info: info,
+                    markerDatastore: markerDatastore,
+                    debugDatastore: debugDatastore,
+                    mapModel: mapModel,
+                    configuration: widget.configuration,
+                    downloadFile: widget.downloadPath!,
+                    datastore: datastore,
+                  );
+                },
+              ),
               if (_showPerformanceOverlay) _buildPerformanceOverlay(),
             ],
           );
@@ -250,14 +270,14 @@ Profiler Events: ${report.totalEvents}
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      MapFile mapFile = await MapFile.createFromFile(filename: widget.downloadPath!);
+      datastore = await MapFile.createFromFile(filename: widget.downloadPath!);
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);
-      Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
+      Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(mapFile, renderTheme, false);
+      renderer = DatastoreRenderer(datastore!, rendertheme, false);
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {

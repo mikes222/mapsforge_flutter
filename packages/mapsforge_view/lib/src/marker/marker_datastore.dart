@@ -1,5 +1,6 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
+import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/marker.dart';
 
 abstract class MarkerDatastore<T> {
@@ -42,4 +43,9 @@ abstract class MarkerDatastore<T> {
   /// It is not called automatically because often we want to modify many
   /// markers at once without repainting after every modification.
   void addMarker(Marker<T> marker);
+
+  /// Removes all markers from this datastore
+  void clearMarkers();
+
+  List<Marker<T>> getTappedMarkers(TapEvent event);
 }

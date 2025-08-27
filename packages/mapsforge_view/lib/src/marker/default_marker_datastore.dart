@@ -1,6 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:mapsforge_view/marker.dart';
+import 'package:mapsforge_view/src/map_model.dart';
 
 class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   final Map<T, Marker<T>> _markers = {};
@@ -31,10 +32,14 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   /// It is not called automatically because often we want to modify many
   /// markers at once without repainting after every modification.
   @override
-  void addMarker(Marker<T> marker) {
-    assert(marker.key != null, "Marker must have an item in default MarkerDatastore");
+  Future<void> addMarker(Marker<T> marker) async {
+    assert(marker.key != null, "Marker must have a key for default MarkerDatastore");
     _markers[marker.key!] = marker;
-    if (cachedBoundingBox != null && marker.shouldPaint(cachedBoundingBox!, cachedZoomlevel)) _cachedMarkers[marker.key!] = marker;
+    if (cachedBoundingBox != null && marker.shouldPaint(cachedBoundingBox!, cachedZoomlevel)) {
+      PixelProjection projection = PixelProjection(cachedZoomlevel);
+      await marker.changeZoomlevel(cachedZoomlevel, projection);
+      _cachedMarkers[marker.key!] = marker;
+    }
   }
 
   /// Do not forget to call setRepaint()
@@ -60,5 +65,14 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   @override
   List<Marker<T>> retrieveMarkersToPaint() {
     return _markers.values.toList();
+  }
+
+  @override
+  List<Marker<T>> getTappedMarkers(TapEvent event) {
+    List<Marker<T>> tappedMarkers = [];
+    for (var marker in _cachedMarkers.values) {
+      if (marker.isTapped(event)) tappedMarkers.add(marker);
+    }
+    return tappedMarkers;
   }
 }

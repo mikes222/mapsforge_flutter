@@ -3,7 +3,7 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/src/projection/mercator_projection.dart';
 import 'package:dart_mapfile/src/exceptions/mapfileexception.dart';
 import 'package:dart_mapfile/src/mapfile_info_builder.dart';
-import 'package:dart_mapfile/src/model/subfileparameter.dart';
+import 'package:dart_mapfile/src/model/subfile_parameter.dart';
 
 class SubFileParameterBuilder {
   /// Maximum valid base zoom level of a sub-file.
