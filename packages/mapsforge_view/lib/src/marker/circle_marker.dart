@@ -18,7 +18,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     super.zoomlevelRange,
     super.key,
     required super.latLong,
-    Position position = Position.CENTER,
+    MapPositioning position = MapPositioning.CENTER,
     int bitmapColor = 0xff000000,
     double radius = 10,
     int fillColor = 0x00000000,

@@ -2,66 +2,96 @@ import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:dart_rendertheme/src/rule/rule.dart';
 
-/// A RenderTheme defines how ways and nodes are drawn.
+/// Main rendering theme engine that defines how map features are styled and drawn.
+/// 
+/// A RenderTheme processes styling rules to determine how ways, nodes, and other
+/// map features should be rendered at different zoom levels. It manages rule
+/// hierarchies, background colors, drawing levels, and zoom-dependent styling.
+/// 
+/// Key responsibilities:
+/// - Rule processing and matching for map features
+/// - Zoom level dependent styling management
+/// - Drawing layer organization and ordering
+/// - Background color and styling configuration
+/// - Performance optimization through caching
 class Rendertheme {
+  /// Size of the matching cache for performance optimization.
   static final int MATCHING_CACHE_SIZE = 1024;
 
-  /// The rendertheme can set the base stroke with factor
+  /// Base stroke width multiplier for all line rendering.
+  /// Applied as a scaling factor to all stroke widths in the theme.
   double baseStrokeWidth = 1;
 
-  /// The rendertheme can set the base text size factor
+  /// Base text size multiplier for all text rendering.
+  /// Applied as a scaling factor to all font sizes in the theme.
   double baseTextSize = 1;
 
+  /// Whether the theme defines a background color for areas outside the map.
   final bool? hasBackgroundOutside;
 
-  /// the maximum number of levels in the rendertheme
+  /// Maximum number of drawing levels (layers) used by this theme.
+  /// Higher levels are drawn on top of lower levels.
   final int levels;
+  
+  /// Background color for the map area (ARGB format).
   final int? mapBackground;
+  
+  /// Background color for areas outside the map bounds (ARGB format).
   final int? mapBackgroundOutside;
 
-  /// A list of rules which contains a list of rules which ...
-  /// see defaultrender.xml how this is constructed.
-  final List<Rule> rulesList; // NOPMD we need specific interface
+  /// Hierarchical list of styling rules for map feature rendering.
+  /// 
+  /// Rules are organized in a tree structure where each rule can contain
+  /// sub-rules. See defaultrender.xml for example structure.
+  final List<Rule> rulesList;
 
-  /// ZoomLevel dependent (iterative) list of rules
+  /// Zoom level specific rule collections for performance optimization.
+  /// 
+  /// Pre-computed rule sets for each zoom level to avoid repeated
+  /// rule evaluation during rendering.
   final Map<int, RenderthemeZoomlevel> _renderthemeZoomlevels = {};
 
+  /// Hash string used for theme identification and caching.
   late final String forHash;
 
   Rendertheme({required this.levels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside});
 
-  /**
-   * @return the number of distinct drawing levels required by this RenderTheme.
-   */
+  /// Returns the number of distinct drawing levels required by this theme.
+  /// 
+  /// Drawing levels determine the rendering order, with higher levels
+  /// drawn on top of lower levels.
   int getLevels() {
     return levels;
   }
 
-  /**
-   * @return the map background color of this RenderTheme.
-   */
+  /// Returns the background color for the map area.
+  /// 
+  /// Returns null if no background color is defined.
+  /// Color is in ARGB format.
   int? getMapBackground() {
     return this.mapBackground;
   }
 
-  /**
-   * @return the background color that applies to areas outside the map.
-   */
+  /// Returns the background color for areas outside the map bounds.
+  /// 
+  /// Returns null if no outside background color is defined.
+  /// Color is in ARGB format.
   int? getMapBackgroundOutside() {
     return this.mapBackgroundOutside;
   }
 
-  /**
-   * @return true if map color is defined for outside areas.
-   */
+  /// Returns true if a background color is defined for areas outside the map.
   bool? hasMapBackgroundOutside() {
     return this.hasBackgroundOutside;
   }
 
-  /// Scales the stroke width of this RenderTheme by the given factor for a given zoom level
-  ///
-  /// @param scaleFactor the factor by which the stroke width should be scaled.
-  /// @param zoomLevel   the zoom level to which this is applied.
+  /// Prepares and caches zoom level specific rendering rules.
+  /// 
+  /// Creates an optimized rule set for the specified zoom level by filtering
+  /// and processing the theme's rules. Results are cached for performance.
+  /// 
+  /// [zoomlevel] The zoom level to prepare rules for
+  /// Returns the prepared zoom level rule set
   RenderthemeZoomlevel prepareZoomlevel(int zoomlevel) {
     if (_renderthemeZoomlevels.containsKey(zoomlevel)) return _renderthemeZoomlevels[zoomlevel]!;
     List<Rule> rules = [];
@@ -80,6 +110,10 @@ class Rendertheme {
     return renderthemeLevel;
   }
 
+  /// Completes theme initialization by finalizing all rules.
+  /// 
+  /// Called after theme loading to perform final processing and optimization
+  /// of all rules in the theme hierarchy.
   void complete() {
     //    this.rulesList.trimToSize();
     //    this.hillShadings.trimToSize();
@@ -88,6 +122,12 @@ class Rendertheme {
     }
   }
 
+  /// Traverses all rules in the theme using the visitor pattern.
+  /// 
+  /// Applies the given visitor to all rules in the theme hierarchy,
+  /// enabling operations like analysis, modification, or extraction.
+  /// 
+  /// [visitor] The visitor to apply to each rule
   void traverseRules(RuleVisitor visitor) {
     for (var rule in rulesList) {
       rule.apply(visitor);

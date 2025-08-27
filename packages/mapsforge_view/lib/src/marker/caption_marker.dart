@@ -19,7 +19,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
     super.zoomlevelRange,
     super.key,
     required super.latLong,
-    Position position = Position.CENTER,
+    MapPositioning position = MapPositioning.CENTER,
     bool rotateWithMap = false,
     required this.caption,
     int bitmapColor = 0xff000000,

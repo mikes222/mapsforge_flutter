@@ -12,7 +12,7 @@ class UiPaint {
 
   List<double>? _strokeDasharray;
 
-  UiPaint.stroke({int? color, double? strokeWidth, Cap? cap, Join? join, List<double>? strokeDasharray})
+  UiPaint.stroke({int? color, double? strokeWidth, MapCap? cap, MapJoin? join, List<double>? strokeDasharray})
     : _paint = ui.Paint()..style = ui.PaintingStyle.stroke {
     if (color != null) _paint.color = Color(color);
     if (strokeWidth != null) _paint.strokeWidth = strokeWidth;
@@ -59,29 +59,29 @@ class UiPaint {
     _paint.color = ui.Color(color);
   }
 
-  void setStrokeCap(Cap cap) {
+  void setStrokeCap(MapCap cap) {
     switch (cap) {
-      case Cap.BUTT:
+      case MapCap.BUTT:
         _paint.strokeCap = ui.StrokeCap.butt;
         break;
-      case Cap.ROUND:
+      case MapCap.ROUND:
         _paint.strokeCap = ui.StrokeCap.round;
         break;
-      case Cap.SQUARE:
+      case MapCap.SQUARE:
         _paint.strokeCap = ui.StrokeCap.square;
         break;
     }
   }
 
-  void setStrokeJoin(Join join) {
+  void setStrokeJoin(MapJoin join) {
     switch (join) {
-      case Join.BEVEL:
+      case MapJoin.BEVEL:
         _paint.strokeJoin = ui.StrokeJoin.bevel;
         break;
-      case Join.MITER:
+      case MapJoin.MITER:
         _paint.strokeJoin = ui.StrokeJoin.miter;
         break;
-      case Join.ROUND:
+      case MapJoin.ROUND:
         _paint.strokeJoin = ui.StrokeJoin.round;
         break;
     }

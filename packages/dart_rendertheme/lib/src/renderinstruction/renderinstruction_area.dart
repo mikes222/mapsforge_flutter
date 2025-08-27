@@ -1,6 +1,6 @@
 import 'package:dart_common/model.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
@@ -15,15 +15,35 @@ import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
-/// Represents a closed polygon on the map.
+/// Rendering instruction for filled polygon areas on the map.
+/// 
+/// This class handles the rendering of closed polygons (areas) such as buildings,
+/// parks, water bodies, and other filled regions. It supports both solid fill colors
+/// and bitmap pattern fills, along with optional stroke outlines.
+/// 
+/// Key features:
+/// - Solid color fills and bitmap pattern fills
+/// - Optional stroke outlines with customizable properties
+/// - Zoom level dependent scaling and visibility
+/// - Support for display modes and rendering priorities
 class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, FillSrcMixin, StrokeSrcMixin implements RenderinstructionWay {
+  /// Creates a new area rendering instruction for the specified drawing level.
+  /// 
+  /// [level] The drawing level (layer) for this area instruction
   RenderinstructionArea(int level) : super() {
     this.level = level;
-    // do not scale bitmaps in areas. They look ugly
+    // Disable bitmap scaling for areas to maintain visual quality
     setBitmapMinZoomLevel(65535);
     setBitmapPercent(100);
   }
 
+  /// Creates a zoom level specific copy of this area instruction.
+  /// 
+  /// Applies zoom level dependent scaling to all rendering properties
+  /// including fill, stroke, and bitmap parameters.
+  /// 
+  /// [zoomlevel] Target zoom level for scaling calculations
+  /// Returns a new scaled area instruction
   @override
   RenderinstructionArea forZoomlevel(int zoomlevel) {
     return RenderinstructionArea(level)
@@ -34,11 +54,18 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
       ..strokeSrcMixinScale(this, zoomlevel);
   }
 
+  /// Returns the type identifier for this rendering instruction.
   @override
   String getType() {
     return "area";
   }
 
+  /// Parses XML attributes to configure this area rendering instruction.
+  /// 
+  /// Processes XML attributes such as fill color, stroke properties, bitmap sources,
+  /// display modes, and other styling parameters from the theme definition.
+  /// 
+  /// [rootElement] XML element containing the area instruction attributes
   void parse(XmlElement rootElement) {
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
@@ -46,7 +73,7 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
       if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {

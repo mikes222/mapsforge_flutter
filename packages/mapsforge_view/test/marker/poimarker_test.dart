@@ -65,7 +65,7 @@ void main() {
       src: "jar:symbols/tourist/view_point.svg",
       width: 200,
       height: 200,
-      position: Position.BELOW,
+      positioning: MapPositioning.BELOW,
     );
     await tester.runAsync(() async {
       await circleMarker.changeZoomlevel(position.zoomlevel, position.projection);
@@ -106,7 +106,7 @@ void main() {
       src: "jar:symbols/tourist/view_point.svg",
       width: 200,
       height: 200,
-      position: Position.BELOW,
+      positioning: MapPositioning.BELOW,
     )..addCaption(caption: "PoiMarker with text");
     await tester.runAsync(() async {
       await circleMarker.changeZoomlevel(position.zoomlevel, position.projection);
@@ -147,8 +147,8 @@ void main() {
       src: "jar:symbols/tourist/view_point.svg",
       width: 200,
       height: 200,
-      position: Position.BELOW,
-    )..addCaption(caption: "PoiMarker with text", position: Position.ABOVE);
+      positioning: MapPositioning.BELOW,
+    )..addCaption(caption: "PoiMarker with text", position: MapPositioning.ABOVE);
     await tester.runAsync(() async {
       await circleMarker.changeZoomlevel(position.zoomlevel, position.projection);
     });
@@ -188,8 +188,8 @@ void main() {
       src: "jar:symbols/tourist/view_point.svg",
       width: 200,
       height: 200,
-      position: Position.BELOW,
-    )..addCaption(caption: "PoiMarker with text", position: Position.LEFT);
+      positioning: MapPositioning.BELOW,
+    )..addCaption(caption: "PoiMarker with text", position: MapPositioning.LEFT);
     await tester.runAsync(() async {
       await circleMarker.changeZoomlevel(position.zoomlevel, position.projection);
     });
@@ -261,8 +261,8 @@ void main() {
 
     PoiMarker circleMarker = PoiMarker(latLong: position.getLatLong(), src: "jar:symbols/tourist/view_point.svg")
       ..addCaption(caption: "Markercaption")
-      ..addCaption(caption: "Markercaption", fontSize: 16, position: Position.ABOVE)
-      ..addCaption(caption: "Markercaption", fontSize: 8, position: Position.RIGHT);
+      ..addCaption(caption: "Markercaption", fontSize: 16, position: MapPositioning.ABOVE)
+      ..addCaption(caption: "Markercaption", fontSize: 8, position: MapPositioning.RIGHT);
     await tester.runAsync(() async {
       await circleMarker.changeZoomlevel(position.zoomlevel, position.projection);
     });

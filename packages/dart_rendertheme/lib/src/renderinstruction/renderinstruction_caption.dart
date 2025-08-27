@@ -1,12 +1,12 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
-import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
-import 'package:dart_rendertheme/src/model/mapfontstyle.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
+import 'package:dart_rendertheme/src/model/map_font_family.dart';
+import 'package:dart_rendertheme/src/model/map_font_style.dart';
+import 'package:dart_rendertheme/src/model/map_positioning.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
-import 'package:dart_rendertheme/src/model/position.dart';
 import 'package:dart_rendertheme/src/model/render_info_node.dart';
 import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
@@ -19,26 +19,48 @@ import 'package:dart_rendertheme/src/rule/symbol_searcher.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-/// Represents a text label on the map.
-/// <p/>
-/// If a bitmap symbol is present the caption position is calculated relative to the bitmap, the
-/// center of which is at the point of the POI. The bitmap itself is never rendered by this class.
+/// Rendering instruction for text labels and captions on the map.
+/// 
+/// This class handles the rendering of text labels for POIs, area names, and other
+/// textual information. It supports positioning relative to symbols, font styling,
+/// stroke outlines, and collision detection for optimal label placement.
+/// 
+/// Key features:
+/// - Text positioning relative to symbols or standalone
+/// - Font family, size, and style customization
+/// - Text stroke outlines for better readability
+/// - Collision detection and label placement optimization
+/// - Support for both node (POI) and way (area) labeling
 class RenderinstructionCaption extends Renderinstruction
     with BaseSrcMixin, TextSrcMixin, FillSrcMixin, StrokeSrcMixin
     implements RenderinstructionNode, RenderinstructionWay {
+  /// Default gap between text and associated symbols in pixels.
   static final double DEFAULT_GAP = 1;
 
+  /// Identifier of the symbol this caption is associated with.
   String? symbolId;
 
+  /// Text key defining which map feature attribute to display.
   TextKey? textKey;
 
-  Position position = Position.CENTER;
+  /// Positioning of the caption relative to its anchor point or symbol.
+  MapPositioning position = MapPositioning.CENTER;
 
+  /// Gap distance between caption and associated symbol in pixels.
   double gap = DEFAULT_GAP;
 
-  /// In the second pass we try to find the corresponding symbol so that we can align the caption relative to this symbol.
+  /// Boundary rectangle of the associated symbol for relative positioning.
+  /// 
+  /// Determined in the second pass of theme processing to enable
+  /// accurate caption alignment relative to symbol boundaries.
   MapRectangle? symbolBoundary;
 
+  /// Creates a new caption rendering instruction for the specified drawing level.
+  /// 
+  /// Initializes default text properties including font size, stroke settings,
+  /// and gap scaling based on global font scale factor.
+  /// 
+  /// [level] The drawing level (layer) for this caption instruction
   RenderinstructionCaption(int level) {
     this.level = level;
     maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
@@ -86,7 +108,7 @@ class RenderinstructionCaption extends Renderinstruction
       if (Renderinstruction.K == name) {
         textKey = TextKey(value);
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
@@ -102,7 +124,7 @@ class RenderinstructionCaption extends Renderinstruction
       } else if (Renderinstruction.FONT_STYLE == name) {
         setFontStyle(MapFontStyle.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.POSITION == name) {
-        position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        position = MapPositioning.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
@@ -125,17 +147,17 @@ class RenderinstructionCaption extends Renderinstruction
     return calculateBoundaryWithSymbol(position, widthEstimated, heightEstimated);
   }
 
-  MapRectangle calculateBoundaryWithSymbol(Position pos, double fontWidth, double fontHeight) {
+  MapRectangle calculateBoundaryWithSymbol(MapPositioning pos, double fontWidth, double fontHeight) {
     //    print("captoin: $pos $fontWidth $fontHeight $symbolBoundary for caption $textKey");
     MapRectangle? symBoundary = symbolBoundary;
-    if (pos == Position.CENTER && symBoundary != null) {
+    if (pos == MapPositioning.CENTER && symBoundary != null) {
       // sensible defaults: below if symbolContainer is present, center if not
-      pos = Position.BELOW;
+      pos = MapPositioning.BELOW;
     }
 
     if (symBoundary == null) {
       // symbol not available, draw the text at the center
-      pos = Position.CENTER;
+      pos = MapPositioning.CENTER;
       symBoundary = const MapRectangle.zero();
     }
 
@@ -143,14 +165,14 @@ class RenderinstructionCaption extends Renderinstruction
     double halfHeight = fontHeight / 2;
 
     switch (pos) {
-      case Position.AUTO:
-      case Position.CENTER:
+      case MapPositioning.AUTO:
+      case MapPositioning.CENTER:
         boundary = MapRectangle(-halfWidth, -halfHeight + dy, halfWidth, halfHeight + dy);
         break;
-      case Position.BELOW:
+      case MapPositioning.BELOW:
         boundary = MapRectangle(-halfWidth, symBoundary.bottom + 0 + gap + dy, halfWidth, symBoundary.bottom + fontHeight + gap + dy);
         break;
-      case Position.BELOW_LEFT:
+      case MapPositioning.BELOW_LEFT:
         boundary = MapRectangle(
           symBoundary.left - fontWidth - gap,
           symBoundary.bottom + 0 + gap + dy,
@@ -158,7 +180,7 @@ class RenderinstructionCaption extends Renderinstruction
           symBoundary.bottom + fontHeight + gap + dy,
         );
         break;
-      case Position.BELOW_RIGHT:
+      case MapPositioning.BELOW_RIGHT:
         boundary = MapRectangle(
           symBoundary.right + 0 + gap,
           symBoundary.bottom + 0 + gap + dy,
@@ -166,10 +188,10 @@ class RenderinstructionCaption extends Renderinstruction
           symBoundary.bottom + fontHeight + gap + dy,
         );
         break;
-      case Position.ABOVE:
+      case MapPositioning.ABOVE:
         boundary = MapRectangle(-halfWidth, symBoundary.top - fontHeight - gap + dy, halfWidth, symBoundary.top - 0 - gap + dy);
         break;
-      case Position.ABOVE_LEFT:
+      case MapPositioning.ABOVE_LEFT:
         boundary = MapRectangle(
           symBoundary.left - fontWidth - gap,
           symBoundary.top - fontHeight - gap + dy,
@@ -177,7 +199,7 @@ class RenderinstructionCaption extends Renderinstruction
           symBoundary.top + 0 - gap + dy,
         );
         break;
-      case Position.ABOVE_RIGHT:
+      case MapPositioning.ABOVE_RIGHT:
         boundary = MapRectangle(
           symBoundary.right + 0 + gap,
           symBoundary.top - fontHeight - gap + dy,
@@ -185,10 +207,10 @@ class RenderinstructionCaption extends Renderinstruction
           symBoundary.top + 0 - gap + dy,
         );
         break;
-      case Position.LEFT:
+      case MapPositioning.LEFT:
         boundary = MapRectangle(symBoundary.left - fontWidth - gap, -halfHeight + dy, symBoundary.left - 0 - gap, halfHeight + dy);
         break;
-      case Position.RIGHT:
+      case MapPositioning.RIGHT:
         boundary = MapRectangle(symBoundary.right + 0 + gap, -halfHeight + dy, symBoundary.right + fontHeight + gap, halfHeight + dy);
         break;
     }

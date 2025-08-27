@@ -1,6 +1,6 @@
 name: dart_common
 resolution: workspace
-description: A sample command-line application.
+description: Common files for mapsforge in dart.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 

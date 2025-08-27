@@ -2,7 +2,7 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
@@ -10,30 +10,56 @@ import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dar
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-///
-/// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
-/// The [RenderinstructionIcon] class holds a flutter icon and refers it by it's id. The class can be used by several other [Renderinstruction] implementations.
-///
+/// Rendering instruction for Flutter font-based icons on the map.
+/// 
+/// This class handles the rendering of vector icons from Flutter's icon fonts
+/// such as Material Icons. Unlike bitmap symbols, these icons are scalable
+/// vector graphics that maintain quality at all zoom levels.
+/// 
+/// Key features:
+/// - Vector-based icons from Flutter icon fonts
+/// - Reusable icons with unique identifiers
+/// - Rotation support with optional map alignment
+/// - Positioning control relative to anchor points
+/// - Support for both node (POI) and way (area) icons
 class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin implements RenderinstructionNode, RenderinstructionWay {
+  /// Unique identifier for this icon, allowing reuse across the theme.
   String? id;
 
-  Position position = Position.CENTER;
+  /// Positioning of the icon relative to its anchor point.
+  MapPositioning position = MapPositioning.CENTER;
 
-  /// The rotation of the symbol.
+  /// Rotation angle of the icon in radians.
   double theta = 0;
 
-  /// The Unicode code point at which this icon is stored in the icon font. See icons.dart.
-  /// The icon [ten_k] has for example the id 0xe000 IconData(0xe000, fontFamily: 'MaterialIcons').
+  /// Unicode code point of the icon in the font family.
+  /// 
+  /// For example, the Material Icons 'ten_k' icon has code point 0xe000,
+  /// corresponding to IconData(0xe000, fontFamily: 'MaterialIcons').
   int codePoint = 0;
 
+  /// Font family name containing the icon glyphs.
   String fontFamily = "MaterialIcons";
 
+  /// Creates a new icon rendering instruction for the specified drawing level.
+  /// 
+  /// Initializes bitmap settings with full size rendering and appropriate
+  /// minimum zoom level for text-related icons.
+  /// 
+  /// [level] The drawing level (layer) for this icon instruction
   RenderinstructionIcon(int level) {
     this.level = level;
     setBitmapPercent(100);
     setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
   }
 
+  /// Creates a zoom level specific copy of this icon instruction.
+  /// 
+  /// Applies zoom level dependent scaling to bitmap properties while
+  /// preserving icon identity, positioning, rotation, and font settings.
+  /// 
+  /// [zoomlevel] Target zoom level for scaling calculations
+  /// Returns a new scaled icon instruction
   @override
   RenderinstructionIcon forZoomlevel(int zoomlevel) {
     RenderinstructionIcon renderinstruction = RenderinstructionIcon(level)
@@ -61,7 +87,7 @@ class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapS
       if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
@@ -79,7 +105,7 @@ class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapS
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
       } else if (Renderinstruction.POSITION == name) {
-        position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        position = MapPositioning.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else {
         throw Exception("Parsing problems $name=$value");
       }
@@ -94,32 +120,32 @@ class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapS
     double halfHeight = getBitmapHeight() / 2;
 
     switch (position) {
-      case Position.AUTO:
-      case Position.CENTER:
+      case MapPositioning.AUTO:
+      case MapPositioning.CENTER:
         boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
         break;
-      case Position.BELOW:
+      case MapPositioning.BELOW:
         boundary = MapRectangle(-halfWidth, 0 + dy, halfWidth, getBitmapHeight() + dy);
         break;
-      case Position.BELOW_LEFT:
+      case MapPositioning.BELOW_LEFT:
         boundary = MapRectangle(-getBitmapWidth().toDouble(), 0 + dy, 0, getBitmapHeight() + dy);
         break;
-      case Position.BELOW_RIGHT:
+      case MapPositioning.BELOW_RIGHT:
         boundary = MapRectangle(0, 0 + dy, getBitmapWidth().toDouble(), getBitmapHeight() + dy);
         break;
-      case Position.ABOVE:
+      case MapPositioning.ABOVE:
         boundary = MapRectangle(-halfWidth, -getBitmapHeight() + dy, halfWidth, 0 + dy);
         break;
-      case Position.ABOVE_LEFT:
+      case MapPositioning.ABOVE_LEFT:
         boundary = MapRectangle(-getBitmapWidth().toDouble(), -getBitmapHeight() + dy, 0, 0 + dy);
         break;
-      case Position.ABOVE_RIGHT:
+      case MapPositioning.ABOVE_RIGHT:
         boundary = MapRectangle(0, -getBitmapHeight() + dy, getBitmapWidth().toDouble(), 0 + dy);
         break;
-      case Position.LEFT:
+      case MapPositioning.LEFT:
         boundary = MapRectangle(-getBitmapWidth().toDouble(), -halfHeight + dy, 0, halfHeight + dy);
         break;
-      case Position.RIGHT:
+      case MapPositioning.RIGHT:
         boundary = MapRectangle(0, -halfHeight + dy, getBitmapWidth().toDouble(), halfHeight + dy);
         break;
     }

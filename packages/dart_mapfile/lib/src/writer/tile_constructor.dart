@@ -292,7 +292,7 @@ class TileConstructor {
     int poicountBefore = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       List.from(poiinfo.poiholders).forEach((poiholder) {
-        if (boundingBox.containsLatLong(poiholder.poi.position)) {
+        if (boundingBox.containsLatLong(poiholder.poi.positioning)) {
           poiinfo.poiholders.remove(poiholder);
         }
       });

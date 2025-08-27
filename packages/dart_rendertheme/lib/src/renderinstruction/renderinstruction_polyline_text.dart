@@ -2,7 +2,7 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
@@ -66,7 +66,7 @@ class RenderinstructionPolylineText extends Renderinstruction
       if (Renderinstruction.K == name) {
         textKey = TextKey(value);
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {

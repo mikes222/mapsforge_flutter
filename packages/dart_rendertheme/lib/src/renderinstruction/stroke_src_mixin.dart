@@ -1,15 +1,15 @@
 import 'package:dart_common/utils.dart';
-import 'package:dart_rendertheme/src/model/cap.dart';
-import 'package:dart_rendertheme/src/model/join.dart';
+import 'package:dart_rendertheme/src/model/map_cap.dart';
+import 'package:dart_rendertheme/src/model/map_join.dart';
 
 mixin StrokeSrcMixin {
   int strokeColor = transparent();
 
   double _strokeWidth = 0;
 
-  Cap _strokeCap = Cap.ROUND;
+  MapCap _strokeCap = MapCap.ROUND;
 
-  Join _strokeJoin = Join.ROUND;
+  MapJoin _strokeJoin = MapJoin.ROUND;
 
   List<double>? _strokeDashArray;
 
@@ -26,9 +26,9 @@ mixin StrokeSrcMixin {
 
   double get strokeWidth => _strokeWidth;
 
-  Cap get strokeCap => _strokeCap;
+  MapCap get strokeCap => _strokeCap;
 
-  Join get strokeJoin => _strokeJoin;
+  MapJoin get strokeJoin => _strokeJoin;
 
   List<double>? get strokeDashArray => _strokeDashArray;
 
@@ -64,11 +64,11 @@ mixin StrokeSrcMixin {
 
   static int transparent() => 0x00000000;
 
-  void setStrokeCap(Cap cap) {
+  void setStrokeCap(MapCap cap) {
     _strokeCap = cap;
   }
 
-  void setStrokeJoin(Join join) {
+  void setStrokeJoin(MapJoin join) {
     _strokeJoin = join;
   }
 

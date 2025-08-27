@@ -1,9 +1,9 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
-import 'package:dart_rendertheme/src/model/cap.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
-import 'package:dart_rendertheme/src/model/join.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/map_cap.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
+import 'package:dart_rendertheme/src/model/map_join.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
 import 'package:dart_rendertheme/src/model/render_info_way.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
@@ -16,19 +16,42 @@ import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-/// Represents an open polyline on the map.
+/// Rendering instruction for polylines (open paths) on the map.
+/// 
+/// This class handles the rendering of linear features such as roads, paths,
+/// rivers, boundaries, and other line-based map elements. It supports stroke
+/// styling, bitmap patterns, and various line cap and join styles.
+/// 
+/// Key features:
+/// - Stroke styling with customizable width, color, and patterns
+/// - Bitmap pattern fills along the line path
+/// - Line cap styles (round, square, butt)
+/// - Line join styles (round, bevel, miter)
+/// - Zoom level dependent scaling and visibility
 class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, StrokeSrcMixin implements RenderinstructionWay {
+  /// Optional identifier for this polyline instruction.
   String? id;
 
+  /// Creates a new polyline rendering instruction for the specified drawing level.
+  /// 
+  /// Initializes bitmap settings to maintain visual quality by disabling
+  /// bitmap scaling which can cause visual artifacts on linear features.
+  /// 
+  /// [level] The drawing level (layer) for this polyline instruction
   RenderinstructionPolyline(int level) {
     this.level = level;
-    // do not scale bitmap in lines they look ugly
+    // Disable bitmap scaling for lines to prevent visual artifacts
     setBitmapPercent(100);
-    //    base.setBitmapMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     setBitmapMinZoomLevel(65535);
-    //    base.setStrokeMinZoomLevel(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
   }
 
+  /// Creates a zoom level specific copy of this polyline instruction.
+  /// 
+  /// Applies zoom level dependent scaling to all rendering properties
+  /// including stroke width, bitmap patterns, and other styling parameters.
+  /// 
+  /// [zoomlevel] Target zoom level for scaling calculations
+  /// Returns a new scaled polyline instruction
   @override
   RenderinstructionPolyline forZoomlevel(int zoomlevel) {
     RenderinstructionPolyline renderinstruction = RenderinstructionPolyline(level)
@@ -40,11 +63,18 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
     return renderinstruction;
   }
 
+  /// Returns the type identifier for this rendering instruction.
   @override
   String getType() {
     return "polyline";
   }
 
+  /// Parses XML attributes to configure this polyline rendering instruction.
+  /// 
+  /// Processes XML attributes such as stroke properties, bitmap sources,
+  /// line caps, joins, and other styling parameters from the theme definition.
+  /// 
+  /// [rootElement] XML element containing the polyline instruction attributes
   void parse(XmlElement rootElement) {
     for (var element in rootElement.attributes) {
       String name = element.name.toString();
@@ -53,7 +83,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       if (Renderinstruction.SRC == name) {
         bitmapSrc = value;
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
@@ -76,9 +106,9 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
         }
         setStrokeDashArray(dashArray);
       } else if (Renderinstruction.STROKE_LINECAP == name) {
-        setStrokeCap(Cap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        setStrokeCap(MapCap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.STROKE_LINEJOIN == name) {
-        setStrokeJoin(Join.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
+        setStrokeJoin(MapJoin.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {

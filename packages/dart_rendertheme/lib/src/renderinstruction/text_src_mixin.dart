@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:dart_common/utils.dart';
-import 'package:dart_rendertheme/src/model/mapfontfamily.dart';
-import 'package:dart_rendertheme/src/model/mapfontstyle.dart';
+import 'package:dart_rendertheme/src/model/map_font_family.dart';
+import 'package:dart_rendertheme/src/model/map_font_style.dart';
 
 mixin TextSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel

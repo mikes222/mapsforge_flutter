@@ -19,7 +19,7 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     super.zoomlevelRange,
     super.key,
     required super.latLong,
-    Position position = Position.CENTER,
+    MapPositioning position = MapPositioning.CENTER,
     bool rotateWithMap = false,
     required IconData iconData,
     int bitmapColor = 0xff000000,

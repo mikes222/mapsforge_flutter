@@ -1,7 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
@@ -11,19 +11,41 @@ import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
-/// Represents a round area on the map.
+/// Rendering instruction for circular shapes on the map.
+/// 
+/// This class handles the rendering of circular elements such as POI markers,
+/// circular area highlights, or decorative elements. Circles can have both
+/// fill colors and stroke outlines with configurable radius and positioning.
+/// 
+/// Key features:
+/// - Configurable radius with optional zoom-level scaling
+/// - Fill colors and stroke outlines
+/// - Positioning relative to anchor points
+/// - Zoom-dependent size scaling for better visibility
 class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillSrcMixin, StrokeSrcMixin implements RenderinstructionNode {
-  /// the radius of the circle in pixels
+  /// The radius of the circle in pixels.
   double radius = 10;
 
+  /// Whether the radius should scale with zoom level changes.
   bool scaleRadius = true;
 
-  Position position = Position.CENTER;
+  /// Positioning of the circle relative to its anchor point.
+  MapPositioning position = MapPositioning.CENTER;
 
+  /// Creates a new circle rendering instruction for the specified drawing level.
+  /// 
+  /// [level] The drawing level (layer) for this circle instruction
   RenderinstructionCircle(int level) {
     this.level = level;
   }
 
+  /// Creates a zoom level specific copy of this circle instruction.
+  /// 
+  /// Applies zoom level dependent scaling to fill, stroke, and optionally
+  /// radius properties based on the scaleRadius setting.
+  /// 
+  /// [zoomlevel] Target zoom level for scaling calculations
+  /// Returns a new scaled circle instruction
   @override
   RenderinstructionCircle forZoomlevel(int zoomlevel) {
     RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
@@ -44,6 +66,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
     return renderinstruction;
   }
 
+  /// Returns the type identifier for this rendering instruction.
   @override
   String getType() {
     return "circle";
@@ -57,7 +80,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
       if (Renderinstruction.RADIUS == name || Renderinstruction.R == name) {
         radius = XmlUtils.parseNonNegativeFloat(name, value);
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
@@ -73,7 +96,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
       } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.POSITION == name) {
-        position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        position = MapPositioning.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else {
         throw Exception("Parsing problems $name=$value");
       }
@@ -88,32 +111,32 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
     double halfWidth = radius;
     if (!isStrokeTransparent()) halfWidth += strokeWidth / 2;
     switch (position) {
-      case Position.AUTO:
-      case Position.CENTER:
+      case MapPositioning.AUTO:
+      case MapPositioning.CENTER:
         boundary = MapRectangle(-halfWidth, -halfWidth + dy, halfWidth, halfWidth + dy);
         break;
-      case Position.BELOW:
+      case MapPositioning.BELOW:
         boundary = MapRectangle(-halfWidth, 0 + dy, halfWidth, halfWidth * 2 + dy);
         break;
-      case Position.BELOW_LEFT:
+      case MapPositioning.BELOW_LEFT:
         boundary = MapRectangle(-halfWidth * 2, 0 + dy, 0, halfWidth * 2 + dy);
         break;
-      case Position.BELOW_RIGHT:
+      case MapPositioning.BELOW_RIGHT:
         boundary = MapRectangle(0, 0 + dy, halfWidth * 2, halfWidth * 2 + dy);
         break;
-      case Position.ABOVE:
+      case MapPositioning.ABOVE:
         boundary = MapRectangle(-halfWidth, -halfWidth * 2 + dy, halfWidth, 0 + dy);
         break;
-      case Position.ABOVE_LEFT:
+      case MapPositioning.ABOVE_LEFT:
         boundary = MapRectangle(-halfWidth * 2, -halfWidth * 2 + dy, 0, 0 + dy);
         break;
-      case Position.ABOVE_RIGHT:
+      case MapPositioning.ABOVE_RIGHT:
         boundary = MapRectangle(0, -halfWidth * 2 + dy, halfWidth * 2, 0 + dy);
         break;
-      case Position.LEFT:
+      case MapPositioning.LEFT:
         boundary = MapRectangle(-halfWidth * 2, -halfWidth + dy, 0, halfWidth + dy);
         break;
-      case Position.RIGHT:
+      case MapPositioning.RIGHT:
         boundary = MapRectangle(0, -halfWidth + dy, halfWidth * 2, halfWidth + dy);
         break;
     }

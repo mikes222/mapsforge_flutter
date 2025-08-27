@@ -19,7 +19,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     super.zoomlevelRange,
     super.key,
     required super.latLong,
-    Position position = Position.CENTER,
+    MapPositioning positioning = MapPositioning.CENTER,
     bool rotateWithMap = false,
     required String src,
     int bitmapColor = 0xff000000,
@@ -36,7 +36,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     renderinstruction.theta = Projection.degToRadian(rotation);
     renderinstruction.setBitmapWidth(width.round());
     renderinstruction.setBitmapHeight(height.round());
-    renderinstruction.position = position;
+    renderinstruction.positioning = positioning;
     renderinstruction.rotateWithMap = rotateWithMap;
   }
 

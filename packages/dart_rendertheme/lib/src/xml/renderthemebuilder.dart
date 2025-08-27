@@ -10,42 +10,97 @@ import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:logging/logging.dart';
 import 'package:xml/xml.dart';
 
-/// A builder for {@link RenderTheme} instances.
+/// Builder class for parsing XML theme files and creating RenderTheme instances.
+/// 
+/// This class handles the parsing of XML-based rendering theme files, converting
+/// them into structured RenderTheme objects. It supports theme customization through
+/// element exclusion and provides comprehensive error handling during parsing.
+/// 
+/// Key features:
+/// - XML theme file parsing and validation
+/// - Rule hierarchy construction
+/// - Element exclusion for theme customization
+/// - Version compatibility checking
+/// - Comprehensive error reporting
 class RenderThemeBuilder {
   static final _log = new Logger('RenderThemeBuilder');
 
+  // XML attribute and element constants
+  
+  /// XML attribute for base stroke width scaling factor.
   static final String BASE_STROKE_WIDTH = "base-stroke-width";
+  
+  /// XML attribute for base text size scaling factor.
   static final String BASE_TEXT_SIZE = "base-text-size";
+  
+  /// XML attribute for map background color.
   static final String MAP_BACKGROUND = "map-background";
+  
+  /// XML attribute for background color outside map bounds.
   static final String MAP_BACKGROUND_OUTSIDE = "map-background-outside";
+  
+  /// Current supported render theme version.
   static final int RENDER_THEME_VERSION = 6;
+  
+  /// XML attribute for theme version.
   static final String VERSION = "version";
+  
+  /// XML namespace declaration.
   static final String XMLNS = "xmlns";
+  
+  /// XML Schema Instance namespace declaration.
   static final String XMLNS_XSI = "xmlns:xsi";
+  
+  /// XML Schema location attribute.
   static final String XSI_SCHEMALOCATION = "xsi:schemaLocation";
 
-  /// The rendertheme can set the base stroke with factor
+  /// Base stroke width scaling factor from theme definition.
   double baseStrokeWidth = 1;
 
-  /// The rendertheme can set the base text size factor
+  /// Base text size scaling factor from theme definition.
   double baseTextSize = 1;
 
+  /// Whether the theme defines background color for areas outside the map.
   bool? hasBackgroundOutside;
+  
+  /// Map background color in ARGB format.
   int? mapBackground;
+  
+  /// Background color for areas outside map bounds in ARGB format.
   int? mapBackgroundOutside;
+  
+  /// Theme file version number.
   late int version;
+  
+  /// Stack of rule builders for hierarchical rule construction.
   final List<RuleBuilder> ruleBuilderStack = [];
+  
+  /// Current nesting level during XML parsing.
   int _level = 0;
+  
+  /// Maximum drawing level found in the theme.
   int maxLevel = 0;
 
+  /// Hash string for theme identification and caching.
   String forHash = "";
 
-  /// New: a set of element IDs to exclude from rendering.
+  /// Set of element IDs to exclude from rendering for theme customization.
   final Set<String> excludeIds;
 
-  // Constructor now accepts an optional excludeIds parameter.
+  /// Private constructor for creating builder instances.
+  /// 
+  /// [excludeIds] Optional set of element IDs to exclude from rendering
   RenderThemeBuilder._({this.excludeIds = const {}});
 
+  /// Creates a RenderTheme from XML content string.
+  /// 
+  /// Parses the provided XML content and builds a complete RenderTheme object.
+  /// Supports element exclusion for theme customization.
+  /// 
+  /// [content] XML theme content as string
+  /// [excludeIds] Optional set of element IDs to exclude from rendering
+  /// Returns the parsed RenderTheme
+  /// Throws FormatException if XML parsing fails
   static Rendertheme createFromString(String content, {Set<String> excludeIds = const {}}) {
     RenderThemeBuilder renderThemeBuilder = RenderThemeBuilder._(excludeIds: excludeIds);
     renderThemeBuilder._parseXml(content);

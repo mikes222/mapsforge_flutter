@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/utils.dart';
-import 'package:dart_rendertheme/src/model/display.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
+import 'package:dart_rendertheme/src/model/map_display.dart';
+import 'package:dart_rendertheme/src/model/map_positioning.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';
-import 'package:dart_rendertheme/src/model/position.dart';
 import 'package:dart_rendertheme/src/model/render_info_node.dart';
 import 'package:dart_rendertheme/src/model/scale.dart';
 import 'package:dart_rendertheme/src/model/wayproperties.dart';
@@ -24,7 +24,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
   static final double REPEAT_GAP_DEFAULT = 150;
   static final double REPEAT_START_DEFAULT = 30;
 
-  Position position = Position.CENTER;
+  MapPositioning position = MapPositioning.CENTER;
 
   bool alignCenter = true;
 
@@ -68,7 +68,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
       } else if (Renderinstruction.ALIGN_CENTER == name) {
         alignCenter = "true" == (value);
       } else if (Renderinstruction.DISPLAY == name) {
-        display = Display.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        display = MapDisplay.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.PRIORITY == name) {
         priority = int.parse(value);
       } else if (Renderinstruction.DY == name) {
@@ -79,7 +79,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
           setBitmapMinZoomLevel(65535);
         }
       } else if (Renderinstruction.POSITION == name) {
-        position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
+        position = MapPositioning.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else if (Renderinstruction.REPEAT == name) {
         repeat = "true" == (value);
       } else if (Renderinstruction.REPEAT_GAP == name) {
