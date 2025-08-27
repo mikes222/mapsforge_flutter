@@ -4,7 +4,7 @@ import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
-import 'package:datastore_renderer/src/model/fillrule.dart';
+import 'package:dart_rendertheme/src/model/map_fillrule.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_rect.dart';
 import 'package:logging/logging.dart';
@@ -47,12 +47,12 @@ class UiPath {
     _dashedPaths.clear();
   }
 
-  void setFillRule(FillRule fillRule) {
+  void setFillRule(MapFillRule fillRule) {
     switch (fillRule) {
-      case FillRule.EVEN_ODD:
+      case MapFillRule.EVEN_ODD:
         _path.fillType = ui.PathFillType.evenOdd;
         break;
-      case FillRule.NON_ZERO:
+      case MapFillRule.NON_ZERO:
         _path.fillType = ui.PathFillType.nonZero;
         break;
     }

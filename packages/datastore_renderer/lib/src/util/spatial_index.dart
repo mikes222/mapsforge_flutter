@@ -1,14 +1,37 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 
-/// A simple spatial index using a grid-based approach for fast collision detection
+/// High-performance spatial index using grid-based partitioning for collision detection.
+/// 
+/// This class implements an optimized spatial indexing system that partitions space
+/// into a regular grid to enable fast collision detection between map elements.
+/// It provides O(1) insertion and O(log n) collision detection performance.
+/// 
+/// Key features:
+/// - Grid-based spatial partitioning for performance
+/// - Configurable cell size for different use cases
+/// - Fast collision detection with boundary checking
+/// - Memory-efficient storage with sparse grid representation
+/// - Exception handling for robust collision detection
 class SpatialIndex {
+  /// Size of each grid cell in logical pixels.
   final double _cellSize;
+  
+  /// Sparse grid storage mapping cell coordinates to render items.
   final Map<String, List<RenderInfo>> _grid = {};
 
+  /// Creates a new spatial index with the specified cell size.
+  /// 
+  /// [cellSize] Size of each grid cell in logical pixels (default: 256.0)
+  /// Smaller cells provide more precise collision detection but use more memory
   SpatialIndex({double cellSize = 256.0}) : _cellSize = cellSize;
 
-  /// Add a render info to the spatial index
+  /// Adds a render item to the spatial index.
+  /// 
+  /// The item is added to all grid cells that intersect with its boundary.
+  /// Items without boundaries are ignored for performance.
+  /// 
+  /// [item] Render item to add to the index
   void add(RenderInfo item) {
     final boundary = item.boundaryAbsolute;
     if (boundary != null) {
@@ -19,7 +42,13 @@ class SpatialIndex {
     }
   }
 
-  /// Check if an item collides with any existing items in the index
+  /// Checks if an item collides with any existing items in the index.
+  /// 
+  /// Uses grid-based lookup to efficiently check only items in nearby cells.
+  /// Handles exceptions gracefully by assuming no collision on error.
+  /// 
+  /// [item] Item to check for collisions
+  /// Returns true if collision detected, false otherwise
   bool hasCollision(RenderInfo item) {
     final boundary = item.boundaryAbsolute;
     if (boundary == null) return false;
@@ -43,7 +72,13 @@ class SpatialIndex {
     return false;
   }
 
-  /// Get all grid cells that a boundary intersects
+  /// Gets all grid cell identifiers that intersect with the given boundary.
+  /// 
+  /// Calculates the range of cells covered by the boundary and returns
+  /// string identifiers for efficient map lookup.
+  /// 
+  /// [boundary] Rectangle boundary to find intersecting cells for
+  /// Returns list of cell identifier strings
   List<String> _getCells(MapRectangle boundary) {
     final minX = (boundary.left / _cellSize).floor();
     final maxX = (boundary.right / _cellSize).floor();

@@ -12,37 +12,75 @@ import 'package:datastore_renderer/src/ui/ui_rect.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
 import 'package:flutter/cupertino.dart';
 
+/// Canvas abstraction for cross-platform rendering operations.
+/// 
+/// This class provides a unified interface for drawing operations on Flutter's
+/// canvas system, supporting both direct canvas rendering and picture recording
+/// for cached tile generation. It includes performance tracking and optimized
+/// drawing methods for map rendering.
+/// 
+/// Key features:
+/// - Direct canvas and picture recorder support
+/// - Performance metrics tracking (actions, bitmaps, text, paths)
+/// - Optimized drawing methods for map elements
+/// - Matrix transformations and clipping support
 class UiCanvas {
+  /// Underlying Flutter canvas for drawing operations.
   late ui.Canvas _uiCanvas;
 
+  /// Picture recorder for generating cached tile images.
   ui.PictureRecorder? _pictureRecorder;
 
-  /// The size of the canvas
+  /// The size of the canvas in logical pixels.
   final ui.Size _size;
 
+  /// Counter for total drawing actions performed.
   int _actions = 0;
 
+  /// Counter for bitmap drawing operations.
   int _bitmapCount = 0;
 
+  /// Counter for text drawing operations.
   int _textCount = 0;
 
+  /// Counter for path drawing operations.
   int _pathCount = 0;
 
+  /// Creates a canvas wrapper for an existing Flutter canvas.
+  /// 
+  /// [_uiCanvas] Existing Flutter canvas to wrap
+  /// [_size] Size of the canvas in logical pixels
   UiCanvas(this._uiCanvas, this._size) : _pictureRecorder = null;
 
+  /// Creates a canvas with picture recording for cached tile generation.
+  /// 
+  /// This constructor creates a canvas that records drawing operations into
+  /// a picture that can be cached and reused for improved performance.
+  /// 
+  /// [width] Width of the canvas in logical pixels
+  /// [height] Height of the canvas in logical pixels
   UiCanvas.forRecorder(double width, double height)
     : _pictureRecorder = ui.PictureRecorder(),
       _size = ui.Size(width, height),
       assert(width >= 0),
       assert(height >= 0) {
     _uiCanvas = ui.Canvas(_pictureRecorder!);
-    //uiCanvas.clipRect(Rect.fromLTWH(0, 0, width, height), doAntiAlias: true);
   }
 
+  /// Disposes of canvas resources and finalizes picture recording.
+  /// 
+  /// Should be called when the canvas is no longer needed to properly
+  /// clean up resources and finalize any ongoing picture recording.
   void dispose() {
     _pictureRecorder?.endRecording();
   }
 
+  /// Draws a Flutter icon using a TextPainter at the specified position.
+  /// 
+  /// [textPainter] Configured TextPainter with icon glyph
+  /// [left] X coordinate for icon placement
+  /// [top] Y coordinate for icon placement
+  /// [matrix] Optional transformation matrix
   void drawIcon({required TextPainter textPainter, required double left, required double top, UiMatrix? matrix}) {
     if (matrix != null || left != 0 || top != 0) {
       _uiCanvas.save();

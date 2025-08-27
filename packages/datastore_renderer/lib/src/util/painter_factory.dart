@@ -4,11 +4,32 @@ import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/shape_painter.dart';
 import 'package:logging/logging.dart';
 
+/// Factory class for creating appropriate shape painters for rendering instructions.
+/// 
+/// This factory provides a centralized way to create shape painters based on
+/// rendering instruction types. It handles the complexity of painter creation,
+/// caching, and type-specific initialization requirements.
+/// 
+/// Key features:
+/// - Type-based painter creation with automatic detection
+/// - Painter caching and reuse for performance
+/// - Asynchronous initialization support
+/// - Creation statistics tracking
+/// - Special handling for context-dependent painters (captions)
 class PainterFactory {
   static final _log = Logger('PainterFactory');
 
+  /// Counter tracking the number of painters created by this factory.
   int created = 0;
 
+  /// Creates a shape painter for the given render information.
+  /// 
+  /// Returns cached painter if available, otherwise creates a new painter
+  /// based on the rendering instruction type. Some painters (like captions)
+  /// are context-dependent and not cached for reuse.
+  /// 
+  /// [renderInfo] Render information containing the instruction and context
+  /// Returns appropriate shape painter for the instruction type
   Future<ShapePainter<T>> createShapePainter<T extends Renderinstruction>(RenderInfo<T> renderInfo) async {
     if (renderInfo.shapePainter != null) return renderInfo.shapePainter!;
 

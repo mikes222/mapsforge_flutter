@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:datastore_renderer/src/model/fillrule.dart';
+import 'package:dart_rendertheme/src/model/map_fillrule.dart';
 import 'package:datastore_renderer/src/ui/ui_path.dart';
 
 abstract class UiShapePainter<T extends Renderinstruction> extends ShapePainter<T> {
@@ -11,7 +11,7 @@ abstract class UiShapePainter<T extends Renderinstruction> extends ShapePainter<
   UiPath calculatePath(List<List<Mappoint>> coordinatesAbsolute, Mappoint reference, double dy) {
     UiPath path = UiPath();
     // omit holes in the area. Without this the hole is also drawn.
-    path.setFillRule(FillRule.EVEN_ODD);
+    path.setFillRule(MapFillRule.EVEN_ODD);
     for (var outerList in coordinatesAbsolute) {
       outerList.forEachIndexed((int idx, Mappoint point) {
         if (idx == 0) {

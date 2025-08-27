@@ -15,32 +15,57 @@ import 'package:datastore_renderer/src/util/tile_dependencies.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-///
-/// This renderer renders the bitmap for the tiles by using the given [Datastore].
-///
+/// High-performance tile renderer for datastore-based map data.
+/// 
+/// This renderer converts map data from datastores into visual tile representations
+/// by applying rendering themes and generating bitmap images. It supports both
+/// static rendering (with labels) and dynamic rendering (without labels for rotation).
+/// 
+/// Key features:
+/// - Efficient tile-based rendering with object pooling
+/// - Theme-based styling with zoom level support
+/// - Optional label rendering for rotation compatibility
+/// - Spatial indexing for collision detection
+/// - Performance optimizations with caching
 class DatastoreRenderer extends Renderer {
   static final _log = Logger('DatastoreRenderer');
+  
+  /// Tag identifier for natural water features used in rendering optimization.
   static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
+  /// Data source providing map features for rendering.
   final Datastore datastore;
 
+  /// Rendering theme defining visual styling rules.
   final Rendertheme renderTheme;
 
-  /// When using the map heading north we can render the labels onto the images.
-  /// However if you want to support rotation the labels should not rotate with
-  /// the map so we are not allowed to render the labels onto the images.
+  /// Whether to render labels directly onto tile images.
+  /// 
+  /// When true, labels are rendered onto tiles for better performance but
+  /// prevent map rotation. When false, labels are rendered separately to
+  /// support dynamic map rotation without label distortion.
   final bool renderLabels;
 
+  /// Manages dependencies between tiles for label rendering.
   TileDependencies? tileDependencies;
 
+  /// Reader for extracting map data from the datastore.
   late DatastoreReader _datastoreReader;
 
-  /// Object pools for performance optimization
+  /// Object pool for RenderInfo lists to reduce garbage collection.
   static late ObjectPool<List<RenderInfo>> _renderInfoListPool;
+  
+  /// Object pool for RenderInfo sets to reduce garbage collection.
   static late ObjectPool<Set<RenderInfo>> _renderInfoSetPool;
 
+  /// Flag tracking whether object pools have been initialized.
   static bool _poolsInitialized = false;
 
+  /// Creates a new datastore renderer with the specified configuration.
+  /// 
+  /// [datastore] Data source providing map features
+  /// [renderTheme] Theme defining visual styling rules
+  /// [renderLabels] Whether to render labels onto tile images
   DatastoreRenderer(this.datastore, this.renderTheme, this.renderLabels) {
     if (renderLabels) {
       tileDependencies = TileDependencies();
