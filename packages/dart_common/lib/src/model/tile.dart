@@ -2,8 +2,22 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/utils/mapsforge_settings_mgr.dart';
 
-/// A tile represents a rectangular part of the world map. All tiles can be identified by their X and Y number together
-/// with their zoom level. Tile 0/0 at zoomlevel 0 represents the whole world. Likewise at zoomlevel 1 Tile 0/0 represents the upper-left quarter of the world.
+/// Represents a rectangular map tile in a hierarchical tiling scheme.
+/// 
+/// Tiles divide the world map into a grid at different zoom levels, following the
+/// standard web mercator tiling scheme. Each tile is uniquely identified by its
+/// X/Y coordinates and zoom level:
+/// 
+/// - Zoom level 0: Single tile (0,0) covers the entire world
+/// - Zoom level 1: 2×2 grid of tiles (0,0 to 1,1)
+/// - Zoom level n: 2^n × 2^n grid of tiles
+/// 
+/// Key features:
+/// - Hierarchical parent/child relationships
+/// - Neighbor tile calculation
+/// - Cached boundary calculations for performance
+/// - Indoor level support for multi-floor mapping
+/// - Efficient coordinate-to-tile conversions
 class Tile {
   /// The X number of this tile.
   final int tileX;
@@ -29,7 +43,12 @@ class Tile {
   /// The (cached) boundary of this tile in pixels
   MapRectangle? _mapBoundary;
 
-  /// @return the maximum valid tile number for the given zoom level, 2<sup>zoomLevel</sup> -1.
+  /// Calculates the maximum valid tile coordinate for a given zoom level.
+  /// 
+  /// At zoom level n, tiles range from 0 to (2^n - 1) in both X and Y directions.
+  /// 
+  /// [zoomLevel] The zoom level (must be non-negative)
+  /// Returns the maximum tile coordinate (2^zoomLevel - 1)
   static int getMaxTileNumber(int zoomLevel) {
     assert(zoomLevel >= 0, "zoomLevel must not be negative: $zoomLevel");
     switch (zoomLevel) {
@@ -44,10 +63,14 @@ class Tile {
     }
   }
 
-  /// @param tileX     the X number of the tile.
-  /// @param tileY     the Y number of the tile.
-  /// @param zoomLevel the zoom level of the tile.
-  /// @throws IllegalArgumentException if any of the parameters is invalid.
+  /// Creates a new tile with the specified coordinates and zoom level.
+  /// 
+  /// [tileX] The X coordinate of the tile (0 to 2^zoomLevel - 1)
+  /// [tileY] The Y coordinate of the tile (0 to 2^zoomLevel - 1)
+  /// [zoomLevel] The zoom level (must be non-negative)
+  /// [indoorLevel] The indoor/floor level for multi-story mapping
+  /// 
+  /// Asserts that all coordinates are within valid ranges for the zoom level
   Tile(this.tileX, this.tileY, this.zoomLevel, this.indoorLevel)
     : assert(tileX >= 0, "tileX $tileX must not be negative"),
       assert(tileY >= 0, "tileY $tileY must not be negative"),
@@ -71,9 +94,12 @@ class Tile {
   @override
   int get hashCode => tileX.hashCode ^ tileY.hashCode ^ zoomLevel.hashCode ^ indoorLevel.hashCode << 5;
 
-  /// Returns a set of the eight neighbours of this tile.
-  ///
-  /// @return neighbour tiles as a set
+  /// Gets all eight neighboring tiles around this tile.
+  /// 
+  /// Returns tiles in all cardinal and diagonal directions, wrapping around
+  /// the world boundaries as needed (longitude wraps, latitude clamps).
+  /// 
+  /// Returns a Set containing the 8 neighboring tiles
   Set<Tile> getNeighbours() {
     Set<Tile> neighbours = {};
     neighbours.add(getLeft());
@@ -87,9 +113,10 @@ class Tile {
     return neighbours;
   }
 
-  /// Returns the tile to the left of this tile.
-  ///
-  /// @return tile to the left.
+  /// Gets the tile immediately to the west (left) of this tile.
+  /// 
+  /// Wraps around the world boundary if necessary.
+  /// Returns the western neighbor tile
   Tile getLeft() {
     int x = tileX - 1;
     if (x < 0) {
@@ -98,9 +125,10 @@ class Tile {
     return Tile(x, tileY, zoomLevel, indoorLevel);
   }
 
-  /// Returns the tile to the right of this tile.
-  ///
-  /// @return tile to the right
+  /// Gets the tile immediately to the east (right) of this tile.
+  /// 
+  /// Wraps around the world boundary if necessary.
+  /// Returns the eastern neighbor tile
   Tile getRight() {
     int x = tileX + 1;
     if (x > getMaxTileNumber(zoomLevel)) {
@@ -109,9 +137,10 @@ class Tile {
     return Tile(x, tileY, zoomLevel, indoorLevel);
   }
 
-  /// Returns the tile above this tile.
-  ///
-  /// @return tile above
+  /// Gets the tile immediately to the north (above) of this tile.
+  /// 
+  /// Wraps around if at the northern boundary.
+  /// Returns the northern neighbor tile
   Tile getAbove() {
     int y = tileY - 1;
     if (y < 0) {
@@ -120,9 +149,10 @@ class Tile {
     return Tile(tileX, y, zoomLevel, indoorLevel);
   }
 
-  /// Returns the tile below this tile.
-  ///
-  /// @return tile below
+  /// Gets the tile immediately to the south (below) of this tile.
+  /// 
+  /// Wraps around if at the southern boundary.
+  /// Returns the southern neighbor tile
 
   Tile getBelow() {
     int y = tileY + 1;

@@ -6,7 +6,20 @@ import 'package:dart_common/src/model/latlong.dart';
 import 'package:dart_common/src/projection/projection.dart';
 import 'package:dart_common/src/utils/latlong_utils.dart';
 
-/// A BoundingBox represents an immutable set of two latitude and two longitude coordinates.
+/// Immutable rectangular geographic boundary defined by latitude and longitude coordinates.
+/// 
+/// A BoundingBox represents a rectangular area on Earth's surface using four coordinates:
+/// minimum/maximum latitude and minimum/maximum longitude. It provides efficient
+/// spatial operations for containment testing, intersection detection, and boundary
+/// calculations commonly used in mapping applications.
+/// 
+/// Key features:
+/// - Immutable design for thread safety
+/// - Efficient containment and intersection testing
+/// - Boundary expansion with margin or meter-based calculations
+/// - Corner point access methods
+/// - Line and area intersection detection
+/// - Geographic coordinate validation
 class BoundingBox {
   /// The maximum latitude coordinate of this BoundingBox in degrees.
   final double maxLatitude;
@@ -20,16 +33,26 @@ class BoundingBox {
   /// The minimum longitude coordinate of this BoundingBox in degrees.
   final double minLongitude;
 
-  /// @param minLatitude  the minimum latitude coordinate in degrees.
-  /// @param minLongitude the minimum longitude coordinate in degrees.
-  /// @param maxLatitude  the maximum latitude coordinate in degrees.
-  /// @param maxLongitude the maximum longitude coordinate in degrees.
-  /// @throws IllegalArgumentException if a coordinate is invalid.
+  /// Creates a BoundingBox with the specified coordinate boundaries.
+  /// 
+  /// [minLatitude] The southern boundary in decimal degrees
+  /// [minLongitude] The western boundary in decimal degrees  
+  /// [maxLatitude] The northern boundary in decimal degrees
+  /// [maxLongitude] The eastern boundary in decimal degrees
+  /// 
+  /// Asserts that min values are less than or equal to max values
   const BoundingBox(this.minLatitude, this.minLongitude, this.maxLatitude, this.maxLongitude)
     : assert(minLatitude <= maxLatitude),
       assert(minLongitude <= maxLongitude);
 
-  /// @param latLongs the coordinates list.
+  /// Creates a BoundingBox that encompasses all the given coordinates.
+  /// 
+  /// Calculates the minimum and maximum latitude/longitude values from the
+  /// provided coordinate list to create the smallest bounding box that contains
+  /// all points.
+  /// 
+  /// [latLongs] List of coordinates to encompass (must not be empty)
+  /// Returns a BoundingBox containing all the coordinates
   factory BoundingBox.fromLatLongs(List<ILatLong> latLongs) {
     assert(latLongs.isNotEmpty);
     double minLatitude = double.infinity;
@@ -62,21 +85,27 @@ class BoundingBox {
     );
   }
 
-  /// @param latitude  the latitude coordinate in degrees.
-  /// @param longitude the longitude coordinate in degrees.
-  /// @return true if this BoundingBox contains the given coordinates, false otherwise.
+  /// Tests if the given coordinates are within this bounding box.
+  /// 
+  /// [latitude] The latitude coordinate to test
+  /// [longitude] The longitude coordinate to test
+  /// Returns true if the coordinates are within the boundary (inclusive)
   bool contains(double latitude, double longitude) {
     return this.minLatitude <= latitude && this.maxLatitude >= latitude && this.minLongitude <= longitude && this.maxLongitude >= longitude;
   }
 
-  /// @param latLong the LatLong whose coordinates should be checked.
-  /// @return true if this BoundingBox contains the given LatLong, false otherwise.
+  /// Tests if the given LatLong point is within this bounding box.
+  /// 
+  /// [latLong] The coordinate point to test
+  /// Returns true if the point is within the boundary (inclusive)
   bool containsLatLong(ILatLong latLong) {
     return contains(latLong.latitude, latLong.longitude);
   }
 
-  /// @param box the BoundingBox whose coordinates should be checked.
-  /// @return true if this BoundingBox contains the given BoundingBox completely, false otherwise.
+  /// Tests if this bounding box completely contains another bounding box.
+  /// 
+  /// [box] The bounding box to test for containment
+  /// Returns true if the given box is completely within this boundary
   bool containsBoundingBox(BoundingBox box) {
     return contains(box.minLatitude, box.minLongitude) && contains(box.maxLatitude, box.maxLongitude);
   }
@@ -94,8 +123,10 @@ class BoundingBox {
   @override
   int get hashCode => maxLatitude.hashCode ^ maxLongitude.hashCode ^ minLatitude.hashCode ^ minLongitude.hashCode;
 
-  /// @param boundingBox the BoundingBox which this BoundingBox should be extended if it is larger
-  /// @return a BoundingBox that covers this BoundingBox and the given BoundingBox.
+  /// Creates a new BoundingBox that encompasses both this and another bounding box.
+  /// 
+  /// [boundingBox] The bounding box to merge with this one
+  /// Returns a new BoundingBox covering both boundaries
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
     return BoundingBox(
       min(this.minLatitude, boundingBox.minLatitude),

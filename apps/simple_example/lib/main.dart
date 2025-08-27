@@ -1,8 +1,7 @@
+import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -60,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.error != null) {
                   // an error occured, show it on screen
-                  return Text("${snapshot.error}", style: TextStyle(color: Theme.of(context).colorScheme.error));
+                  return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
                 }
                 if (snapshot.data != null) {
                   // cool we have already the MapModel so we can start the view
@@ -85,16 +84,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
     ByteData mapContent = await rootBundle.load("assets/monaco.map");
-    MapFile mapFile = await MapFile.createFromContent(content: mapContent.buffer.asUint8List());
+    Datastore datastore = await MapFile.createFromContent(content: mapContent.buffer.asUint8List());
 
-    // Read the rendertheme from the assets folder.
-    String renderthemeString = await rootBundle.loadString("assets/defaultrender.xml");
-    Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
-
-    // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-    DatastoreRenderer renderer = DatastoreRenderer(mapFile, rendertheme, false);
-    // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
-    MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
+    // Now instantiate our mapModel Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
+    MapModel mapModel = await MapModelHelper.createOfflineMapModel(datastore: datastore, zoomlevelRange: const ZoomlevelRange(0, 21));
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
     // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile if you do not

@@ -2,13 +2,25 @@ import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 
+/// In-memory datastore implementation for testing and dynamic tile generation.
+/// 
+/// This datastore holds all map data in memory using simple lists, making it
+/// suitable for testing, prototyping, or scenarios where map data is generated
+/// dynamically at runtime.
+/// 
+/// Key characteristics:
+/// - Fast access to data (no I/O operations)
+/// - Limited by available memory
+/// - Supports adding POIs and ways programmatically
+/// - Implements basic spatial filtering by tile boundaries
 class MemoryDatastore extends Datastore {
-  /// The read POIs.
+  /// Collection of Points of Interest stored in memory.
   final List<PointOfInterest> pointOfInterests = [];
 
-  /// The read ways.
+  /// Collection of ways (roads, paths, boundaries) stored in memory.
   final List<Way> ways = [];
 
+  /// Clears all stored data from memory.
   @override
   void dispose() {
     pointOfInterests.clear();
@@ -33,6 +45,10 @@ class MemoryDatastore extends Datastore {
     throw UnimplementedError();
   }
 
+  /// Reads map data for a single tile by filtering stored data.
+  /// 
+  /// Performs spatial filtering to return only POIs and ways that intersect
+  /// with the tile's geographic boundaries.
   @override
   Future<DatastoreBundle> readMapDataSingle(Tile tile) {
     List<PointOfInterest> poiResults = pointOfInterests.where((poi) => tile.getBoundingBox().containsLatLong(poi.position)).toList();
@@ -57,6 +73,9 @@ class MemoryDatastore extends Datastore {
     throw UnimplementedError();
   }
 
+  /// Always returns true as memory datastore can generate tiles on demand.
+  /// 
+  /// For label display, neighboring tiles may also be considered supported.
   @override
   Future<bool> supportsTile(Tile tile) {
     // you may want to show neighbouring tiles too in order to display labels.
@@ -75,10 +94,16 @@ class MemoryDatastore extends Datastore {
     // return false;
   }
 
+  /// Adds a Point of Interest to the in-memory collection.
+  /// 
+  /// [poi] The POI to add to the datastore
   void addPoi(PointOfInterest poi) {
     pointOfInterests.add(poi);
   }
 
+  /// Adds a way to the in-memory collection.
+  /// 
+  /// [way] The way (road, path, boundary) to add to the datastore
   void addWay(Way way) {
     ways.add(way);
   }
@@ -88,6 +113,7 @@ class MemoryDatastore extends Datastore {
     return 'MemoryDatastore{pointOfInterests: $pointOfInterests, ways: $ways}';
   }
 
+  /// Returns the maximum possible bounding box as this datastore has no fixed bounds.
   @override
   Future<BoundingBox> getBoundingBox() {
     return Future.value(Projection.BOUNDINGBOX_MAX);

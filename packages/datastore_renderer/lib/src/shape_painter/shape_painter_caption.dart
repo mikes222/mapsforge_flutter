@@ -84,15 +84,16 @@ class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
       back?.getWidth() ?? front?.getWidth() ?? 0,
       back?.getHeight() ?? front?.getHeight() ?? 0,
     );
-    //print("paint caption boundar: $boundary ${renderInfo.caption} and symbol ${renderinstruction.renderinstructionSymbol}");
+    // print(
+    //   "paint caption boundar: $boundary, symbolboundary: ${renderinstruction.symbolBoundary}, ${renderInfo.caption} and position ${renderinstruction.position}",
+    // );
     // uiCanvas.drawRect(
-    //     ui.Rect.fromLTWH(relative.x + boundary.left, relative.y + boundary.top,
-    //         boundary.getWidth(), boundary.getHeight()),
-    //     ui.Paint()..color = Colors.red.withOpacity(0.5));
+    //   ui.Rect.fromLTWH(relative.dx + boundary.left, relative.dy + boundary.top, boundary.getWidth(), boundary.getHeight()),
+    //   ui.Paint()..color = Colors.red.withOpacity(0.5),
+    // );
     if (back != null) uiCanvas.drawParagraph(back.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
     if (front != null) uiCanvas.drawParagraph(front.paragraph, ui.Offset(relative.dx + boundary.left, relative.dy + boundary.top));
-    // uiCanvas.drawCircle(ui.Offset(relative.x, relative.y), 10,
-    //     ui.Paint()..color = Colors.green.withOpacity(0.5));
+    //uiCanvas.drawCircle(ui.Offset(relative.dx, relative.dy), 10, ui.Paint()..color = Colors.green.withOpacity(0.5));
     if (renderContext.rotationRadian != 0) {
       uiCanvas.restore();
     }

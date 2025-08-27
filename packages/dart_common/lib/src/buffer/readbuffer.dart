@@ -6,9 +6,20 @@ import 'package:logging/logging.dart';
 
 import '../model/tag.dart';
 
-/// A chunk of a file.
+/// A high-performance buffer for reading binary data from Mapsforge files.
+/// 
+/// This class provides efficient methods for reading various data types from
+/// binary streams, with optimizations for variable-length integer encoding
+/// and UTF-8 string decoding commonly used in Mapsforge format.
+/// 
+/// Key features:
+/// - Big-endian byte order for all multi-byte values
+/// - Variable-length integer encoding support
+/// - Optimized UTF-8 string decoding with caching
+/// - Tag parsing for map metadata
+/// - Memory-efficient buffer management
 class Readbuffer {
-  static final _log = new Logger('ReadBuffer');
+  static final _log = Logger('ReadBuffer');
 
   static final String CHARSET_UTF8 = "UTF-8";
 
@@ -27,34 +38,40 @@ class Readbuffer {
   /// Cached UTF-8 decoder to avoid repeated instantiation
   static final Utf8Decoder _utf8Decoder = const Utf8Decoder();
 
-  ///
-  /// Default constructor to open a buffer for reading a mapfile
-  ///
+  /// Creates a new Readbuffer with the given data and optional file offset.
+  /// 
+  /// [_bufferData] The binary data to read from
+  /// [_offset] The offset in the original file where this buffer starts (optional)
   Readbuffer(this._bufferData, this._offset) : _bufferPosition = 0;
 
   /// Creates a new Readbuffer by copying the given buffer and setting the new buffer position to 0.
   Readbuffer.from(Readbuffer other) : _bufferData = other._bufferData, _offset = other._offset, _bufferPosition = 0;
 
+  /// Extracts a portion of the buffer as a new Uint8List.
+  /// 
+  /// [position] Starting position in the buffer
+  /// [length] Number of bytes to extract
+  /// Returns a sublist view of the buffer data
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0);
     assert(position + length <= _bufferData.length);
     return _bufferData.sublist(position, position + length);
   }
 
-  /// Returns one signed byte from the read buffer.
-  ///
-  /// @return the byte value.
+  /// Reads one signed byte from the current buffer position.
+  /// 
+  /// Advances the buffer position by 1 byte.
+  /// Returns the signed byte value (-128 to 127)
   int readByte() {
     int value = _bufferData[_bufferPosition++];
     // Convert unsigned byte to signed byte
     return value > 127 ? value - 256 : value;
   }
 
-  /// Converts four bytes from the read buffer to a float.
-  /// <p/>
-  /// The byte order is big-endian.
-  ///
-  /// @return the float value.
+  /// Reads a 32-bit IEEE 754 float from the current buffer position.
+  /// 
+  /// Uses big-endian byte order. Advances the buffer position by 4 bytes.
+  /// Returns the float value as a double
   double readFloat() {
     // https://stackoverflow.com/questions/55355482/parsing-integer-bit-patterns-as-ieee-754-floats-in-dart
     // Use a single ByteData view instead of creating new instances
@@ -63,37 +80,42 @@ class Readbuffer {
     return _sharedByteData.getFloat32(0, Endian.big);
   }
 
-  /// Converts four bytes from the read buffer to a signed int.
-  /// <p/>
-  /// The byte order is big-endian.
-  ///
-  /// @return the int value.
+  /// Reads a 32-bit signed integer from the current buffer position.
+  /// 
+  /// Uses big-endian byte order. Advances the buffer position by 4 bytes.
+  /// Returns the signed integer value
   int readInt() {
     _bufferPosition += 4;
     return Deserializer.getInt(_bufferData, _bufferPosition - 4);
   }
 
-  /// Converts eight bytes from the read buffer to a signed long.
-  /// <p/>
-  /// The byte order is big-endian.
-  ///
-  /// @return the long value.
+  /// Reads a 64-bit signed integer from the current buffer position.
+  /// 
+  /// Uses big-endian byte order. Advances the buffer position by 8 bytes.
+  /// Returns the signed long integer value
   int readLong() {
     _bufferPosition += 8;
     return Deserializer.getLong(_bufferData, _bufferPosition - 8);
   }
 
-  /// Converts two bytes from the read buffer to a signed int.
-  /// <p/>
-  /// The byte order is big-endian.
-  ///
-  /// @return the int value.
+  /// Reads a 16-bit signed integer from the current buffer position.
+  /// 
+  /// Uses big-endian byte order. Advances the buffer position by 2 bytes.
+  /// Returns the signed short integer value
   int readShort() {
     assert(_bufferPosition < _bufferData.length);
     this._bufferPosition += 2;
     return Deserializer.getShort(_bufferData, _bufferPosition - 2);
   }
 
+  /// Reads and parses map tags from the buffer.
+  /// 
+  /// Tags can contain variable values that need to be decoded based on their type.
+  /// Supported variable types: %b (byte), %i (int), %f (float), %h (short), %s (string)
+  /// 
+  /// [tagsArray] Array of available tag definitions
+  /// [numberOfTags] Number of tags to read
+  /// Returns a list of parsed Tag objects
   List<Tag> readTags(List<Tag> tagsArray, int numberOfTags) {
     List<Tag> tags = [];
     List<int> tagIds = [];
@@ -139,11 +161,12 @@ class Readbuffer {
     return tags;
   }
 
-  /// Converts a variable amount of bytes from the read buffer to an unsigned int.
-  /// <p/>
-  /// The first bit is for continuation info, the other seven bits are for data.
-  ///
-  /// @return the int value.
+  /// Reads a variable-length unsigned integer using LEB128 encoding.
+  /// 
+  /// The first bit of each byte indicates continuation (1) or termination (0).
+  /// The remaining 7 bits contain data. This encoding is optimized for small values.
+  /// 
+  /// Returns the decoded unsigned integer value
   int readUnsignedInt() {
     assert(_bufferPosition <= _bufferData.length);
     int variableByteDecode = 0;
@@ -185,12 +208,12 @@ class Readbuffer {
     return variableByteDecode;
   }
 
-  /// Converts a variable amount of bytes from the read buffer to a signed int.
-  /// <p/>
-  /// The first bit is for continuation info, the other six (last byte) or seven (all other bytes) bits are for data.
-  /// The second bit in the last byte indicates the sign of the number.
-  ///
-  /// @return the int value.
+  /// Reads a variable-length signed integer using modified LEB128 encoding.
+  /// 
+  /// Similar to unsigned variant, but the last byte uses 6 data bits and 1 sign bit.
+  /// The sign bit (bit 6) in the final byte determines if the value is negative.
+  /// 
+  /// Returns the decoded signed integer value
   int readSignedInt() {
     int variableByteDecode = 0;
     int variableByteShift = 0;
@@ -219,17 +242,24 @@ class Readbuffer {
     return variableByteDecode;
   }
 
-  /// Decodes a variable amount of bytes from the read buffer to a string.
-  ///
-  /// @return the UTF-8 decoded string (may be null).
+  /// Reads a UTF-8 encoded string with variable length prefix.
+  /// 
+  /// First reads the string length as a variable-length unsigned integer,
+  /// then decodes that many bytes as a UTF-8 string.
+  /// 
+  /// Returns the decoded string
   String readUTF8EncodedString() {
     return readUTF8EncodedString2(readUnsignedInt());
   }
 
-  /// Decodes the given amount of bytes from the read buffer to a string.
-  ///
-  /// @param stringLength the length of the string in bytes.
-  /// @return the UTF-8 decoded string (may be null).
+  /// Reads a UTF-8 encoded string of specified length.
+  /// 
+  /// Uses optimized decoding strategies based on string length:
+  /// - Small strings (≤64 bytes): Uses sublist for efficiency
+  /// - Large strings: Uses range conversion to avoid copying
+  /// 
+  /// [stringLength] The number of bytes to read and decode
+  /// Returns the decoded UTF-8 string
   String readUTF8EncodedString2(int stringLength) {
     assert(stringLength > 0);
     if (_bufferPosition + stringLength <= _bufferData.length) {
@@ -253,19 +283,23 @@ class Readbuffer {
     throw Exception("Cannot read utf8 string with $stringLength length at position $_bufferPosition of data with ${_bufferData.length} bytes");
   }
 
-  /// @return the current buffer position.
+  /// Gets the current read position in the buffer.
+  /// 
+  /// Returns the byte offset from the start of the buffer
   int getBufferPosition() {
     return _bufferPosition;
   }
 
-  /// @return the current size of the read buffer.
+  /// Gets the total size of the buffer.
+  /// 
+  /// Returns the number of bytes in the buffer
   int getBufferSize() {
     return _bufferData.length;
   }
 
-  /// Sets the buffer position to the given offset.
-  ///
-  /// @param bufferPosition the buffer position.
+  /// Sets the current read position in the buffer.
+  /// 
+  /// [bufferPosition] The new position (must be within buffer bounds)
   void setBufferPosition(int bufferPosition) {
     // if (bufferPosition < 0 || bufferPosition >= _bufferData.length) {
     //   _log.warning("Cannot set bufferPosition $bufferPosition because we have only ${_bufferData.length} bytes available");
@@ -274,9 +308,9 @@ class Readbuffer {
     _bufferPosition = bufferPosition;
   }
 
-  /// Skips the given number of bytes in the read buffer.
-  ///
-  /// @param bytes the number of bytes to skip.
+  /// Advances the buffer position by the specified number of bytes.
+  /// 
+  /// [bytes] The number of bytes to skip (must not exceed buffer bounds)
   void skipBytes(int bytes) {
     assert(_bufferPosition >= 0 && _bufferPosition + bytes <= _bufferData.length);
     _bufferPosition += bytes;

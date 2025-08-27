@@ -4,14 +4,29 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/utils/mapsforge_settings_mgr.dart';
 
+/// Pixel-based projection extending Mercator projection with screen coordinate support.
+/// 
+/// This class extends MercatorProjection to provide conversions between geographic
+/// coordinates and pixel coordinates on screen. It handles:
+/// - Geographic coordinates ↔ pixel coordinates
+/// - Pixel coordinates ↔ tile coordinates  
+/// - Relative positioning within tiles
+/// - Distance and scale calculations
+/// 
+/// Key features:
+/// - Configurable tile size for different display densities
+/// - Cached calculations for performance
+/// - Relative coordinate calculations for tile rendering
+/// - Meter-per-pixel calculations for scale awareness
 class PixelProjection extends MercatorProjection {
-  /// the size of a tile  in mappixel. Each tile has the same width and height.
+  /// The size of a tile in pixels. Each tile has the same width and height.
+  /// This value is typically 256 or 512 pixels depending on display density.
   final double tileSize;
 
-  ///
-  /// the size of the whole map in mappixel. At scalefactor 1 (or zoomLevel 0)
-  /// the _mapSize is equal to the tileSize.
-  ///
+  /// The total size of the world map in pixels at the current zoom level.
+  /// 
+  /// At zoom level 0 (scalefactor 1), mapSize equals tileSize.
+  /// At zoom level n, mapSize = tileSize × 2^n.
   late int _mapSize;
 
   static final Map<String, double> _pixelDiffCache = {};
@@ -20,38 +35,39 @@ class PixelProjection extends MercatorProjection {
     _mapSize = _mapSizeWithScaleFactor();
   }
 
-  /// returns the number of pixel for the whole map at a given scalefactor
+  /// Calculates the total map size in pixels for the current scale factor.
+  /// 
+  /// Returns the width/height of the entire world map in pixels
   int _mapSizeWithScaleFactor() {
     return (tileSize * scalefactor.scalefactor).round();
   }
 
-  /// Converts a pixel X coordinate to the tile X number.
-  ///
-  /// @param pixelX    the pixel X coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the tile X number.
+  /// Converts a pixel X coordinate to the corresponding tile X number.
+  /// 
+  /// [pixelX] The pixel X coordinate to convert
+  /// Returns the tile X coordinate containing this pixel
   int pixelXToTileX(double pixelX) {
     assert(pixelX >= 0);
     assert(pixelX <= _mapSize);
     return min(pixelX / tileSize, scalefactor.scalefactor - 1).floor();
   }
 
-  /// Converts a pixel Y coordinate to the tile Y number.
-  ///
-  /// @param pixelY    the pixel Y coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the tile Y number.
+  /// Converts a pixel Y coordinate to the corresponding tile Y number.
+  /// 
+  /// [pixelY] The pixel Y coordinate to convert
+  /// Returns the tile Y coordinate containing this pixel
   int pixelYToTileY(double pixelY) {
     assert(pixelY >= 0);
     assert(pixelY <= _mapSize);
     return min(pixelY / tileSize, scalefactor.scalefactor - 1).floor();
   }
 
-  /// Converts a latitude coordinate (in degrees) to a pixel Y coordinate at a certain zoom level.
-  ///
-  /// @param latitude  the latitude coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the pixel Y coordinate of the latitude value.
+  /// Converts a latitude coordinate to the corresponding pixel Y coordinate.
+  /// 
+  /// Uses Mercator projection formulas to calculate the pixel position.
+  /// 
+  /// [latitude] The latitude coordinate in degrees
+  /// Returns the pixel Y coordinate (0 to mapSize)
   double latitudeToPixelY(double latitude) {
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;
@@ -61,12 +77,12 @@ class PixelProjection extends MercatorProjection {
     return min(max(0, pixelY), _mapSize.toDouble());
   }
 
-  /// Converts a pixel Y coordinate at a certain map size to a latitude coordinate.
-  ///
-  /// @param pixelY  the pixel Y coordinate that should be converted.
-  /// @param mapSize precomputed size of map.
-  /// @return the latitude value of the pixel Y coordinate.
-  /// @throws IllegalArgumentException if the given pixelY coordinate is invalid.
+  /// Converts a pixel Y coordinate to the corresponding latitude coordinate.
+  /// 
+  /// Uses inverse Mercator projection to calculate the geographic coordinate.
+  /// 
+  /// [pixelY] The pixel Y coordinate to convert
+  /// Returns the latitude in degrees
   double pixelYToLatitude(double pixelY) {
     pixelY = min(max(0, pixelY), _mapSize.toDouble());
     assert(pixelY >= 0);

@@ -1,45 +1,70 @@
 import 'dart:math';
 
+/// Singleton settings manager for Mapsforge rendering configuration.
+/// 
+/// This class manages global settings that affect map rendering behavior,
+/// including tile sizes, scaling factors, stroke properties, and text rendering.
+/// Uses the singleton pattern to ensure consistent settings across the application.
+/// 
+/// Key configuration areas:
+/// - Tile rendering (size, scale factors)
+/// - Stroke rendering (thickness, zoom-dependent scaling)
+/// - Font and text rendering (scale factors, maximum widths)
+/// - Device-specific adaptations (DPI scaling)
 class MapsforgeSettingsMgr {
   static MapsforgeSettingsMgr? _instance;
 
-  /// The size of a tile in mappixel. The default is 256. It is discouraged to change this because the images received from most online renderers also
-  /// have 256 pixels in size.
+  /// The size of a tile in pixels. Default is 256 pixels.
+  /// 
+  /// Changing this value is discouraged as most online tile services
+  /// provide tiles in 256x256 pixel format.
   double tileSize = 256;
 
-  /// start to thicken the strokes at this zoomlevel
+  /// Minimum zoom level at which stroke thickening begins.
+  /// Below this level, strokes maintain their base thickness.
   int strokeMinZoomlevel = 13;
 
-  /// start to thicken the strokes of texts at this zoomlevel
+  /// Minimum zoom level at which text stroke thickening begins.
+  /// Text strokes start scaling at higher zoom levels than regular strokes.
   int strokeMinZoomlevelText = 18;
 
-  /// Factor of increasing strokes when zooming in.
+  /// Multiplicative factor for stroke thickness increase per zoom level.
+  /// Applied when zoom level exceeds strokeMinZoomlevel.
   double _strokeIncreaseFactor = 1.4;
 
-  /// Do NOT scale beyond this factor
+  /// Maximum allowed stroke scale factor to prevent excessive thickness.
+  /// Caps the stroke scaling regardless of zoom level.
   double _strokeMaxScaleFactor = 5;
 
-  /// sets the scale factor for fonts and symbols. The size of a font or symbol is dependent on the [Rendertheme],
-  /// and this property.
+  /// Scale factor for fonts and symbols rendering.
+  /// 
+  /// Final font/symbol size = base size × fontScaleFactor.
+  /// Works in conjunction with render theme definitions.
   double _fontScaleFactor = 1;
 
-  /// Device scale factor. With value 1 one tile spans exactly [tileSize] pixels at screen. At value 2 the tile will be half the size on screen.
-  ///
-  /// This is used to make the tiles more crisp on screen.
+  /// Device pixel density scale factor for crisp rendering.
+  /// 
+  /// - Value 1.0: tile spans exactly tileSize pixels on screen
+  /// - Value 2.0: tile appears half-size (higher DPI displays)
+  /// Used to adapt rendering for different screen densities.
   double _deviceScaleFactor = 1;
 
-  /// scale factor requested by the user. The bigger that value the larger the size of the tiles.
-  /// That also means that the map shows more details at a certain zoomLevel. This does NOT affect the text
+  /// User-requested scale factor for tile rendering.
+  /// 
+  /// Higher values make tiles appear larger, showing more detail at a given zoom level.
+  /// Note: This does not affect text rendering, only map elements.
   double _userScaleFactor = 1;
 
-  /// The maximum width of a text is dependent on the tile size. We calculate neighbors of
-  /// a tile to draw remaining text. If the text is larger than one tile it may span
-  /// more than one neighbor which lead to truncated texts.
+  /// Maximum text width factor relative to tile size.
+  /// 
+  /// Prevents text from spanning too many neighboring tiles, which could
+  /// cause truncation issues in tile-based rendering.
   final double maxTextWidthFactor = 0.95;
 
   late double maxTextWidth;
 
-  /// The maximum allowed zoomlevel. This is a default but can be overruled.
+  /// Default maximum zoom level supported by the rendering system.
+  /// Can be overridden by specific map implementations.
   static const int defaultMaxZoomlevel = 25;
 
   factory MapsforgeSettingsMgr() {
@@ -92,7 +117,14 @@ class MapsforgeSettingsMgr {
     _strokeIncreaseFactor = strokeIncreaseFactor;
   }
 
-  /// Many items will be scaled starting at a defined zoomlevel to make them bigger when zooming in. This method calculates the scale factor.
+  /// Calculates zoom-dependent scale factor for rendering elements.
+  /// 
+  /// Elements scale progressively larger as zoom level increases beyond minZoomlevel.
+  /// Uses exponential scaling based on strokeIncreaseFactor.
+  /// 
+  /// [zoomlevel] Current zoom level
+  /// [minZoomlevel] Zoom level at which scaling begins
+  /// Returns the calculated scale factor
   double calculateScaleFactor(int zoomlevel, int minZoomlevel) {
     int zoomLevelDiff = zoomlevel - minZoomlevel + 1;
     double scaleFactor = pow(_strokeIncreaseFactor, zoomLevelDiff) as double;

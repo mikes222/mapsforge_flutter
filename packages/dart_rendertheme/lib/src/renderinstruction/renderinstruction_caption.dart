@@ -58,8 +58,8 @@ class RenderinstructionCaption extends Renderinstruction
     renderinstruction.symbolId = symbolId;
     renderinstruction.textKey = textKey;
     renderinstruction.position = position;
-    if (zoomlevel >= MapsforgeSettingsMgr().strokeMinZoomlevel) {
-      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, MapsforgeSettingsMgr().strokeMinZoomlevel);
+    if (zoomlevel >= strokeMinZoomLevel) {
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, strokeMinZoomLevel);
       renderinstruction.gap = gap * scaleFactor;
     }
     return renderinstruction;
@@ -145,7 +145,7 @@ class RenderinstructionCaption extends Renderinstruction
     switch (pos) {
       case Position.AUTO:
       case Position.CENTER:
-        boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
+        boundary = MapRectangle(-halfWidth, -halfHeight + dy, halfWidth, halfHeight + dy);
         break;
       case Position.BELOW:
         boundary = MapRectangle(-halfWidth, symBoundary.bottom + 0 + gap + dy, halfWidth, symBoundary.bottom + fontHeight + gap + dy);
@@ -186,10 +186,10 @@ class RenderinstructionCaption extends Renderinstruction
         );
         break;
       case Position.LEFT:
-        boundary = MapRectangle(symBoundary.left - fontWidth - gap, -halfHeight, symBoundary.left - 0 - gap, halfHeight);
+        boundary = MapRectangle(symBoundary.left - fontWidth - gap, -halfHeight + dy, symBoundary.left - 0 - gap, halfHeight + dy);
         break;
       case Position.RIGHT:
-        boundary = MapRectangle(symBoundary.right + 0 + gap, -halfHeight, symBoundary.right + fontHeight + gap, halfHeight);
+        boundary = MapRectangle(symBoundary.right + 0 + gap, -halfHeight + dy, symBoundary.right + fontHeight + gap, halfHeight + dy);
         break;
     }
     return boundary!;

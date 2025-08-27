@@ -2,7 +2,18 @@ import 'package:dart_common/src/utils/latlong_utils.dart';
 
 import 'ilatlong.dart';
 
-/// This immutable class represents a geographic coordinate with a latitude and longitude value.
+/// Immutable geographic coordinate representing a point on Earth's surface.
+/// 
+/// This class stores latitude and longitude values in decimal degrees using the WGS84
+/// coordinate system. It provides conversion utilities for microdegrees (degrees * 10^6)
+/// and supports parsing from various string formats.
+/// 
+/// Key features:
+/// - Immutable design for thread safety
+/// - WGS84 coordinate system compliance
+/// - Microdegree conversion for high-precision storage
+/// - String parsing with multiple separator support
+/// - Efficient equality comparison and hashing
 class LatLong implements ILatLong {
   /// Conversion factor from degrees to microdegrees.
   static final double CONVERSION_FACTOR = 1000000.0;
@@ -21,20 +32,23 @@ class LatLong implements ILatLong {
   @override
   final double longitude;
 
-  /// Converts a coordinate from degrees to microdegrees (degrees * 10^6). No validation is performed.
-  ///
-  /// @param coordinate the coordinate in degrees.
-  /// @return the coordinate in microdegrees (degrees * 10^6).
+  /// Converts a coordinate from degrees to microdegrees (degrees × 10^6).
+  /// 
+  /// Microdegrees provide integer representation of coordinates with sub-meter precision.
+  /// No validation is performed on the input coordinate.
+  /// 
+  /// [coordinate] The coordinate value in decimal degrees
+  /// Returns the coordinate as an integer in microdegrees
   static int degreesToMicrodegrees(double coordinate) {
     return (coordinate * CONVERSION_FACTOR).floor();
   }
 
-  /// Constructs a new LatLong with the given latitude and longitude values, measured in
-  /// degrees.
-  ///
-  /// @param latitude  the latitude value in degrees.
-  /// @param longitude the longitude value in degrees.
-  /// @throws IllegalArgumentException if the latitude or longitude value is invalid.
+  /// Creates a new LatLong with the specified coordinates in decimal degrees.
+  /// 
+  /// [latitude] The latitude value in degrees (-90.0 to +90.0)
+  /// [longitude] The longitude value in degrees (-180.0 to +180.0)
+  /// 
+  /// Note: Coordinate validation is currently disabled but may be re-enabled
   const LatLong(this.latitude, this.longitude);
 
   // {
@@ -89,28 +103,26 @@ class LatLong implements ILatLong {
   @override
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
 
-  /**
-   * Constructs a new LatLong with the given latitude and longitude values, measured in
-   * microdegrees.
-   *
-   * @param latitudeE6  the latitude value in microdegrees.
-   * @param longitudeE6 the longitude value in microdegrees.
-   * @return the LatLong
-   * @throws IllegalArgumentException if the latitudeE6 or longitudeE6 value is invalid.
-   */
+  /// Creates a LatLong from microdegree coordinates.
+  /// 
+  /// Converts microdegree values (degrees × 10^6) back to decimal degrees.
+  /// This is useful when working with high-precision integer coordinate storage.
+  /// 
+  /// [latitudeE6] The latitude value in microdegrees
+  /// [longitudeE6] The longitude value in microdegrees
+  /// Returns a new LatLong with converted decimal degree values
   static LatLong fromMicroDegrees(int latitudeE6, int longitudeE6) {
     return new LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6), LatLongUtils.microdegreesToDegrees(longitudeE6));
   }
 
-  /**
-   * Constructs a new LatLong from a comma-separated String containing latitude and
-   * longitude values (also ';', ':' and whitespace work as separator).
-   * Latitude and longitude are interpreted as measured in degrees.
-   *
-   * @param latLonString the String containing the latitude and longitude values
-   * @return the LatLong
-   * @throws IllegalArgumentException if the latLonString could not be interpreted as a coordinate
-   */
+  /// Parses a LatLong from a string with latitude and longitude values.
+  /// 
+  /// Supports multiple separators: comma (,), semicolon (;), colon (:), and whitespace.
+  /// The format should be "latitude,longitude" or similar with supported separators.
+  /// 
+  /// [latLonString] String containing the coordinate values
+  /// Returns a new LatLong parsed from the string
+  /// Throws Exception if the string format is invalid
   static LatLong fromString(String latLonString) {
     List<String> split = latLonString.split("[,;:\\s]");
     if (split.length != 2) throw new Exception("cannot read coordinate, not a valid format");
@@ -119,38 +131,30 @@ class LatLong implements ILatLong {
     return new LatLong(latitude, longitude);
   }
 
-  /**
-   * Returns the latitude value of this coordinate.
-   *
-   * @return the latitude value of this coordinate.
-   */
+  /// Gets the latitude value in decimal degrees.
+  /// 
+  /// Returns the latitude coordinate (-90.0 to +90.0)
   double? getLatitude() {
     return this.latitude;
   }
 
-  /**
-   * Returns the latitude value in microdegrees of this coordinate.
-   *
-   * @return the latitude value in microdegrees of this coordinate.
-   */
+  /// Gets the latitude value in microdegrees.
+  /// 
+  /// Returns the latitude as an integer in microdegrees (degrees × 10^6)
   int getLatitudeE6() {
     return degreesToMicrodegrees(this.latitude);
   }
 
-  /**
-   * Returns the longitude value of this coordinate.
-   *
-   * @return the longitude value of this coordinate.
-   */
+  /// Gets the longitude value in decimal degrees.
+  /// 
+  /// Returns the longitude coordinate (-180.0 to +180.0)
   double? getLongitude() {
     return this.longitude;
   }
 
-  /**
-   * Returns the longitude value in microdegrees of this coordinate.
-   *
-   * @return the longitude value in microdegrees of this coordinate.
-   */
+  /// Gets the longitude value in microdegrees.
+  /// 
+  /// Returns the longitude as an integer in microdegrees (degrees × 10^6)
   int getLongitudeE6() {
     return degreesToMicrodegrees(this.longitude);
   }

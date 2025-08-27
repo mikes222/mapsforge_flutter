@@ -1,3 +1,13 @@
+/// Core data models for geographic and map-related data structures.
+/// 
+/// This library provides fundamental classes for:
+/// - Geographic coordinates (LatLong, ILatLong)
+/// - Spatial boundaries (BoundingBox, MapRectangle)
+/// - Map elements (Tile, Way, PointOfInterest)
+/// - Geometric primitives (MapPoint, MapSize)
+/// - Data organization (Tag, DatastoreBundle)
+/// - Zoom level management (ZoomlevelRange)
+/// - Coordinate utilities and transformations
 export 'src/model/boundingbox.dart';
 export 'src/model/datastore_bundle.dart';
 export 'src/model/ilatlong.dart';

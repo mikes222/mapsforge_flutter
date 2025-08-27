@@ -20,6 +20,7 @@ mixin class CaptionMixin {
     Position position = Position.BELOW,
     double dy = 0,
     int? strokeMinZoomLevel,
+    double gap = 1,
   }) {
     Caption cp = Caption(
       caption: caption,
@@ -30,6 +31,7 @@ mixin class CaptionMixin {
       zoomlevelRange: zoomlevelRange ?? ZoomlevelRange.standard(),
       position: position,
       dy: dy,
+      gap: gap,
       strokeMinZoomLevel: strokeMinZoomLevel,
       poiMarker: (this as CaptionReference),
     );
@@ -92,6 +94,7 @@ class Caption {
     required this.zoomlevelRange,
     Position position = Position.BELOW,
     double dy = 0,
+    double gap = 1,
     int? strokeMinZoomLevel,
     required this.poiMarker,
   }) : assert(strokeWidth >= 0),
@@ -105,6 +108,7 @@ class Caption {
     renderinstruction.maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
     renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel ?? MapsforgeSettingsMgr().strokeMinZoomlevelText);
     renderinstruction.dy = dy;
+    renderinstruction.gap = gap;
     renderinstruction.symbolId = "marker";
   }
 

@@ -2,12 +2,31 @@ import 'dart:collection';
 
 import 'package:dart_common/model.dart';
 
+/// Optimized Douglas-Peucker line simplification algorithm for geographic coordinates.
+/// 
+/// This class implements the Douglas-Peucker algorithm to reduce the number of points
+/// in a polyline while preserving its essential shape. The algorithm recursively finds
+/// the point with the maximum perpendicular distance from a line segment and keeps it
+/// if the distance exceeds a specified tolerance.
+/// 
+/// Key optimizations:
+/// - Uses squared distances to avoid expensive sqrt operations
+/// - Employs efficient stack-based processing
+/// - Caches frequently accessed points
+/// - Uses boolean arrays for O(1) point tracking
 class DouglasPeuckerLatLong {
-  // Cache for frequently used calculations to avoid repeated computation
+  /// Epsilon value for floating-point comparisons to handle degenerate cases.
   static const double _epsilon = 1e-10;
   
-  /// Optimized perpendicular distance squared calculation
-  /// Uses direct coordinate arithmetic without expensive operations
+  /// Calculates squared perpendicular distance from point to line segment.
+  /// 
+  /// Uses optimized coordinate arithmetic to avoid expensive square root operations.
+  /// Handles degenerate cases where line segment endpoints are identical.
+  /// 
+  /// [p] Point to measure distance from
+  /// [a] Start point of line segment
+  /// [b] End point of line segment
+  /// Returns squared perpendicular distance
   double _perpendicularDistanceSquared(ILatLong p, ILatLong a, ILatLong b) {
     final double ax = a.longitude;
     final double ay = a.latitude;
@@ -34,8 +53,14 @@ class DouglasPeuckerLatLong {
     return (cross * cross) / segmentLengthSquared;
   }
 
-  /// Optimized Douglas-Peucker line simplification algorithm
-  /// Uses squared distances throughout to avoid expensive sqrt operations
+  /// Simplifies a polyline using the Douglas-Peucker algorithm.
+  /// 
+  /// Reduces the number of points in the input polyline while preserving
+  /// its essential shape within the specified tolerance.
+  /// 
+  /// [points] Input polyline as list of coordinates
+  /// [tolerance] Maximum allowed perpendicular distance for point removal
+  /// Returns simplified polyline with fewer points
   List<ILatLong> simplify(List<ILatLong> points, double tolerance) {
     if (points.length <= 2) {
       return points;
@@ -104,8 +129,10 @@ class DouglasPeuckerLatLong {
   }
 }
 
-/// Internal class to represent a line segment for processing
-/// More efficient than using List<int> for stack operations
+/// Internal helper class representing a line segment for stack-based processing.
+/// 
+/// More memory-efficient than using List<int> or other generic containers
+/// for representing start/end indices during algorithm execution.
 class _Segment {
   final int start;
   final int end;

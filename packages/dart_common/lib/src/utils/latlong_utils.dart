@@ -2,28 +2,48 @@ import 'dart:math';
 
 import 'package:dart_common/model.dart';
 
+/// Utility class for geographic coordinate calculations and geometric operations.
+/// 
+/// This class provides a comprehensive set of static methods for working with
+/// geographic coordinates, including:
+/// - Point-in-polygon testing
+/// - Line segment intersections
+/// - Distance calculations
+/// - Coordinate system conversions
+/// - Geometric analysis of paths and polygons
+/// 
+/// All methods are static and the class cannot be instantiated.
 class LatLongUtils {
-  /// The equatorial radius as defined by the <a href="http://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
-  /// ellipsoid</a>. WGS84 is the reference coordinate system used by the Global Positioning System.
+  /// WGS84 equatorial radius in meters.
+  /// 
+  /// The equatorial radius of Earth as defined by the WGS84 ellipsoid,
+  /// which is the reference coordinate system used by GPS.
   static final double EQUATORIAL_RADIUS = 6378137.0;
 
-  /// Polar radius of earth is required for distance computation.
+  /// WGS84 polar radius in meters.
+  /// Used for accurate distance computations on the Earth's ellipsoid.
   static final double POLAR_RADIUS = 6356752.3142;
 
-  /// Conversion factor from degrees to microdegrees and vice versa.
+  /// Conversion factor between degrees and microdegrees (10^6).
   static final double CONVERSION_FACTOR = 1000000.0;
 
+  /// Conversion factor between degrees and nanodegrees (10^9).
   static final double NANO_CONVERSION_FACTOR = 1000000000.0;
 
+  /// Standard delimiter for coordinate string parsing.
   static final String DELIMITER = ",";
 
+  /// Private constructor to prevent instantiation.
   LatLongUtils._();
 
-  /// Find if the given point lies within this polygon.
-  /// <p>
-  /// http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-  ///
-  /// @return true if this polygon contains the given point, false otherwise.
+  /// Tests if a point lies within a polygon using the ray casting algorithm.
+  /// 
+  /// Implementation based on the PNPOLY algorithm.
+  /// Reference: http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+  /// 
+  /// [latLongs] Vertices of the polygon
+  /// [latLong] Point to test
+  /// Returns true if the point is inside the polygon
   static bool contains(List<ILatLong> latLongs, ILatLong latLong) {
     bool result = false;
     for (int i = 0, j = latLongs.length - 1; i < latLongs.length; j = i++) {
@@ -58,12 +78,14 @@ class LatLongUtils {
   //    return new LatLong(coordinates[0], coordinates[1]);
   //  }
 
-  /// Calculate the Euclidean distance between two LatLongs in degrees using the Pythagorean
-  /// theorem.
-  ///
-  /// @param latLong1 first LatLong
-  /// @param latLong2 second LatLong
-  /// @return distance in degrees as a double
+  /// Calculates Euclidean distance between two coordinates in degrees.
+  /// 
+  /// Uses the Pythagorean theorem for fast approximate distance calculation.
+  /// Note: This is not accurate for large distances due to Earth's curvature.
+  /// 
+  /// [latLong1] First coordinate
+  /// [latLong2] Second coordinate
+  /// Returns distance in degrees
   static double euclideanDistance(ILatLong latLong1, ILatLong latLong2) {
     return sqrt(euclideanDistanceSquared(latLong1, latLong2));
   }
@@ -88,28 +110,34 @@ class LatLongUtils {
     return false;
   }
 
-  /// Converts a coordinate from microdegrees (degrees * 10^6) to degrees. No validation is performed.
-  ///
-  /// @param coordinate the coordinate in microdegrees (degrees * 10^6).
-  /// @return the coordinate in degrees.
+  /// Converts microdegrees to degrees.
+  /// 
+  /// [coordinate] Coordinate in microdegrees (degrees × 10^6)
+  /// Returns coordinate in degrees
   static double microdegreesToDegrees(int coordinate) {
     return coordinate / CONVERSION_FACTOR;
   }
 
-  /// Converts a coordinate from degrees to microdegrees (degrees * 10^6). No validation is performed.
-  ///
-  /// @param coordinate the coordinate in microdegrees (degrees * 10^6).
-  /// @return the coordinate in degrees.
+  /// Converts degrees to microdegrees.
+  /// 
+  /// [coordinate] Coordinate in degrees
+  /// Returns coordinate in microdegrees (degrees × 10^6)
   static int degreesToMicrodegrees(double coordinate) {
     return (coordinate * CONVERSION_FACTOR).round();
   }
 
-  /// Converts a coordinate from nanodegrees (degrees * 10^9) to degrees. No validation is performed.
+  /// Converts nanodegrees to degrees.
+  /// 
+  /// [coordinate] Coordinate in nanodegrees (degrees × 10^9)
+  /// Returns coordinate in degrees
   static double nanodegreesToDegrees(int coordinate) {
     return coordinate / NANO_CONVERSION_FACTOR;
   }
 
-  /// Converts a coordinate from degrees to nanodegrees (degrees * 10^9). No validation is performed.
+  /// Converts degrees to nanodegrees.
+  /// 
+  /// [coordinate] Coordinate in degrees
+  /// Returns coordinate in nanodegrees (degrees × 10^9)
   static int degreesToNanodegrees(double coordinate) {
     return (coordinate * NANO_CONVERSION_FACTOR).round();
   }

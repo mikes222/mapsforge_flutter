@@ -4,9 +4,26 @@ import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/projection/scalefactor.dart';
 
+/// Web Mercator projection implementation for converting between geographic and tile coordinates.
+/// 
+/// This class implements the standard Web Mercator projection (EPSG:3857) used by most
+/// web mapping services. It provides conversions between:
+/// - Geographic coordinates (latitude/longitude) and tile coordinates (tileX/tileY)
+/// - Support for different zoom levels with scalefactor-based calculations
+/// - Boundary box calculations for tiles and tile ranges
+/// 
+/// Key features:
+/// - Efficient tile coordinate calculations
+/// - Proper handling of world boundaries and edge cases
+/// - Cached scalefactor for performance
+/// - Dateline crossing fixes for boundary calculations
 class MercatorProjection implements Projection {
-  ///
-  /// The scalefactor. The scaleFactor is dependent on the zoomLevel (scaleFactor similar to pow(2, zoomLevel) ). The whole world fits into on tile in zoomLevel 0 (=scaleFactor 1).
+  /// The scale factor for this projection, derived from the zoom level.
+  /// 
+  /// Scale factor = 2^zoomLevel, where:
+  /// - Zoom level 0: scalefactor = 1 (whole world in 1 tile)
+  /// - Zoom level 1: scalefactor = 2 (world in 2x2 tiles)
+  /// - Zoom level n: scalefactor = 2^n (world in 2^n x 2^n tiles)
   final Scalefactor _scalefactor;
 
   late final int _maxTileCount;
@@ -31,11 +48,13 @@ class MercatorProjection implements Projection {
   //   return (tileSize.toDouble() * (pow(2, Projection.scaleFactorToZoomLevel(scaleFactor))));
   // }
 
-  /// Converts a longitude coordinate (in degrees) to the tile X number at a certain zoom level.
-  ///
-  /// @param longitude the longitude coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the tile X number of the longitude value.
+  /// Converts a longitude coordinate to the corresponding tile X number.
+  /// 
+  /// Handles edge cases at the world boundaries (±180°) and ensures
+  /// the result is within valid tile coordinate range.
+  /// 
+  /// [longitude] The longitude coordinate in degrees (-180 to +180)
+  /// Returns the tile X coordinate (0 to scalefactor-1)
   @override
   int longitudeToTileX(double longitude) {
     if (longitude >= 180) {
@@ -48,12 +67,12 @@ class MercatorProjection implements Projection {
     return result;
   }
 
-  /// Converts a tile X number at a certain zoom level to a longitude coordinate (left side of the tile).
-  ///
-  /// @param tileX     the tile X number that should be converted.
-  /// @param zoomLevel the zoom level at which the number should be converted.
-  /// @return the longitude value of the tile X number.
-  ///
+  /// Converts a tile X coordinate to the corresponding longitude (western edge).
+  /// 
+  /// Returns the longitude of the western (left) edge of the specified tile.
+  /// 
+  /// [tileX] The tile X coordinate to convert
+  /// Returns the longitude in degrees of the tile's western boundary
   @override
   double tileXToLongitude(int tileX) {
     assert(tileX >= 0);
@@ -64,11 +83,13 @@ class MercatorProjection implements Projection {
     //return pixelXToLongitude(tileX * tileSize.toDouble());
   }
 
-  /// Converts a tile Y number at a certain zoom level to a latitude coordinate.
-  ///
-  /// @param tileY     the tile Y number that should be converted.
-  /// @param zoomLevel the zoom level at which the number should be converted.
-  /// @return the latitude value of the tile Y number.
+  /// Converts a tile Y coordinate to the corresponding latitude (northern edge).
+  /// 
+  /// Returns the latitude of the northern (top) edge of the specified tile.
+  /// Uses inverse Mercator projection formulas.
+  /// 
+  /// [tileY] The tile Y coordinate to convert
+  /// Returns the latitude in degrees of the tile's northern boundary
   @override
   double tileYToLatitude(int tileY) {
     assert(tileY >= 0);
@@ -80,11 +101,13 @@ class MercatorProjection implements Projection {
     return 90 - pi360 * atan(exp(-y * pi2));
   }
 
-  /// Converts a latitude coordinate (in degrees) to a tile Y number at a certain zoom level.
-  ///
-  /// @param latitude  the latitude coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the tile Y number of the latitude value.
+  /// Converts a latitude coordinate to the corresponding tile Y number.
+  /// 
+  /// Handles edge cases at the poles (±90°) and uses Mercator projection
+  /// formulas to calculate the correct tile coordinate.
+  /// 
+  /// [latitude] The latitude coordinate in degrees (-90 to +90)
+  /// Returns the tile Y coordinate (0 to scalefactor-1)
   @override
   int latitudeToTileY(double latitude) {
     if (latitude >= 90) {
@@ -110,8 +133,13 @@ class MercatorProjection implements Projection {
     return result;
   }
 
-  ///
-  /// The bounding box of this tile in lat/lon coordinates
+  /// Calculates the geographic bounding box for a single tile.
+  /// 
+  /// Returns the latitude/longitude boundaries that define the geographic
+  /// area covered by the specified tile. Includes fixes for dateline crossing.
+  /// 
+  /// [tile] The tile to calculate boundaries for
+  /// Returns the BoundingBox in geographic coordinates
   BoundingBox boundingBoxOfTile(Tile tile) {
     double minLatitude = max(Projection.LATITUDE_MIN, tileYToLatitude(tile.tileY + 1));
     double minLongitude = max(Projection.LONGITUDE_MIN, tileXToLongitude(tile.tileX));

@@ -1,20 +1,21 @@
+/// Utility class providing helper methods for list operations.
+/// 
+/// This class contains static utility methods for common list operations
+/// that are not available in the standard Dart libraries or need custom
+/// implementations for specific use cases.
 class ListHelper {
-  /// copied from collections.dart (part of dart:collection), but only for flutter
   /// Compares two lists for element-by-element equality.
-  ///
-  /// Returns true if the lists are both null, or if they are both non-null, have
-  /// the same length, and contain the same members in the same order. Returns
-  /// false otherwise.
-  ///
-  /// If the elements are maps, lists, sets, or other collections/composite
-  /// objects, then the contents of those elements are not compared element by
-  /// element unless their equality operators ([Object.==]) do so. For checking
-  /// deep equality, consider using the [DeepCollectionEquality] class.
-  ///
-  /// See also:
-  ///
-  ///  * [setEquals], which does something similar for sets.
-  ///  * [mapEquals], which does something similar for maps.
+  /// 
+  /// This implementation is adapted from dart:collection for Flutter compatibility.
+  /// Returns true if both lists are null, or if they are non-null with the same
+  /// length and identical elements in the same order.
+  /// 
+  /// Note: Uses shallow equality comparison via [Object.==]. For deep equality
+  /// of nested collections, consider using DeepCollectionEquality.
+  /// 
+  /// [a] First list to compare
+  /// [b] Second list to compare
+  /// Returns true if lists are equal, false otherwise
   bool listEquals<T>(List<T>? a, List<T>? b) {
     if (a == null) {
       return b == null;

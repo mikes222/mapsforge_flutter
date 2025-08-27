@@ -4,3 +4,4 @@ export 'src/map_position.dart';
 export 'src/mapsforge_view.dart';
 export 'src/tile/tile_view.dart';
 export 'src/util/errorhelper_widget.dart';
+export 'src/util/map_model_helper.dart';

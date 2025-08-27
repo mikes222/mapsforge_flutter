@@ -85,34 +85,36 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
   @override
   MapRectangle getBoundary() {
     if (boundary != null) return boundary!;
+    double halfWidth = radius;
+    if (!isStrokeTransparent()) halfWidth += strokeWidth / 2;
     switch (position) {
       case Position.AUTO:
       case Position.CENTER:
-        boundary = MapRectangle(-radius, -radius, radius, radius);
+        boundary = MapRectangle(-halfWidth, -halfWidth + dy, halfWidth, halfWidth + dy);
         break;
       case Position.BELOW:
-        boundary = MapRectangle(-radius, 0 + dy, radius, radius * 2 + dy);
+        boundary = MapRectangle(-halfWidth, 0 + dy, halfWidth, halfWidth * 2 + dy);
         break;
       case Position.BELOW_LEFT:
-        boundary = MapRectangle(-radius * 2, 0 + dy, 0, radius * 2 + dy);
+        boundary = MapRectangle(-halfWidth * 2, 0 + dy, 0, halfWidth * 2 + dy);
         break;
       case Position.BELOW_RIGHT:
-        boundary = MapRectangle(0, 0 + dy, radius * 2, radius * 2 + dy);
+        boundary = MapRectangle(0, 0 + dy, halfWidth * 2, halfWidth * 2 + dy);
         break;
       case Position.ABOVE:
-        boundary = MapRectangle(-radius, -radius * 2 + dy, radius, 0 + dy);
+        boundary = MapRectangle(-halfWidth, -halfWidth * 2 + dy, halfWidth, 0 + dy);
         break;
       case Position.ABOVE_LEFT:
-        boundary = MapRectangle(-radius * 2, -radius * 2 + dy, 0, 0 + dy);
+        boundary = MapRectangle(-halfWidth * 2, -halfWidth * 2 + dy, 0, 0 + dy);
         break;
       case Position.ABOVE_RIGHT:
-        boundary = MapRectangle(0, -radius * 2 + dy, radius * 2, 0 + dy);
+        boundary = MapRectangle(0, -halfWidth * 2 + dy, halfWidth * 2, 0 + dy);
         break;
       case Position.LEFT:
-        boundary = MapRectangle(-radius * 2, -radius + dy, 0, radius + dy);
+        boundary = MapRectangle(-halfWidth * 2, -halfWidth + dy, 0, halfWidth + dy);
         break;
       case Position.RIGHT:
-        boundary = MapRectangle(0, -radius + dy, radius * 2, radius + dy);
+        boundary = MapRectangle(0, -halfWidth + dy, halfWidth * 2, halfWidth + dy);
         break;
     }
     return boundary!;
