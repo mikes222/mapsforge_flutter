@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 import 'package:dart_rendertheme/src/util/douglas_peucker_mappoint.dart';
 
@@ -135,5 +136,30 @@ class WayProperties implements NodeWayProperties {
     }
 
     return Mappoint((pointXMin + pointXMax) / 2, (pointYMax + pointYMin) / 2);
+  }
+
+  LineSegmentPath? calculateStringPath(double dy) {
+    List<List<Mappoint>> coordinatesAbsolute = getCoordinatesAbsolute();
+
+    if (coordinatesAbsolute.isEmpty || coordinatesAbsolute[0].length < 2) {
+      return null;
+    }
+    List<Mappoint> c;
+    if (dy == 0) {
+      c = coordinatesAbsolute[0];
+    } else {
+      c = parallelPath(coordinatesAbsolute[0], dy);
+    }
+
+    if (c.length < 2) {
+      return null;
+    }
+
+    LineSegmentPath fullPath = LineSegmentPath();
+    for (int i = 1; i < c.length; i++) {
+      LineSegment segment = LineSegment(c[i - 1], c[i]);
+      fullPath.segments.add(segment);
+    }
+    return fullPath;
   }
 }

@@ -5,6 +5,8 @@ import 'package:dart_rendertheme/src/model/line_segment.dart';
 
 /// A list of Linesegments which consists of segments in screen-pixels.
 class LineSegmentPath {
+  static final double MAX_LABEL_CORNER_ANGLE = 10;
+
   final List<LineSegment> segments = [];
 
   MapRectangle? _bounds;
@@ -91,6 +93,44 @@ class LineSegmentPath {
     double result = 0;
     for (LineSegment segment in segments) {
       result += segment.length();
+    }
+    return result;
+  }
+
+  LineSegmentPath reducePathForText(double textWidth, double repeatStart, double repeatGap) {
+    LineSegmentPath result = LineSegmentPath();
+    LineSegmentPath path = LineSegmentPath();
+    LineSegmentPath longestPath = LineSegmentPath();
+    double preLength = repeatStart;
+    for (LineSegment segment in segments) {
+      if (path.length() > preLength + textWidth && path.segments.first.start != path.segments.last.end) {
+        // the length of all previous tiny paths is in sum long enough to fit the text
+        result.segments.add(LineSegment(path.segments.first.start, path.segments.last.end));
+        path = LineSegmentPath();
+      }
+      while (segment.length() >= preLength + textWidth) {
+        // we found a segment which is long enough
+        result.segments.add(segment.subSegment(preLength, textWidth));
+        segment = segment.subSegment(preLength + textWidth);
+        preLength = repeatGap;
+        // ignore the tiny paths from previous iterations
+        path.segments.clear();
+      }
+      if (segment.length() > 10) {
+        if (path.segments.isEmpty || path.segments.last.angleTo(segment).abs() < MAX_LABEL_CORNER_ANGLE) {
+          // the angle to the last segment is small enough to be part of the same path
+          path.segments.add(segment);
+        } else {
+          path.segments.clear();
+          if (longestPath.length() < path.length()) longestPath = path;
+        }
+      }
+    }
+    if (result.segments.isEmpty && longestPath.segments.isNotEmpty && longestPath.length() > textWidth * 2 / 3) {
+      // we do not have a sufficient length for the text but the remaining path is 2/3 of what we need so use it
+      if (longestPath.segments.first.start != longestPath.segments.last.end) {
+        result.segments.add(LineSegment(longestPath.segments.first.start, longestPath.segments.last.end));
+      }
     }
     return result;
   }

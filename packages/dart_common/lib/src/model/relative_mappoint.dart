@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dart_common/src/model/mappoint.dart';
 
 /// A Point represents an immutable pair of double coordinates in map pixels.
@@ -15,11 +13,6 @@ class RelativeMappoint {
   /// @param x the x coordinate of this point.
   /// @param y the y coordinate of this point.
   const RelativeMappoint(this.dx, this.dy);
-
-  /// @return the euclidian distance from this point to the given point.
-  double distance(Mappoint point) {
-    return sqrt(pow(dx - point.x, 2) + pow(dy - point.y, 2));
-  }
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is Mappoint && runtimeType == other.runtimeType && dx == other.x && dy == other.y;

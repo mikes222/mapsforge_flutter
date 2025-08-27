@@ -6,14 +6,14 @@ import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
+class ShapePainterCircle extends UiShapePainter<RenderinstructionCircle> {
   late final UiPaint? fill;
 
   late final UiPaint? stroke;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintCircle._(RenderinstructionCircle renderinstruction) : super(renderinstruction) {
+  ShapePainterCircle._(RenderinstructionCircle renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
       fill = UiPaint.fill(color: renderinstruction.fillColor);
     } else {
@@ -32,10 +32,10 @@ class ShapePaintCircle extends UiShapePainter<RenderinstructionCircle> {
     }
   }
 
-  static Future<ShapePaintCircle> create(RenderinstructionCircle renderinstruction) async {
+  static Future<ShapePainterCircle> create(RenderinstructionCircle renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePaintCircle;
-      ShapePaintCircle shapePaint = ShapePaintCircle._(renderinstruction);
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterCircle;
+      ShapePainterCircle shapePaint = ShapePainterCircle._(renderinstruction);
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;
     });

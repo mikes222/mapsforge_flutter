@@ -52,7 +52,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
     RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed, caption: caption);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
   }
 
   ///

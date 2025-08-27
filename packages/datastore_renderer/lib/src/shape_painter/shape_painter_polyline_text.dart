@@ -8,7 +8,7 @@ import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
+class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineText> {
   late final UiPaint? paintBack;
 
   late final UiPaint? paintFront;
@@ -17,8 +17,12 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintPathtext._(RenderinstructionPathtext renderinstruction) : super(renderinstruction) {
-    if (!renderinstruction.isFillTransparent()) paintFront = UiPaint.fill(color: renderinstruction.fillColor);
+  ShapePainterPolylineText._(RenderinstructionPolylineText renderinstruction) : super(renderinstruction) {
+    if (!renderinstruction.isFillTransparent()) {
+      paintFront = UiPaint.fill(color: renderinstruction.fillColor);
+    } else {
+      paintFront = null;
+    }
     if (!renderinstruction.isStrokeTransparent()) {
       paintBack = UiPaint.stroke(
         color: renderinstruction.strokeColor,
@@ -27,6 +31,8 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
         join: renderinstruction.strokeJoin,
         strokeDasharray: renderinstruction.strokeDashArray,
       );
+    } else {
+      paintBack = null;
     }
     textPaint = UiTextPaint();
     textPaint.setFontFamily(renderinstruction.fontFamily);
@@ -34,10 +40,10 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
     textPaint.setTextSize(renderinstruction.fontSize);
   }
 
-  static Future<ShapePaintPathtext> create(RenderinstructionPathtext renderinstruction) async {
+  static Future<ShapePainterPolylineText> create(RenderinstructionPolylineText renderinstruction) async {
     return _taskQueue.add(() async {
       //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintPathtext;
-      ShapePaintPathtext shapePaint = ShapePaintPathtext._(renderinstruction);
+      ShapePainterPolylineText shapePaint = ShapePainterPolylineText._(renderinstruction);
       //await shapePaint.init(symbolCache);
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;
@@ -60,6 +66,40 @@ class ShapePaintPathtext extends UiShapePainter<RenderinstructionPathtext> {
     }
   }
 
+  /// PolylineTextMarker uses this method
   @override
-  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {}
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
+    if (renderInfo is! RenderInfoWay) throw Exception("renderInfo is not RenderInfoWay ${renderInfo.runtimeType}");
+
+    LineSegmentPath? lineSegmentPath = wayProperties.calculateStringPath(renderinstruction.dy);
+    if (lineSegmentPath == null || lineSegmentPath.segments.isEmpty) {
+      return;
+    }
+
+    double widthEstimated = renderinstruction.maxTextWidth;
+    lineSegmentPath = lineSegmentPath.reducePathForText(widthEstimated, renderinstruction.repeatStart, renderinstruction.repeatGap);
+    if (lineSegmentPath.segments.isEmpty) return;
+
+    for (var segment in lineSegmentPath.segments) {
+      // So text isn't upside down
+      bool doInvert = segment.end.x <= segment.start.x;
+      Mappoint start;
+      double diff = (segment.length() - widthEstimated) / 2;
+      if (doInvert) {
+        start = segment.pointAlongLineSegment(diff + widthEstimated);
+      } else {
+        start = segment.pointAlongLineSegment(diff);
+      }
+
+      if (paintBack != null) {
+        ParagraphEntry entry = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.maxTextWidth);
+        renderContext.canvas.drawTextRotated(entry.paragraph, renderContext.rotationRadian + segment.getTheta(), start.offset(renderContext.reference));
+      }
+      if (paintFront != null) {
+        ParagraphEntry entry = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.maxTextWidth);
+        renderContext.canvas.drawTextRotated(entry.paragraph, renderContext.rotationRadian + segment.getTheta(), start.offset(renderContext.reference));
+      }
+    }
+  }
 }

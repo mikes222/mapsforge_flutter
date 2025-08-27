@@ -9,7 +9,7 @@ class PainterFactory {
 
   int created = 0;
 
-  Future<ShapePainter<T>> createShapePaint<T extends Renderinstruction>(RenderInfo<T> renderInfo) async {
+  Future<ShapePainter<T>> createShapePainter<T extends Renderinstruction>(RenderInfo<T> renderInfo) async {
     if (renderInfo.shapePainter != null) return renderInfo.shapePainter!;
 
     if (renderInfo.renderInstruction.getPainter() != null) {
@@ -19,60 +19,60 @@ class PainterFactory {
 
     switch (renderInfo.renderInstruction.getType()) {
       case "area":
-        ShapePainter<T> shapePaint = await ShapePaintArea.create(renderInfo.renderInstruction as RenderinstructionArea) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePaintArea.create(renderInfo.renderInstruction as RenderinstructionArea) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
+        return shapePainter;
       case "caption":
 
         /// we need to calculate the boundary for the caption. Remember that we cannot
         /// use ui code in isolates but here we are back again from isolates so we can
         /// calculate the width/height of the caption.
-        ShapePainter<T> shapePaint = await ShapePaintCaption.create(renderInfo.renderInstruction as RenderinstructionCaption) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterCaption.create(renderInfo.renderInstruction as RenderinstructionCaption) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
-        return shapePaint;
+        // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePainter
+        return shapePainter;
       case "circle":
-        ShapePainter<T> shapePaint = await ShapePaintCircle.create(renderInfo.renderInstruction as RenderinstructionCircle) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterCircle.create(renderInfo.renderInstruction as RenderinstructionCircle) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
+        return shapePainter;
       // case "Hillshading":
-      //   shapePaint = ShapePaintHillshading(shape as ShapeHillshading) as ShapePainter<T>;
+      //   shapePainter = ShapePaintHillshading(shape as ShapeHillshading) as ShapePainter<T>;
       //   break;
       case "icon":
-        ShapePainter<T> shapePaint = await ShapePaintIcon.create(renderInfo.renderInstruction as RenderinstructionIcon) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterIcon.create(renderInfo.renderInstruction as RenderinstructionIcon) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
+        return shapePainter;
       case "linesymbol":
-        ShapePainter<T> shapePaint = await ShapePaintLinesymbol.create(renderInfo.renderInstruction as RenderinstructionLinesymbol) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterLinesymbol.create(renderInfo.renderInstruction as RenderinstructionLinesymbol) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
-      case "pathtext":
-        ShapePainter<T> shapePaint = await ShapePaintPathtext.create(renderInfo.renderInstruction as RenderinstructionPathtext) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
-        ++created;
-        // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePaint
-        return shapePaint;
+        return shapePainter;
       case "polyline":
         // same as area but for open ways
-        ShapePainter<T> shapePaint = await ShapePaintPolyline.create(renderInfo.renderInstruction as RenderinstructionPolyline) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterPolyline.create(renderInfo.renderInstruction as RenderinstructionPolyline) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
+        return shapePainter;
+      case "polylinetext":
+        ShapePainter<T> shapePainter = await ShapePainterPolylineText.create(renderInfo.renderInstruction as RenderinstructionPolylineText) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
+        ++created;
+        // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePainter
+        return shapePainter;
       case "rect":
-        ShapePainter<T> shapePaint = await ShapePaintRect.create(renderInfo.renderInstruction as RenderinstructionRect) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterRect.create(renderInfo.renderInstruction as RenderinstructionRect) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
+        return shapePainter;
       case "symbol":
-        ShapePainter<T> shapePaint = await ShapePaintSymbol.create(renderInfo.renderInstruction as RenderinstructionSymbol) as ShapePainter<T>;
-        renderInfo.shapePainter = shapePaint;
+        ShapePainter<T> shapePainter = await ShapePainterSymbol.create(renderInfo.renderInstruction as RenderinstructionSymbol) as ShapePainter<T>;
+        renderInfo.shapePainter = shapePainter;
         ++created;
-        return shapePaint;
+        return shapePainter;
       default:
         throw Exception("cannot find ShapePaint for ${renderInfo.renderInstruction.getType()} of type ${renderInfo.runtimeType}");
     }
@@ -84,7 +84,7 @@ class PainterFactory {
 
     for (LayerContainer layerContainer in layerContainers.drawingLayers) {
       for (RenderInfo renderInfo in layerContainer.renderInfoCollection.renderInfos) {
-        futures.add(createShapePaint(renderInfo));
+        futures.add(createShapePainter(renderInfo));
         if (futures.length > 100) {
           await Future.wait(futures);
           futures.clear();
@@ -92,14 +92,14 @@ class PainterFactory {
       }
     }
     for (RenderInfo renderInfo in layerContainers.clashingInfoCollection.renderInfos) {
-      futures.add(createShapePaint(renderInfo));
+      futures.add(createShapePainter(renderInfo));
       if (futures.length > 100) {
         await Future.wait(futures);
         futures.clear();
       }
     }
     for (RenderInfo renderInfo in layerContainers.labels.renderInfos) {
-      futures.add(createShapePaint(renderInfo));
+      futures.add(createShapePainter(renderInfo));
       if (futures.length > 100) {
         await Future.wait(futures);
         futures.clear();

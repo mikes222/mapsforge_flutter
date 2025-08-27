@@ -11,6 +11,7 @@ class LineSegment {
   static int TOP = 8; // 1000
 
   final Mappoint start;
+
   final Mappoint end;
 
   /// the degree of this segment. 0 means vector to the right side -->
@@ -198,9 +199,9 @@ class LineSegment {
   /// @param offset offset applied at begin of line
   /// @param length length of the new segment
   /// @return new LineSegment computed
-  LineSegment subSegment(double offset, double length) {
+  LineSegment subSegment(double offset, [double length = -1]) {
     Mappoint subSegmentStart = pointAlongLineSegment(offset);
-    Mappoint subSegmentEnd = pointAlongLineSegment(offset + length);
+    Mappoint subSegmentEnd = length == -1 ? end : pointAlongLineSegment(offset + length);
     return LineSegment(subSegmentStart, subSegmentEnd);
   }
 

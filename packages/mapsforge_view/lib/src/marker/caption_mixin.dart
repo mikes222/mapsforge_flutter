@@ -5,7 +5,7 @@ import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/shape_painter.dart';
-import 'package:mapsforge_view/src/marker/abstract_poi_marker.dart';
+import 'package:mapsforge_view/src/marker/caption_reference.dart';
 
 mixin class CaptionMixin {
   final List<Caption> _captions = [];
@@ -31,7 +31,7 @@ mixin class CaptionMixin {
       position: position,
       dy: dy,
       strokeMinZoomLevel: strokeMinZoomLevel,
-      poiMarker: (this as AbstractPoiMarker),
+      poiMarker: (this as CaptionReference),
     );
     _captions.add(cp);
     return cp;
@@ -81,7 +81,7 @@ class Caption {
 
   RenderInfoNode<RenderinstructionCaption>? renderInfo;
 
-  final AbstractPoiMarker poiMarker;
+  final CaptionReference poiMarker;
 
   Caption({
     required String caption,
@@ -112,9 +112,9 @@ class Caption {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
     renderinstructionZoomed.secondPass(poiMarker);
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], poiMarker.latLong), projection);
+    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], poiMarker.getReference()), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstruction.forZoomlevel(zoomlevel), caption: _caption);
-    renderInfo?.shapePainter = await ShapePaintCaption.create(renderinstructionZoomed);
+    renderInfo?.shapePainter = await ShapePainterCaption.create(renderinstructionZoomed);
   }
 
   void render({required UiRenderContext renderContext, required NodeProperties nodeProperties}) {
@@ -138,12 +138,12 @@ class Caption {
   Future<void> setStrokeColorFromNumber(int strokeColor) async {
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderInfo?.renderInstruction.setStrokeColorFromNumber(strokeColor);
-    renderInfo?.shapePainter = await ShapePaintCaption.create(renderInfo!.renderInstruction);
+    renderInfo?.shapePainter = await ShapePainterCaption.create(renderInfo!.renderInstruction);
   }
 
   Future<void> setFillColorFromNumber(int fillColor) async {
     renderinstruction.setFillColorFromNumber(fillColor);
     renderInfo?.renderInstruction.setFillColorFromNumber(fillColor);
-    renderInfo?.shapePainter = await ShapePaintCaption.create(renderInfo!.renderInstruction);
+    renderInfo?.shapePainter = await ShapePainterCaption.create(renderInfo!.renderInstruction);
   }
 }

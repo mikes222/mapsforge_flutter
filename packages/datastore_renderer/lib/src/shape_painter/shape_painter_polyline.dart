@@ -10,14 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
+class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
   static final _log = Logger('ShapePaintPolyline');
 
   late final UiPaint? stroke;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintPolyline._(RenderinstructionPolyline renderinstruction) : super(renderinstruction) {
+  ShapePainterPolyline._(RenderinstructionPolyline renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isStrokeTransparent() || renderinstruction.bitmapSrc != null) {
       stroke = UiPaint.stroke(
         color: renderinstruction.strokeColor,
@@ -31,10 +31,10 @@ class ShapePaintPolyline extends UiShapePainter<RenderinstructionPolyline> {
     }
   }
 
-  static Future<ShapePaintPolyline> create(RenderinstructionPolyline renderinstruction) async {
+  static Future<ShapePainterPolyline> create(RenderinstructionPolyline renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePaintPolyline;
-      ShapePaintPolyline shapePaint = ShapePaintPolyline._(renderinstruction);
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterPolyline;
+      ShapePainterPolyline shapePaint = ShapePainterPolyline._(renderinstruction);
       await shapePaint.init();
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;

@@ -19,8 +19,8 @@ import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_circle.
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_linesymbol.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_pathtext.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_polyline.dart';
+import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_polyline_text.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_symbol.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
 import 'package:dart_rendertheme/src/rule/negativerule.dart';
@@ -388,7 +388,7 @@ class RuleBuilder {
       //          getStringAttribute("lang"), getStringAttribute("value"));
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionPathtext pathText = new RenderinstructionPathtext(level);
+      RenderinstructionPolylineText pathText = new RenderinstructionPolylineText(level);
       pathText.parse(rootElement);
       if (isVisibleWay(pathText)) {
         if (closed != Closed.YES) addRenderingInstructionOpenWay(pathText);

@@ -19,7 +19,7 @@ class Mappoint {
 
   /// @return the euclidian distance from this point to the given point.
   double distance(Mappoint point) {
-    return sqrt(pow(x - point.x, 2) + pow(y - point.y, 2));
+    return sqrt((x - point.x) * (x - point.x) + (y - point.y) * (y - point.y));
   }
 
   @override

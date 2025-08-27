@@ -195,7 +195,7 @@ class DirectionVector {
   factory DirectionVector.get(Offset firstVector, Offset secondVector) {
     Offset directionVector = Offset(secondVector.dx - firstVector.dx, secondVector.dy - firstVector.dy);
 
-    double directionVectorLength = sqrt(pow(directionVector.dx, 2) + pow(directionVector.dy, 2));
+    double directionVectorLength = sqrt(directionVector.dx * directionVector.dx + directionVector.dy * directionVector.dy);
 
     return DirectionVector._(vector: directionVector, length: directionVectorLength, firstVector: firstVector, secondVector: secondVector);
   }

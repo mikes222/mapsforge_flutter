@@ -11,7 +11,7 @@ import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
+class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
   // this is the stroke, normally white and represents the "surrounding of the text"
   UiPaint? paintBack;
 
@@ -22,7 +22,7 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintCaption._(RenderinstructionCaption renderinstruction) : super(renderinstruction) {
+  ShapePainterCaption._(RenderinstructionCaption renderinstruction) : super(renderinstruction) {
     reinit();
   }
 
@@ -30,10 +30,10 @@ class ShapePaintCaption extends UiShapePainter<RenderinstructionCaption> {
   //   reinit(caption);
   // }
 
-  static Future<ShapePaintCaption> create(RenderinstructionCaption renderinstruction) async {
+  static Future<ShapePainterCaption> create(RenderinstructionCaption renderinstruction) async {
     return _taskQueue.add(() async {
       //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintCaption;
-      ShapePaintCaption shapePaint = ShapePaintCaption._(renderinstruction);
+      ShapePainterCaption shapePaint = ShapePainterCaption._(renderinstruction);
       //await shapePaint.init(symbolCache);
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;

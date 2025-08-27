@@ -64,10 +64,36 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _createMarker() {
-    marker = RectMarker(
-      minLatLon: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-      maxLatLon: LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+    marker = PolylineTextMarker(
+      path: [
+        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+        LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
+      ],
+      caption: "PolylineTextMarker",
+      fontSize: 20,
     );
+
+    // marker = AreaMarker(
+    //   path: [
+    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //     LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
+    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //   ],
+    // );
+
+    // marker = PolylineMarker(
+    //   path: [
+    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //     LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+    //   ],
+    // );
+
+    // marker = RectMarker(
+    //   minLatLon: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //   maxLatLon: LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+    // )..addCaption(caption: "RectCaption");
 
     // marker = CaptionMarker(
     //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),

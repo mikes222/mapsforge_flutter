@@ -10,9 +10,12 @@ import 'package:flutter/widgets.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/marker.dart';
 import 'package:mapsforge_view/src/marker/caption_mixin.dart';
+import 'package:mapsforge_view/src/marker/caption_reference.dart';
 
-/// A Marker which draws a rectangle specified by the min/max lat/lon attributes.
-class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearcher {
+/// A Marker which draws a rectangle specified by the min/max lat/lon attributes. Currently there is no way
+/// to position captions other than in the center of the rectangle (RenderinstructionRect always returns Boundary.zero since it does not have any information
+/// about the actual size of the rectangle).
+class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearcher, CaptionReference {
   late RenderinstructionRect renderinstruction;
 
   RenderInfoWay<RenderinstructionRect>? renderInfo;
@@ -68,7 +71,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
       projection,
     );
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -96,17 +99,22 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
   Future<void> setBitmapColorFromNumber(int color) async {
     renderinstruction.setBitmapColorFromNumber(color);
     renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
   }
 
   Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
     renderinstruction.bitmapSrc = bitmapSrc;
     renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
   }
 
   @override
   MapRectangle? searchForSymbolBoundary(String symbolId) {
     return renderInfo?.renderInstruction.getBoundary();
+  }
+
+  @override
+  ILatLong getReference() {
+    return center;
   }
 }

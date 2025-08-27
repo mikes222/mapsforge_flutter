@@ -45,7 +45,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     RenderinstructionCircle renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);

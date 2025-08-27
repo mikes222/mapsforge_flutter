@@ -10,7 +10,7 @@ import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:logging/logging.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
+class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
   static final _log = Logger('ShapePaintLinesymbol');
 
   late final UiPaint fill;
@@ -19,7 +19,7 @@ class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintLinesymbol._(RenderinstructionLinesymbol renderinstruction) : super(renderinstruction) {
+  ShapePainterLinesymbol._(RenderinstructionLinesymbol renderinstruction) : super(renderinstruction) {
     fill = UiPaint.fill(color: 0xff000000);
   }
 
@@ -39,10 +39,10 @@ class ShapePaintLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
     symbolImage?.dispose();
   }
 
-  static Future<ShapePaintLinesymbol> create(RenderinstructionLinesymbol renderinstruction) async {
+  static Future<ShapePainterLinesymbol> create(RenderinstructionLinesymbol renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePaintLinesymbol;
-      ShapePaintLinesymbol shapePaint = ShapePaintLinesymbol._(renderinstruction);
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterLinesymbol;
+      ShapePainterLinesymbol shapePaint = ShapePainterLinesymbol._(renderinstruction);
       await shapePaint.init();
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;

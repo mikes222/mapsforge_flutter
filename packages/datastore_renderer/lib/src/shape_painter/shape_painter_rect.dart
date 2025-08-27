@@ -9,14 +9,14 @@ import 'package:datastore_renderer/src/ui/ui_rect.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:task_queue/task_queue.dart';
 
-class ShapePaintRect extends UiShapePainter<RenderinstructionRect> {
+class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
   UiPaint? fill;
 
   late final UiPaint? stroke;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
-  ShapePaintRect._(RenderinstructionRect renderinstruction) : super(renderinstruction) {
+  ShapePainterRect._(RenderinstructionRect renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
       fill = UiPaint.fill(color: renderinstruction.fillColor);
     }
@@ -33,10 +33,10 @@ class ShapePaintRect extends UiShapePainter<RenderinstructionRect> {
     }
   }
 
-  static Future<ShapePaintRect> create(RenderinstructionRect renderinstruction) async {
+  static Future<ShapePainterRect> create(RenderinstructionRect renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePaintRect;
-      ShapePaintRect shapePaint = ShapePaintRect._(renderinstruction);
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterRect;
+      ShapePainterRect shapePaint = ShapePainterRect._(renderinstruction);
       await shapePaint.init();
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;

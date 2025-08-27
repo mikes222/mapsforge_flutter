@@ -10,7 +10,6 @@ import 'package:dart_rendertheme/src/renderinstruction/repeat_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/text_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/textkey.dart';
-import 'package:dart_rendertheme/src/util/waydecorator.dart';
 import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
@@ -19,7 +18,7 @@ import 'renderinstruction.dart';
 /**
  * Represents a text along a polyline on the map.
  */
-class RenderinstructionPathtext extends Renderinstruction
+class RenderinstructionPolylineText extends Renderinstruction
     with BaseSrcMixin, TextSrcMixin, StrokeSrcMixin, FillSrcMixin, RepeatSrcMixin
     implements RenderinstructionWay {
   static final double REPEAT_GAP_DEFAULT = 100;
@@ -29,7 +28,7 @@ class RenderinstructionPathtext extends Renderinstruction
 
   int zoomlevel = -1;
 
-  RenderinstructionPathtext(int level) {
+  RenderinstructionPolylineText(int level) {
     this.level = level;
     //initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     //initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
@@ -40,8 +39,8 @@ class RenderinstructionPathtext extends Renderinstruction
   }
 
   @override
-  RenderinstructionPathtext forZoomlevel(int zoomlevel) {
-    RenderinstructionPathtext renderinstruction = RenderinstructionPathtext(level)
+  RenderinstructionPolylineText forZoomlevel(int zoomlevel) {
+    RenderinstructionPolylineText renderinstruction = RenderinstructionPolylineText(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..textSrcMixinScale(this, zoomlevel)
@@ -56,7 +55,7 @@ class RenderinstructionPathtext extends Renderinstruction
 
   @override
   String getType() {
-    return "pathtext";
+    return "polylinetext";
   }
 
   void parse(XmlElement rootElement) {
@@ -119,17 +118,17 @@ class RenderinstructionPathtext extends Renderinstruction
     if (caption == null || caption.trim().isEmpty) {
       return;
     }
-    LineSegmentPath? stringPath = _calculateStringPath(wayProperties, dy);
-    if (stringPath == null || stringPath.segments.isEmpty) {
+    LineSegmentPath? lineSegmentPath = wayProperties.calculateStringPath(dy);
+    if (lineSegmentPath == null || lineSegmentPath.segments.isEmpty) {
       return;
     }
 
     double widthEstimated = maxTextWidth;
-    LineSegmentPath fullPath = WayDecorator.reducePathForText(stringPath, widthEstimated);
-    if (fullPath.segments.isEmpty) return;
+    lineSegmentPath = lineSegmentPath.reducePathForText(widthEstimated, repeatStart, repeatGap);
+    if (lineSegmentPath.segments.isEmpty) return;
 
     PixelProjection projection = PixelProjection(zoomlevel);
-    for (var segment in fullPath.segments) {
+    for (var segment in lineSegmentPath.segments) {
       // So text isn't upside down
       bool doInvert = segment.end.x < segment.start.x;
       Mappoint start;
@@ -154,36 +153,5 @@ class RenderinstructionPathtext extends Renderinstruction
         ),
       );
     }
-
-    // layerContainer.addClash(
-    //   RenderInfoWay(wayProperties, this)
-    //     ..caption = caption
-    //     ..stringPath = stringPath,
-    // );
-  }
-
-  LineSegmentPath? _calculateStringPath(WayProperties wayProperties, double dy) {
-    List<List<Mappoint>> coordinatesAbsolute = wayProperties.getCoordinatesAbsolute();
-
-    if (coordinatesAbsolute.isEmpty || coordinatesAbsolute[0].length < 2) {
-      return null;
-    }
-    List<Mappoint> c;
-    if (dy == 0) {
-      c = coordinatesAbsolute[0];
-    } else {
-      c = WayProperties.parallelPath(coordinatesAbsolute[0], dy);
-    }
-
-    if (c.length < 2) {
-      return null;
-    }
-
-    LineSegmentPath fullPath = LineSegmentPath();
-    for (int i = 1; i < c.length; i++) {
-      LineSegment segment = LineSegment(c[i - 1], c[i]);
-      fullPath.segments.add(segment);
-    }
-    return fullPath;
   }
 }

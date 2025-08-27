@@ -8,6 +8,7 @@ mixin TextSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
   int _textMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevelText;
 
+  /// The maximum allowed font size when zooming
   double _maxFontSize = 50;
 
   double _fontSize = 10;
@@ -45,6 +46,10 @@ mixin TextSrcMixin {
 
   void setFontSize(double fontSize) {
     _fontSize = fontSize * MapsforgeSettingsMgr().getFontScaleFactor();
+  }
+
+  void setMaxFontSize(double maxFontSize) {
+    _maxFontSize = maxFontSize;
   }
 
   MapFontStyle get fontStyle => _fontStyle;

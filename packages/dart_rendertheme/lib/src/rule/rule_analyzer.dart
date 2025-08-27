@@ -6,7 +6,7 @@ import 'package:dart_rendertheme/src/matcher/negativematcher.dart';
 import 'package:dart_rendertheme/src/matcher/valuematcher.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_caption.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
-import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_pathtext.dart';
+import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_polyline_text.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_way.dart';
 import 'package:dart_rendertheme/src/rule/negativerule.dart';
 import 'package:dart_rendertheme/src/rule/positiverule.dart';
@@ -44,7 +44,7 @@ class RuleAnalyzer extends RuleVisitor {
       if (renderInstruction is RenderinstructionCaption) {
         String? textKey = renderInstruction.textKey?.key;
         if (textKey != null) keys.add(textKey);
-      } else if (renderInstruction is RenderinstructionPathtext) {
+      } else if (renderInstruction is RenderinstructionPolylineText) {
         String? textKey = renderInstruction.textKey?.key;
         if (textKey != null) keys.add(textKey);
       }
@@ -55,7 +55,7 @@ class RuleAnalyzer extends RuleVisitor {
       if (renderInstruction is RenderinstructionCaption) {
         String? textKey = renderInstruction.textKey?.key;
         if (textKey != null) keys.add(textKey);
-      } else if (renderInstruction is RenderinstructionPathtext) {
+      } else if (renderInstruction is RenderinstructionPolylineText) {
         String? textKey = renderInstruction.textKey?.key;
         if (textKey != null) keys.add(textKey);
       }

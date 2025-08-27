@@ -165,7 +165,7 @@ abstract class Projection {
 
     if (iterLimit == 0) return 0; // formula failed to converge
 
-    double uSq = cosSqAlpha * (pow(EQUATORIAL_RADIUS, 2) - pow(POLAR_RADIUS, 2)) / pow(POLAR_RADIUS, 2);
+    double uSq = cosSqAlpha * (EQUATORIAL_RADIUS * EQUATORIAL_RADIUS - POLAR_RADIUS * POLAR_RADIUS) / POLAR_RADIUS / POLAR_RADIUS;
     double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
     double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
     double deltaSigma =

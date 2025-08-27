@@ -12,11 +12,11 @@ mixin RepeatSrcMixin {
   bool rotate = true;
 
   void setRepeatGap(double repeatGap) {
-    this._repeatGap = repeatGap * MapsforgeSettingsMgr().getFontScaleFactor();
+    _repeatGap = repeatGap * MapsforgeSettingsMgr().getFontScaleFactor();
   }
 
   void setRepeatStart(double repeatStart) {
-    this._repeatStart = repeatStart * MapsforgeSettingsMgr().getFontScaleFactor();
+    _repeatStart = repeatStart * MapsforgeSettingsMgr().getFontScaleFactor();
   }
 
   void repeatSrcMixinClone(RepeatSrcMixin base) {

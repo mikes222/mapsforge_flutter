@@ -156,7 +156,7 @@ class TapEvent implements ILatLong {
 
   final PixelProjection projection;
 
-  /// The point of the event in mappixels
+  /// The point of the event in absolute mappixels
   final Mappoint mappoint;
 
   const TapEvent({required this.latitude, required this.longitude, required this.projection, required this.mappoint});

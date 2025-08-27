@@ -42,7 +42,7 @@ class LatLongUtils {
   /// libGDX (Apache 2.0)
   static double distanceSegmentPoint(double startX, double startY, double endX, double endY, double pointX, double pointY) {
     LatLong nearest = nearestSegmentPoint(startX, startY, endX, endY, pointX, pointY);
-    return sqrt(pow(nearest.longitude - pointX, 2) + pow(nearest.latitude - pointY, 2));
+    return sqrt((nearest.longitude - pointX) * (nearest.longitude - pointX) + (nearest.latitude - pointY) + (nearest.latitude - pointY));
   }
 
   /**
@@ -65,11 +65,12 @@ class LatLongUtils {
   /// @param latLong2 second LatLong
   /// @return distance in degrees as a double
   static double euclideanDistance(ILatLong latLong1, ILatLong latLong2) {
-    return sqrt(pow(latLong1.longitude - latLong2.longitude, 2) + pow(latLong1.latitude - latLong2.latitude, 2));
+    return sqrt(euclideanDistanceSquared(latLong1, latLong2));
   }
 
   static double euclideanDistanceSquared(ILatLong latLong1, ILatLong latLong2) {
-    return pow(latLong1.longitude - latLong2.longitude, 2).toDouble() + pow(latLong1.latitude - latLong2.latitude, 2);
+    return (latLong1.longitude - latLong2.longitude) * (latLong1.longitude - latLong2.longitude) +
+        (latLong1.latitude - latLong2.latitude) * (latLong1.latitude - latLong2.latitude);
   }
 
   /// Find if this way is closed.

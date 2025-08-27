@@ -52,7 +52,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     RenderinstructionSymbol renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -90,13 +90,13 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   Future<void> setBitmapColorFromNumber(int color) async {
     renderinstruction.setBitmapColorFromNumber(color);
     renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
   }
 
   Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
     renderinstruction.bitmapSrc = bitmapSrc;
     renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePaint(renderInfo!);
+    await PainterFactory().createShapePainter(renderInfo!);
   }
 
   void setLatLong(ILatLong latLong, PixelProjection projection) {
