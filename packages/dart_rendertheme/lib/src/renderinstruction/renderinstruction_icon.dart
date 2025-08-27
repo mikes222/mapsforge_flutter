@@ -12,9 +12,9 @@ import 'package:xml/xml.dart';
 
 ///
 /// Represents an icon on the map. The rendertheme.xml has the possiblity to define a symbol by id and use that symbol later by referring to this id.
-/// The [RenderinstructionSymbol] class holds a symbol (=bitmap) and refers it by it's id. The class can be used by several other [Renderinstruction] implementations.
+/// The [RenderinstructionIcon] class holds a flutter icon and refers it by it's id. The class can be used by several other [Renderinstruction] implementations.
 ///
-class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin implements RenderinstructionNode, RenderinstructionWay {
+class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin implements RenderinstructionNode, RenderinstructionWay {
   String? id;
 
   Position position = Position.CENTER;
@@ -22,15 +22,21 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   /// The rotation of the symbol.
   double theta = 0;
 
-  RenderinstructionSymbol(int level) {
+  /// The Unicode code point at which this icon is stored in the icon font. See icons.dart.
+  /// The icon [ten_k] has for example the id 0xe000 IconData(0xe000, fontFamily: 'MaterialIcons').
+  int codePoint = 0;
+
+  String fontFamily = "MaterialIcons";
+
+  RenderinstructionIcon(int level) {
     this.level = level;
     setBitmapPercent(100);
     setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
   }
 
   @override
-  RenderinstructionSymbol forZoomlevel(int zoomlevel) {
-    RenderinstructionSymbol renderinstruction = RenderinstructionSymbol(level)
+  RenderinstructionIcon forZoomlevel(int zoomlevel) {
+    RenderinstructionIcon renderinstruction = RenderinstructionIcon(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
       ..bitmapSrcMixinScale(this, zoomlevel);
@@ -38,12 +44,14 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
     renderinstruction.position = position;
     renderinstruction.theta = theta;
     renderinstruction.rotateWithMap = rotateWithMap;
+    renderinstruction.codePoint = codePoint;
+    renderinstruction.fontFamily = fontFamily;
     return renderinstruction;
   }
 
   @override
   String getType() {
-    return "symbol";
+    return "icon";
   }
 
   void parse(XmlElement rootElement) {

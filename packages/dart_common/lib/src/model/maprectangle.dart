@@ -1,4 +1,4 @@
-import 'mappoint.dart';
+import 'package:dart_common/model.dart';
 
 /// A Rectangle represents an immutable set of four double coordinates in mappixels.
 class MapRectangle {
@@ -106,11 +106,26 @@ class MapRectangle {
     return cornerDistanceX * cornerDistanceX + cornerDistanceY * cornerDistanceY <= radius * radius;
   }
 
-  MapRectangle shift(Mappoint origin) {
-    if (origin.x == 0 && origin.y == 0) {
+  MapRectangle shift(Mappoint reference) {
+    if (reference.x == 0 && reference.y == 0) {
       return this;
     }
-    return MapRectangle(left + origin.x, top + origin.y, right + origin.x, bottom + origin.y);
+    return MapRectangle(left + reference.x, top + reference.y, right + reference.x, bottom + reference.y);
+  }
+
+  MapRectangle offset(Mappoint reference) {
+    if (reference.x == 0 && reference.y == 0) {
+      return this;
+    }
+    return MapRectangle(left - reference.x, top - reference.y, right - reference.x, bottom - reference.y);
+  }
+
+  Mappoint getLeftUpper() {
+    return Mappoint(left, top);
+  }
+
+  Mappoint getRightLower() {
+    return Mappoint(right, bottom);
   }
 
   @override

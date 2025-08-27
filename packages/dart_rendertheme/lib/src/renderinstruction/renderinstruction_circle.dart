@@ -1,10 +1,7 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
+import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/src/model/display.dart';
-import 'package:dart_rendertheme/src/model/layer_container.dart';
-import 'package:dart_rendertheme/src/model/nodeproperties.dart';
-import 'package:dart_rendertheme/src/model/render_info_node.dart';
-import 'package:dart_rendertheme/src/model/wayproperties.dart';
 import 'package:dart_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_node.dart';
@@ -21,6 +18,8 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
 
   bool scaleRadius = true;
 
+  Position position = Position.CENTER;
+
   RenderinstructionCircle(int level) {
     this.level = level;
   }
@@ -35,6 +34,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
 
     renderinstruction.scaleRadius = scaleRadius;
     renderinstruction.radius = radius;
+    renderinstruction.position = position;
     if (scaleRadius) {
       if (zoomlevel >= MapsforgeSettingsMgr().strokeMinZoomlevel) {
         double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, MapsforgeSettingsMgr().strokeMinZoomlevel);
@@ -72,6 +72,8 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
+      } else if (Renderinstruction.POSITION == name) {
+        position = Position.values.firstWhere((e) => e.toString().toLowerCase().contains(value));
       } else {
         throw Exception("Parsing problems $name=$value");
       }
@@ -82,7 +84,38 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
 
   @override
   MapRectangle getBoundary() {
-    return MapRectangle(-radius, -radius, radius, radius);
+    if (boundary != null) return boundary!;
+    switch (position) {
+      case Position.AUTO:
+      case Position.CENTER:
+        boundary = MapRectangle(-radius, -radius, radius, radius);
+        break;
+      case Position.BELOW:
+        boundary = MapRectangle(-radius, 0 + dy, radius, radius * 2 + dy);
+        break;
+      case Position.BELOW_LEFT:
+        boundary = MapRectangle(-radius * 2, 0 + dy, 0, radius * 2 + dy);
+        break;
+      case Position.BELOW_RIGHT:
+        boundary = MapRectangle(0, 0 + dy, radius * 2, radius * 2 + dy);
+        break;
+      case Position.ABOVE:
+        boundary = MapRectangle(-radius, -radius * 2 + dy, radius, 0 + dy);
+        break;
+      case Position.ABOVE_LEFT:
+        boundary = MapRectangle(-radius * 2, -radius * 2 + dy, 0, 0 + dy);
+        break;
+      case Position.ABOVE_RIGHT:
+        boundary = MapRectangle(0, -radius * 2 + dy, radius * 2, 0 + dy);
+        break;
+      case Position.LEFT:
+        boundary = MapRectangle(-radius * 2, -radius + dy, 0, radius + dy);
+        break;
+      case Position.RIGHT:
+        boundary = MapRectangle(0, -radius + dy, radius * 2, radius + dy);
+        break;
+    }
+    return boundary!;
   }
 
   @override

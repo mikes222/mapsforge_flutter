@@ -1,6 +1,5 @@
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
-import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/renderer.dart';
@@ -8,34 +7,35 @@ import 'package:datastore_renderer/shape_painter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/marker/abstract_poi_marker.dart';
-import 'package:mapsforge_view/src/marker/caption_mixin.dart';
 
-class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
-  late RenderinstructionSymbol renderinstruction;
+class CaptionMarker<T> extends AbstractPoiMarker<T> {
+  late RenderinstructionCaption renderinstruction;
 
-  RenderInfoNode<RenderinstructionSymbol>? renderInfo;
+  RenderInfoNode<RenderinstructionCaption>? renderInfo;
 
-  PoiMarker({
+  String caption;
+
+  CaptionMarker({
     super.zoomlevelRange,
     super.item,
     required super.latLong,
     Position position = Position.CENTER,
     bool rotateWithMap = false,
-    required String src,
+    required this.caption,
     int bitmapColor = 0xff000000,
-    double width = 20,
-    double height = 20,
+    double strokeWidth = 2.0,
+    int strokeColor = 0xffffffff,
+    int fillColor = 0xff000000,
+    double fontSize = 10.0,
 
     /// Rotation of the poi in degrees clockwise
     double rotation = 0,
   }) {
-    renderinstruction = RenderinstructionSymbol(0);
-    renderinstruction.bitmapSrc = src;
-    renderinstruction.setBitmapColorFromNumber(bitmapColor);
-    renderinstruction.setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
-    renderinstruction.theta = Projection.degToRadian(rotation);
-    renderinstruction.setBitmapWidth(width.round());
-    renderinstruction.setBitmapHeight(height.round());
+    renderinstruction = RenderinstructionCaption(0);
+    renderinstruction.setStrokeWidth(strokeWidth);
+    renderinstruction.setStrokeColorFromNumber(strokeColor);
+    renderinstruction.setFillColorFromNumber(fillColor);
+    renderinstruction.setFontSize(fontSize);
     renderinstruction.position = position;
     renderinstruction.rotateWithMap = rotateWithMap;
   }
@@ -49,13 +49,10 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionSymbol renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
-    renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
+    renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePaint(renderInfo!);
-
-    // captions needs the new renderinstruction so execute this method after renderInfo is created
-    await changeZoomlevelCaptions(zoomlevel, projection);
   }
 
   ///
@@ -64,8 +61,6 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
-    renderCaptions(renderContext: renderContext, nodeProperties: renderInfo!.nodeProperties);
-
     renderInfo?.render(renderContext);
   }
 
@@ -82,27 +77,10 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     return tpd;
   }
 
-  set rotation(double rotation) {
-    renderinstruction.theta = Projection.degToRadian(rotation);
-    renderInfo?.renderInstruction.theta = Projection.degToRadian(rotation);
-  }
-
-  Future<void> setBitmapColorFromNumber(int color) async {
-    renderinstruction.setBitmapColorFromNumber(color);
-    renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePaint(renderInfo!);
-  }
-
-  Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
-    renderinstruction.bitmapSrc = bitmapSrc;
-    renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePaint(renderInfo!);
-  }
-
   void setLatLong(ILatLong latLong, PixelProjection projection) {
     super.latLong = latLong;
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
-    RenderInfoNode<RenderinstructionSymbol> renderInfoNew = RenderInfoNode(nodeProperties, renderInfo!.renderInstruction);
+    RenderInfoNode<RenderinstructionCaption> renderInfoNew = RenderInfoNode(nodeProperties, renderInfo!.renderInstruction, caption: caption);
     renderInfoNew.shapePainter = renderInfo?.shapePainter;
     renderInfo = renderInfoNew;
   }

@@ -1,5 +1,5 @@
-import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:dart_common/model.dart';
 
 abstract class SymbolSearcher {
-  RenderinstructionSymbol? searchForSymbol(String symbolId);
+  MapRectangle? searchForSymbolBoundary(String symbolId);
 }

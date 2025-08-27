@@ -45,7 +45,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   Future? _createModelFuture;
 
-  late PoiMarker poiMarker;
+  late Marker marker;
 
   @override
   void initState() {
@@ -64,11 +64,31 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _createMarker() {
-    poiMarker = PoiMarker(
-      src: "packages/mapsforge_assets/assets/symbols/viewpoint.svg",
-      latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-      rotateWithMap: true,
-    )..addCaption(caption: "PoiMarker");
+    marker = RectMarker(
+      minLatLon: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+      maxLatLon: LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+    );
+
+    // marker = CaptionMarker(
+    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //   caption: 'PoiCaption',
+    // );
+
+    // marker = CircleMarker(
+    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //   fillColor: Colors.white.withAlpha(200).toARGB32(),
+    // )..addCaption(caption: "IconMarker");
+
+    // marker = IconMarker(
+    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //   iconData: Icons.accessibility,
+    // )..addCaption(caption: "IconMarker");
+
+    // marker = PoiMarker(
+    //   src: "packages/mapsforge_assets/assets/symbols/viewpoint.svg",
+    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+    //   rotateWithMap: true,
+    // )..addCaption(caption: "PoiMarker");
   }
 
   void _initializeOptimizations() {
@@ -169,7 +189,7 @@ Profiler Events: ${report.totalEvents}
               TileView(mapModel: mapModel),
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
               if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
-              SingleMarkerOverlay(mapModel: mapModel, marker: poiMarker),
+              SingleMarkerOverlay(mapModel: mapModel, marker: marker),
               // Shows a ruler with distance information in the left-bottom corner of the map
               DistanceOverlay(mapModel: mapModel),
               // Shows zoom-in and zoom-out buttons

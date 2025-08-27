@@ -10,32 +10,32 @@ import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/marker/abstract_poi_marker.dart';
 import 'package:mapsforge_view/src/marker/caption_mixin.dart';
 
-class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
-  late RenderinstructionSymbol renderinstruction;
+class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
+  late RenderinstructionIcon renderinstruction;
 
-  RenderInfoNode<RenderinstructionSymbol>? renderInfo;
+  RenderInfoNode<RenderinstructionIcon>? renderInfo;
 
-  PoiMarker({
+  IconMarker({
     super.zoomlevelRange,
     super.item,
     required super.latLong,
     Position position = Position.CENTER,
     bool rotateWithMap = false,
-    required String src,
+    required IconData iconData,
     int bitmapColor = 0xff000000,
-    double width = 20,
-    double height = 20,
+    double size = 20,
 
     /// Rotation of the poi in degrees clockwise
     double rotation = 0,
   }) {
-    renderinstruction = RenderinstructionSymbol(0);
-    renderinstruction.bitmapSrc = src;
+    renderinstruction = RenderinstructionIcon(0);
+    renderinstruction.codePoint = iconData.codePoint;
+    renderinstruction.fontFamily = iconData.fontFamily!;
     renderinstruction.setBitmapColorFromNumber(bitmapColor);
     renderinstruction.setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
     renderinstruction.theta = Projection.degToRadian(rotation);
-    renderinstruction.setBitmapWidth(width.round());
-    renderinstruction.setBitmapHeight(height.round());
+    renderinstruction.setBitmapWidth(size.round());
+    renderinstruction.setBitmapHeight(size.round());
     renderinstruction.position = position;
     renderinstruction.rotateWithMap = rotateWithMap;
   }
@@ -49,7 +49,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionSymbol renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionIcon renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
     await PainterFactory().createShapePaint(renderInfo!);
@@ -102,7 +102,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   void setLatLong(ILatLong latLong, PixelProjection projection) {
     super.latLong = latLong;
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
-    RenderInfoNode<RenderinstructionSymbol> renderInfoNew = RenderInfoNode(nodeProperties, renderInfo!.renderInstruction);
+    RenderInfoNode<RenderinstructionIcon> renderInfoNew = RenderInfoNode(nodeProperties, renderInfo!.renderInstruction);
     renderInfoNew.shapePainter = renderInfo?.shapePainter;
     renderInfo = renderInfoNew;
   }

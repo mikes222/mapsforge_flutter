@@ -124,10 +124,11 @@ abstract class Rule implements SymbolSearcher {
     }
   }
 
-  RenderinstructionSymbol? searchForSymbol(String id) {
+  @override
+  MapRectangle? searchForSymbolBoundary(String id) {
     Renderinstruction? result = renderinstructionNodes.firstWhereOrNull((element) => element is RenderinstructionSymbol && element.id == id);
-    if (result != null) return result as RenderinstructionSymbol;
-    if (parent != null) return parent!.searchForSymbol(id);
+    if (result != null) return (result as RenderinstructionSymbol).getBoundary();
+    if (parent != null) return parent!.searchForSymbolBoundary(id);
     return null;
   }
 

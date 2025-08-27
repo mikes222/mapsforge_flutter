@@ -37,7 +37,7 @@ class RenderinstructionCaption extends Renderinstruction
   double gap = DEFAULT_GAP;
 
   /// In the second pass we try to find the corresponding symbol so that we can align the caption relative to this symbol.
-  RenderinstructionSymbol? renderinstructionSymbol;
+  MapRectangle? symbolBoundary;
 
   RenderinstructionCaption(int level) {
     this.level = level;
@@ -74,7 +74,7 @@ class RenderinstructionCaption extends Renderinstruction
   void secondPass(SymbolSearcher symbolSearcher) {
     super.secondPass(symbolSearcher);
     if (symbolId != null) {
-      renderinstructionSymbol = symbolSearcher.searchForSymbol(symbolId!);
+      symbolBoundary = symbolSearcher.searchForSymbolBoundary(symbolId!);
     }
   }
 
@@ -126,17 +126,17 @@ class RenderinstructionCaption extends Renderinstruction
   }
 
   MapRectangle calculateBoundaryWithSymbol(Position pos, double fontWidth, double fontHeight) {
-    MapRectangle? symbolBoundary = renderinstructionSymbol?.getBoundary();
     //    print("captoin: $pos $fontWidth $fontHeight $symbolBoundary for caption $textKey");
-    if (pos == Position.CENTER && symbolBoundary != null) {
+    MapRectangle? symBoundary = symbolBoundary;
+    if (pos == Position.CENTER && symBoundary != null) {
       // sensible defaults: below if symbolContainer is present, center if not
       pos = Position.BELOW;
     }
 
-    if (symbolBoundary == null) {
+    if (symBoundary == null) {
       // symbol not available, draw the text at the center
       pos = Position.CENTER;
-      symbolBoundary = const MapRectangle.zero();
+      symBoundary = const MapRectangle.zero();
     }
 
     double halfWidth = fontWidth / 2;
@@ -148,48 +148,48 @@ class RenderinstructionCaption extends Renderinstruction
         boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);
         break;
       case Position.BELOW:
-        boundary = MapRectangle(-halfWidth, symbolBoundary.bottom + 0 + gap + dy, halfWidth, symbolBoundary.bottom + fontHeight + gap + dy);
+        boundary = MapRectangle(-halfWidth, symBoundary.bottom + 0 + gap + dy, halfWidth, symBoundary.bottom + fontHeight + gap + dy);
         break;
       case Position.BELOW_LEFT:
         boundary = MapRectangle(
-          symbolBoundary.left - fontWidth - gap,
-          symbolBoundary.bottom + 0 + gap + dy,
-          symbolBoundary.left - 0 - gap,
-          symbolBoundary.bottom + fontHeight + gap + dy,
+          symBoundary.left - fontWidth - gap,
+          symBoundary.bottom + 0 + gap + dy,
+          symBoundary.left - 0 - gap,
+          symBoundary.bottom + fontHeight + gap + dy,
         );
         break;
       case Position.BELOW_RIGHT:
         boundary = MapRectangle(
-          symbolBoundary.right + 0 + gap,
-          symbolBoundary.bottom + 0 + gap + dy,
-          symbolBoundary.right + fontWidth + gap,
-          symbolBoundary.bottom + fontHeight + gap + dy,
+          symBoundary.right + 0 + gap,
+          symBoundary.bottom + 0 + gap + dy,
+          symBoundary.right + fontWidth + gap,
+          symBoundary.bottom + fontHeight + gap + dy,
         );
         break;
       case Position.ABOVE:
-        boundary = MapRectangle(-halfWidth, symbolBoundary.top - fontHeight - gap + dy, halfWidth, symbolBoundary.top - 0 - gap + dy);
+        boundary = MapRectangle(-halfWidth, symBoundary.top - fontHeight - gap + dy, halfWidth, symBoundary.top - 0 - gap + dy);
         break;
       case Position.ABOVE_LEFT:
         boundary = MapRectangle(
-          symbolBoundary.left - fontWidth - gap,
-          symbolBoundary.top - fontHeight - gap + dy,
-          symbolBoundary.left - 0 - gap,
-          symbolBoundary.top + 0 - gap + dy,
+          symBoundary.left - fontWidth - gap,
+          symBoundary.top - fontHeight - gap + dy,
+          symBoundary.left - 0 - gap,
+          symBoundary.top + 0 - gap + dy,
         );
         break;
       case Position.ABOVE_RIGHT:
         boundary = MapRectangle(
-          symbolBoundary.right + 0 + gap,
-          symbolBoundary.top - fontHeight - gap + dy,
-          symbolBoundary.right + fontWidth + gap,
-          symbolBoundary.top + 0 - gap + dy,
+          symBoundary.right + 0 + gap,
+          symBoundary.top - fontHeight - gap + dy,
+          symBoundary.right + fontWidth + gap,
+          symBoundary.top + 0 - gap + dy,
         );
         break;
       case Position.LEFT:
-        boundary = MapRectangle(symbolBoundary.left - fontWidth - gap, -halfHeight, symbolBoundary.left - 0 - gap, halfHeight);
+        boundary = MapRectangle(symBoundary.left - fontWidth - gap, -halfHeight, symBoundary.left - 0 - gap, halfHeight);
         break;
       case Position.RIGHT:
-        boundary = MapRectangle(symbolBoundary.right + 0 + gap, -halfHeight, symbolBoundary.right + fontHeight + gap, halfHeight);
+        boundary = MapRectangle(symBoundary.right + 0 + gap, -halfHeight, symBoundary.right + fontHeight + gap, halfHeight);
         break;
     }
     return boundary!;

@@ -20,6 +20,11 @@ mixin BaseSrcMixin {
   /// Do NOT clone this.
   MapRectangle? boundary;
 
+  /// if false (default) the symbol will always drawn in the same direction regardless of the map rotation. For example an exclamation symbol (!) will
+  /// always have the dot points towards the bottom of the screen.
+  /// If true the symbol rotates with the map.
+  bool rotateWithMap = false;
+
   void setDy(double value) {
     dy = value * MapsforgeSettingsMgr().getUserScaleFactor();
   }
@@ -30,6 +35,7 @@ mixin BaseSrcMixin {
     priority = base.priority;
     dy = base.dy;
     scale = base.scale;
+    rotateWithMap = base.rotateWithMap;
   }
 
   void baseSrcMixinScale(BaseSrcMixin base, int zoomlevel) {

@@ -10,6 +10,7 @@ import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_path.dart';
 import 'package:datastore_renderer/src/ui/ui_rect.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
+import 'package:flutter/cupertino.dart';
 
 class UiCanvas {
   late ui.Canvas _uiCanvas;
@@ -40,6 +41,23 @@ class UiCanvas {
 
   void dispose() {
     _pictureRecorder?.endRecording();
+  }
+
+  void drawIcon({required TextPainter textPainter, required double left, required double top, UiMatrix? matrix}) {
+    if (matrix != null || left != 0 || top != 0) {
+      _uiCanvas.save();
+    }
+    if (left != 0 || top != 0) {
+      _uiCanvas.translate(left, top);
+    }
+    if (matrix != null) {
+      _uiCanvas.transform(matrix.expose());
+    }
+    textPainter.paint(_uiCanvas, ui.Offset.zero);
+    ++_bitmapCount;
+    if (matrix != null || left != 0 || top != 0) {
+      _uiCanvas.restore();
+    }
   }
 
   void drawPicture({required SymbolImage symbolImage, required double left, required double top, required UiPaint paint, UiMatrix? matrix}) {
