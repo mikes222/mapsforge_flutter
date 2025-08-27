@@ -3,6 +3,10 @@ import 'package:dart_common/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 
+/// Moves, shifts and rotates the screen.
+/// Moves the screen so that the [mapPosition] is in the center of the screen
+/// Shifts the screen because the center of the map may not be the center of the mpaPosition (because we do not want to redraw the map everytime).
+/// Rotates the screen if the map should be rotated.
 class TransformWidget extends StatelessWidget {
   final MapPosition mapPosition;
 

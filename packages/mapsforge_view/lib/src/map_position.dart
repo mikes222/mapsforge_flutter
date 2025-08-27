@@ -290,6 +290,10 @@ class MapPosition {
     return _center!;
   }
 
+  ILatLong getLatLong() {
+    return LatLong(_latitude, _longitude);
+  }
+
   /// Returns the rotation in radians
   double get rotationRadian => _rotationRadian;
 
