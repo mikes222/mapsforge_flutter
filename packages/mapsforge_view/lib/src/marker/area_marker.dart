@@ -20,7 +20,7 @@ class AreaMarker<T> extends Marker<T> {
 
   AreaMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
     int fillColor = 0xff000000,
@@ -55,7 +55,7 @@ class AreaMarker<T> extends Marker<T> {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
-    renderInfo?.render(renderContext);
+    renderInfo!.render(renderContext);
   }
 
   @override

@@ -17,7 +17,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
 
   CaptionMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     required super.latLong,
     Position position = Position.CENTER,
     bool rotateWithMap = false,

@@ -9,9 +9,9 @@ abstract class Marker<T> {
   /// the item this marker represents.
   ///
   /// This property is NOT used by mapsforge. It can be used by the developer to reference to the source of this marker, e.g. a database entry.
-  T? item;
+  T? key;
 
-  Marker({this.zoomlevelRange = const ZoomlevelRange.standard(), this.item});
+  Marker({this.zoomlevelRange = const ZoomlevelRange.standard(), this.key});
 
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection);
 

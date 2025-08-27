@@ -47,6 +47,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   late Marker marker;
 
+  MarkerDatastore datastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
+
   @override
   void initState() {
     super.initState();
@@ -64,24 +66,25 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _createMarker() {
-    marker = PolylineTextMarker(
-      path: [
-        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-        LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
-        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
-      ],
-      caption: "PolylineTextMarker",
-      fontSize: 20,
-    );
-
-    // marker = AreaMarker(
+    // marker = PolylineTextMarker(
     //   path: [
     //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
     //     LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
     //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
-    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
     //   ],
+    //   caption: "PolylineTextMarker",
+    //   fontSize: 20,
     // );
+
+    marker = AreaMarker(
+      key: "area",
+      path: [
+        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+        LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
+        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
+        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
+      ],
+    );
 
     // marker = PolylineMarker(
     //   path: [
@@ -115,6 +118,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
     //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
     //   rotateWithMap: true,
     // )..addCaption(caption: "PoiMarker");
+
+    datastore.addMarker(marker);
   }
 
   void _initializeOptimizations() {
@@ -215,7 +220,8 @@ Profiler Events: ${report.totalEvents}
               TileView(mapModel: mapModel),
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
               if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
-              SingleMarkerOverlay(mapModel: mapModel, marker: marker),
+              //SingleMarkerOverlay(mapModel: mapModel, marker: marker),
+              MarkerDatastoreOverlay(mapModel: mapModel, datastore: datastore),
               // Shows a ruler with distance information in the left-bottom corner of the map
               DistanceOverlay(mapModel: mapModel),
               // Shows zoom-in and zoom-out buttons

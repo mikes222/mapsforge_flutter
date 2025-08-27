@@ -1,8 +1,11 @@
 export 'src/marker/area_marker.dart';
 export 'src/marker/caption_marker.dart';
 export 'src/marker/circle_marker.dart';
+export 'src/marker/default_marker_datastore.dart';
 export 'src/marker/icon_marker.dart';
 export 'src/marker/marker.dart';
+export 'src/marker/marker_datastore.dart';
+export 'src/marker/marker_datastore_overlay.dart';
 export 'src/marker/poi_marker.dart';
 export 'src/marker/polyline_marker.dart';
 export 'src/marker/polyline_text_marker.dart';

@@ -17,4 +17,9 @@ class UiRenderContext extends RenderContext {
   double rotationRadian;
 
   UiRenderContext({required this.canvas, required this.reference, required this.projection, this.rotationRadian = 0});
+
+  @override
+  String toString() {
+    return 'UiRenderContext{reference: $reference, projection: $projection, rotationRadian: $rotationRadian}';
+  }
 }

@@ -17,7 +17,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   PoiMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     required super.latLong,
     Position position = Position.CENTER,
     bool rotateWithMap = false,

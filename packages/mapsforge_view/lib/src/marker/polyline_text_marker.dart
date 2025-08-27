@@ -22,7 +22,7 @@ class PolylineTextMarker<T> extends Marker<T> {
 
   PolylineTextMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     required this.caption,
     double strokeWidth = 2.0,
     int strokeColor = 0xffffffff,

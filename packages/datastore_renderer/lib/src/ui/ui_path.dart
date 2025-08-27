@@ -172,6 +172,11 @@ class UiPath {
     _points.add(Pointinfo(false, rect.getLeft(), rect.getBottom()));
     _points.add(Pointinfo(false, rect.getLeft(), rect.getTop()));
   }
+
+  @override
+  String toString() {
+    return 'UiPath{_points: $_points}';
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

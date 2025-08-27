@@ -17,7 +17,7 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   IconMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     required super.latLong,
     Position position = Position.CENTER,
     bool rotateWithMap = false,

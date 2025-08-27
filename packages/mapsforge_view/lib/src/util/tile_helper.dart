@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:dart_common/model.dart';
 import 'package:dart_common/utils.dart';
@@ -31,5 +32,29 @@ class TileHelper {
       tileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
     }
     return TileDimension(left: tileLeft, right: tileRight, top: tileTop, bottom: tileBottom);
+  }
+
+  /// Calculates all tiles needed to display the map on the available view area
+  static BoundingBox calculateBoundingBoxOfScreen({required MapPosition mapPosition, required Size screensize}) {
+    Mappoint center = mapPosition.getCenter();
+    double halfWidth = screensize.width / 2;
+    double halfHeight = screensize.height / 2;
+    if (mapPosition.rotation > 2) {
+      // we rotate. Use the max side for both width and height
+      halfWidth = max(halfWidth, halfHeight);
+      halfHeight = halfWidth;
+    }
+    int degreeDiff = 45 - ((mapPosition.rotation) % 90 - 45).round().abs();
+    if (degreeDiff > 5) {
+      // rising from 0 to 45, then falling to 0 at 90°
+      halfWidth *= 1.2;
+      halfHeight *= 1.2;
+    }
+    double minLatitude = mapPosition.projection.pixelYToLatitude(center.y + halfHeight);
+    double minLongitude = mapPosition.projection.pixelXToLongitude(center.x - halfWidth);
+    double maxLatitude = mapPosition.projection.pixelYToLatitude(center.y - halfHeight);
+    double maxLongitude = mapPosition.projection.pixelXToLongitude(center.x + halfWidth);
+    BoundingBox result = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+    return result;
   }
 }

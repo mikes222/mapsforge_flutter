@@ -30,7 +30,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
 
   RectMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     String? bitmapSrc,
     int fillColor = 0x00000000,
     double strokeWidth = 2.0,

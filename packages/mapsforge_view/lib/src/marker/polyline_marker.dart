@@ -20,7 +20,7 @@ class PolylineMarker<T> extends Marker<T> {
 
   PolylineMarker({
     super.zoomlevelRange,
-    super.item,
+    super.key,
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
     List<double>? strokeDasharray,

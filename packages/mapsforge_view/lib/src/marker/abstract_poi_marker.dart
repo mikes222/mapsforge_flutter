@@ -10,7 +10,7 @@ abstract class AbstractPoiMarker<T> extends AbstractMarker<T> implements ILatLon
   ///
   ILatLong latLong;
 
-  AbstractPoiMarker({super.zoomlevelRange, required this.latLong, super.item});
+  AbstractPoiMarker({super.zoomlevelRange, required this.latLong, super.key});
 
   /// returns true if the marker should be painted. The [boundary] represents the currently visible area
   @override
