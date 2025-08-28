@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:math' as Math;
 
 import 'package:dart_common/model.dart';
-import 'package:dart_common/src/performance_profiler.dart';
 import 'package:dart_common/src/utils/douglas_peucker_latlong.dart';
+
+import 'performance_profiler.dart';
 
 /// Comprehensive integration benchmark to measure overall performance improvements
 class IntegrationBenchmark {

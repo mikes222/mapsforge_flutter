@@ -1,10 +1,29 @@
-#  How to build indoor .map files from .osm or .osm.pbf files
+# Building Indoor Map Files from OSM Data
 
-## Step 1: Get a tag_mapping.xml file and extend it
+A comprehensive guide for creating indoor-enabled Mapsforge map files from OpenStreetMap data sources.
 
-Mapsforge maps do not contain any indoor data when creating a map using the mapsforge writers default settings. Therefore you need this: [tag-mapping.xml](https://github.com/mapsforge/mapsforge/blob/master/mapsforge-map-writer/src/main/config/tag-mapping.xml).
+## Overview
 
-Additionally, this file needs to be extended to include tags used for indoor maps. You must specify all key-value pairs that appear in your osm file and put it inside the `<tag-mapping>` block. Here is an example:
+This guide walks you through the complete process of converting OSM or OSM.PBF files into Mapsforge map files with indoor mapping support. The process involves configuring tag mappings, setting up the conversion tools, and handling common issues that may arise.
+
+**What you'll need:**
+- OSM or OSM.PBF source data
+- Osmosis with Map-Writer plugin
+- Custom tag mapping configuration
+- Java Runtime Environment
+
+## Step 1: Configure Tag Mapping for Indoor Data
+
+### Understanding the Requirements
+
+Mapsforge maps exclude indoor data by default. To include indoor mapping features, you need to extend the standard tag mapping configuration with indoor-specific tags.
+
+**Download the base configuration:**
+[tag-mapping.xml](https://github.com/mapsforge/mapsforge/blob/master/mapsforge-map-writer/src/main/config/tag-mapping.xml)
+
+### Adding Indoor Tag Mappings
+
+Extend the base configuration by adding indoor-specific tags within the `<tag-mapping>` block:
 ```
 <!-- INDOOR TAGS -->
 <ways>
@@ -58,139 +77,293 @@ Additionally, this file needs to be extended to include tags used for indoor map
     <osm-tag key="repeat_on" value="5" zoom-appear="18"/>
 </pois>
 ```
-With the first lines of code we include every `ways` with the `indoor` tag and the corresponding common values for [simple indoor tagging](https://wiki.openstreetmap.org/wiki/Simple_Indoor_Tagging). You can add other indoor related key-value pairs for ways here.
 
-The second section defines special nodes or `pois` (points of interest) used while mapping. These can later be rendered e.g. as small circles or displayed as caption or icon and should be added here.
+### Configuration Sections Explained
 
-In the third section all ways with an `level` or `repeat_on` key are included. The value `%f` stands for every value that can be interpreted as number such as `2` or `2.0`. All other values are simply considered as String with the `%s` keyword.
+**Indoor Ways Section:**
+The first section includes all `ways` with the `indoor` tag and common values for [Simple Indoor Tagging](https://wiki.openstreetmap.org/wiki/Simple_Indoor_Tagging). Add additional indoor-related key-value pairs for ways as needed.
 
-Unfortunately the mapfile writer has problems with the `%s` keyword when parsing pois. Therefore you can only use the `%f` keyword and for safety reasons specify all values used for the `level` and `repeat_on` key in your osm file, as you can see in the fourth section. In this example we only used single levels from -2 to 5 as values, but also strings like `0; 1; 2; 3` are possible.
+**Points of Interest (POIs):**
+The second section defines special nodes used in indoor mapping. These can be rendered as circles, captions, or icons in your final map.
 
+**Level and Repeat Tags:**
+The third section handles `level` and `repeat_on` keys:
+- `%f` matches numeric values like `2` or `2.0`
+- `%s` matches string values (has limitations with POIs)
 
-## Step 2: Download Osmosis and the Map-Writer-Plugin
-
-Osmosis is the main tool to transform osm data. Look up the latest stable version [here](https://wiki.openstreetmap.org/wiki/Osmosis#Latest_stable_version), go to the download page on GitHub, download and install it. Remeber the installation folder.
-If installed with homebrew via `brew install osmosis`, it can be found at `/usr/local/Cellar/osmosis/<VERSION>/bin/osmosis`.
-
-In order to transform the data into a .map file, you need to install the map-writer plugin. Therefore create a folder called 'plugins' next to the bin and libexec folders. In the example above it should be:  `/usr/local/Cellar/osmosis/<VERSION>/plugins/`.
-
-Now download the mapsforge-map-writer (select "jar-with-dependencies" when clicked the download icon) from [Maven Central](https://search.maven.org/search?q=a:mapsforge-map-writer). Move the jar file from your downloads folder into the plugins directory you just created.
-
-If you have trouble installing the writer-plugin, you can read further information [here](https://github.com/mapsforge/mapsforge/blob/master/docs/Getting-Started-Map-Writer.md#plugin-installation).
+**Important Limitation:**
+The mapfile writer has issues with `%s` for POIs. Use `%f` for numeric values and explicitly specify all string values used in your OSM file, as shown in the fourth section. This example covers levels -2 to 5, but complex strings like `0; 1; 2; 3` are also supported.
 
 
-## Step 3: Prepare your data
+## Step 2: Install Osmosis and Map-Writer Plugin
 
-There are 2 formats of osm data you can use to create .map files: `.osm` and `.osm.pbf`.
-Usually these data are downloaded from osm servers. For example you can download `.osm` files of specified areas from [openstreetmap](https://www.openstreetmap.org) or `.osm.pbf` files of whole states from [GEOFABRIK](https://download.geofabrik.de/).
+### Installing Osmosis
 
-These downloaded files are already ready for the conversion. So if you haven't touched/changed the file (you can change the filename, that is ok), you can skip this section and continue with step 4.
+Osmosis is the primary tool for transforming OSM data. Choose your installation method:
 
-Otherwise if you added or modified any data manually, you have to follow the next sub-steps. It is recommended to copy your osm file before this step to prevent irreversible damage to the file as you will have to manually edit it.
+**Option A: Direct Download**
+1. Check the [latest stable version](https://wiki.openstreetmap.org/wiki/Osmosis#Latest_stable_version)
+2. Download from the GitHub releases page
+3. Install and note the installation directory
 
-### Step 3.1: Add missing attributes to modified files
+**Option B: Package Manager (Recommended)**
+```bash
+# macOS with Homebrew
+brew install osmosis
 
-OSM files are just more or less standardized xml files with a header for general information as well well as all nodes, ways, relations - each containing additional information (attributes). By uploading the osm file to an osm server, the file automatically receives a set of modified and additional attributs for all nodes, ways, and relations from the server which are required by the mapfile writer to convert properly. Here is a list of attributes that should be found in all nodes, ways, and relations:
-- an id > 0   [`id="20465986"`]
-- a visible statement   [`visible="true"`]
-- a version number   [`version="1"`]
-- a changeset number   [`changeset="475804"`]
-- a timestamp   [`timestamp="2021-06-11T12:51:34Z"`]
-- a username   [`user="JohnDoe"`]
-- a user-id   [`uid="1234"`]
-nodes only:
-- a latitude   [`lat="50.8125743"`]
-- a longitude   [`lon="12.9318745"`]
-
-So if your data is missing some attributes the easiest way to add/modify them is by using the find-and-replace function of a text editor like [Xcode](https://apps.apple.com/de/app/xcode/id497799835?mt=12) (Mac) or [Notepad++](https://notepad-plus-plus.org/downloads/) (Windows). Therefor, change the name of your file from `myOsmFile.osm` to `myOsmFile.xml` at first to open it correctly. Look for some nodes or ways and check which attributes are missing. Via find-and-replace you can add them like in the following example.
-
-In this example a node looks like this:
+# Ubuntu/Debian
+sudo apt-get install osmosis
 ```
+
+**Installation Path Examples:**
+- Homebrew: `/usr/local/Cellar/osmosis/<VERSION>/bin/osmosis`
+- Manual install: `<install_dir>/bin/osmosis`
+
+### Installing the Map-Writer Plugin
+
+**Create Plugin Directory:**
+Create a `plugins` folder alongside the `bin` and `libexec` directories:
+```
+/usr/local/Cellar/osmosis/<VERSION>/plugins/
+```
+
+**Download the Plugin:**
+1. Visit [Maven Central](https://search.maven.org/search?q=a:mapsforge-map-writer)
+2. Select the latest version
+3. Download the "jar-with-dependencies" file
+4. Move the JAR file to your plugins directory
+
+**Troubleshooting:**
+If you encounter plugin installation issues, consult the [official installation guide](https://github.com/mapsforge/mapsforge/blob/master/docs/Getting-Started-Map-Writer.md#plugin-installation).
+
+
+## Step 3: Prepare Your OSM Data
+
+### Supported Data Formats
+
+You can use two OSM data formats for map creation:
+- **`.osm`** - XML format, suitable for smaller areas
+- **`.osm.pbf`** - Binary format, efficient for larger datasets
+
+### Data Sources
+
+**Download Options:**
+- [OpenStreetMap](https://www.openstreetmap.org) - Specific areas in `.osm` format
+- [GEOFABRIK](https://download.geofabrik.de/) - Regional extracts in `.osm.pbf` format
+
+### Data Preparation Requirements
+
+**Ready-to-use Data:**
+If you downloaded unmodified files from OSM servers, they're ready for conversion. You can rename files if needed, then proceed to Step 4.
+
+**Modified Data:**
+If you've manually edited OSM data, additional preparation is required. **Important:** Create a backup copy before proceeding, as you'll need to manually edit XML attributes.
+
+### Step 3.1: Add Missing Attributes to Modified Files
+
+OSM files are standardized XML files containing nodes, ways, and relations with specific attributes. When files are uploaded to OSM servers, they automatically receive required attributes for proper conversion.
+
+**Required Attributes for All Elements:**
+- **ID (positive):** `id="20465986"`
+- **Visibility:** `visible="true"`
+- **Version:** `version="1"`
+- **Changeset:** `changeset="475804"`
+- **Timestamp:** `timestamp="2021-06-11T12:51:34Z"`
+- **Username:** `user="JohnDoe"`
+- **User ID:** `uid="1234"`
+
+**Additional Node Attributes:**
+- **Latitude:** `lat="50.8125743"`
+- **Longitude:** `lon="12.9318745"`
+
+**Editing Process:**
+
+1. **Rename for editing:** Change `myOsmFile.osm` to `myOsmFile.xml` for proper text editor handling
+2. **Choose your editor:**
+   - **macOS:** [Xcode](https://apps.apple.com/de/app/xcode/id497799835?mt=12) or any text editor
+   - **Windows:** [Notepad++](https://notepad-plus-plus.org/downloads/) or similar
+   - **Linux:** vim, nano, or gedit
+
+**Example Transformation:**
+
+**Original node:**
+```xml
 <node id="-104099" action="modify" visible="true" lat="50.84176020006" lon="12.92692686547" />
 ```
-It does not matter whether the values have a single `'` or a double `"`.
-We can remove the `action` key if the value is `"modify"` as it is of no use anymore. Therefore, find all ` action="modify"` with one blank space in front and replace it with nothing. This way we guarantee to keep one blank space between every attribute:
-```
+
+**Step 1 - Remove unnecessary action attribute:**
+Find: ` action="modify"` → Replace with: (nothing)
+```xml
 <node id="-104099" visible="true" lat="50.84176020006" lon="12.92692686547" />
 ```
-Now to add the missing attributes we can for example simply replace the `visible` attritbute with itself and the rest: `timestamp="2021-05-23T07:16:19Z" uid="12345678" user="JohnDoe" visible="true" version="1" changeset="123456789"`. This way we keep the usual order of attributes. (The order does not matter for the mapfile writer, but it is good habit to keep information uniform.) Our example will look like this now:
-```
-<node id="-104099" timestamp='2021-05-23T07:16:19Z' uid='12345678' user='JonDoe' visible='true' version='1' changeset='123456789' lat="50.84176020006" lon="12.92692686547" />
-```
-Finally we have to make every id positive. This is actually divided into two parts. The fist part is replacing every `id="-` by `id="` to simply erase the negative sign:
-```
-<node id="104099" timestamp='2021-05-23T07:16:19Z' uid='12345678' user='JonDoe' visible='true' version='1' changeset='123456789' lat="50.84176020006" lon="12.92692686547" />
-```
-The second part is very similar: replace all `ref="-` by `ref="` to set all the node references of the ways and relations right.
 
-### Step 3.1: Add the missing boundary box
-
-Just like the version attributes your file could be missing one information, usually provided by a server when downloading. If the first 3 rows of your osm or respectivly xml file looks like this:
+**Step 2 - Add missing attributes:**
+Replace `visible="true"` with complete attribute set:
+```xml
+<node id="-104099" timestamp="2021-05-23T07:16:19Z" uid="12345678" user="JohnDoe" visible="true" version="1" changeset="123456789" lat="50.84176020006" lon="12.92692686547" />
 ```
+
+**Step 3 - Fix negative IDs:**
+- Find: `id="-` → Replace with: `id="`
+- Find: `ref="-` → Replace with: `ref="`
+
+**Final result:**
+```xml
+<node id="104099" timestamp="2021-05-23T07:16:19Z" uid="12345678" user="JohnDoe" visible="true" version="1" changeset="123456789" lat="50.84176020006" lon="12.92692686547" />
+```
+
+### Step 3.2: Add Missing Boundary Box
+
+OSM files require bounding box information for proper conversion. If your file header looks like this:
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <osm version="0.6" generator="JOSM">
-    <node id="104099" timestamp='2021-05-23T07:16:19Z' uid='12345678' user='JonDoe' visible='true' version='1' changeset='123456789' lat="50.84176020006" lon="12.92692686547" />
+    <node id="104099" timestamp="2021-05-23T07:16:19Z" uid="12345678" user="JohnDoe" visible="true" version="1" changeset="123456789" lat="50.84176020006" lon="12.92692686547" />
 ```
-, then you need to define the bounding box in here.
-Find out the 4 boarders of your mapped area in terms of highest and lowest value of each longitude and latitude and add them in front of the first node like in the example below.
-```
+
+You need to add a bounds element before the first node:
+
+**Calculate Boundaries:**
+1. Find the minimum and maximum latitude values in your data
+2. Find the minimum and maximum longitude values in your data
+3. Add a small buffer to prevent clipping
+
+**Example with bounds:**
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <osm version="0.6" generator="JOSM">
     <bounds minlat="50.8412200" minlon="12.9259400" maxlat="50.8419200" maxlon="12.9280500"/>
-    <node id="104099" timestamp='2021-05-23T07:16:19Z' uid='12345678' user='JonDoe' visible='true' version='1' changeset='123456789' lat="50.84176020006" lon="12.92692686547" />
+    <node id="104099" timestamp="2021-05-23T07:16:19Z" uid="12345678" user="JohnDoe" visible="true" version="1" changeset="123456789" lat="50.84176020006" lon="12.92692686547" />
 ```
-Be generous and add a little more space to the boundary to avoid clipping. Floor a `minlat` of 50.8412220 to 50.8412200 and ceil a `maxlat` of 50.8419171 to 50.8419200!
 
-These bounding box information can also be provided by a commandline parameter `bbox` as mentioned in step 4.
+**Boundary Calculation Tips:**
+- **Floor minimum values:** 50.8412220 → 50.8412200
+- **Ceil maximum values:** 50.8419171 → 50.8419200
+- **Alternative:** Use command-line `bbox` parameter (see Step 4)
 
-When you are done do not forget to undo the renaming, this time from `myOsmFile.xml` to `myOsmFile.osm`.
+**Final Step:** Rename `myOsmFile.xml` back to `myOsmFile.osm`
 
 
-## Step 4: Build the command line
+## Step 4: Build and Execute the Conversion Command
 
-At first we want Osmosis to read the osm input file (which can be read as xml). So we start with the read-xml command: `osmosis --rx file="myOsmFile.osm"`.
+### Command Structure
 
-Secondly we want the mapfile-writer to give us the .map file as output: `--mapfile-writer file=myMapFile.map`.
+The Osmosis command consists of several components that work together to convert your OSM data into a Mapsforge map file.
 
-We can also tell the writer to use the hard drive for converting as we have limited RAM by default. This option is crucial for larger files (e.g. most .osm.pbf files): `type=hd` 
+### Basic Command Components
 
-Furthermore we have to give information about the tagged indoor data (which we already specified in the tag-mapping.xml file) using two additional parameters: `tag-conf-file=tag-mapping.xml tag-values=true`.
-
-If you have not defined a bounding box in your osm/xml file like described in step 3.2, you have to pass it as a parameter within the command. The parameter must look like this `bbox=minLat,minLon,maxLat,maxLon` in exactly this order as degrees.
-
-To play save with osmosis finding the map-writer-plugin, you should navigate to your osmosis directory at first and start the conversion from there. In the example of step 2 the command should be: `cd /usr/local/Cellar/osmosis/<VERSION>`
-
-If you have also moved your .osm file as well as the tag-mapping.xml in this directory, this is the complete command to build your map file: 
+**1. Input Reader:**
+```bash
+osmosis --rx file="myOsmFile.osm"
 ```
+- `--rx` reads XML format (.osm files)
+- For .osm.pbf files, use `--rbf` instead
+
+**2. Output Writer:**
+```bash
+--mapfile-writer file=myMapFile.map
+```
+
+**3. Performance Options:**
+```bash
+type=hd
+```
+- Uses hard drive for processing (essential for large files)
+- Prevents memory overflow with large datasets
+
+**4. Indoor Data Configuration:**
+```bash
+tag-conf-file=tag-mapping.xml tag-values=true
+```
+- References your custom tag mapping file
+- Enables indoor tag processing
+
+**5. Optional Bounding Box:**
+```bash
+bbox=minLat,minLon,maxLat,maxLon
+```
+- Use if not defined in your OSM file
+- Values in decimal degrees
+
+### Complete Command Examples
+
+**For .osm files:**
+```bash
+cd /usr/local/Cellar/osmosis/<VERSION>
 bin/osmosis --rx file="myOsmFile.osm" --mapfile-writer file=myMapFile.map type=hd tag-conf-file=tag-mapping.xml tag-values=true
 ```
 
+**For .osm.pbf files:**
+```bash
+cd /usr/local/Cellar/osmosis/<VERSION>
+bin/osmosis --rbf file="myOsmFile.osm.pbf" --mapfile-writer file=myMapFile.map type=hd tag-conf-file=tag-mapping.xml tag-values=true
+```
+
+**With bounding box parameter:**
+```bash
+bin/osmosis --rx file="myOsmFile.osm" --mapfile-writer file=myMapFile.map type=hd tag-conf-file=tag-mapping.xml tag-values=true bbox=50.8412200,12.9259400,50.8419200,12.9280500
+```
+
+### Execution Tips
+
+**Directory Setup:**
+1. Navigate to your Osmosis installation directory
+2. Place your OSM file and tag-mapping.xml in the same directory
+3. Run the command from this location to ensure plugin detection
 
 
-# Some common Errors and Fixes
 
-## Error: The operation couldn’t be completed. Unable to locate a Java Runtime.
+# Troubleshooting Common Issues
 
-It seems like your system is missing a java runtime environment. Usually this problem is fixed by installing a [recommended java jre (e.g. version 8)](https://www.java.com/de/download/manual.jsp) or a [jdk](https://www.oracle.com/de/java/technologies/javase/javase-jdk8-downloads.html) which includes the corresponding jre.
+## Java Runtime Issues
 
-If you are on Mac and using homebrew, follow [these steps (1.1 to 1.7)](https://mkyong.com/java/how-to-install-java-on-mac-osx/#homebrew-install-latest-java-on-macos) to install and link the necessary jre.
+**Error:** "The operation couldn't be completed. Unable to locate a Java Runtime."
 
+**Solution:**
+Your system is missing a Java Runtime Environment. Install one of the following:
 
-## Error: Task type mapfile-writer doesn't exist.
+- **Java JRE:** [Download Java 8 or later](https://www.java.com/de/download/manual.jsp)
+- **Java JDK:** [Download from Oracle](https://www.oracle.com/de/java/technologies/javase/javase-jdk8-downloads.html) (includes JRE)
 
-Osmosis couldn't find the map-writer plugin. So the plugins folder from Step 2 seems to be in a wrong directory. Try to move the plugins folder one level up or down. If the error still exists you have to set your working directory to the original osmosis, e.g. /usr/local/Cellar/osmosis/0.48.3/ like in the example from step 2. Then you must call osmosis via bin/osmosis in the command line and have the plugins folder as well as your files in here (0.48.3).
+**macOS with Homebrew:**
+Follow [these installation steps](https://mkyong.com/java/how-to-install-java-on-mac-osx/#homebrew-install-latest-java-on-macos) to install and configure Java.
 
+## Plugin Detection Issues
 
-## Error: Cannot begin reading in Add stage, must call complete first.
+**Error:** "Task type mapfile-writer doesn't exist."
 
-If you have the parameter `type=hd` set to the mapfile-writer, remove it and try again.
+**Cause:** Osmosis cannot locate the map-writer plugin.
 
+**Solutions:**
+1. **Check plugin directory:** Ensure the `plugins` folder is in the correct location relative to your Osmosis installation
+2. **Verify working directory:** Navigate to your Osmosis installation directory before running commands
+3. **Use relative paths:** Call osmosis using `bin/osmosis` from the installation directory
+4. **File placement:** Ensure both the plugin JAR and your files are in the correct directories
 
-## Error: Node X does not have a version attribute as OSM 0.6 are required to have. Is this a 0.5 file?
+## Processing Issues
 
-There are still nodes which are missing some attributes. Check step 3.1.
+**Error:** "Cannot begin reading in Add stage, must call complete first."
 
+**Solution:** Remove the `type=hd` parameter from your mapfile-writer command and retry.
 
-## Error: No valid bounding box found in input data. / tile based data store not initialized, missing bounding box information in input data'.
+## Data Validation Errors
 
-There is still a bounding box missing in your osm/xml file or your command line. Check step 3.2.
+**Error:** "Node X does not have a version attribute as OSM 0.6 are required to have. Is this a 0.5 file?"
+
+**Solution:** Your OSM file has missing attributes. Review and complete Step 3.1 to add all required node, way, and relation attributes.
+
+**Error:** "No valid bounding box found in input data" / "tile based data store not initialized, missing bounding box information in input data"
+
+**Solution:** Your OSM file lacks bounding box information. Either:
+- Add a `<bounds>` element to your OSM file (Step 3.2)
+- Include the `bbox` parameter in your command line
+
+## Verification Steps
+
+After completing the documentation updates, verify the process works by:
+
+1. **Test with sample data:** Use a small OSM extract to validate the complete workflow
+2. **Check all file paths:** Ensure tag-mapping.xml, OSM files, and plugins are correctly located
+3. **Validate output:** Confirm the generated .map file can be loaded in your mapping application
+4. **Test indoor features:** Verify that indoor elements appear correctly in the rendered map

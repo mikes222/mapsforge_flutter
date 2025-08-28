@@ -7,12 +7,17 @@ import 'package:flutter/material.dart';
 class ImageHelper {
   static final double _margin = 5;
 
+  static TilePicture? _missing;
+
+  static TilePicture? _noData;
+
   ///
   /// creates a tile bitmap with the information that the rendering of the given tile is not yet finished. This tile will normally
   /// be replaced
   /// when the rendering finishes.
   ///
   Future<TilePicture> createMissingBitmap() async {
+    if (_missing != null) return _missing!;
     double tileSize = MapsforgeSettingsMgr().tileSize;
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
@@ -32,13 +37,15 @@ class ImageHelper {
     canvas.drawParagraph(builder.build()..layout(ui.ParagraphConstraints(width: tileSize.toDouble())), ui.Offset(0, tileSize / 2));
 
     var pic = pictureRecorder.endRecording();
-    return TilePicture.fromPicture(pic);
+    _missing = TilePicture.fromPicture(pic);
+    return _missing!;
   }
 
   ///
   /// Creates a tilebitmap which denotes that there are no maps with any data found for the given tile.
   ///
   Future<TilePicture> createNoDataBitmap() async {
+    if (_noData != null) return _noData!;
     double tileSize = MapsforgeSettingsMgr().tileSize;
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
@@ -59,7 +66,8 @@ class ImageHelper {
 
     var pic = pictureRecorder.endRecording();
     //    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
-    return TilePicture.fromPicture(pic);
+    _noData = TilePicture.fromPicture(pic);
+    return _noData!;
   }
 
   ///

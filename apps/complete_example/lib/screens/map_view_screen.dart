@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:complete_example/context_menu/my_context_menu.dart';
 import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
-import 'package:dart_common/src/performance_profiler.dart';
 import 'package:dart_common/utils.dart';
 import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
@@ -15,8 +14,6 @@ import 'package:mapsforge_view/gesture.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/marker.dart';
 import 'package:mapsforge_view/overlay.dart';
-import 'package:mapsforge_view/src/cache/adaptive_memory_tile_cache.dart';
-import 'package:mapsforge_view/src/cache/memory_pressure_monitor.dart';
 import 'package:task_queue/task_queue.dart';
 
 import '../models/app_models.dart';
@@ -35,11 +32,8 @@ class MapViewScreen extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  late final PerformanceProfiler _profiler;
-  late final GeometricIsolateWorker _isolateWorker;
   late final IsolatePoolManager _poolManager;
   late final MemoryPressureMonitor _memoryMonitor;
-  late final AdaptiveMemoryTileCache _adaptiveCache;
   late final EnhancedTaskQueue _taskQueue;
 
   bool _showPerformanceOverlay = false;
@@ -68,6 +62,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     super.didChangeDependencies();
     // FutureBuilder should NOT call the future directly because we would risk creating the model multiple times. Instead this is the first
     // time we can create the future AND having the context.
+    print("new CreateModleFuture");
     _createModelFuture ??= createModel(context);
   }
 
@@ -129,11 +124,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _initializeOptimizations() {
-    _profiler = PerformanceProfiler();
-    _isolateWorker = GeometricIsolateWorker();
     _poolManager = IsolatePoolManager(maxIsolates: 4);
     _memoryMonitor = MemoryPressureMonitor();
-    _adaptiveCache = AdaptiveMemoryTileCache.create(initialCapacity: 1000, memoryMonitor: _memoryMonitor);
     _taskQueue = EnhancedTaskQueue(maxParallel: 4);
 
     _memoryMonitor.startMonitoring();
@@ -151,20 +143,15 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _updatePerformanceInfo() {
-    final memoryStats = _memoryMonitor.getMemoryStats();
-    final cacheStats = _adaptiveCache.getStatistics();
+    final memoryStats = _memoryMonitor.memoryStatistics;
     final poolStats = _poolManager.getStatistics();
-    final report = _profiler.generateReport();
 
     setState(() {
       _performanceInfo =
           '''
-Memory Pressure: ${(memoryStats['memoryPressure'] * 100).toStringAsFixed(1)}%
-Cache Capacity: ${cacheStats['currentCapacity']}
-Cache Utilization: ${(cacheStats['cacheUtilization'] * 100).toStringAsFixed(1)}%
+Memory Pressure: ${(memoryStats.memoryPressure * 100).toStringAsFixed(1)}%
 Active Tasks: ${_taskQueue.runningCount}
 Pool Workers: ${poolStats['totalWorkers']}
-Profiler Events: ${report.totalEvents}
 ''';
     });
   }
@@ -172,7 +159,6 @@ Profiler Events: ${report.totalEvents}
   @override
   void dispose() {
     _memoryMonitor.dispose();
-    _adaptiveCache.dispose();
     _poolManager.shutdown();
     _taskQueue.cancel();
     super.dispose();

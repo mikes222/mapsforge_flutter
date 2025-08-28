@@ -1,5 +1,6 @@
-import 'package:dart_common/src/integration_benchmark.dart';
 import 'package:test/test.dart';
+
+import 'integration_benchmark.dart';
 
 void main() {
   group('IntegrationBenchmark', () {

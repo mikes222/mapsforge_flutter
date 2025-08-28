@@ -7,7 +7,7 @@ import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/tile/tile_dimension.dart';
 
 class TileHelper {
-  /// Calculates all tiles needed to display the map on the available view area
+  /// Calculates all tiles needed to display the map on the available view area. Leave a margin so that we do not need to refetch everything for tiny position changes.
   static TileDimension calculateTiles({required MapPosition mapViewPosition, required MapSize screensize}) {
     Mappoint center = mapViewPosition.getCenter();
     double halfWidth = screensize.width / 2;

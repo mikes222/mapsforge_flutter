@@ -19,7 +19,7 @@ class TileJobQueue {
 
   MapSize? _size;
 
-  TileCache tileCache = MemoryTileCache.create();
+  final TileCache _tileCache = MemoryTileCache.create();
 
   static _CurrentJob? _currentJob;
 
@@ -65,6 +65,7 @@ class TileJobQueue {
     _batchTimer?.cancel();
     _tileStream.close();
     _batchTileset = null;
+    _tileCache.dispose();
   }
 
   /// Sets the current size of the mapview so that we know which and how many tiles we need for the whole view
@@ -84,7 +85,7 @@ class TileJobQueue {
 
     // retrieve all available tiles from cache
     for (Tile tile in tiles) {
-      TilePicture? picture = tileCache.get(tile);
+      TilePicture? picture = _tileCache.get(tile);
       if (picture != null) tileSet.images[tile] = picture;
     }
     if (myJob._abort) return;
@@ -103,9 +104,13 @@ class TileJobQueue {
       final future = _tileTaskQueue.add(() async {
         if (myJob._abort) return;
 
-        TilePicture? picture = await tileCache.getOrProduce(tile, (Tile tile) async {
+        TilePicture? picture = await _tileCache.getOrProduce(tile, (Tile tile) async {
           JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
-          if (result.picture == null) return ImageHelper().createNoDataBitmap();
+          if (result.picture == null) {
+            return null;
+            // print("No picture for tile $tile");
+            // return ImageHelper().createNoDataBitmap();
+          }
           // make sure the picture is converted to an image
           await result.picture!.convertPictureToImage();
           return result.picture!;
@@ -115,6 +120,8 @@ class TileJobQueue {
         if (picture != null) {
           tileSet.images[tile] = picture;
           _emitTileSetBatched(tileSet);
+        } else {
+          tileSet.images[tile] = await ImageHelper().createNoDataBitmap();
         }
       });
 

@@ -20,9 +20,9 @@ class MapModel {
 
   final Subject<TapEvent?> _tapSubject = PublishSubject();
 
-  final Subject<TapEvent> _longTapSubject = PublishSubject();
+  final Subject<TapEvent?> _longTapSubject = PublishSubject();
 
-  final Subject<TapEvent> _doubleTapSubject = PublishSubject();
+  final Subject<TapEvent?> _doubleTapSubject = PublishSubject();
 
   MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
@@ -46,13 +46,17 @@ class MapModel {
   /// A stream which triggers an event if the user starts to move the map. This can be used to switch off automatic movements
   Stream<Object> get manualMoveStream => _manualMoveSubject.stream;
 
-  /// A stream which triggers an event if the user taps at the map
+  /// A stream which triggers an event if the user taps at the map. Sending a null value down the stream means that the listener is not
+  /// entitled to handle the event anymore. This is currently being used to hide the context menu.
   Stream<TapEvent?> get tapStream => _tapSubject.stream;
 
-  /// A stream which triggers an event if the user long taps at the map
-  Stream<TapEvent> get longTapStream => _longTapSubject.stream;
+  /// A stream which triggers an event if the user long taps at the map. Sending a null value down the stream means that the listener is not
+  /// entitled to handle the event anymore. This is currently being used to hide the context menu.
+  Stream<TapEvent?> get longTapStream => _longTapSubject.stream;
 
-  Stream<TapEvent> get doubleTapStream => _doubleTapSubject.stream;
+  /// A stream which triggers an event if the user double-taps at the map. Sending a null value down the stream means that the listener is not
+  /// entitled to handle the event anymore. This is currently being used to hide the context menu.
+  Stream<TapEvent?> get doubleTapStream => _doubleTapSubject.stream;
 
   void manualMove(Object object) {
     _manualMoveSubject.add(object);
@@ -63,11 +67,11 @@ class MapModel {
     _tapSubject.add(event);
   }
 
-  void longTap(TapEvent event) {
+  void longTap(TapEvent? event) {
     _longTapSubject.add(event);
   }
 
-  void doubleTap(TapEvent event) {
+  void doubleTap(TapEvent? event) {
     _doubleTapSubject.add(event);
   }
 
@@ -160,6 +164,8 @@ class TapEvent implements ILatLong {
   final Mappoint mappoint;
 
   const TapEvent({required this.latitude, required this.longitude, required this.projection, required this.mappoint});
+
+  LatLong get latLong => LatLong(latitude, longitude);
 
   @override
   String toString() {

@@ -31,7 +31,9 @@ class ContextMenuOverlay extends StatelessWidget {
             if (snapshot.hasError) {
               return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
             }
+            // null event, close the context menu
             if (snapshot.data == null) return const SizedBox();
+            // we have a tap event. Let us listen to the current map position and show the context menu.
             TapEvent event = snapshot.data!;
             return StreamBuilder(
               stream: mapModel.positionStream,

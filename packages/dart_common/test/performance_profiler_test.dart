@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_common/src/performance_profiler.dart';
 import 'package:test/test.dart';
+
+import 'performance_profiler.dart';
 
 void main() {
   group('PerformanceProfiler', () {

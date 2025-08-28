@@ -5,14 +5,14 @@ import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/utils/mapsforge_settings_mgr.dart';
 
 /// Pixel-based projection extending Mercator projection with screen coordinate support.
-/// 
+///
 /// This class extends MercatorProjection to provide conversions between geographic
 /// coordinates and pixel coordinates on screen. It handles:
 /// - Geographic coordinates ↔ pixel coordinates
-/// - Pixel coordinates ↔ tile coordinates  
+/// - Pixel coordinates ↔ tile coordinates
 /// - Relative positioning within tiles
 /// - Distance and scale calculations
-/// 
+///
 /// Key features:
 /// - Configurable tile size for different display densities
 /// - Cached calculations for performance
@@ -24,7 +24,7 @@ class PixelProjection extends MercatorProjection {
   final double tileSize;
 
   /// The total size of the world map in pixels at the current zoom level.
-  /// 
+  ///
   /// At zoom level 0 (scalefactor 1), mapSize equals tileSize.
   /// At zoom level n, mapSize = tileSize × 2^n.
   late int _mapSize;
@@ -36,36 +36,36 @@ class PixelProjection extends MercatorProjection {
   }
 
   /// Calculates the total map size in pixels for the current scale factor.
-  /// 
+  ///
   /// Returns the width/height of the entire world map in pixels
   int _mapSizeWithScaleFactor() {
     return (tileSize * scalefactor.scalefactor).round();
   }
 
   /// Converts a pixel X coordinate to the corresponding tile X number.
-  /// 
+  ///
   /// [pixelX] The pixel X coordinate to convert
   /// Returns the tile X coordinate containing this pixel
   int pixelXToTileX(double pixelX) {
     assert(pixelX >= 0);
     assert(pixelX <= _mapSize);
-    return min(pixelX / tileSize, scalefactor.scalefactor - 1).floor();
+    return max(min(pixelX / tileSize, scalefactor.scalefactor - 1), 0).floor();
   }
 
   /// Converts a pixel Y coordinate to the corresponding tile Y number.
-  /// 
+  ///
   /// [pixelY] The pixel Y coordinate to convert
   /// Returns the tile Y coordinate containing this pixel
   int pixelYToTileY(double pixelY) {
     assert(pixelY >= 0);
     assert(pixelY <= _mapSize);
-    return min(pixelY / tileSize, scalefactor.scalefactor - 1).floor();
+    return max(min(pixelY / tileSize, scalefactor.scalefactor - 1), 0).floor();
   }
 
   /// Converts a latitude coordinate to the corresponding pixel Y coordinate.
-  /// 
+  ///
   /// Uses Mercator projection formulas to calculate the pixel position.
-  /// 
+  ///
   /// [latitude] The latitude coordinate in degrees
   /// Returns the pixel Y coordinate (0 to mapSize)
   double latitudeToPixelY(double latitude) {
@@ -78,9 +78,9 @@ class PixelProjection extends MercatorProjection {
   }
 
   /// Converts a pixel Y coordinate to the corresponding latitude coordinate.
-  /// 
+  ///
   /// Uses inverse Mercator projection to calculate the geographic coordinate.
-  /// 
+  ///
   /// [pixelY] The pixel Y coordinate to convert
   /// Returns the latitude in degrees
   double pixelYToLatitude(double pixelY) {

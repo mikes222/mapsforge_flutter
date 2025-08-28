@@ -37,6 +37,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future? _createModelFuture;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // FutureBuilder should NOT call the future directly because we would risk creating the model multiple times. Instead this is the first

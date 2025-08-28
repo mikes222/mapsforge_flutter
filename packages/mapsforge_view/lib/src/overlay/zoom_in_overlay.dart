@@ -23,6 +23,7 @@ class ZoomInOverlay extends StatelessWidget {
         // zoomin around the position of the tap would bring the tap-position to the center and zooming around the new center.
         // Instead we want to zoom so that the tap-position stays at the same position in the ui and everything around it zooms.
         MapPosition lastPosition = mapModel.lastPosition!;
+        print("zoomin $event ${snapshot.connectionState}");
         mapModel.zoomInAround(
           (event.latitude - lastPosition.latitude) / 2 + lastPosition.latitude,
           (event.longitude - lastPosition.longitude) / 2 + lastPosition.longitude,

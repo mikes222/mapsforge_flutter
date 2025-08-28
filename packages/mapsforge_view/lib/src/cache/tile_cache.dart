@@ -10,7 +10,7 @@ abstract class TileCache {
   ///
   void dispose();
 
-  Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture> Function(Tile) producer);
+  Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture?> Function(Tile) producer);
 
   ///
   /// Purges the whole cache. The cache can be used afterwards but will not return any items

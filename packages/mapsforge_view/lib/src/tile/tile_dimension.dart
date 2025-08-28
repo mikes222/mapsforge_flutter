@@ -7,7 +7,11 @@ class TileDimension {
 
   final int bottom;
 
-  const TileDimension({required this.left, required this.right, required this.top, required this.bottom});
+  const TileDimension({required this.left, required this.right, required this.top, required this.bottom})
+    : assert(left <= right),
+      assert(top <= bottom),
+      assert(left >= 0),
+      assert(bottom >= 0);
 
   @override
   bool operator ==(Object other) =>

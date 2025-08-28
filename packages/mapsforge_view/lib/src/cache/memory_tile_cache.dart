@@ -4,17 +4,14 @@ import 'package:ecache/ecache.dart';
 import 'package:mapsforge_view/src/cache/spatial_tile_index.dart';
 import 'package:mapsforge_view/src/cache/tile_cache.dart';
 
-///
-/// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.
+/// This is a memory-only implementation of the [TileCache]. It stores the bitmaps in memory.
 /// We use a factory and remember all active instances. This way we can easily purge caches if needed.
-///
 class MemoryTileCache extends TileCache {
   static final List<MemoryTileCache> _instances = [];
 
-  late final Storage<Tile, TilePicture> storage;
-  late final LruCache<Tile, TilePicture> _cache;
+  late final LruCache<Tile, TilePicture?> _cache;
 
-  final SpatialTileIndex _spatialIndex = SpatialTileIndex(cellSize: 0.1); // 0.1 degree cells
+  final SpatialTileIndex _spatialIndex = SpatialTileIndex(cellSize: 2); // 2 degree cells, 180*90 = 16200 cells
 
   factory MemoryTileCache.create() {
     MemoryTileCache result = MemoryTileCache._();
@@ -23,12 +20,12 @@ class MemoryTileCache extends TileCache {
   }
 
   MemoryTileCache._() {
-    storage = WeakReferenceStorage<Tile, TilePicture>(
+    var storage = WeakReferenceStorage<Tile, TilePicture?>(
       onEvict: (tile, picture) {
         _spatialIndex.removeTile(tile);
       },
     );
-    _cache = LruCache<Tile, TilePicture>(storage: storage, capacity: 1000);
+    _cache = LruCache<Tile, TilePicture?>(storage: storage, capacity: 1000);
   }
 
   @override
@@ -70,14 +67,12 @@ class MemoryTileCache extends TileCache {
   }
 
   @override
-  Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture> Function(Tile) producer) async {
+  Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture?> Function(Tile) producer) async {
     final TilePicture? result = await _cache.getOrProduce(tile, producer);
 
-    // Add tile to spatial index when it's successfully cached
-    if (result != null && _cache.get(tile) != null) {
+    if (result != null) {
       _spatialIndex.addTile(tile);
     }
-
     return result;
   }
 
@@ -87,7 +82,7 @@ class MemoryTileCache extends TileCache {
       return _cache.get(tile);
     } catch (error) {
       // Exception: Cannot get a value from a producer since the value is a future and the get() method is synchronously
-      // a value is still in progress, return null
+      // a the procuder is still in progress, return null
       return null;
     }
   }
