@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/context_menu/context_menu_overlay.dart';
-import 'package:mapsforge_view/src/gesture/double_tap_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/move_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/rotation_gesture_detector.dart';
 import 'package:mapsforge_view/src/gesture/scale_gesture_detector.dart';
@@ -27,9 +26,7 @@ class MapsforgeView extends StatelessWidget {
         RotationGestureDetector(mapModel: mapModel),
         // scales the map when two fingers are pressed and zoomed
         ScaleGestureDetector(mapModel: mapModel),
-        // informs mapModel about double tap gestures
-        DoubleTapGestureDetector(mapModel: mapModel),
-        // informs mapModel about short and long taps
+        // informs mapModel about short, long and double taps
         TapGestureDetector(mapModel: mapModel),
         // Shows tiles according to the current position
         TileView(mapModel: mapModel),

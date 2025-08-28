@@ -204,9 +204,7 @@ Pool Workers: ${poolStats['totalWorkers']}
               RotationGestureDetector(mapModel: mapModel),
               // scales the map when two fingers are pressed and zoomed
               ScaleGestureDetector(mapModel: mapModel),
-              // informs mapModel about double tap gestures
-              DoubleTapGestureDetector(mapModel: mapModel),
-              // informs mapModel about short and long taps
+              // informs mapModel about short, long and double taps
               TapGestureDetector(mapModel: mapModel),
               // Shows tiles according to the current position
               TileView(mapModel: mapModel),
