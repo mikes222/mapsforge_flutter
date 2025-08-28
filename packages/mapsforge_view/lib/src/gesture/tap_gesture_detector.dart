@@ -22,7 +22,9 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
 
   final bool doLog = false;
 
-  _TapDownEvent? _eventHandler;
+  bool _longPressed = false;
+
+  Timer? _timer;
 
   // short click:
   // onTapDown
@@ -65,79 +67,37 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
           onTapDown: (TapDownDetails details) {
             if (doLog) _log.info("onTapDown $details with localPosition ${details.localPosition}");
             // only if we do not have already a double tap down event
-            _eventHandler ??= _TapDownEvent(mapModel: widget.mapModel, tapDownLocalPosition: details.localPosition, size: constraints.biggest);
+            if (_timer != null) return;
+            _longPressed = false;
+            _timer = Timer(const Duration(milliseconds: 500), () {
+              // tapped at least 500 ms, user wants to move something (or long-press, but the latter is reported at onTapUp)
+              _longPressed = true;
+              _timer = null;
+            });
           },
           onTapUp: (TapUpDetails details) {
             if (doLog) _log.info("onTapUp $details");
-            _eventHandler?.tapUp(size: constraints.biggest);
-            _eventHandler?.dispose();
-            _eventHandler = null;
+            _timer?.cancel();
+            _timer = null;
+            MapPosition lastPosition = widget.mapModel.lastPosition!;
+            PositionInfo positionInfo = RotateHelper.normalize(lastPosition, constraints.biggest, details.localPosition.dx, details.localPosition.dy);
+
+            TapEvent tapEvent = TapEvent(
+              latitude: positionInfo.latitude,
+              longitude: positionInfo.longitude,
+              projection: lastPosition.projection,
+              mappoint: positionInfo.mappoint,
+            );
+            if (_longPressed) {
+              widget.mapModel.longTap(tapEvent);
+              return;
+            } else {
+              widget.mapModel.tap(tapEvent);
+            }
           },
           child: const SizedBox.expand(),
         );
       },
     );
   }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class _TapDownEvent {
-  final MapModel mapModel;
-
-  final Offset tapDownLocalPosition;
-
-  final int tapDownTime;
-
-  bool _stop = false;
-
-  bool _longPressed = false;
-
-  Timer? _timer;
-
-  _TapDownEvent({required this.mapModel, required this.tapDownLocalPosition, required Size size}) : tapDownTime = DateTime.now().millisecondsSinceEpoch {
-    _timer = Timer(const Duration(milliseconds: 500), () {
-      // tapped at least 500 ms, user wants to move something (or long-press, but the latter is reported at onTapUp)
-      if (_stop) return;
-      _longPressed = true;
-
-      PositionInfo positionInfo = RotateHelper.normalize(mapModel.lastPosition!, size, tapDownLocalPosition.dx, tapDownLocalPosition.dy);
-    });
-  }
-
-  void dispose() {
-    _stop = true;
-    _timer?.cancel();
-    _timer = null;
-  }
-
-  void tapUp({required Size size}) {
-    _stop = true;
-    _timer?.cancel();
-    _timer = null;
-    PositionInfo positionInfo = RotateHelper.normalize(mapModel.lastPosition!, size, tapDownLocalPosition.dx, tapDownLocalPosition.dy);
-
-    if (longPressed) {
-      // tapped at least 500 ms, long tap
-      // we already reported a gestureMoveStartEvent, we should cancel it
-      TapEvent tapEvent = TapEvent(
-        latitude: positionInfo.latitude,
-        longitude: positionInfo.longitude,
-        projection: mapModel.lastPosition!.projection,
-        mappoint: positionInfo.mappoint,
-      );
-      mapModel.longTap(tapEvent);
-      return;
-    } else {
-      TapEvent tapEvent = TapEvent(
-        latitude: positionInfo.latitude,
-        longitude: positionInfo.longitude,
-        projection: mapModel.lastPosition!.projection,
-        mappoint: positionInfo.mappoint,
-      );
-      mapModel.tap(tapEvent);
-    }
-  }
-
-  bool get longPressed => _longPressed;
 }

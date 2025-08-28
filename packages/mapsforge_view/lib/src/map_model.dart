@@ -13,7 +13,7 @@ class MapModel {
 
   final ZoomlevelRange zoomlevelRange;
 
-  /// Inform a listener about the last known position, hence using the [BehaviorSubject].
+  /// Inform a listener about the last known position even if he was not listening at the time, hence using the [BehaviorSubject].
   final Subject<MapPosition> _positionSubject = BehaviorSubject<MapPosition>();
 
   final Subject<Object> _manualMoveSubject = PublishSubject<Object>();

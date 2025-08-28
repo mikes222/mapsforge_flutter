@@ -283,13 +283,6 @@ Pool Workers: ${poolStats['totalWorkers']}
     );
     mapModel.setPosition(mapPosition);
 
-    // For demo purposes we could zoom and rotate after each few seconds.
-    // Future.delayed(const Duration(seconds: 15), () {
-    //   mapModel.zoomIn();
-    // });
-    // Future.delayed(const Duration(seconds: 30), () {
-    //   mapModel.rotateTo(20);
-    // });
     return mapModel;
   }
 
