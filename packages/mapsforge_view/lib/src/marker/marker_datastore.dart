@@ -3,6 +3,9 @@ import 'package:dart_common/projection.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/marker.dart';
 
+/// A datastore for markers which can hold several markers. The idea is to create an api which is able to retrieve markers
+/// - e.g. from database or servers - based on the currently visible boundary of the map.
+/// See also [SingleMarkerOverlay] for an overlay which holds exactly one marker.
 abstract class MarkerDatastore<T> {
   final ZoomlevelRange zoomlevelRange;
 
@@ -14,6 +17,8 @@ abstract class MarkerDatastore<T> {
 
   MarkerDatastore({required this.zoomlevelRange, this.extendMeters = 5000});
 
+  /// The overlay calls this method whenever the zoomlevel changes to give the datastore the possibility to initialize its markers for the new
+  /// zoomlevel.
   Future<void> askChangeZoomlevel(int zoomlevel, BoundingBox boundingBox, PixelProjection projection) async {
     if (!zoomlevelRange.isWithin(zoomlevel)) return;
     cachedZoomlevel = zoomlevel;
@@ -21,6 +26,9 @@ abstract class MarkerDatastore<T> {
     retrieveMarkersFor(cachedBoundingBox!, cachedZoomlevel);
   }
 
+  /// The overlay calls this method whenever the map moves outside the previous bounding box. Note that the overlay extends the currently visible view by
+  /// [extendMeters] to avoid refetching markers everytime the map moves.
+  /// todo shoud this method be async?
   void askChangeBoundingBox(BoundingBox boundingBox) {
     if (cachedBoundingBox?.containsBoundingBox(boundingBox) == false) {
       return;
@@ -30,11 +38,14 @@ abstract class MarkerDatastore<T> {
     retrieveMarkersFor(cachedBoundingBox!, cachedZoomlevel);
   }
 
+  /// The overlay calls this method to retrieve the markers which should be painted.
   List<Marker<T>> askRetrieveMarkersToPaint() {
     if (!zoomlevelRange.isWithin(cachedZoomlevel)) return const [];
     return retrieveMarkersToPaint();
   }
 
+  /// This method returns the markers which should be painted for the given [zoomlevel] and [boundingBox].
+  /// todo should this method be async?
   void retrieveMarkersFor(BoundingBox boundingBox, int zoomlevel);
 
   List<Marker<T>> retrieveMarkersToPaint();

@@ -98,7 +98,6 @@ class Rendertheme {
     List<Rule> rules = [];
     for (Rule rule in rulesList) {
       Rule? r = rule.forZoomlevel(zoomlevel, () {
-        print("asked for $maxLevels +1");
         return ++maxLevels;
       });
       if (r != null) {

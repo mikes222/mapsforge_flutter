@@ -70,6 +70,7 @@ class PolylineMarker<T> extends Marker<T> {
       Mappoint point0 = tapEvent.projection.latLonToPixel(path[idx]);
       Mappoint point1 = tapEvent.projection.latLonToPixel(path[idx + 1]);
       double distance = LatLongUtils.distanceSegmentPoint(point0.x, point0.y, point1.x, point1.y, tapped.x, tapped.y);
+      // correct would be half of strokeWidth but it is hard to tap exactly so be graceful here
       if (distance <= renderInfo!.renderInstruction.strokeWidth) return idx;
     }
     return -1;

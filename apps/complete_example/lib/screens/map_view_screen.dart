@@ -119,7 +119,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     //   rotateWithMap: true,
     // )..addCaption(caption: "PoiMarker");
 
-    markerDatastore.addMarker(marker);
+    //markerDatastore.addMarker(marker);
   }
 
   void _initializeOptimizations() {

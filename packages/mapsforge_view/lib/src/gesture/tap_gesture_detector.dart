@@ -41,8 +41,7 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
           behavior: HitTestBehavior.translucent,
           onPointerDown: (PointerDownEvent event) {
             if (doLog) _log.info("onPointerDown $event");
-            bool cancel = _handler?._cancelIfMoved(event.localPosition) ?? false;
-            if (cancel) _handler = null;
+            _handler?._cancelIfMoved(event.localPosition);
 
             if (_handler != null) {
               if (_handler!._upCount > 0) {
@@ -54,6 +53,7 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
               return;
             }
             _handler = _Handler(
+              tapState: this,
               lastPosition: widget.mapModel.lastPosition!,
               mapModel: widget.mapModel,
               longPressDuration: widget.longPressDuration,
@@ -64,8 +64,7 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
           },
           onPointerUp: (PointerUpEvent event) {
             if (doLog) _log.info("onPointerUp $event");
-            bool cancel = _handler?._cancelIfMoved(event.localPosition) ?? false;
-            if (cancel) _handler = null;
+            _handler?._cancelIfMoved(event.localPosition);
             _handler?._incUpCount();
           },
           onPointerCancel: (PointerCancelEvent event) {
@@ -91,7 +90,10 @@ class _Handler {
 
   final MapModel mapModel;
 
+  final _TapGestureDetectorState tapState;
+
   _Handler({
+    required this.tapState,
     required this.lastPosition,
     required this.mapModel,
     required this.longPressDuration,
@@ -114,6 +116,7 @@ class _Handler {
     _timer = Timer(Duration(milliseconds: longPressDuration), () {
       // 0 _upCount: this is a long press, otherwise a single tap
       _sendToMapModel(size, localPosition);
+      tapState._handler = null;
     });
   }
 
@@ -121,12 +124,11 @@ class _Handler {
     ++_upCount;
   }
 
-  bool _cancelIfMoved(Offset localPosition) {
+  void _cancelIfMoved(Offset localPosition) {
     if ((localPosition.dx - _tapDownOffset.dx).abs() > maxDistance || (localPosition.dy - _tapDownOffset.dy).abs() > maxDistance) {
       _timer.cancel();
-      return true;
+      tapState._handler = null;
     }
-    return false;
   }
 
   void _cancel() {
