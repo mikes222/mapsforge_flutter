@@ -64,7 +64,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionRect renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionRect renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     nodeProperties = NodeProperties(PointOfInterest(0, [], center), projection);
     WayProperties wayProperties = WayProperties(
       Way(0, [], [

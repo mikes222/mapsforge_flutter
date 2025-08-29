@@ -12,11 +12,11 @@ import 'package:xml/xml.dart';
 import 'renderinstruction.dart';
 
 /// Rendering instruction for circular shapes on the map.
-/// 
+///
 /// This class handles the rendering of circular elements such as POI markers,
 /// circular area highlights, or decorative elements. Circles can have both
 /// fill colors and stroke outlines with configurable radius and positioning.
-/// 
+///
 /// Key features:
 /// - Configurable radius with optional zoom-level scaling
 /// - Fill colors and stroke outlines
@@ -33,21 +33,21 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
   MapPositioning position = MapPositioning.CENTER;
 
   /// Creates a new circle rendering instruction for the specified drawing level.
-  /// 
+  ///
   /// [level] The drawing level (layer) for this circle instruction
   RenderinstructionCircle(int level) {
     this.level = level;
   }
 
   /// Creates a zoom level specific copy of this circle instruction.
-  /// 
+  ///
   /// Applies zoom level dependent scaling to fill, stroke, and optionally
   /// radius properties based on the scaleRadius setting.
-  /// 
+  ///
   /// [zoomlevel] Target zoom level for scaling calculations
   /// Returns a new scaled circle instruction
   @override
-  RenderinstructionCircle forZoomlevel(int zoomlevel) {
+  RenderinstructionCircle forZoomlevel(int zoomlevel, int level) {
     RenderinstructionCircle renderinstruction = RenderinstructionCircle(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
@@ -145,7 +145,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
 
   @override
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
-    layerContainer.add(RenderInfoNode<RenderinstructionCircle>(nodeProperties, this));
+    layerContainer.add(level, RenderInfoNode<RenderinstructionCircle>(nodeProperties, this));
   }
 
   @override

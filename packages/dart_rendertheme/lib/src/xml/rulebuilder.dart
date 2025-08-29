@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/matcher/anymatcher.dart';
@@ -49,9 +47,12 @@ class RuleBuilder {
   /// Do not import rules with the given id
   final Set<String> excludeIds;
 
-  /// The level of this rule. Starting with 0
-  int level;
-  int maxLevel;
+  final RenderThemeBuilder renderThemeBuilder;
+
+  /// The level of this rule. Starting with 0. Each level gets a unique id in ascending order from top to bottom of the rendertheme.
+  /// This way we can draw for example the black line of all streets at once (in a lower level) and THEN draw the yellowish lines of all streets above it In a higher level).
+  /// This leads to the illusion of joining the streets.
+  int _level = -1;
 
   /// The category defined for this rule
   String? cat;
@@ -111,14 +112,13 @@ class RuleBuilder {
     return RuleOptimizer.optimizeElementMatcher(result, this.ruleBuilderStack);
   }
 
-  RuleBuilder(this.level, {Set<String>? excludeIds})
+  RuleBuilder(this.renderThemeBuilder, {Set<String>? excludeIds})
     : excludeIds = excludeIds ?? {},
       zoomlevelRange = const ZoomlevelRange.standard(),
       ruleBuilderStack = [],
       renderinstructionNodes = [],
       renderinstructionOpenWays = [],
-      renderinstructionClosedWays = [],
-      maxLevel = level {
+      renderinstructionClosedWays = [] {
     closed = Closed.ANY;
     element = Element.ANY;
   }
@@ -306,7 +306,7 @@ class RuleBuilder {
         return; // Skip parsing this rule entirely.
       }
       checkState(qName, XmlElementType.RULE);
-      RuleBuilder ruleBuilder = RuleBuilder(++level, excludeIds: excludeIds);
+      RuleBuilder ruleBuilder = RuleBuilder(renderThemeBuilder, excludeIds: excludeIds);
       ruleBuilder.zoomlevelRange = zoomlevelRange;
 
       try {
@@ -315,18 +315,17 @@ class RuleBuilder {
         _log.warning("Error while parsing rule $ruleBuilder which is a subrule of $this", error, stacktrace);
       }
       ruleBuilderStack.add(ruleBuilder);
-      maxLevel = max(level, ruleBuilder.maxLevel);
+      // after parsing we get the current max levels from this subrule and use it for the next subrules.
     } else if ("area" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionArea area = RenderinstructionArea(level);
+      RenderinstructionArea area = RenderinstructionArea(getNextLevel());
       area.parse(rootElement);
       if (isVisibleWay(area)) {
         if (closed != Closed.NO) addRenderingInstructionClosedWay(area);
-        maxLevel = max(maxLevel, level);
       }
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionSymbol symbol = RenderinstructionSymbol(level);
+      RenderinstructionSymbol symbol = RenderinstructionSymbol(getNextLevel());
       symbol.parse(rootElement);
       // Skip if the symbol's id is in the excluded set.
       if (symbol.id != null && excludeIds.contains(symbol.id)) {
@@ -339,7 +338,7 @@ class RuleBuilder {
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionCaption caption = new RenderinstructionCaption(level);
+      RenderinstructionCaption caption = new RenderinstructionCaption(getNextLevel());
       caption.parse(rootElement);
       if (isVisible(caption)) {
         if (element != Element.WAY) addRenderingInstructionNode(caption);
@@ -351,15 +350,14 @@ class RuleBuilder {
       //this.currentLayer.addCategory(getStringAttribute("id"));
     } else if ("circle" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionCircle circle = RenderinstructionCircle(level);
+      RenderinstructionCircle circle = RenderinstructionCircle(getNextLevel());
       circle.parse(rootElement);
       if (isVisible(circle)) {
         if (element != Element.WAY) addRenderingInstructionNode(circle);
-        maxLevel = max(maxLevel, level);
       }
     } else if ("line" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionPolyline line = RenderinstructionPolyline(level);
+      RenderinstructionPolyline line = RenderinstructionPolyline(getNextLevel());
 
       line.parse(rootElement);
       if (line.id != null && excludeIds.contains(line.id)) {
@@ -368,12 +366,11 @@ class RuleBuilder {
         if (isVisibleWay(line)) {
           if (closed != Closed.YES) addRenderingInstructionOpenWay(line);
           if (closed != Closed.NO) addRenderingInstructionClosedWay(line);
-          maxLevel = max(maxLevel, level);
         }
       }
     } else if ("lineSymbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionLinesymbol lineSymbol = new RenderinstructionLinesymbol(level);
+      RenderinstructionLinesymbol lineSymbol = RenderinstructionLinesymbol(getNextLevel());
       lineSymbol.parse(rootElement);
       if (isVisibleWay(lineSymbol)) {
         if (closed != Closed.YES) addRenderingInstructionOpenWay(lineSymbol);
@@ -388,7 +385,7 @@ class RuleBuilder {
       //          getStringAttribute("lang"), getStringAttribute("value"));
     } else if ("pathText" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionPolylineText pathText = new RenderinstructionPolylineText(level);
+      RenderinstructionPolylineText pathText = RenderinstructionPolylineText(getNextLevel());
       pathText.parse(rootElement);
       if (isVisibleWay(pathText)) {
         if (closed != Closed.YES) addRenderingInstructionOpenWay(pathText);
@@ -397,7 +394,7 @@ class RuleBuilder {
       }
     } else if ("symbol" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionSymbol symbol = RenderinstructionSymbol(level);
+      RenderinstructionSymbol symbol = RenderinstructionSymbol(getNextLevel());
       symbol.parse(rootElement);
       if (isVisible(symbol)) {
         if (element != Element.WAY) addRenderingInstructionNode(symbol);
@@ -407,16 +404,14 @@ class RuleBuilder {
     } else if ("hillshading" == qName) {
       checkState(qName, XmlElementType.RULE);
 
-      RenderinstructionHillshading hillshading = RenderinstructionHillshading(this.level);
+      RenderinstructionHillshading hillshading = RenderinstructionHillshading(getNextLevel());
       hillshading.parse(rootElement);
-
-      maxLevel = max(maxLevel, level);
 
       //      if (this.categories == null || category == null || this.categories.contains(category)) {
       hillShadings.add(hillshading);
       //      }
     } else {
-      throw new Exception("unknown element: " + qName + ", " + rootElement.toString());
+      throw Exception("unknown element: $qName, $rootElement");
     }
   }
 
@@ -469,6 +464,13 @@ class RuleBuilder {
     // categories contain this rule's category
     return true;
     //return this.categories == null || rule.cat == null || this.categories.contains(rule.cat);
+  }
+
+  int getNextLevel() {
+    if (_level == -1) {
+      _level = renderThemeBuilder.getNextLevel();
+    }
+    return _level;
   }
 
   void addRenderingInstructionNode(RenderinstructionNode renderInstructionNode) {

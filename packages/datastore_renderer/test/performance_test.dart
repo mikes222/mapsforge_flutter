@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
@@ -24,6 +22,8 @@ class _MockRenderInstruction extends Renderinstruction {
 
   @override
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}
+
+  int level = 0;
 }
 
 // Mock RenderInfo for testing

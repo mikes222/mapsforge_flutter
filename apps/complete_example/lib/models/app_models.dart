@@ -78,6 +78,10 @@ class AppConfiguration {
     buffer.writeln('Location: ${location.name}, ${location.country}');
     return buffer.toString();
   }
+
+  static AppConfiguration getDefaultConfiguration() {
+    return AppConfiguration(rendererType: RendererType.offline, location: MapLocations.defaultLocation, renderTheme: RenderTheme.defaultTheme);
+  }
 }
 
 /// Predefined map locations with their corresponding map files

@@ -55,18 +55,20 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       appBar: AppBar(title: const Text('Map Configuration'), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildRendererSection(),
-            const SizedBox(height: 24),
-            if (_selectedRenderer.isOffline) ...[_buildRenderThemeSection(), const SizedBox(height: 24)],
-            _buildLocationSection(),
-            const SizedBox(height: 32),
-            _buildConfigurationSummary(),
-            const Spacer(),
-            _buildActionButtons(),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildRendererSection(),
+              const SizedBox(height: 24),
+              if (_selectedRenderer.isOffline) ...[_buildRenderThemeSection(), const SizedBox(height: 24)],
+              _buildLocationSection(),
+              const SizedBox(height: 32),
+              _buildConfigurationSummary(),
+              const SizedBox(height: 32),
+              _buildActionButtons(),
+            ],
+          ),
         ),
       ),
     );

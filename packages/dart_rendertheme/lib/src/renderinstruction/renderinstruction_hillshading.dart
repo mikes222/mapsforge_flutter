@@ -23,7 +23,7 @@ class RenderinstructionHillshading extends Renderinstruction with BaseSrcMixin i
   }
 
   @override
-  RenderinstructionHillshading forZoomlevel(int zoomlevel) {
+  RenderinstructionHillshading forZoomlevel(int zoomlevel, int level) {
     RenderinstructionHillshading renderinstruction = RenderinstructionHillshading(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel);

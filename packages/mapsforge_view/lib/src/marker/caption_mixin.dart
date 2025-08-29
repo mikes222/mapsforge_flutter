@@ -114,10 +114,10 @@ class Caption {
 
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     renderinstructionZoomed.secondPass(poiMarker);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], poiMarker.getReference()), projection);
-    renderInfo = RenderInfoNode(nodeProperties, renderinstruction.forZoomlevel(zoomlevel), caption: _caption);
+    renderInfo = RenderInfoNode(nodeProperties, renderinstruction.forZoomlevel(zoomlevel, 0), caption: _caption);
     renderInfo?.shapePainter = await ShapePainterCaption.create(renderinstructionZoomed);
   }
 

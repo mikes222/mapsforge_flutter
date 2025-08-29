@@ -39,7 +39,7 @@ class RenderinstructionPolylineText extends Renderinstruction
   }
 
   @override
-  RenderinstructionPolylineText forZoomlevel(int zoomlevel) {
+  RenderinstructionPolylineText forZoomlevel(int zoomlevel, int level) {
     RenderinstructionPolylineText renderinstruction = RenderinstructionPolylineText(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)

@@ -11,12 +11,12 @@ import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 /// Rendering instruction for bitmap symbols and icons on the map.
-/// 
+///
 /// This class handles the rendering of bitmap-based symbols such as POI icons,
 /// directional arrows, and other graphical elements. Symbols can be defined
 /// once with an ID and reused throughout the theme, supporting positioning,
 /// rotation, and scaling.
-/// 
+///
 /// Key features:
 /// - Reusable symbols with unique identifiers
 /// - Bitmap scaling and positioning control
@@ -33,10 +33,10 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   double theta = 0;
 
   /// Creates a new symbol rendering instruction for the specified drawing level.
-  /// 
+  ///
   /// Initializes bitmap settings with full size rendering and appropriate
   /// minimum zoom level for text-related symbols.
-  /// 
+  ///
   /// [level] The drawing level (layer) for this symbol instruction
   RenderinstructionSymbol(int level) {
     this.level = level;
@@ -45,14 +45,14 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   }
 
   /// Creates a zoom level specific copy of this symbol instruction.
-  /// 
+  ///
   /// Applies zoom level dependent scaling to bitmap properties while
   /// preserving symbol identity, positioning, and rotation settings.
-  /// 
+  ///
   /// [zoomlevel] Target zoom level for scaling calculations
   /// Returns a new scaled symbol instruction
   @override
-  RenderinstructionSymbol forZoomlevel(int zoomlevel) {
+  RenderinstructionSymbol forZoomlevel(int zoomlevel, int level) {
     RenderinstructionSymbol renderinstruction = RenderinstructionSymbol(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
@@ -71,10 +71,10 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   }
 
   /// Parses XML attributes to configure this symbol rendering instruction.
-  /// 
+  ///
   /// Processes XML attributes such as symbol ID, bitmap source, positioning,
   /// rotation, and other styling parameters from the theme definition.
-  /// 
+  ///
   /// [rootElement] XML element containing the symbol instruction attributes
   void parse(XmlElement rootElement) {
     for (var element in rootElement.attributes) {

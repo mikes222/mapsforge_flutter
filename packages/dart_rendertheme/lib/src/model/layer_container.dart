@@ -5,8 +5,8 @@ import 'package:dart_rendertheme/model.dart';
 /// in the datastore. So in other words you can define which way should be drawn in the back and which should be drawn
 /// at the front.
 class LayerContainer {
-  /// Default renderinfos
-  final RenderInfoCollection renderInfoCollection = RenderInfoCollection([]);
+  /// Default renderinfos. Each rule gets a unique level in ascending order. We have to draw the renderinfos in that particular order.
+  late final List<RenderInfoCollection> levels;
 
   /// Potentially clashing renderinfos. These renderinfos will be removed if clashes with other objects of this collection occurs.
   final RenderInfoCollection _clashingInfoCollection = RenderInfoCollection([]);
@@ -16,10 +16,12 @@ class LayerContainer {
 
   ///
   /// Define the maximum number of levels.
-  LayerContainer() {}
+  LayerContainer(int maxLevels) {
+    levels = List.generate(maxLevels, (int idx) => RenderInfoCollection([]));
+  }
 
-  void add(RenderInfo element) {
-    renderInfoCollection.renderInfos.add(element);
+  void add(int level, RenderInfo element) {
+    levels[level].renderInfos.add(element);
   }
 
   void addLabel(RenderInfo element) {

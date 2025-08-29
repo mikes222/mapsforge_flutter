@@ -24,7 +24,7 @@ class RenderinstructionRect extends Renderinstruction with BaseSrcMixin, BitmapS
   }
 
   @override
-  RenderinstructionRect forZoomlevel(int zoomlevel) {
+  RenderinstructionRect forZoomlevel(int zoomlevel, int level) {
     RenderinstructionRect renderinstruction = RenderinstructionRect(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
@@ -81,7 +81,7 @@ class RenderinstructionRect extends Renderinstruction with BaseSrcMixin, BitmapS
   @override
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
     if (bitmapSrc == null) return;
-    layerContainer.add(RenderInfoNode(nodeProperties, this));
+    layerContainer.add(level, RenderInfoNode(nodeProperties, this));
   }
 
   @override
@@ -90,6 +90,6 @@ class RenderinstructionRect extends Renderinstruction with BaseSrcMixin, BitmapS
 
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    layerContainer.add(RenderInfoWay(wayProperties, this));
+    layerContainer.add(level, RenderInfoWay(wayProperties, this));
   }
 }

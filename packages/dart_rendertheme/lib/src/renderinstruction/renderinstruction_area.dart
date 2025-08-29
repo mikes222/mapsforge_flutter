@@ -16,11 +16,11 @@ import 'package:xml/xml.dart';
 import 'renderinstruction.dart';
 
 /// Rendering instruction for filled polygon areas on the map.
-/// 
+///
 /// This class handles the rendering of closed polygons (areas) such as buildings,
 /// parks, water bodies, and other filled regions. It supports both solid fill colors
 /// and bitmap pattern fills, along with optional stroke outlines.
-/// 
+///
 /// Key features:
 /// - Solid color fills and bitmap pattern fills
 /// - Optional stroke outlines with customizable properties
@@ -28,7 +28,7 @@ import 'renderinstruction.dart';
 /// - Support for display modes and rendering priorities
 class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, FillSrcMixin, StrokeSrcMixin implements RenderinstructionWay {
   /// Creates a new area rendering instruction for the specified drawing level.
-  /// 
+  ///
   /// [level] The drawing level (layer) for this area instruction
   RenderinstructionArea(int level) : super() {
     this.level = level;
@@ -38,14 +38,14 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
   }
 
   /// Creates a zoom level specific copy of this area instruction.
-  /// 
+  ///
   /// Applies zoom level dependent scaling to all rendering properties
   /// including fill, stroke, and bitmap parameters.
-  /// 
+  ///
   /// [zoomlevel] Target zoom level for scaling calculations
   /// Returns a new scaled area instruction
   @override
-  RenderinstructionArea forZoomlevel(int zoomlevel) {
+  RenderinstructionArea forZoomlevel(int zoomlevel, int level) {
     return RenderinstructionArea(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
@@ -61,10 +61,10 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
   }
 
   /// Parses XML attributes to configure this area rendering instruction.
-  /// 
+  ///
   /// Processes XML attributes such as fill color, stroke properties, bitmap sources,
   /// display modes, and other styling parameters from the theme definition.
-  /// 
+  ///
   /// [rootElement] XML element containing the area instruction attributes
   void parse(XmlElement rootElement) {
     for (var element in rootElement.attributes) {
@@ -116,6 +116,6 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    layerContainer.add(RenderInfoWay(wayProperties, this));
+    layerContainer.add(level, RenderInfoWay(wayProperties, this));
   }
 }

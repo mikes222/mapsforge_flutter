@@ -44,7 +44,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionCircle renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionCircle renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);

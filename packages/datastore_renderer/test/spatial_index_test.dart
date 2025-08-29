@@ -10,9 +10,7 @@ class TestRenderInfo extends RenderInfo {
   final bool _shouldClash;
   final String _id;
 
-  TestRenderInfo(this._id, this._boundary, {bool shouldClash = false}) 
-      : _shouldClash = shouldClash,
-        super(_MockRenderInstruction()) {
+  TestRenderInfo(this._id, this._boundary, {bool shouldClash = false}) : _shouldClash = shouldClash, super(_MockRenderInstruction()) {
     boundaryAbsolute = _boundary;
   }
 
@@ -70,6 +68,8 @@ class _MockRenderInstruction extends Renderinstruction {
 
   @override
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}
+
+  int level = 0;
 }
 
 void main() {

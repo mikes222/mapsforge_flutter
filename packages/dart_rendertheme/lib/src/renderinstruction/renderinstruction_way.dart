@@ -7,5 +7,5 @@ abstract class RenderinstructionWay implements Renderinstruction {
 
   /// Creates a copy of itself with the data needed for the given zoomlevel. Note that this should only be called from [Rendertheme]
   /// and NOT from [RenderthemeZoomlevel]
-  RenderinstructionWay forZoomlevel(int zoomlevel);
+  RenderinstructionWay forZoomlevel(int zoomlevel, int level);
 }

@@ -54,7 +54,7 @@ class PolylineTextMarker<T> extends Marker<T> {
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionPolylineText renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionPolylineText renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     WayProperties wayProperties = WayProperties(Way(0, [], [path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePainter(renderInfo!);

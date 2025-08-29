@@ -1,12 +1,14 @@
 import 'package:complete_example/screens/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 void main() {
-  runApp(const MapsforgeOptimizedApp());
+  _initLogging();
+  runApp(const MapsforgeApp());
 }
 
-class MapsforgeOptimizedApp extends StatelessWidget {
-  const MapsforgeOptimizedApp({super.key});
+class MapsforgeApp extends StatelessWidget {
+  const MapsforgeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,4 +18,14 @@ class MapsforgeOptimizedApp extends StatelessWidget {
       home: const MainNavigationScreen(),
     );
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void _initLogging() {
+  // Print output to console.
+  Logger.root.onRecord.listen((LogRecord r) {
+    print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
+  });
+  Logger.root.level = Level.FINEST;
 }

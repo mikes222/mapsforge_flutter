@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:dart_common/utils.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
@@ -11,11 +10,11 @@ import 'package:logging/logging.dart';
 import 'package:xml/xml.dart';
 
 /// Builder class for parsing XML theme files and creating RenderTheme instances.
-/// 
+///
 /// This class handles the parsing of XML-based rendering theme files, converting
 /// them into structured RenderTheme objects. It supports theme customization through
 /// element exclusion and provides comprehensive error handling during parsing.
-/// 
+///
 /// Key features:
 /// - XML theme file parsing and validation
 /// - Rule hierarchy construction
@@ -26,31 +25,31 @@ class RenderThemeBuilder {
   static final _log = new Logger('RenderThemeBuilder');
 
   // XML attribute and element constants
-  
+
   /// XML attribute for base stroke width scaling factor.
   static final String BASE_STROKE_WIDTH = "base-stroke-width";
-  
+
   /// XML attribute for base text size scaling factor.
   static final String BASE_TEXT_SIZE = "base-text-size";
-  
+
   /// XML attribute for map background color.
   static final String MAP_BACKGROUND = "map-background";
-  
+
   /// XML attribute for background color outside map bounds.
   static final String MAP_BACKGROUND_OUTSIDE = "map-background-outside";
-  
+
   /// Current supported render theme version.
   static final int RENDER_THEME_VERSION = 6;
-  
+
   /// XML attribute for theme version.
   static final String VERSION = "version";
-  
+
   /// XML namespace declaration.
   static final String XMLNS = "xmlns";
-  
+
   /// XML Schema Instance namespace declaration.
   static final String XMLNS_XSI = "xmlns:xsi";
-  
+
   /// XML Schema location attribute.
   static final String XSI_SCHEMALOCATION = "xsi:schemaLocation";
 
@@ -62,24 +61,22 @@ class RenderThemeBuilder {
 
   /// Whether the theme defines background color for areas outside the map.
   bool? hasBackgroundOutside;
-  
+
   /// Map background color in ARGB format.
   int? mapBackground;
-  
+
   /// Background color for areas outside map bounds in ARGB format.
   int? mapBackgroundOutside;
-  
+
   /// Theme file version number.
   late int version;
-  
+
   /// Stack of rule builders for hierarchical rule construction.
   final List<RuleBuilder> ruleBuilderStack = [];
-  
-  /// Current nesting level during XML parsing.
-  int _level = 0;
-  
-  /// Maximum drawing level found in the theme.
-  int maxLevel = 0;
+
+  /// Current nesting level during XML parsing. Each rule gets a new level in ascending order from the
+  /// top to the bottom of the rendertheme.xml file.
+  int _level = -1;
 
   /// Hash string for theme identification and caching.
   String forHash = "";
@@ -88,15 +85,15 @@ class RenderThemeBuilder {
   final Set<String> excludeIds;
 
   /// Private constructor for creating builder instances.
-  /// 
+  ///
   /// [excludeIds] Optional set of element IDs to exclude from rendering
   RenderThemeBuilder._({this.excludeIds = const {}});
 
   /// Creates a RenderTheme from XML content string.
-  /// 
+  ///
   /// Parses the provided XML content and builds a complete RenderTheme object.
   /// Supports element exclusion for theme customization.
-  /// 
+  ///
   /// [content] XML theme content as string
   /// [excludeIds] Optional set of element IDs to exclude from rendering
   /// Returns the parsed RenderTheme
@@ -130,11 +127,16 @@ class RenderThemeBuilder {
         rule.parent = null;
       }
     }
-    Rendertheme renderTheme = Rendertheme(levels: maxLevel, rulesList: rules);
+    Rendertheme renderTheme = Rendertheme(maxLevels: _level, rulesList: rules);
     for (Rule rule in rules) {
       rule.secondPass();
     }
     return renderTheme;
+  }
+
+  int getNextLevel() {
+    ++_level;
+    return _level;
   }
 
   ///
@@ -146,7 +148,7 @@ class RenderThemeBuilder {
     assert(content.length > 10);
     int time = DateTime.now().millisecondsSinceEpoch;
     XmlDocument document = XmlDocument.parse(content);
-    assert(document.children.length > 0);
+    assert(document.children.isNotEmpty);
     bool foundRendertheme = false;
     for (XmlNode node in document.children) {
       switch (node.nodeType) {
@@ -232,12 +234,9 @@ class RenderThemeBuilder {
             foundElement = true;
             if (element.name.toString() == "rule") {
               // Pass the excludeIds from this builder into each new RuleBuilder.
-              RuleBuilder ruleBuilder = RuleBuilder(_level, excludeIds: excludeIds);
+              RuleBuilder ruleBuilder = RuleBuilder(this, excludeIds: excludeIds);
               ruleBuilder.parse(element);
               ruleBuilderStack.add(ruleBuilder);
-              ++_level;
-              maxLevel = max(maxLevel, _level);
-              maxLevel = max(maxLevel, ruleBuilder.maxLevel);
               break;
             } else if ("hillshading" == element.name.toString()) {
               RenderinstructionHillshading hillshading = RenderinstructionHillshading(_level);

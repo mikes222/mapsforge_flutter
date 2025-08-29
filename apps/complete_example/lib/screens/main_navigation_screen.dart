@@ -13,7 +13,7 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  AppConfiguration? _currentConfiguration;
+  AppConfiguration _currentConfiguration = AppConfiguration.getDefaultConfiguration();
 
   @override
   Widget build(BuildContext context) {
@@ -46,18 +46,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              if (_currentConfiguration != null) ...[CurrentConfigurationCard(currentConfiguration: _currentConfiguration!), const SizedBox(height: 16)],
+              ...[CurrentConfigurationCard(currentConfiguration: _currentConfiguration), const SizedBox(height: 16)],
               const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () => _navigateToConfiguration(),
                   icon: const Icon(Icons.settings),
-                  label: Text(_currentConfiguration == null ? 'Configure Map Settings' : 'Change Configuration'),
+                  label: Text('Change Configuration'),
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                 ),
               ),
-              if (_currentConfiguration != null) ...[
+              ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -93,12 +93,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _navigateToMapView() {
-    if (_currentConfiguration != null) {
-      if (_currentConfiguration!.rendererType.isOffline) {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => FileDownloadScreen(configuration: _currentConfiguration!)));
-      } else {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => MapViewScreen(configuration: _currentConfiguration!)));
-      }
+    if (_currentConfiguration.rendererType.isOffline) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => FileDownloadScreen(configuration: _currentConfiguration!)));
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => MapViewScreen(configuration: _currentConfiguration!)));
     }
   }
 }

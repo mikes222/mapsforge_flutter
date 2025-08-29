@@ -30,8 +30,9 @@ class RuleAnalyzer extends RuleVisitor {
   }
 
   void analyzeRule(Rule rule, int level) {
+    if (debug) print("${' ' * level * 2}Rule $rule");
     for (RenderinstructionNode renderInstruction in rule.renderinstructionNodes) {
-      if (debug) print("${' ' * level * 2}--> Node ${renderInstruction.runtimeType}");
+      if (debug) print("${' ' * level * 2}--> Node ${renderInstruction.runtimeType} ${renderInstruction.level}");
       addNode(rule);
       if (renderInstruction is RenderinstructionCaption) {
         String? textKey = renderInstruction.textKey?.key;
@@ -39,7 +40,7 @@ class RuleAnalyzer extends RuleVisitor {
       }
     }
     for (RenderinstructionWay renderInstruction in rule.renderinstructionOpenWays) {
-      if (debug) print("${' ' * level * 2}--> Open Way ${renderInstruction.runtimeType}");
+      if (debug) print("${' ' * level * 2}--> Open Way ${renderInstruction.runtimeType} ${renderInstruction.level}");
       addOpenWay(rule);
       if (renderInstruction is RenderinstructionCaption) {
         String? textKey = renderInstruction.textKey?.key;
@@ -50,7 +51,7 @@ class RuleAnalyzer extends RuleVisitor {
       }
     }
     for (RenderinstructionWay renderInstruction in rule.renderinstructionClosedWays) {
-      if (debug) print("${' ' * level * 2}--> Closed Way ${renderInstruction.runtimeType}");
+      if (debug) print("${' ' * level * 2}--> Closed Way ${renderInstruction.runtimeType} ${renderInstruction.level}");
       addClosedWay(rule);
       if (renderInstruction is RenderinstructionCaption) {
         String? textKey = renderInstruction.textKey?.key;

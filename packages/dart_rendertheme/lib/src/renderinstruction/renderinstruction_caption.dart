@@ -20,11 +20,11 @@ import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 /// Rendering instruction for text labels and captions on the map.
-/// 
+///
 /// This class handles the rendering of text labels for POIs, area names, and other
 /// textual information. It supports positioning relative to symbols, font styling,
 /// stroke outlines, and collision detection for optimal label placement.
-/// 
+///
 /// Key features:
 /// - Text positioning relative to symbols or standalone
 /// - Font family, size, and style customization
@@ -50,16 +50,16 @@ class RenderinstructionCaption extends Renderinstruction
   double gap = DEFAULT_GAP;
 
   /// Boundary rectangle of the associated symbol for relative positioning.
-  /// 
+  ///
   /// Determined in the second pass of theme processing to enable
   /// accurate caption alignment relative to symbol boundaries.
   MapRectangle? symbolBoundary;
 
   /// Creates a new caption rendering instruction for the specified drawing level.
-  /// 
+  ///
   /// Initializes default text properties including font size, stroke settings,
   /// and gap scaling based on global font scale factor.
-  /// 
+  ///
   /// [level] The drawing level (layer) for this caption instruction
   RenderinstructionCaption(int level) {
     this.level = level;
@@ -70,7 +70,7 @@ class RenderinstructionCaption extends Renderinstruction
   }
 
   @override
-  RenderinstructionCaption forZoomlevel(int zoomlevel) {
+  RenderinstructionCaption forZoomlevel(int zoomlevel, int level) {
     RenderinstructionCaption renderinstruction = RenderinstructionCaption(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)

@@ -1,20 +1,19 @@
 import 'dart:math';
 
-import 'package:dart_common/model.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/util/rotate_helper.dart';
 
-/// Recognizes scale gestures (zoom) and scales the map accordingly.
+/// Two‐finger rotation overlay that never blocks pan/zoom,
+/// and uses ViewModel.rotateDelta() to apply each twist incrementally.
 class ScaleGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 
-  /// The absorption factor of a swipe. The lower the factor the faster swiping
-  /// stops.
-  final double swipeAbsorption;
+  /// degrees of twist before we start rotating
+  final double thresholdDeg;
 
-  const ScaleGestureDetector({super.key, required this.mapModel, this.swipeAbsorption = 0.9}) : assert(swipeAbsorption >= 0 && swipeAbsorption <= 1);
+  const ScaleGestureDetector({super.key, required this.mapModel, this.thresholdDeg = 10.0});
 
   @override
   State<ScaleGestureDetector> createState() => _ScaleGestureDetectorState();
@@ -23,68 +22,36 @@ class ScaleGestureDetector extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _ScaleGestureDetectorState extends State<ScaleGestureDetector> {
-  static final _log = Logger('_ScaleGestureDetectorState');
+  static final _log = Logger('_Scale2GestureDetectorState');
 
-  final bool doLog = true;
+  final bool doLog = false;
 
-  _ScaleEvent? _eventHandler;
+  _Handler? _handler;
 
-  // short click:
-  // onTapDown
-  // onTapUp
-  //
-  // long click:
-  // onTapDown
-  // onTapUp
-  //
-  // doubletap:
-  // onDoubleTapDown
-  // onTapDown
-  // onDoubleTap
-  //
-  // normal drag event:
-  // optionally (if the user waits a bit): onTapDown
-  // onScaleStart with pointerCount 1
-  // several onScaleUpdate with scale 1.0, rotation 0.0 and pointerCount: 1
-  // onScaleEnd with velocity 0/0 and pointerCount: 0
-  // NO onTapUp!
-  //
-  // zoom-in event:
-  // optionally (if the user waits a bit): onTapDown
-  // onScaleStart with pointerCount 2
-  // several onScaleUpdate scale > 1, rotation normally != 0 and pointerCount: 2
-  // onScaleEnd with velocity 0/0 and pointerCount: 1
-  //
-  // swipe: (similar to normal drag event)
-  // optionally (if the user waits a bit): onTapDown
-  // onScaleStart with pointerCount 1
-  // several onScaleUpdate with scale 1.0, rotation 0.0 and pointerCount: 1
-  // onScaleEnd with velocity -2324/-2699, pointerCount 0
-  // velocity is in pixels per second
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, BoxConstraints constraints) {
-        return GestureDetector(
-          behavior: HitTestBehavior.deferToChild,
-          onScaleStart: (ScaleStartDetails details) {
-            if (doLog) _log.info("onScaleStart $details");
-            if (details.pointerCount > 1) {
-              _eventHandler = _ScaleEvent(
-                mapModel: widget.mapModel,
-                startLocalFocalPoint: details.localFocalPoint,
-                startCenter: widget.mapModel.lastPosition!.getCenter(),
-              );
-            }
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (event) {
+            if (doLog) _log.info("onPointerDown $event ${event.pointer}");
+            _handler ??= _Handler(size: constraints.biggest, lastPosition: widget.mapModel.lastPosition!, mapModel: widget.mapModel);
+            _handler!._addOffset(event.pointer, event.position);
           },
-          onScaleUpdate: (ScaleUpdateDetails details) {
-            if (doLog) _log.info("onScaleUpdate $details");
-            _eventHandler?.update(details: details);
+          onPointerMove: (event) {
+            if (doLog) _log.info("onPointerMove $event ${event.pointer}");
+            _handler?._movePointer(event.pointer, event.position);
           },
-          onScaleEnd: (ScaleEndDetails details) {
-            if (doLog) _log.info("onScaleEnd $details");
-            _eventHandler?.end(details: details, size: constraints.biggest) ?? true;
-            _eventHandler = null;
+          onPointerUp: (event) {
+            if (doLog) _log.info("onPointerUp $event ${event.pointer}");
+            bool cancel = _handler?._removeOffset(event.pointer) ?? false;
+            if (cancel) _handler = null;
+          },
+          onPointerCancel: (event) {
+            if (doLog) _log.info("onPointerCancel $event ${event.pointer}");
+            _handler?._cancel();
+            _handler = null;
           },
           child: const SizedBox.expand(),
         );
@@ -93,60 +60,86 @@ class _ScaleGestureDetectorState extends State<ScaleGestureDetector> {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-class _ScaleEvent {
-  static final _log = Logger('FlutterGestureDetectorState._ScaleEvent');
+class _Handler {
+  final MapPosition lastPosition;
 
   final MapModel mapModel;
 
-  final Offset startLocalFocalPoint;
+  final Size size;
 
-  final Mappoint startCenter;
+  final Map<int, Offset> _points = {};
 
-  double? lastScale;
+  _Vector? _startVector;
 
-  Offset? lastFocalPoint;
+  _Vector? _lastVector;
 
-  _ScaleEvent({required this.mapModel, required this.startLocalFocalPoint, required this.startCenter});
+  double _lastScale = 1;
 
-  void update({required ScaleUpdateDetails details}) {
-    // do not send tiny changes
-    if (lastScale != null &&
-        ((details.scale / lastScale!) - 1).abs() < 0.01 &&
-        lastFocalPoint != null &&
-        (lastFocalPoint!.dx - details.focalPoint.dx).abs() < 5 &&
-        (lastFocalPoint!.dy - details.focalPoint.dy).abs() < 5) {
+  _Handler({required this.lastPosition, required this.mapModel, required this.size});
+
+  void _addOffset(int id, Offset offset) {
+    _points[id] = offset;
+    if (_points.length != 2) {
       return;
     }
-    // _log.info(
-    //     "onScaleUpdate scale ${details.scale} around ${details.localFocalPoint}, rotation ${details.rotation}, size $size");
-    lastScale = details.scale;
-    lastFocalPoint = details.focalPoint;
-    /*MapViewPosition? newPost =*/
-    mapModel.scaleAround(details.localFocalPoint, details.scale);
-    // Mappoint(details.localFocalPoint.dx * viewModel.viewScaleFactor,
-    //     details.localFocalPoint.dy * viewModel.viewScaleFactor),
-    // lastScale!);
+    _startVector = _Vector(_points.values.first, _points.values.last);
   }
 
-  bool end({required ScaleEndDetails details, required Size size}) {
+  bool _removeOffset(int id) {
+    _points.remove(id);
+    if (_points.length == 1) {
+      if (_startVector != null) _sendEnd();
+    }
+    if (_points.isEmpty) return true;
+    return false;
+  }
+
+  void _cancel() {
+    _points.clear();
+    if (_startVector != null) _sendEnd();
+  }
+
+  void _movePointer(int id, Offset offset) {
+    if (!_points.containsKey(id)) {
+      return;
+    }
+    _points[id] = offset;
+    if (_points.length != 2) {
+      return;
+    }
+    _Vector newVector = _Vector(_points.values.first, _points.values.last);
+    if (newVector.getLength().isNaN) return;
+    // if (_lastVector != null &&
+    //     (newVector.getLength() / _lastVector!.getLength() - 1).abs() < 0.01 &&
+    //     (newVector.getFocalPoint().dx - _lastVector!.getFocalPoint().dx).abs() < 5 &&
+    //     (newVector.getFocalPoint().dy - _lastVector!.getFocalPoint().dy).abs() < 5) {
+    //   // do not send tiny changes
+    //   return;
+    // }
+    _lastScale = newVector.getLength() / _startVector!.getLength();
+    mapModel.scaleAround(newVector.getFocalPoint(), _lastScale);
+    _lastVector = newVector;
+  }
+
+  void _sendEnd() {
     // no zoom: 0, double zoom: 1, half zoom: -1
-    double zoomLevelOffset = log(lastScale!) / log(2);
+    double zoomLevelOffset = log(_lastScale) / log(2);
     int zoomLevelDiff = zoomLevelOffset.round();
     if (zoomLevelDiff != 0) {
       // Complete large zooms towards gesture direction
       num mult = pow(2, zoomLevelDiff);
       // if (doLog)
       //   _log.info("onScaleEnd zooming now zoomLevelDiff $zoomLevelDiff");
-      PositionInfo positionInfo = RotateHelper.normalize(mapModel.lastPosition!, size, startLocalFocalPoint.dx, startLocalFocalPoint.dy);
+      PositionInfo positionInfo = RotateHelper.normalize(lastPosition, size, _lastVector!.getFocalPoint().dx, _lastVector!.getFocalPoint().dy);
       mapModel.zoomToAround(
-        positionInfo.latitude + (mapModel.lastPosition!.latitude! - positionInfo.latitude) / mult,
-        positionInfo.longitude + (mapModel.lastPosition!.longitude! - positionInfo.longitude) / mult,
+        positionInfo.latitude + (mapModel.lastPosition!.latitude - positionInfo.latitude) / mult,
+        positionInfo.longitude + (mapModel.lastPosition!.longitude - positionInfo.longitude) / mult,
         mapModel.lastPosition!.zoomlevel + zoomLevelDiff,
       );
       //      if (doLog) _log.info("onScaleEnd  resulting in ${newPost.toString()}");
-    } else if (lastScale != 1) {
+    } else if (_lastScale != 1) {
       // no significant zoom. Restore the old zoom
       /*MapViewPosition newPost =*/
       mapModel.zoomTo(mapModel.lastPosition!.zoomlevel);
@@ -154,6 +147,36 @@ class _ScaleEvent {
       //   _log.info(
       //       "onScaleEnd Restored zoom to ${viewModel.mapViewPosition!.zoomLevel}");
     }
-    return true;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _Vector {
+  final Offset start;
+
+  final Offset end;
+
+  double? _length;
+
+  Offset? _focalPoint;
+
+  _Vector(this.start, this.end);
+
+  double getLength() {
+    if (_length != null) return _length!;
+    _length = sqrt((end.dx - start.dx) * (end.dx - start.dx) + (end.dy - start.dy) * (end.dy - start.dy));
+    return _length!;
+  }
+
+  Offset getFocalPoint() {
+    if (_focalPoint != null) return _focalPoint!;
+    _focalPoint = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+    return _focalPoint!;
+  }
+
+  @override
+  String toString() {
+    return '_Vector{_length: $_length, _focalPoint: $_focalPoint}';
   }
 }

@@ -17,11 +17,11 @@ import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 /// Rendering instruction for polylines (open paths) on the map.
-/// 
+///
 /// This class handles the rendering of linear features such as roads, paths,
 /// rivers, boundaries, and other line-based map elements. It supports stroke
 /// styling, bitmap patterns, and various line cap and join styles.
-/// 
+///
 /// Key features:
 /// - Stroke styling with customizable width, color, and patterns
 /// - Bitmap pattern fills along the line path
@@ -33,10 +33,10 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   String? id;
 
   /// Creates a new polyline rendering instruction for the specified drawing level.
-  /// 
+  ///
   /// Initializes bitmap settings to maintain visual quality by disabling
   /// bitmap scaling which can cause visual artifacts on linear features.
-  /// 
+  ///
   /// [level] The drawing level (layer) for this polyline instruction
   RenderinstructionPolyline(int level) {
     this.level = level;
@@ -46,14 +46,14 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   }
 
   /// Creates a zoom level specific copy of this polyline instruction.
-  /// 
+  ///
   /// Applies zoom level dependent scaling to all rendering properties
   /// including stroke width, bitmap patterns, and other styling parameters.
-  /// 
+  ///
   /// [zoomlevel] Target zoom level for scaling calculations
   /// Returns a new scaled polyline instruction
   @override
-  RenderinstructionPolyline forZoomlevel(int zoomlevel) {
+  RenderinstructionPolyline forZoomlevel(int zoomlevel, int level) {
     RenderinstructionPolyline renderinstruction = RenderinstructionPolyline(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
@@ -70,10 +70,10 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   }
 
   /// Parses XML attributes to configure this polyline rendering instruction.
-  /// 
+  ///
   /// Processes XML attributes such as stroke properties, bitmap sources,
   /// line caps, joins, and other styling parameters from the theme definition.
-  /// 
+  ///
   /// [rootElement] XML element containing the polyline instruction attributes
   void parse(XmlElement rootElement) {
     for (var element in rootElement.attributes) {
@@ -149,6 +149,6 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
     if (bitmapSrc == null && isStrokeTransparent()) return;
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
-    layerContainer.add(RenderInfoWay<RenderinstructionPolyline>(wayProperties, this));
+    layerContainer.add(level, RenderInfoWay<RenderinstructionPolyline>(wayProperties, this));
   }
 }

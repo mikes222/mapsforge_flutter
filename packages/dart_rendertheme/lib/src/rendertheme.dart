@@ -3,11 +3,11 @@ import 'package:dart_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:dart_rendertheme/src/rule/rule.dart';
 
 /// Main rendering theme engine that defines how map features are styled and drawn.
-/// 
+///
 /// A RenderTheme processes styling rules to determine how ways, nodes, and other
 /// map features should be rendered at different zoom levels. It manages rule
 /// hierarchies, background colors, drawing levels, and zoom-dependent styling.
-/// 
+///
 /// Key responsibilities:
 /// - Rule processing and matching for map features
 /// - Zoom level dependent styling management
@@ -29,24 +29,24 @@ class Rendertheme {
   /// Whether the theme defines a background color for areas outside the map.
   final bool? hasBackgroundOutside;
 
-  /// Maximum number of drawing levels (layers) used by this theme.
+  /// Maximum number of drawing levels used by this theme.
   /// Higher levels are drawn on top of lower levels.
-  final int levels;
-  
+  final int maxLevels;
+
   /// Background color for the map area (ARGB format).
   final int? mapBackground;
-  
+
   /// Background color for areas outside the map bounds (ARGB format).
   final int? mapBackgroundOutside;
 
   /// Hierarchical list of styling rules for map feature rendering.
-  /// 
+  ///
   /// Rules are organized in a tree structure where each rule can contain
   /// sub-rules. See defaultrender.xml for example structure.
   final List<Rule> rulesList;
 
   /// Zoom level specific rule collections for performance optimization.
-  /// 
+  ///
   /// Pre-computed rule sets for each zoom level to avoid repeated
   /// rule evaluation during rendering.
   final Map<int, RenderthemeZoomlevel> _renderthemeZoomlevels = {};
@@ -54,55 +54,59 @@ class Rendertheme {
   /// Hash string used for theme identification and caching.
   late final String forHash;
 
-  Rendertheme({required this.levels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside});
+  Rendertheme({required this.maxLevels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside});
 
   /// Returns the number of distinct drawing levels required by this theme.
-  /// 
+  ///
   /// Drawing levels determine the rendering order, with higher levels
   /// drawn on top of lower levels.
   int getLevels() {
-    return levels;
+    return maxLevels;
   }
 
   /// Returns the background color for the map area.
-  /// 
+  ///
   /// Returns null if no background color is defined.
   /// Color is in ARGB format.
   int? getMapBackground() {
-    return this.mapBackground;
+    return mapBackground;
   }
 
   /// Returns the background color for areas outside the map bounds.
-  /// 
+  ///
   /// Returns null if no outside background color is defined.
   /// Color is in ARGB format.
   int? getMapBackgroundOutside() {
-    return this.mapBackgroundOutside;
+    return mapBackgroundOutside;
   }
 
   /// Returns true if a background color is defined for areas outside the map.
   bool? hasMapBackgroundOutside() {
-    return this.hasBackgroundOutside;
+    return hasBackgroundOutside;
   }
 
   /// Prepares and caches zoom level specific rendering rules.
-  /// 
+  ///
   /// Creates an optimized rule set for the specified zoom level by filtering
   /// and processing the theme's rules. Results are cached for performance.
-  /// 
+  ///
   /// [zoomlevel] The zoom level to prepare rules for
   /// Returns the prepared zoom level rule set
   RenderthemeZoomlevel prepareZoomlevel(int zoomlevel) {
     if (_renderthemeZoomlevels.containsKey(zoomlevel)) return _renderthemeZoomlevels[zoomlevel]!;
+    int maxLevels = -1;
     List<Rule> rules = [];
     for (Rule rule in rulesList) {
-      Rule? r = rule.forZoomlevel(zoomlevel);
+      Rule? r = rule.forZoomlevel(zoomlevel, () {
+        print("asked for $maxLevels +1");
+        return ++maxLevels;
+      });
       if (r != null) {
         rules.add(r);
         r.parent = null;
       }
     }
-    RenderthemeZoomlevel renderthemeLevel = RenderthemeZoomlevel(rulesList: rules);
+    RenderthemeZoomlevel renderthemeLevel = RenderthemeZoomlevel(rulesList: rules, maxLevels: maxLevels);
     for (Rule rule in rules) {
       rule.secondPass();
     }
@@ -111,7 +115,7 @@ class Rendertheme {
   }
 
   /// Completes theme initialization by finalizing all rules.
-  /// 
+  ///
   /// Called after theme loading to perform final processing and optimization
   /// of all rules in the theme hierarchy.
   void complete() {
@@ -123,10 +127,10 @@ class Rendertheme {
   }
 
   /// Traverses all rules in the theme using the visitor pattern.
-  /// 
+  ///
   /// Applies the given visitor to all rules in the theme hierarchy,
   /// enabling operations like analysis, modification, or extraction.
-  /// 
+  ///
   /// [visitor] The visitor to apply to each rule
   void traverseRules(RuleVisitor visitor) {
     for (var rule in rulesList) {

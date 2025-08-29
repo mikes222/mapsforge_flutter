@@ -120,6 +120,15 @@ class MapModel {
     setPosition(newPosition);
   }
 
+  /// Sets the scale around a focal point.
+  ///
+  /// [focalPoint] The point to scale around.
+  /// [scale] The new scale value. Must be greater than 0.
+  /// A scale of 1 means no action,
+  /// 0..1 means zoom-out (you will see more area on screen since at pinch-to-zoom the fingers are moved towards each other)
+  /// >1 means zoom-in.
+  /// Scaling is different from zooming. Scaling is used during pinch-to-zoom gesture to scale the current area.
+  /// Zooming triggers new tile-images. Scaling does not.
   void scaleAround(Offset? focalPoint, double scale) {
     MapPosition newPosition = _lastPosition!.scaleAround(focalPoint, scale);
     setPosition(newPosition);

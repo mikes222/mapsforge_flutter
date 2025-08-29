@@ -9,7 +9,7 @@ abstract class RenderinstructionNode implements Renderinstruction {
 
   /// Creates a copy of itself with the data needed for the given zoomlevel. Note that this should only be called from [Rendertheme]
   /// and NOT from [RenderthemeZoomlevel]
-  RenderinstructionNode forZoomlevel(int zoomlevel);
+  RenderinstructionNode forZoomlevel(int zoomlevel, int level);
 
   @override
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}

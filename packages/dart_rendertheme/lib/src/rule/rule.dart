@@ -48,7 +48,7 @@ abstract class Rule implements SymbolSearcher {
     }
   }
 
-  Rule? forZoomlevel(int zoomlevel);
+  Rule? forZoomlevel(int zoomlevel, int Function());
 
   void apply(RuleVisitor v) {
     v.apply(this);
@@ -161,7 +161,8 @@ abstract class Rule implements SymbolSearcher {
 
   @override
   String toString() {
-    return 'Rule{zoomlevelRange: $zoomlevelRange, renderInstructionNodes: $renderinstructionNodes, renderInstructionOpenWays: $renderinstructionOpenWays, renderInstructionClosedWays: $renderinstructionClosedWays}';
+    //return 'Rule{zoomlevelRange: $zoomlevelRange, renderInstructionNodes: $renderinstructionNodes, renderInstructionOpenWays: $renderinstructionOpenWays, renderInstructionClosedWays: $renderinstructionClosedWays}';
+    return 'Rule{zoomlevelRange: $zoomlevelRange, renderInstructionNodes: ${renderinstructionNodes.length}, renderInstructionOpenWays: ${renderinstructionOpenWays.length}, renderInstructionClosedWays: ${renderinstructionClosedWays.length}}';
   }
 }
 

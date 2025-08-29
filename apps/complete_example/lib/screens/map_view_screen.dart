@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:complete_example/context_menu/my_context_menu.dart';
 import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
-import 'package:dart_common/utils.dart';
 import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
@@ -203,6 +202,7 @@ Pool Workers: ${poolStats['totalWorkers']}
               // rotates the map when two fingers are pressed and rotated
               RotationGestureDetector(mapModel: mapModel),
               // scales the map when two fingers are pressed and zoomed
+              //ScaleGestureDetector(mapModel: mapModel),
               ScaleGestureDetector(mapModel: mapModel),
               // informs mapModel about short, long and double taps
               TapGestureDetector(mapModel: mapModel),
@@ -248,8 +248,8 @@ Pool Workers: ${poolStats['totalWorkers']}
   Future<MapModel> createModel(BuildContext context) async {
     // find the device to pixel ratio end set the global property accordingly. This will shrink the tiles, requires to produce more tiles but makes the
     // map crispier.
-    double ratio = MediaQuery.devicePixelRatioOf(context);
-    MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
+    // double ratio = MediaQuery.devicePixelRatioOf(context);
+    // MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
 
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {

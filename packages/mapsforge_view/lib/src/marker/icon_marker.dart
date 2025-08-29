@@ -49,7 +49,7 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionIcon renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel);
+    RenderinstructionIcon renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);

@@ -47,7 +47,7 @@ class DatastoreReader {
     if (datastoreBundle == null) {
       return null;
     }
-    LayerContainerCollection layerContainerCollection = LayerContainerCollection();
+    LayerContainerCollection layerContainerCollection = LayerContainerCollection(renderthemeLevel.maxLevels);
     _processMapReadResult(layerContainerCollection, tile, renderthemeLevel, datastoreBundle);
     layerContainerCollection.clashingInfoCollection.collisionFreeOrdered();
     return layerContainerCollection;
@@ -59,9 +59,9 @@ class DatastoreReader {
     // }
     DatastoreBundle? datastoreBundle = await datastore.readLabels(leftUpper, rightLower);
     if (datastoreBundle == null) return null;
-    LayerContainerCollection layerContainerCollection = LayerContainerCollection();
+    LayerContainerCollection layerContainerCollection = LayerContainerCollection(renderthemeLevel.maxLevels);
     _processMapReadResult(layerContainerCollection, leftUpper, renderthemeLevel, datastoreBundle);
-    layerContainerCollection.drawingLayers.clear();
+    layerContainerCollection.drawings.clear();
     layerContainerCollection.clashingInfoCollection.clear();
     layerContainerCollection.labels.collisionFreeOrdered();
     return layerContainerCollection;

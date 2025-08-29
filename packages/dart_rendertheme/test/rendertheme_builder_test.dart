@@ -24,7 +24,7 @@ void main() {
     expect(renderTheme.baseTextSize, 1.0);
 
     // Verify that the theme has multiple levels (zoom levels)
-    expect(renderTheme.levels, greaterThan(0));
+    expect(renderTheme.maxLevels, greaterThan(0));
   });
 
   test('should contain expected rules', () {

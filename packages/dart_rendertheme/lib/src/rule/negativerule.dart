@@ -19,26 +19,30 @@ class NegativeRule extends Rule {
   });
 
   @override
-  NegativeRule? forZoomlevel(int zoomlevel) {
+  NegativeRule? forZoomlevel(int zoomlevel, int getMaxLevel()) {
     if (!matchesForZoomLevel(zoomlevel)) {
       return null;
     }
 
     List<RenderinstructionNode> renderinstructionNodes = [];
-    for (var renderInstruction in super.renderinstructionNodes) {
-      renderinstructionNodes.add(renderInstruction.forZoomlevel(zoomlevel));
-    }
     List<RenderinstructionWay> renderinstructionOpenWays = [];
-    for (var renderInstruction in super.renderinstructionOpenWays) {
-      renderinstructionOpenWays.add(renderInstruction.forZoomlevel(zoomlevel));
-    }
     List<RenderinstructionWay> renderinstructionClosedWays = [];
-    for (var renderInstruction in super.renderinstructionClosedWays) {
-      renderinstructionClosedWays.add(renderInstruction.forZoomlevel(zoomlevel));
+    if (super.renderinstructionNodes.isNotEmpty || super.renderinstructionOpenWays.isNotEmpty || super.renderinstructionClosedWays.isNotEmpty) {
+      // only retrieve a new level if we need it
+      int maxLevel = getMaxLevel();
+      for (var renderInstruction in super.renderinstructionNodes) {
+        renderinstructionNodes.add(renderInstruction.forZoomlevel(zoomlevel, maxLevel));
+      }
+      for (var renderInstruction in super.renderinstructionOpenWays) {
+        renderinstructionOpenWays.add(renderInstruction.forZoomlevel(zoomlevel, maxLevel));
+      }
+      for (var renderInstruction in super.renderinstructionClosedWays) {
+        renderinstructionClosedWays.add(renderInstruction.forZoomlevel(zoomlevel, maxLevel));
+      }
     }
     List<Rule> subRules = [];
     for (var subRule in super.subRules) {
-      Rule? rule = subRule.forZoomlevel(zoomlevel);
+      Rule? rule = subRule.forZoomlevel(zoomlevel, getMaxLevel);
       if (rule != null) subRules.add(rule);
     }
 

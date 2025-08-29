@@ -114,16 +114,6 @@ class UiPaint {
     return _paint.isAntiAlias;
   }
 
-  // @override
-  // void setBitmapShaderShift(Mappoint origin) {
-  //   // TODO: implement setBitmapShaderShift
-  // }
-  //
-  // @override
-  // void setTextAlign(Align align) {
-  //   // TODO: implement setTextAlign
-  // }
-
   void setStrokeDasharray(List<double>? strokeDasharray) {
     _strokeDasharray = strokeDasharray;
   }

@@ -16,11 +16,11 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
 /// High-performance tile renderer for datastore-based map data.
-/// 
+///
 /// This renderer converts map data from datastores into visual tile representations
 /// by applying rendering themes and generating bitmap images. It supports both
 /// static rendering (with labels) and dynamic rendering (without labels for rotation).
-/// 
+///
 /// Key features:
 /// - Efficient tile-based rendering with object pooling
 /// - Theme-based styling with zoom level support
@@ -29,7 +29,7 @@ import 'package:logging/logging.dart';
 /// - Performance optimizations with caching
 class DatastoreRenderer extends Renderer {
   static final _log = Logger('DatastoreRenderer');
-  
+
   /// Tag identifier for natural water features used in rendering optimization.
   static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
@@ -40,7 +40,7 @@ class DatastoreRenderer extends Renderer {
   final Rendertheme renderTheme;
 
   /// Whether to render labels directly onto tile images.
-  /// 
+  ///
   /// When true, labels are rendered onto tiles for better performance but
   /// prevent map rotation. When false, labels are rendered separately to
   /// support dynamic map rotation without label distortion.
@@ -54,7 +54,7 @@ class DatastoreRenderer extends Renderer {
 
   /// Object pool for RenderInfo lists to reduce garbage collection.
   static late ObjectPool<List<RenderInfo>> _renderInfoListPool;
-  
+
   /// Object pool for RenderInfo sets to reduce garbage collection.
   static late ObjectPool<Set<RenderInfo>> _renderInfoSetPool;
 
@@ -62,7 +62,7 @@ class DatastoreRenderer extends Renderer {
   static bool _poolsInitialized = false;
 
   /// Creates a new datastore renderer with the specified configuration.
-  /// 
+  ///
   /// [datastore] Data source providing map features
   /// [renderTheme] Theme defining visual styling rules
   /// [renderLabels] Whether to render labels onto tile images
@@ -120,7 +120,6 @@ class DatastoreRenderer extends Renderer {
     UiRenderContext renderContext = UiRenderContext(canvas: canvas, reference: leftUpper, projection: projection);
     drawWays(layerContainers, renderContext);
 
-    int labelCount = 0;
     if (renderLabels) {
       _LabelResult labelResult = _processLabels(renderContext, layerContainers.labels, job.tile);
       // rendering the labels directly into the canvas. Rotation of labels if the map rotates is not supported in this case.
@@ -162,10 +161,8 @@ class DatastoreRenderer extends Renderer {
   }
 
   void drawWays(LayerContainerCollection layerContainers, UiRenderContext renderContext) {
-    for (LayerContainer layerContainer in layerContainers.drawingLayers) {
-      for (RenderInfo renderInfo in layerContainer.renderInfoCollection.renderInfos) {
-        renderInfo.render(renderContext);
-      }
+    for (RenderInfo renderInfo in layerContainers.drawings.renderInfos) {
+      renderInfo.render(renderContext);
     }
     for (RenderInfo renderInfo in layerContainers.clashingInfoCollection.renderInfos) {
       renderInfo.render(renderContext);

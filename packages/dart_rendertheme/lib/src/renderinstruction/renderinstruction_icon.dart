@@ -11,11 +11,11 @@ import 'package:dart_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
 /// Rendering instruction for Flutter font-based icons on the map.
-/// 
+///
 /// This class handles the rendering of vector icons from Flutter's icon fonts
 /// such as Material Icons. Unlike bitmap symbols, these icons are scalable
 /// vector graphics that maintain quality at all zoom levels.
-/// 
+///
 /// Key features:
 /// - Vector-based icons from Flutter icon fonts
 /// - Reusable icons with unique identifiers
@@ -33,7 +33,7 @@ class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapS
   double theta = 0;
 
   /// Unicode code point of the icon in the font family.
-  /// 
+  ///
   /// For example, the Material Icons 'ten_k' icon has code point 0xe000,
   /// corresponding to IconData(0xe000, fontFamily: 'MaterialIcons').
   int codePoint = 0;
@@ -42,10 +42,10 @@ class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapS
   String fontFamily = "MaterialIcons";
 
   /// Creates a new icon rendering instruction for the specified drawing level.
-  /// 
+  ///
   /// Initializes bitmap settings with full size rendering and appropriate
   /// minimum zoom level for text-related icons.
-  /// 
+  ///
   /// [level] The drawing level (layer) for this icon instruction
   RenderinstructionIcon(int level) {
     this.level = level;
@@ -54,14 +54,14 @@ class RenderinstructionIcon extends Renderinstruction with BaseSrcMixin, BitmapS
   }
 
   /// Creates a zoom level specific copy of this icon instruction.
-  /// 
+  ///
   /// Applies zoom level dependent scaling to bitmap properties while
   /// preserving icon identity, positioning, rotation, and font settings.
-  /// 
+  ///
   /// [zoomlevel] Target zoom level for scaling calculations
   /// Returns a new scaled icon instruction
   @override
-  RenderinstructionIcon forZoomlevel(int zoomlevel) {
+  RenderinstructionIcon forZoomlevel(int zoomlevel, int level) {
     RenderinstructionIcon renderinstruction = RenderinstructionIcon(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)

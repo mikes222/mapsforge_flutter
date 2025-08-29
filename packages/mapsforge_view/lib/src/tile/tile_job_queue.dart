@@ -105,15 +105,22 @@ class TileJobQueue {
         if (myJob._abort) return;
 
         TilePicture? picture = await _tileCache.getOrProduce(tile, (Tile tile) async {
-          JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
-          if (result.picture == null) {
-            return null;
-            // print("No picture for tile $tile");
-            // return ImageHelper().createNoDataBitmap();
+          try {
+            JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
+            if (result.picture == null) {
+              return null;
+              // print("No picture for tile $tile");
+              // return ImageHelper().createNoDataBitmap();
+            }
+            // make sure the picture is converted to an image
+            await result.picture!.convertPictureToImage();
+            return result.picture!;
+          } catch (error, stacktrace) {
+            // error in ecache abort() method. The completer should be checked for isComplete() before injecting an exception
+            print(error);
+            print(stacktrace);
+            rethrow;
           }
-          // make sure the picture is converted to an image
-          await result.picture!.convertPictureToImage();
-          return result.picture!;
         });
 
         if (myJob._abort) return;

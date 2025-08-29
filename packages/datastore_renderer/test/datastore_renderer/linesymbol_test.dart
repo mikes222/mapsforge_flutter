@@ -121,6 +121,66 @@ void main() {
     //await tester.pump();
     await expectLater(find.byType(RawImage), matchesGoldenFile('goldens/linesymbol_rt_lb.png'));
   });
+
+  testWidgets('Should draw 2 crossing linesymbols', (WidgetTester tester) async {
+    int l = 0;
+    int zoomlevel = 16;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18);
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
+
+    var img = await (tester.runAsync(() async {
+      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
+
+      MemoryDatastore datastore = MemoryDatastore();
+      // symbol in the center of the poi, name above, ele below
+      datastore.addWay(
+        const Way(
+          0,
+          [Tag('highway', 'motorway'), Tag('oneway', 'yes')],
+          [
+            [LatLong(45.95, 18.002), LatLong(46.0004, 18.0006), LatLong(45.95, 17.953)],
+          ],
+          null,
+        ),
+      );
+      // datastore.addWay(
+      //   const Way(
+      //     0,
+      //     [Tag('highway', 'motorway'), Tag('oneway', 'yes')],
+      //     [
+      //       [LatLong(46, 18.000), LatLong(45.95, 18.002)],
+      //     ],
+      //     null,
+      //   ),
+      // );
+      Tile tile = Tile(x, y, zoomlevel, l);
+      JobRequest mapGeneratorJob = JobRequest(tile);
+      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+
+      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      expect(jobResult.picture, isNotNull);
+      return await jobResult.picture!.convertPictureToImage();
+    }));
+
+    expect(img, isNotNull);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(),
+        home: Scaffold(
+          body: Center(
+            child: Container(
+              decoration: BoxDecoration(border: Border.all(color: Colors.blue, width: 1)),
+              child: RawImage(image: img),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    //await tester.pump();
+    await expectLater(find.byType(RawImage), matchesGoldenFile('goldens/linesymbol_corner.png'));
+  });
 }
 
 void _initLogging() {

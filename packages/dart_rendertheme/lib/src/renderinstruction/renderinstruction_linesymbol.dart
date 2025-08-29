@@ -40,7 +40,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
   }
 
   @override
-  RenderinstructionLinesymbol forZoomlevel(int zoomlevel) {
+  RenderinstructionLinesymbol forZoomlevel(int zoomlevel, int level) {
     RenderinstructionLinesymbol renderinstruction = RenderinstructionLinesymbol(level)
       ..renderinstructionScale(this, zoomlevel)
       ..baseSrcMixinScale(this, zoomlevel)
