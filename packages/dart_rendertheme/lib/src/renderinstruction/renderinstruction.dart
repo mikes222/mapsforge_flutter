@@ -119,6 +119,8 @@ abstract class Renderinstruction {
   /// Display mode controlling when this instruction should be rendered.
   MapDisplay display = MapDisplay.IFSPACE;
 
+  void dispose() {}
+
   /// Scales rendering parameters based on zoom level and base instruction.
   ///
   /// Copies display properties from the base instruction and applies

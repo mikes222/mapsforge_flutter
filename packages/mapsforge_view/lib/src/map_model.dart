@@ -32,6 +32,7 @@ class MapModel {
     _tapSubject.close();
     _longTapSubject.close();
     _doubleTapSubject.close();
+    renderer.dispose();
   }
 
   void setPosition(MapPosition position) {

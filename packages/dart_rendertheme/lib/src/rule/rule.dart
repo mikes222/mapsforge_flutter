@@ -33,6 +33,21 @@ abstract class Rule implements SymbolSearcher {
     }
   }
 
+  void dispose() {
+    for (Rule rule in subRules) {
+      rule.dispose();
+    }
+    for (RenderinstructionNode renderinstruction in renderinstructionNodes) {
+      renderinstruction.dispose();
+    }
+    for (RenderinstructionWay renderinstruction in renderinstructionOpenWays) {
+      renderinstruction.dispose();
+    }
+    for (RenderinstructionWay renderinstruction in renderinstructionClosedWays) {
+      renderinstruction.dispose();
+    }
+  }
+
   void secondPass() {
     for (Rule rule in subRules) {
       rule.secondPass();

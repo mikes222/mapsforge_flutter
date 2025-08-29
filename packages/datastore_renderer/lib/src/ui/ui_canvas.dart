@@ -13,12 +13,12 @@ import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
 import 'package:flutter/cupertino.dart';
 
 /// Canvas abstraction for cross-platform rendering operations.
-/// 
+///
 /// This class provides a unified interface for drawing operations on Flutter's
 /// canvas system, supporting both direct canvas rendering and picture recording
 /// for cached tile generation. It includes performance tracking and optimized
 /// drawing methods for map rendering.
-/// 
+///
 /// Key features:
 /// - Direct canvas and picture recorder support
 /// - Performance metrics tracking (actions, bitmaps, text, paths)
@@ -47,16 +47,16 @@ class UiCanvas {
   int _pathCount = 0;
 
   /// Creates a canvas wrapper for an existing Flutter canvas.
-  /// 
+  ///
   /// [_uiCanvas] Existing Flutter canvas to wrap
   /// [_size] Size of the canvas in logical pixels
   UiCanvas(this._uiCanvas, this._size) : _pictureRecorder = null;
 
   /// Creates a canvas with picture recording for cached tile generation.
-  /// 
+  ///
   /// This constructor creates a canvas that records drawing operations into
   /// a picture that can be cached and reused for improved performance.
-  /// 
+  ///
   /// [width] Width of the canvas in logical pixels
   /// [height] Height of the canvas in logical pixels
   UiCanvas.forRecorder(double width, double height)
@@ -68,7 +68,7 @@ class UiCanvas {
   }
 
   /// Disposes of canvas resources and finalizes picture recording.
-  /// 
+  ///
   /// Should be called when the canvas is no longer needed to properly
   /// clean up resources and finalize any ongoing picture recording.
   void dispose() {
@@ -76,7 +76,7 @@ class UiCanvas {
   }
 
   /// Draws a Flutter icon using a TextPainter at the specified position.
-  /// 
+  ///
   /// [textPainter] Configured TextPainter with icon glyph
   /// [left] X coordinate for icon placement
   /// [top] Y coordinate for icon placement
@@ -115,6 +115,7 @@ class UiCanvas {
     }
   }
 
+  /// draws the given [picture] at the specified position. Note that the picture is NOT disposed in this method.
   void drawTilePicture({required TilePicture picture, required double left, required double top}) {
     if (picture.getPicture() != null) {
       ui.Picture pic = picture.getPicture()!;

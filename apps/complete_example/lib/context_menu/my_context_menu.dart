@@ -39,6 +39,14 @@ class MyContextMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (info.diffX < -info.halfScreenWidth ||
+        info.diffX > 3 * info.halfScreenWidth ||
+        info.diffY < -info.halfScreenHeight ||
+        info.diffY > 3 * info.halfScreenHeight) {
+      info.mapModel.tap(null);
+      return const SizedBox();
+    }
+
     int tileY = info.projection.latitudeToTileY(info.latitude);
     int tileX = info.projection.longitudeToTileX(info.longitude);
     Tile tile = Tile(tileX, tileY, info.projection.scalefactor.zoomlevel, mapModel.lastPosition!.indoorLevel);

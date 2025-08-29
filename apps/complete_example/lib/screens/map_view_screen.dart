@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:complete_example/context_menu/my_context_menu.dart';
 import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
+import 'package:dart_common/utils.dart';
 import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:datastore_renderer/cache.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,6 +49,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
   MarkerDatastore debugDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
 
   Datastore? datastore;
+
+  MapModel? _mapModel;
 
   @override
   void initState() {
@@ -160,6 +164,10 @@ Pool Workers: ${poolStats['totalWorkers']}
     _memoryMonitor.dispose();
     _poolManager.shutdown();
     _taskQueue.cancel();
+    // mapModel must be disposed after use
+    _mapModel?.dispose();
+    // disposing the symbolcache also frees a lot of memory
+    SymbolCacheMgr().dispose();
     super.dispose();
   }
 
@@ -248,8 +256,8 @@ Pool Workers: ${poolStats['totalWorkers']}
   Future<MapModel> createModel(BuildContext context) async {
     // find the device to pixel ratio end set the global property accordingly. This will shrink the tiles, requires to produce more tiles but makes the
     // map crispier.
-    // double ratio = MediaQuery.devicePixelRatioOf(context);
-    // MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
+    double ratio = MediaQuery.devicePixelRatioOf(context);
+    MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
 
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
@@ -270,7 +278,8 @@ Pool Workers: ${poolStats['totalWorkers']}
       throw UnimplementedError();
     }
     // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
-    MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
+    // MapModel must be disposed after use.
+    _mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
     // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile.
@@ -279,9 +288,9 @@ Pool Workers: ${poolStats['totalWorkers']}
       widget.configuration.location.centerLongitude,
       widget.configuration.location.defaultZoomLevel,
     );
-    mapModel.setPosition(mapPosition);
+    _mapModel!.setPosition(mapPosition);
 
-    return mapModel;
+    return _mapModel!;
   }
 
   Widget _buildPerformanceOverlay() {

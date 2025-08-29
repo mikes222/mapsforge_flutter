@@ -10,6 +10,7 @@ abstract class TileCache {
   ///
   void dispose();
 
+  /// todo it may make sense to return a clone and dispose that clone at the consumer. The cache may evict an image at any time even if it is still used by the consumer.
   Future<TilePicture?> getOrProduce(Tile tile, Future<TilePicture?> Function(Tile) producer);
 
   ///
@@ -23,5 +24,8 @@ abstract class TileCache {
   ///
   void purgeByBoundary(BoundingBox boundingBox);
 
+  /// Returns the requested picture or null if the picture is not available.
+  ///
+  /// todo it may make sense to return a clone and dispose that clone at the consumer. The cache may evict an image at any time even if it is still used by the consumer.
   TilePicture? get(Tile tile);
 }

@@ -37,7 +37,7 @@ class DatastoreRenderer extends Renderer {
   final Datastore datastore;
 
   /// Rendering theme defining visual styling rules.
-  final Rendertheme renderTheme;
+  final Rendertheme rendertheme;
 
   /// Whether to render labels directly onto tile images.
   ///
@@ -64,9 +64,9 @@ class DatastoreRenderer extends Renderer {
   /// Creates a new datastore renderer with the specified configuration.
   ///
   /// [datastore] Data source providing map features
-  /// [renderTheme] Theme defining visual styling rules
+  /// [rendertheme] Theme defining visual styling rules
   /// [renderLabels] Whether to render labels onto tile images
-  DatastoreRenderer(this.datastore, this.renderTheme, this.renderLabels) {
+  DatastoreRenderer(this.datastore, this.rendertheme, this.renderLabels) {
     if (renderLabels) {
       tileDependencies = TileDependencies();
     } else {
@@ -91,6 +91,7 @@ class DatastoreRenderer extends Renderer {
   @mustCallSuper
   void dispose() {
     tileDependencies?.dispose();
+    rendertheme.dispose();
     super.dispose();
   }
 
@@ -103,7 +104,7 @@ class DatastoreRenderer extends Renderer {
     Timing timing = Timing(log: _log, active: true, prefix: "${job.tile.toString()} ");
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(job.tile.zoomLevel);
+    RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(job.tile.zoomLevel);
     timing.lap(100, "$renderthemeLevel prepareZoomlevel");
 
     LayerContainerCollection? layerContainers = await _datastoreReader.read(datastore, job.tile, renderthemeLevel);
@@ -147,7 +148,7 @@ class DatastoreRenderer extends Renderer {
     Timing timing = Timing(log: _log, active: true);
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
-    RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(job.tile.zoomLevel);
+    RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(job.tile.zoomLevel);
 
     LayerContainerCollection? layerContainers = await _datastoreReader.readLabels(datastore, job.tile, job.rightLower ?? job.tile, renderthemeLevel);
 
@@ -157,7 +158,7 @@ class DatastoreRenderer extends Renderer {
 
     await PainterFactory().initDrawingLayers(layerContainers);
     timing.done(100, "Retrieve labels for $job completed");
-    return JobResult.normal(null, layerContainers.labels);
+    return JobResult.normalLabels(layerContainers.labels);
   }
 
   void drawWays(LayerContainerCollection layerContainers, UiRenderContext renderContext) {
@@ -262,7 +263,7 @@ class DatastoreRenderer extends Renderer {
 
   @override
   String getRenderKey() {
-    return "${renderTheme.hashCode ^ renderLabels.hashCode}";
+    return "${rendertheme.hashCode ^ renderLabels.hashCode}";
   }
 }
 

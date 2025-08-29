@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 
 class MapModelHelper {
+  /// A helper function to create a mapModel from a mapfile. Note that the mapModel must be disposed after use.
   static Future<MapModel> createOfflineMapModel({
     String renderthemeFilename = "assets/defaultrender.xml",
     required Datastore datastore,

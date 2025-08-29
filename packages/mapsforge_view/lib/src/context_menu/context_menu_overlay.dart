@@ -10,7 +10,7 @@ import 'package:mapsforge_view/src/context_menu/simple_context_menu.dart';
 typedef ContextMenuBuilder = Widget Function(ContextMenuInfo info);
 
 /// Listens to tap events on the map and shows a context menu. The event which is being listened is configurable. The context menu to show is also
-/// configurable.
+/// configurable. Make sure to close the context menu by calling MapModel.tapEvent(null) when the context menu should be closed or is (far) outside of the visible area.
 class ContextMenuOverlay extends StatelessWidget {
   final MapModel mapModel;
 

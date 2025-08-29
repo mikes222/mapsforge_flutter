@@ -10,6 +10,8 @@ class TilePicture {
 
   TilePicture.fromPicture(this._picture) : _image = null;
 
+  // Instantiates a new TilePicture object and holds the given image. Note that the responsibility to dispose the image is transferred to this class hence the
+  // class MUST be disposed after use.
   TilePicture.fromBitmap(this._image) : _picture = null;
 
   ui.Picture? getPicture() {

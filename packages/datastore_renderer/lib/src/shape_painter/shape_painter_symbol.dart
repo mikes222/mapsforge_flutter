@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:task_queue/task_queue.dart';
 
+/// This class must be disposed after use
 class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
   static final _log = Logger('ShapePaintSymbol');
 
@@ -50,6 +51,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     }
   }
 
+  @override
   void dispose() {
     symbolImage?.dispose();
   }

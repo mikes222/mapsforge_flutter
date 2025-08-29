@@ -37,6 +37,15 @@ class RenderthemeZoomlevel {
   /// [rulesList] Hierarchical list of rendering rules for this zoom level
   RenderthemeZoomlevel({required this.rulesList, required this.maxLevels});
 
+  void dispose() {
+    for (var element in rulesList) {
+      element.dispose();
+    }
+    nodeMatchingCache.clear();
+    openWayMatchingCache.clear();
+    closedWayMatchingCache.clear();
+  }
+
   /// Matches a node (POI) against the rendering rules for this zoom level.
   ///
   /// Uses cached results when available to improve performance. The matching

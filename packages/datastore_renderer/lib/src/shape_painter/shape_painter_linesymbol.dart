@@ -10,6 +10,7 @@ import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:logging/logging.dart';
 import 'package:task_queue/task_queue.dart';
 
+/// Linesymbols must be disposed after use
 class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
   static final _log = Logger('ShapePaintLinesymbol');
 
@@ -35,6 +36,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
     }
   }
 
+  @override
   void dispose() {
     symbolImage?.dispose();
   }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 class ImageHelper {
   static final double _margin = 5;
 
+  /// todo since the images may be disposed by the receiving cache there may be a problem here. We should rather handle a clone() to the caller.
   static TilePicture? _missing;
 
   static TilePicture? _noData;

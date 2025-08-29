@@ -113,6 +113,16 @@ class Rendertheme {
     return renderthemeLevel;
   }
 
+  void dispose() {
+    for (var element in rulesList) {
+      element.dispose();
+    }
+    for (var element in _renderthemeZoomlevels.values) {
+      element.dispose();
+    }
+    _renderthemeZoomlevels.clear();
+  }
+
   /// Completes theme initialization by finalizing all rules.
   ///
   /// Called after theme loading to perform final processing and optimization

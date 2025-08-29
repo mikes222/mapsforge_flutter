@@ -10,6 +10,13 @@ class SimpleContextMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (info.diffX < -info.halfScreenWidth ||
+        info.diffX > 3 * info.halfScreenWidth ||
+        info.diffY < -info.halfScreenHeight ||
+        info.diffY > 3 * info.halfScreenHeight) {
+      info.mapModel.tap(null);
+      return const SizedBox();
+    }
     return SimpleContextMenuWidget(
       info: info,
       child: InkWell(
