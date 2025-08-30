@@ -123,6 +123,8 @@ class _MoveEvent {
 
   Offset? _updateLocalFocalPoint;
 
+  int _lastManualMoveEvent = 0;
+
   _MoveEvent({required this.mapModel, required this.swipeAbsorption, required this.startLocalFocalPoint, required this.startCenter});
 
   void dispose() {
@@ -142,6 +144,10 @@ class _MoveEvent {
       double rot = mapModel.lastPosition!.rotationRadian;
       diffX = cos(-rot + rad) * hyp;
       diffY = sin(-rot + rad) * hyp;
+    }
+    if (_lastManualMoveEvent == 0 || _lastManualMoveEvent < DateTime.now().millisecondsSinceEpoch) {
+      _lastManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
+      mapModel.manualMove(Object());
     }
     mapModel.setCenter(startCenter.x - diffX, startCenter.y - diffY);
   }
@@ -190,6 +196,10 @@ class _MoveEvent {
     //if (doLog) _log.info("Swiping ${_swipeOffset!.distance}");
     Mappoint? center = mapModel.lastPosition?.getCenter();
     if (center != null) {
+      if (_lastManualMoveEvent == 0 || _lastManualMoveEvent < DateTime.now().millisecondsSinceEpoch) {
+        _lastManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
+        mapModel.manualMove(Object());
+      }
       mapModel.setCenter(center.x - _swipeOffset!.dx, center.y - _swipeOffset!.dy);
     }
     // slow down after each iteration
