@@ -5,8 +5,6 @@ environment:
 dev_dependencies:
   melos: ^7.1.0
 workspace:
-  - packages/task_queue
-  - packages/dart_isolate
   - packages/dart_common
   - packages/dart_mapfile
   - packages/dart_rendertheme

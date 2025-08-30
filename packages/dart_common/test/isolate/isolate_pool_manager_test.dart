@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:dart_common/dart_isolate.dart';
 import 'package:dart_common/model.dart';
-import 'package:dart_isolate/dart_isolate.dart';
-import 'package:task_queue/task_queue.dart';
+import 'package:dart_common/src/task_queue/enhanced_task_queue.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -17,9 +17,6 @@ dependencies:
   dart_common: ^1.0.0
 
   # Workspace
-  dart_isolate: ^1.0.0
-
-  # Workspace
   dart_mapfile: ^1.0.0
 
   # Workspace
@@ -31,9 +28,6 @@ dependencies:
 
   # for pbf format
   protobuf: ^4.2.0
-
-  # Workspace
-  task_queue: ^1.0.0
 
   # MIT License
   # for reading and writing osm files

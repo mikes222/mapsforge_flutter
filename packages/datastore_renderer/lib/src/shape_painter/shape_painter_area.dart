@@ -1,3 +1,4 @@
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
@@ -6,14 +7,13 @@ import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_path.dart';
 import 'package:datastore_renderer/src/ui/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
-import 'package:task_queue/task_queue.dart';
 
 /// Shape painter for rendering filled polygon areas on the map canvas.
-/// 
+///
 /// This painter handles the rendering of closed polygon areas such as buildings,
 /// parks, water bodies, and other filled regions. It supports both solid fill
 /// colors and bitmap pattern fills, along with optional stroke outlines.
-/// 
+///
 /// Key features:
 /// - Solid color fills and bitmap pattern fills
 /// - Stroke outlines with customizable properties
@@ -30,10 +30,10 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   static final TaskQueue _taskQueue = SimpleTaskQueue();
 
   /// Private constructor for creating area shape painters.
-  /// 
+  ///
   /// Initializes fill and stroke paint objects based on the rendering instruction
   /// configuration. Transparent fills and strokes are set to null for optimization.
-  /// 
+  ///
   /// [renderinstruction] Area rendering instruction with styling parameters
   ShapePaintArea._(RenderinstructionArea renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
@@ -53,10 +53,10 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   }
 
   /// Creates a new area shape painter with asynchronous initialization.
-  /// 
+  ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  /// 
+  ///
   /// [renderinstruction] Area rendering instruction to create painter for
   /// Returns initialized area shape painter
   static Future<ShapePaintArea> create(RenderinstructionArea renderinstruction) async {
@@ -70,7 +70,7 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   }
 
   /// Initializes the shape painter by loading bitmap patterns if specified.
-  /// 
+  ///
   /// Loads bitmap images from the symbol cache for pattern fills and
   /// configures the fill paint accordingly.
   Future<void> init() async {

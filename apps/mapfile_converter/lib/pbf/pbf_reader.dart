@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_common/buffer.dart';
+import 'package:dart_common/dart_isolate.dart';
 import 'package:dart_common/model.dart';
-import 'package:dart_isolate/dart_isolate.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';

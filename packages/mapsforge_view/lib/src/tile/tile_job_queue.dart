@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_common/model.dart';
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_common/utils.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/ui.dart';
@@ -10,7 +11,6 @@ import 'package:mapsforge_view/src/tile/tile_dimension.dart';
 import 'package:mapsforge_view/src/tile/tile_set.dart';
 import 'package:mapsforge_view/src/util/tile_helper.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:task_queue/task_queue.dart';
 
 import '../cache/memory_tile_cache.dart';
 

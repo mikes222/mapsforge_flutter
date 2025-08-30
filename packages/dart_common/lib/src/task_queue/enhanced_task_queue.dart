@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:collection';
 
-import 'package:task_queue/src/queue_cancelled_exception.dart';
+import 'package:dart_common/src/task_queue/queue_cancelled_exception.dart';
 
 /// Priority levels for tasks
 enum TaskPriority {
@@ -239,20 +238,11 @@ class WorkStealingTaskQueue {
   int _nextWorker = 0;
 
   WorkStealingTaskQueue({int numWorkers = 4, int maxParallelPerWorker = 2})
-      : _numWorkers = numWorkers,
-        _workers = List.generate(
-          numWorkers,
-          (index) => EnhancedTaskQueue(maxParallel: maxParallelPerWorker),
-        );
+    : _numWorkers = numWorkers,
+      _workers = List.generate(numWorkers, (index) => EnhancedTaskQueue(maxParallel: maxParallelPerWorker));
 
   /// Add task to the least busy worker
-  Future<T> add<T>(
-    Future<T> Function() closure, {
-    TaskPriority priority = TaskPriority.normal,
-    Duration? timeout,
-    String? taskId,
-    Set<String>? dependencies,
-  }) {
+  Future<T> add<T>(Future<T> Function() closure, {TaskPriority priority = TaskPriority.normal, Duration? timeout, String? taskId, Set<String>? dependencies}) {
     // Find worker with least load
     EnhancedTaskQueue leastBusyWorker = _workers[0];
     int minLoad = leastBusyWorker.queueLength + leastBusyWorker.runningCount;
@@ -266,13 +256,7 @@ class WorkStealingTaskQueue {
       }
     }
 
-    return leastBusyWorker.add(
-      closure,
-      priority: priority,
-      timeout: timeout,
-      taskId: taskId,
-      dependencies: dependencies,
-    );
+    return leastBusyWorker.add(closure, priority: priority, timeout: timeout, taskId: taskId, dependencies: dependencies);
   }
 
   /// Add task to specific worker (round-robin)
@@ -288,13 +272,7 @@ class WorkStealingTaskQueue {
       throw ArgumentError('Worker index out of range: $workerIndex');
     }
 
-    return _workers[workerIndex].add(
-      closure,
-      priority: priority,
-      timeout: timeout,
-      taskId: taskId,
-      dependencies: dependencies,
-    );
+    return _workers[workerIndex].add(closure, priority: priority, timeout: timeout, taskId: taskId, dependencies: dependencies);
   }
 
   /// Cancel all workers
@@ -317,8 +295,7 @@ class WorkStealingTaskQueue {
 
       final priorityCounts = stats['priorityCounts'] as Map<String, int>;
       for (final entry in priorityCounts.entries) {
-        combinedPriorityCounts[entry.key] = 
-            (combinedPriorityCounts[entry.key] ?? 0) + entry.value;
+        combinedPriorityCounts[entry.key] = (combinedPriorityCounts[entry.key] ?? 0) + entry.value;
       }
     }
 
@@ -351,7 +328,7 @@ class _EnhancedTask<T> implements Comparable<_EnhancedTask> {
     // Higher priority first
     final priorityComparison = other.priority.value.compareTo(priority.value);
     if (priorityComparison != 0) return priorityComparison;
-    
+
     // Earlier creation time first (FIFO within same priority)
     return createdAt.compareTo(other.createdAt);
   }

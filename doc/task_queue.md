@@ -4,8 +4,8 @@ A Dart package that provides a task queue mechanism to manage and execute asynch
 
 # Features
 
- - **Sequential Task Execution**: Ensures tasks are executed one after another, maintaining order and preventing race conditions.
- - **Parallel Task Execution**: Ensures a limited number of tasks are executed concurrently, enhancing efficiency.
+- **Sequential Task Execution**: Ensures tasks are executed one after another, maintaining order and preventing race conditions.
+- **Parallel Task Execution**: Ensures a limited number of tasks are executed concurrently, enhancing efficiency.
 
 # Getting Started
 
@@ -74,7 +74,7 @@ The handling is the same as the sequential execution explained above.
 
 # Additional Information
 
- - License: This project is licensed under the MIT License. See the LICENSE file for details.
- - Contributions: Contributions are welcome! Please open issues or submit pull requests for any enhancements or bug fixes.
- - Author: mikes222
+- License: This project is licensed under the MIT License. See the LICENSE file for details.
+- Contributions: Contributions are welcome! Please open issues or submit pull requests for any enhancements or bug fixes.
+- Author: mikes222
 

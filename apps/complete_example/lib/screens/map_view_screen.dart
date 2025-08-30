@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
+import 'package:dart_common/dart_isolate.dart';
 import 'package:dart_common/datastore.dart';
 import 'package:dart_common/model.dart';
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_common/utils.dart';
-import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/cache.dart';
@@ -15,7 +16,6 @@ import 'package:mapsforge_view/gesture.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/marker.dart';
 import 'package:mapsforge_view/overlay.dart';
-import 'package:task_queue/task_queue.dart';
 
 import '../models/app_models.dart';
 

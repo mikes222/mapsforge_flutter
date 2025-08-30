@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:dart_common/model.dart';
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
@@ -9,7 +10,6 @@ import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
-import 'package:task_queue/task_queue.dart';
 
 class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
   // this is the stroke, normally white and represents the "surrounding of the text"

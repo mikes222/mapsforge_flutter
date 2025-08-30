@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:task_queue/task_queue.dart';
+import 'package:dart_common/src/task_queue/enhanced_task_queue.dart';
+import 'package:dart_common/src/task_queue/queue_cancelled_exception.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -54,10 +55,10 @@ void main() {
 
         // Allow small delay for tasks to queue up
         await Future.delayed(Duration(milliseconds: 10));
-        
+
         // Release the blocking task
         completer.complete();
-        
+
         await Future.wait([blockingFuture, ...futures]);
         priorityQueue.cancel();
 
@@ -182,7 +183,7 @@ void main() {
         // Use a queue with maxParallel=1 and block it first
         final cancelQueue = EnhancedTaskQueue(maxParallel: 1);
         var executed = false;
-        
+
         // Block the queue with a long-running task
         final completer = Completer<void>();
         final blockingFuture = cancelQueue.add(() async {
@@ -198,7 +199,7 @@ void main() {
 
         // Allow task to be queued
         await Future.delayed(Duration(milliseconds: 10));
-        
+
         // Cancel the queued task
         final cancelled = cancelQueue.cancelTask('test-task');
         expect(cancelled, isTrue);
@@ -214,7 +215,7 @@ void main() {
         completer.complete();
         await blockingFuture;
         cancelQueue.cancel();
-        
+
         expect(executed, isFalse);
       });
 
@@ -345,13 +346,15 @@ void main() {
 
       test('should provide combined statistics', () async {
         final futures = <Future>[];
-        
+
         // Add tasks to different workers
         for (int i = 0; i < 5; i++) {
-          futures.add(queue.add(() async {
-            await Future.delayed(Duration(milliseconds: 50));
-            return i;
-          }));
+          futures.add(
+            queue.add(() async {
+              await Future.delayed(Duration(milliseconds: 50));
+              return i;
+            }),
+          );
         }
 
         // Wait for tasks to be distributed
@@ -360,7 +363,7 @@ void main() {
         final stats = queue.getStatistics();
         expect(stats['numWorkers'], equals(3));
         expect(stats['workerStats'], hasLength(3));
-        
+
         // Wait for tasks to complete and handle cancellation exceptions
         await Future.wait(futures, eagerError: false).catchError((e) => null);
       });

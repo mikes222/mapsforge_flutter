@@ -69,11 +69,6 @@ dependencies:
   # For file downloading
   path_provider: ^2.1.5
 
-  # Performance optimization packages
-  task_queue: ^1.0.0
-  dart_isolate: ^1.0.0
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

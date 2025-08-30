@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:dart_common/model.dart';
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/ui/ui_matrix.dart';
@@ -9,7 +10,6 @@ import 'package:datastore_renderer/src/ui/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:task_queue/task_queue.dart';
 
 class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
   static final _log = Logger('ShapePaintSymbol');

@@ -4,11 +4,11 @@ A Dart package that provides a task queue mechanism as well as isolates to manag
 
 # Features
 
- - **Sequential Task Execution**: Ensures tasks are executed one after another, maintaining order and preventing race conditions.
- - **Parallel Task Execution**: Ensures a limited number of tasks are executed concurrently, enhancing efficiency.
- - **Isolate method calls**: Leverages Dart's isolate system to perform tasks without blocking the main thread, enhancing performance.
- - **Isolate returning streams**: Calling an isolate and wait for the stream of events from the isolate
- - **Isolate pool**: Create a pool of isolates and delegate each call to another free isolate. 
+- **Sequential Task Execution**: Ensures tasks are executed one after another, maintaining order and preventing race conditions.
+- **Parallel Task Execution**: Ensures a limited number of tasks are executed concurrently, enhancing efficiency.
+- **Isolate method calls**: Leverages Dart's isolate system to perform tasks without blocking the main thread, enhancing performance.
+- **Isolate returning streams**: Calling an isolate and wait for the stream of events from the isolate
+- **Isolate pool**: Create a pool of isolates and delegate each call to another free isolate.
 
 # Getting Started
 
@@ -141,11 +141,11 @@ class IsolateWorkingClass {
 }
 ```
 
-Now use the new isolate. This usecase is useful if 
+Now use the new isolate. This usecase is useful if
 
 1. you need to handle large quantities of data to the isolate during initialization. (Data that is not changing during the lifetime of the isolate)
 2. you want to reuse the isolate multiple times
-3. you want to call the isolate method multiple times without waiting for the result of the previous method call. 
+3. you want to call the isolate method multiple times without waiting for the result of the previous method call.
 
 ```dart
     IsolateWorkingClass workingClass = await IsolateWorkingClass.instantiate("isolateParams");
@@ -165,13 +165,13 @@ To be documented
 
 **Notes:**
 
-To handle multiple parameters create a helper class containing the parameters. Alternatively you can handle a map with the desired parameters. 
+To handle multiple parameters create a helper class containing the parameters. Alternatively you can handle a map with the desired parameters.
 
 
 
 # Additional Information
 
- - License: This project is licensed under the MIT License. See the LICENSE file for details.
- - Contributions: Contributions are welcome! Please open issues or submit pull requests for any enhancements or bug fixes.
- - Author: mikes222
+- License: This project is licensed under the MIT License. See the LICENSE file for details.
+- Contributions: Contributions are welcome! Please open issues or submit pull requests for any enhancements or bug fixes.
+- Author: mikes222
 

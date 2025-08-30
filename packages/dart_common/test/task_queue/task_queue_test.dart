@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:task_queue/task_queue.dart';
+import 'package:dart_common/src/task_queue/task_queue.dart';
 import 'package:test/test.dart';
 
 void main() {

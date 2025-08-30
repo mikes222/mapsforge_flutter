@@ -46,19 +46,14 @@ dependencies:
 
   ecache: ^2.0.12
 
-  # for svg files
-  #vector_graphics: ^1.1.19
-
   # BSD License
+  # for importing svg files
   flutter_svg: ^2.2.0
 
   logging: ^1.3.0
 
   # Workspace
   mapsforge_assets: ^1.0.0
-
-  # Workspace
-  task_queue: ^1.0.0
 
 dev_dependencies:
   flutter_test:

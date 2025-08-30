@@ -2,10 +2,10 @@ import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:dart_common/buffer.dart';
+import 'package:dart_common/dart_isolate.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/utils/timing.dart';
-import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/writer/way_cropper.dart';
 import 'package:ecache/ecache.dart';

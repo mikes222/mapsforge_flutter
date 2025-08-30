@@ -1,4 +1,5 @@
 import 'package:dart_common/model.dart';
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
@@ -6,7 +7,6 @@ import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_render_context.dart';
 import 'package:datastore_renderer/src/ui/ui_shape_painter.dart';
 import 'package:datastore_renderer/src/ui/ui_text_paint.dart';
-import 'package:task_queue/task_queue.dart';
 
 class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineText> {
   late final UiPaint? paintBack;

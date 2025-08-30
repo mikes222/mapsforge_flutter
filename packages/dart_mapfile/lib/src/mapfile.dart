@@ -1,12 +1,13 @@
 import 'dart:typed_data';
 
 import 'package:dart_common/buffer.dart';
+import 'package:dart_common/dart_isolate.dart';
 import 'package:dart_common/model.dart';
 import 'package:dart_common/projection.dart';
 import 'package:dart_common/src/buffer/readbuffer_memory.dart';
 import 'package:dart_common/src/datastore/datastore.dart';
+import 'package:dart_common/task_queue.dart';
 import 'package:dart_common/utils.dart';
-import 'package:dart_isolate/dart_isolate.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/indexcache.dart';
 import 'package:dart_mapfile/src/map_datastore.dart';
@@ -17,7 +18,6 @@ import 'package:dart_mapfile/src/model/query_parameters.dart';
 import 'package:dart_mapfile/src/model/subfile_parameter.dart';
 import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
-import 'package:task_queue/task_queue.dart';
 
 @pragma("vm:entry-point")
 class IsolateMapfile implements Datastore {

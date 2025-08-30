@@ -1,4 +1,4 @@
-#Melos Documentation for Flutter Projects
+# Melos Documentation for Flutter Projects
 
 This guide provides a clear overview of using Melos, a powerful tool for managing multi-package Dart and Flutter projects, also known as monorepos. It outlines two common use cases and best practices to ensure your project remains scalable and maintainable.
 
@@ -15,7 +15,7 @@ Set up a Melos project with the following directory structure:
 
 **Melos Configuration**
 
-Your melos.yaml file should define the location of your packages. See melos docu for more info:
+Your pubspec.yaml file should define the location of your packages. See melos docu for more info:
 
 ````yaml
 name: my_app_monorepo
@@ -41,6 +41,8 @@ dependencies:
 ````
 
 Note: Melos automatically handles the path dependencies for you, linking local packages within the monorepo. This allows your main application to compile without any issues, as if the packages were standard, separate projects.
+
+This approach works also during development because melos will make sure that your packages are available. This is in contrary to development without melos where you need to change the reference to local packages in the pubspec.yaml file. 
 
 ## Use Case 2: Splitting a Complex Library into Functional Parts
 

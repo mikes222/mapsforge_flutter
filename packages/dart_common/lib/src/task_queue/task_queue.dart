@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:task_queue/src/queue_cancelled_exception.dart';
+import 'package:dart_common/src/task_queue/queue_cancelled_exception.dart';
 
 /// Abstract class for a queue to execute Futures in order.
 abstract class TaskQueue {
