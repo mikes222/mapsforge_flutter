@@ -1,5 +1,5 @@
-import 'package:dart_common/model.dart';
-import 'package:dart_common/task_queue.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
@@ -44,7 +44,7 @@ class ShapePainterCircle extends UiShapePainter<RenderinstructionCircle> {
   @override
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
-    RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference);
+    MappointRelative relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference);
     relative = relative.offset(0, renderinstruction.dy);
     if (fill != null) renderContext.canvas.drawCircle(relative.dx, relative.dy, renderinstruction.radius, fill!);
     if (stroke != null) renderContext.canvas.drawCircle(relative.dx, relative.dy, renderinstruction.radius, stroke!);

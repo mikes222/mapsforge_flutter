@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:math' as Math;
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 /// A spatial index for tiles using a grid-based approach to optimize
 /// boundary-based cache operations and collision detection

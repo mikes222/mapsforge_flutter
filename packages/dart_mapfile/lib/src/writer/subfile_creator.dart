@@ -3,10 +3,10 @@ import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/src/projection/mercator_projection.dart';
-import 'package:dart_common/src/utils/timing.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/src/projection/mercator_projection.dart';
+import 'package:mapsforge_flutter_core/src/utils/timing.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/writer/poiholder.dart';
 import 'package:dart_mapfile/src/writer/tile_constructor.dart';

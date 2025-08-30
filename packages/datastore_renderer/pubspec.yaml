@@ -39,9 +39,6 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Workspace
-  dart_common: ^1.0.0
-
-  # Workspace
   dart_rendertheme: ^1.0.0
 
   ecache: ^2.0.12
@@ -53,7 +50,7 @@ dependencies:
   logging: ^1.3.0
 
   # Workspace
-  mapsforge_assets: ^1.0.0
+  mapsforge_flutter_core: ^1.0.0
 
 dev_dependencies:
   flutter_test:

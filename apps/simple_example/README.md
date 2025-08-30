@@ -150,12 +150,12 @@ After understanding this simple example, explore:
 
 This example uses these Mapsforge packages:
 
-- `dart_common` - Common utilities and models
+- `mapsforge_flutter_core` - Common utilities and models
 - `dart_mapfile` - Map file reading and parsing
 - `dart_rendertheme` - Render theme processing
 - `datastore_renderer` - Map rendering engine
 - `mapsforge_view` - Flutter UI components
-- `mapsforge_assets` - Map symbols and patterns
+- `dart_rendertheme` - Map symbols and patterns
 
 ## Resources
 

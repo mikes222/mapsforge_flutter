@@ -171,7 +171,7 @@ lib/
 - `datastore_renderer`: Rendering engine
 
 ### Performance Optimizations
-- `dart_common`: Performance profiler and utilities
+- `mapsforge_flutter_core`: Performance profiler and utilities
 - `task_queue`: Enhanced task scheduling
 - `dart_isolate`: Isolate pool management
 

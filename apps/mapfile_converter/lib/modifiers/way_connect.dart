@@ -1,5 +1,6 @@
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_common/model.dart';
 import 'package:logging/logging.dart';
 
 /// Connects open ways together to form a longer way. Only master and openOuters will be taken into account.

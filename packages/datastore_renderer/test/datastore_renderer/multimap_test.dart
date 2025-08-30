@@ -1,8 +1,8 @@
-import 'package:dart_common/model.dart';
-import 'package:dart_mapfile/src/multimap_datastore.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/cache.dart';
 import 'package:datastore_renderer/renderer.dart';
+import 'package:datastore_renderer/src/multimap_datastore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 
@@ -24,11 +24,11 @@ main() async {
   test("MultimapDatastore without maps", () async {
     _initLogging();
 
-    MultiMapDataStore dataStore = MultiMapDataStore(DataPolicy.RETURN_ALL);
+    MultiMapDataStore datastore = MultiMapDataStore(DataPolicy.RETURN_ALL);
 
     Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
-    DatastoreRenderer renderer = DatastoreRenderer(dataStore, renderTheme, true);
+    DatastoreRenderer renderer = DatastoreRenderer(datastore, renderTheme, true);
 
     int zoomlevel = 18; //zoomlevel
     int indoorLevel = 0; // indoor level

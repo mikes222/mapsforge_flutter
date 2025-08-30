@@ -1,7 +1,8 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_mapfile/src/writer/wayholder.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/mapfile/way_simplify_filter.dart';

@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:datastore_renderer/src/job/job_request.dart';
 import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:datastore_renderer/src/renderer.dart';

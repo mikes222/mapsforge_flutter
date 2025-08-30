@@ -1,5 +1,6 @@
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 class MapHeaderOptionalFields {
   /// Bitmask for the comment field in the file header.

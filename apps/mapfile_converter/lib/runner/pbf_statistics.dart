@@ -1,5 +1,5 @@
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';

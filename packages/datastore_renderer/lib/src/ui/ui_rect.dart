@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class UiRect {
   final ui.Rect _rect;

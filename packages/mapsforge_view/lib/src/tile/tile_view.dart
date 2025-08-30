@@ -1,11 +1,10 @@
-import 'package:dart_common/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/tile/tile_job_queue.dart';
 import 'package:mapsforge_view/src/tile/tile_painter.dart';
 import 'package:mapsforge_view/src/tile/tile_set.dart';
 import 'package:mapsforge_view/src/transform_widget.dart';
-import 'package:mapsforge_view/src/util/errorhelper_widget.dart';
 
 /// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
 class TileView extends StatefulWidget {

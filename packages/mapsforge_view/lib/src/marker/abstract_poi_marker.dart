@@ -1,4 +1,4 @@
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:mapsforge_view/src/marker/abstract_marker.dart';
 import 'package:mapsforge_view/src/marker/caption_reference.dart';

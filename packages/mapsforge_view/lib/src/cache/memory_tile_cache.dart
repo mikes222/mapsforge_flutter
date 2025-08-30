@@ -1,4 +1,4 @@
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:ecache/ecache.dart';
 import 'package:mapsforge_view/src/cache/spatial_tile_index.dart';

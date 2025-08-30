@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 /// A directed line segment between two Points in Screen pixels.
 class LineSegment {

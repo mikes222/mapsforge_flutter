@@ -1,4 +1,4 @@
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:dart_rendertheme/src/rule/rule.dart';
 

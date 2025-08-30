@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
-import 'package:dart_common/model.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_view/src/cache/spatial_tile_index.dart';
 
 // Mock Tile class for testing
@@ -16,8 +16,7 @@ class MockTile extends Tile {
   String toString() => 'MockTile($_id)';
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is MockTile && _id == other._id;
+  bool operator ==(Object other) => identical(this, other) || other is MockTile && _id == other._id;
 
   @override
   int get hashCode => _id.hashCode;

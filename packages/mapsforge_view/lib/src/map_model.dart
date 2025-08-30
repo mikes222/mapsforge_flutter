@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:rxdart/rxdart.dart';

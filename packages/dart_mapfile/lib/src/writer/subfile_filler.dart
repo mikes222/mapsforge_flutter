@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_mapfile/src/writer/wayholder.dart';
 import 'package:mapfile_converter/mapfile/way_simplify_filter.dart';
 import 'package:mapfile_converter/mapfile/way_size_filter.dart';

@@ -1,8 +1,8 @@
 import 'package:complete_example/context_menu/mapfile_analyze/poipage.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/waypage.dart';
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/mapfile_debug.dart';
 import 'package:flutter/material.dart';

@@ -1,5 +1,5 @@
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 
 /// Properties for one Node (PointOfInterest) read from the datastore. Note that the properties are

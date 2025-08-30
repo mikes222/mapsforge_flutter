@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/src/model/line_segment.dart';
 
 /// A list of Linesegments which consists of segments in screen-pixels.

@@ -16,7 +16,7 @@ class ImageBundleLoader implements ImageLoader {
     // compatibility with mapsforge
     if (src.startsWith(PREFIX_JAR)) {
       src = src.substring(PREFIX_JAR.length);
-      src = "packages/mapsforge_assets/assets/$src";
+      src = "packages/dart_rendertheme/assets/$src";
     }
     if (bundle != null) {
       ByteData content = await bundle!.load(src);

@@ -1,4 +1,4 @@
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 /// Holds data returned from the PbfReader. These data must be converted
 /// to PointOfInterest and Way objects before being used.

@@ -1,5 +1,4 @@
-import 'package:dart_common/datastore.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/services.dart';

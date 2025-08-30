@@ -1,5 +1,5 @@
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:dart_mapfile/mapfile.dart';
 
 /// Filter ways by size. If the way would be too small in max zoom of the desired

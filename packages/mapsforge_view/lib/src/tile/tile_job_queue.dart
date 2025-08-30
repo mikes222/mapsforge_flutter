@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/task_queue.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/ui.dart';
 import 'package:mapsforge_view/mapsforge.dart';
@@ -169,7 +169,7 @@ class TileJobQueue {
     int indoorLevel = mapPosition.indoorLevel;
     Mappoint center = mapPosition.getCenter();
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
-    RelativeMappoint relative = center.offset(Mappoint(MapsforgeSettingsMgr().tileSize / 2, MapsforgeSettingsMgr().tileSize / 2));
+    MappointRelative relative = center.offset(Mappoint(MapsforgeSettingsMgr().tileSize / 2, MapsforgeSettingsMgr().tileSize / 2));
     Map<Tile, double> tileMap = <Tile, double>{};
     for (int tileY = tileDimension.top; tileY <= tileDimension.bottom; ++tileY) {
       for (int tileX = tileDimension.left; tileX <= tileDimension.right; ++tileX) {

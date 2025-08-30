@@ -460,7 +460,7 @@ lib/
 
 ## Dependencies
 
-- **`dart_common`**: Core utilities and data models
+- **`mapsforge_flutter_core`**: Core utilities and data models
 - **`datastore_renderer`**: Rendering engine integration
 - **`dart_rendertheme`**: Theme and styling support
 - **`flutter`**: Flutter framework
@@ -525,7 +525,7 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 
 ## Related Packages
 
-- **`dart_common`**: Core utilities and data structures
+- **`mapsforge_flutter_core`**: Core utilities and data structures
 - **`datastore_renderer`**: High-performance tile rendering
 - **`dart_rendertheme`**: Theme processing and styling
 - **`dart_mapfile`**: Map file reading and processing

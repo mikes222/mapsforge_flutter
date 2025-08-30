@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/tile/tile_dimension.dart';
 

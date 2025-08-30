@@ -1,7 +1,7 @@
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/src/projection/mercator_projection.dart';
-import 'package:dart_mapfile/src/exceptions/mapfileexception.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/src/projection/mercator_projection.dart';
+import 'package:dart_mapfile/src/exceptions/mapfile_exception.dart';
 import 'package:dart_mapfile/src/mapfile_info_builder.dart';
 import 'package:dart_mapfile/src/model/subfile_parameter.dart';
 

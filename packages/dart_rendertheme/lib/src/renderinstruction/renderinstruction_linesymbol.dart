@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/map_display.dart';
 import 'package:dart_rendertheme/src/model/map_positioning.dart';
@@ -147,7 +147,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
       Mappoint current = outerList[i]!;
 
       // calculate the length of the current segment (Euclidian distance)
-      RelativeMappoint diff = current.offset(previous);
+      MappointRelative diff = current.offset(previous);
       double segmentLengthInPixel = sqrt(diff.dx * diff.dx + diff.dy * diff.dy);
       segmentLengthRemaining = segmentLengthInPixel.round();
 

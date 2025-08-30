@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
 import 'package:datastore_renderer/src/ui/symbol_image.dart';
@@ -197,7 +197,7 @@ class UiCanvas {
     for (var segment in lineString.segments) {
       // So text isn't upside down
       bool doInvert = segment.end.x < segment.start.x;
-      RelativeMappoint start;
+      MappointRelative start;
       double diff = (segment.length() - entry.getWidth()) / 2;
       if (doInvert) {
         //start = segment.end.offset(-origin.x, -origin.y);
@@ -213,7 +213,7 @@ class UiCanvas {
     }
   }
 
-  void drawTextRotated(ui.Paragraph paragraph, double theta, RelativeMappoint reference) {
+  void drawTextRotated(ui.Paragraph paragraph, double theta, MappointRelative reference) {
     // since the text is rotated, use the textwidth as margin in all directions
     // if (start.x + textwidth < 0 ||
     //     start.y + textwidth < 0 ||

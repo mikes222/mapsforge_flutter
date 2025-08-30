@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/cachefile.dart';

@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 /// Implementation of a picture (sequence of recorded image operations) or a bitmap (raw pixel data). Note that the image must be disposed after use.
 class TilePicture {

@@ -1,5 +1,5 @@
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/map_header_info_builder.dart';
 import 'package:dart_mapfile/src/model/mapfile_info.dart';

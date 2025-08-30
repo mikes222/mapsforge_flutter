@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:datastore_renderer/src/ui/tile_picture.dart';
 import 'package:flutter/material.dart';
 

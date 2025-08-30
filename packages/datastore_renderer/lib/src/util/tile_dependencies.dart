@@ -1,6 +1,6 @@
-import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 /// The TileDependecies class tracks the dependencies between tiles for labels.
 /// When the labels are drawn on a per-tile basis it is important to know where
@@ -18,7 +18,7 @@ class TileDependencies {
   /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
   /// Using a more efficient data structure for better performance
   final Map<Tile, Set<Dependency>> _overlapData = {};
-  
+
   /// Cache for frequently accessed tiles to avoid repeated lookups
   final Map<Tile, bool> _drawnTileCache = {};
 
@@ -45,7 +45,7 @@ class TileDependencies {
   /// @param element the MapElementContainer in question
   void addOverlappingElement(RenderInfo element, List<Tile> tiles) {
     if (tiles.isEmpty) return; // Early exit for empty tiles
-    
+
     Dependency dependency = Dependency(element, List.from(tiles)); // Create copy to avoid mutation issues
     for (var tile in tiles) {
       _overlapData.putIfAbsent(tile, () => <Dependency>{}).add(dependency);
@@ -58,9 +58,9 @@ class TileDependencies {
     if (_drawnTileCache.containsKey(neighbour)) {
       return _drawnTileCache[neighbour]!;
     }
-    
+
     bool drawn = _overlapData.containsKey(neighbour) && _overlapData[neighbour]!.isEmpty;
-    
+
     // Cache the result for future lookups
     _drawnTileCache[neighbour] = drawn;
     return drawn;
@@ -98,7 +98,7 @@ class TileDependencies {
       _drawnTileCache[tileToDraw] = true; // Update cache
       return null;
     }
-    
+
     Set<Dependency> result = <Dependency>{};
     // Use iterator for better performance with large sets
     final iterator = map.iterator;
@@ -108,7 +108,7 @@ class TileDependencies {
       assert(removed);
       result.add(dependency);
     }
-    
+
     // mark as drawn
     map.clear();
     _drawnTileCache[tileToDraw] = true; // Update cache

@@ -1,7 +1,7 @@
-import 'package:test/test.dart';
-import 'package:dart_common/model.dart';
-
 // Mock Tile class for testing
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+
 class MockTile extends Tile {
   final BoundingBox _boundingBox;
   final String _id;
@@ -15,8 +15,7 @@ class MockTile extends Tile {
   String toString() => 'MockTile($_id)';
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is MockTile && _id == other._id;
+  bool operator ==(Object other) => identical(this, other) || other is MockTile && _id == other._id;
 
   @override
   int get hashCode => _id.hashCode;
@@ -46,12 +45,7 @@ void main() {
 
         // Create multiple boundary boxes to test performance
         for (int i = 0; i < 1000; i++) {
-          final bounds = BoundingBox(
-            i.toDouble(), 
-            i.toDouble(), 
-            (i + 1).toDouble(), 
-            (i + 1).toDouble()
-          );
+          final bounds = BoundingBox(i.toDouble(), i.toDouble(), (i + 1).toDouble(), (i + 1).toDouble());
           final tile = MockTile('tile$i', bounds);
           expect(tile.getBoundingBox(), isNotNull);
         }

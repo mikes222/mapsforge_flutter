@@ -58,7 +58,7 @@ dependencies:
 
 ```dart
 import 'package:datastore_renderer/renderer.dart';
-import 'package:dart_common/datastore.dart';
+import 'package:mapsforge_flutter_core/datastore.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 
 // Create renderer with datastore and theme
@@ -218,7 +218,7 @@ print('Actions: ${canvas.actions}, Bitmaps: ${canvas.bitmapCount}');
 
 ## Dependencies
 
-- **`dart_common`**: Core utilities and data models
+- **`mapsforge_flutter_core`**: Core utilities and data models
 - **`dart_rendertheme`**: Theme processing and rendering instructions
 - **`flutter`**: Flutter framework for UI rendering
 - **`flutter_svg`**: SVG image support
@@ -261,7 +261,7 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 
 ## Related Packages
 
-- **`dart_common`**: Core utilities and data structures
+- **`mapsforge_flutter_core`**: Core utilities and data structures
 - **`dart_rendertheme`**: Theme processing and styling rules
 - **`dart_mapfile`**: Map file reading and processing
 - **`mapsforge_flutter`**: Complete Flutter mapping solution

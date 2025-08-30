@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/task_queue.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/ui/paragraph_cache.dart';
@@ -64,7 +64,7 @@ class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     //print("paint caption: $front $back $shape");
 
-    RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
+    MappointRelative relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
     ui.Canvas? uiCanvas = renderContext.canvas.expose();
     if (renderContext.rotationRadian != 0) {
       uiCanvas.save();
@@ -102,7 +102,7 @@ class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
   @override
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
-    RelativeMappoint relative = wayProperties.getCenterAbsolute(renderContext.projection).offset(renderContext.reference).offset(0, renderinstruction.dy);
+    MappointRelative relative = wayProperties.getCenterAbsolute(renderContext.projection).offset(renderContext.reference).offset(0, renderinstruction.dy);
     //print("paint caption boundar: $boundary $relative ${shape}");
 
     ui.Canvas? uiCanvas = renderContext.canvas.expose();

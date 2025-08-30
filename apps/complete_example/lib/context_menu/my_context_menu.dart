@@ -1,10 +1,10 @@
 import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/mapheaderpage.dart';
 import 'package:complete_example/models/app_models.dart';
-import 'package:dart_common/datastore.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_view/context_menu.dart';

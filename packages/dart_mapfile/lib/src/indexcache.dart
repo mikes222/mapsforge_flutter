@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/src/buffer/deserializer.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/src/buffer/deserializer.dart';
 import 'package:dart_mapfile/src/indexcacheentrykey.dart';
 import 'package:dart_mapfile/src/model/subfile_parameter.dart';
 import 'package:dart_mapfile/src/subfile_parameter_builder.dart';

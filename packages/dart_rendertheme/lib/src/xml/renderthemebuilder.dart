@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:dart_rendertheme/src/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:dart_rendertheme/src/xml/rulebuilder.dart';

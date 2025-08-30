@@ -1,4 +1,4 @@
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 mixin RepeatSrcMixin {
   final int _repeatMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevelText;

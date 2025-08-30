@@ -1,9 +1,9 @@
 /// Core rendering engine library for datastore-based map rendering.
-/// 
+///
 /// This library provides the main rendering implementations for converting
 /// map data from datastores into visual representations. It includes support
 /// for various data sources and rendering strategies.
-/// 
+///
 /// Key exports:
 /// - **DatastoreRenderer**: Main renderer for local map data
 /// - **ArcGISOnlineRenderer**: Renderer for ArcGIS online tile services
@@ -17,6 +17,8 @@ export 'src/datastore_renderer.dart';
 export 'src/dummy_renderer.dart';
 export 'src/job/job_request.dart';
 export 'src/job/job_result.dart';
+export 'src/memory_datastore.dart';
+export 'src/multimap_datastore.dart';
 export 'src/osm_online_renderer.dart';
 export 'src/renderer.dart';
 export 'src/ui/ui_render_context.dart';

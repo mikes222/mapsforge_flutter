@@ -1,13 +1,10 @@
-import 'package:dart_common/datastore.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:datastore_renderer/renderer.dart';
 import 'package:datastore_renderer/src/cache/file_symbol_cache.dart';
 import 'package:datastore_renderer/src/cache/image_bundle_loader.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
-import 'package:datastore_renderer/src/datastore_renderer.dart';
-import 'package:datastore_renderer/src/job/job_request.dart';
-import 'package:datastore_renderer/src/job/job_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';

@@ -1,4 +1,4 @@
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 mixin BitmapSrcMixin {
   /// Default size is 20x20px (400px) at baseline mdpi (160dpi).

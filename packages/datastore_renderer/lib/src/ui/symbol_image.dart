@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:flutter/material.dart';
 
 /// A wrapper for ui images. Do not forget to dispose() this class after use

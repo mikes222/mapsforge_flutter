@@ -1,4 +1,4 @@
-import 'package:dart_common/src/model/maprectangle.dart';
+import 'package:mapsforge_flutter_core/src/model/maprectangle.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:dart_rendertheme/src/model/layer_container.dart';
 import 'package:dart_rendertheme/src/model/nodeproperties.dart';

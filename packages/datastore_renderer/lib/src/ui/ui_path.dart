@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_rendertheme/src/model/map_fillrule.dart';
 import 'package:datastore_renderer/src/ui/ui_paint.dart';
 import 'package:datastore_renderer/src/ui/ui_rect.dart';
@@ -58,13 +58,13 @@ class UiPath {
     }
   }
 
-  void lineToMappoint(RelativeMappoint point) {
+  void lineToMappoint(MappointRelative point) {
     _path.lineTo(point.dx, point.dy);
     _points.add(Pointinfo(false, point.dx, point.dy));
     _dashedPaths.clear();
   }
 
-  void moveToMappoint(RelativeMappoint point) {
+  void moveToMappoint(MappointRelative point) {
     _path.moveTo(point.dx, point.dy);
     _points.add(Pointinfo(true, point.dx, point.dy));
     _dashedPaths.clear();

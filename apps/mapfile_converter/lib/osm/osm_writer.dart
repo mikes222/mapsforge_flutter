@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class OsmWriter {
   late final IOSink _sink;

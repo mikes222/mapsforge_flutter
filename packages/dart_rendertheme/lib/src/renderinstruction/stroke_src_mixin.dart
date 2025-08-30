@@ -1,4 +1,4 @@
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_rendertheme/src/model/map_cap.dart';
 import 'package:dart_rendertheme/src/model/map_join.dart';
 

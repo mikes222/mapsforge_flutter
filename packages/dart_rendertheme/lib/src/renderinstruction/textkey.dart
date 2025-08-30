@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 /// The key to search for in the tags of the node or way. If the key is found the corresponding value is normally used
 /// for drawing the text. For example the key may be "street". So if the node/way contains the key "street" the

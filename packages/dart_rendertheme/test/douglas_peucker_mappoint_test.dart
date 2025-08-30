@@ -1,6 +1,7 @@
-import 'package:test/test.dart';
-import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/src/util/douglas_peucker_mappoint.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:test/expect.dart';
+import 'package:test/scaffolding.dart';
 
 void main() {
   group('DouglasPeuckerMappoint Optimizations', () {
@@ -12,10 +13,7 @@ void main() {
 
     group('Basic Functionality', () {
       test('should return original points when count <= 2', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 1.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0)];
 
         final result = douglasPeucker.simplify(points, 0.1);
         expect(result.length, equals(2));
@@ -38,12 +36,7 @@ void main() {
 
     group('Line Simplification', () {
       test('should preserve straight line with collinear points', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 1.0),
-          Mappoint(2.0, 2.0),
-          Mappoint(3.0, 3.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 2.0), Mappoint(3.0, 3.0)];
 
         final result = douglasPeucker.simplify(points, 0.1);
         expect(result.length, equals(2));
@@ -115,21 +108,15 @@ void main() {
       });
 
       test('should handle repeated calculations efficiently', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 0.1),
-          Mappoint(2.0, 0.0),
-          Mappoint(3.0, 0.1),
-          Mappoint(4.0, 0.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.1), Mappoint(2.0, 0.0), Mappoint(3.0, 0.1), Mappoint(4.0, 0.0)];
 
         final stopwatch = Stopwatch()..start();
-        
+
         // Perform multiple simplifications
         for (int i = 0; i < 1000; i++) {
           douglasPeucker.simplify(points, 0.05);
         }
-        
+
         stopwatch.stop();
         expect(stopwatch.elapsedMilliseconds, lessThan(100));
       });
@@ -152,24 +139,14 @@ void main() {
       });
 
       test('should handle zero tolerance', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 0.001),
-          Mappoint(2.0, 0.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.001), Mappoint(2.0, 0.0)];
 
         final result = douglasPeucker.simplify(points, 0.0);
         expect(result.length, equals(3)); // Should keep all points
       });
 
       test('should handle very high tolerance', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 1.0),
-          Mappoint(2.0, 0.0),
-          Mappoint(3.0, 1.0),
-          Mappoint(4.0, 0.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 0.0), Mappoint(3.0, 1.0), Mappoint(4.0, 0.0)];
 
         final result = douglasPeucker.simplify(points, 10.0);
         expect(result.length, equals(2)); // Should simplify to endpoints
@@ -178,13 +155,7 @@ void main() {
       });
 
       test('should handle negative coordinates', () {
-        final points = [
-          Mappoint(-2.0, -2.0),
-          Mappoint(-1.0, -1.0),
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 1.0),
-          Mappoint(2.0, 2.0),
-        ];
+        final points = [Mappoint(-2.0, -2.0), Mappoint(-1.0, -1.0), Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 2.0)];
 
         final result = douglasPeucker.simplify(points, 0.1);
         expect(result.length, greaterThanOrEqualTo(2));
@@ -193,22 +164,14 @@ void main() {
       });
 
       test('should handle very small coordinates', () {
-        final points = [
-          Mappoint(0.0001, 0.0001),
-          Mappoint(0.0002, 0.0002),
-          Mappoint(0.0003, 0.0001),
-        ];
+        final points = [Mappoint(0.0001, 0.0001), Mappoint(0.0002, 0.0002), Mappoint(0.0003, 0.0001)];
 
         final result = douglasPeucker.simplify(points, 0.00001);
         expect(result.length, greaterThanOrEqualTo(2));
       });
 
       test('should handle very large coordinates', () {
-        final points = [
-          Mappoint(1000000.0, 1000000.0),
-          Mappoint(1000001.0, 1000001.0),
-          Mappoint(1000002.0, 1000000.0),
-        ];
+        final points = [Mappoint(1000000.0, 1000000.0), Mappoint(1000001.0, 1000001.0), Mappoint(1000002.0, 1000000.0)];
 
         final result = douglasPeucker.simplify(points, 0.5);
         expect(result.length, greaterThanOrEqualTo(2));
@@ -217,20 +180,14 @@ void main() {
 
     group('Algorithm Correctness', () {
       test('should maintain path topology', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 1.0),
-          Mappoint(2.0, 0.5),
-          Mappoint(3.0, 1.5),
-          Mappoint(4.0, 0.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 0.5), Mappoint(3.0, 1.5), Mappoint(4.0, 0.0)];
 
         final result = douglasPeucker.simplify(points, 0.3);
-        
+
         // Result should maintain start and end points
         expect(result.first, equals(points.first));
         expect(result.last, equals(points.last));
-        
+
         // Points should be in order
         for (int i = 1; i < result.length; i++) {
           expect(result[i].x, greaterThanOrEqualTo(result[i - 1].x));
@@ -238,17 +195,11 @@ void main() {
       });
 
       test('should be deterministic', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 0.1),
-          Mappoint(2.0, 0.0),
-          Mappoint(3.0, 0.1),
-          Mappoint(4.0, 0.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.1), Mappoint(2.0, 0.0), Mappoint(3.0, 0.1), Mappoint(4.0, 0.0)];
 
         final result1 = douglasPeucker.simplify(points, 0.05);
         final result2 = douglasPeucker.simplify(points, 0.05);
-        
+
         expect(result1.length, equals(result2.length));
         for (int i = 0; i < result1.length; i++) {
           expect(result1[i].x, equals(result2[i].x));
@@ -288,16 +239,10 @@ void main() {
       });
 
       test('should handle rapid tolerance changes', () {
-        final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 0.1),
-          Mappoint(2.0, 0.0),
-          Mappoint(3.0, 0.1),
-          Mappoint(4.0, 0.0),
-        ];
+        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.1), Mappoint(2.0, 0.0), Mappoint(3.0, 0.1), Mappoint(4.0, 0.0)];
 
         final tolerances = [0.01, 0.1, 1.0, 0.05, 0.5];
-        
+
         for (final tolerance in tolerances) {
           final result = douglasPeucker.simplify(points, tolerance);
           expect(result.length, greaterThanOrEqualTo(2));

@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_common/model.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:mapfile_converter/waycacheproto/cache.pb.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class CacheFile {
   int degreeToMicrodegree(double value) {

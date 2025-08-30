@@ -180,7 +180,7 @@ final symbolInstruction = RenderinstructionSymbol(level: 5)
 
 ## Dependencies
 
-- **`dart_common`**: Core utilities and data models
+- **`mapsforge_flutter_core`**: Core utilities and data models
 - **`xml`**: XML parsing and processing
 - **`ecache`**: LRU caching implementation
 - **`collection`**: Enhanced collection utilities
@@ -198,6 +198,6 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 
 ## Related Packages
 
-- **`dart_common`**: Core utilities and data structures
+- **`mapsforge_flutter_core`**: Core utilities and data structures
 - **`dart_mapfile`**: Map file reading and processing
 - **`mapsforge_flutter`**: Complete Flutter mapping solution

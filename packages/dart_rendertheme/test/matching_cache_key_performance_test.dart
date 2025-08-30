@@ -1,6 +1,7 @@
-import 'package:test/test.dart';
-import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/src/model/matching_cache_key.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:test/expect.dart';
+import 'package:test/scaffolding.dart';
 
 void main() {
   group('MatchingCacheKey Performance Optimizations', () {
@@ -21,7 +22,7 @@ void main() {
 
       test('should generate same hash for identical keys', () {
         final tags = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
-        
+
         final key1 = MatchingCacheKey(tags, 0);
         final key2 = MatchingCacheKey(tags, 0);
 
@@ -40,7 +41,7 @@ void main() {
 
       test('should incorporate indoor level in hash', () {
         final tags = [Tag('highway', 'primary')];
-        
+
         final key1 = MatchingCacheKey(tags, 0);
         final key2 = MatchingCacheKey(tags, 1);
         final key3 = MatchingCacheKey(tags, -1);
@@ -54,14 +55,10 @@ void main() {
     group('Hash Distribution Quality', () {
       test('should produce well-distributed hashes for similar tags', () {
         final Set<int> hashCodes = <int>{};
-        
+
         // Generate many similar but different tag combinations
         for (int i = 0; i < 100; i++) {
-          final tags = [
-            Tag('highway', 'primary'),
-            Tag('name', 'Street $i'),
-            Tag('ref', 'A$i'),
-          ];
+          final tags = [Tag('highway', 'primary'), Tag('name', 'Street $i'), Tag('ref', 'A$i')];
           final key = MatchingCacheKey(tags, i % 5);
           hashCodes.add(key.hashCode);
         }
@@ -73,7 +70,7 @@ void main() {
       test('should handle hash collisions gracefully with equality check', () {
         final tags1 = [Tag('highway', 'primary'), Tag('name', 'Main')];
         final tags2 = [Tag('highway', 'secondary'), Tag('name', 'Side')];
-        
+
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);
 
@@ -130,7 +127,7 @@ void main() {
       test('should handle null and empty values in tags', () {
         final tags1 = [Tag('highway', ''), Tag('', 'value')];
         final tags2 = [Tag('highway', null), Tag(null, 'value')];
-        
+
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);
 
@@ -142,7 +139,7 @@ void main() {
 
       test('should handle extreme indoor levels', () {
         final tags = [Tag('highway', 'primary')];
-        
+
         final keyMin = MatchingCacheKey(tags, -1000000);
         final keyMax = MatchingCacheKey(tags, 1000000);
 
@@ -154,7 +151,7 @@ void main() {
       test('should handle tags with very long strings', () {
         final longString = 'a' * 1000;
         final tags = [Tag('highway', longString), Tag(longString, 'primary')];
-        
+
         final key = MatchingCacheKey(tags, 0);
 
         expect(() => key.hashCode, returnsNormally);
@@ -165,12 +162,12 @@ void main() {
       test('should use FNV-1a algorithm characteristics', () {
         final tags = [Tag('test', 'value')];
         final key = MatchingCacheKey(tags, 0);
-        
+
         final hash = key.hashCode;
-        
+
         // FNV-1a should produce non-zero hashes for non-empty input
         expect(hash, isNot(equals(0)));
-        
+
         // Should be deterministic
         expect(key.hashCode, equals(hash));
         expect(key.hashCode, equals(hash));
@@ -178,7 +175,7 @@ void main() {
 
       test('should minimize hash collisions compared to simple XOR', () {
         final Set<int> hashCodes = <int>{};
-        
+
         // Test with systematic tag variations that might cause XOR collisions
         for (int i = 0; i < 50; i++) {
           for (int j = 0; j < 50; j++) {

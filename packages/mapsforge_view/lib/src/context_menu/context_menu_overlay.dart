@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/src/context_menu/simple_context_menu.dart';

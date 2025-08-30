@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_common/model.dart';
-import 'package:dart_common/task_queue.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:datastore_renderer/src/cache/symbol_cache_mgr.dart';
@@ -60,7 +60,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
-    RelativeMappoint relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
+    MappointRelative relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
     MapRectangle boundary = renderinstruction.getBoundary();
     UiMatrix? matrix;
     if (renderinstruction.rotateWithMap) {
@@ -107,7 +107,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
     Mappoint point = wayProperties.getCenterAbsolute(renderContext.projection);
-    RelativeMappoint relative = point.offset(renderContext.reference);
+    MappointRelative relative = point.offset(renderContext.reference);
     MapRectangle boundary = renderinstruction.getBoundary();
     UiMatrix? matrix;
     if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {

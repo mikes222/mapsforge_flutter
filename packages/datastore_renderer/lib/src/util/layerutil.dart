@@ -1,6 +1,6 @@
-import 'package:dart_common/model.dart';
 import 'package:dart_rendertheme/model.dart';
-import 'spatial_index.dart';
+import 'package:datastore_renderer/src/util/spatial_index.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class LayerUtil {
   static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {
@@ -35,7 +35,7 @@ class LayerUtil {
     if (addElements.length > 10 || keepElements.length > 10) {
       return _removeCollisionsWithSpatialIndex(addElements, keepElements);
     }
-    
+
     // Use original algorithm for small lists
     List<RenderInfo> toDraw2 = [];
     for (var newElement in addElements) {
@@ -47,18 +47,18 @@ class LayerUtil {
     }
     return toDraw2;
   }
-  
+
   /// Optimized collision removal using spatial indexing
   static List<RenderInfo> _removeCollisionsWithSpatialIndex(List<RenderInfo> addElements, List<RenderInfo> keepElements) {
     final spatialIndex = SpatialIndex(cellSize: 128.0);
-    
+
     // Add all keep elements to spatial index
     for (final element in keepElements) {
       spatialIndex.add(element);
     }
-    
+
     final toDraw = <RenderInfo>[];
-    
+
     // Check each new element against spatial index
     for (final newElement in addElements) {
       if (!spatialIndex.hasCollision(newElement)) {
@@ -66,7 +66,7 @@ class LayerUtil {
         spatialIndex.add(newElement); // Add to index for subsequent collision checks
       }
     }
-    
+
     return toDraw;
   }
 }

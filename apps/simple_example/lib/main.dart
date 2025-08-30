@@ -1,8 +1,8 @@
-import 'package:dart_common/datastore.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:datastore_renderer/cache.dart';
+import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';

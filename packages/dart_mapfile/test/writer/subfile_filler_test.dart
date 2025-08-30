@@ -1,4 +1,4 @@
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';

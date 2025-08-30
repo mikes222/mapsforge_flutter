@@ -1,13 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:dart_common/buffer.dart';
-import 'package:dart_common/dart_isolate.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
-import 'package:dart_common/src/buffer/readbuffer_memory.dart';
-import 'package:dart_common/src/datastore/datastore.dart';
-import 'package:dart_common/task_queue.dart';
-import 'package:dart_common/utils.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/dart_isolate.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_core/src/buffer/readbuffer_memory.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_mapfile/src/indexcache.dart';
 import 'package:dart_mapfile/src/map_datastore.dart';

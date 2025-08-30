@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:logging/logging.dart';

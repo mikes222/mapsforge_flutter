@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:dart_common/model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 import 'attributematcher.dart';
 

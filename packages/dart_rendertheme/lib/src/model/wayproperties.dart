@@ -1,8 +1,9 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/projection.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/src/model/nodewayproperties.dart';
 import 'package:dart_rendertheme/src/util/douglas_peucker_mappoint.dart';

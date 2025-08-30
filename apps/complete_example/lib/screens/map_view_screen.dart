@@ -1,17 +1,16 @@
 import 'dart:async';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
-import 'package:dart_common/dart_isolate.dart';
-import 'package:dart_common/datastore.dart';
-import 'package:dart_common/model.dart';
-import 'package:dart_common/task_queue.dart';
-import 'package:dart_common/utils.dart';
 import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/cache.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mapsforge_flutter_core/dart_isolate.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_view/gesture.dart';
 import 'package:mapsforge_view/mapsforge.dart';
 import 'package:mapsforge_view/marker.dart';
@@ -118,7 +117,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     // )..addCaption(caption: "IconMarker");
 
     // marker = PoiMarker(
-    //   src: "packages/mapsforge_assets/assets/symbols/viewpoint.svg",
+    //   src: "packages/dart_rendertheme/assets/symbols/viewpoint.svg",
     //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
     //   rotateWithMap: true,
     // )..addCaption(caption: "PoiMarker");
