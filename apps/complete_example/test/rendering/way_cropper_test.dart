@@ -1,12 +1,12 @@
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_mapfile/src/writer/way_cropper.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/filter.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 
 void main() async {
   final _log = Logger('CopyPbfToMapfileTest');

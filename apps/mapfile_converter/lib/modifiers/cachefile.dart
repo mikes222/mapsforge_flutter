@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:dart_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:mapfile_converter/waycacheproto/cache.pb.dart';
 import 'package:mapsforge_flutter_core/model.dart';

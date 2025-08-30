@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:dart_mapfile/src/exceptions/file_not_found_exception.dart';
-import 'package:datastore_renderer/renderer.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 /// A MapDatabase that reads and combines data from multiple map files.
 /// The MultiMapDatabase supports the following modes for reading from multiple files:
@@ -177,8 +175,8 @@ class MultiMapDataStore extends Datastore {
           }
           return null;
         }());
-      } on FileNotFoundException catch (error) {
-        _log.warning("File ${error.filename} missing, removing mapfile now");
+      } on Exception catch (error) {
+        _log.warning("File error ${error} missing, removing mapfile now");
         mapDatabases.remove(mdb);
       }
     }

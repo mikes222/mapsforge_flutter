@@ -6,7 +6,7 @@ import 'package:complete_example/services/platform_file_download_service.dart';
 import 'package:complete_example/widget/download_location_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mapsforge_view/mapsforge.dart';
+import 'package:mapsforge_flutter/mapsforge.dart';
 
 class FileDownloadScreen extends StatefulWidget {
   final AppConfiguration configuration;

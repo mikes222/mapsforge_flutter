@@ -1,4 +1,4 @@
-import 'package:dart_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 
 class ZoomlevelWriter {

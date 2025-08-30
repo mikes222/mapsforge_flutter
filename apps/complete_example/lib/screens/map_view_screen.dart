@@ -1,20 +1,20 @@
 import 'dart:async';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
-import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:datastore_renderer/cache.dart';
 import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mapsforge_flutter/gesture.dart';
+import 'package:mapsforge_flutter/mapsforge.dart';
+import 'package:mapsforge_flutter/marker.dart';
+import 'package:mapsforge_flutter/overlay.dart';
 import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_view/gesture.dart';
-import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/marker.dart';
-import 'package:mapsforge_view/overlay.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 
 import '../models/app_models.dart';
 

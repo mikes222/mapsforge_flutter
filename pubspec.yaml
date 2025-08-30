@@ -1,4 +1,4 @@
-name: mapsforge_flutter
+name: mapsforge_flutter_monorepo
 publish_to: none
 environment:
   sdk: ^3.9.0
@@ -6,10 +6,10 @@ dev_dependencies:
   melos: ^7.1.0
 workspace:
   - packages/mapsforge_flutter_core
-  - packages/dart_mapfile
+  - packages/mapsforge_flutter_mapfile
   - packages/dart_rendertheme
   - packages/datastore_renderer
-  - packages/mapsforge_view
+  - packages/mapsforge_flutter
   - apps/mapfile_converter
   - apps/simple_example
   - apps/complete_example

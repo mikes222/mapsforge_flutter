@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:mapsforge_flutter_core/buffer.dart';
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:dart_mapfile/mapfile.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart' as osmformat;
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart' as osmformat;
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 
 import '../osm/osm_data.dart';
 import '../pbfproto/osmformat.pb.dart';
@@ -28,10 +28,10 @@ class PbfWriter {
 
     HeaderBlock headerBlock = HeaderBlock(
       bbox: HeaderBBox(
-        left: $fixnum.Int64(LatLongUtils.degreesToNanodegrees(boundingBox.minLongitude)),
-        right: $fixnum.Int64(LatLongUtils.degreesToNanodegrees(boundingBox.maxLongitude)),
-        top: $fixnum.Int64(LatLongUtils.degreesToNanodegrees(boundingBox.maxLatitude)),
-        bottom: $fixnum.Int64(LatLongUtils.degreesToNanodegrees(boundingBox.minLatitude)),
+        left: $fixnum.Int64(osmformat.LatLongUtils.degreesToNanodegrees(boundingBox.minLongitude)),
+        right: $fixnum.Int64(osmformat.LatLongUtils.degreesToNanodegrees(boundingBox.maxLongitude)),
+        top: $fixnum.Int64(osmformat.LatLongUtils.degreesToNanodegrees(boundingBox.maxLatitude)),
+        bottom: $fixnum.Int64(osmformat.LatLongUtils.degreesToNanodegrees(boundingBox.minLatitude)),
       ),
       writingprogram: "Mapsforge Flutter",
     );
@@ -124,8 +124,8 @@ class PbfWriter {
       $fixnum.Int64 lastLat = $fixnum.Int64(0);
       $fixnum.Int64 lastLon = $fixnum.Int64(0);
       for (var position in node.positions) {
-        $fixnum.Int64 lat = $fixnum.Int64(LatLongUtils.degreesToNanodegrees(position.latitude / granularity));
-        $fixnum.Int64 lon = $fixnum.Int64(LatLongUtils.degreesToNanodegrees(position.longitude / granularity));
+        $fixnum.Int64 lat = $fixnum.Int64(osmformat.LatLongUtils.degreesToNanodegrees(position.latitude / granularity));
+        $fixnum.Int64 lon = $fixnum.Int64(osmformat.LatLongUtils.degreesToNanodegrees(position.longitude / granularity));
         denseNodes.lat.add(lat - lastLat - latOffset);
         denseNodes.lon.add(lon - lastLon - lonOffset);
         lastLat = lat;

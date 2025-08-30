@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:mapsforge_flutter_core/buffer.dart';
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:dart_mapfile/mapfile.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/cachefile.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
@@ -11,6 +8,9 @@ import 'package:mapfile_converter/modifiers/large_data_splitter.dart';
 import 'package:mapfile_converter/modifiers/way_connect.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 
 import '../modifiers/way_repair.dart';
 import '../osm/osm_reader.dart';

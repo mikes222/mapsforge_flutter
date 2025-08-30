@@ -1,11 +1,11 @@
 import 'package:complete_example/context_menu/mapfile_analyze/poipage.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/waypage.dart';
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:dart_mapfile/mapfile.dart';
-import 'package:dart_mapfile/mapfile_debug.dart';
-import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 
 class BlockPage extends StatelessWidget {
   final MapFile mapFile;

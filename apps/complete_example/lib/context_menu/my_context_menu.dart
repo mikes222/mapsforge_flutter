@@ -1,15 +1,14 @@
 import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/mapheaderpage.dart';
 import 'package:complete_example/models/app_models.dart';
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:datastore_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mapsforge_view/context_menu.dart';
-import 'package:mapsforge_view/mapsforge.dart';
-import 'package:mapsforge_view/marker.dart';
+import 'package:mapsforge_flutter/context_menu.dart';
+import 'package:mapsforge_flutter/mapsforge.dart';
+import 'package:mapsforge_flutter/marker.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 class MyContextMenu extends StatelessWidget {
   final ContextMenuInfo info;

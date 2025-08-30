@@ -14,9 +14,6 @@ dependencies:
   args: ^2.7.0
 
   # Workspace
-  dart_mapfile: ^1.0.0
-
-  # Workspace
   dart_rendertheme: ^1.0.0
 
   # For logging to console
@@ -25,6 +22,9 @@ dependencies:
 
   # Workspace
   mapsforge_flutter_core: ^1.0.0
+
+  # Workspace
+  mapsforge_flutter_mapfile: ^1.0.0
 
   # for pbf format
   protobuf: ^4.2.0

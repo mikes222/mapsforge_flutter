@@ -1,7 +1,7 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:dart_mapfile/mapfile.dart';
-import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 
 /// Splits wayholders with many closedOuters into smaller wayholders. Clusters the new wayholders geographically.
 class LargeDataSplitter {

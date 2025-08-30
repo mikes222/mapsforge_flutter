@@ -39,9 +39,6 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Workspace
-  dart_mapfile: ^1.0.0
-
-  # Workspace
   dart_rendertheme: ^1.0.0
 
   # Workspace
@@ -63,7 +60,10 @@ dependencies:
   mapsforge_flutter_core: ^1.0.0
 
   # Workspace
-  mapsforge_view: ^1.0.0
+  mapsforge_flutter: ^1.0.0
+
+  # Workspace
+  mapsforge_flutter_mapfile: ^1.0.0
 
   # For file downloading
   path_provider: ^2.1.5

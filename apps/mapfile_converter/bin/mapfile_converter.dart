@@ -2,8 +2,6 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:dart_mapfile/mapfile.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/mapfile/zoomlevel_writer.dart';
@@ -13,6 +11,8 @@ import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
 import 'package:mapfile_converter/pbf/pbf_writer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 
 import '../lib/runner/pbf_statistics.dart';
 
