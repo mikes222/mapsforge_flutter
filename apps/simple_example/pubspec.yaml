@@ -39,9 +39,6 @@ dependencies:
   # Workspace
   dart_rendertheme: ^1.0.0
 
-  # Workspace
-  datastore_renderer: ^1.0.0
-
   logging: ^1.3.0
 
   # Workspace
@@ -52,6 +49,9 @@ dependencies:
 
   # Workspace
   mapsforge_flutter_mapfile: ^1.0.0
+
+  # Workspace
+  mapsforge_flutter_renderer: ^1.0.0
 
 dev_dependencies:
   flutter_test:

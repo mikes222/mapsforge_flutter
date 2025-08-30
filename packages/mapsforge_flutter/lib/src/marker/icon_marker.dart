@@ -1,7 +1,7 @@
 import 'package:dart_rendertheme/model.dart';
 import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:datastore_renderer/renderer.dart';
-import 'package:datastore_renderer/shape_painter.dart';
+import 'package:mapsforge_flutter_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/abstract_poi_marker.dart';

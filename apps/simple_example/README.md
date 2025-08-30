@@ -153,7 +153,7 @@ This example uses these Mapsforge packages:
 - `mapsforge_flutter_core` - Common utilities and models
 - `dart_mapfile` - Map file reading and parsing
 - `dart_rendertheme` - Render theme processing
-- `datastore_renderer` - Map rendering engine
+- `mapsforge_flutter_renderer` - Map rendering engine
 - `mapsforge_view` - Flutter UI components
 - `dart_rendertheme` - Map symbols and patterns
 

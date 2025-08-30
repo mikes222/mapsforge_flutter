@@ -37,9 +37,6 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Workspace
-  datastore_renderer: ^1.0.0
-
-  # Workspace
   dart_rendertheme: ^1.0.0
 
   ecache: ^2.0.12
@@ -48,6 +45,9 @@ dependencies:
 
   # Workspace
   mapsforge_flutter_core: ^1.0.0
+
+  # Workspace
+  mapsforge_flutter_renderer: ^1.0.0
 
   # simpler version of flutter streams
   rxdart: ^0.28.0

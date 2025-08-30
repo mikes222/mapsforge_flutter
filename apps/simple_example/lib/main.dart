@@ -1,11 +1,11 @@
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
-import 'package:datastore_renderer/cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_renderer/cache.dart';
 
 void main() {
   _initLogging();

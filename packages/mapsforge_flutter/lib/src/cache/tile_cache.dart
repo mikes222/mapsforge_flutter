@@ -1,5 +1,5 @@
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:datastore_renderer/ui.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 
 ///
 /// Implementations of this class provides caches for [Tile]s.

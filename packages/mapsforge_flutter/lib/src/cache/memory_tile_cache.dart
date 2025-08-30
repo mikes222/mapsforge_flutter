@@ -1,4 +1,4 @@
-import 'package:datastore_renderer/ui.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/src/cache/spatial_tile_index.dart';
 import 'package:mapsforge_flutter/src/cache/tile_cache.dart';

@@ -1,9 +1,9 @@
 /// Data models and structures for map rendering and styling.
-/// 
+///
 /// This library contains the core data models used throughout the rendering
 /// system, including layer management, geometric primitives, styling properties,
 /// and rendering context information.
-/// 
+///
 /// Key model categories:
 /// - **Layer Management**: [LayerContainer], [LayerContainerCollection]
 /// - **Geometric Primitives**: [LineSegment], [LineSegmentPath]
@@ -19,6 +19,7 @@ export 'src/model/layer_container_collection.dart';
 export 'src/model/line_segment.dart';
 export 'src/model/line_segment_path.dart';
 export 'src/model/map_cap.dart';
+export 'src/model/map_fillrule.dart';
 export 'src/model/map_font_family.dart';
 export 'src/model/map_font_style.dart';
 export 'src/model/map_join.dart';

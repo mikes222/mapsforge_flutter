@@ -1,4 +1,4 @@
-import 'package:datastore_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';

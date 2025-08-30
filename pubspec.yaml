@@ -7,9 +7,9 @@ dev_dependencies:
 workspace:
   - packages/mapsforge_flutter_core
   - packages/mapsforge_flutter_mapfile
-  - packages/dart_rendertheme
-  - packages/datastore_renderer
+  - packages/mapsforge_flutter_renderer
   - packages/mapsforge_flutter
+  - packages/dart_rendertheme
   - apps/mapfile_converter
   - apps/simple_example
   - apps/complete_example

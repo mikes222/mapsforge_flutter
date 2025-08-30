@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
 import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:datastore_renderer/cache.dart';
-import 'package:datastore_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/gesture.dart';

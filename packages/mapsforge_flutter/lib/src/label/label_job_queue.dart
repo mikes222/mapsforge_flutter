@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:dart_rendertheme/model.dart';
-import 'package:datastore_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/cache/memory_label_cache.dart';
 import 'package:mapsforge_flutter/src/label/label_set.dart';

@@ -168,7 +168,7 @@ lib/
 - `mapsforge_view`: Map rendering and caching
 - `dart_mapfile`: Map file handling
 - `dart_rendertheme`: Theme processing
-- `datastore_renderer`: Rendering engine
+- `mapsforge_flutter_renderer`: Rendering engine
 
 ### Performance Optimizations
 - `mapsforge_flutter_core`: Performance profiler and utilities

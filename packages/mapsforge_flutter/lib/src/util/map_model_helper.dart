@@ -1,5 +1,5 @@
 import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:datastore_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
