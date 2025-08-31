@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:dart_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';

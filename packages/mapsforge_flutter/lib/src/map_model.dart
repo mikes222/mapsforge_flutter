@@ -1,9 +1,9 @@
 import 'dart:ui';
 
-import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:rxdart/rxdart.dart';
 
 class MapModel {

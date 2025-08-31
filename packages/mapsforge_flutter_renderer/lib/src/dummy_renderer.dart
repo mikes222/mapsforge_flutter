@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 
 ///

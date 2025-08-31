@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 
 ///

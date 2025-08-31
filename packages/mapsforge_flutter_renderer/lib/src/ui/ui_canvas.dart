@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache.dart';

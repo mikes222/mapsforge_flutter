@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_renderer/src/cache/image_loader.dart';
 import 'package:flutter/services.dart';
+import 'package:mapsforge_flutter_renderer/src/cache/image_loader.dart';
 
 class ImageBundleLoader implements ImageLoader {
   static final String PREFIX_JAR = "jar:";
@@ -16,7 +16,7 @@ class ImageBundleLoader implements ImageLoader {
     // compatibility with mapsforge
     if (src.startsWith(PREFIX_JAR)) {
       src = src.substring(PREFIX_JAR.length);
-      src = "packages/dart_rendertheme/assets/$src";
+      src = "packages/mapsforge_flutter_rendertheme/assets/$src";
     }
     if (bundle != null) {
       ByteData content = await bundle!.load(src);

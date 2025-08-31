@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 
-/// An immutable container for the data returned from a MapDataStore.
+/// An immutable container for the data returned from a Datastore.
 class DatastoreBundle {
   /// True if the read area is completely covered by water, false otherwise.
   bool isWater = false;

@@ -1,8 +1,8 @@
-import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class MapModelHelper {
   /// A helper function to create a mapModel from a mapfile. Note that the mapModel must be disposed after use.

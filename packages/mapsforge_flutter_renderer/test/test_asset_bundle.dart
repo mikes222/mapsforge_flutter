@@ -9,7 +9,7 @@ class TestAssetBundle extends PlatformAssetBundle {
 
   @override
   Future<ByteData> load(String key) async {
-    key = key.replaceFirst("packages/dart_rendertheme/assets/", "");
+    key = key.replaceFirst("packages/mapsforge_flutter_rendertheme/assets/", "");
     print("Loading $key");
     File file = File('$prefix/$key');
     Uint8List content = file.readAsBytesSync();

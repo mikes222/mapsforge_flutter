@@ -1,5 +1,3 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
@@ -7,6 +5,8 @@ import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/single_marker_painter.dart';
 import 'package:mapsforge_flutter/src/transform_widget.dart';
+import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 import '../test_asset_bundle.dart';
 

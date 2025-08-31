@@ -1,7 +1,7 @@
 import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/mapheaderpage.dart';
 import 'package:complete_example/models/app_models.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/context_menu.dart';

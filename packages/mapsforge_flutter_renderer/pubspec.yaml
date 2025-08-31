@@ -39,7 +39,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Workspace
-  dart_rendertheme: ^1.0.0
+  mapsforge_flutter_rendertheme: ^1.0.0
 
   # For the online renderers
   dio: ^5.9.0

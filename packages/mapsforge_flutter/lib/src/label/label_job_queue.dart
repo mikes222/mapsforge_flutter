@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:dart_rendertheme/model.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/cache/memory_label_cache.dart';
 import 'package:mapsforge_flutter/src/label/label_set.dart';
 import 'package:mapsforge_flutter/src/tile/tile_dimension.dart';
 import 'package:mapsforge_flutter/src/util/tile_helper.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:rxdart/rxdart.dart';
 
 class LabelJobQueue {

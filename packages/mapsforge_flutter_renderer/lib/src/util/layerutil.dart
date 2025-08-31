@@ -1,6 +1,6 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 class LayerUtil {
   static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {

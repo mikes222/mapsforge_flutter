@@ -1,10 +1,7 @@
-import 'package:dart_rendertheme/rendertheme.dart';
-import 'package:mapsforge_flutter_renderer/cache.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
-import 'package:mapsforge_flutter_renderer/src/cache/file_symbol_cache.dart';
-import 'package:mapsforge_flutter_renderer/src/cache/image_bundle_loader.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 import '../test_asset_bundle.dart';
 

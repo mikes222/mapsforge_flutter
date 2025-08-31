@@ -1,7 +1,3 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
-import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/abstract_poi_marker.dart';
@@ -9,6 +5,10 @@ import 'package:mapsforge_flutter/src/marker/caption_mixin.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   late RenderinstructionIcon renderinstruction;

@@ -1,4 +1,4 @@
-import 'package:dart_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 
 /// High-performance spatial index using grid-based partitioning for collision detection.

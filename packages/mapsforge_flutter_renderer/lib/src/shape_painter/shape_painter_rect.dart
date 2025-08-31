@@ -1,13 +1,13 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_rect.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
   UiPaint? fill;

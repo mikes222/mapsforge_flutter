@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:dart_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 
 /// The properties to draw a text. Normally used in conjunction with a FlutterPaint which defines, color of the text.

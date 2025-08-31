@@ -1,13 +1,13 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/renderinstruction.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
-import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 /// A Marker which draws a rectangle specified by the min/max lat/lon attributes. Currently there is no way
 /// to position captions other than in the center of the rectangle (RenderinstructionPath always returns Boundary.zero since it does not have any information

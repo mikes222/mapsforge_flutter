@@ -1,5 +1,5 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/renderinstruction.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/util/layerutil.dart';

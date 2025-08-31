@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/mapfile/zoomlevel_writer.dart';
 import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';

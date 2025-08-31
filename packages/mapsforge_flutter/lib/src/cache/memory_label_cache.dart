@@ -1,6 +1,6 @@
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:dart_rendertheme/model.dart';
 import 'package:ecache/ecache.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 ///
 /// This is a memory-only implementation of the [TileBitmapCache]. It stores the bitmaps in memory.

@@ -1,4 +1,4 @@
-import 'package:dart_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_canvas.dart';

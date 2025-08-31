@@ -1,18 +1,19 @@
-import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_canvas.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
 import 'package:mapsforge_flutter_renderer/src/util/datastore_reader.dart';
 import 'package:mapsforge_flutter_renderer/src/util/layerutil.dart';
 import 'package:mapsforge_flutter_renderer/src/util/object_pool.dart';
 import 'package:mapsforge_flutter_renderer/src/util/tile_dependencies.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 /// High-performance tile renderer for datastore-based map data.
 ///

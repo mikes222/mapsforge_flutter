@@ -1,7 +1,7 @@
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:dart_rendertheme/src/rule/rule_analyzer.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/src/rule/rule_analyzer.dart';
 
 /// Removes tags from node/ways according to the rules. If no tags remains the correspondig node/way will be discarded
 class CustomOsmPrimitiveConverter extends DefaultOsmPrimitiveConverter {

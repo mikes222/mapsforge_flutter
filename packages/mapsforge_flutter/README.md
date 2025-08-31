@@ -462,7 +462,7 @@ lib/
 
 - **`mapsforge_flutter_core`**: Core utilities and data models
 - **`mapsforge_flutter_renderer`**: Rendering engine integration
-- **`dart_rendertheme`**: Theme and styling support
+- **`mapsforge_flutter_rendertheme`**: Theme and styling support
 - **`flutter`**: Flutter framework
 - **`rxdart`**: Reactive programming support
 - **`ecache`**: Caching infrastructure
@@ -527,6 +527,6 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 
 - **`mapsforge_flutter_core`**: Core utilities and data structures
 - **`mapsforge_flutter_renderer`**: High-performance tile rendering
-- **`dart_rendertheme`**: Theme processing and styling
+- **`mapsforge_flutter_rendertheme`**: Theme processing and styling
 - **`dart_mapfile`**: Map file reading and processing
 - **`mapsforge_flutter`**: Complete Flutter mapping solution

@@ -1,9 +1,9 @@
 import 'dart:ui' as ui;
 
-import 'package:dart_rendertheme/model.dart';
-import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' as mat;
+import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 class UiPaint {
   final ui.Paint _paint;

@@ -1,12 +1,11 @@
-import 'package:dart_rendertheme/rendertheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
-import 'package:mapsforge_flutter_renderer/src/datastore_renderer.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 ///
 /// flutter test --update-goldens

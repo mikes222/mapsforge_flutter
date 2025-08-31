@@ -1,15 +1,15 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:dart_rendertheme/model.dart';
-import 'package:dart_rendertheme/renderinstruction.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
-import 'package:mapsforge_flutter_renderer/renderer.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_text_paint.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
   // this is the stroke, normally white and represents the "surrounding of the text"

@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:mapsforge_flutter_renderer/renderer.dart';
-import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/cache/tile_cache.dart';
 import 'package:mapsforge_flutter/src/tile/tile_dimension.dart';
@@ -10,6 +8,8 @@ import 'package:mapsforge_flutter/src/util/tile_helper.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../cache/memory_tile_cache.dart';

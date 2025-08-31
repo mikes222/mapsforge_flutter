@@ -3,7 +3,7 @@ import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.da
 import 'package:complete_example/context_menu/mapfile_analyze/tileindex_page.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
-import 'package:dart_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:flutter/material.dart';
 
 class SubfileParamsPage extends StatelessWidget {

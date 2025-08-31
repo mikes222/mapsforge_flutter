@@ -1,9 +1,9 @@
-import 'package:mapsforge_flutter_renderer/renderer.dart';
-import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/marker/marker_datastore.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 
 class MarkerDatastorePainter extends CustomPainter {
   final MapPosition mapPosition;
