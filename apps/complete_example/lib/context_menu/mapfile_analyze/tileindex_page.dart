@@ -11,7 +11,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 class TileindexPage extends StatelessWidget {
   final SubFileParameter subFileParameter;
 
-  final MapFile mapFile;
+  final Mapfile mapFile;
 
   final int maxItems = 80;
 
@@ -60,7 +60,7 @@ class TileindexPage extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           FutureBuilder(
-            future: _readTileHeader(tileIndexes, indexEntry & MapFile.BITMASK_INDEX_OFFSET),
+            future: _readTileHeader(tileIndexes, indexEntry & Mapfile.BITMASK_INDEX_OFFSET),
             builder: (context, snapshot) {
               if (snapshot.hasError || snapshot.error != null) {
                 print(snapshot.error);

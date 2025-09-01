@@ -14,6 +14,7 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:mapsforge_flutter_renderer/online_renderer.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 import '../models/app_models.dart';
@@ -163,6 +164,7 @@ Pool Workers: ${poolStats['totalWorkers']}
     _mapModel?.dispose();
     // disposing the symbolcache also frees a lot of memory
     SymbolCacheMgr().dispose();
+    ParagraphCacheMgr().dispose();
     super.dispose();
   }
 
@@ -198,9 +200,9 @@ Pool Workers: ${poolStats['totalWorkers']}
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
           MapModel mapModel = snapshot.data;
-          MarkerDatastore markerDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard(), mapModel: mapModel);
+          MarkerDatastore markerDatastore = DefaultMarkerDatastore(mapModel: mapModel);
 
-          MarkerDatastore debugDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard(), mapModel: mapModel);
+          MarkerDatastore debugDatastore = DefaultMarkerDatastore(mapModel: mapModel);
 
           return Stack(
             children: [
@@ -218,8 +220,8 @@ Pool Workers: ${poolStats['totalWorkers']}
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
               if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
               //SingleMarkerOverlay(mapModel: mapModel, marker: marker),
-              MarkerDatastoreOverlay(mapModel: mapModel, datastore: markerDatastore),
-              MarkerDatastoreOverlay(mapModel: mapModel, datastore: debugDatastore),
+              MarkerDatastoreOverlay(mapModel: mapModel, datastore: markerDatastore, zoomlevelRange: const ZoomlevelRange.standard()),
+              MarkerDatastoreOverlay(mapModel: mapModel, datastore: debugDatastore, zoomlevelRange: const ZoomlevelRange.standard()),
               // Shows a ruler with distance information in the left-bottom corner of the map
               DistanceOverlay(mapModel: mapModel),
               // Shows zoom-in and zoom-out buttons
@@ -261,7 +263,7 @@ Pool Workers: ${poolStats['totalWorkers']}
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      datastore = await MapFile.createFromFile(filename: widget.downloadPath!);
+      datastore = await IsolateMapfile.createFromFile(filename: widget.downloadPath!);
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);

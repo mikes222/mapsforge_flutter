@@ -5,12 +5,12 @@ import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late MapFile mapFile;
+  late Mapfile mapFile;
 
   setUpAll(() async {
     _initLogging();
     // Create a MapFile instance from the monaco.map file
-    mapFile = await MapFile.createFromFile(filename: 'test/monaco.map', preferredLanguage: null);
+    mapFile = await Mapfile.createFromFile(filename: 'test/monaco.map', preferredLanguage: null);
     // Trigger loading of map data by getting the bounding box
     await mapFile.getBoundingBox();
   });
@@ -87,7 +87,7 @@ void main() {
   test('should handle invalid file path', () async {
     // The test passes if no exception is thrown when creating the MapFile
     // with an invalid path, as the actual error might occur during later operations
-    final mapFile = await MapFile.createFromFile(filename: 'nonexistent.map', preferredLanguage: null);
+    final mapFile = await Mapfile.createFromFile(filename: 'nonexistent.map', preferredLanguage: null);
 
     // Ensure we can still call methods on the map file without crashing
     expect(mapFile, isNotNull);

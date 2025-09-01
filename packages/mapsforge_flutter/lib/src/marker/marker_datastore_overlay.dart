@@ -11,7 +11,11 @@ class MarkerDatastoreOverlay extends StatefulWidget {
 
   final MarkerDatastore datastore;
 
-  const MarkerDatastoreOverlay({super.key, required this.mapModel, required this.datastore});
+  final ZoomlevelRange zoomlevelRange;
+
+  final int extendMeters;
+
+  const MarkerDatastoreOverlay({super.key, required this.mapModel, required this.datastore, required this.zoomlevelRange, this.extendMeters = 5000});
 
   @override
   State<MarkerDatastoreOverlay> createState() => _MarkerDatastoreOverlayState();
@@ -20,13 +24,15 @@ class MarkerDatastoreOverlay extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
-  int _lastZoomlevel = -1;
+  BoundingBox? _cachedBoundingBox;
+
+  int _cachedZoomlevel = -1;
 
   @override
   void didUpdateWidget(covariant MarkerDatastoreOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.datastore != widget.datastore) {
-      _lastZoomlevel = -1;
+    if (oldWidget.datastore != widget.datastore || oldWidget.zoomlevelRange != widget.zoomlevelRange) {
+      _cachedZoomlevel = -1;
     }
   }
 
@@ -45,45 +51,30 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
               return const SizedBox();
             }
             MapPosition position = snapshot.data!;
-            if (_lastZoomlevel == position.zoomlevel) {
+            if (_cachedZoomlevel == position.zoomlevel) {
               BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
-              widget.datastore.askChangeBoundingBox(boundingBox);
-              return TransformWidget(
-                mapCenter: position.getCenter(),
-                mapPosition: position,
-                screensize: screensize,
-                child: CustomPaint(foregroundPainter: MarkerDatastorePainter(position, widget.datastore), child: const SizedBox.expand()),
-              );
+              if (_cachedBoundingBox == null || !_cachedBoundingBox!.containsBoundingBox(boundingBox)) {
+                boundingBox = boundingBox.extendMeters(widget.extendMeters);
+                widget.datastore.askChangeBoundingBox(_cachedZoomlevel, boundingBox);
+                _cachedBoundingBox = boundingBox;
+              }
             }
-            return FutureBuilder(
-              future: _checkZoomlevel(position, screensize),
-              builder: (BuildContext context, asyncSnapshot) {
-                if (snapshot.error != null) {
-                  return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
-                }
-                if (_lastZoomlevel != position.zoomlevel) return const SizedBox();
-                BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
-                widget.datastore.askChangeBoundingBox(boundingBox);
-                return TransformWidget(
-                  mapCenter: position.getCenter(),
-                  mapPosition: position,
-                  screensize: screensize,
-                  child: CustomPaint(foregroundPainter: MarkerDatastorePainter(position, widget.datastore), child: const SizedBox.expand()),
-                );
-              },
+            if (_cachedZoomlevel != position.zoomlevel) {
+              BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
+              boundingBox = boundingBox.extendMeters(widget.extendMeters);
+              widget.datastore.askChangeZoomlevel(position.zoomlevel, boundingBox, position.projection);
+              _cachedZoomlevel = position.zoomlevel;
+              _cachedBoundingBox = boundingBox;
+            }
+            return TransformWidget(
+              mapCenter: position.getCenter(),
+              mapPosition: position,
+              screensize: screensize,
+              child: CustomPaint(foregroundPainter: MarkerDatastorePainter(position, widget.datastore), child: const SizedBox.expand()),
             );
           },
         );
       },
     );
-  }
-
-  Future<bool> _checkZoomlevel(MapPosition position, Size screensize) async {
-    if (_lastZoomlevel != position.zoomlevel) {
-      BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
-      await widget.datastore.askChangeZoomlevel(position.zoomlevel, boundingBox, position.projection);
-      _lastZoomlevel = position.zoomlevel;
-    }
-    return true;
   }
 }

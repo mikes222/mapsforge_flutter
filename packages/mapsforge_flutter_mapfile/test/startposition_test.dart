@@ -3,10 +3,10 @@ import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:test/test.dart';
 
 void main() async {
-  late MapFile mapFile;
+  late Mapfile mapFile;
 
   setUpAll(() async {
-    mapFile = await MapFile.createFromFile(filename: "test/campus_level.map");
+    mapFile = await Mapfile.createFromFile(filename: "test/campus_level.map");
   });
 
   test("should return zoomlevel from mapfile", () async {

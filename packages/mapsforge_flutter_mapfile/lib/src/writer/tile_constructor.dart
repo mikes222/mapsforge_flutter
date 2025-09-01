@@ -330,7 +330,7 @@ class TileConstructor {
   /// @return true if the block signature could be processed successfully, false otherwise.
   void _writeTileHeaderSignature(Tile tile, Writebuffer writebuffer) {
     if (debugFile) {
-      writebuffer.appendStringWithoutLength("###TileStart${tile.tileX},${tile.tileY}###".padRight(MapFile.SIGNATURE_LENGTH_BLOCK, " "));
+      writebuffer.appendStringWithoutLength("###TileStart${tile.tileX},${tile.tileY}###".padRight(Mapfile.SIGNATURE_LENGTH_BLOCK, " "));
     }
   }
 

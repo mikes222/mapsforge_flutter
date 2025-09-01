@@ -36,8 +36,8 @@ class Scalefactor {
   ///
   /// @param zoomLevel the zoom level to convert.
   /// @return the corresponding scale factor.
-  static double zoomlevelToScalefactor(int zoomLevel) {
-    assert(zoomLevel >= 0 && zoomLevel <= MAXZOOMLEVEL);
-    return pow(2, zoomLevel.toDouble()).toDouble();
+  static double zoomlevelToScalefactor(int zoomlevel) {
+    assert(zoomlevel >= 0 && zoomlevel <= MAXZOOMLEVEL, "Zoom level $zoomlevel out of range");
+    return pow(2, zoomlevel.toDouble()).toDouble();
   }
 }

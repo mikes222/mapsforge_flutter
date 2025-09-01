@@ -233,7 +233,7 @@ class SubfileCreator {
   /// Note: to calculate how many tile index entries there will be, use the formulae at [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames] to find out how many tiles will be covered by the bounding box at the base zoom level of the sub file
   void _writeTileIndexEntry(Writebuffer writebuffer, bool coveredByWater, int offset) {
     int indexEntry = 0;
-    if (coveredByWater) indexEntry = indexEntry |= MapFile.BITMASK_INDEX_WATER;
+    if (coveredByWater) indexEntry = indexEntry |= Mapfile.BITMASK_INDEX_WATER;
 
     // 2.-40. bit (mask: 0x7f ff ff ff ff): 39 bit offset of the tile in the sub file as 5-bytes LONG (optional debug information and index size is also counted; byte order is BigEndian i.e. most significant byte first)
     // If the tile is empty offset(tile,,i,,) = offset(tile,,i+1,,)

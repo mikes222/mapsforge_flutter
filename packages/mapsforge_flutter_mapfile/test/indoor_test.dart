@@ -7,12 +7,12 @@ import 'package:test/test.dart';
 ///
 ///
 void main() async {
-  late MapFile mapFile;
+  late Mapfile mapFile;
 
   late DatastoreBundle mapReadResult;
 
   setUpAll(() async {
-    mapFile = await MapFile.createFromFile(filename: "test/campus_level.map");
+    mapFile = await Mapfile.createFromFile(filename: "test/campus_level.map");
 
     //x- and y-Coordinates from upperLeft- and lowerRight-Tile that define the map-area,
     //here we are using the coordinates of 4 Tiles around the NHG in Reichenhainer Straße 70, 09126

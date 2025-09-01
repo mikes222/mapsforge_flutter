@@ -89,16 +89,14 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     renderInfo?.renderInstruction.theta = Projection.degToRadian(rotation);
   }
 
-  Future<void> setBitmapColorFromNumber(int color) async {
+  void setBitmapColorFromNumber(int color) {
     renderinstruction.setBitmapColorFromNumber(color);
     renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePainter(renderInfo!);
   }
 
-  Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
+  void setAndLoadBitmapSrc(String bitmapSrc) {
     renderinstruction.bitmapSrc = bitmapSrc;
     renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePainter(renderInfo!);
   }
 
   void setLatLong(ILatLong latLong) {

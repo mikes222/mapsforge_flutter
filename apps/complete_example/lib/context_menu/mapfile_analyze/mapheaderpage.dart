@@ -1,11 +1,11 @@
 import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/subfileparamspage.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/tagspage.dart';
-import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 ///
 /// These classes are for debugging purposes only.
@@ -27,13 +27,13 @@ class MapHeaderPage extends StatelessWidget {
       future: _loadMapFile(filename),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.data == null) return const Center(child: const CircularProgressIndicator());
-        MapFile mapFile = snapshot.data;
+        Mapfile mapFile = snapshot.data;
         return ListView(children: <Widget>[_buildGeneralCard(mapFile), _buildFileinfoCard(mapFile, context), _buildFileheaderCard(context, mapFile)]);
       },
     );
   }
 
-  Card _buildFileinfoCard(MapFile mapFile, BuildContext context) {
+  Card _buildFileinfoCard(Mapfile mapFile, BuildContext context) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +68,7 @@ class MapHeaderPage extends StatelessWidget {
     );
   }
 
-  Card _buildGeneralCard(MapFile mapFile) {
+  Card _buildGeneralCard(Mapfile mapFile) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +87,7 @@ class MapHeaderPage extends StatelessWidget {
     );
   }
 
-  Card _buildFileheaderCard(BuildContext context, MapFile mapFile) {
+  Card _buildFileheaderCard(BuildContext context, Mapfile mapFile) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,8 +147,8 @@ class MapHeaderPage extends StatelessWidget {
     );
   }
 
-  Future<MapFile> _loadMapFile(String filename) async {
-    MapFile mapFile = await MapFile.createFromFile(filename: filename);
+  Future<Mapfile> _loadMapFile(String filename) async {
+    Mapfile mapFile = await Mapfile.createFromFile(filename: filename);
     // to open the mapfile
     await mapFile.getBoundingBox();
     return mapFile;

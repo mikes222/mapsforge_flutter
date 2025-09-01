@@ -102,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
     ByteData mapContent = await rootBundle.load("assets/monaco.map");
-    Datastore datastore = await MapFile.createFromContent(content: mapContent.buffer.asUint8List());
+    Datastore datastore = await Mapfile.createFromContent(content: mapContent.buffer.asUint8List());
 
     // Now instantiate our mapModel Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range. MapModel must be disposed after use.
     _mapModel = await MapModelHelper.createOfflineMapModel(datastore: datastore, zoomlevelRange: const ZoomlevelRange(0, 21));

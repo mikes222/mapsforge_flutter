@@ -31,7 +31,7 @@ void main() {
       String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
       Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-      Datastore mapFile = await MapFile.createFromFile(filename: 'test/rendering/monaco.map', preferredLanguage: null);
+      Datastore mapFile = await Mapfile.createFromFile(filename: 'test/rendering/monaco.map', preferredLanguage: null);
 
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = new JobRequest(tile);
@@ -81,7 +81,7 @@ void main() {
       String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
       Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-      Datastore mapFile = await MapFile.createFromFile(filename: 'test/rendering/monaco.map', preferredLanguage: null);
+      Datastore mapFile = await Mapfile.createFromFile(filename: 'test/rendering/monaco.map', preferredLanguage: null);
 
       Renderer dataStoreRenderer = DatastoreRenderer(mapFile, renderTheme, true);
       List imgs = [];

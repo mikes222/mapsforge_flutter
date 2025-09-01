@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 
 class BlockPage extends StatelessWidget {
-  final MapFile mapFile;
+  final Mapfile mapFile;
 
   final SubFileParameter subFileParameter;
 

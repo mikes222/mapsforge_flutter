@@ -19,7 +19,7 @@ import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 @pragma("vm:entry-point")
 class IsolateMapfile implements Datastore {
   /// The instance of the mapfile in the isolate
-  static MapFile? mapFile;
+  static Mapfile? mapFile;
 
   /// The parameter needed to create a mapfile in the isolate
   static late final String filename;
@@ -31,10 +31,10 @@ class IsolateMapfile implements Datastore {
 
   IsolateMapfile._();
 
-  static Future<IsolateMapfile> create(String filename, [String? preferredLanguage]) async {
-    IsolateMapfile _instance = IsolateMapfile._();
-    await _instance._isolateInstance.spawn(_createInstanceStatic, _MapfileInstanceRequest(filename, preferredLanguage));
-    return _instance;
+  static Future<IsolateMapfile> createFromFile({required String filename, String? preferredLanguage}) async {
+    IsolateMapfile instance = IsolateMapfile._();
+    await instance._isolateInstance.spawn(_createInstanceStatic, _MapfileInstanceRequest(filename, preferredLanguage));
+    return instance;
   }
 
   @override
@@ -46,14 +46,17 @@ class IsolateMapfile implements Datastore {
   static Future<void> _createInstanceStatic(IsolateInitInstanceParams request) async {
     filename = (request.initObject as _MapfileInstanceRequest).filename;
     preferredLanguage = request.initObject.preferredLanguage;
-    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
+    mapFile ??= await Mapfile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
     await FlutterIsolateInstance.isolateInit(request, _acceptRequestsStatic);
   }
 
   @pragma('vm:entry-point')
   static Future _acceptRequestsStatic(Object request) async {
     if (request is _MapfileReadSingleRequest) return mapFile!.readLabelsSingle(request.tile);
+    if (request is _MapfileReadRequest) return mapFile!.readLabels(request.upperLeft, request.lowerRight);
+    if (request is _MapfileReadDataSingleRequest) return mapFile!.readMapDataSingle(request.tile);
     if (request is _MapfileSupportsTileRequest) return mapFile!.supportsTile(request.tile);
+    if (request is _MapfileBoundingBoxRequest) return mapFile!.getBoundingBox();
   }
 
   @override
@@ -76,7 +79,7 @@ class IsolateMapfile implements Datastore {
 
   @override
   Future<DatastoreBundle?> readMapDataSingle(Tile tile) async {
-    DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
+    DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadDataSingleRequest(tile));
     return result;
   }
 
@@ -131,6 +134,14 @@ class _MapfileReadSingleRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+class _MapfileReadDataSingleRequest {
+  final Tile tile;
+
+  _MapfileReadDataSingleRequest(this.tile);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 class _MapfileReadRequest {
   final Tile upperLeft;
 
@@ -151,7 +162,7 @@ class _MapfileSupportsTileRequest {
 
 /// A class for reading binary map files.
 /// The mapFile should be disposed if not needed anymore
-class MapFile extends MapDatastore {
+class Mapfile extends MapDatastore {
   static final _log = new Logger('MapFile');
 
   /// Bitmask to extract the block offset from an index entry.
@@ -191,15 +202,15 @@ class MapFile extends MapDatastore {
 
   final Cache<String, Readbuffer> _cache = LfuCache(storage: StatisticsStorage(), capacity: 100);
 
-  static Future<MapFile> createFromFile({required String filename, String? preferredLanguage, ReadbufferSource? source}) async {
-    MapFile mapFile = MapFile._(preferredLanguage);
+  static Future<Mapfile> createFromFile({required String filename, String? preferredLanguage, ReadbufferSource? source}) async {
+    Mapfile mapFile = Mapfile._(preferredLanguage);
     await mapFile._init(source ?? ReadbufferFile(filename));
     return mapFile;
   }
 
-  static Future<MapFile> createFromContent({required Uint8List content, String? preferredLanguage}) async {
+  static Future<Mapfile> createFromContent({required Uint8List content, String? preferredLanguage}) async {
     assert(content.isNotEmpty);
-    MapFile mapFile = MapFile._(preferredLanguage);
+    Mapfile mapFile = Mapfile._(preferredLanguage);
     await mapFile._initContent(content);
     return mapFile;
   }
@@ -209,15 +220,15 @@ class MapFile extends MapDatastore {
   /// @param filename the filename of the mapfile.
   /// @param language       the language to use (may be null).
   /// @throws MapFileException if the given map file channel is null or invalid.
-  MapFile._(String? preferredLanguage) : super((preferredLanguage?.trim().toLowerCase().isEmpty ?? true) ? null : preferredLanguage?.trim().toLowerCase());
+  Mapfile._(String? preferredLanguage) : super((preferredLanguage?.trim().toLowerCase().isEmpty ?? true) ? null : preferredLanguage?.trim().toLowerCase());
 
-  Future<MapFile> _init(ReadbufferSource source) async {
+  Future<Mapfile> _init(ReadbufferSource source) async {
     _databaseIndexCache = IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = source;
     return this;
   }
 
-  Future<MapFile> _initContent(Uint8List content) async {
+  Future<Mapfile> _initContent(Uint8List content) async {
     _databaseIndexCache = IndexCache(INDEX_CACHE_SIZE);
     this.readBufferSource = ReadbufferMemory(content);
     return this;

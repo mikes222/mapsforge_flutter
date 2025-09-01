@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.dart';
-import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -10,9 +9,10 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class PoiWayListPage extends StatelessWidget {
-  final MapFile mapFile;
+  final Mapfile mapFile;
 
   final SubFileParameter subFileParameter;
 
