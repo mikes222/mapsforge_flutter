@@ -43,10 +43,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   late Marker marker;
 
-  MarkerDatastore markerDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
-
-  MarkerDatastore debugDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard());
-
   Datastore? datastore;
 
   MapModel? _mapModel;
@@ -202,6 +198,10 @@ Pool Workers: ${poolStats['totalWorkers']}
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
           MapModel mapModel = snapshot.data;
+          MarkerDatastore markerDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard(), mapModel: mapModel);
+
+          MarkerDatastore debugDatastore = DefaultMarkerDatastore(zoomlevelRange: const ZoomlevelRange.standard(), mapModel: mapModel);
+
           return Stack(
             children: [
               // move the map

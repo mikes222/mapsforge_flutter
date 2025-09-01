@@ -17,7 +17,7 @@ class AreaMarker<T> extends Marker<T> {
 
   RenderInfoWay<RenderinstructionArea>? renderInfo;
 
-  List<ILatLong> path = [];
+  final List<ILatLong> _path = [];
 
   AreaMarker({
     super.zoomlevelRange,
@@ -26,9 +26,10 @@ class AreaMarker<T> extends Marker<T> {
     int strokeColor = 0xff000000,
     int fillColor = 0xff000000,
     List<double>? strokeDasharray,
-    this.path = const [],
+    List<ILatLong> path = const [],
     int? strokeMinZoomLevel,
   }) {
+    if (path.isNotEmpty) _path.addAll(path);
     renderinstruction = RenderinstructionArea(0);
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.setStrokeWidth(strokeWidth);
@@ -47,7 +48,7 @@ class AreaMarker<T> extends Marker<T> {
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionArea renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    WayProperties wayProperties = WayProperties(Way(0, [], [path], null), projection);
+    WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
   }
@@ -64,26 +65,20 @@ class AreaMarker<T> extends Marker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
-    return LatLongUtils.contains(path, tapEvent);
+    return LatLongUtils.contains(_path, tapEvent);
   }
 
-  Future<void> setBitmapColorFromNumber(int color) async {
+  void setBitmapColorFromNumber(int color) {
     renderinstruction.setBitmapColorFromNumber(color);
-    renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePainter(renderInfo!);
   }
 
-  Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
+  void setAndLoadBitmapSrc(String bitmapSrc) {
     renderinstruction.bitmapSrc = bitmapSrc;
-    renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePainter(renderInfo!);
   }
 
-  Future<void> addLatLong(ILatLong latLong, PixelProjection projection) async {
-    path.add(latLong);
-    WayProperties wayProperties = WayProperties(Way(0, [], [path], null), projection);
-    RenderInfoWay<RenderinstructionArea> renderInfoNew = RenderInfoWay(wayProperties, renderInfo!.renderInstruction);
-    renderInfoNew.shapePainter = await PainterFactory().createShapePainter(renderInfo!);
-    renderInfo = renderInfoNew;
+  void addLatLong(ILatLong latLong) {
+    _path.add(latLong);
   }
+
+  List<ILatLong> get path => _path;
 }

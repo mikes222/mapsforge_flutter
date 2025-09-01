@@ -56,7 +56,6 @@ class RenderinstructionCaption extends Renderinstruction
   /// [level] The drawing level (layer) for this caption instruction
   RenderinstructionCaption(int level) {
     this.level = level;
-    maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
     gap = DEFAULT_GAP * MapsforgeSettingsMgr().getFontScaleFactor();
     setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
     setFontSize(10);
@@ -141,6 +140,10 @@ class RenderinstructionCaption extends Renderinstruction
   }
 
   MapRectangle calculateBoundaryWithSymbol(MapPositioning pos, double fontWidth, double fontHeight) {
+    assert(fontWidth > 0, "fontWidth must be positive ($fontWidth)");
+    assert(fontWidth < 10000, "fontWidth must be less than 10000 ($fontWidth)");
+    assert(fontHeight > 0, "fontHeight must be positive ($fontHeight)");
+    assert(fontHeight < 10000, "fontHeight must be less than 10000 ($fontHeight)");
     //    print("captoin: $pos $fontWidth $fontHeight $symbolBoundary for caption $textKey");
     MapRectangle? symBoundary = symbolBoundary;
     if (pos == MapPositioning.CENTER && symBoundary != null) {
@@ -213,20 +216,20 @@ class RenderinstructionCaption extends Renderinstruction
   @override
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties) {
     String? caption = textKey!.getValue(nodeProperties.tags);
-    if (caption == null) {
+    if (caption == null || caption.trim().isEmpty) {
       return;
     }
 
-    layerContainer.addLabel(RenderInfoNode(nodeProperties, this, caption: caption));
+    layerContainer.addLabel(RenderInfoNode(nodeProperties, this, caption: caption.trim()));
   }
 
   @override
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {
     String? caption = textKey!.getValue(wayProperties.getTags());
-    if (caption == null) {
+    if (caption == null || caption.trim().isEmpty) {
       return;
     }
 
-    layerContainer.addLabel(RenderInfoWay(wayProperties, this, caption: caption));
+    layerContainer.addLabel(RenderInfoWay(wayProperties, this, caption: caption.trim()));
   }
 }

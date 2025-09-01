@@ -23,7 +23,7 @@ main() async {
   test("MultimapDatastore without maps", () async {
     _initLogging();
 
-    MultiMapDataStore datastore = MultiMapDataStore(DataPolicy.RETURN_ALL);
+    MultimapDatastore datastore = MultimapDatastore(DataPolicy.RETURN_ALL);
 
     Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/mapsforge_flutter_renderer/defaultrender.xml");
 

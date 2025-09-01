@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/tile/tile_job_queue.dart';
 import 'package:mapsforge_flutter/src/tile/tile_painter.dart';
 import 'package:mapsforge_flutter/src/tile/tile_set.dart';
 import 'package:mapsforge_flutter/src/transform_widget.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 /// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
 class TileView extends StatefulWidget {
@@ -65,7 +65,7 @@ class _TileViewState extends State<TileView> {
               );
             }
             // We do not have a position yet or we wait for processing of the first tiles
-            return const Center(child: CircularProgressIndicator());
+            return const SizedBox.expand();
           },
         );
       },

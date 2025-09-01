@@ -58,7 +58,7 @@ class _LabelViewState extends State<LabelView> {
                 child: CustomPaint(foregroundPainter: LabelPainter(snapshot.data!), child: const SizedBox.expand()),
               );
             }
-            // TileView shows already a circular progress indicator, do not do it twice
+            // Waiting for position information of until data are available
             return const SizedBox.expand();
           },
         );

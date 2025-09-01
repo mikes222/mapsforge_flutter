@@ -46,26 +46,26 @@ class IsolateMapfile implements Datastore {
   static Future<void> _createInstanceStatic(IsolateInitInstanceParams request) async {
     filename = (request.initObject as _MapfileInstanceRequest).filename;
     preferredLanguage = request.initObject.preferredLanguage;
-    await FlutterIsolateInstance.isolateInit(request, _readLabelsSingleStatic);
+    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
+    await FlutterIsolateInstance.isolateInit(request, _acceptRequestsStatic);
+  }
+
+  @pragma('vm:entry-point')
+  static Future _acceptRequestsStatic(Object request) async {
+    if (request is _MapfileReadSingleRequest) return mapFile!.readLabelsSingle(request.tile);
+    if (request is _MapfileSupportsTileRequest) return mapFile!.supportsTile(request.tile);
   }
 
   @override
-  Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) {
-    // DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadRequest(upperLeft, lowerRight));
-    // return result;
-    throw UnimplementedError();
+  Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) async {
+    DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadRequest(upperLeft, lowerRight));
+    return result;
   }
 
   @override
   Future<DatastoreBundle?> readLabelsSingle(Tile tile) async {
     DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
     return result;
-  }
-
-  @pragma('vm:entry-point')
-  static Future<DatastoreBundle?> _readLabelsSingleStatic(_MapfileReadSingleRequest request) async {
-    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
-    return mapFile!.readLabelsSingle(request.tile);
   }
 
   @override
@@ -78,12 +78,6 @@ class IsolateMapfile implements Datastore {
   Future<DatastoreBundle?> readMapDataSingle(Tile tile) async {
     DatastoreBundle? result = await _isolateInstance.compute(_MapfileReadSingleRequest(tile));
     return result;
-  }
-
-  @pragma('vm:entry-point')
-  static Future<DatastoreBundle?> _readMapDataSingleStatic(_MapfileReadSingleRequest request) async {
-    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
-    return mapFile!.readMapDataSingle(request.tile);
   }
 
   @override
@@ -104,22 +98,10 @@ class IsolateMapfile implements Datastore {
     return result;
   }
 
-  @pragma('vm:entry-point')
-  static Future<bool> _supportsTileStatic(_MapfileSupportsTileRequest request) async {
-    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
-    return mapFile!.supportsTile(request.tile);
-  }
-
   @override
   Future<BoundingBox> getBoundingBox() async {
     BoundingBox result = await _isolateInstance.compute(_MapfileBoundingBoxRequest());
     return result;
-  }
-
-  @pragma('vm:entry-point')
-  static Future<BoundingBox> _getBoundingBoxStatic(_MapfileBoundingBoxRequest request) async {
-    mapFile ??= await MapFile.createFromFile(filename: filename, preferredLanguage: preferredLanguage);
-    return mapFile!.getBoundingBox();
   }
 }
 

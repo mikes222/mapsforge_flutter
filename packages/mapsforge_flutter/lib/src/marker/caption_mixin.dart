@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 mixin class CaptionMixin {
   final List<Caption> _captions = [];
 
-  Caption addCaption({
+  Caption? addCaption({
     required String caption,
     double strokeWidth = 2.0,
     int strokeColor = 0xffffffff,
@@ -22,6 +22,7 @@ mixin class CaptionMixin {
     int? strokeMinZoomLevel,
     double gap = 1,
   }) {
+    if (caption.trim().isEmpty) return null;
     Caption cp = Caption(
       caption: caption,
       strokeWidth: strokeWidth,
@@ -97,6 +98,7 @@ class Caption {
     double gap = 1,
     int? strokeMinZoomLevel,
     required this.poiMarker,
+    double? maxTextWidth,
   }) : assert(strokeWidth >= 0),
        _caption = caption {
     renderinstruction = RenderinstructionCaption(0);
@@ -105,7 +107,7 @@ class Caption {
     renderinstruction.setFillColorFromNumber(fillColor);
     renderinstruction.setFontSize(fontSize);
     renderinstruction.position = position;
-    renderinstruction.maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
+    if (maxTextWidth != null) renderinstruction.setMaxTextWidth(maxTextWidth);
     renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel ?? MapsforgeSettingsMgr().strokeMinZoomlevelText);
     renderinstruction.dy = dy;
     renderinstruction.gap = gap;

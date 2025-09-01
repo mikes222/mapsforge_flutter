@@ -111,6 +111,14 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
     await PainterFactory().createShapePainter(renderInfo!);
   }
 
+  void setStrokeColorFromNumber(int color) {
+    renderinstruction.setStrokeColorFromNumber(color);
+  }
+
+  void setFillColorFromNumber(int color) {
+    renderinstruction.setFillColorFromNumber(color);
+  }
+
   @override
   MapRectangle? searchForSymbolBoundary(String symbolId) {
     return renderInfo?.renderInstruction.getBoundary();

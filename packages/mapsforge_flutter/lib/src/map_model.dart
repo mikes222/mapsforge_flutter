@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:mapsforge_flutter/mapsforge.dart';
+import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
@@ -24,6 +25,9 @@ class MapModel {
 
   final Subject<TapEvent?> _doubleTapSubject = PublishSubject();
 
+  /// When using the context menu we often needs the markers which are tapped. To simplify that we register/unregister datastores to the map.
+  final List<MarkerDatastore> _datastore = [];
+
   MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
   void dispose() {
@@ -33,6 +37,18 @@ class MapModel {
     _longTapSubject.close();
     _doubleTapSubject.close();
     renderer.dispose();
+    for (var datastore in List.of(_datastore)) {
+      datastore.dispose();
+    }
+    _datastore.clear();
+  }
+
+  List<Marker> getTappedMarkers(TapEvent event) {
+    List<Marker> tappedMarkers = [];
+    for (var datastore in _datastore) {
+      tappedMarkers.addAll(datastore.getTappedMarkers(event));
+    }
+    return tappedMarkers;
   }
 
   void setPosition(MapPosition position) {
@@ -150,9 +166,18 @@ class MapModel {
     setPosition(newPosition);
   }
 
+  /// Sets the center of the mapmodel to the given coordinates in mappixel
   void setCenter(double x, double y) {
     MapPosition newPosition = _lastPosition!.setCenter(x, y);
     setPosition(newPosition);
+  }
+
+  void registerMarkerDatastore(MarkerDatastore datastore) {
+    _datastore.add(datastore);
+  }
+
+  void unregisterMarkerDatastore(MarkerDatastore datastore) {
+    _datastore.remove(datastore);
   }
 }
 

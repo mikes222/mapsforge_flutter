@@ -52,6 +52,7 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
               }
               return;
             }
+            if (widget.mapModel.lastPosition == null) return;
             _handler = _Handler(
               tapState: this,
               lastPosition: widget.mapModel.lastPosition!,

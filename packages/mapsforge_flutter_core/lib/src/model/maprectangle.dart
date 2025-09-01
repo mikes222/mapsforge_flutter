@@ -7,7 +7,7 @@ class MapRectangle {
   final double right;
   final double top;
 
-  const MapRectangle(this.left, this.top, this.right, this.bottom) : assert(left <= right), assert(bottom >= top);
+  const MapRectangle(this.left, this.top, this.right, this.bottom) : assert(left <= right, "left ($left) > right ($right)"), assert(bottom >= top);
 
   const MapRectangle.zero() : this(0, 0, 0, 0);
 

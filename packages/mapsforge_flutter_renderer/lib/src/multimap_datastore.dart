@@ -14,7 +14,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 /// suitable when multiple maps cover the different areas, but there is some overlap at boundaries. This
 /// is the most expensive operation and often it is actually faster to double paint objects as otherwise
 /// all objects have to be compared with all others.
-class MultiMapDataStore extends Datastore {
+class MultimapDatastore extends Datastore {
   static final _log = Logger('MultiMapDataStore');
 
   BoundingBox? boundingBox;
@@ -25,7 +25,7 @@ class MultiMapDataStore extends Datastore {
 
   int? startZoomLevel;
 
-  MultiMapDataStore(this.dataPolicy) : mapDatabases = [], super();
+  MultimapDatastore(this.dataPolicy) : mapDatabases = [], super();
 
   @override
   void dispose() {
@@ -131,7 +131,7 @@ class MultiMapDataStore extends Datastore {
 
   Future<DatastoreBundle> _readLabels(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
-    for (Datastore mdb in mapDatabases) {
+    for (Datastore mdb in List.of(mapDatabases)) {
       if ((await mdb.supportsTile(upperLeft))) {
         DatastoreBundle? result = await mdb.readLabels(upperLeft, lowerRight);
         if (result == null) {

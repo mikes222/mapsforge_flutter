@@ -72,6 +72,9 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
         child: StreamBuilder(
           stream: widget.mapModel.positionStream,
           builder: (BuildContext context, AsyncSnapshot<MapPosition> snapshot) {
+            if (snapshot.error != null) {
+              return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
+            }
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox();
             }

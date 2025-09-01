@@ -17,15 +17,15 @@ mixin TextSrcMixin {
 
   MapFontStyle _fontStyle = MapFontStyle.NORMAL;
 
-  /// The maximum width of a text as defined in the displaymodel
-  double maxTextWidth = 300;
+  /// The maximum width of a text
+  double _maxTextWidth = MapsforgeSettingsMgr().maxTextWidth;
 
   void textSrcMixinClone(TextSrcMixin base) {
     _textMinZoomLevel = base._textMinZoomLevel;
     _fontSize = base._fontSize;
     _fontFamily = base._fontFamily;
     _fontStyle = base._fontStyle;
-    maxTextWidth = base.maxTextWidth;
+    _maxTextWidth = base._maxTextWidth;
   }
 
   void textSrcMixinScale(TextSrcMixin base, int zoomlevel) {
@@ -50,6 +50,14 @@ mixin TextSrcMixin {
 
   void setMaxFontSize(double maxFontSize) {
     _maxFontSize = maxFontSize;
+  }
+
+  void setMaxTextWidth(double maxTextWidth) {
+    _maxTextWidth = maxTextWidth;
+  }
+
+  double getMaxTextWidth() {
+    return _maxTextWidth;
   }
 
   MapFontStyle get fontStyle => _fontStyle;

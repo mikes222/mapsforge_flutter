@@ -107,7 +107,9 @@ class FlutterIsolateInstance {
   static Future<void> _listenToMainIsolate<U, V>(ReceivePort receivePort, SendPort sendPort, RequestCallback<U, V> requestCallback) async {
     await for (var data in receivePort) {
       if (data is _IsolateRequestInstanceParams) {
-        unawaited(_handleRequest(sendPort, requestCallback, data.parameter as U, data.id));
+        // convert to U before starting the unawaited() method to throw stacktrace if necessary
+        U param = data.parameter;
+        unawaited(_handleRequest(sendPort, requestCallback, param, data.id));
       }
     }
   }

@@ -17,7 +17,7 @@ class LayerContainer {
   ///
   /// Define the maximum number of levels.
   LayerContainer(int maxLevels) {
-    levels = List.generate(maxLevels, (int idx) => RenderInfoCollection([]));
+    levels = List.generate(maxLevels + 1, (int idx) => RenderInfoCollection([]));
   }
 
   void add(int level, RenderInfo element) {

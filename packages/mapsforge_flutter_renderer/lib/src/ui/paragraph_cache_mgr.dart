@@ -1,21 +1,24 @@
 import 'dart:ui' as ui;
 
+import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_text_paint.dart';
-import 'package:ecache/ecache.dart';
 
-class ParagraphCache {
-  static ParagraphCache? _instance;
+class ParagraphCacheMgr {
+  static ParagraphCacheMgr? _instance;
 
-  final LruCache<String, ParagraphEntry> _cache = LruCache<String, ParagraphEntry>(storage: WeakReferenceStorage<String, ParagraphEntry>(), capacity: 1000);
+  final LruCache<String, ParagraphEntry> _cache = LruCache<String, ParagraphEntry>(
+    storage: WeakReferenceStorage<String, ParagraphEntry>(onEvict: (key, element) => element.dispose()),
+    capacity: 1000,
+  );
 
-  factory ParagraphCache() {
+  factory ParagraphCacheMgr() {
     if (_instance != null) return _instance!;
-    _instance = ParagraphCache._();
+    _instance = ParagraphCacheMgr._();
     return _instance!;
   }
 
-  ParagraphCache._();
+  ParagraphCacheMgr._();
 
   ParagraphEntry getEntry(String text, UiTextPaint textPaint, UiPaint paint, double maxTextWidth) {
     String key =
@@ -24,6 +27,11 @@ class ParagraphCache {
       return ParagraphEntry(text, paint, textPaint, maxTextWidth);
     });
     return result;
+  }
+
+  void dispose() {
+    _cache.clear();
+    _instance = null;
   }
 }
 
@@ -36,6 +44,7 @@ class ParagraphEntry {
     ui.ParagraphBuilder builder = _buildParagraphBuilder(text, paint, textPaint);
     paragraph = builder.build();
     paragraph.layout(ui.ParagraphConstraints(width: maxTextwidth));
+    assert(paragraph.longestLine > 0, "Paragraph width is negative ${paragraph.longestLine} for text $text and maxTextwidth $maxTextwidth");
   }
 
   ui.ParagraphBuilder _buildParagraphBuilder(String text, UiPaint paint, UiTextPaint textPaint) {
@@ -45,10 +54,15 @@ class ParagraphEntry {
   }
 
   double getWidth() {
+    assert(paragraph.longestLine > 0, "Paragraph width is negative ${paragraph.longestLine}");
     return paragraph.longestLine;
   }
 
   double getHeight() {
     return paragraph.height;
+  }
+
+  void dispose() {
+    paragraph.dispose();
   }
 }

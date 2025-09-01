@@ -6,7 +6,9 @@ import 'package:mapsforge_flutter/context_menu.dart';
 class SimpleContextMenu extends StatelessWidget {
   final ContextMenuInfo info;
 
-  const SimpleContextMenu({super.key, required this.info});
+  final Widget? child;
+
+  const SimpleContextMenu({super.key, required this.info, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +21,21 @@ class SimpleContextMenu extends StatelessWidget {
     }
     return SimpleContextMenuWidget(
       info: info,
-      child: InkWell(
-        onTap: () {
-          info.mapModel.tap(null);
-        },
-        onLongPress: () {
-          Clipboard.setData(ClipboardData(text: "${info.latitude.toStringAsFixed(6)}, ${info.longitude.toStringAsFixed(6)}"));
-        },
-        child: Text("${info.latitude.toStringAsFixed(6)} / ${info.longitude.toStringAsFixed(6)}"),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              info.mapModel.tap(null);
+            },
+            onLongPress: () {
+              Clipboard.setData(ClipboardData(text: "${info.latitude.toStringAsFixed(6)}, ${info.longitude.toStringAsFixed(6)}"));
+            },
+            child: Text("${info.latitude.toStringAsFixed(6)} / ${info.longitude.toStringAsFixed(6)}"),
+          ),
+          if (child != null) child!,
+        ],
       ),
     );
   }

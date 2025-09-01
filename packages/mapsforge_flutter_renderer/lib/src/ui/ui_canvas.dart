@@ -1,9 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache_mgr.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_matrix.dart';
@@ -11,6 +10,7 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_path.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_rect.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_text_paint.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 /// Canvas abstraction for cross-platform rendering operations.
 ///
@@ -192,7 +192,7 @@ class UiCanvas {
       return;
     }
 
-    ParagraphEntry entry = ParagraphCache().getEntry(text, textPaint, paint, maxTextWidth);
+    ParagraphEntry entry = ParagraphCacheMgr().getEntry(text, textPaint, paint, maxTextWidth);
 
     for (var segment in lineString.segments) {
       // So text isn't upside down
@@ -241,7 +241,7 @@ class UiCanvas {
 
   /// draws the given [text] so that the center of the text in at the given x/y coordinates
   void drawText(String text, double x, double y, UiPaint paint, UiTextPaint textPaint, double maxTextWidth) {
-    ParagraphEntry entry = ParagraphCache().getEntry(text, textPaint, paint, maxTextWidth);
+    ParagraphEntry entry = ParagraphCacheMgr().getEntry(text, textPaint, paint, maxTextWidth);
     double textwidth = entry.getWidth();
     double textHeight = entry.getHeight();
     if (x + textwidth / 2 < 0 || y + entry.getHeight() < 0 || x - textwidth / 2 > _size.width || y - entry.getHeight() > _size.height) return;

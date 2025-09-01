@@ -1,8 +1,8 @@
-import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter/src/cache/spatial_tile_index.dart';
 import 'package:mapsforge_flutter/src/cache/tile_cache.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 
 /// This is a memory-only implementation of the [TileCache]. It stores the bitmaps in memory.
 /// We use a factory and remember all active instances. This way we can easily purge caches if needed.
@@ -31,9 +31,9 @@ class MemoryTileCache extends TileCache {
 
   @override
   void dispose() {
+    _instances.remove(this);
     _cache.clear();
     _spatialIndex.clear();
-    _instances.remove(this);
   }
 
   static void purgeAllCaches() {

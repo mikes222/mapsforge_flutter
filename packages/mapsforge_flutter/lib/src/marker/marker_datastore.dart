@@ -1,7 +1,7 @@
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 
 /// A datastore for markers which can hold several markers. The idea is to create an api which is able to retrieve markers
 /// - e.g. from database or servers - based on the currently visible boundary of the map.
@@ -16,6 +16,9 @@ abstract class MarkerDatastore<T> {
   final int extendMeters;
 
   MarkerDatastore({required this.zoomlevelRange, this.extendMeters = 5000});
+
+  /// Some markers (e.g. [PoiMarker]) needs a disposal.
+  void dispose();
 
   /// The overlay calls this method whenever the zoomlevel changes to give the datastore the possibility to initialize its markers for the new
   /// zoomlevel.
@@ -57,6 +60,9 @@ abstract class MarkerDatastore<T> {
 
   /// Removes all markers from this datastore
   void clearMarkers();
+
+  /// Should be called if a merker has been changed and needs a reinit
+  Future<void> markerChanged(Marker<T> marker);
 
   List<Marker<T>> getTappedMarkers(TapEvent event);
 }

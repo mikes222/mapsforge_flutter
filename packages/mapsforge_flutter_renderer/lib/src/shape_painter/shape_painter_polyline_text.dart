@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
-import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache_mgr.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
@@ -57,11 +57,11 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
 
     MappointRelative relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
     if (paintBack != null) {
-      ParagraphEntry entry = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.maxTextWidth);
+      ParagraphEntry entry = ParagraphCacheMgr().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.getMaxTextWidth());
       renderContext.canvas.drawTextRotated(entry.paragraph, renderInfo.rotateRadians, relative);
     }
     if (paintFront != null) {
-      ParagraphEntry entry = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.maxTextWidth);
+      ParagraphEntry entry = ParagraphCacheMgr().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.getMaxTextWidth());
       renderContext.canvas.drawTextRotated(entry.paragraph, renderInfo.rotateRadians, relative);
     }
   }
@@ -77,7 +77,7 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
       return;
     }
 
-    double widthEstimated = renderinstruction.maxTextWidth;
+    double widthEstimated = renderinstruction.getMaxTextWidth();
     lineSegmentPath = lineSegmentPath.reducePathForText(widthEstimated, renderinstruction.repeatStart, renderinstruction.repeatGap);
     if (lineSegmentPath.segments.isEmpty) return;
 
@@ -93,11 +93,11 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
       }
 
       if (paintBack != null) {
-        ParagraphEntry entry = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.maxTextWidth);
+        ParagraphEntry entry = ParagraphCacheMgr().getEntry(renderInfo.caption!, textPaint, paintBack!, renderinstruction.getMaxTextWidth());
         renderContext.canvas.drawTextRotated(entry.paragraph, renderContext.rotationRadian + segment.getTheta(), start.offset(renderContext.reference));
       }
       if (paintFront != null) {
-        ParagraphEntry entry = ParagraphCache().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.maxTextWidth);
+        ParagraphEntry entry = ParagraphCacheMgr().getEntry(renderInfo.caption!, textPaint, paintFront!, renderinstruction.getMaxTextWidth());
         renderContext.canvas.drawTextRotated(entry.paragraph, renderContext.rotationRadian + segment.getTheta(), start.offset(renderContext.reference));
       }
     }

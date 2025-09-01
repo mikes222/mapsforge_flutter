@@ -43,6 +43,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   @mustCallSuper
   void dispose() {
+    renderinstruction.dispose();
     super.dispose();
   }
 
@@ -100,12 +101,8 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     await PainterFactory().createShapePainter(renderInfo!);
   }
 
-  void setLatLong(ILatLong latLong, PixelProjection projection) {
+  void setLatLong(ILatLong latLong) {
     super.latLong = latLong;
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
-    RenderInfoNode<RenderinstructionSymbol> renderInfoNew = RenderInfoNode(nodeProperties, renderInfo!.renderInstruction);
-    renderInfoNew.shapePainter = renderInfo?.shapePainter;
-    renderInfo = renderInfoNew;
   }
 
   @override

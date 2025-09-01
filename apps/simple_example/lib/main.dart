@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 
 void main() {
   _initLogging();
@@ -55,8 +56,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     // mapModel must be disposed after use
     _mapModel?.dispose();
-    // disposing the symbolcache also frees a lot of memory
+    // The following caches also may be disposed. If you intend to start a new map it may make sense to keep them for faster startup
     SymbolCacheMgr().dispose();
+    ParagraphCacheMgr().dispose();
     super.dispose();
   }
 

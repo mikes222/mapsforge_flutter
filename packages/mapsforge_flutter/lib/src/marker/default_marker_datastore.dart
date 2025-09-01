@@ -1,14 +1,20 @@
-import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/map_model.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
 
 class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   final Map<T, Marker<T>> _markers = {};
 
   final Map<T, Marker<T>> _cachedMarkers = {};
 
-  DefaultMarkerDatastore({required super.zoomlevelRange, super.extendMeters = 5000});
+  bool _disposed = false;
+
+  final MapModel mapModel;
+
+  DefaultMarkerDatastore({required super.zoomlevelRange, super.extendMeters = 5000, required this.mapModel}) {
+    mapModel.registerMarkerDatastore(this);
+  }
 
   @override
   Future<void> askChangeZoomlevel(int zoomlevel, BoundingBox boundingBox, PixelProjection projection) async {
@@ -42,6 +48,17 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     }
   }
 
+  @override
+  Future<void> markerChanged(Marker<T> marker) async {
+    assert(marker.key != null, "Marker must have a key for default MarkerDatastore");
+    _markers[marker.key!] = marker;
+    if (cachedBoundingBox != null && marker.shouldPaint(cachedBoundingBox!, cachedZoomlevel)) {
+      PixelProjection projection = PixelProjection(cachedZoomlevel);
+      await marker.changeZoomlevel(cachedZoomlevel, projection);
+      _cachedMarkers[marker.key!] = marker;
+    }
+  }
+
   /// Do not forget to call setRepaint()
   void removeMarker(Marker<T> marker) {
     _markers.remove(marker.key);
@@ -49,7 +66,14 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     _cachedMarkers.remove(marker.key);
   }
 
+  void removeByKey(T key) {
+    Marker<T>? marker = _markers.remove(key);
+    marker?.dispose();
+    _cachedMarkers.remove(key);
+  }
+
   /// Do not forget to call setRepaint()
+  @override
   void clearMarkers() {
     for (var marker in _markers.values) {
       marker.dispose();
@@ -64,6 +88,10 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
 
   @override
   List<Marker<T>> retrieveMarkersToPaint() {
+    return _cachedMarkers.values.toList();
+  }
+
+  List<Marker<T>> getAllMarkers() {
     return _markers.values.toList();
   }
 
@@ -75,4 +103,20 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     }
     return tappedMarkers;
   }
+
+  /// In future versions we want to notify the ui about a necessary repaint because something has been changed
+  void setRepaint() {}
+
+  @override
+  void dispose() {
+    mapModel.unregisterMarkerDatastore(this);
+    _cachedMarkers.clear();
+    _markers.forEach((key, value) {
+      value.dispose();
+    });
+    _markers.clear();
+    _disposed = true;
+  }
+
+  bool get disposed => _disposed;
 }

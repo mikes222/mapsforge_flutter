@@ -36,6 +36,7 @@ class _ScaleGestureDetectorState extends State<ScaleGestureDetector> {
           behavior: HitTestBehavior.translucent,
           onPointerDown: (event) {
             if (doLog) _log.info("onPointerDown $event ${event.pointer}");
+            if (widget.mapModel.lastPosition == null) return;
             _handler ??= _Handler(size: constraints.biggest, lastPosition: widget.mapModel.lastPosition!, mapModel: widget.mapModel);
             _handler!._addOffset(event.pointer, event.position);
           },

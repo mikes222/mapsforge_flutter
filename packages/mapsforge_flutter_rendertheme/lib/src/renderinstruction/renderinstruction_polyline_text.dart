@@ -32,7 +32,6 @@ class RenderinstructionPolylineText extends Renderinstruction
     this.level = level;
     //initTextMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
     //initPaintMixin(DisplayModel.STROKE_MIN_ZOOMLEVEL_TEXT);
-    maxTextWidth = MapsforgeSettingsMgr().getMaxTextWidth();
     setRepeatGap(REPEAT_GAP_DEFAULT);
     setRepeatStart(REPEAT_START_DEFAULT);
     setStrokeMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
@@ -104,7 +103,7 @@ class RenderinstructionPolylineText extends Renderinstruction
   @override
   MapRectangle getBoundary() {
     // boundary depends on the text, so fake it
-    double widthEstimated = maxTextWidth;
+    double widthEstimated = getMaxTextWidth();
     double heightEstimated = fontSize;
     return MapRectangle(-widthEstimated / 2, -heightEstimated / 2, widthEstimated / 2, heightEstimated / 2);
   }
@@ -123,7 +122,7 @@ class RenderinstructionPolylineText extends Renderinstruction
       return;
     }
 
-    double widthEstimated = maxTextWidth;
+    double widthEstimated = getMaxTextWidth();
     lineSegmentPath = lineSegmentPath.reducePathForText(widthEstimated, repeatStart, repeatGap);
     if (lineSegmentPath.segments.isEmpty) return;
 

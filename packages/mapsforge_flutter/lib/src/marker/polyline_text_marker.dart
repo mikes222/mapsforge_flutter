@@ -17,7 +17,7 @@ class PolylineTextMarker<T> extends Marker<T> {
 
   RenderInfoWay<RenderinstructionPolylineText>? renderInfo;
 
-  List<ILatLong> path = [];
+  List<ILatLong> _path = [];
 
   final String caption;
 
@@ -29,12 +29,14 @@ class PolylineTextMarker<T> extends Marker<T> {
     int strokeColor = 0xffffffff,
     int fillColor = 0xff000000,
     List<double>? strokeDasharray,
-    this.path = const [],
+    List<ILatLong> path = const [],
     double fontSize = 10.0,
     double maxFontSize = 50.0,
     double repeatStart = 10,
     double repeatGap = 100,
+    double? maxTextWidth,
   }) {
+    if (path.isNotEmpty) _path.addAll(path);
     renderinstruction = RenderinstructionPolylineText(0);
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.setStrokeWidth(strokeWidth);
@@ -44,6 +46,7 @@ class PolylineTextMarker<T> extends Marker<T> {
     renderinstruction.setRepeatStart(repeatStart);
     renderinstruction.setRepeatGap(repeatGap);
     renderinstruction.setMaxFontSize(maxFontSize);
+    if (maxTextWidth != null) renderinstruction.setMaxTextWidth(maxTextWidth);
   }
 
   @override
@@ -56,7 +59,7 @@ class PolylineTextMarker<T> extends Marker<T> {
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionPolylineText renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    WayProperties wayProperties = WayProperties(Way(0, [], [path], null), projection);
+    WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePainter(renderInfo!);
   }
@@ -78,20 +81,18 @@ class PolylineTextMarker<T> extends Marker<T> {
 
   int indexOfTappedPath(TapEvent tapEvent) {
     Mappoint tapped = tapEvent.mappoint;
-    for (int idx = 0; idx < path.length - 1; ++idx) {
-      Mappoint point0 = tapEvent.projection.latLonToPixel(path[idx]);
-      Mappoint point1 = tapEvent.projection.latLonToPixel(path[idx + 1]);
+    for (int idx = 0; idx < _path.length - 1; ++idx) {
+      Mappoint point0 = tapEvent.projection.latLonToPixel(_path[idx]);
+      Mappoint point1 = tapEvent.projection.latLonToPixel(_path[idx + 1]);
       double distance = LatLongUtils.distanceSegmentPoint(point0.x, point0.y, point1.x, point1.y, tapped.x, tapped.y);
       if (distance <= renderInfo!.renderInstruction.fontSize) return idx;
     }
     return -1;
   }
 
-  Future<void> addLatLong(ILatLong latLong, PixelProjection projection) async {
-    path.add(latLong);
-    WayProperties wayProperties = WayProperties(Way(0, [], [path], null), projection);
-    RenderInfoWay<RenderinstructionPolylineText> renderInfoNew = RenderInfoWay(wayProperties, renderInfo!.renderInstruction);
-    renderInfoNew.shapePainter = await PainterFactory().createShapePainter(renderInfo!);
-    renderInfo = renderInfoNew;
+  void addLatLong(ILatLong latLong) {
+    _path.add(latLong);
   }
+
+  List<ILatLong> get path => _path;
 }
