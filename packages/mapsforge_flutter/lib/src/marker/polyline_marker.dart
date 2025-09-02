@@ -44,7 +44,8 @@ class PolylineMarker<T> extends Marker<T> {
 
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
-    //renderInfo?.shapePainter?.dispose();
+    // we are unable to initialize without a path
+    if (_path.isEmpty) return;
     RenderinstructionPolyline renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
@@ -57,7 +58,9 @@ class PolylineMarker<T> extends Marker<T> {
   @override
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
-    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
+    // path was empty during initialization
+    if (renderInfo != null) return;
+    //assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderInfo?.render(renderContext);
   }
 

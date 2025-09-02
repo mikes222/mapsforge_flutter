@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -6,10 +7,11 @@ import 'package:mapsforge_flutter_core/projection.dart';
 /// A datastore for markers which can hold several markers. The idea is to create an api which is able to retrieve markers
 /// - e.g. from database or servers - based on the currently visible boundary of the map.
 /// See also [SingleMarkerOverlay] for an overlay which holds exactly one marker.
-abstract class MarkerDatastore<T> {
+abstract class MarkerDatastore<T> with ChangeNotifier {
   MarkerDatastore();
 
   /// Some markers (e.g. [PoiMarker]) needs a disposal.
+  @override
   void dispose();
 
   /// The overlay calls this method whenever the zoomlevel changes to give the datastore the possibility to initialize its markers for the new
@@ -39,4 +41,13 @@ abstract class MarkerDatastore<T> {
 
   /// Returns all markers which are in the area marked by the given event.
   List<Marker<T>> getTappedMarkers(TapEvent event);
+
+  /// Notifies the ui about a necessary repaint because something has been changed
+  void setRepaint() {
+    try {
+      notifyListeners();
+    } catch (error) {
+      // ignore that error
+    }
+  }
 }

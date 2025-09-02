@@ -125,11 +125,15 @@ class Caption {
 
   void render({required UiRenderContext renderContext, required NodeProperties nodeProperties}) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderInfo?.render(renderContext);
   }
 
   set caption(String caption) {
     _caption = caption;
+
+    /// stop if the caption is not yet initialized
+    if (renderInfo == null) return;
     RenderInfoNode<RenderinstructionCaption> renderInfoNew = RenderInfoNode<RenderinstructionCaption>(
       renderInfo!.nodeProperties,
       renderInfo!.renderInstruction,

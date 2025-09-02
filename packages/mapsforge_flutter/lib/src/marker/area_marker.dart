@@ -24,7 +24,7 @@ class AreaMarker<T> extends Marker<T> {
     super.key,
     double strokeWidth = 2.0,
     int strokeColor = 0xff000000,
-    int fillColor = 0xff000000,
+    int fillColor = 0x00000000,
     List<double>? strokeDasharray,
     List<ILatLong> path = const [],
     int? strokeMinZoomLevel,

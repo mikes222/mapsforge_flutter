@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/marker/marker_datastore.dart';
-import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
 
 class MarkerDatastorePainter extends CustomPainter {
@@ -10,7 +9,7 @@ class MarkerDatastorePainter extends CustomPainter {
 
   final MarkerDatastore datastore;
 
-  MarkerDatastorePainter(this.mapPosition, this.datastore);
+  MarkerDatastorePainter(this.mapPosition, this.datastore) : super(repaint: datastore);
 
   @override
   void paint(Canvas canvas, Size size) {

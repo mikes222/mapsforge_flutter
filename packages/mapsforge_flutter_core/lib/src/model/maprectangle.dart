@@ -12,6 +12,7 @@ class MapRectangle {
   const MapRectangle.zero() : this(0, 0, 0, 0);
 
   factory MapRectangle.from(List<Mappoint> mp1) {
+    assert(mp1.isNotEmpty);
     double bottom = -1;
     double left = double.maxFinite;
     double right = -1;

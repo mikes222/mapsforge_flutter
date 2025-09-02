@@ -9,7 +9,8 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   /// All known markers
   final Map<T, Marker<T>> _markers = {};
 
-  final Set<Marker<T>> _reinitRequestedMarkers = {};
+  /// All initialized markers which can be painted at the current zoomlevel but which may be outside of the current bounding box
+  final Set<Marker<T>> _initializedMarkers = {};
 
   /// The markers which are currently eligible to paint on screen
   final Set<Marker<T>> _cachedMarkers = {};
@@ -22,32 +23,50 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
 
   BoundingBox? _boundingBox;
 
+  int _iteration = 0;
+
   DefaultMarkerDatastore({required this.mapModel}) {
     mapModel.registerMarkerDatastore(this);
   }
 
   @override
   void askChangeZoomlevel(int zoomlevel, BoundingBox boundingBox, PixelProjection projection) {
+    ++_iteration;
+    _initializedMarkers.clear();
     _cachedMarkers.clear();
-    _reinitRequestedMarkers.clear();
     _zoomlevel = zoomlevel;
     _boundingBox = boundingBox;
-    reinitMarkers(zoomlevel, boundingBox, projection);
+    unawaited(reinitMarkers(_iteration, zoomlevel, boundingBox, projection));
   }
 
-  void reinitMarkers(int zoomlevel, BoundingBox boundingBox, PixelProjection projection) {
-    for (var marker in _markers.values) {
+  /// reinit all markers after zoomlevel changed
+  Future<void> reinitMarkers(int iteration, int zoomlevel, BoundingBox boundingBox, PixelProjection projection) async {
+    int count = 0;
+    for (var marker in List.of(_markers.values)) {
       if (marker.shouldPaint(boundingBox, zoomlevel)) {
-        _reinitRequestedMarkers.add(marker);
+        await reinitOneMarker(marker, zoomlevel, boundingBox, projection);
+        // zoomlevel changed again, stop here
+        if (iteration != _iteration) break;
+        ++count;
+        if ((count % 100) == 0) {
+          // every 100 markers trigger a repaint
+          setRepaint();
+        }
       }
     }
-    unawaited(_performReinit(zoomlevel, projection));
+    setRepaint();
+  }
+
+  Future<void> reinitOneMarker(Marker<T> marker, int zoomlevel, BoundingBox boundingBox, PixelProjection projection) async {
+    await marker.changeZoomlevel(zoomlevel, projection);
+    _initializedMarkers.add(marker);
+    _cachedMarkers.add(marker);
   }
 
   @override
   void askChangeBoundingBox(int zoomlevel, BoundingBox boundingBox) {
     _cachedMarkers.clear();
-    for (var marker in _markers.values) {
+    for (var marker in _initializedMarkers) {
       if (marker.shouldPaint(boundingBox, zoomlevel)) {
         _cachedMarkers.add(marker);
       }
@@ -61,19 +80,6 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     return _cachedMarkers;
   }
 
-  Future<void> _performReinit(int zoomlevel, PixelProjection projection) async {
-    try {
-      for (var marker in _reinitRequestedMarkers) {
-        await marker.changeZoomlevel(zoomlevel, projection);
-        _cachedMarkers.add(marker);
-      }
-    } on ConcurrentModificationError catch (_) {
-      // seems in the meantime we should change additional items, stop here and let the next call do the job
-      return;
-    }
-    _reinitRequestedMarkers.clear();
-  }
-
   /// Adds a new marker. Note that you may need to call setRepaint() afterwards.
   /// It is not called automatically because often we want to modify many
   /// markers at once without repainting after every modification.
@@ -82,7 +88,9 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     assert(marker.key != null, "Marker must have a key for default MarkerDatastore");
     _markers[marker.key!] = marker;
     if (_zoomlevel != -1 && marker.shouldPaint(_boundingBox!, _zoomlevel)) {
-      _reinitRequestedMarkers.add(marker);
+      reinitOneMarker(marker, _zoomlevel, _boundingBox!, PixelProjection(_zoomlevel)).then((value) {
+        setRepaint();
+      });
     }
   }
 
@@ -90,20 +98,29 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   void markerChanged(Marker<T> marker) {
     assert(marker.key != null, "Marker must have a key for default MarkerDatastore");
     _markers[marker.key!] = marker;
+    if (_zoomlevel != -1 && marker.shouldPaint(_boundingBox!, _zoomlevel)) {
+      reinitOneMarker(marker, _zoomlevel, _boundingBox!, PixelProjection(_zoomlevel)).then((value) {
+        setRepaint();
+      });
+    }
   }
 
   /// Do not forget to call setRepaint()
   @override
   void removeMarker(Marker<T> marker) {
     _markers.remove(marker.key);
+    _initializedMarkers.remove(marker);
+    _cachedMarkers.remove(marker);
     marker.dispose();
-    _cachedMarkers.remove(marker.key);
   }
 
   void removeByKey(T key) {
     Marker<T>? marker = _markers.remove(key);
-    marker?.dispose();
-    _cachedMarkers.remove(key);
+    if (marker != null) {
+      _initializedMarkers.remove(marker);
+      _cachedMarkers.remove(marker);
+      marker.dispose();
+    }
   }
 
   /// Do not forget to call setRepaint()
@@ -113,6 +130,7 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
       marker.dispose();
     }
     _markers.clear();
+    _initializedMarkers.clear();
     _cachedMarkers.clear();
   }
 
@@ -133,16 +151,12 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     return tappedMarkers;
   }
 
-  /// In future versions we want to notify the ui about a necessary repaint because something has been changed
-  void setRepaint() {
-    if (_zoomlevel != -1) unawaited(_performReinit(_zoomlevel, PixelProjection(_zoomlevel)));
-  }
-
   @override
   void dispose() {
+    super.dispose();
     mapModel.unregisterMarkerDatastore(this);
+    _initializedMarkers.clear();
     _cachedMarkers.clear();
-    _reinitRequestedMarkers.clear();
     _markers.forEach((key, value) {
       value.dispose();
     });
