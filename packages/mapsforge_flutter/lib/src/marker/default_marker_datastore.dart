@@ -105,8 +105,9 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
 
   @override
   void markerChanged(Marker<T> marker) {
-    assert(marker.key != null, "Marker must have a key for default MarkerDatastore");
     _CurrentMarkers<T>? currentMarkers = _currentMarkers;
+    currentMarkers?._initializedMarkers.remove(marker);
+    currentMarkers?._cachedMarkers.remove(marker);
     if (currentMarkers != null && marker.shouldPaint(currentMarkers.boundingBox, currentMarkers.zoomlevel)) {
       reinitOneMarker(currentMarkers, marker).then((value) {
         requestRepaint();

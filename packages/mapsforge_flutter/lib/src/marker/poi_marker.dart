@@ -91,12 +91,12 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   void setBitmapColorFromNumber(int color) {
     renderinstruction.setBitmapColorFromNumber(color);
-    renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
+    renderInfo?.renderInstruction.setBitmapColorFromNumber(color);
   }
 
   void setAndLoadBitmapSrc(String bitmapSrc) {
     renderinstruction.bitmapSrc = bitmapSrc;
-    renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
+    renderInfo?.renderInstruction.setBitmapSrc(bitmapSrc);
   }
 
   void setLatLong(ILatLong latLong) {

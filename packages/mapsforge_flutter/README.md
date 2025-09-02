@@ -45,12 +45,18 @@ The `mapsforge_view` package is the primary UI layer for Mapsforge Flutter appli
 
 ## Installation
 
-Add this package to your `pubspec.yaml`:
+Add these packages to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  mapsforge_view: ^1.0.0
+  mapsforge_flutter: ^1.0.0
+  mapsforge_flutter_core: ^1.0.0
+  mapsforge_flutter_mapfile: ^1.0.0
+  mapsforge_flutter_renderer: ^1.0.0
+  mapsforge_flutter_rendertheme: ^1.0.0
 ```
+
+Note: See doc/install.md for working with a local copy of mapsforge_flutter. 
 
 ## Quick Start
 

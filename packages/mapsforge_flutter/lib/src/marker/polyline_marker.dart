@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -13,6 +14,8 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// to position captions other than in the center of the rectangle (RenderinstructionPath always returns Boundary.zero since it does not have any information
 /// about the actual size of the rectangle).
 class PolylineMarker<T> extends Marker<T> {
+  static final _log = Logger('PolylineMarker');
+
   late RenderinstructionPolyline renderinstruction;
 
   RenderInfoWay<RenderinstructionPolyline>? renderInfo;
@@ -45,7 +48,10 @@ class PolylineMarker<T> extends Marker<T> {
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     // we are unable to initialize without a path
-    if (_path.isEmpty) return;
+    if (_path.isEmpty) {
+      _log.warning("PolylineMarker has an empty path, cannot draw anyhting $this");
+      return;
+    }
     RenderinstructionPolyline renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
@@ -59,7 +65,7 @@ class PolylineMarker<T> extends Marker<T> {
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
     // path was empty during initialization
-    if (renderInfo != null) return;
+    if (renderInfo == null) return;
     //assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     renderInfo?.render(renderContext);
   }
@@ -76,7 +82,7 @@ class PolylineMarker<T> extends Marker<T> {
       Mappoint point1 = tapEvent.projection.latLonToPixel(_path[idx + 1]);
       double distance = LatLongUtils.distanceSegmentPoint(point0.x, point0.y, point1.x, point1.y, tapped.x, tapped.y);
       // correct would be half of strokeWidth but it is hard to tap exactly so be graceful here
-      if (distance <= renderInfo!.renderInstruction.strokeWidth) return idx;
+      if (distance <= (renderInfo?.renderInstruction.strokeWidth ?? 0)) return idx;
     }
     return -1;
   }
