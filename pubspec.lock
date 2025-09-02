@@ -189,10 +189,10 @@ packages:
     dependency: transitive
     description:
       name: ecache
-      sha256: d66af6d18e2825dedaf851c0d60152ef1d57281c2977bda0497a2ad05448ad33
+      sha256: a44df8c1b0fe5fa0854d254bf7e1fcfc13d952a327bd429c5c8b99e8df9358d6
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.12"
+    version: "2.0.13"
   fake_async:
     dependency: transitive
     description:

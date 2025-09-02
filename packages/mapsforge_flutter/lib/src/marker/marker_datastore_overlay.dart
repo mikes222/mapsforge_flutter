@@ -62,6 +62,7 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
             if (_cachedZoomlevel != position.zoomlevel) {
               BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
               boundingBox = boundingBox.extendMeters(widget.extendMeters);
+              //print("MarkerDatastoreOverlay: askChangeZoomlevel zoomlevel ${position.zoomlevel}, boundingbox $boundingBox for ${widget.datastore}");
               widget.datastore.askChangeZoomlevel(position.zoomlevel, boundingBox, position.projection);
               _cachedZoomlevel = position.zoomlevel;
               _cachedBoundingBox = boundingBox;

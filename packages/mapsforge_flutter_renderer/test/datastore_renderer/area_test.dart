@@ -28,7 +28,7 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     var img = await (tester.runAsync(() async {
-      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/mapsforge_flutter_renderer/defaultrender.xml");
+      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
       MemoryDatastore datastore = MemoryDatastore();
       datastore.addWay(

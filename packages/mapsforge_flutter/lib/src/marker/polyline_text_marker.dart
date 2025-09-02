@@ -62,6 +62,7 @@ class PolylineTextMarker<T> extends Marker<T> {
     WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePainter(renderInfo!);
+    assert(renderInfo!.shapePainter != null, "PainterFactory should create a painter");
   }
 
   ///

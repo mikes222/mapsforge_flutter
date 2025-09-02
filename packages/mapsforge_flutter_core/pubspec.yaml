@@ -10,7 +10,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
 
-  ecache: ^2.0.12
+  ecache: ^2.0.13
 
   logging: ^1.3.0
 

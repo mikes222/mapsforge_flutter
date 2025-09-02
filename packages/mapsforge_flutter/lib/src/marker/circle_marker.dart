@@ -29,7 +29,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     renderinstruction = RenderinstructionCircle(0);
     renderinstruction.radius = radius;
     renderinstruction.fillColor = fillColor;
-    renderinstruction.strokeColor = strokeColor;
+    renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.position = position;
     renderinstruction.setStrokeWidth(strokeWidth);
     if (strokeMinZoomLevel != null) renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel);

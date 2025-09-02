@@ -21,7 +21,7 @@ main() async {
   test("MapDatastore", () async {
     _initLogging();
 
-    Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/mapsforge_flutter_renderer/defaultrender.xml");
+    Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
     // todo move to a package where this package and mapfile package is available
     // Datastore datastore = await MapFile.from("campus_level.map");

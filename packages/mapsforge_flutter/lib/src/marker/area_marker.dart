@@ -46,6 +46,7 @@ class AreaMarker<T> extends Marker<T> {
 
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
+    assert(_path.isNotEmpty);
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionArea renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);

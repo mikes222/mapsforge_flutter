@@ -1,8 +1,8 @@
 import 'dart:math';
 
-class Scalefactor {
-  static final int MAXZOOMLEVEL = 25;
+import 'package:mapsforge_flutter_core/src/utils/mapsforge_settings_mgr.dart';
 
+class Scalefactor {
   /// The number of tiles in horizontal/vertical direction. ZoomLevel 3 (8*8 tiles)
   /// results to 2^zoomlevel = 8. To reflect pinch'n'zoom the scalefactor can also
   /// be a fractional number
@@ -37,7 +37,7 @@ class Scalefactor {
   /// @param zoomLevel the zoom level to convert.
   /// @return the corresponding scale factor.
   static double zoomlevelToScalefactor(int zoomlevel) {
-    assert(zoomlevel >= 0 && zoomlevel <= MAXZOOMLEVEL, "Zoom level $zoomlevel out of range");
+    assert(zoomlevel >= 0 && zoomlevel <= MapsforgeSettingsMgr.defaultMaxZoomlevel, "Zoom level $zoomlevel out of range");
     return pow(2, zoomlevel.toDouble()).toDouble();
   }
 }

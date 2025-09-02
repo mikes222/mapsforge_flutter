@@ -162,11 +162,9 @@ class PixelProjection extends MercatorProjection {
     return mappoint.offset(leftUpper);
   }
 
-  /**
-   * Returns the top-left point of this tile in absolute pixel coordinates.
-   *
-   * @return the top-left point
-   */
+  /// Returns the top-left point of this tile in absolute pixel coordinates.
+  ///
+  /// @return the top-left point
   Mappoint getLeftUpper(Tile tile) {
     return tile.getLeftUpper();
   }
@@ -208,21 +206,20 @@ class PixelProjection extends MercatorProjection {
     return 'PixelProjection{_mapSize: $_mapSize, zoomLevel: ${scalefactor.zoomlevel}}';
   }
 
-  /// todo this uses ui.Size which is not allowed in dart.
   /// Find the maximum zoomLevel where the [boundary] fits in given the current screensize.
   /// This is an expensive operations since we probe each zoomLevel until we find the correct one.
   /// Use it sparingly.
-  // static int calculateFittingZoomlevel(BoundingBox boundary, Size size) {
-  //   for (int zoomLevel = Scalefactor.MAXZOOMLEVEL; zoomLevel >= 0; --zoomLevel) {
-  //     PixelProjection projection = PixelProjection(zoomLevel);
-  //     Mappoint leftUpper = projection.latLonToPixel(LatLong(boundary.maxLatitude, boundary.minLongitude));
-  //     Mappoint rightBottom = projection.latLonToPixel(LatLong(boundary.minLatitude, boundary.maxLongitude));
-  //     assert(leftUpper.x < rightBottom.x);
-  //     assert(leftUpper.y < rightBottom.y);
-  //     if ((rightBottom.x - leftUpper.x) <= size.width && (rightBottom.y - leftUpper.y) <= size.height) {
-  //       return zoomLevel;
-  //     }
-  //   }
-  //   return 0;
-  // }
+  static int calculateFittingZoomlevel(BoundingBox boundary, MapSize size) {
+    for (int zoomLevel = MapsforgeSettingsMgr.defaultMaxZoomlevel; zoomLevel >= 0; --zoomLevel) {
+      PixelProjection projection = PixelProjection(zoomLevel);
+      Mappoint leftUpper = projection.latLonToPixel(LatLong(boundary.maxLatitude, boundary.minLongitude));
+      Mappoint rightBottom = projection.latLonToPixel(LatLong(boundary.minLatitude, boundary.maxLongitude));
+      assert(leftUpper.x < rightBottom.x);
+      assert(leftUpper.y < rightBottom.y);
+      if ((rightBottom.x - leftUpper.x) <= size.width && (rightBottom.y - leftUpper.y) <= size.height) {
+        return zoomLevel;
+      }
+    }
+    return 0;
+  }
 }

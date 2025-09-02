@@ -25,7 +25,7 @@ main() async {
 
     MultimapDatastore datastore = MultimapDatastore(DataPolicy.RETURN_ALL);
 
-    Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/mapsforge_flutter_renderer/defaultrender.xml");
+    Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
     DatastoreRenderer renderer = DatastoreRenderer(datastore, renderTheme, true);
 

@@ -1,7 +1,7 @@
-import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/src/tile/tile_set.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_renderer/ui.dart';
 
 class TilePainter extends CustomPainter {
   final TileSet tileSet;
@@ -14,7 +14,13 @@ class TilePainter extends CustomPainter {
     Mappoint center = tileSet.getCenter();
     tileSet.images.forEach((Tile tile, TilePicture picture) {
       Mappoint leftUpper = tile.getLeftUpper();
-      uiCanvas.drawTilePicture(picture: picture, left: leftUpper.x - center.x, top: leftUpper.y - center.y);
+      try {
+        uiCanvas.drawTilePicture(picture: picture, left: leftUpper.x - center.x, top: leftUpper.y - center.y);
+      } catch (error, stacktrace) {
+        print(error);
+        print(stacktrace);
+        print(tile);
+      }
     });
   }
 

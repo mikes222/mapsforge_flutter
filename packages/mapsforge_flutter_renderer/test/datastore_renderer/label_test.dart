@@ -28,7 +28,7 @@ void main() {
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(18); // lat/lon: 43.7399/7.4262;
 
     List<dynamic>? imgs = await (tester.runAsync(() async {
-      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/mapsforge_flutter_renderer/defaultrender.xml");
+      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
       MemoryDatastore datastore = MemoryDatastore();
       // to check if the position of the symbol is correct. One cirlce above, one below, one to the right

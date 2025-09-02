@@ -30,6 +30,8 @@ abstract class MarkerDatastore<T> with ChangeNotifier {
   /// markers at once without repainting after every modification.
   void addMarker(Marker<T> marker);
 
+  void addMarkers(Iterable<Marker<T>> markers);
+
   /// Removes a marker from this datastore
   void removeMarker(Marker<T> marker);
 
@@ -43,7 +45,7 @@ abstract class MarkerDatastore<T> with ChangeNotifier {
   List<Marker<T>> getTappedMarkers(TapEvent event);
 
   /// Notifies the ui about a necessary repaint because something has been changed
-  void setRepaint() {
+  void requestRepaint() {
     try {
       notifyListeners();
     } catch (error) {

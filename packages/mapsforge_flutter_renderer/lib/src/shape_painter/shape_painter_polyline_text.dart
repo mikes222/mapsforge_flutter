@@ -42,9 +42,8 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
 
   static Future<ShapePainterPolylineText> create(RenderinstructionPolylineText renderinstruction) async {
     return _taskQueue.add(() async {
-      //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintPathtext;
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterPolylineText;
       ShapePainterPolylineText shapePaint = ShapePainterPolylineText._(renderinstruction);
-      //await shapePaint.init(symbolCache);
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;
     });

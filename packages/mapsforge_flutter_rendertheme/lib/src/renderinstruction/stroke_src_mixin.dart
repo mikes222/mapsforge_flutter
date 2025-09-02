@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter_rendertheme/src/model/map_cap.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_join.dart';
 
 mixin StrokeSrcMixin {
-  int strokeColor = transparent();
+  int _strokeColor = transparent();
 
   double _strokeWidth = 0;
 
@@ -16,7 +16,7 @@ mixin StrokeSrcMixin {
   int _strokeMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevel;
 
   void setStrokeColorFromNumber(int color) {
-    strokeColor = color;
+    _strokeColor = color;
   }
 
   void setStrokeWidth(double strokeWidth) {
@@ -35,7 +35,7 @@ mixin StrokeSrcMixin {
   int get strokeMinZoomLevel => _strokeMinZoomLevel;
 
   void strokeSrcMixinClone(StrokeSrcMixin base) {
-    strokeColor = base.strokeColor;
+    _strokeColor = base._strokeColor;
     _strokeWidth = base._strokeWidth;
     _strokeCap = base._strokeCap;
     _strokeJoin = base._strokeJoin;
@@ -59,10 +59,12 @@ mixin StrokeSrcMixin {
   }
 
   bool isStrokeTransparent() {
-    return strokeColor == transparent();
+    return _strokeColor == transparent();
   }
 
   static int transparent() => 0x00000000;
+
+  int get strokeColor => _strokeColor;
 
   void setStrokeCap(MapCap cap) {
     _strokeCap = cap;

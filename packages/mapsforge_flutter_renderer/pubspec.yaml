@@ -44,7 +44,7 @@ dependencies:
   # For the online renderers
   dio: ^5.9.0
 
-  ecache: ^2.0.12
+  ecache: ^2.0.13
 
   # BSD License
   # for importing svg files

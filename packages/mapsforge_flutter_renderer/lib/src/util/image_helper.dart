@@ -18,7 +18,7 @@ class ImageHelper {
   /// when the rendering finishes.
   ///
   Future<TilePicture> createMissingBitmap() async {
-    if (_missing != null) return _missing!;
+    if (_missing != null) return _missing!.clone();
     double tileSize = MapsforgeSettingsMgr().tileSize;
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);
@@ -46,7 +46,7 @@ class ImageHelper {
   /// Creates a tilebitmap which denotes that there are no maps with any data found for the given tile.
   ///
   Future<TilePicture> createNoDataBitmap() async {
-    if (_noData != null) return _noData!;
+    if (_noData != null) return _noData!.clone();
     double tileSize = MapsforgeSettingsMgr().tileSize;
     var pictureRecorder = ui.PictureRecorder();
     var canvas = ui.Canvas(pictureRecorder);

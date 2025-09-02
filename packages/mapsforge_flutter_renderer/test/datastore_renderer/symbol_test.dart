@@ -28,7 +28,7 @@ void main() {
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(46);
 
     var img = await (tester.runAsync(() async {
-      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/mapsforge_flutter_renderer/defaultrender.xml");
+      Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
       MemoryDatastore datastore = MemoryDatastore();
       // symbol in the center of the poi, name above, ele below
       datastore.addPoi(const PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'TestPOI'), Tag('ele', '500m')], LatLong(46, 18)));

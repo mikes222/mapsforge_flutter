@@ -143,7 +143,7 @@ abstract class MapDatastore extends Datastore {
       return null;
     }
 
-    List<String> langNames = s.toLowerCase().split("\r");
+    List<String> langNames = s.split("\r");
     if (preferredLanguage == null) {
       return langNames[0];
     }
