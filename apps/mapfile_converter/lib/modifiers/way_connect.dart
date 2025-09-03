@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// Connects open ways together to form a longer way. Only master and openOuters will be taken into account.
 class WayConnect {

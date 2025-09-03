@@ -5,12 +5,12 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/shape_painter.dart';
+import 'package:mapsforge_flutter_renderer/src/datastore_reader.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_canvas.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
-import 'package:mapsforge_flutter_renderer/src/util/datastore_reader.dart';
+import 'package:mapsforge_flutter_renderer/src/util/datastore_reader_impl.dart';
 import 'package:mapsforge_flutter_renderer/src/util/layerutil.dart';
-import 'package:mapsforge_flutter_renderer/src/util/object_pool.dart';
 import 'package:mapsforge_flutter_renderer/src/util/tile_dependencies.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
@@ -33,9 +33,6 @@ class DatastoreRenderer extends Renderer {
   /// Tag identifier for natural water features used in rendering optimization.
   static final Tag TAG_NATURAL_WATER = const Tag("natural", "water");
 
-  /// Data source providing map features for rendering.
-  final Datastore datastore;
-
   /// Rendering theme defining visual styling rules.
   final Rendertheme rendertheme;
 
@@ -46,45 +43,36 @@ class DatastoreRenderer extends Renderer {
   /// support dynamic map rotation without label distortion.
   final bool renderLabels;
 
+  final Datastore datastore;
+
   /// Manages dependencies between tiles for label rendering.
   TileDependencies? tileDependencies;
 
   /// Reader for extracting map data from the datastore.
-  late DatastoreReader _datastoreReader;
-
-  /// Object pool for RenderInfo lists to reduce garbage collection.
-  static late ObjectPool<List<RenderInfo>> _renderInfoListPool;
+  DatastoreReader? _datastoreReader;
 
   /// Object pool for RenderInfo sets to reduce garbage collection.
-  static late ObjectPool<Set<RenderInfo>> _renderInfoSetPool;
-
-  /// Flag tracking whether object pools have been initialized.
-  static bool _poolsInitialized = false;
+  static final ObjectPool<Set<RenderInfo>> _renderInfoSetPool = ObjectPool<Set<RenderInfo>>(
+    factory: () => <RenderInfo>{},
+    reset: (set) => set.clear(),
+    maxSize: 20,
+  );
 
   /// Creates a new datastore renderer with the specified configuration.
   ///
   /// [datastore] Data source providing map features
   /// [rendertheme] Theme defining visual styling rules
   /// [renderLabels] Whether to render labels onto tile images
-  DatastoreRenderer(this.datastore, this.rendertheme, this.renderLabels) {
+  /// [useIsolateReader] Whether to use an isolate for rendering. If you use [IsolateMapfile] do NOT use an isolateReader
+  DatastoreRenderer(this.datastore, this.rendertheme, this.renderLabels, {bool useIsolateReader = false}) {
     if (renderLabels) {
       tileDependencies = TileDependencies();
     } else {
       tileDependencies = null;
     }
-    _datastoreReader = DatastoreReader();
-    _initializePools();
-  }
-
-  /// Initialize object pools for better performance
-  static void _initializePools() {
-    if (_poolsInitialized) return;
-
-    _renderInfoListPool = ObjectPool<List<RenderInfo>>(factory: () => <RenderInfo>[], reset: (list) => list.clear(), maxSize: 20);
-
-    _renderInfoSetPool = ObjectPool<Set<RenderInfo>>(factory: () => <RenderInfo>{}, reset: (set) => set.clear(), maxSize: 20);
-
-    _poolsInitialized = true;
+    if (!useIsolateReader) {
+      _datastoreReader = DatastoreReaderImpl(datastore);
+    }
   }
 
   @override
@@ -101,13 +89,15 @@ class DatastoreRenderer extends Renderer {
   /// @returns the Bitmap for the requested tile
   @override
   Future<JobResult> executeJob(JobRequest job) async {
-    Timing timing = Timing(log: _log, active: true, prefix: "${job.tile.toString()} ");
+    var session = PerformanceProfiler().startSession(category: "DatastoreRenderer.executeJob");
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(job.tile.zoomLevel);
-    timing.lap(100, "$renderthemeLevel prepareZoomlevel");
+    session.checkpoint("after prepareZoomlevel");
 
-    LayerContainerCollection? layerContainers = await _datastoreReader.read(datastore, job.tile, renderthemeLevel);
+    _datastoreReader ??= await IsolateDatastoreReader.create(datastore);
+
+    LayerContainerCollection? layerContainers = await _datastoreReader!.read(job.tile, renderthemeLevel);
 
     //timing.lap(100, "RenderContext ${renderContext} created");
     if (layerContainers == null) {
@@ -134,10 +124,10 @@ class DatastoreRenderer extends Renderer {
       // Returning the canvas with the map but without labels onto it. The labels have to be drawn directly into the view.
       layerContainers.labels.clear();
     }
-    timing.lap(100, "Data read and prepared");
+    session.checkpoint("data read and prepared");
     TilePicture? picture = await canvas.finalizeBitmap();
     canvas.dispose();
-    timing.done(100, "TilePicture created");
+    session.complete();
     //_log.info("Executing ${job.toString()} returns ${bitmap.toString()}");
     //_log.info("ways: ${mapReadResult.ways.length}, Areas: ${Area.count}, ShapePaintPolylineContainer: ${ShapePaintPolylineContainer.count}");
     return JobResult.normal(picture, layerContainers.labels);
@@ -145,19 +135,21 @@ class DatastoreRenderer extends Renderer {
 
   @override
   Future<JobResult> retrieveLabels(JobRequest job) async {
-    Timing timing = Timing(log: _log, active: true);
+    var session = PerformanceProfiler().startSession(category: "DatastoreRenderer.retrieveLabels");
     // current performance measurements for isolates indicates that isolates are too slow so it makes no sense to use them currently. Seems
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    LayerContainerCollection? layerContainers = await _datastoreReader.readLabels(datastore, job.tile, job.rightLower ?? job.tile, renderthemeLevel);
+    _datastoreReader ??= await IsolateDatastoreReader.create(datastore);
+
+    LayerContainerCollection? layerContainers = await _datastoreReader!.readLabels(job.tile, job.rightLower ?? job.tile, renderthemeLevel);
 
     if (layerContainers == null) {
       return JobResult.unsupported();
     }
 
     await PainterFactory().initDrawingLayers(layerContainers);
-    timing.done(100, "Retrieve labels for $job completed");
+    session.complete();
     return JobResult.normalLabels(layerContainers.labels);
   }
 

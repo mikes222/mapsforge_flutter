@@ -1,6 +1,6 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:test/test.dart';
 
 void main() async {

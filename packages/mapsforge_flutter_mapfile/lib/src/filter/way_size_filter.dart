@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// Filter ways by size. If the way would be too small in max zoom of the desired
 /// subfile (hence maxZoomlevel) we do not want to include it at all.

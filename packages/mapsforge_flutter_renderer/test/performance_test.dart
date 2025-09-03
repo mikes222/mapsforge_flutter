@@ -1,10 +1,10 @@
-import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/src/utils/object_pool.dart';
 import 'package:mapsforge_flutter_renderer/src/util/layerutil.dart';
-import 'package:mapsforge_flutter_renderer/src/util/object_pool.dart';
 import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 /// Mock RenderInstruction for testing
 class _MockRenderInstruction extends Renderinstruction {

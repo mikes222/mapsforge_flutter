@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 
 class WayCropper {

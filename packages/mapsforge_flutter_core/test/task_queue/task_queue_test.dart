@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:mapsforge_flutter_core/src/task_queue/parallel_task_queue.dart';
+import 'package:mapsforge_flutter_core/src/task_queue/simple_task_queue.dart';
 import 'package:mapsforge_flutter_core/src/task_queue/task_queue.dart';
 import 'package:test/test.dart';
 

@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 
 /// Optimized Douglas-Peucker line simplification algorithm for geographic coordinates.
@@ -67,7 +68,6 @@ class DouglasPeuckerLatLong {
     }
 
     final double toleranceSquared = tolerance * tolerance;
-    final List<ILatLong> result = <ILatLong>[];
 
     // Use a more efficient stack structure with pre-allocated capacity
     final Queue<_Segment> stack = Queue<_Segment>();
@@ -119,15 +119,18 @@ class DouglasPeuckerLatLong {
     }
 
     // Build result list from kept points
-    for (int i = 0; i < points.length; i++) {
-      if (keepPoint[i]) {
-        result.add(points[i]);
+    final List<ILatLong> result = <ILatLong>[];
+    points.forEachIndexed((index, point) {
+      if (keepPoint[index]) {
+        result.add(point);
       }
-    }
+    });
 
     return result;
   }
 }
+
+//////////////////////////////////////////////////////////////////////////////
 
 /// Internal helper class representing a line segment for stack-based processing.
 ///

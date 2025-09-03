@@ -7,9 +7,7 @@ import 'package:mapsforge_flutter/gesture.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/overlay.dart';
-import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
@@ -33,9 +31,7 @@ class MapViewScreen extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  late final IsolatePoolManager _poolManager;
   late final MemoryPressureMonitor _memoryMonitor;
-  late final EnhancedTaskQueue _taskQueue;
 
   bool _showPerformanceOverlay = false;
   String _performanceInfo = '';
@@ -123,9 +119,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _initializeOptimizations() {
-    _poolManager = IsolatePoolManager(maxIsolates: 4);
     _memoryMonitor = MemoryPressureMonitor();
-    _taskQueue = EnhancedTaskQueue(maxParallel: 4);
 
     _memoryMonitor.startMonitoring();
   }
@@ -143,14 +137,13 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   void _updatePerformanceInfo() {
     final memoryStats = _memoryMonitor.memoryStatistics;
-    final poolStats = _poolManager.getStatistics();
+    final PerformanceReport performanceStats = PerformanceProfiler().generateReport(false);
 
     setState(() {
       _performanceInfo =
           '''
 Memory Pressure: ${(memoryStats.memoryPressure * 100).toStringAsFixed(1)}%
-Active Tasks: ${_taskQueue.runningCount}
-Pool Workers: ${poolStats['totalWorkers']}
+$performanceStats
 ''';
     });
   }
@@ -158,8 +151,6 @@ Pool Workers: ${poolStats['totalWorkers']}
   @override
   void dispose() {
     _memoryMonitor.dispose();
-    _poolManager.shutdown();
-    _taskQueue.cancel();
     // mapModel must be disposed after use
     _mapModel?.dispose();
     // disposing the symbolcache also frees a lot of memory
@@ -263,14 +254,14 @@ Pool Workers: ${poolStats['totalWorkers']}
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      datastore = await IsolateMapfile.createFromFile(filename: widget.downloadPath!);
+      datastore = await Mapfile.createFromFile(filename: widget.downloadPath!);
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);
       Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, rendertheme, false);
+      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: true);
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {
@@ -298,16 +289,28 @@ Pool Workers: ${poolStats['totalWorkers']}
     return Positioned(
       top: 16,
       right: 16,
+      left: 16,
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(8)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          //mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Performance Metrics',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Text(
+                  'Performance Metrics',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {
+                    PerformanceProfiler().clear();
+                  },
+                  icon: const Icon(Icons.delete_forever, color: Colors.white),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(

@@ -26,7 +26,7 @@ class _LabelViewState extends State<LabelView> {
   @override
   void initState() {
     super.initState();
-    jobQueue = LabelJobQueue(mapsforgeModel: widget.mapModel);
+    jobQueue = LabelJobQueue(mapModel: widget.mapModel);
   }
 
   @override

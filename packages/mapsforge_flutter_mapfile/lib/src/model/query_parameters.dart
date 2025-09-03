@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
-import 'package:mapsforge_flutter_mapfile/src/querycalculations.dart';
+import 'package:mapsforge_flutter_mapfile/src/helper/querycalculations.dart';
 
 class QueryParameters {
   int fromBaseTileX = 0;

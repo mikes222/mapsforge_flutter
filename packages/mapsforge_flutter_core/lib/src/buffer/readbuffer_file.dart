@@ -3,10 +3,10 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer_source.dart';
-import 'package:mapsforge_flutter_core/src/utils/timing.dart';
-import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 
 /// Reads chunks of a file from the disc. Supports reading multiple chunks concurrently (underlying RandomAccessFile forbids this).
 class ReadbufferFile implements ReadbufferSource {
@@ -51,11 +51,11 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   Future<Readbuffer> readFromFile(int length) async {
     assert(length > 0);
-    Timing timing = Timing(log: _log);
+    var session = PerformanceProfiler().startSession(category: "ReadbufferFile.read");
     _resource ??= _ReadbufferFileResource(filename);
     Uint8List bufferData = await _resource!.read(length);
     Readbuffer result = Readbuffer(bufferData, _position);
-    timing.done(100, "readFromFile position: $_position, length: $length");
+    session.complete();
     _position += length;
     return result;
   }
@@ -72,12 +72,12 @@ class ReadbufferFile implements ReadbufferSource {
     assert(length > 0);
     assert(position >= 0);
 
-    Timing timing = Timing(log: _log);
+    var session = PerformanceProfiler().startSession(category: "ReadbufferFile.readAt");
     _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
     Uint8List bufferData = await resourceAt.readAt(position, length);
     _resourceAts.addLast(resourceAt);
     Readbuffer result = Readbuffer(bufferData, position);
-    timing.done(100, "readFromFile at position: $position, length: $length");
+    session.complete();
     return result;
   }
 

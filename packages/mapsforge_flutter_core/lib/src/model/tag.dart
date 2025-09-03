@@ -1,31 +1,19 @@
-/**
- * A tag represents an immutable key-value pair.
- */
+/// A tag represents an immutable key-value pair.
 class Tag implements Comparable<Tag> {
   static final String KEY_VALUE_SEPARATOR = '=';
 
-  /**
-   * The key of this tag.
-   */
+  /// The key of this tag.
   final String? key;
 
-  /**
-   * The value of this tag.
-   */
+  /// The value of this tag.
   final String? value;
 
-  /**
-   * @param key   the key of the tag.
-   * @param value the value of the tag.
-   */
+  /// @param key   the key of the tag.
+  /// @param value the value of the tag.
   const Tag(this.key, this.value);
 
-  /**
-   * @param tag the textual representation of the tag.
-   */
-  Tag.fromTag(tag)
-      : key = tag.substring(0, tag.indexOf(KEY_VALUE_SEPARATOR)),
-        value = tag.substring(tag.indexOf(KEY_VALUE_SEPARATOR) + 1);
+  /// @param tag the textual representation of the tag.
+  Tag.fromTag(tag) : key = tag.substring(0, tag.indexOf(KEY_VALUE_SEPARATOR)), value = tag.substring(tag.indexOf(KEY_VALUE_SEPARATOR) + 1);
 
   static List<Tag> from(Map<String, String> tags) {
     List<Tag> list = [];
@@ -35,22 +23,20 @@ class Tag implements Comparable<Tag> {
     return list;
   }
 
-  /**
-   * Compares this tag to the specified tag.
-   * The tag comparison is based on a comparison of key and value in that order.
-   *
-   * @param tag The tag to compare to.
-   * @return 0 if equal, &lt; 0 if considered "smaller", and &gt; 0 if considered "bigger".
-   */
+  /// Compares this tag to the specified tag.
+  /// The tag comparison is based on a comparison of key and value in that order.
+  ///
+  /// @param tag The tag to compare to.
+  /// @return 0 if equal, &lt; 0 if considered "smaller", and &gt; 0 if considered "bigger".
   @override
   int compareTo(Tag tag) {
-    int keyResult = this.key!.compareTo(tag.key!);
+    int keyResult = key!.compareTo(tag.key!);
 
     if (keyResult != 0) {
       return keyResult;
     }
 
-    return this.value!.compareTo(tag.value!);
+    return value!.compareTo(tag.value!);
   }
 
   @override
@@ -66,11 +52,11 @@ class Tag implements Comparable<Tag> {
 
   static String tagsWithoutNames(List<Tag> tags) {
     String result = '';
-    tags.forEach((tag) {
-      if (tag.key!.startsWith("name:") || tag.key!.startsWith("official_name") || tag.key!.startsWith("alt_name") || tag.key!.startsWith("int_name")) return;
+    for (var tag in tags) {
+      if (tag.key!.startsWith("name:") || tag.key!.startsWith("official_name") || tag.key!.startsWith("alt_name") || tag.key!.startsWith("int_name")) continue;
       if (result.isNotEmpty) result += ",";
       result += "${tag.key}=${tag.value}";
-    });
+    }
     return result;
   }
 }

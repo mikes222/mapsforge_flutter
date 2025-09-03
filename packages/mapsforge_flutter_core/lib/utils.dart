@@ -8,5 +8,7 @@
 export 'src/utils/douglas_peucker_latlong.dart';
 export 'src/utils/latlong_utils.dart';
 export 'src/utils/mapsforge_settings_mgr.dart';
+export 'src/utils/object_pool.dart';
+export 'src/utils/performance_profiler.dart';
 export 'src/utils/timing.dart';
 export 'src/utils/uint8_list_builder.dart';

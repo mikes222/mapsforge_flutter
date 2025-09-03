@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
-import 'package:mapsforge_flutter_mapfile/src/model/mapfile_helper.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
+import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 
 mixin TagholderMixin {
   List<Tagholder> tagholders = [];

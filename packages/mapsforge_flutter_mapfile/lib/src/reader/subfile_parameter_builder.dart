@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 import 'package:mapsforge_flutter_mapfile/src/exceptions/mapfile_exception.dart';
-import 'package:mapsforge_flutter_mapfile/src/mapfile_info_builder.dart';
+import 'package:mapsforge_flutter_mapfile/src/reader/mapfile_info_builder.dart';
 
 class SubFileParameterBuilder {
   /// Maximum valid base zoom level of a sub-file.
@@ -32,33 +32,33 @@ class SubFileParameterBuilder {
     // get and check the base zoom level (1 byte)
     int baseZoomLevel = readbuffer.readByte();
     if (baseZoomLevel < 0 || baseZoomLevel > BASE_ZOOM_LEVEL_MAX) {
-      throw new MapFileException("invalid base zoom level: $baseZoomLevel");
+      throw MapFileException("invalid base zoom level: $baseZoomLevel");
     }
     this.baseZoomLevel = baseZoomLevel;
 
     // get and check the minimum zoom level (1 byte)
     int zoomLevelMin = readbuffer.readByte();
     if (zoomLevelMin < 0 || zoomLevelMin > 22) {
-      throw new Exception("invalid minimum zoom level: $zoomLevelMin");
+      throw Exception("invalid minimum zoom level: $zoomLevelMin");
     }
     this.zoomLevelMin = zoomLevelMin;
 
     // get and check the maximum zoom level (1 byte)
     int zoomLevelMax = readbuffer.readByte();
     if (zoomLevelMax < 0 || zoomLevelMax > 22) {
-      throw new Exception("invalid maximum zoom level: $zoomLevelMax");
+      throw Exception("invalid maximum zoom level: $zoomLevelMax");
     }
     this.zoomLevelMax = zoomLevelMax;
 
     // check for valid zoom level range
     if (zoomLevelMin > zoomLevelMax) {
-      throw new Exception("invalid zoom level range: $zoomLevelMin $zoomLevelMax");
+      throw Exception("invalid zoom level range: $zoomLevelMin $zoomLevelMax");
     }
 
     // get and check the start address of the sub-file (8 bytes)
     int startAddress = readbuffer.readLong();
     if (startAddress < MapfileInfoBuilder.HEADER_SIZE_MIN || startAddress >= fileSize) {
-      throw new Exception("invalid start address: $startAddress");
+      throw Exception("invalid start address: $startAddress");
     }
     this.startAddress = startAddress;
 
@@ -72,7 +72,7 @@ class SubFileParameterBuilder {
     // get and check the size of the sub-file (8 bytes)
     int subFileSize = readbuffer.readLong();
     if (subFileSize < 1) {
-      throw new Exception("invalid sub-file size: $subFileSize");
+      throw Exception("invalid sub-file size: $subFileSize");
     }
     this.subFileSize = subFileSize;
 
@@ -110,7 +110,7 @@ class SubFileParameterBuilder {
       boundaryTileLeft,
       boundaryTileRight,
       boundaryTileTop,
-      this.indexStartAddress! + numberOfBlocks * BYTES_PER_INDEX_ENTRY,
+      indexStartAddress! + numberOfBlocks * BYTES_PER_INDEX_ENTRY,
       indexStartAddress!,
       numberOfBlocks,
       startAddress!,

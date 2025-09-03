@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
+import 'package:mapsforge_flutter_mapfile/src/exceptions/mapfile_exception.dart';
 import 'package:mapsforge_flutter_mapfile/src/map_datastore.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 
@@ -109,7 +110,7 @@ class MapfileHelper {
     MapDatastore mapDataStore,
   ) {
     List<Way> ways = [];
-    List<Tag> wayTags = this._mapFileHeader.getMapHeaderInfo().wayTags;
+    List<Tag> wayTags = _mapFileHeader.getMapHeaderInfo().wayTags;
 
     BoundingBox wayFilterBbox = filterRequired
         ? boundingBox.extendMeters(queryParameters.queryZoomLevel > 20 ? wayFilterDistance ~/ 4 : wayFilterDistance)
@@ -141,21 +142,22 @@ class MapfileHelper {
     MapfileSelector selector,
   ) {
     List<Way> ways = [];
-    if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
+    if (_mapFileHeader.getMapHeaderInfo().debugFile) {
       // get and check the way signature
       String signatureWay = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_WAY);
       if (!signatureWay.startsWith("---WayStart")) {
-        throw Exception("invalid way signature: " + signatureWay);
+        throw MapFileException("invalid way signature: $signatureWay");
       }
     }
 
     // get the size of the way (VBE-U)
     int wayDataSize = readBuffer.readUnsignedInt();
     if (wayDataSize < 0) {
-      throw Exception("invalid way data size: $wayDataSize");
+      throw MapFileException("invalid way data size: $wayDataSize");
     }
 
-    int pos = readBuffer.getBufferPosition();
+    /*int pos =*/
+    readBuffer.getBufferPosition();
     if (queryParameters.useTileBitmask) {
       // get the way tile bitmask (2 bytes)
       int tileBitmask = readBuffer.readShort();
@@ -197,7 +199,7 @@ class MapfileHelper {
     // check if the way has a name
     if (featureName) {
       try {
-        tags.add(new Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
+        tags.add(Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
       } catch (e) {
         _log.warning(e.toString());
         //tags.add(Tag(TAG_KEY_NAME, "unknown"));
@@ -207,7 +209,7 @@ class MapfileHelper {
     // check if the way has a house number
     if (featureHouseNumber) {
       try {
-        tags.add(new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+        tags.add(Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
       } catch (e) {
         _log.warning(e.toString());
         //tags.add(Tag(TAG_KEY_NAME, "unknown"));
@@ -217,7 +219,7 @@ class MapfileHelper {
     // check if the way has a reference
     if (featureRef) {
       try {
-        tags.add(new Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
+        tags.add(Tag(TAG_KEY_REF, readBuffer.readUTF8EncodedString()));
       } catch (e) {
         _log.warning(e.toString());
         //tags.add(Tag(TAG_KEY_NAME, "unknown"));
@@ -231,7 +233,7 @@ class MapfileHelper {
 
     int wayDataBlocks = _readOptionalWayDataBlocksByte(featureWayDataBlocksByte, readBuffer);
     if (wayDataBlocks < 1) {
-      throw Exception("invalid number of way data blocks: $wayDataBlocks");
+      throw MapFileException("invalid number of way data blocks: $wayDataBlocks");
     }
 
     for (int wayDataBlock = 0; wayDataBlock < wayDataBlocks; ++wayDataBlock) {
@@ -261,7 +263,7 @@ class MapfileHelper {
     // get and check the number of way coordinate blocks (VBE-U)
     int numberOfWayCoordinateBlocks = readBuffer.readUnsignedInt();
     if (numberOfWayCoordinateBlocks < 1 || numberOfWayCoordinateBlocks > 32767) {
-      throw Exception("invalid number of way coordinate blocks: $numberOfWayCoordinateBlocks");
+      throw MapFileException("invalid number of way coordinate blocks: $numberOfWayCoordinateBlocks");
     }
 
     // create the array which will store the different way coordinate blocks
@@ -272,7 +274,7 @@ class MapfileHelper {
       // get and check the number of way nodes (VBE-U)
       int numberOfWayNodes = readBuffer.readUnsignedInt();
       if (numberOfWayNodes < 2 || numberOfWayNodes > 32767) {
-        throw Exception("invalid number of way nodes: $numberOfWayNodes");
+        throw MapFileException("invalid number of way nodes: $numberOfWayNodes");
         // returning null here will actually leave the tile blank as the
         // position on the ReadBuffer will not be advanced correctly. However,
         // it will not crash the app.
@@ -383,7 +385,7 @@ class MapfileHelper {
     MapDatastore mapDataStore,
   ) {
     List<PointOfInterest> pois = [];
-    List<Tag> poiTags = this._mapFileHeader.getMapHeaderInfo().poiTags;
+    List<Tag> poiTags = _mapFileHeader.getMapHeaderInfo().poiTags;
 
     for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
       PointOfInterest pointOfInterest = read1Poi(readBuffer, tileLatitude, tileLongitude, mapDataStore, poiTags);
@@ -399,11 +401,11 @@ class MapfileHelper {
   }
 
   PointOfInterest read1Poi(Readbuffer readBuffer, double tileLatitude, double tileLongitude, MapDatastore mapDataStore, List<Tag> poiTags) {
-    if (this._mapFileHeader.getMapHeaderInfo().debugFile) {
+    if (_mapFileHeader.getMapHeaderInfo().debugFile) {
       // get and check the POI signature
       String signaturePoi = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_POI);
       if (!signaturePoi.startsWith("***POIStart")) {
-        throw Exception("invalid POI signature: " + signaturePoi);
+        throw MapFileException("invalid POI signature: $signaturePoi");
       }
     }
 
@@ -434,17 +436,17 @@ class MapfileHelper {
 
     // check if the POI has a name
     if (featureName) {
-      tags.add(new Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
+      tags.add(Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
     }
 
     // check if the POI has a house number
     if (featureHouseNumber) {
-      tags.add(new Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
+      tags.add(Tag(TAG_KEY_HOUSE_NUMBER, readBuffer.readUTF8EncodedString()));
     }
 
     // check if the POI has an elevation
     if (featureElevation) {
-      tags.add(new Tag(TAG_KEY_ELE, readBuffer.readSignedInt().toString()));
+      tags.add(Tag(TAG_KEY_ELE, readBuffer.readSignedInt().toString()));
     }
 
     LatLong position = LatLong(latitude, longitude);

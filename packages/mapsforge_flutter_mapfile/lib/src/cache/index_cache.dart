@@ -5,8 +5,8 @@ import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
-import 'package:mapsforge_flutter_mapfile/src/indexcacheentrykey.dart';
-import 'package:mapsforge_flutter_mapfile/src/subfile_parameter_builder.dart';
+import 'package:mapsforge_flutter_mapfile/src/model/index_cache_entry_key.dart';
+import 'package:mapsforge_flutter_mapfile/src/reader/subfile_parameter_builder.dart';
 
 ///
 /// A cache for database index blocks with a fixed size and LRU policy.
@@ -25,23 +25,21 @@ class IndexCache {
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.
   /// @throws IllegalArgumentException if the capacity is negative.
-  IndexCache(int capacity) : _cache = LruCache<IndexCacheEntryKey, Uint8List>(storage: WeakReferenceStorage(), capacity: capacity);
+  IndexCache(int capacity) : _cache = LruCache<IndexCacheEntryKey, Uint8List>(capacity: capacity);
 
   /// Destroy the cache at the end of its lifetime.
   void dispose() {
     _log.info("Statistics for IndexCache: ${_cache.storage.toString()}");
-    this._cache.clear();
+    _cache.clear();
   }
 
-  /**
-   * Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be
-   * read from the map file index and put in the cache.
-   *
-   * @param subFileParameter the parameters of the map file for which the index entry is needed.
-   * @param blockNumber      the number of the block in the map file.
-   * @return the index entry.
-   * @throws IOException if an I/O error occurs during reading.
-   */
+  /// Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be
+  /// read from the map file index and put in the cache.
+  ///
+  /// @param subFileParameter the parameters of the map file for which the index entry is needed.
+  /// @param blockNumber      the number of the block in the map file.
+  /// @return the index entry.
+  /// @throws IOException if an I/O error occurs during reading.
   Future<int> getIndexEntry(SubFileParameter subFileParameter, int blockNumber, ReadbufferSource readBufferSource) async {
     // check if the block number is out of bounds
     assert(blockNumber < subFileParameter.numberOfBlocks);
@@ -53,7 +51,7 @@ class IndexCache {
     IndexCacheEntryKey indexCacheEntryKey = IndexCacheEntryKey(subFileParameter, indexBlockNumber);
 
     // check for cached index block
-    Uint8List indexBlock = await this._cache.getOrProduce(indexCacheEntryKey, (key) async {
+    Uint8List indexBlock = await _cache.getOrProduce(indexCacheEntryKey, (key) async {
       // cache miss, seek to the correct index block in the file and read it
       int indexBlockPosition = subFileParameter.indexStartAddress + indexBlockNumber * SIZE_OF_INDEX_BLOCK;
 

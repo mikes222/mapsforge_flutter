@@ -7,7 +7,7 @@ import 'package:mapfile_converter/pbfproto/osmformat.pb.dart' as osmformat;
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart' as osmformat;
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 import '../osm/osm_data.dart';
 import '../pbfproto/osmformat.pb.dart';

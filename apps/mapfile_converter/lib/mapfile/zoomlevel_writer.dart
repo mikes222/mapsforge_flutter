@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class ZoomlevelWriter {
   final double maxDeviationSize;

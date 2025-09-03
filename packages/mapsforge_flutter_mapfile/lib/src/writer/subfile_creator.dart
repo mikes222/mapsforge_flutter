@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tile_constructor.dart';

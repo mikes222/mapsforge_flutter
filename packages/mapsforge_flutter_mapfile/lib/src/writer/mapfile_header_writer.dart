@@ -1,9 +1,9 @@
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
-import 'package:mapsforge_flutter_mapfile/src/map_header_info_builder.dart';
-import 'package:mapsforge_flutter_mapfile/src/mapfile_info_builder.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/map_header_optional_fields.dart';
+import 'package:mapsforge_flutter_mapfile/src/reader/map_header_info_builder.dart';
+import 'package:mapsforge_flutter_mapfile/src/reader/mapfile_info_builder.dart';
 
 class MapfileHeaderWriter {
   final MapHeaderInfo mapHeaderInfo;

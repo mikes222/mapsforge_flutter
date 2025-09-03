@@ -12,7 +12,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:rxdart/rxdart.dart';
 
 class LabelJobQueue {
-  final MapModel mapsforgeModel;
+  final MapModel mapModel;
 
   MapSize? _size;
 
@@ -27,8 +27,8 @@ class LabelJobQueue {
 
   final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
-  LabelJobQueue({required this.mapsforgeModel}) {
-    _subscription = mapsforgeModel.positionStream.listen((MapPosition position) {
+  LabelJobQueue({required this.mapModel}) {
+    _subscription = mapModel.positionStream.listen((MapPosition position) {
       if (_currentJob?.position == position) {
         return;
       }
@@ -53,6 +53,15 @@ class LabelJobQueue {
 
   /// Sets the current size of the mapview so that we know which and how many tiles we need for the whole view
   void setSize(double width, double height) {
+    if (_size == null || _size!.width != width || _size!.height != height) {
+      _size = MapSize(width: width, height: height);
+      if (mapModel.lastPosition != null) {
+        TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: mapModel.lastPosition!, screensize: _size!);
+        _currentJob?.abort();
+        unawaited(_positionEvent(mapModel.lastPosition!, tileDimension));
+      }
+      return;
+    }
     _size = MapSize(width: width, height: height);
   }
 
@@ -75,7 +84,7 @@ class LabelJobQueue {
         Tile leftUpper = Tile(left, top, position.zoomlevel, position.indoorLevel);
         Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomlevel, position.indoorLevel);
         RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
-          JobResult result = await mapsforgeModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
+          JobResult result = await mapModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
           if (result.renderInfo == null) throw Exception("No renderInfo for $tile");
           return result.renderInfo!;
         });

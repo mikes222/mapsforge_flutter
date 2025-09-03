@@ -1,8 +1,8 @@
-import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/shape_painter.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 /// Factory class for creating appropriate shape painters for rendering instructions.
 ///
@@ -100,7 +100,7 @@ class PainterFactory {
   }
 
   Future<void> initDrawingLayers(LayerContainerCollection layerContainers) async {
-    Timing timing = Timing(log: _log);
+    var session = PerformanceProfiler().startSession(category: "PainterFactory.initDrawingLayers");
     List<Future> futures = [];
 
     for (RenderInfo renderInfo in layerContainers.drawings.renderInfos) {
@@ -125,6 +125,6 @@ class PainterFactory {
       }
     }
     await Future.wait(futures);
-    timing.done(100, "initDrawingLayers");
+    session.complete();
   }
 }

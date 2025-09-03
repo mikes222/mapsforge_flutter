@@ -5,12 +5,10 @@ class IndexCacheEntryKey {
   final int indexBlockNumber;
   final SubFileParameter subFileParameter;
 
-  /**
-   * Creates an immutable key to be stored in a map.
-   *
-   * @param subFileParameter the parameters of the map file.
-   * @param indexBlockNumber the number of the index block.
-   */
+  /// Creates an immutable key to be stored in a map.
+  ///
+  /// @param subFileParameter the parameters of the map file.
+  /// @param indexBlockNumber the number of the index block.
   IndexCacheEntryKey(this.subFileParameter, this.indexBlockNumber) {}
 
   @override

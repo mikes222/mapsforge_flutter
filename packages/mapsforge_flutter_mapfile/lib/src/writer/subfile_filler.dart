@@ -1,7 +1,7 @@
 import 'dart:isolate';
 
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_size_filter.dart';
 

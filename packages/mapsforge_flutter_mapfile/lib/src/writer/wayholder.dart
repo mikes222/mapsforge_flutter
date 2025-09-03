@@ -2,8 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile.dart';
-import 'package:mapsforge_flutter_mapfile/src/model/mapfile_helper.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
+import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 /// Holds one way and its tags
@@ -61,20 +61,20 @@ class Wayholder with TagholderMixin {
 
   Wayholder cloneWith({List<Waypath>? inner, List<Waypath>? closedOuters, List<Waypath>? openOuters}) {
     Wayholder result = Wayholder();
-    result._closedOuters = closedOuters ?? this._closedOuters.map((toElement) => toElement.clone()).toList();
-    result._openOuters = openOuters ?? this._openOuters.map((toElement) => toElement.clone()).toList();
-    result._inner = inner ?? this._inner.map((toElement) => toElement.clone()).toList();
-    result.tileBitmask = this.tileBitmask;
-    result.labelPosition = this.labelPosition;
-    result.tags = List.from(this.tags);
-    result.layer = this.layer;
-    result.mergedWithOtherWay = this.mergedWithOtherWay;
-    result.featureElevation = this.featureElevation;
-    result.featureHouseNumber = this.featureHouseNumber;
-    result.featureName = this.featureName;
-    result.featureRef = this.featureRef;
-    result.languagesPreference = this.languagesPreference;
-    result.tagholders = List.from(this.tagholders);
+    result._closedOuters = closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList();
+    result._openOuters = openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList();
+    result._inner = inner ?? _inner.map((toElement) => toElement.clone()).toList();
+    result.tileBitmask = tileBitmask;
+    result.labelPosition = labelPosition;
+    result.tags = List.from(tags);
+    result.layer = layer;
+    result.mergedWithOtherWay = mergedWithOtherWay;
+    result.featureElevation = featureElevation;
+    result.featureHouseNumber = featureHouseNumber;
+    result.featureName = featureName;
+    result.featureRef = featureRef;
+    result.languagesPreference = languagesPreference;
+    result.tagholders = List.from(tagholders);
     return result;
   }
 

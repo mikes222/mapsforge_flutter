@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/map_header_optional_fields.dart';
 
-import 'model/map_header_info.dart';
+import '../model/map_header_info.dart';
 
 class MapHeaderInfoBuilder {
   /// Lowest version of the map file format supported by this implementation.
@@ -119,7 +119,7 @@ class MapHeaderInfoBuilder {
     // get and check the projection name
     String projectionName = readbuffer.readUTF8EncodedString();
     if (MERCATOR != projectionName) {
-      throw new Exception("unsupported projection: $projectionName");
+      throw Exception("unsupported projection: $projectionName");
     }
     this.projectionName = projectionName;
   }
@@ -128,7 +128,7 @@ class MapHeaderInfoBuilder {
     // get and check the number of POI tags (2 bytes)
     int numberOfPoiTags = readbuffer.readShort();
     if (numberOfPoiTags < 0) {
-      throw new Exception("invalid number of POI tags: $numberOfPoiTags");
+      throw Exception("invalid number of POI tags: $numberOfPoiTags");
     }
 
     List<Tag> poiTags = [];
@@ -144,7 +144,7 @@ class MapHeaderInfoBuilder {
     // get and check the number of way tags (2 bytes)
     int numberOfWayTags = readbuffer.readShort();
     if (numberOfWayTags < 0) {
-      throw new Exception("invalid number of way tags: $numberOfWayTags");
+      throw Exception("invalid number of way tags: $numberOfWayTags");
     }
 
     List<Tag> wayTags = [];
@@ -152,7 +152,7 @@ class MapHeaderInfoBuilder {
     for (int currentTagId = 0; currentTagId < numberOfWayTags; ++currentTagId) {
       // get and check the way tag
       String tag = readbuffer.readUTF8EncodedString();
-      wayTags.add(new Tag.fromTag(tag));
+      wayTags.add(Tag.fromTag(tag));
     }
     this.wayTags = wayTags;
   }

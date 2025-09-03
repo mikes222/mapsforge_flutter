@@ -2,9 +2,9 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
-import 'package:mapsforge_flutter_mapfile/src/map_header_info_builder.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
-import 'package:mapsforge_flutter_mapfile/src/subfile_parameter_builder.dart';
+import 'package:mapsforge_flutter_mapfile/src/reader/map_header_info_builder.dart';
+import 'package:mapsforge_flutter_mapfile/src/reader/subfile_parameter_builder.dart';
 
 class MapfileInfoBuilder {
   /// Magic byte at the beginning of a valid binary map file.

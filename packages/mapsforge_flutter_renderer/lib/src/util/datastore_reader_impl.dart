@@ -1,44 +1,73 @@
-import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_renderer/src/datastore_reader.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
-class DatastoreReaderIsolate {
-  static DatastoreReader? _reader;
+class IsolateDatastoreReader implements DatastoreReader {
+  static DatastoreReaderImpl? _reader;
 
-  @pragma('vm:entry-point')
-  static Future<LayerContainerCollection?> read(DatastoreReaderIsolateRequest request) async {
-    _reader ??= DatastoreReader();
-    return _reader!.read(request.datastore, request.tile, request.renderthemeLevel);
+  /// a long-running instance of an isolate
+  late final FlutterIsolateInstance _isolateInstance = FlutterIsolateInstance();
+
+  IsolateDatastoreReader._(Datastore datastore);
+
+  static Future<IsolateDatastoreReader> create(Datastore datastore) async {
+    IsolateDatastoreReader instance = IsolateDatastoreReader._(datastore);
+    await instance._isolateInstance.spawn(_createInstanceStatic, DatastoreReaderIsolateInitRequest(datastore));
+    return instance;
   }
 
   @pragma('vm:entry-point')
-  static Future<LayerContainerCollection?> readLabels(DatastoreReaderIsolateRequest request) async {
-    _reader ??= DatastoreReader();
-    return _reader!.readLabels(request.datastore, request.tile, request.tile, request.renderthemeLevel);
+  static Future<void> _createInstanceStatic(IsolateInitInstanceParams request) async {
+    _reader = DatastoreReaderImpl((request.initObject as DatastoreReaderIsolateInitRequest).datastore);
+    await FlutterIsolateInstance.isolateInit(request, _acceptRequestsStatic);
+  }
+
+  @pragma('vm:entry-point')
+  static Future _acceptRequestsStatic(Object request) async {
+    DatastoreReaderIsolateRequest r = request as DatastoreReaderIsolateRequest;
+    if (r.rightLower == null) return _reader!.read(r.tile, r.renderthemeLevel);
+    return _reader!.readLabels(r.tile, r.rightLower!, r.renderthemeLevel);
+  }
+
+  Future<LayerContainerCollection?> read(Tile tile, RenderthemeZoomlevel renderthemeLevel) async {
+    return await _isolateInstance.compute(DatastoreReaderIsolateRequest(tile, renderthemeLevel));
+  }
+
+  Future<LayerContainerCollection?> readLabels(Tile leftUpper, Tile rightLower, RenderthemeZoomlevel renderthemeLevel) async {
+    return await _isolateInstance.compute(DatastoreReaderIsolateRequest(leftUpper, renderthemeLevel, rightLower: rightLower));
   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-class DatastoreReaderIsolateRequest {
+class DatastoreReaderIsolateInitRequest {
   final Datastore datastore;
-  final Tile tile;
-  final Tile? lowerRight;
-  final RenderthemeZoomlevel renderthemeLevel;
-  final int maxLevels;
 
-  DatastoreReaderIsolateRequest(this.datastore, this.tile, this.renderthemeLevel, this.maxLevels, {this.lowerRight});
+  DatastoreReaderIsolateInitRequest(this.datastore);
+}
+//////////////////////////////////////////////////////////////////////////////
+
+class DatastoreReaderIsolateRequest {
+  final Tile tile;
+  final Tile? rightLower;
+  final RenderthemeZoomlevel renderthemeLevel;
+
+  DatastoreReaderIsolateRequest(this.tile, this.renderthemeLevel, {this.rightLower});
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// Reads the content of a datastore - e.g. MapFile - either via isolate or direct
 /// in the main thread.
-class DatastoreReader {
-  DatastoreReader();
+class DatastoreReaderImpl implements DatastoreReader {
+  final Datastore datastore;
 
-  Future<LayerContainerCollection?> read(Datastore datastore, Tile tile, RenderthemeZoomlevel renderthemeLevel) async {
+  DatastoreReaderImpl(this.datastore);
+
+  Future<LayerContainerCollection?> read(Tile tile, RenderthemeZoomlevel renderthemeLevel) async {
     if (!(await datastore.supportsTile(tile))) {
       return null;
     }
@@ -52,7 +81,7 @@ class DatastoreReader {
     return layerContainerCollection;
   }
 
-  Future<LayerContainerCollection?> readLabels(Datastore datastore, Tile leftUpper, Tile rightLower, RenderthemeZoomlevel renderthemeLevel) async {
+  Future<LayerContainerCollection?> readLabels(Tile leftUpper, Tile rightLower, RenderthemeZoomlevel renderthemeLevel) async {
     // if (!(await datastore.supportsTile(leftUpper))) {
     //   return null;
     // }
