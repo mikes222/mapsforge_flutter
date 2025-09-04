@@ -1,4 +1,4 @@
-# Known Issues & Solutions
+ # Known Issues & Solutions
 
 ## 🌊 Map Appears Completely Blue (Everything Looks "Under Water")
 
