@@ -1,10 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mapsforge_flutter/gesture.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/context_menu/context_menu_overlay.dart';
-import 'package:mapsforge_flutter/src/gesture/move_gesture_detector.dart';
-import 'package:mapsforge_flutter/src/gesture/rotation_gesture_detector.dart';
-import 'package:mapsforge_flutter/src/gesture/scale_gesture_detector.dart';
-import 'package:mapsforge_flutter/src/gesture/tap_gesture_detector.dart';
 import 'package:mapsforge_flutter/src/overlay/distance_overlay.dart';
 import 'package:mapsforge_flutter/src/overlay/indoorlevel_overlay.dart';
 import 'package:mapsforge_flutter/src/overlay/no_position_overlay.dart';
@@ -47,6 +44,8 @@ class MapsforgeView extends StatelessWidget {
         ScaleGestureDetector(mapModel: mapModel),
         // informs mapModel about short, long and double taps
         TapGestureDetector(mapModel: mapModel),
+        // informs mapModel about drag and drop events
+        DragAndDropGestureDetector(mapModel: mapModel),
         // Shows tiles according to the current position
         TileView(mapModel: mapModel),
         // Shows labels (and rotate them) according to the current position (if the renderer supports it)

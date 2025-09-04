@@ -35,14 +35,10 @@ class MyHomePage extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _MyHomePageState extends State<MyHomePage> {
+  /// FutureBuilder should never call the method directly according to its documentation to avoid creating the model multiple times.
   Future? _createModelFuture;
 
   MapModel? _mapModel;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void didChangeDependencies() {
@@ -104,12 +100,13 @@ class _MyHomePageState extends State<MyHomePage> {
     ByteData mapContent = await rootBundle.load("assets/monaco.map");
     Datastore datastore = await Mapfile.createFromContent(content: mapContent.buffer.asUint8List());
 
-    // Now instantiate our mapModel Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range. MapModel must be disposed after use.
+    // Now instantiate our mapModel. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range. MapModel must be disposed after use.
     _mapModel = await MapModelHelper.createOfflineMapModel(datastore: datastore, zoomlevelRange: const ZoomlevelRange(0, 21));
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
-    // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile if you do not
+    // Note that the [MapsforgeView] is unable to show something unless there is a position set. Consider using the default position of the mapFile if you do not
     // have a position available.
+    // See [MapModel.moveTo] and [MapModel.setCenter] for setting positions if there is already an initial position.
     MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
     _mapModel!.setPosition(mapPosition);
 

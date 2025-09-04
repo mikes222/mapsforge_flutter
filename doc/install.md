@@ -72,28 +72,20 @@ melos run dart_test
 
 ## Adding a new app/package
 
-cd apps or cd packages
+``cd apps`` or ``cd packages``
 
-flutter create <package_name> or dart create <package_name>
+``flutter create <package_name>`` or ``dart create <package_name>``
 
-edit analysis_options.yaml
+replace ``analysis_options.yaml`` with
 
 ```yaml
   include: ../../analysis_options.yaml
 ```
 
-edit pubspec.yaml
-
-in the second line:
+edit the new ``pubspec.yaml`` and insert into the second line:
 
 ```yaml
 resolution: workspace
-```
-
-in the root:
-
-```bash
-melos bootstrap
 ```
 
 in pubspec.yaml of the root directory:
@@ -108,4 +100,3 @@ Afterwards:
 ```bash
 melos bootstrap
 ```
-

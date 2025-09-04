@@ -25,6 +25,8 @@ class MapModel {
 
   final Subject<TapEvent?> _doubleTapSubject = PublishSubject();
 
+  final Subject<DragNdropEvent> _dragNdropSubject = PublishSubject();
+
   /// When using the context menu we often needs the markers which are tapped. To simplify that we register/unregister datastores to the map.
   final List<MarkerDatastore> _datastore = [];
 
@@ -36,6 +38,7 @@ class MapModel {
     _tapSubject.close();
     _longTapSubject.close();
     _doubleTapSubject.close();
+    _dragNdropSubject.close();
     renderer.dispose();
     for (var datastore in List.of(_datastore)) {
       datastore.dispose();
@@ -75,6 +78,8 @@ class MapModel {
   /// entitled to handle the event anymore. This is currently being used to hide the context menu.
   Stream<TapEvent?> get doubleTapStream => _doubleTapSubject.stream;
 
+  Stream<DragNdropEvent> get dragNdropStream => _dragNdropSubject.stream;
+
   void manualMove(Object object) {
     _manualMoveSubject.add(object);
   }
@@ -90,6 +95,10 @@ class MapModel {
 
   void doubleTap(TapEvent? event) {
     _doubleTapSubject.add(event);
+  }
+
+  void dragNdrop(DragNdropEvent event) {
+    _dragNdropSubject.add(event);
   }
 
   void zoomIn() {
@@ -151,6 +160,7 @@ class MapModel {
     setPosition(newPosition);
   }
 
+  /// Moves to a new latitude and longitude. There must already be a position set.
   void moveTo(double latitude, double longitude) {
     MapPosition newPosition = _lastPosition!.moveTo(latitude, longitude);
     setPosition(newPosition);
@@ -166,7 +176,7 @@ class MapModel {
     setPosition(newPosition);
   }
 
-  /// Sets the center of the mapmodel to the given coordinates in mappixel
+  /// Sets the center of the mapmodel to the given coordinates in mappixel. There must already be a position set.
   void setCenter(double x, double y) {
     MapPosition newPosition = _lastPosition!.setCenter(x, y);
     setPosition(newPosition);
@@ -206,6 +216,30 @@ class TapEvent implements ILatLong {
   String toString() {
     return 'TapEvent{latitude: $latitude, longitude: $longitude, mappoint: $mappoint}';
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class DragNdropEvent extends TapEvent {
+  final DragNdropEventType type;
+
+  DragNdropEvent({required super.latitude, required super.longitude, required super.projection, required super.mappoint, required this.type});
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+enum DragNdropEventType {
+  /// Drag'n'drop started
+  start,
+
+  /// Drag'n'drop cancelled, for example because the user moved outside of the view
+  cancel,
+
+  /// Drag'n'drop moved
+  move,
+
+  /// Drag'n'drop finished
+  finish,
 }
 
 //////////////////////////////////////////////////////////////////////////////

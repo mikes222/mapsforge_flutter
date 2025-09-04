@@ -113,6 +113,8 @@ class _MoveEvent {
 
   final Mappoint startCenter;
 
+  Timer? _startTimer;
+
   Timer? _swipeTimer;
 
   Offset? _swipeOffset;
@@ -123,13 +125,23 @@ class _MoveEvent {
 
   Offset? _updateLocalFocalPoint;
 
-  int _lastManualMoveEvent = 0;
+  int _nextManualMoveEvent = 0;
 
-  _MoveEvent({required this.mapModel, required this.swipeAbsorption, required this.startLocalFocalPoint, required this.startCenter});
+  _MoveEvent({
+    required this.mapModel,
+    required this.swipeAbsorption,
+    required this.startLocalFocalPoint,
+    required this.startCenter,
+    int longPressDuration = 350,
+  }) {
+    _startTimer = Timer(Duration(milliseconds: longPressDuration), () {});
+  }
 
   void dispose() {
     _swipeTimer?.cancel();
     _swipeTimer = null;
+    _startTimer?.cancel();
+    _startTimer = null;
     _swipeOffset = null;
   }
 
@@ -145,8 +157,8 @@ class _MoveEvent {
       diffX = cos(-rot + rad) * hyp;
       diffY = sin(-rot + rad) * hyp;
     }
-    if (_lastManualMoveEvent == 0 || _lastManualMoveEvent < DateTime.now().millisecondsSinceEpoch) {
-      _lastManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
+    if (_nextManualMoveEvent == 0 || _nextManualMoveEvent < DateTime.now().millisecondsSinceEpoch) {
+      _nextManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
       mapModel.manualMove(Object());
     }
     mapModel.setCenter(startCenter.x - diffX, startCenter.y - diffY);
@@ -196,8 +208,8 @@ class _MoveEvent {
     //if (doLog) _log.info("Swiping ${_swipeOffset!.distance}");
     Mappoint? center = mapModel.lastPosition?.getCenter();
     if (center != null) {
-      if (_lastManualMoveEvent == 0 || _lastManualMoveEvent < DateTime.now().millisecondsSinceEpoch) {
-        _lastManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
+      if (_nextManualMoveEvent == 0 || _nextManualMoveEvent < DateTime.now().millisecondsSinceEpoch) {
+        _nextManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
         mapModel.manualMove(Object());
       }
       mapModel.setCenter(center.x - _swipeOffset!.dx, center.y - _swipeOffset!.dy);

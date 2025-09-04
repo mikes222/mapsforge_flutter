@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
+import 'package:complete_example/marker/my_marker_datastore.dart';
 import 'package:ecache/ecache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,7 +52,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
   void initState() {
     super.initState();
     _initializeOptimizations();
-    _createMarker();
   }
 
   @override
@@ -61,63 +61,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
     // time we can create the future AND having the context.
     print("new CreateModleFuture");
     _createModelFuture ??= createModel(context);
-  }
-
-  void _createMarker() {
-    // marker = PolylineTextMarker(
-    //   path: [
-    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //     LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
-    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
-    //   ],
-    //   caption: "PolylineTextMarker",
-    //   fontSize: 20,
-    // );
-
-    marker = AreaMarker(
-      key: "area",
-      path: [
-        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-        LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
-        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude + 0.001),
-        LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-      ],
-    );
-
-    // marker = PolylineMarker(
-    //   path: [
-    //     LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //     LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
-    //   ],
-    // );
-
-    // marker = RectMarker(
-    //   minLatLon: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //   maxLatLon: LatLong(widget.configuration.location.centerLatitude + 0.001, widget.configuration.location.centerLongitude + 0.001),
-    // )..addCaption(caption: "RectCaption");
-
-    // marker = CaptionMarker(
-    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //   caption: 'PoiCaption',
-    // );
-
-    // marker = CircleMarker(
-    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //   fillColor: Colors.white.withAlpha(200).toARGB32(),
-    // )..addCaption(caption: "IconMarker");
-
-    // marker = IconMarker(
-    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //   iconData: Icons.accessibility,
-    // )..addCaption(caption: "IconMarker");
-
-    // marker = PoiMarker(
-    //   src: "packages/mapsforge_flutter_rendertheme/assets/symbols/viewpoint.svg",
-    //   latLong: LatLong(widget.configuration.location.centerLatitude, widget.configuration.location.centerLongitude),
-    //   rotateWithMap: true,
-    // )..addCaption(caption: "PoiMarker");
-
-    //markerDatastore.addMarker(marker);
   }
 
   void _initializeOptimizations() {
@@ -203,21 +146,23 @@ $storageString
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
           MapModel mapModel = snapshot.data;
-          MarkerDatastore markerDatastore = DefaultMarkerDatastore(mapModel: mapModel);
+          MarkerDatastore markerDatastore = MyMarkerDatastore(mapModel: mapModel);
 
           MarkerDatastore debugDatastore = DefaultMarkerDatastore(mapModel: mapModel);
 
           return Stack(
             children: [
+              TestGestureDetector(mapModel: mapModel),
               // move the map
-              MoveGestureDetector(mapModel: mapModel),
+              // MoveGestureDetector(mapModel: mapModel),
               // rotates the map when two fingers are pressed and rotated
               RotationGestureDetector(mapModel: mapModel),
               // scales the map when two fingers are pressed and zoomed
-              //ScaleGestureDetector(mapModel: mapModel),
               ScaleGestureDetector(mapModel: mapModel),
               // informs mapModel about short, long and double taps
-              TapGestureDetector(mapModel: mapModel),
+              //TapGestureDetector(mapModel: mapModel),
+              // informs mapModel about drag and drop events
+              //DragAndDropGestureDetector(mapModel: mapModel),
               // Shows tiles according to the current position
               TileView(mapModel: mapModel),
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
@@ -231,8 +176,10 @@ $storageString
               ZoomOverlay(mapModel: mapModel),
               // listens to double-click events (configurable) and zooms in
               ZoomInOverlay(mapModel: mapModel),
+              // shows additional overlays or custom overlays
               // shows the indoorlevel zoom buttons
-              IndoorlevelOverlay(mapModel: mapModel),
+              //              IndoorlevelOverlay(mapModel: mapModel),
+
               // listens to tap events (configurable) and shows a context menu (also configurable)
               ContextMenuOverlay(
                 mapModel: mapModel,
@@ -248,6 +195,7 @@ $storageString
                   );
                 },
               ),
+              NoPositionOverlay(mapModel: mapModel),
               if (_showPerformanceOverlay) _buildPerformanceOverlay(),
             ],
           );

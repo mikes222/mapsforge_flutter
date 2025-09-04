@@ -21,8 +21,8 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     MapPositioning position = MapPositioning.CENTER,
     int bitmapColor = 0xff000000,
     double radius = 10,
-    int fillColor = 0x00000000,
-    int strokeColor = 0xff000000,
+    int fillColor = 0x00000000, // transparent
+    int strokeColor = 0xff000000, // black
     double strokeWidth = 2.0,
     int? strokeMinZoomLevel,
   }) {
@@ -94,5 +94,13 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   MapRectangle? searchForSymbolBoundary(String symbolId) {
     return renderInfo?.renderInstruction.getBoundary();
+  }
+
+  void setStrokeColorFromNumber(int color) {
+    renderinstruction.setStrokeColorFromNumber(color);
+  }
+
+  void setFillColorFromNumber(int color) {
+    renderinstruction.setFillColorFromNumber(color);
   }
 }

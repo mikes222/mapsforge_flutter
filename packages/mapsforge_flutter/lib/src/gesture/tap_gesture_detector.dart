@@ -46,8 +46,8 @@ class _TapGestureDetectorState extends State<TapGestureDetector> {
             if (_handler != null) {
               if (_handler!._upCount > 0) {
                 // already a double tap event
-                _handler!._cancel();
                 _handler!._sendDoubleMapModel(constraints.biggest, event.localPosition);
+                _handler!._cancel();
                 _handler = null;
               }
               return;

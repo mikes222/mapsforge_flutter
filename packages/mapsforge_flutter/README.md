@@ -100,139 +100,27 @@ class _MapScreenState extends State<MapScreen> {
 
 ## Markers
 
-### Point of Interest (POI) Markers
-
-POI markers display icons or symbols at specific geographic locations.
-
 ```dart
 // Create a POI marker with custom icon
 final poiMarker = PoiMarker<String>(
-  key: "restaurant_1",
   latLong: LatLong(52.5200, 13.4050),
   src: "assets/icons/restaurant.png",
-  width: 32,
-  height: 32,
-  positioning: MapPositioning.CENTER,
-  rotateWithMap: false,
-  rotation: 0, // degrees clockwise
-  zoomlevelRange: ZoomlevelRange(12, 18),
 );
 
 // Add to marker datastore
 final markerDatastore = DefaultMarkerDatastore();
 markerDatastore.addMarker(poiMarker);
 
-// Create overlay for rendering
-final markerOverlay = MarkerDatastoreOverlay(
-  markerDatastore: markerDatastore,
-);
-
 // Add to your map stack
 Stack(
   children: [
     MapsforgeView(mapModel: mapModel),
-    markerOverlay,
+    MarkerDatastoreOverlay(markerDatastore: markerDatastore),
   ],
 )
 ```
 
-### Circle Markers
-
-Circle markers create circular shapes with customizable fill and stroke.
-
-```dart
-final circleMarker = CircleMarker<String>(
-  key: "location_1",
-  latLong: LatLong(52.5200, 13.4050),
-  radius: 50, // radius in pixels
-  fillColor: 0x80FF0000, // Semi-transparent red
-  strokeColor: 0xFF000000, // Black border
-  strokeWidth: 2.0,
-  position: MapPositioning.CENTER,
-  zoomlevelRange: ZoomlevelRange(10, 16),
-);
-```
-
-### Area Markers
-
-Area markers render polygon shapes defined by coordinate paths.
-
-```dart
-final areaMarker = AreaMarker<String>(
-  key: "park_area",
-  path: [
-    LatLong(52.5200, 13.4050),
-    LatLong(52.5210, 13.4060),
-    LatLong(52.5190, 13.4070),
-    LatLong(52.5180, 13.4040),
-  ],
-  fillColor: 0x8000FF00, // Semi-transparent green
-  strokeColor: 0xFF008000, // Dark green border
-  strokeWidth: 2.0,
-  zoomlevelRange: ZoomlevelRange(8, 15),
-);
-```
-
-### Polyline Markers
-
-Polyline markers draw lines and paths between coordinates.
-
-```dart
-final polylineMarker = PolylineMarker<String>(
-  key: "route_1",
-  path: [
-    LatLong(52.5200, 13.4050),
-    LatLong(52.5250, 13.4100),
-    LatLong(52.5300, 13.4150),
-  ],
-  strokeColor: 0xFF0000FF, // Blue line
-  strokeWidth: 4.0,
-  strokeDasharray: [10.0, 5.0], // Dashed line pattern
-  zoomlevelRange: ZoomlevelRange(10, 18),
-);
-```
-
-### Caption Markers
-
-Caption markers display text labels at specific locations.
-
-```dart
-final captionMarker = CaptionMarker<String>(
-  key: "label_1",
-  latLong: LatLong(52.5200, 13.4050),
-  text: "Berlin",
-  fontSize: 16.0,
-  fontColor: 0xFF000000,
-  strokeColor: 0xFFFFFFFF, // White outline
-  strokeWidth: 1.0,
-  positioning: MapPositioning.CENTER,
-  zoomlevelRange: ZoomlevelRange(8, 16),
-);
-```
-
-### Marker Management
-
-```dart
-// Create marker datastore
-final markerDatastore = DefaultMarkerDatastore();
-
-// Add multiple markers
-markerDatastore.addMarker(poiMarker);
-markerDatastore.addMarker(circleMarker);
-markerDatastore.addMarker(areaMarker);
-
-// Remove markers
-markerDatastore.removeMarker(poiMarker);
-
-// Clear all markers
-markerDatastore.clearMarkers();
-
-// Handle marker taps
-markerDatastore.onTap = (marker, tapEvent) {
-  print("Tapped marker: ${marker.key}");
-  // Handle marker interaction
-};
-```
+See also [doc/marker](doc/marker.md)
 
 ## Overlays
 
@@ -511,18 +399,19 @@ flutter test
 ## Contributing
 
 1. Follow the existing code style and patterns
-2. Add tests for new marker types and overlays
+2. Add tests for new functionality
 3. Update documentation for API changes
 4. Ensure performance optimizations are maintained
 5. Test with various map data sources and scenarios
 
 ## Examples
 
+Check the `apps/simple_example` directory for a basic map setup.
+
 Check the `apps/complete_example` directory for comprehensive usage examples including:
-- Basic map setup with markers and overlays
+- Basic map setup with markers
 - Custom marker implementations
 - Advanced gesture handling
-- Performance optimization techniques
 - Indoor mapping integration
 
 ## License
@@ -532,7 +421,19 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 ## Related Packages
 
 - **`mapsforge_flutter_core`**: Core utilities and data structures
-- **`mapsforge_flutter_renderer`**: High-performance tile rendering
-- **`mapsforge_flutter_rendertheme`**: Theme processing and styling
-- **`dart_mapfile`**: Map file reading and processing
-- **`mapsforge_flutter`**: Complete Flutter mapping solution
+- **`mapsforge_flutter_renderer`**: High-performance tile rendering for offline mapfiles as well as online renderers
+- **`mapsforge_flutter_rendertheme`**: Theme processing and styling for offline mapfiles
+- **`mapsforge_flutter_mapfile`**: Map file reading and processing
+- **`mapsforge_flutter`**: Complete Flutter mapping solution with markers, overlays, and gesture handling
+
+## Documentation
+
+Decision why/how we use melos: [doc/melos](doc/melos.md)
+
+Setting up a new project which contains mapsforge_flutter: [doc/install](doc/install.md)
+
+Upgrading to a newer version: [doc/changes](doc/changes.md)
+
+Known issue: [doc/known_issues](doc/known_issues.md)
+
+Working with markers: [doc/marker](doc/marker.md)
