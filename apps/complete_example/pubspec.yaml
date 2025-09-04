@@ -32,6 +32,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # for unzipping the hillshading file after download
+  archive: ^4.0.7
+
   collection: ^1.19.1
 
   # The following adds the Cupertino Icons font to your application.
@@ -40,6 +43,8 @@ dependencies:
 
   # For file downloading
   dio: ^5.9.0
+
+  ecache: ^2.1.1
 
   # For downlaoding files in web
   file_picker: ^10.3.2
@@ -94,6 +99,7 @@ flutter:
     - assets/render_theme/defaultrender.xml
     - assets/render_theme/darkrender.xml
     - assets/render_theme/mapsforge_default.xml
+    - assets/render_theme/sicilia_oam.xml
     - packages/mapsforge_flutter_rendertheme/assets/patterns/dark_farmland.svg
     - packages/mapsforge_flutter_rendertheme/assets/patterns/dark_military.png
     - packages/mapsforge_flutter_rendertheme/assets/patterns/coniferous.svg

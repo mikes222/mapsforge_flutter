@@ -19,7 +19,8 @@ void main() {
 
   setUp(() {
     _initLogging();
-    SymbolCacheMgr().symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle("test/assets")));
+    SymbolCacheMgr().symbolCache = FileSymbolCache();
+    SymbolCacheMgr().symbolCache.addLoader("jar:", ImageBundleLoader(bundle: TestAssetBundle("test/cache")));
   });
 
   testWidgets('Creates a custom datastore and renders it', (WidgetTester tester) async {

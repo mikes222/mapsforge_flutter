@@ -15,7 +15,8 @@ main() async {
 
   setUp(() {
     _initLogging();
-    SymbolCacheMgr().symbolCache = FileSymbolCache(imageLoader: ImageBundleLoader(bundle: TestAssetBundle("test/assets")));
+    SymbolCacheMgr().symbolCache = FileSymbolCache();
+    SymbolCacheMgr().symbolCache.addLoader("jar:", ImageBundleLoader(bundle: TestAssetBundle("test/cache")));
   });
 
   test("MapDatastore", () async {

@@ -41,7 +41,7 @@ dependencies:
   # Workspace
   mapsforge_flutter_rendertheme: ^1.0.0
 
-  ecache: ^2.0.13
+  ecache: ^2.1.1
 
   logging: ^1.3.0
 

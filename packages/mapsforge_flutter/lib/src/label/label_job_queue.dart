@@ -49,6 +49,7 @@ class LabelJobQueue {
   void dispose() {
     _subscription?.cancel();
     _labelStream.close();
+    _cache.dispose();
   }
 
   /// Sets the current size of the mapview so that we know which and how many tiles we need for the whole view

@@ -45,7 +45,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
 
     if (config.isValid) {
-      widget.onConfigurationChanged(config);
+      //widget.onConfigurationChanged(config);
     }
   }
 

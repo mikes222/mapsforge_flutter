@@ -20,19 +20,19 @@ class MemoryTileCache extends TileCache {
   }
 
   MemoryTileCache._() {
-    var storage = WeakReferenceStorage<Tile, TilePicture?>(
+    _cache = LruCache<Tile, TilePicture?>(
       onEvict: (tile, picture) {
         _spatialIndex.removeTile(tile);
         picture?.dispose();
       },
+      capacity: 1000,
     );
-    _cache = LruCache<Tile, TilePicture?>(storage: storage, capacity: 1000);
   }
 
   @override
   void dispose() {
     _instances.remove(this);
-    _cache.clear();
+    _cache.dispose();
     _spatialIndex.clear();
   }
 

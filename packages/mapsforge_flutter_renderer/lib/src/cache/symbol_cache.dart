@@ -1,3 +1,4 @@
+import 'package:mapsforge_flutter_renderer/src/cache/image_loader.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 
 ///
@@ -10,6 +11,9 @@ abstract class SymbolCache {
   /// Disposes the cache. It should not be used afterwards
   ///
   void dispose() {}
+
+  /// Configure an additional loader. The loader is chosen based on the prefix of the requested file
+  void addLoader(String prefix, ImageLoader imageLoader);
 
   ///
   /// loads and returns the desired symbol, optionally rescales it to the given width and height

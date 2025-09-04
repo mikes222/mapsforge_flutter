@@ -162,7 +162,7 @@ class SubfileCreator {
   }
 
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
-    Timing timing = Timing(log: _log);
+    var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
     List<IsolateTileConstructor> tileConstructor = [];
     // each instance must process this number of consecutive tiles
     final int iterationCount = 20;
@@ -202,7 +202,7 @@ class SubfileCreator {
       tileConstructor[i].dispose();
     }
     tileConstructor.clear();
-    timing.done(10000, "prepare tiles for baseZoomLevel $baseZoomLevel completed");
+    session.complete();
   }
 
   Future<void> _future(IsolateTileConstructor tileConstructor, Tile tile) async {

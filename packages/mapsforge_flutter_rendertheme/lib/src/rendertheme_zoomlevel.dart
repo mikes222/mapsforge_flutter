@@ -22,28 +22,32 @@ class RenderthemeZoomlevel {
   final List<Rule> rulesList;
 
   /// LRU cache for node (POI) rendering instruction matches.
-  final Cache<MatchingCacheKey, List<Renderinstruction>> nodeMatchingCache = LruCache(capacity: 100);
+  late final Cache<MatchingCacheKey, List<Renderinstruction>> nodeMatchingCache;
 
   /// LRU cache for open way (linear) rendering instruction matches.
-  final Cache<MatchingCacheKey, List<Renderinstruction>> openWayMatchingCache = LruCache(capacity: 100);
+  late final Cache<MatchingCacheKey, List<Renderinstruction>> openWayMatchingCache;
 
   /// LRU cache for closed way (area) rendering instruction matches.
-  final Cache<MatchingCacheKey, List<Renderinstruction>> closedWayMatchingCache = LruCache(capacity: 100);
+  late final Cache<MatchingCacheKey, List<Renderinstruction>> closedWayMatchingCache;
 
   int maxLevels;
 
   /// Creates a new zoom level specific rendering theme.
   ///
   /// [rulesList] Hierarchical list of rendering rules for this zoom level
-  RenderthemeZoomlevel({required this.rulesList, required this.maxLevels});
+  RenderthemeZoomlevel({required this.rulesList, required this.maxLevels, int zoomlevel = -1}) {
+    nodeMatchingCache = LruCache(capacity: 1000, name: "Node-MatchingCache$zoomlevel");
+    openWayMatchingCache = LruCache(capacity: 1000, name: "OpenWay-MatchingCache$zoomlevel");
+    closedWayMatchingCache = LruCache(capacity: 1000, name: "ClosedWay-MatchingCache$zoomlevel");
+  }
 
   void dispose() {
     for (var element in rulesList) {
       element.dispose();
     }
-    nodeMatchingCache.clear();
-    openWayMatchingCache.clear();
-    closedWayMatchingCache.clear();
+    nodeMatchingCache.dispose();
+    openWayMatchingCache.dispose();
+    closedWayMatchingCache.dispose();
   }
 
   /// Matches a node (POI) against the rendering rules for this zoom level.

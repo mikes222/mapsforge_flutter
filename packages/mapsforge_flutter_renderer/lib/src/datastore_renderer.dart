@@ -80,6 +80,7 @@ class DatastoreRenderer extends Renderer {
   void dispose() {
     tileDependencies?.dispose();
     rendertheme.dispose();
+    datastore.dispose();
     super.dispose();
   }
 

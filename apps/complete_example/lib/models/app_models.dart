@@ -17,7 +17,8 @@ enum RendererType {
 enum RenderTheme {
   defaultTheme('Default Theme', 'assets/render_theme/defaultrender.xml'),
   darkTheme('Dark Theme', 'assets/render_theme/darkrender.xml'),
-  mapsforgeTheme('Maspforge Default Theme', 'assets/render_theme/mapsforge_default.xml');
+  mapsforgeTheme('Maspforge Default Theme', 'assets/render_theme/mapsforge_default.xml'),
+  siziliaTheme('Sicilia Hillshading Theme', 'assets/render_theme/sicilia_oam.xml');
 
   const RenderTheme(this.displayName, this.fileName);
   final String displayName;
@@ -176,6 +177,15 @@ class MapLocations {
       centerLongitude: 14.3,
       defaultZoomLevel: 15,
       country: 'Italy',
+    ),
+    MapLocation(
+      name: 'World',
+      description: 'Worldmap',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/world.map',
+      centerLatitude: 40,
+      centerLongitude: 10,
+      defaultZoomLevel: 4,
+      country: 'World',
     ),
   ];
 

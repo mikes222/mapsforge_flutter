@@ -30,12 +30,11 @@ class MemoryLabelCache {
   }
 
   MemoryLabelCache._() {
-    _cache = LruCache<Tile, RenderInfoCollection>(capacity: 500);
+    _cache = LruCache<Tile, RenderInfoCollection>(capacity: 500, name: "MemoryLabelCache");
   }
 
   void dispose() {
-    print("Statistics for MemoryLabelCache: ${_cache.storage.toString()}");
-    _cache.clear();
+    _cache.dispose();
     _instances.remove(this);
   }
 

@@ -1,14 +1,13 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 
 class ImageBuilder {
   const ImageBuilder();
 
-  Future<SymbolImage> createPngSymbol(ByteData content, int width, int height) async {
-    Uint8List bytes = content.buffer.asUint8List();
+  Future<SymbolImage> createPngSymbol(Uint8List bytes, int width, int height) async {
     if (width != 0 && height != 0) {
       var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);
       // add additional checking for number of frames etc here
@@ -31,8 +30,8 @@ class ImageBuilder {
   /// Make sure this method runs in a real loop, not a fake-loop while testing. Use e.g.
   ///
   ///     await tester.runAsync(() async {...});
-  Future<SymbolImage> createSvgSymbol(ByteData content, int width, int height) async {
-    PictureInfo pictureInfo = await vg.loadPicture(SvgBytesLoader(content.buffer.asUint8List()), null);
+  Future<SymbolImage> createSvgSymbol(Uint8List bytes, int width, int height) async {
+    PictureInfo pictureInfo = await vg.loadPicture(SvgBytesLoader(bytes), null);
     final ui.Picture picture = pictureInfo.picture;
     ui.Image image = await picture.toImage(pictureInfo.size.width.round(), pictureInfo.size.height.round());
     ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);

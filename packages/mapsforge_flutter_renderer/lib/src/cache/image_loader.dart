@@ -1,5 +1,5 @@
 import 'dart:typed_data';
 
 abstract class ImageLoader {
-  Future<ByteData?> fetchResource(String src);
+  Future<Uint8List?> fetchResource(String src);
 }

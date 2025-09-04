@@ -287,7 +287,7 @@ class TileConstructor {
     }
     // cleanup every minute
     if (DateTime.now().millisecondsSinceEpoch - lastRemove < 1000 * 60) return;
-    Timing timing = Timing(log: _log);
+    var session = PerformanceProfiler().startSession(category: "TileConstructor.removeOld");
     BoundingBox boundingBox = newTile.getBoundingBox().extendBoundingBox(first!.getBoundingBox());
     int poicountBefore = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
@@ -298,7 +298,7 @@ class TileConstructor {
       });
     });
     int poicountAfter = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
-    timing.lap(200, "Removed old poi values $poicountBefore -> $poicountAfter");
+    session.checkpoint("$poicountBefore -> $poicountAfter");
     int waycountBefore = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
     _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
       List.from(wayinfo.wayholders).forEach((wayholder) {
@@ -309,7 +309,7 @@ class TileConstructor {
       });
     });
     int waycountAfter = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
-    timing.done(200, "Removed old way values $poicountBefore -> $poicountAfter, $waycountBefore -> $waycountAfter");
+    session.complete();
     lastRemove = DateTime.now().millisecondsSinceEpoch;
   }
 

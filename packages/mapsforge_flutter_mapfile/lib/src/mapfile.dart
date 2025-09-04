@@ -201,7 +201,7 @@ class Mapfile extends MapDatastore {
 
   late final ReadbufferSource readBufferSource;
 
-  final Cache<String, Readbuffer> _cache = LfuCache(storage: StatisticsStorage(), capacity: 100);
+  final Cache<String, Readbuffer> _cache = LfuCache(capacity: 100);
 
   static Future<Mapfile> createFromFile({required String filename, String? preferredLanguage, ReadbufferSource? source}) async {
     Mapfile mapFile = Mapfile._(preferredLanguage);
@@ -244,6 +244,7 @@ class Mapfile extends MapDatastore {
   void dispose() {
     _databaseIndexCache.dispose();
     readBufferSource.dispose();
+    _cache.dispose();
   }
 
   /// @return the header data for the current map file.

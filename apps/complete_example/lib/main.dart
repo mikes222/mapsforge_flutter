@@ -1,9 +1,13 @@
 import 'package:complete_example/screens/main_navigation_screen.dart';
+import 'package:ecache/ecache.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 void main() {
   _initLogging();
+  PerformanceProfiler().setEnabled(true);
+  StorageMgr().setEnabled(true);
   runApp(const MapsforgeApp());
 }
 

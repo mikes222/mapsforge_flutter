@@ -14,7 +14,7 @@ dependencies:
   collection: ^1.19.1
 
   # Workspace
-  ecache: ^2.0.13
+  ecache: ^2.1.1
 
   logging: ^1.3.0
 

@@ -12,7 +12,7 @@ class PerformanceProfiler {
   final Map<String, List<PerformanceMetric>> _completedMetrics = {};
   final Queue<PerformanceEvent> _recentEvents = Queue<PerformanceEvent>();
 
-  bool _enabled = true;
+  bool _enabled = false;
   int _maxRecentEvents = 1000;
   int _maxMetricsPerCategory = 500;
 
@@ -20,7 +20,7 @@ class PerformanceProfiler {
   ProfilerSession startSession({String category = 'default'}) {
     if (!_enabled) return _NoOpProfilerSession();
 
-    final session = ProfilerSession._(category);
+    final session = DefaultProfilerSession._(category);
     _activeSessions[session.id] = session;
     return session;
   }
@@ -48,7 +48,7 @@ class PerformanceProfiler {
   }
 
   /// Completes a profiling session
-  void _completeSession(ProfilerSession session) {
+  void _completeSession(DefaultProfilerSession session) {
     _activeSessions.remove(session.id);
     recordEvent(session.duration, category: session.category, metadata: session.metadata);
   }
@@ -136,7 +136,11 @@ class PerformanceProfiler {
 
   /// Enables or disables profiling
   void setEnabled(bool enabled) {
-    _enabled = enabled;
+    // assertions are not included in production code so it is impossible to enable profiling in release mode
+    assert(() {
+      _enabled = enabled;
+      return true;
+    }());
     if (!enabled) {
       _activeSessions.clear();
     }
@@ -196,8 +200,18 @@ class PerformanceProfiler {
 
 //////////////////////////////////////////////////////////////////////////////
 
+abstract class ProfilerSession {
+  void addMetadata(String key, dynamic value);
+
+  void complete() {}
+
+  void checkpoint(String name);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 /// Represents a profiling session for measuring operation duration
-class ProfilerSession {
+class DefaultProfilerSession implements ProfilerSession {
   final int id;
   final String category;
   final DateTime startTime;
@@ -208,7 +222,7 @@ class ProfilerSession {
 
   static int _nextId = 0;
 
-  ProfilerSession._(this.category) : id = ++_nextId, startTime = DateTime.now();
+  DefaultProfilerSession._(this.category) : id = ++_nextId, startTime = DateTime.now();
 
   /// Gets the duration of the session
   Duration get duration {
@@ -217,6 +231,7 @@ class ProfilerSession {
   }
 
   /// Adds metadata to the session
+  @override
   void addMetadata(String key, dynamic value) {
     if (!_completed) {
       metadata[key] = value;
@@ -224,6 +239,7 @@ class ProfilerSession {
   }
 
   /// Completes the profiling session
+  @override
   void complete() {
     if (_completed) return;
 
@@ -233,6 +249,7 @@ class ProfilerSession {
   }
 
   /// Records a checkpoint within the session
+  @override
   void checkpoint(String name) {
     if (_completed) return;
 
@@ -244,8 +261,8 @@ class ProfilerSession {
 //////////////////////////////////////////////////////////////////////////////
 
 /// No-op implementation for when profiling is disabled
-class _NoOpProfilerSession extends ProfilerSession {
-  _NoOpProfilerSession() : super._('noop');
+class _NoOpProfilerSession implements ProfilerSession {
+  _NoOpProfilerSession();
 
   @override
   void addMetadata(String key, dynamic value) {}

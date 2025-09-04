@@ -25,7 +25,7 @@ void main() {
     });
 
     test('should start and complete sessions', () {
-      final session = profiler.startSession(category: 'testing');
+      DefaultProfilerSession session = profiler.startSession(category: 'testing') as DefaultProfilerSession;
       expect(session.category, equals('testing'));
       //expect(session.duration.inMicroseconds, greaterThan(0));
 
@@ -92,8 +92,7 @@ void main() {
     test('should handle enable/disable', () {
       profiler.setEnabled(false);
 
-      final session = profiler.startSession();
-      expect(session.category, equals('noop')); // No-op session
+      ProfilerSession session = profiler.startSession();
 
       profiler.recordEvent(const Duration(milliseconds: 100));
       expect(profiler.getStats('default', false).count, equals(0));
@@ -116,7 +115,7 @@ void main() {
     });
 
     test('should handle session checkpoints', () {
-      final session = profiler.startSession();
+      DefaultProfilerSession session = profiler.startSession() as DefaultProfilerSession;
 
       // Simulate some work
       Future.delayed(const Duration(milliseconds: 10));

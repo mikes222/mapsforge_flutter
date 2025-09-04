@@ -25,12 +25,11 @@ class IndexCache {
   /// @param inputChannel the map file from which the index should be read and cached.
   /// @param capacity     the maximum number of entries in the cache.
   /// @throws IllegalArgumentException if the capacity is negative.
-  IndexCache(int capacity) : _cache = LruCache<IndexCacheEntryKey, Uint8List>(capacity: capacity);
+  IndexCache(int capacity) : _cache = LruCache<IndexCacheEntryKey, Uint8List>(capacity: capacity, name: "MapfileIndexCache");
 
   /// Destroy the cache at the end of its lifetime.
   void dispose() {
-    _log.info("Statistics for IndexCache: ${_cache.storage.toString()}");
-    _cache.clear();
+    _cache.dispose();
   }
 
   /// Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be

@@ -105,7 +105,7 @@ class Rendertheme {
         r.parent = null;
       }
     }
-    RenderthemeZoomlevel renderthemeLevel = RenderthemeZoomlevel(rulesList: rules, maxLevels: maxLevels);
+    RenderthemeZoomlevel renderthemeLevel = RenderthemeZoomlevel(rulesList: rules, maxLevels: maxLevels, zoomlevel: zoomlevel);
     for (Rule rule in rules) {
       rule.secondPass();
     }

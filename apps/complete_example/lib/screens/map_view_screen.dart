@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
+import 'package:ecache/ecache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/gesture.dart';
@@ -14,6 +16,7 @@ import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:mapsforge_flutter_renderer/online_renderer.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../models/app_models.dart';
 
@@ -48,7 +51,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
   void initState() {
     super.initState();
     _initializeOptimizations();
-    _startPerformanceMonitoring();
     _createMarker();
   }
 
@@ -127,6 +129,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
   void _startPerformanceMonitoring() {
     // Update performance info every 2 seconds
     Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!_showPerformanceOverlay) {
+        timer.cancel();
+        return;
+      }
       if (mounted) {
         _updatePerformanceInfo();
       } else {
@@ -138,12 +144,17 @@ class _MapViewScreenState extends State<MapViewScreen> {
   void _updatePerformanceInfo() {
     final memoryStats = _memoryMonitor.memoryStatistics;
     final PerformanceReport performanceStats = PerformanceProfiler().generateReport(false);
+    final StorageReport storageReport = StorageMgr().createReport();
+    String storageString = storageReport.toString();
+    storageString = storageString.replaceAll("StatisticsStorage", "");
+    storageString = storageString.replaceAll("StorageMetric", "");
 
     setState(() {
       _performanceInfo =
           '''
 Memory Pressure: ${(memoryStats.memoryPressure * 100).toStringAsFixed(1)}%
 $performanceStats
+$storageString
 ''';
     });
   }
@@ -171,6 +182,7 @@ $performanceStats
             onPressed: () {
               setState(() {
                 _showPerformanceOverlay = !_showPerformanceOverlay;
+                if (_showPerformanceOverlay) _startPerformanceMonitoring();
               });
             },
             tooltip: 'Toggle Performance Overlay',
@@ -246,6 +258,10 @@ $performanceStats
   }
 
   Future<MapModel> createModel(BuildContext context) async {
+    // Hillshading needs resources from filesystem
+    Directory directory = await getTemporaryDirectory();
+    SymbolCacheMgr().symbolCache.addLoader("file:ele_res/", ImageRelativeLoader(pathPrefix: "${directory.path}/sicilia_oam/"));
+
     // find the device to pixel ratio end set the global property accordingly. This will shrink the tiles, requires to produce more tiles but makes the
     // map crispier.
     double ratio = MediaQuery.devicePixelRatioOf(context);
@@ -254,14 +270,14 @@ $performanceStats
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      datastore = await Mapfile.createFromFile(filename: widget.downloadPath!);
+      datastore = await Mapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);
       Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: true);
+      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: false);
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {
@@ -292,32 +308,41 @@ $performanceStats
       left: 16,
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(8)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          //mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Performance Metrics',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+        decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(8)),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            //mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Performance Metrics',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      PerformanceProfiler().clear();
+                      StorageMgr().clear();
+                    },
+                    icon: const Icon(Icons.delete_forever, color: Colors.white),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onLongPress: () {
+                  Clipboard.setData(ClipboardData(text: _performanceInfo));
+                },
+                child: Text(
+                  _performanceInfo,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white, fontFamily: 'monospace'),
                 ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    PerformanceProfiler().clear();
-                  },
-                  icon: const Icon(Icons.delete_forever, color: Colors.white),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _performanceInfo,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white, fontFamily: 'monospace'),
-            ),
-          ],
+              ),
+              Text("Note that metrics inside isolates are not accessible", style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+            ],
+          ),
         ),
       ),
     );

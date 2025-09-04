@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.2+1"
+  archive:
+    dependency: transitive
+    description:
+      name: archive
+      sha256: "2fde1607386ab523f7a36bb3e7edb43bd58e6edaf2ffb29d8a6d578b297fdbbd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.7"
   args:
     dependency: transitive
     description:
@@ -186,13 +194,12 @@ packages:
     source: hosted
     version: "2.1.1"
   ecache:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: ecache
-      sha256: a44df8c1b0fe5fa0854d254bf7e1fcfc13d952a327bd429c5c8b99e8df9358d6
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.13"
+      path: "../ecache"
+      relative: true
+    source: path
+    version: "2.1.1"
   fake_async:
     dependency: transitive
     description:
@@ -258,10 +265,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_svg
-      sha256: cd57f7969b4679317c17af6fd16ee233c1e60a82ed209d8a475c54fd6fd6f845
+      sha256: b9c2ad5872518a27507ab432d1fb97e8813b05f0fc693f9d40fad06d073e0678
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.0"
+    version: "2.2.1"
   flutter_test:
     dependency: transitive
     description: flutter
@@ -560,6 +567,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  posix:
+    dependency: transitive
+    description:
+      name: posix
+      sha256: "6323a5b0fa688b6a010df4905a56b00181479e6d10534cecfecede2aa55add61"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.3"
   process:
     dependency: transitive
     description:

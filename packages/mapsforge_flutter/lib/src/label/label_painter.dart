@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/src/label/label_set.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 

@@ -2,6 +2,11 @@ name: mapsforge_flutter_monorepo
 publish_to: none
 environment:
   sdk: ^3.9.0
+
+dependency_overrides:
+  ecache:
+    path: ../ecache
+
 dev_dependencies:
   melos: ^7.1.0
 workspace:
@@ -19,7 +24,7 @@ melos:
     bootstrap:
       dependencies:
         # Upgraded for getOrProduceSync()
-        ecache: ^2.0.13
+        ecache: ^2.1.1
 
         # flutter_test is not compatible with newer versions currently (08/2025)
         test: ^1.26.2

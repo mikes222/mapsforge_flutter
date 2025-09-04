@@ -105,21 +105,21 @@ class PainterFactory {
 
     for (RenderInfo renderInfo in layerContainers.drawings.renderInfos) {
       futures.add(createShapePainter(renderInfo));
-      if (futures.length > 100) {
+      if (futures.length > 200) {
         await Future.wait(futures);
         futures.clear();
       }
     }
     for (RenderInfo renderInfo in layerContainers.clashingInfoCollection.renderInfos) {
       futures.add(createShapePainter(renderInfo));
-      if (futures.length > 100) {
+      if (futures.length > 200) {
         await Future.wait(futures);
         futures.clear();
       }
     }
     for (RenderInfo renderInfo in layerContainers.labels.renderInfos) {
       futures.add(createShapePainter(renderInfo));
-      if (futures.length > 100) {
+      if (futures.length > 200) {
         await Future.wait(futures);
         futures.clear();
       }
