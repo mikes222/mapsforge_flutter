@@ -439,3 +439,5 @@ Known issue: [doc/known_issues](doc/known_issues.md)
 Working with markers: [doc/marker](doc/marker.md)
 
 Performance considerations during development: [doc/performance](doc/performance.md)
+
+Enhanced usage of the library:  [doc/enhanced_usage](doc/enhanced_usage.md)

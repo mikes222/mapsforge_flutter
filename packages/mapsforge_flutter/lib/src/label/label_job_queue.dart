@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/label/label_set.dart';
 import 'package:mapsforge_flutter/src/tile/tile_dimension.dart';
 import 'package:mapsforge_flutter/src/util/tile_helper.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:rxdart/rxdart.dart';
@@ -71,6 +72,7 @@ class LabelJobQueue {
   Future<void> _positionEvent(MapPosition position, TileDimension tileDimension) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
+    final session = PerformanceProfiler().startSession(category: "LabelJobQueue");
     LabelSet labelSet = LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: []);
     _CurrentJob myJob = _CurrentJob(position, tileDimension, labelSet);
     _currentJob = myJob;
@@ -100,6 +102,7 @@ class LabelJobQueue {
       if (top > tileDimension.bottom) break;
     }
     myJob._done = true;
+    session.complete();
   }
 
   Stream<LabelSet> get labelStream => _labelStream.stream;

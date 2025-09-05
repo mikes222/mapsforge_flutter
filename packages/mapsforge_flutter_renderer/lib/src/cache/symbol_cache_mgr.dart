@@ -1,4 +1,5 @@
 import 'package:mapsforge_flutter_renderer/src/cache/file_symbol_cache.dart';
+import 'package:mapsforge_flutter_renderer/src/cache/image_loader.dart';
 import 'package:mapsforge_flutter_renderer/src/cache/symbol_cache.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 
@@ -43,6 +44,10 @@ class SymbolCacheMgr {
   void dispose() {
     symbolCache.dispose();
     _instance = null;
+  }
+
+  void addLoader(String prefix, ImageLoader loader) {
+    symbolCache.addLoader(prefix, loader);
   }
 
   /// Loads and returns the desired symbol with optional scaling.

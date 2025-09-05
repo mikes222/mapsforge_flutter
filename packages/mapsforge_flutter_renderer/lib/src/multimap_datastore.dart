@@ -17,9 +17,16 @@ import 'package:mapsforge_flutter_core/model.dart';
 class MultimapDatastore extends Datastore {
   static final _log = Logger('MultiMapDataStore');
 
+  /// The bounding box of all included datastores
   BoundingBox? boundingBox;
+
   final DataPolicy dataPolicy;
+
+  /// A list of map datastores
   final List<Datastore> datastores;
+
+  /// A map tracking the boundary of each datastore for optimization
+  final Map<Datastore, BoundingBox> _datastoreBoundaries = {};
 
   LatLong? startPosition;
 
@@ -42,6 +49,11 @@ class MultimapDatastore extends Datastore {
       throw Exception("Duplicate map database");
     }
     datastores.add(datastore);
+    
+    // Get and cache the datastore's boundary
+    BoundingBox datastoreBoundary = await datastore.getBoundingBox();
+    _datastoreBoundaries[datastore] = datastoreBoundary;
+    
     boundingBox = null;
   }
 
@@ -49,14 +61,17 @@ class MultimapDatastore extends Datastore {
     BoundingBox toRemove = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
     boundingBox = null;
     for (Datastore datastore in List.from(datastores)) {
-      BoundingBox boundingBox = await datastore.getBoundingBox();
-      if (toRemove.intersects(boundingBox)) {
+      BoundingBox? datastoreBoundary = _datastoreBoundaries[datastore];
+      datastoreBoundary ??= await datastore.getBoundingBox();
+      
+      if (toRemove.intersects(datastoreBoundary)) {
         datastores.remove(datastore);
+        _datastoreBoundaries.remove(datastore);
       } else {
         if (null == this.boundingBox) {
-          this.boundingBox = boundingBox;
+          this.boundingBox = datastoreBoundary;
         } else {
-          this.boundingBox = this.boundingBox!.extendBoundingBox(boundingBox);
+          this.boundingBox = this.boundingBox!.extendBoundingBox(datastoreBoundary);
         }
       }
     }
@@ -67,14 +82,31 @@ class MultimapDatastore extends Datastore {
     startPosition = null;
     startZoomLevel = null;
     datastores.clear();
+    _datastoreBoundaries.clear();
   }
+
+  /// Checks if a datastore's boundary intersects with the given tile's boundary
+  /// Returns true if intersection exists or if boundary is not cached (fallback to supportsTile)
+  bool _datastoreIntersectsTile(Datastore datastore, Tile tile) {
+    BoundingBox? datastoreBoundary = _datastoreBoundaries[datastore];
+    if (datastoreBoundary == null) {
+      // Fallback to original behavior if boundary not cached
+      return true;
+    }
+    
+    BoundingBox tileBoundary = tile.getBoundingBox();
+    return datastoreBoundary.intersects(tileBoundary);
+  }
+
+  /// Getter for accessing datastore boundaries (primarily for testing)
+  Map<Datastore, BoundingBox> get datastoreBoundaries => Map.unmodifiable(_datastoreBoundaries);
 
   @override
   Future<DatastoreBundle?> readLabelsSingle(Tile tile) async {
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in List.from(datastores)) {
-          if ((await mdb.supportsTile(tile))) {
+          if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             return mdb.readLabelsSingle(tile);
           }
         }
@@ -92,7 +124,7 @@ class MultimapDatastore extends Datastore {
     List<Future<DatastoreBundle?>> futures = [];
     for (Datastore mdb in List.from(datastores)) {
       futures.add(() async {
-        if ((await mdb.supportsTile(tile))) {
+        if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
           //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
           DatastoreBundle? result = await mdb.readLabelsSingle(tile);
           return result;
@@ -117,7 +149,7 @@ class MultimapDatastore extends Datastore {
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in List.from(datastores)) {
-          if ((await mdb.supportsTile(upperLeft))) {
+          if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
             return mdb.readLabels(upperLeft, lowerRight);
           }
         }
@@ -135,7 +167,7 @@ class MultimapDatastore extends Datastore {
     List<Future<DatastoreBundle?>> futures = [];
     for (Datastore mdb in List.of(datastores)) {
       futures.add(() async {
-        if ((await mdb.supportsTile(upperLeft))) {
+        if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
           DatastoreBundle? result = await mdb.readLabels(upperLeft, lowerRight);
           return result;
         }
@@ -159,7 +191,7 @@ class MultimapDatastore extends Datastore {
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in List.from(datastores)) {
-          if ((await mdb.supportsTile(tile))) {
+          if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             return mdb.readMapDataSingle(tile);
           }
         }
@@ -178,7 +210,7 @@ class MultimapDatastore extends Datastore {
     for (Datastore mdb in List.of(datastores)) {
       try {
         futures.add(() async {
-          if ((await mdb.supportsTile(tile))) {
+          if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             DatastoreBundle? result = await mdb.readMapDataSingle(tile);
             return result;
           }
@@ -209,7 +241,7 @@ class MultimapDatastore extends Datastore {
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in List.from(datastores)) {
-          if ((await mdb.supportsTile(upperLeft))) {
+          if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
             return mdb.readMapData(upperLeft, lowerRight);
           }
         }
@@ -226,7 +258,7 @@ class MultimapDatastore extends Datastore {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
     bool found = false;
     for (Datastore mdb in List.from(datastores)) {
-      if ((await mdb.supportsTile(upperLeft))) {
+      if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
         //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
         DatastoreBundle result = await mdb.readMapData(upperLeft, lowerRight);
         found = true;
@@ -244,7 +276,7 @@ class MultimapDatastore extends Datastore {
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in datastores) {
-          if ((await mdb.supportsTile(tile))) {
+          if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             return mdb.readPoiDataSingle(tile);
           }
         }
@@ -260,7 +292,7 @@ class MultimapDatastore extends Datastore {
   Future<DatastoreBundle> _readPoiData(Tile tile, bool deduplicate) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
     for (Datastore mdb in datastores) {
-      if ((await mdb.supportsTile(tile))) {
+      if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
         DatastoreBundle? result = await mdb.readPoiDataSingle(tile);
         if (result == null) {
           continue;
@@ -278,7 +310,7 @@ class MultimapDatastore extends Datastore {
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
         for (Datastore mdb in datastores) {
-          if ((await mdb.supportsTile(upperLeft))) {
+          if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
             return mdb.readPoiData(upperLeft, lowerRight);
           }
         }
@@ -294,7 +326,7 @@ class MultimapDatastore extends Datastore {
   Future<DatastoreBundle> _readPoiDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
     for (Datastore mdb in datastores) {
-      if ((await mdb.supportsTile(upperLeft))) {
+      if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
         DatastoreBundle? result = await mdb.readPoiData(upperLeft, lowerRight);
         if (result == null) {
           continue;
@@ -320,7 +352,10 @@ class MultimapDatastore extends Datastore {
     List<Future<bool>> futures = [];
     for (Datastore mdb in List.from(datastores)) {
       futures.add(() async {
-        return await mdb.supportsTile(tile);
+        if (_datastoreIntersectsTile(mdb, tile)) {
+          return await mdb.supportsTile(tile);
+        }
+        return false;
       }());
     }
     List<bool> results = await Future.wait(futures);
@@ -336,7 +371,10 @@ class MultimapDatastore extends Datastore {
   Future<BoundingBox> getBoundingBox() async {
     if (boundingBox != null) return boundingBox!;
     for (Datastore datastore in List.from(datastores)) {
-      BoundingBox? boundingBox = await datastore.getBoundingBox();
+      BoundingBox? boundingBox = _datastoreBoundaries[datastore];
+      boundingBox ??= await datastore.getBoundingBox();
+      _datastoreBoundaries[datastore] = boundingBox;
+      
       if (null == this.boundingBox) {
         this.boundingBox = boundingBox;
       } else {

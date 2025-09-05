@@ -511,6 +511,7 @@ class MoveHandler extends Handler {
       tapState.removeHandler(this);
       return;
     }
+    velocityCalculator.addEvent(offset);
     // calculate the offset per iteration
     _swipeOffset = velocityCalculator.lastVelocity.offsetPerMillisecond * _swipeSleepMs.toDouble();
     if (mapModel.lastPosition?.rotation != 0) {

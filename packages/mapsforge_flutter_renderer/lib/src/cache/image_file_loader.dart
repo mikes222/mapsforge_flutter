@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter_renderer/src/cache/image_loader.dart';
 
-class ImageRelativeLoader implements ImageLoader {
+class ImageFileLoader implements ImageLoader {
   final String pathPrefix;
 
-  const ImageRelativeLoader({required this.pathPrefix});
+  const ImageFileLoader({required this.pathPrefix});
 
   ///
   /// Returns the content of the symbol given as [src] as [ByteData]. This method reads the file or resource and returns the requested bytes.

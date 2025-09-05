@@ -35,6 +35,7 @@ dependencies:
   # for unzipping the hillshading file after download
   archive: ^4.0.7
 
+  # Enhancements for the flutter collection classes, e.g. List.firstWhereOrNull()
   collection: ^1.19.1
 
   # The following adds the Cupertino Icons font to your application.
@@ -44,6 +45,7 @@ dependencies:
   # For file downloading
   dio: ^5.9.0
 
+  # A very cool cache (ok, I am the maintainer, maybe a bit biased)
   ecache: ^2.1.1
 
   # For downlaoding files in web
@@ -53,6 +55,7 @@ dependencies:
   # For converting int to datetime
   intl: ^0.20.2
 
+  # Mapsforge logging system
   logging: ^1.3.0
 
   # Workspace
@@ -72,6 +75,9 @@ dependencies:
 
   # For file downloading
   path_provider: ^2.1.5
+
+  # For memory monitoring
+  system_info2: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +106,7 @@ flutter:
     - assets/render_theme/darkrender.xml
     - assets/render_theme/mapsforge_default.xml
     - assets/render_theme/sicilia_oam.xml
+    # Copy all lines with "- packages/mapsforge_flutter_rendertheme..." to your own pubspec.yaml
     - packages/mapsforge_flutter_rendertheme/assets/patterns/dark_farmland.svg
     - packages/mapsforge_flutter_rendertheme/assets/patterns/dark_military.png
     - packages/mapsforge_flutter_rendertheme/assets/patterns/coniferous.svg

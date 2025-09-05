@@ -37,7 +37,7 @@ class RenderthemeZoomlevel {
   /// [rulesList] Hierarchical list of rendering rules for this zoom level
   RenderthemeZoomlevel({required this.rulesList, required this.maxLevels, int zoomlevel = -1}) {
     nodeMatchingCache = LruCache(capacity: 1000, name: "Node-MatchingCache$zoomlevel");
-    openWayMatchingCache = LruCache(capacity: 1000, name: "OpenWay-MatchingCache$zoomlevel");
+    openWayMatchingCache = LruCache(capacity: 5000, name: "OpenWay-MatchingCache$zoomlevel");
     closedWayMatchingCache = LruCache(capacity: 1000, name: "ClosedWay-MatchingCache$zoomlevel");
   }
 

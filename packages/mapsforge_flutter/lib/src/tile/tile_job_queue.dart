@@ -87,6 +87,7 @@ class TileJobQueue {
   Future<void> _positionEvent(MapPosition position, TileDimension tileDimension) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
+    final session = PerformanceProfiler().startSession(category: "TileJobQueue");
     TileSet tileSet = TileSet(center: position.getCenter(), mapPosition: position);
     _CurrentJob myJob = _CurrentJob(position, tileDimension, tileSet);
     _currentJob = myJob;
@@ -152,6 +153,7 @@ class TileJobQueue {
       // Start prefetching neighboring tiles
       //_prefetchNeighboringTiles(position, tileDimension);
     }
+    session.complete();
   }
 
   Stream<TileSet> get tileStream => _tileStream.stream;

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:complete_example/context_menu/my_context_menu.dart';
 import 'package:complete_example/marker/my_marker_datastore.dart';
+import 'package:complete_example/widget/performance_widget.dart';
 import 'package:ecache/ecache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,6 @@ import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/overlay.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
@@ -36,10 +36,7 @@ class MapViewScreen extends StatefulWidget {
 //////////////////////////////////////////////////////////////////////////////
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  late final MemoryPressureMonitor _memoryMonitor;
-
   bool _showPerformanceOverlay = false;
-  String _performanceInfo = '';
 
   Future? _createModelFuture;
 
@@ -50,12 +47,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
   MapModel? _mapModel;
 
   @override
-  void initState() {
-    super.initState();
-    _initializeOptimizations();
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // FutureBuilder should NOT call the future directly because we would risk creating the model multiple times. Instead this is the first
@@ -64,50 +55,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
     _createModelFuture ??= createModel(context);
   }
 
-  void _initializeOptimizations() {
-    _memoryMonitor = MemoryPressureMonitor();
-
-    _memoryMonitor.startMonitoring();
-  }
-
-  void _startPerformanceMonitoring() {
-    // Update performance info every 2 seconds
-    Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (!_showPerformanceOverlay) {
-        timer.cancel();
-        return;
-      }
-      if (mounted) {
-        _updatePerformanceInfo();
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  void _updatePerformanceInfo() {
-    final memoryStats = _memoryMonitor.memoryStatistics;
-    final PerformanceReport performanceStats = PerformanceProfiler().generateReport(false);
-    final StorageReport storageReport = StorageMgr().createReport();
-    String storageString = storageReport.toString();
-    storageString = storageString.replaceAll("StatisticsStorage", "");
-    storageString = storageString.replaceAll("StorageMetric", "");
-    final TaskQueueReport taskQueueReport = TaskQueueMgr().createReport();
-
-    setState(() {
-      _performanceInfo =
-          '''
-Memory Pressure: ${(memoryStats.memoryPressure * 100).toStringAsFixed(1)}%
-$performanceStats
-$storageString
-$taskQueueReport
-''';
-    });
-  }
-
   @override
   void dispose() {
-    _memoryMonitor.dispose();
     // mapModel must be disposed after use
     _mapModel?.dispose();
     // disposing the symbolcache also frees a lot of memory
@@ -128,7 +77,6 @@ $taskQueueReport
             onPressed: () {
               setState(() {
                 _showPerformanceOverlay = !_showPerformanceOverlay;
-                if (_showPerformanceOverlay) _startPerformanceMonitoring();
               });
             },
             tooltip: 'Toggle Performance Overlay',
@@ -195,7 +143,7 @@ $taskQueueReport
                 },
               ),
               NoPositionOverlay(mapModel: mapModel),
-              if (_showPerformanceOverlay) _buildPerformanceOverlay(),
+              if (_showPerformanceOverlay) const PerformanceWidget(),
             ],
           );
         }
@@ -207,7 +155,8 @@ $taskQueueReport
   Future<MapModel> createModel(BuildContext context) async {
     // Hillshading needs resources from filesystem
     Directory directory = await getTemporaryDirectory();
-    SymbolCacheMgr().symbolCache.addLoader("file:ele_res/", ImageRelativeLoader(pathPrefix: "${directory.path}/sicilia_oam/"));
+    // configure a loader to read images from the filesystem for hillshading
+    SymbolCacheMgr().addLoader("file:ele_res/", ImageFileLoader(pathPrefix: "${directory.path}/sicilia_oam/"));
 
     // find the device to pixel ratio end set the global property accordingly. This will shrink the tiles, requires to produce more tiles but makes the
     // map crispier.
@@ -224,7 +173,7 @@ $taskQueueReport
       Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: true);
+      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: !StorageMgr().isEnabled());
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {
@@ -246,53 +195,5 @@ $taskQueueReport
     _mapModel!.setPosition(mapPosition);
 
     return _mapModel!;
-  }
-
-  Widget _buildPerformanceOverlay() {
-    return Positioned(
-      top: 16,
-      right: 16,
-      left: 16,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(8)),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            //mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Performance Metrics',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      PerformanceProfiler().clear();
-                      StorageMgr().clear();
-                      TaskQueueMgr().clear();
-                    },
-                    icon: const Icon(Icons.delete_forever, color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              InkWell(
-                onLongPress: () {
-                  Clipboard.setData(ClipboardData(text: _performanceInfo));
-                },
-                child: Text(
-                  _performanceInfo,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white, fontFamily: 'monospace'),
-                ),
-              ),
-              Text("Note that metrics inside isolates are not accessible", style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

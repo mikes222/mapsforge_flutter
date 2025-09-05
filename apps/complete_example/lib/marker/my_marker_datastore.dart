@@ -31,6 +31,7 @@ class MyMarkerDatastore extends DefaultMarkerDatastore {
         markers.removeWhere((element) => element is! CircleMarker);
         _dragNdropMarker = (markers.isNotEmpty ? markers.first : null) as CircleMarker?;
         if (_dragNdropMarker != null) {
+          // in a real app you do not need this because the position comes from an external source and can be refetched when drag'n'drop is cancelled.
           _originalPosition = _dragNdropMarker!.latLong;
           _dragNdropMarker!.setStrokeColorFromNumber(Colors.red.toARGB32());
           markerChanged(_dragNdropMarker!);
