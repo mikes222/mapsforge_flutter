@@ -20,7 +20,7 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
 
   TextPainter? textPainter;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterIcon");
 
   ShapePainterIcon._(RenderinstructionIcon renderinstruction) : super(renderinstruction) {
     fill = UiPaint.fill(color: renderinstruction.getBitmapColor());

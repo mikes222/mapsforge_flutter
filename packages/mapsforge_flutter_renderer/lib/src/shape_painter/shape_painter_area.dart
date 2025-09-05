@@ -27,7 +27,7 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   late final UiPaint? stroke;
 
   /// Task queue for managing asynchronous painter creation.
-  static final TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintArea");
 
   /// Private constructor for creating area shape painters.
   ///

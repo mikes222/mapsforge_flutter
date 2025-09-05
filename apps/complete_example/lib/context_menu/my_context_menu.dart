@@ -1,7 +1,6 @@
 import 'package:complete_example/context_menu/mapfile_analyze/labeltextcustom.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/mapheaderpage.dart';
 import 'package:complete_example/models/app_models.dart';
-import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/context_menu.dart';
@@ -9,6 +8,7 @@ import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class MyContextMenu extends StatelessWidget {
   final ContextMenuInfo info;
@@ -19,7 +19,7 @@ class MyContextMenu extends StatelessWidget {
 
   final AppConfiguration configuration;
 
-  final String downloadFile;
+  final String? downloadFile;
 
   final MarkerDatastore debugDatastore;
 
@@ -68,7 +68,7 @@ class MyContextMenu extends StatelessWidget {
           OutlinedButton(
             onPressed: () {
               // add a marker to the database, the old marker with the same key will be replaced.
-              markerDatastore.addMarker(CircleMarker(latLong: info.latLong, key: "circle"));
+              markerDatastore.addMarker(CircleMarker(latLong: info.latLong));
               //MarkerdemoDatabase.addToDatabase(widget.event);
               // // The Datastore will listen to changes in the database and update the UI
               // // hide the contextmenu
@@ -82,7 +82,7 @@ class MyContextMenu extends StatelessWidget {
                 String renderthemeString = await rootBundle.loadString(configuration.renderTheme!.fileName);
                 Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage(rendertheme, downloadFile)));
+                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage(rendertheme, downloadFile!)));
                 //MarkerdemoDatabase.addToDatabase(widget.event);
                 // // The Datastore will listen to changes in the database and update the UI
                 // // hide the contextmenu

@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_text_paint.dart';
 class ParagraphCacheMgr {
   static ParagraphCacheMgr? _instance;
 
-  final LruCache<String, ParagraphEntry> _cache = LruCache<String, ParagraphEntry>(onEvict: (key, element) => element.dispose(), capacity: 1000);
+  final LruCache<String, ParagraphEntry> _cache = LruCache<String, ParagraphEntry>(onEvict: (key, element) => element.dispose(), capacity: 2000);
 
   factory ParagraphCacheMgr() {
     if (_instance != null) return _instance!;

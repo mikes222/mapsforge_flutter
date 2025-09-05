@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rule/symbol_searcher.dart';
+
+typedef CreatePainter<T extends Renderinstruction> = Future<ShapePainter<T>> Function();
 
 /// Abstract base class for all rendering instructions in the theme system.
 ///
@@ -137,7 +141,57 @@ abstract class Renderinstruction {
   /// Used for debugging, logging, and instruction classification.
   String getType();
 
-  ShapePainter? getPainter();
+  /// do not clone the painter
+  ShapePainter? shapePainter;
+
+  /// Completer for coordinating parallel creation attempts
+  Completer<ShapePainter?>? _painterCompleter;
+
+  ShapePainter? getPainter() => shapePainter;
+
+  /// Ultra-fast painter creation using Completer pattern
+  /// This is the fastest approach for high-concurrency scenarios
+  Future<ShapePainter<T>> createPainter<T extends Renderinstruction>(CreatePainter createPainter) async {
+    // Fast path: painter already exists
+    if (shapePainter != null) return shapePainter! as ShapePainter<T>;
+
+    // If creation is in progress, wait for it
+    if (_painterCompleter != null) {
+      final result = await _painterCompleter!.future;
+      if (result != null) return result as ShapePainter<T>;
+      // If result was null (cancelled), fall through to create new one
+    }
+
+    // Start new creation process
+    _painterCompleter = Completer<ShapePainter?>();
+
+    try {
+      // Double-check pattern in case another thread completed while we waited
+      if (shapePainter != null) {
+        _painterCompleter!.complete(shapePainter);
+        return shapePainter! as ShapePainter<T>;
+      }
+
+      // Create the painter
+      shapePainter = await createPainter();
+
+      // Complete the completer for any waiting threads
+      if (!_painterCompleter!.isCompleted) {
+        _painterCompleter!.complete(shapePainter);
+      }
+
+      return shapePainter! as ShapePainter<T>;
+    } catch (error, stackTrace) {
+      // Complete with error for any waiting threads
+      if (!_painterCompleter!.isCompleted) {
+        _painterCompleter!.completeError(error, stackTrace);
+      }
+      rethrow;
+    } finally {
+      // Clear the completer
+      _painterCompleter = null;
+    }
+  }
 
   /// Returns the boundary of this object around the center of the area or the poi. If the boundary cannot determined exactly we need to estimate it.
   /// This method is used only if the renderinstruction adds itself to label or clash (see [LayerContainer])

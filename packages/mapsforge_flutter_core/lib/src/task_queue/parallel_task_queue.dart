@@ -8,6 +8,9 @@ import 'package:mapsforge_flutter_core/src/task_queue/task_queue.dart';
 class ParallelTaskQueue implements TaskQueue {
   final Queue<_QueuedFuture> _nextCycle = Queue();
 
+  // Performance monitoring
+  late final TaskQueueMetrics metrics;
+
   bool _isCancelled = false;
 
   @override
@@ -17,7 +20,12 @@ class ParallelTaskQueue implements TaskQueue {
 
   final int maxParallel;
 
-  ParallelTaskQueue(this.maxParallel);
+  ParallelTaskQueue(this.maxParallel, {String? name}) {
+    metrics = TaskQueueMetrics(name: name ?? runtimeType.toString());
+  }
+
+  @override
+  void dispose() {}
 
   @override
   void cancel() {

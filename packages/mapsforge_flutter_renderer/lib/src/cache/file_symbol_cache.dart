@@ -23,7 +23,10 @@ class FileSymbolCache extends SymbolCache {
       item.dispose();
     },
     capacity: 500,
+    name: "FileSymbolCache.Resized",
   );
+
+  final LruCache<String, Uint8List?> _resourceCache = LruCache<String, Uint8List?>(capacity: 500, name: "FileSymbolCache.Original");
 
   ///
   /// Creates a new FileSymbolCache which loads symbols from file-sources and
@@ -36,10 +39,11 @@ class FileSymbolCache extends SymbolCache {
 
   @override
   void dispose() {
-    print("Statistics for FileSymbolCache: ${_cache.storage.toString()}");
     _cache.dispose();
+    _resourceCache.dispose();
   }
 
+  @override
   void addLoader(String prefix, ImageLoader imageLoader) {
     imageLoaders[prefix] = imageLoader;
   }
@@ -59,10 +63,12 @@ class FileSymbolCache extends SymbolCache {
   }
 
   Future<Uint8List?> _loadResource(String src) async {
-    var entry = imageLoaders.entries.firstWhereOrNull((entry) => src.startsWith(entry.key));
-    if (entry == null) return null;
-    src = src.substring(entry.key.length);
-    return entry.value.fetchResource(src);
+    return _resourceCache.getOrProduce(src, (_) async {
+      var entry = imageLoaders.entries.firstWhereOrNull((entry) => src.startsWith(entry.key));
+      if (entry == null) return null;
+      src = src.substring(entry.key.length);
+      return entry.value.fetchResource(src);
+    });
   }
 
   Future<SymbolImage> _createSymbol(String src, int width, int height) async {

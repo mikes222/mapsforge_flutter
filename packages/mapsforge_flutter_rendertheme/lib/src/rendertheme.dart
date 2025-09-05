@@ -1,4 +1,5 @@
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rule/rule.dart';
 
@@ -94,6 +95,7 @@ class Rendertheme {
   /// Returns the prepared zoom level rule set
   RenderthemeZoomlevel prepareZoomlevel(int zoomlevel) {
     if (_renderthemeZoomlevels.containsKey(zoomlevel)) return _renderthemeZoomlevels[zoomlevel]!;
+    var session = PerformanceProfiler().startSession(category: "Rendertheme.prepareZoomlevel");
     int maxLevels = -1;
     List<Rule> rules = [];
     for (Rule rule in rulesList) {
@@ -110,6 +112,7 @@ class Rendertheme {
       rule.secondPass();
     }
     _renderthemeZoomlevels[zoomlevel] = renderthemeLevel;
+    session.complete();
     return renderthemeLevel;
   }
 

@@ -14,7 +14,7 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
 
   late final UiPaint? stroke;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintRect");
 
   ShapePainterRect._(RenderinstructionRect renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {

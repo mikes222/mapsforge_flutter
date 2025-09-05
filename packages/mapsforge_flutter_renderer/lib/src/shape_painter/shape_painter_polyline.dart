@@ -15,7 +15,7 @@ class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
 
   late final UiPaint? stroke;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintPolyline");
 
   ShapePainterPolyline._(RenderinstructionPolyline renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isStrokeTransparent() || renderinstruction.bitmapSrc != null) {

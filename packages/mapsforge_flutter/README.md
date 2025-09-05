@@ -437,3 +437,5 @@ Upgrading to a newer version: [doc/changes](doc/changes.md)
 Known issue: [doc/known_issues](doc/known_issues.md)
 
 Working with markers: [doc/marker](doc/marker.md)
+
+Performance considerations during development: [doc/performance](doc/performance.md)

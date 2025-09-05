@@ -138,7 +138,7 @@ class _ReadbufferFileResource {
   Future<Uint8List> readAt(int position, int length) async {
     RandomAccessFile raf = await _raf.setPosition(position);
     Uint8List result = await raf.read(length);
-    assert(result.length == length);
+    assert(result.length == length, "read ${result.length} != requested $length for reading file at position ${position.toRadixString(16)}");
     return result;
   }
 

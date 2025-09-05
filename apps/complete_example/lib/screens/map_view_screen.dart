@@ -11,6 +11,7 @@ import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/overlay.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
@@ -91,6 +92,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     String storageString = storageReport.toString();
     storageString = storageString.replaceAll("StatisticsStorage", "");
     storageString = storageString.replaceAll("StorageMetric", "");
+    final TaskQueueReport taskQueueReport = TaskQueueMgr().createReport();
 
     setState(() {
       _performanceInfo =
@@ -98,6 +100,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
 Memory Pressure: ${(memoryStats.memoryPressure * 100).toStringAsFixed(1)}%
 $performanceStats
 $storageString
+$taskQueueReport
 ''';
     });
   }
@@ -146,23 +149,19 @@ $storageString
         if (snapshot.data != null) {
           // cool we have already the MapModel so we can start the view
           MapModel mapModel = snapshot.data;
-          MarkerDatastore markerDatastore = MyMarkerDatastore(mapModel: mapModel);
 
+          // These datastores are recreated at each build(). In our demo the markers in the datastore will be gone.
+          // In real life you would fetch the markers from the source.
+          MarkerDatastore markerDatastore = MyMarkerDatastore(mapModel: mapModel);
           MarkerDatastore debugDatastore = DefaultMarkerDatastore(mapModel: mapModel);
 
           return Stack(
             children: [
-              TestGestureDetector(mapModel: mapModel),
-              // move the map
-              // MoveGestureDetector(mapModel: mapModel),
+              GenericGestureDetector(mapModel: mapModel),
               // rotates the map when two fingers are pressed and rotated
               RotationGestureDetector(mapModel: mapModel),
               // scales the map when two fingers are pressed and zoomed
               ScaleGestureDetector(mapModel: mapModel),
-              // informs mapModel about short, long and double taps
-              //TapGestureDetector(mapModel: mapModel),
-              // informs mapModel about drag and drop events
-              //DragAndDropGestureDetector(mapModel: mapModel),
               // Shows tiles according to the current position
               TileView(mapModel: mapModel),
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
@@ -190,7 +189,7 @@ $storageString
                     debugDatastore: debugDatastore,
                     mapModel: mapModel,
                     configuration: widget.configuration,
-                    downloadFile: widget.downloadPath!,
+                    downloadFile: widget.downloadPath,
                     datastore: datastore,
                   );
                 },
@@ -225,7 +224,7 @@ $storageString
       Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: false);
+      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: true);
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {
@@ -273,6 +272,7 @@ $storageString
                     onPressed: () {
                       PerformanceProfiler().clear();
                       StorageMgr().clear();
+                      TaskQueueMgr().clear();
                     },
                     icon: const Icon(Icons.delete_forever, color: Colors.white),
                   ),

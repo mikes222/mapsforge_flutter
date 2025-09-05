@@ -2,12 +2,15 @@ import 'package:complete_example/screens/main_navigation_screen.dart';
 import 'package:ecache/ecache.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 
 void main() {
   _initLogging();
+  // enable performance profiling for these classes. Retrieve the results with e.g. PerformanceProfiler().generateReport();
   PerformanceProfiler().setEnabled(true);
   StorageMgr().setEnabled(true);
+  TaskQueueMgr().setEnabled(true);
   runApp(const MapsforgeApp());
 }
 

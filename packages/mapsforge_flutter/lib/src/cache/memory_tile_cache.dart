@@ -25,7 +25,7 @@ class MemoryTileCache extends TileCache {
         _spatialIndex.removeTile(tile);
         picture?.dispose();
       },
-      capacity: 1000,
+      capacity: 2000,
     );
   }
 

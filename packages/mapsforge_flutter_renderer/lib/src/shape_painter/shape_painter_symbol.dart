@@ -23,14 +23,14 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
 
   SymbolImage? symbolImage;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterSymbol");
 
   ShapePainterSymbol._(RenderinstructionSymbol renderinstruction) : super(renderinstruction) {
     fill = UiPaint.fill(color: renderinstruction.getBitmapColor());
   }
 
   static Future<ShapePainterSymbol> create(RenderinstructionSymbol renderinstruction) async {
-    return _taskQueue.add(() async {
+    return await _taskQueue.add(() async {
       if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterSymbol;
       ShapePainterSymbol shapePaint = ShapePainterSymbol._(renderinstruction);
       await shapePaint.init();

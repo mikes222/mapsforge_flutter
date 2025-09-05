@@ -11,7 +11,7 @@ class ShapePainterCircle extends UiShapePainter<RenderinstructionCircle> {
 
   late final UiPaint? stroke;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue();
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintCircle");
 
   ShapePainterCircle._(RenderinstructionCircle renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {

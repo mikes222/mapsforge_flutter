@@ -1,7 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/scale.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/shape_painter.dart';
 
 mixin BaseSrcMixin {
   late final int level;
@@ -11,9 +10,6 @@ mixin BaseSrcMixin {
   double dy = 0;
 
   Scale scale = Scale.STROKE;
-
-  /// do not clone the painter
-  ShapePainter? shapePainter;
 
   /// The boundary of this object in pixels relative to the center of the
   /// corresponding node or way. This is a cache and will be calculated by asking.
@@ -50,6 +46,4 @@ mixin BaseSrcMixin {
     }
     scale = Scale.STROKE;
   }
-
-  ShapePainter? getPainter() => shapePainter;
 }

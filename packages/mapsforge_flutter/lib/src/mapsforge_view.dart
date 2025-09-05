@@ -36,16 +36,12 @@ class MapsforgeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // move the map
-        MoveGestureDetector(mapModel: mapModel),
+        // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop
+        GenericGestureDetector(mapModel: mapModel),
         // rotates the map when two fingers are pressed and rotated
         RotationGestureDetector(mapModel: mapModel),
         // scales the map when two fingers are pressed and zoomed
         ScaleGestureDetector(mapModel: mapModel),
-        // informs mapModel about short, long and double taps
-        TapGestureDetector(mapModel: mapModel),
-        // informs mapModel about drag and drop events
-        DragAndDropGestureDetector(mapModel: mapModel),
         // Shows tiles according to the current position
         TileView(mapModel: mapModel),
         // Shows labels (and rotate them) according to the current position (if the renderer supports it)

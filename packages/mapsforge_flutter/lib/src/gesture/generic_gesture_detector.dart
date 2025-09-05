@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter/src/util/rotate_helper.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 
-class TestGestureDetector extends StatefulWidget {
+class GenericGestureDetector extends StatefulWidget {
   final MapModel mapModel;
 
   /// The maximum duration to wait for distinguishing between:
@@ -27,7 +27,7 @@ class TestGestureDetector extends StatefulWidget {
   /// stops.
   final double swipeAbsorption;
 
-  const TestGestureDetector({
+  const GenericGestureDetector({
     super.key,
     required this.mapModel,
     this.longPressDuration = 350,
@@ -37,12 +37,12 @@ class TestGestureDetector extends StatefulWidget {
   }) : assert(swipeAbsorption >= 0 && swipeAbsorption <= 1);
 
   @override
-  State<TestGestureDetector> createState() => _TestGestureDetectorState();
+  State<GenericGestureDetector> createState() => _GenericGestureDetectorState();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _TestGestureDetectorState extends State<TestGestureDetector> {
+class _GenericGestureDetectorState extends State<GenericGestureDetector> {
   final List<Handler> _handlers = [];
 
   @override
@@ -159,7 +159,7 @@ class Handler {
 
   late final Timer _timer;
 
-  final _TestGestureDetectorState tapState;
+  final _GenericGestureDetectorState tapState;
 
   final MapModel mapModel;
 

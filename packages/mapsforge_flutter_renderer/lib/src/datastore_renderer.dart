@@ -168,16 +168,6 @@ class DatastoreRenderer extends Renderer {
     return !renderLabels;
   }
 
-  static List<Mappoint> getTilePixelCoordinates(int tileSize) {
-    List<Mappoint> result = [];
-    result.add(const Mappoint(0, 0));
-    result.add(Mappoint(tileSize.toDouble(), 0));
-    result.add(Mappoint(tileSize.toDouble(), tileSize.toDouble()));
-    result.add(Mappoint(0, tileSize.toDouble()));
-    result.add(result[0]);
-    return result;
-  }
-
   _LabelResult _processLabels(UiRenderContext renderContext, RenderInfoCollection renderInfoCollection, Tile tile) {
     // if we are drawing the labels per neighbour, we need to establish which neighbour-overlapping
     // elements need to be drawn.

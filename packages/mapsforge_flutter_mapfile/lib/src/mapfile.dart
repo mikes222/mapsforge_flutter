@@ -197,7 +197,7 @@ class Mapfile extends MapDatastore {
 
   late final MapfileHelper _helper;
 
-  final TaskQueue _queue = SimpleTaskQueue();
+  final TaskQueue _queue = SimpleTaskQueue(name: "Mapfile.lateOpen");
 
   late final ReadbufferSource readBufferSource;
 
@@ -245,6 +245,7 @@ class Mapfile extends MapDatastore {
     _databaseIndexCache.dispose();
     readBufferSource.dispose();
     _cache.dispose();
+    _queue.dispose();
   }
 
   /// @return the header data for the current map file.

@@ -24,11 +24,10 @@ class MyMarkerDatastore extends DefaultMarkerDatastore {
   }
 
   void _newDragNdropEvent(DragNdropEvent event) {
-    //if (event.type != DragNdropEventType.move)
-    print("new dragNdrop event ${event.type}");
     switch (event.type) {
       case DragNdropEventType.start:
         List<Marker> markers = getTappedMarkers(event);
+        print("found markers: ${markers.length}");
         markers.removeWhere((element) => element is! CircleMarker);
         _dragNdropMarker = (markers.isNotEmpty ? markers.first : null) as CircleMarker?;
         if (_dragNdropMarker != null) {
