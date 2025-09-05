@@ -65,4 +65,8 @@ mixin TextSrcMixin {
   MapFontFamily get fontFamily => _fontFamily;
 
   double get fontSize => _fontSize;
+
+  void setTextMinZoomLevel(int textMinZoomLevel) {
+    _textMinZoomLevel = textMinZoomLevel;
+  }
 }

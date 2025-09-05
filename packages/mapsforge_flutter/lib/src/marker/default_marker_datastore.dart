@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/map_model.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -128,7 +129,7 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     marker.dispose();
   }
 
-  void removeByKey(T key) {
+  void removeMarkerByKey(T key) {
     Marker<T>? marker = _markers.firstWhereOrNull((marker) => marker.key == key);
     if (marker != null) {
       _CurrentMarkers<T>? currentMarkers = _currentMarkers;
@@ -156,7 +157,7 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     }
   }
 
-  Marker<T>? getMarker(T key) {
+  Marker<T>? getMarkerByKey(T key) {
     return _markers.firstWhereOrNull((marker) => marker.key == key);
   }
 
@@ -177,6 +178,7 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   }
 
   @override
+  @mustCallSuper
   void dispose() {
     super.dispose();
     mapModel.unregisterMarkerDatastore(this);

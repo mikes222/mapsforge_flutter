@@ -18,12 +18,12 @@ class MultimapDatastore extends Datastore {
   static final _log = Logger('MultiMapDataStore');
 
   /// The bounding box of all included datastores
-  BoundingBox? boundingBox;
+  BoundingBox? _boundingBox;
 
   final DataPolicy dataPolicy;
 
   /// A list of map datastores
-  final List<Datastore> datastores;
+  final Set<Datastore> datastores = {};
 
   /// A map tracking the boundary of each datastore for optimization
   final Map<Datastore, BoundingBox> _datastoreBoundaries = {};
@@ -32,7 +32,7 @@ class MultimapDatastore extends Datastore {
 
   int? startZoomLevel;
 
-  MultimapDatastore(this.dataPolicy) : datastores = [], super();
+  MultimapDatastore(this.dataPolicy);
 
   @override
   void dispose() {
@@ -49,36 +49,36 @@ class MultimapDatastore extends Datastore {
       throw Exception("Duplicate map database");
     }
     datastores.add(datastore);
-    
+
     // Get and cache the datastore's boundary
     BoundingBox datastoreBoundary = await datastore.getBoundingBox();
     _datastoreBoundaries[datastore] = datastoreBoundary;
-    
-    boundingBox = null;
+
+    if (_boundingBox != null) _boundingBox = _boundingBox!.extendBoundingBox(datastoreBoundary);
   }
 
   Future<void> removeDatastore(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) async {
     BoundingBox toRemove = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
-    boundingBox = null;
+    _boundingBox = null;
     for (Datastore datastore in List.from(datastores)) {
       BoundingBox? datastoreBoundary = _datastoreBoundaries[datastore];
       datastoreBoundary ??= await datastore.getBoundingBox();
-      
+
       if (toRemove.intersects(datastoreBoundary)) {
         datastores.remove(datastore);
         _datastoreBoundaries.remove(datastore);
       } else {
-        if (null == this.boundingBox) {
-          this.boundingBox = datastoreBoundary;
+        if (null == this._boundingBox) {
+          this._boundingBox = datastoreBoundary;
         } else {
-          this.boundingBox = this.boundingBox!.extendBoundingBox(datastoreBoundary);
+          this._boundingBox = this._boundingBox!.extendBoundingBox(datastoreBoundary);
         }
       }
     }
   }
 
   void removeAllDatastores() {
-    boundingBox = null;
+    _boundingBox = null;
     startPosition = null;
     startZoomLevel = null;
     datastores.clear();
@@ -93,7 +93,7 @@ class MultimapDatastore extends Datastore {
       // Fallback to original behavior if boundary not cached
       return true;
     }
-    
+
     BoundingBox tileBoundary = tile.getBoundingBox();
     return datastoreBoundary.intersects(tileBoundary);
   }
@@ -369,19 +369,19 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<BoundingBox> getBoundingBox() async {
-    if (boundingBox != null) return boundingBox!;
+    if (_boundingBox != null) return _boundingBox!;
     for (Datastore datastore in List.from(datastores)) {
       BoundingBox? boundingBox = _datastoreBoundaries[datastore];
       boundingBox ??= await datastore.getBoundingBox();
       _datastoreBoundaries[datastore] = boundingBox;
-      
-      if (null == this.boundingBox) {
-        this.boundingBox = boundingBox;
+
+      if (null == this._boundingBox) {
+        this._boundingBox = boundingBox;
       } else {
-        this.boundingBox = this.boundingBox!.extendBoundingBox(boundingBox);
+        this._boundingBox = this._boundingBox!.extendBoundingBox(boundingBox);
       }
     }
-    return boundingBox!;
+    return _boundingBox!;
   }
 }
 

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 import 'package:mapsforge_flutter/src/marker/marker_datastore.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
 
 class MarkerDatastorePainter extends CustomPainter {
@@ -13,6 +14,7 @@ class MarkerDatastorePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final session = PerformanceProfiler().startSession(category: "MarkerPainter.${datastore.runtimeType}");
     UiCanvas uiCanvas = UiCanvas(canvas, size);
     UiRenderContext renderContext = UiRenderContext(
       canvas: uiCanvas,
@@ -20,9 +22,12 @@ class MarkerDatastorePainter extends CustomPainter {
       projection: mapPosition.projection,
       rotationRadian: mapPosition.rotationRadian,
     );
-    for (Marker marker in datastore.askRetrieveMarkersToPaint()) {
+    Iterable<Marker> markers = datastore.askRetrieveMarkersToPaint();
+    //print("Markerlenght: ${markers.length} for $datastore");
+    for (Marker marker in markers) {
       marker.render(renderContext);
     }
+    session.complete();
   }
 
   @override

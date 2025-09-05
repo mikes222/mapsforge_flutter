@@ -28,7 +28,7 @@ class MapModel {
   final Subject<DragNdropEvent> _dragNdropSubject = PublishSubject();
 
   /// When using the context menu we often needs the markers which are tapped. To simplify that we register/unregister datastores to the map.
-  final List<MarkerDatastore> _datastore = [];
+  final Set<MarkerDatastore> _datastores = {};
 
   MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
@@ -40,15 +40,15 @@ class MapModel {
     _doubleTapSubject.close();
     _dragNdropSubject.close();
     renderer.dispose();
-    for (var datastore in List.of(_datastore)) {
+    for (var datastore in List.of(_datastores)) {
       datastore.dispose();
     }
-    _datastore.clear();
+    _datastores.clear();
   }
 
   List<Marker> getTappedMarkers(TapEvent event) {
     List<Marker> tappedMarkers = [];
-    for (var datastore in _datastore) {
+    for (var datastore in _datastores) {
       tappedMarkers.addAll(datastore.getTappedMarkers(event));
     }
     return tappedMarkers;
@@ -121,6 +121,7 @@ class MapModel {
 
   void zoomTo(int zoomLevel) {
     zoomLevel = zoomlevelRange.ensureBounds(zoomLevel);
+    if (zoomLevel == _lastPosition!.zoomlevel) return;
     MapPosition newPosition = _lastPosition!.zoomTo(zoomLevel);
     setPosition(newPosition);
   }
@@ -183,11 +184,11 @@ class MapModel {
   }
 
   void registerMarkerDatastore(MarkerDatastore datastore) {
-    _datastore.add(datastore);
+    _datastores.add(datastore);
   }
 
   void unregisterMarkerDatastore(MarkerDatastore datastore) {
-    _datastore.remove(datastore);
+    _datastores.remove(datastore);
   }
 }
 

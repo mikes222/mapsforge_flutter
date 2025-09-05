@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class CaptionMarker<T> extends AbstractPoiMarker<T> {
-  late RenderinstructionCaption renderinstruction;
+  late final RenderinstructionCaption renderinstruction;
 
   RenderInfoNode<RenderinstructionCaption>? renderInfo;
 

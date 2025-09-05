@@ -11,7 +11,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
-  late RenderinstructionIcon renderinstruction;
+  late final RenderinstructionIcon renderinstruction;
 
   RenderInfoNode<RenderinstructionIcon>? renderInfo;
 

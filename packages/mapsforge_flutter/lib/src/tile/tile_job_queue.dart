@@ -14,6 +14,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../cache/memory_tile_cache.dart';
 
+// todo we need a method to invalidate the tileset
 class TileJobQueue {
   final MapModel mapModel;
 

@@ -16,7 +16,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 class PolylineMarker<T> extends Marker<T> {
   static final _log = Logger('PolylineMarker');
 
-  late RenderinstructionPolyline renderinstruction;
+  late final RenderinstructionPolyline renderinstruction;
 
   RenderInfoWay<RenderinstructionPolyline>? renderInfo;
 
@@ -87,21 +87,32 @@ class PolylineMarker<T> extends Marker<T> {
     return -1;
   }
 
+  // execute [markerChanged] after changing this property
   void setBitmapColorFromNumber(int color) {
     renderinstruction.setBitmapColorFromNumber(color);
   }
 
+  // execute [markerChanged] after changing this property
   void setAndLoadBitmapSrc(String bitmapSrc) {
     renderinstruction.bitmapSrc = bitmapSrc;
   }
 
+  // execute [markerChanged] after changing this property
   void addLatLong(ILatLong latLong) {
     _path.add(latLong);
   }
 
+  // execute [markerChanged] after changing this property
   void clear() {
     _path.clear();
   }
 
   List<ILatLong> get path => _path;
+
+  @override
+  bool shouldPaint(BoundingBox boundary, int zoomlevel) {
+    if (!zoomlevelRange.isWithin(zoomlevel)) return false;
+    if (!(renderInfo?.wayProperties.way.getBoundingBox().intersects(boundary) ?? true)) return false;
+    return true;
+  }
 }

@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
-  late RenderinstructionCircle renderinstruction;
+  late final RenderinstructionCircle renderinstruction;
 
   RenderInfoNode<RenderinstructionCircle>? renderInfo;
 
@@ -96,10 +96,12 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     return renderInfo?.renderInstruction.getBoundary();
   }
 
+  // execute [markerChanged] after changing this property
   void setStrokeColorFromNumber(int color) {
     renderinstruction.setStrokeColorFromNumber(color);
   }
 
+  // execute [markerChanged] after changing this property
   void setFillColorFromNumber(int color) {
     renderinstruction.setFillColorFromNumber(color);
   }

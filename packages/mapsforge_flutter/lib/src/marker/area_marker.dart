@@ -13,7 +13,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// to position captions other than in the center of the rectangle (RenderinstructionPath always returns Boundary.zero since it does not have any information
 /// about the actual size of the rectangle).
 class AreaMarker<T> extends Marker<T> {
-  late RenderinstructionArea renderinstruction;
+  late final RenderinstructionArea renderinstruction;
 
   RenderInfoWay<RenderinstructionArea>? renderInfo;
 
@@ -69,17 +69,27 @@ class AreaMarker<T> extends Marker<T> {
     return LatLongUtils.contains(_path, tapEvent);
   }
 
+  // execute [markerChanged] after changing this property
   void setBitmapColorFromNumber(int color) {
     renderinstruction.setBitmapColorFromNumber(color);
   }
 
+  // execute [markerChanged] after changing this property
   void setAndLoadBitmapSrc(String bitmapSrc) {
     renderinstruction.bitmapSrc = bitmapSrc;
   }
 
+  // execute [markerChanged] after changing this property
   void addLatLong(ILatLong latLong) {
     _path.add(latLong);
   }
 
   List<ILatLong> get path => _path;
+
+  @override
+  bool shouldPaint(BoundingBox boundary, int zoomlevel) {
+    if (!zoomlevelRange.isWithin(zoomlevel)) return false;
+    if (!(renderInfo?.wayProperties.way.getBoundingBox().intersects(boundary) ?? true)) return false;
+    return true;
+  }
 }

@@ -11,7 +11,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
-  late RenderinstructionSymbol renderinstruction;
+  late final RenderinstructionSymbol renderinstruction;
 
   RenderInfoNode<RenderinstructionSymbol>? renderInfo;
 
@@ -89,16 +89,19 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     renderInfo?.renderInstruction.theta = Projection.degToRadian(rotation);
   }
 
+  // execute [markerChanged] after changing this property
   void setBitmapColorFromNumber(int color) {
     renderinstruction.setBitmapColorFromNumber(color);
     renderInfo?.renderInstruction.setBitmapColorFromNumber(color);
   }
 
+  // execute [markerChanged] after changing this property
   void setAndLoadBitmapSrc(String bitmapSrc) {
     renderinstruction.bitmapSrc = bitmapSrc;
     renderInfo?.renderInstruction.setBitmapSrc(bitmapSrc);
   }
 
+  // execute [markerChanged] after changing this property
   void setLatLong(ILatLong latLong) {
     super.latLong = latLong;
   }

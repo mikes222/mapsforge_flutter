@@ -16,7 +16,7 @@ import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 /// to position captions other than in the center of the rectangle (RenderinstructionRect always returns Boundary.zero since it does not have any information
 /// about the actual size of the rectangle).
 class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearcher, CaptionReference {
-  late RenderinstructionRect renderinstruction;
+  late final RenderinstructionRect renderinstruction;
 
   RenderInfoWay<RenderinstructionRect>? renderInfo;
 
@@ -93,10 +93,10 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
 
   @override
   bool isTapped(TapEvent tapEvent) {
-    return tapEvent.latitude > minLatLon.latitude &&
-        tapEvent.latitude < maxLatLon.latitude &&
-        tapEvent.longitude > minLatLon.longitude &&
-        tapEvent.longitude < maxLatLon.longitude;
+    return tapEvent.latitude >= minLatLon.latitude &&
+        tapEvent.latitude <= maxLatLon.latitude &&
+        tapEvent.longitude >= minLatLon.longitude &&
+        tapEvent.longitude <= maxLatLon.longitude;
   }
 
   Future<void> setBitmapColorFromNumber(int color) async {
@@ -111,10 +111,12 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
     await PainterFactory().createShapePainter(renderInfo!);
   }
 
+  // execute [markerChanged] after changing this property
   void setStrokeColorFromNumber(int color) {
     renderinstruction.setStrokeColorFromNumber(color);
   }
 
+  // execute [markerChanged] after changing this property
   void setFillColorFromNumber(int color) {
     renderinstruction.setFillColorFromNumber(color);
   }
@@ -127,5 +129,12 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
   @override
   ILatLong getReference() {
     return center;
+  }
+
+  @override
+  bool shouldPaint(BoundingBox boundary, int zoomlevel) {
+    if (!zoomlevelRange.isWithin(zoomlevel)) return false;
+    if (!boundary.intersects(BoundingBox(minLatLon.latitude, minLatLon.longitude, maxLatLon.latitude, maxLatLon.longitude))) return false;
+    return true;
   }
 }

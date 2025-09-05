@@ -222,3 +222,28 @@ Datastores also supports querying data from external sources like databases or w
 
 Create your own datastore by implementing the MarkerDatastore interface. Listen to the ``askChangeZoomlevel`` and ``askChangeBoundingBox`` methods. 
 Request the new data and call ``requestRepaint()`` afterwards to trigger a repaint as soon as the new markers are available.
+
+## Finding tapped markers
+
+Listen to one of the tap-events of mapModel:
+
+```dart
+mapModel.tapStream.listen(...);
+```
+
+Doing this in the datastore may be an efficient way to deal only with markers bound to this datastore. In the ``listen()`` method just find the tapped markers with
+
+```dart
+List<Marker<T>> getTappedMarkers(TapEvent event);
+```
+
+which is a method of ``DefaultMarkerDatastore``
+
+You could also find all tapped markers via MapModel:
+
+```dart
+mapModel.getTappedMarkers(TapEvent event);
+```
+
+Note: The builder for the context menu also receives a TapEvent so in the context menu you can find all tapped events with this method. 
+

@@ -109,6 +109,7 @@ class Caption {
     renderinstruction.position = position;
     if (maxTextWidth != null) renderinstruction.setMaxTextWidth(maxTextWidth);
     renderinstruction.setStrokeMinZoomLevel(strokeMinZoomLevel ?? MapsforgeSettingsMgr().strokeMinZoomlevelText);
+    renderinstruction.setTextMinZoomLevel(strokeMinZoomLevel ?? MapsforgeSettingsMgr().strokeMinZoomlevelText);
     renderinstruction.dy = dy;
     renderinstruction.gap = gap;
     renderinstruction.symbolId = "marker";

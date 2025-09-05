@@ -13,7 +13,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// to position captions other than in the center of the rectangle (RenderinstructionPath always returns Boundary.zero since it does not have any information
 /// about the actual size of the rectangle).
 class PolylineTextMarker<T> extends Marker<T> {
-  late RenderinstructionPolylineText renderinstruction;
+  late final RenderinstructionPolylineText renderinstruction;
 
   RenderInfoWay<RenderinstructionPolylineText>? renderInfo;
 
@@ -91,9 +91,17 @@ class PolylineTextMarker<T> extends Marker<T> {
     return -1;
   }
 
+  // execute [markerChanged] after changing this property
   void addLatLong(ILatLong latLong) {
     _path.add(latLong);
   }
 
   List<ILatLong> get path => _path;
+
+  @override
+  bool shouldPaint(BoundingBox boundary, int zoomlevel) {
+    if (!zoomlevelRange.isWithin(zoomlevel)) return false;
+    if (!(renderInfo?.wayProperties.way.getBoundingBox().intersects(boundary) ?? true)) return false;
+    return true;
+  }
 }

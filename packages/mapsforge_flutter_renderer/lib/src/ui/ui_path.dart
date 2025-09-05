@@ -3,11 +3,11 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_rect.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 class UiPath {
   static final _log = Logger('FlutterPath');
@@ -150,10 +150,11 @@ class UiPath {
       drawDash(paint, uiCanvas);
       return;
     }
-    if (paint.isFillPaint()) {
-      uiCanvas.drawPath(_path, paint.expose());
-      return;
-    }
+    if (!_path.getBounds().overlaps(uiCanvas.getLocalClipBounds())) return;
+    //    if (paint.isFillPaint()) {
+    uiCanvas.drawPath(_path, paint.expose());
+    return;
+    //  }
 
     // https://github.com/flutter/flutter/issues/78543#issuecomment-885090581
     _points.forEachIndexed((int idx, Pointinfo point) {
