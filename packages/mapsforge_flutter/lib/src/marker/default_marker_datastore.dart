@@ -70,6 +70,15 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
         currentMarkers._cachedMarkers.add(marker);
       }
     }
+    // check remaining markers if they should paint on the new boundary
+    List<Marker<T>> toInitialize = _markers.whereNot((test) => currentMarkers._initializedMarkers.contains(test)).toList();
+    for (var marker in toInitialize) {
+      if (marker.shouldPaint(boundingBox, zoomlevel)) {
+        reinitOneMarker(currentMarkers, marker).then((value) {
+          requestRepaint();
+        });
+      }
+    }
   }
 
   @override

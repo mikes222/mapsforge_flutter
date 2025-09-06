@@ -274,25 +274,23 @@ class BoundingBox {
   //    return new BoundingBox(minLat, minLon, maxLat, maxLon);
   //  }
 
-  /**
-   * Creates a BoundingBox that is a fixed margin factor larger on all sides (but does not cross date line/poles).
-   *
-   * @param margin extension (must be > 0)
-   * @return an extended BoundingBox or this (if margin == 1)
-   */
+  /// Creates a BoundingBox that is a fixed margin factor larger on all sides (but does not cross date line/poles).
+  ///
+  /// @param margin extension (must be > 0)
+  /// @return an extended BoundingBox or this (if margin == 1)
   BoundingBox extendMargin(double margin) {
     assert(margin >= 1);
     if (margin == 1) {
       return this;
     }
 
-    double verticalExpansion = (this.getLatitudeSpan() * margin - this.getLatitudeSpan()) * 0.5;
-    double horizontalExpansion = (this.getLongitudeSpan() * margin - this.getLongitudeSpan()) * 0.5;
+    double verticalExpansion = (getLatitudeSpan() * margin - getLatitudeSpan()) * 0.5;
+    double horizontalExpansion = (getLongitudeSpan() * margin - getLongitudeSpan()) * 0.5;
 
-    double minLat = max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon = max(-180, this.minLongitude - horizontalExpansion);
-    double maxLat = min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon = min(180, this.maxLongitude + horizontalExpansion);
+    double minLat = max(Projection.LATITUDE_MIN, minLatitude - verticalExpansion);
+    double minLon = max(Projection.LONGITUDE_MIN, minLongitude - horizontalExpansion);
+    double maxLat = min(Projection.LATITUDE_MAX, maxLatitude + verticalExpansion);
+    double maxLon = min(Projection.LONGITUDE_MAX, maxLongitude + horizontalExpansion);
 
     return BoundingBox(minLat, minLon, maxLat, maxLon);
   }
