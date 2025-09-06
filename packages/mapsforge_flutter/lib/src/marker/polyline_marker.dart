@@ -10,9 +10,10 @@ import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
-/// A Marker which draws a rectangle specified by the min/max lat/lon attributes. Currently there is no way
-/// to position captions other than in the center of the rectangle (RenderinstructionPath always returns Boundary.zero since it does not have any information
-/// about the actual size of the rectangle).
+/// A Marker which draws an open path specified by a series of lat/lon attributes.
+///
+/// See also:
+/// [AreaMarker] which draws a closed polyline. Also more information about the differences to this marker can be found in [AreaMarker].
 class PolylineMarker<T> extends Marker<T> {
   static final _log = Logger('PolylineMarker');
 
@@ -20,7 +21,7 @@ class PolylineMarker<T> extends Marker<T> {
 
   RenderInfoWay<RenderinstructionPolyline>? renderInfo;
 
-  final List<ILatLong> _path = [];
+  late final Waypath _path;
 
   PolylineMarker({
     super.zoomlevelRange,
@@ -31,7 +32,7 @@ class PolylineMarker<T> extends Marker<T> {
     List<ILatLong> path = const [],
     int? strokeMinZoomLevel,
   }) {
-    if (path.isNotEmpty) _path.addAll(path);
+    _path = path.isEmpty ? Waypath.empty() : Waypath(path: path);
     renderinstruction = RenderinstructionPolyline(0);
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.setStrokeWidth(strokeWidth);
@@ -53,7 +54,7 @@ class PolylineMarker<T> extends Marker<T> {
       return;
     }
     RenderinstructionPolyline renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
+    WayProperties wayProperties = WayProperties(Way(0, [], [_path.path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
   }
@@ -78,8 +79,8 @@ class PolylineMarker<T> extends Marker<T> {
   int indexOfTappedPath(TapEvent tapEvent) {
     Mappoint tapped = tapEvent.mappoint;
     for (int idx = 0; idx < _path.length - 1; ++idx) {
-      Mappoint point0 = tapEvent.projection.latLonToPixel(_path[idx]);
-      Mappoint point1 = tapEvent.projection.latLonToPixel(_path[idx + 1]);
+      Mappoint point0 = tapEvent.projection.latLonToPixel(_path.path[idx]);
+      Mappoint point1 = tapEvent.projection.latLonToPixel(_path.path[idx + 1]);
       double distance = LatLongUtils.distanceSegmentPoint(point0.x, point0.y, point1.x, point1.y, tapped.x, tapped.y);
       // correct would be half of strokeWidth but it is hard to tap exactly so be graceful here
       if (distance <= (renderInfo?.renderInstruction.strokeWidth ?? 0)) return idx;
@@ -107,12 +108,10 @@ class PolylineMarker<T> extends Marker<T> {
     _path.clear();
   }
 
-  List<ILatLong> get path => _path;
-
   @override
   bool shouldPaint(BoundingBox boundary, int zoomlevel) {
     if (!zoomlevelRange.isWithin(zoomlevel)) return false;
-    if (!(renderInfo?.wayProperties.way.getBoundingBox().intersects(boundary) ?? true)) return false;
+    if (!(_path.boundingBox.intersects(boundary))) return false;
     return true;
   }
 }

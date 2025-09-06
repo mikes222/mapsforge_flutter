@@ -43,7 +43,7 @@ class WaySimplifyFilter {
     }
     assert(res1.length >= 2);
     if (LatLongUtils.isClosedWay(res1)) assert(res1.length > 2);
-    return Waypath(res1);
+    return Waypath(path: res1);
   }
 
   Waypath reduceWayEnsureMax(Waypath waypath) {
@@ -58,6 +58,6 @@ class WaySimplifyFilter {
     List<ILatLong> res1 = dpl.simplify(waypath.path, maxDeviation);
     if (res1.length > 32767) return _reduceWayEnsureMax(waypath, maxDeviation + maxDeviationLatLong!);
     assert(res1.length > 2);
-    return Waypath(res1);
+    return Waypath(path: res1);
   }
 }

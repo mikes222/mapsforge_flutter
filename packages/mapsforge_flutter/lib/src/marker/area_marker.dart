@@ -9,15 +9,20 @@ import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
-/// A Marker which draws a rectangle specified by the min/max lat/lon attributes. Currently there is no way
-/// to position captions other than in the center of the rectangle (RenderinstructionPath always returns Boundary.zero since it does not have any information
-/// about the actual size of the rectangle).
+/// A Marker which draws a closed polyline specified by a series of lat/lon attributes.
+/// Note that there are fundamental differences to [PolylineMarker]:
+/// - The area is assumed to be closed and adding/removing/changing points is not allowed
+/// - The area can be filled with a color/bitmap which is not possible for open polylines
+/// - isTapped checks if the tap event is inside the area as opposed to the polyline where the tap event must be at the line itself.
+///
+/// See also:
+/// [PolylineMarker] which draws an open polyline.
 class AreaMarker<T> extends Marker<T> {
   late final RenderinstructionArea renderinstruction;
 
   RenderInfoWay<RenderinstructionArea>? renderInfo;
 
-  final List<ILatLong> _path = [];
+  late final Waypath _path;
 
   AreaMarker({
     super.zoomlevelRange,
@@ -29,7 +34,7 @@ class AreaMarker<T> extends Marker<T> {
     List<ILatLong> path = const [],
     int? strokeMinZoomLevel,
   }) {
-    if (path.isNotEmpty) _path.addAll(path);
+    _path = path.isEmpty ? Waypath.empty() : Waypath(path: path);
     renderinstruction = RenderinstructionArea(0);
     renderinstruction.setStrokeColorFromNumber(strokeColor);
     renderinstruction.setStrokeWidth(strokeWidth);
@@ -49,7 +54,7 @@ class AreaMarker<T> extends Marker<T> {
     assert(_path.isNotEmpty);
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionArea renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    WayProperties wayProperties = WayProperties(Way(0, [], [_path], null), projection);
+    WayProperties wayProperties = WayProperties(Way(0, [], [_path.path], null), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
   }
@@ -66,7 +71,7 @@ class AreaMarker<T> extends Marker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
-    return LatLongUtils.contains(_path, tapEvent);
+    return _path.contains(tapEvent.latLong);
   }
 
   // execute [markerChanged] after changing this property
@@ -79,17 +84,11 @@ class AreaMarker<T> extends Marker<T> {
     renderinstruction.bitmapSrc = bitmapSrc;
   }
 
-  // execute [markerChanged] after changing this property
-  void addLatLong(ILatLong latLong) {
-    _path.add(latLong);
-  }
-
-  List<ILatLong> get path => _path;
-
   @override
   bool shouldPaint(BoundingBox boundary, int zoomlevel) {
     if (!zoomlevelRange.isWithin(zoomlevel)) return false;
-    if (!(renderInfo?.wayProperties.way.getBoundingBox().intersects(boundary) ?? true)) return false;
+    if (!(_path.boundingBox.intersects(boundary))) return false;
+    if (!LatLongUtils.doesBoundaryIntersectPolygon(boundary, _path.path)) return false;
     return true;
   }
 }

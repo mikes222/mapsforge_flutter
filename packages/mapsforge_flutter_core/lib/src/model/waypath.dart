@@ -10,10 +10,10 @@ class Waypath {
   // cached bounding box
   BoundingBox? _boundingBox;
 
-  Waypath(this._path) : assert(_path.isNotEmpty);
+  Waypath({required List<ILatLong> path}) : assert(path.isNotEmpty), _path = path;
 
   Waypath clone() {
-    Waypath result = Waypath(List.from(_path));
+    Waypath result = Waypath(path: List.from(_path));
     result._closed = _closed;
     result._boundingBox = _boundingBox;
     return result;
@@ -102,6 +102,13 @@ class Waypath {
     _closed = null;
     _boundingBox = null;
     return _path;
+  }
+
+  bool contains(ILatLong latLong) {
+    if (_boundingBox != null && !_boundingBox!.containsLatLong(latLong)) {
+      return false;
+    }
+    return LatLongUtils.contains(_path, latLong);
   }
 
   @override

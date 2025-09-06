@@ -43,14 +43,14 @@ class Wayholder with TagholderMixin {
 
   /// Creates a new wayholder from a existing way. Note that the existing way may NOT contain any path (if created from a OsmRelation)
   Wayholder.fromWay(Way way) {
-    _inner = way.latLongs.skip(1).map((toElement) => Waypath(toElement)).toList();
+    _inner = way.latLongs.skip(1).map((toElement) => Waypath(path: toElement)).toList();
     _closedOuters = [];
     _openOuters = [];
     if (way.latLongs.isNotEmpty) {
       if (LatLongUtils.isClosedWay(way.latLongs[0])) {
-        _closedOuters.add(Waypath(way.latLongs[0]));
+        _closedOuters.add(Waypath(path: way.latLongs[0]));
       } else {
-        _openOuters.add(Waypath(way.latLongs[0]));
+        _openOuters.add(Waypath(path: way.latLongs[0]));
       }
     }
 

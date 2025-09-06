@@ -39,10 +39,11 @@ class WayCropper {
   }
 
   Wayholder? cropOutsideWay(Wayholder wayholder, BoundingBox boundingBox) {
-    List<Waypath> inner = wayholder.innerRead.map((test) => Waypath(_reduceOutside(test, boundingBox))).toList()..removeWhere((Waypath test) => test.isEmpty);
-    List<Waypath> closedOuters = wayholder.closedOutersRead.map((test) => Waypath(_reduceOutside(test, boundingBox))).toList()
+    List<Waypath> inner = wayholder.innerRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
       ..removeWhere((Waypath test) => test.isEmpty);
-    List<Waypath> openOuters = wayholder.openOutersRead.map((test) => Waypath(_reduceOutside(test, boundingBox))).toList()
+    List<Waypath> closedOuters = wayholder.closedOutersRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
+      ..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> openOuters = wayholder.openOutersRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
       ..removeWhere((Waypath test) => test.isEmpty);
 
     if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
@@ -120,7 +121,7 @@ class WayCropper {
       optimizedWaypoints.add(tileBoundary.getRightLower());
       optimizedWaypoints.add(tileBoundary.getLeftLower());
       optimizedWaypoints.add(tileBoundary.getLeftUpper());
-      return Waypath(optimizedWaypoints);
+      return Waypath(path: optimizedWaypoints);
     }
     path.forEach((waypoint) {
       bool isInside = tileBoundary.containsLatLong(waypoint);
@@ -177,10 +178,10 @@ class WayCropper {
       if (optimizedWaypoints.length > 32767) {
         // many waypoints? simplify them.
         WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
-        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
+        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(path: optimizedWaypoints));
         return result;
       }
-      return Waypath(optimizedWaypoints);
+      return Waypath(path: optimizedWaypoints);
     }
     // Step 1: Find out if the center of the tile is inside or outside of the original way
     bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
@@ -198,7 +199,7 @@ class WayCropper {
       optimizedWaypoints.add(tileBoundary.getRightLower());
       optimizedWaypoints.add(tileBoundary.getLeftLower());
       optimizedWaypoints.add(tileBoundary.getLeftUpper());
-      return Waypath(optimizedWaypoints);
+      return Waypath(path: optimizedWaypoints);
     }
     if (LatLongUtils.isClosedWay(optimizedWaypoints)) {
       if (optimizedWaypoints.first != optimizedWaypoints.last) {
@@ -210,10 +211,10 @@ class WayCropper {
 
       if (optimizedWaypoints.length > 32767) {
         WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
-        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(optimizedWaypoints));
+        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(path: optimizedWaypoints));
         return result;
       }
-      return Waypath(optimizedWaypoints);
+      return Waypath(path: optimizedWaypoints);
     }
     // if start and end would be inside the tile we would have a closed way. So both must be outside
     // find how we should close the way:
@@ -227,14 +228,14 @@ class WayCropper {
       // perfect, both are inside or outside
       assert(tempWaypoints.length >= 3);
       assert(tempWaypoints.length <= 32767);
-      return Waypath(tempWaypoints);
+      return Waypath(path: tempWaypoints);
     }
     // We have to close it the other way around
     _addCornersOtherWay(lastExitDirection, firstEntryDirection, optimizedWaypoints, tileBoundary);
     optimizedWaypoints.add(optimizedWaypoints.first);
     assert(optimizedWaypoints.length >= 3);
     assert(optimizedWaypoints.length <= 32767);
-    return Waypath(optimizedWaypoints);
+    return Waypath(path: optimizedWaypoints);
   }
 
   /// Reduces the nodes outside the given boundary.

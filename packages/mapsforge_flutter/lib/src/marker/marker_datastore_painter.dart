@@ -94,7 +94,7 @@ class MarkerDatastorePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Start performance monitoring for this render cycle
     final session = PerformanceProfiler().startSession(category: "MarkerPainter.${datastore.runtimeType}");
-    
+
     // Set up rendering infrastructure
     UiCanvas uiCanvas = UiCanvas(canvas, size);
     UiRenderContext renderContext = UiRenderContext(
@@ -103,15 +103,15 @@ class MarkerDatastorePainter extends CustomPainter {
       projection: mapPosition.projection,
       rotationRadian: mapPosition.rotationRadian,
     );
-    
+
     // Get markers to render from datastore
     Iterable<Marker> markers = datastore.askRetrieveMarkersToPaint();
-    
+
     // Render each marker with the prepared context
     for (Marker marker in markers) {
       marker.render(renderContext);
     }
-    
+
     // Complete performance profiling
     session.complete();
   }

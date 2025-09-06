@@ -344,6 +344,114 @@ class LatLongUtils {
     return "${waypaths.take(20).map((toElement) => "${toElement.length}").toList()} (${waypaths.length} items)";
   }
 
+  /// Checks if a bounding box (boundary) intersects with a polygon.
+  ///
+  /// This method determines if a polygon would be visible within the given boundary
+  /// by checking for various types of intersections:
+  /// - Boundary completely inside polygon
+  /// - Polygon completely inside boundary  
+  /// - Partial intersection (polygon edges cross boundary edges)
+  ///
+  /// [boundary] The rectangular boundary to test against
+  /// [polygon] List of vertices defining the polygon
+  /// Returns true if the polygon intersects with or is contained within the boundary
+  static bool doesBoundaryIntersectPolygon(BoundingBox boundary, List<ILatLong> polygon) {
+    if (polygon.length < 3) return false;
+
+    // Get boundary corner points
+    List<ILatLong> boundaryCorners = [
+      LatLong(boundary.maxLatitude, boundary.minLongitude), // top-left
+      LatLong(boundary.maxLatitude, boundary.maxLongitude), // top-right
+      LatLong(boundary.minLatitude, boundary.maxLongitude), // bottom-right
+      LatLong(boundary.minLatitude, boundary.minLongitude), // bottom-left
+    ];
+
+    // Check if boundary is completely inside polygon
+    // If all boundary corners are inside the polygon, boundary is contained
+    bool allCornersInside = true;
+    for (ILatLong corner in boundaryCorners) {
+      if (!isPointInPolygon(corner, polygon)) {
+        allCornersInside = false;
+        break;
+      }
+    }
+    if (allCornersInside) return true;
+
+    // Check if polygon is completely inside boundary
+    // If all polygon vertices are inside the boundary, polygon is contained
+    bool allVerticesInside = true;
+    for (ILatLong vertex in polygon) {
+      if (!boundary.containsLatLong(vertex)) {
+        allVerticesInside = false;
+        break;
+      }
+    }
+    if (allVerticesInside) return true;
+
+    // Check for edge intersections between polygon and boundary
+    // Get boundary edges
+    List<List<ILatLong>> boundaryEdges = [
+      [boundaryCorners[0], boundaryCorners[1]], // top edge
+      [boundaryCorners[1], boundaryCorners[2]], // right edge
+      [boundaryCorners[2], boundaryCorners[3]], // bottom edge
+      [boundaryCorners[3], boundaryCorners[0]], // left edge
+    ];
+
+    // Check each polygon edge against each boundary edge
+    for (int i = 0; i < polygon.length; i++) {
+      ILatLong polygonStart = polygon[i];
+      ILatLong polygonEnd = polygon[(i + 1) % polygon.length];
+
+      for (List<ILatLong> boundaryEdge in boundaryEdges) {
+        if (doLinesIntersect(polygonStart, polygonEnd, boundaryEdge[0], boundaryEdge[1])) {
+          return true;
+        }
+      }
+    }
+
+    // Check if any polygon vertex is inside the boundary (partial containment)
+    for (ILatLong vertex in polygon) {
+      if (boundary.containsLatLong(vertex)) {
+        return true;
+      }
+    }
+
+    // Check if any boundary corner is inside the polygon (partial containment)
+    for (ILatLong corner in boundaryCorners) {
+      if (isPointInPolygon(corner, polygon)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Checks if a bounding box is completely contained within a polygon.
+  ///
+  /// [boundary] The rectangular boundary to test
+  /// [polygon] List of vertices defining the polygon
+  /// Returns true if the entire boundary is inside the polygon
+  static bool isBoundaryInsidePolygon(BoundingBox boundary, List<ILatLong> polygon) {
+    if (polygon.length < 3) return false;
+
+    // Get boundary corner points
+    List<ILatLong> boundaryCorners = [
+      LatLong(boundary.maxLatitude, boundary.minLongitude), // top-left
+      LatLong(boundary.maxLatitude, boundary.maxLongitude), // top-right
+      LatLong(boundary.minLatitude, boundary.maxLongitude), // bottom-right
+      LatLong(boundary.minLatitude, boundary.minLongitude), // bottom-left
+    ];
+
+    // Check if all boundary corners are inside the polygon
+    for (ILatLong corner in boundaryCorners) {
+      if (!isPointInPolygon(corner, polygon)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /// adds the [otherLatLongs] to [firstWaypath] in the correct order. Returns true if successful. Note that [firstWaypath] may be changed whereas
   /// [otherLatLongs] is never gonna be changed.
   static bool combine(Waypath firstWaypath, List<ILatLong> otherLatLongs) {

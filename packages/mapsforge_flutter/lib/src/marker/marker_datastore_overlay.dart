@@ -110,13 +110,8 @@ class MarkerDatastoreOverlay extends StatefulWidget {
   /// [extendMargin] controls the buffer zone size (default: 1.2 = 20% extension)
   ///
   /// Throws [AssertionError] if [extendMargin] < 1.0
-  const MarkerDatastoreOverlay({
-    super.key,
-    required this.mapModel,
-    required this.datastore,
-    required this.zoomlevelRange,
-    this.extendMargin = 1.2,
-  }) : assert(extendMargin >= 1.0, 'extendMargin must be >= 1.0');
+  const MarkerDatastoreOverlay({super.key, required this.mapModel, required this.datastore, required this.zoomlevelRange, this.extendMargin = 1.5})
+    : assert(extendMargin >= 1.0, 'extendMargin must be >= 1.0');
 
   @override
   State<MarkerDatastoreOverlay> createState() => _MarkerDatastoreOverlayState();
@@ -184,16 +179,16 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
               return const SizedBox();
             }
             MapPosition position = snapshot.data!;
-            
+
             // Handle position changes at the same zoom level
             if (_cachedZoomlevel == position.zoomlevel) {
               BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
-              
+
               // Check if we've moved outside the cached bounding box
               if (_cachedBoundingBox == null || !_cachedBoundingBox!.containsBoundingBox(boundingBox)) {
                 // Extend the bounding box to create a buffer zone
                 boundingBox = boundingBox.extendMargin(widget.extendMargin);
-                
+
                 // Request markers for the new area
                 widget.datastore.askChangeBoundingBox(_cachedZoomlevel, boundingBox);
                 _cachedBoundingBox = boundingBox;
@@ -201,26 +196,28 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
             }
             // Handle zoom level changes
             if (_cachedZoomlevel != position.zoomlevel) {
-              BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
-              boundingBox = boundingBox.extendMargin(widget.extendMargin);
-              
-              // Notify datastore of zoom level change - this may trigger
-              // marker filtering, clustering, or style changes
-              widget.datastore.askChangeZoomlevel(position.zoomlevel, boundingBox, position.projection);
-              
-              // Update cache
-              _cachedZoomlevel = position.zoomlevel;
-              _cachedBoundingBox = boundingBox;
+              if (widget.zoomlevelRange.isWithin(position.zoomlevel)) {
+                BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
+                boundingBox = boundingBox.extendMargin(widget.extendMargin);
+
+                // Notify datastore of zoom level change - this may trigger
+                // marker filtering, clustering, or style changes
+                widget.datastore.askChangeZoomlevel(position.zoomlevel, boundingBox, position.projection);
+
+                // Update cache
+                _cachedZoomlevel = position.zoomlevel;
+                _cachedBoundingBox = boundingBox;
+              } else {
+                // todo maybe the datastore should be informed that it is not needed for that zoomlevel
+                return const SizedBox();
+              }
             }
             // Render markers with proper coordinate transformation
             return TransformWidget(
               mapCenter: position.getCenter(),
               mapPosition: position,
               screensize: screensize,
-              child: CustomPaint(
-                foregroundPainter: MarkerDatastorePainter(position, widget.datastore),
-                child: const SizedBox.expand(),
-              ),
+              child: CustomPaint(foregroundPainter: MarkerDatastorePainter(position, widget.datastore), child: const SizedBox.expand()),
             );
           },
         );
