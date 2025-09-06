@@ -13,7 +13,7 @@ class MyMarkerDatastore extends DefaultMarkerDatastore {
 
   ILatLong? _originalPosition;
 
-  MyMarkerDatastore({required super.mapModel}) {
+  MyMarkerDatastore(MapModel mapModel) {
     _subscription = mapModel.dragNdropStream.listen((event) => _newDragNdropEvent(event));
   }
 

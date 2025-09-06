@@ -15,11 +15,7 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
 
   bool _disposed = false;
 
-  final MapModel mapModel;
-
-  DefaultMarkerDatastore({required this.mapModel}) {
-    mapModel.registerMarkerDatastore(this);
-  }
+  DefaultMarkerDatastore();
 
   @override
   void askChangeZoomlevel(int zoomlevel, BoundingBox boundingBox, PixelProjection projection) {
@@ -190,7 +186,6 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   @mustCallSuper
   void dispose() {
     super.dispose();
-    mapModel.unregisterMarkerDatastore(this);
     _currentMarkers = null;
     for (var value in _markers) {
       value.dispose();

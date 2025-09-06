@@ -103,6 +103,8 @@ class PolylineMarker<T> extends Marker<T> {
     _path.add(latLong);
   }
 
+  List<ILatLong> get path => _path.path;
+
   // execute [markerChanged] after changing this property
   void clear() {
     _path.clear();

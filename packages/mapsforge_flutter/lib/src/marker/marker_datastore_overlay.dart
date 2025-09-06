@@ -137,6 +137,18 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
   /// A value of -1 indicates no previous zoom level has been cached.
   int _cachedZoomlevel = -1;
 
+  @override
+  void initState() {
+    super.initState();
+    widget.mapModel.registerMarkerDatastore(widget.datastore);
+  }
+
+  @override
+  void dispose() {
+    widget.mapModel.unregisterMarkerDatastore(widget.datastore);
+    super.dispose();
+  }
+
   /// Called when the widget configuration changes.
   ///
   /// Invalidates cached zoom level if the datastore or zoom level range

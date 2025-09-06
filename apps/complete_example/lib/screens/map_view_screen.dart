@@ -100,8 +100,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
           // These datastores are recreated at each build(). In our demo the markers in the datastore will be gone.
           // In real life you would fetch the markers from the source.
-          MarkerDatastore markerDatastore = MyMarkerDatastore(mapModel: mapModel);
-          MarkerDatastore debugDatastore = DefaultMarkerDatastore(mapModel: mapModel);
+          MarkerDatastore markerDatastore = MyMarkerDatastore(mapModel);
+          MarkerDatastore debugDatastore = DefaultMarkerDatastore();
 
           return Stack(
             children: [
