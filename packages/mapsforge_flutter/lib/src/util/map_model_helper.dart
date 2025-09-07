@@ -21,4 +21,11 @@ class MapModelHelper {
     MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: zoomlevelRange);
     return mapModel;
   }
+
+  /// A helper function to create a mapModel from a mapfile. Note that the mapModel must be disposed after use.
+  static Future<MapModel> createOnlineMapModel({required Renderer renderer, ZoomlevelRange zoomlevelRange = const ZoomlevelRange.standard()}) async {
+    // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
+    MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: zoomlevelRange);
+    return mapModel;
+  }
 }

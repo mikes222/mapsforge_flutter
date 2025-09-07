@@ -18,8 +18,9 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   DefaultMarkerDatastore();
 
   @override
+  @mustCallSuper
   void askChangeZoomlevel(int zoomlevel, BoundingBox boundingBox, PixelProjection projection) {
-    _currentMarkers?.stop = true;
+    _currentMarkers?.setStop();
     _CurrentMarkers<T> currentMarkers = _CurrentMarkers(zoomlevel: zoomlevel, boundingBox: boundingBox, projection: projection);
     _currentMarkers = currentMarkers;
     unawaited(_reinitMarkers(currentMarkers, List.of(_markers)));
@@ -56,8 +57,9 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
   }
 
   @override
+  @mustCallSuper
   void askChangeBoundingBox(int zoomlevel, BoundingBox boundingBox) {
-    _currentMarkers?.stop = true;
+    _currentMarkers?.setStop();
     _CurrentMarkers<T> currentMarkers = _CurrentMarkers(zoomlevel: zoomlevel, boundingBox: boundingBox, projection: PixelProjection(zoomlevel));
     currentMarkers._initializedMarkers.addAll(_currentMarkers?._initializedMarkers ?? []);
     _currentMarkers = currentMarkers;
@@ -212,7 +214,15 @@ class _CurrentMarkers<T> {
 
   final PixelProjection projection;
 
-  bool stop = false;
+  bool _stop = false;
+
+  bool get stop => _stop;
+
+  void setStop() {
+    _stop = true;
+    // avoid giving the markers to the ui, they are being reinitialized for the next zoomlevel
+    _cachedMarkers.clear();
+  }
 
   _CurrentMarkers({required this.projection, required this.zoomlevel, required this.boundingBox});
 }

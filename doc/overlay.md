@@ -31,3 +31,53 @@ You should not use ZoomOverlay and IndoorlevelZoomOverlay concurrently.
 
 This widget provides manual rotation of the map with 3 finger-touches. 
 It is transparent to the user. 
+
+
+### Zoom Controls
+
+Zoom overlays provide interactive zoom in/out buttons.
+
+```dart
+// Standard zoom overlay with positioned buttons
+ZoomOverlay(
+  mapModel: mapModel,
+  top: 50,    // Position from top
+  right: 20,  // Position from right
+)
+
+// Alternative: zoom-in only overlay
+ZoomInOverlay(
+  mapModel: mapModel,
+  bottom: 100,
+  right: 20,
+)
+```
+
+### Distance Scale
+
+Distance overlays show a scale ruler for measuring distances.
+
+```dart
+DistanceOverlay(mapModel: mapModel)
+```
+
+The distance overlay automatically:
+- Updates scale based on current zoom level
+- Shows appropriate units (meters, kilometers)
+- Positions itself in the bottom-left corner
+- Fades in/out during map interactions
+
+### Indoor Level Controls
+
+Indoor level overlays provide controls for navigating building floors.
+
+```dart
+IndoorlevelOverlay(mapModel: mapModel)
+```
+
+Features:
+- Automatic detection of indoor data
+- Floor level selection buttons
+- Smooth transitions between levels
+- Integration with indoor-enabled map data
+

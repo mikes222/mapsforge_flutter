@@ -1,10 +1,25 @@
 # mapsforge_view
 
-A comprehensive Flutter widget library for interactive map visualization with advanced marker and overlay support. This package provides the main UI components for the Mapsforge Flutter ecosystem, enabling rich mapping experiences with customizable overlays, markers, and gesture handling.
+A comprehensive Flutter widget library for interactive map visualization with advanced marker and overlay support. 
+This package provides the main UI components for the Mapsforge Flutter ecosystem, enabling rich mapping experiences with customizable overlays, markers, and gesture handling.
+
+# Screenshots
+
+![Austria offline](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
+![Austria Satellite](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
+![Indoor navigation](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
+![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
+![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
 ## Overview
 
-The `mapsforge_view` package is the primary UI layer for Mapsforge Flutter applications. It provides a complete set of widgets, overlays, and markers that work seamlessly with the underlying rendering engine to create interactive, feature-rich map applications.
+With this library, you can load and render *mapfiles* directly from a user’s device. **No internet connection required!**
+Perfect for offline navigation, custom mapping applications, and seamless user experiences!
+
+The `mapsforge_view` package is the primary UI layer for Mapsforge Flutter applications. 
+It provides a complete set of widgets, overlays, and markers that work seamlessly with the underlying rendering engine to create interactive, feature-rich map applications.
+
+mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting the well-established [mapsforge library](https://github.com/mapsforge/mapsforge) from Java/Android.
 
 **Key Features:**
 - Complete map widget with gesture support
@@ -49,53 +64,84 @@ Add these packages to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  mapsforge_flutter: ^1.0.0
-  mapsforge_flutter_core: ^1.0.0
-  mapsforge_flutter_mapfile: ^1.0.0
-  mapsforge_flutter_renderer: ^1.0.0
-  mapsforge_flutter_rendertheme: ^1.0.0
+  mapsforge_flutter: ^4.0.0
+  mapsforge_flutter_core: ^4.0.0
+  mapsforge_flutter_mapfile: ^4.0.0
+  mapsforge_flutter_renderer: ^4.0.0
+  mapsforge_flutter_rendertheme: ^4.0.0
 ```
 
-Note: See doc/install.md for working with a local copy of mapsforge_flutter. 
+Note: See [doc/install](doc/install.md) for working with a local copy of mapsforge_flutter. 
+
 
 ## Quick Start
 
 ### Basic Map Setup
 
+Find the device to pixel ratio end set the global property accordingly. 
+This will shrink the tiles, requires to produce more tiles but makes the map crispier.
+
 ```dart
-import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter/mapsforge.dart';
-import 'package:mapsforge_flutter/marker.dart';
-import 'package:mapsforge_flutter/overlay.dart';
+double ratio = MediaQuery.devicePixelRatioOf(context);
+MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
+```
 
-class MapScreen extends StatefulWidget {
-  @override
-  _MapScreenState createState() => _MapScreenState();
-}
+Read the map from the assets folder. Since monaco is small, we can keep it in memory
 
-class _MapScreenState extends State<MapScreen> {
-  late MapModel mapModel;
+```dart
+ByteData mapContent = await rootBundle.load("assets/monaco.map");
+Datastore datastore = await Mapfile.createFromContent(content: mapContent.buffer.asUint8List());
+```
 
-  @override
-  void initState() {
-    super.initState();
-    mapModel = MapModel(
-      renderer: yourRenderer, // DatastoreRenderer or other
-      position: MapPosition(
-        latitude: 52.5200,
-        longitude: 13.4050,
-        zoomLevel: 12,
-      ),
-    );
-  }
+Alternatively read the map from the file system.
 
+```dart
+datastore = await Mapfile.createFromFile(filename: filename);
+```
+
+Now create the MapModel. 
+Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range. 
+MapModel must be disposed after use.
+
+```dart
+_mapModel = await MapModelHelper.createOfflineMapModel(datastore: datastore, zoomlevelRange: const ZoomlevelRange(0, 21));
+```
+
+For demo purposes set a position and zoomlevel. 
+Note that this information would come from e.g. a gps provider in the real world.
+
+```dart
+MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
+_mapModel!.setPosition(mapPosition);
+```
+
+Use the MapModel to view the map
+
+```dart
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MapsforgeView(mapModel: mapModel),
+      appBar: AppBar(),
+      body: Center(
+        child: FutureBuilder(
+          // retrieve the MapModel we just created
+          future: _createModelFuture,
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.error != null) {
+              // an error occured, show it on screen
+              return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
+            }
+            if (snapshot.data != null) {
+              // cool we have already the MapModel so we can start the view
+              MapModel mapsforgeModel = snapshot.data;
+              return MapsforgeView(mapModel: mapsforgeModel);
+            }
+            // mapModel is still not availabe or no position defined
+            return const CircularProgressIndicator();
+          },
+      ),
     );
   }
-}
 ```
 
 ## Markers
@@ -124,8 +170,6 @@ See also [doc/marker](doc/marker.md)
 
 ## Overlays
 
-### Zoom Controls
-
 Zoom overlays provide interactive zoom in/out buttons.
 
 ```dart
@@ -144,37 +188,11 @@ ZoomInOverlay(
 )
 ```
 
-### Distance Scale
-
-Distance overlays show a scale ruler for measuring distances.
-
-```dart
-DistanceOverlay(mapModel: mapModel)
-```
-
-The distance overlay automatically:
-- Updates scale based on current zoom level
-- Shows appropriate units (meters, kilometers)
-- Positions itself in the bottom-left corner
-- Fades in/out during map interactions
-
-### Indoor Level Controls
-
-Indoor level overlays provide controls for navigating building floors.
-
-```dart
-IndoorlevelOverlay(mapModel: mapModel)
-```
-
-Features:
-- Automatic detection of indoor data
-- Floor level selection buttons
-- Smooth transitions between levels
-- Integration with indoor-enabled map data
+See also [doc/overlay](doc/overlay.md)
 
 ### Context Menus
 
-Context menu overlays handle long-press interactions with customizable menus.
+Context menu overlays handle interactions with customizable menus.
 
 ```dart
 // Custom context menu
