@@ -192,3 +192,25 @@ Monitor these critical metrics:
 - **Comprehensive Monitoring**: Real-time performance metrics and statistics
 
 These optimizations are automatically applied when using the latest version - no code changes required for most improvements. 
+
+
+## Performance Considerations
+
+### Marker Performance
+- Use appropriate zoom level ranges to limit marker visibility
+- Implement clustering for large marker sets (>1000 markers)
+- Consider marker pooling for frequently updated markers
+- Use efficient marker datastores for large datasets
+
+### Overlay Performance
+- Overlays are rendered on every frame during interactions
+- Keep overlay rendering lightweight
+- Use animation controllers for smooth transitions
+- Implement proper disposal to prevent memory leaks
+
+### Memory Management
+- Dispose of markers and overlays when no longer needed
+- Use weak references for large marker collections
+- Implement efficient caching strategies
+- Monitor memory usage with large datasets
+

@@ -176,6 +176,40 @@ final poiMarker = PoiMarker<String>(
 );
 ```
 
+# Custom Marker Types
+
+Create custom markers by extending the base `Marker` class:
+
+```dart
+class CustomMarker<T> extends Marker<T> {
+  final String customProperty;
+  
+  CustomMarker({
+    required this.customProperty,
+    required LatLong latLong,
+    super.zoomlevelRange,
+    super.key,
+  });
+
+  @override
+  Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
+    // Implement zoom-level specific rendering
+  }
+
+  @override
+  void render(UiRenderContext renderContext) {
+    // Implement custom rendering logic
+  }
+
+  @override
+  bool isTapped(TapEvent tapEvent) {
+    // Implement custom tap detection
+    return false;
+  }
+}
+```
+
+
 # Marker Management
 
 ## Display Markers

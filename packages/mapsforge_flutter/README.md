@@ -1,4 +1,4 @@
-# mapsforge_view
+# mapsforge_flutter
 
 A comprehensive Flutter widget library for interactive map visualization with advanced marker and overlay support. 
 This package provides the main UI components for the Mapsforge Flutter ecosystem, enabling rich mapping experiences with customizable overlays, markers, and gesture handling.
@@ -11,7 +11,7 @@ This package provides the main UI components for the Mapsforge Flutter ecosystem
 ![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
 ![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
-## Overview
+# Overview
 
 With this library, you can load and render *mapfiles* directly from a user’s device. **No internet connection required!**
 Perfect for offline navigation, custom mapping applications, and seamless user experiences!
@@ -28,29 +28,35 @@ mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting
 - Context menu support with customizable actions
 - Indoor mapping support with level controls
 - Performance-optimized rendering with caching
+- Hillshading
+- Drag-and-drop support
+- Online and Offline Maps
+- Map rotation
+- Convert PBF files to mapsforge files
+- Convert PBF files to osm files
 
-## Core Components
+# Core Components
 
-### Map Widget
+## Map Widget
 - **`MapsforgeView`**: Complete map widget with all standard features
 - **`TileView`**: Core tile rendering widget
 - **`LabelView`**: Label rendering with rotation support
 - **`MapModel`**: Central state management for map data
 
-### Gesture System
+## Gesture System
 - **`MoveGestureDetector`**: Pan and drag gestures
 - **`ScaleGestureDetector`**: Pinch-to-zoom gestures
 - **`RotationGestureDetector`**: Two-finger rotation
 - **`TapGestureDetector`**: Single and long tap handling
 - **`DoubleTapGestureDetector`**: Double-tap zoom
 
-### Overlay System
+## Overlay System
 - **`ZoomOverlay`**: Zoom in/out buttons
 - **`DistanceOverlay`**: Scale ruler display
 - **`IndoorlevelOverlay`**: Indoor level controls
 - **`ContextMenuOverlay`**: Contextual menu system
 
-### Marker System
+## Marker System
 - **`PoiMarker`**: Point of interest markers with icons
 - **`CircleMarker`**: Circular markers with customizable styling
 - **`AreaMarker`**: Polygon area markers
@@ -58,7 +64,7 @@ mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting
 - **`PolylineMarker`**: Line and path markers
 - **`CaptionMarker`**: Text label markers
 
-## Installation
+# Installation
 
 Add these packages to your `pubspec.yaml`:
 
@@ -71,12 +77,12 @@ dependencies:
   mapsforge_flutter_rendertheme: ^4.0.0
 ```
 
-Note: See [doc/install](doc/install.md) for working with a local copy of mapsforge_flutter. 
+Note: See [doc/install](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/install.md) for working with a local copy of mapsforge_flutter. 
 
 
-## Quick Start
+# Quick Start
 
-### Basic Map Setup
+## Basic Map Setup
 
 Find the device to pixel ratio end set the global property accordingly. 
 This will shrink the tiles, requires to produce more tiles but makes the map crispier.
@@ -144,7 +150,7 @@ Use the MapModel to view the map
   }
 ```
 
-## Markers
+# Markers
 
 ```dart
 // Create a POI marker with custom icon
@@ -166,9 +172,9 @@ Stack(
 )
 ```
 
-See also [doc/marker](doc/marker.md)
+See also [doc/marker](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/marker.md)
 
-## Overlays
+# Overlays
 
 Zoom overlays provide interactive zoom in/out buttons.
 
@@ -188,9 +194,9 @@ ZoomInOverlay(
 )
 ```
 
-See also [doc/overlay](doc/overlay.md)
+See also [doc/overlay](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/overlay.md)
 
-### Context Menus
+# Context Menus
 
 Context menu overlays handle interactions with customizable menus.
 
@@ -228,99 +234,7 @@ ContextMenuOverlay(
 )
 ```
 
-## Advanced Usage
-
-### Custom Marker Types
-
-Create custom markers by extending the base `Marker` class:
-
-```dart
-class CustomMarker<T> extends Marker<T> {
-  final String customProperty;
-  
-  CustomMarker({
-    required this.customProperty,
-    required LatLong latLong,
-    super.zoomlevelRange,
-    super.key,
-  });
-
-  @override
-  Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
-    // Implement zoom-level specific rendering
-  }
-
-  @override
-  void render(UiRenderContext renderContext) {
-    // Implement custom rendering logic
-  }
-
-  @override
-  bool isTapped(TapEvent tapEvent) {
-    // Implement custom tap detection
-    return false;
-  }
-}
-```
-
-### Marker Clustering
-
-For performance with large marker sets, implement clustering:
-
-```dart
-class ClusteredMarkerDatastore extends MarkerDatastore {
-  final double clusterRadius;
-  
-  ClusteredMarkerDatastore({this.clusterRadius = 50.0});
-  
-  @override
-  List<Marker> getVisibleMarkers(BoundingBox boundary, int zoomLevel) {
-    final markers = super.getVisibleMarkers(boundary, zoomLevel);
-    
-    if (zoomLevel < 12) {
-      return clusterMarkers(markers);
-    }
-    
-    return markers;
-  }
-  
-  List<Marker> clusterMarkers(List<Marker> markers) {
-    // Implement clustering algorithm
-    // Return cluster markers instead of individual markers
-  }
-}
-```
-
-### Performance Optimization
-
-```dart
-// Use zoom level ranges to control marker visibility
-final marker = PoiMarker(
-  latLong: position,
-  src: "icon.png",
-  zoomlevelRange: ZoomlevelRange(10, 18), // Only visible at these zoom levels
-);
-
-// Implement efficient marker filtering
-class FilteredMarkerDatastore extends DefaultMarkerDatastore {
-  String? categoryFilter;
-  
-  @override
-  List<Marker> getVisibleMarkers(BoundingBox boundary, int zoomLevel) {
-    var markers = super.getVisibleMarkers(boundary, zoomLevel);
-    
-    if (categoryFilter != null) {
-      markers = markers.where((marker) {
-        return marker.key?.toString().contains(categoryFilter!) ?? false;
-      }).toList();
-    }
-    
-    return markers;
-  }
-}
-```
-
-### Gesture Customization
+# Gesture Customization
 
 ```dart
 // Create custom map widget with selective gestures
@@ -351,70 +265,16 @@ class CustomMapView extends StatelessWidget {
 }
 ```
 
-## Package Structure
+# Dependencies
 
-```
-lib/
-├── mapsforge.dart              # Main map components
-├── marker.dart                 # Marker system exports
-├── overlay.dart                # Overlay system exports
-├── context_menu.dart           # Context menu components
-├── gesture.dart                # Gesture handling exports
-└── src/
-    ├── map_model.dart          # Core map state management
-    ├── map_position.dart       # Position and viewport handling
-    ├── mapsforge_view.dart     # Main map widget
-    ├── marker/                 # Marker implementations
-    ├── overlay/                # Overlay implementations
-    ├── gesture/                # Gesture detector implementations
-    └── context_menu/           # Context menu system
-```
-
-## Dependencies
-
+- **`mapsforge_flutter`**: Flutter UI framework
 - **`mapsforge_flutter_core`**: Core utilities and data models
-- **`mapsforge_flutter_renderer`**: Rendering engine integration
+- **`mapsforge_flutter_renderer`**: Rendering engine integration (online and offline)
 - **`mapsforge_flutter_rendertheme`**: Theme and styling support
-- **`flutter`**: Flutter framework
-- **`rxdart`**: Reactive programming support
-- **`ecache`**: Caching infrastructure
-- **`logging`**: Logging support
+- **`mapsforge_flutter_mapfile`**: Map file reading and processing
 
-## Performance Considerations
 
-### Marker Performance
-- Use appropriate zoom level ranges to limit marker visibility
-- Implement clustering for large marker sets (>1000 markers)
-- Consider marker pooling for frequently updated markers
-- Use efficient marker datastores for large datasets
-
-### Overlay Performance
-- Overlays are rendered on every frame during interactions
-- Keep overlay rendering lightweight
-- Use animation controllers for smooth transitions
-- Implement proper disposal to prevent memory leaks
-
-### Memory Management
-- Dispose of markers and overlays when no longer needed
-- Use weak references for large marker collections
-- Implement efficient caching strategies
-- Monitor memory usage with large datasets
-
-## Testing
-
-The package includes comprehensive tests covering:
-- Marker creation and rendering
-- Overlay functionality and positioning
-- Gesture handling and interactions
-- Performance with large datasets
-- Memory management and disposal
-
-Run tests with:
-```bash
-flutter test
-```
-
-## Contributing
+# Contributing
 
 1. Follow the existing code style and patterns
 2. Add tests for new functionality
@@ -422,9 +282,11 @@ flutter test
 4. Ensure performance optimizations are maintained
 5. Test with various map data sources and scenarios
 
-## Examples
+# Examples
 
 Check the `apps/simple_example` directory for a basic map setup.
+
+Check the `apps/online_renderer_example` directory for a basic setup for pure online rendering.
 
 Check the `apps/complete_example` directory for comprehensive usage examples including:
 - Basic map setup with markers
@@ -432,11 +294,11 @@ Check the `apps/complete_example` directory for comprehensive usage examples inc
 - Advanced gesture handling
 - Indoor mapping integration
 
-## License
+# License
 
 This package is part of the Mapsforge Flutter ecosystem. See the main project license for details.
 
-## Related Packages
+# Related Packages
 
 - **`mapsforge_flutter_core`**: Core utilities and data structures
 - **`mapsforge_flutter_renderer`**: High-performance tile rendering for offline mapfiles as well as online renderers
@@ -444,18 +306,18 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 - **`mapsforge_flutter_mapfile`**: Map file reading and processing
 - **`mapsforge_flutter`**: Complete Flutter mapping solution with markers, overlays, and gesture handling
 
-## Documentation
+# Documentation
 
-Decision why/how we use melos: [doc/melos](doc/melos.md)
+Decision why/how we use melos: [doc/melos](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/melos.md)
 
-Setting up a new project which contains mapsforge_flutter: [doc/install](doc/install.md)
+Setting up a new project which contains mapsforge_flutter: [doc/install](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/install.md)
 
-Upgrading to a newer version: [doc/changes](doc/changes.md)
+Upgrading to a newer version: [doc/changes](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/changes.md)
 
-Known issue: [doc/known_issues](doc/known_issues.md)
+Known issue: [doc/known_issues](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/known_issues.md)
 
-Working with markers: [doc/marker](doc/marker.md)
+Working with markers: [doc/marker](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/marker.md)
 
-Performance considerations during development: [doc/performance](doc/performance.md)
+Performance considerations during development: [doc/performance](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/performance.md)
 
-Enhanced usage of the library:  [doc/enhanced_usage](doc/enhanced_usage.md)
+Enhanced usage of the library:  [doc/enhanced_usage](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/enhanced_usage.md)
