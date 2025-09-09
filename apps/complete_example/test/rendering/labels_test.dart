@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
@@ -9,57 +8,14 @@ import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
-///
-/// flutter test --update-goldens
-///
-///
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() {
-    _initLogging();
-    //MapsforgeSettingsMgr().strokeIncreaseFactor = 1.5;
-  });
-
-  testWidgets('Create one single tile and compare it with golden', (WidgetTester tester) async {
+  testWidgets('Check labels test', (WidgetTester tester) async {
     int l = 0;
-    int zoomlevel = 16;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
-
-    var img = await (tester.runAsync(() async {
-      String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
-      Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
-
-      Datastore mapFile = await Mapfile.createFromFile(filename: 'test/rendering/monaco.map', preferredLanguage: null);
-
-      Tile tile = Tile(x, y, zoomlevel, l);
-      JobRequest mapGeneratorJob = new JobRequest(tile);
-      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(mapFile, renderTheme, useSeparateLabelLayer: false);
-
-      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
-      return await jobResult.picture!.convertPictureToImage();
-    }));
-
-    assert(img != null);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(),
-        home: Scaffold(
-          body: Center(child: RawImage(image: img)),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await expectLater(find.byType(RawImage), matchesGoldenFile('goldens/datastorerenderer_single.png'));
-  });
-
-  testWidgets('Create 9 tiles, assemble them to one image and compare it with golden', (WidgetTester tester) async {
-    int l = 0;
-    int zoomlevel = 15;
-    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.4262); // lat/lon: 43.7399/7.4262;
-    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.7399);
+    int zoomlevel = 21;
+    int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.42238); // lat/lon: 43.73954/7.42238;
+    int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.73954);
 
     tester.binding.window.physicalSizeTestValue = Size(MapsforgeSettingsMgr().tileSize * 9, MapsforgeSettingsMgr().tileSize * 9);
     // resets the screen to its orinal size after the test end
@@ -93,8 +49,6 @@ void main() {
         imgs.add(await jobResult.picture!.convertPictureToImage());
       }
 
-      //      ByteData bytes = await img.toByteData(format: ImageByteFormat.png);
-      //      assert(bytes != null);
       return imgs;
     }));
 
@@ -104,12 +58,9 @@ void main() {
       MaterialApp(
         theme: ThemeData(),
         home: Scaffold(
-          body: SizedBox(
-            width: MapsforgeSettingsMgr().tileSize * 3,
-            height: MapsforgeSettingsMgr().tileSize * 3,
+          body: Center(
             child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
+              children: [
                 Row(
                   children: <Widget>[
                     RawImage(image: imgs![0]),
@@ -138,17 +89,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    //await tester.pump();
-    await expectLater(find.byType(SizedBox), matchesGoldenFile('goldens/datastorerenderer_multi.png'));
+    await expectLater(find.byType(Center), matchesGoldenFile('goldens/check_labels.png'));
   });
-}
-
-void _initLogging() {
-  // Print output to console.
-  Logger.root.onRecord.listen((LogRecord r) {
-    print('${r.time}\t${r.loggerName}\t[${r.level.name}]:\t${r.message}');
-  });
-
-  // Root logger level.
-  Logger.root.level = Level.FINEST;
 }

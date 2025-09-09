@@ -16,7 +16,7 @@ class MapModelHelper {
     Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
     // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-    DatastoreRenderer renderer = DatastoreRenderer(datastore, rendertheme, false);
+    DatastoreRenderer renderer = DatastoreRenderer(datastore, rendertheme);
     // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
     MapModel mapModel = MapModel(renderer: renderer, zoomlevelRange: zoomlevelRange);
     return mapModel;

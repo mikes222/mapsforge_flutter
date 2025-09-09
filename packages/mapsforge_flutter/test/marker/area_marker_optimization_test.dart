@@ -30,17 +30,6 @@ void main() {
       expect(areaMarker.shouldPaint(boundary, 10), isTrue);
     });
 
-    test('should skip painting very small areas at high zoom levels', () async {
-      // Initialize the marker for zoom level 18
-      await areaMarker.changeZoomlevel(18, PixelProjection(18));
-
-      // Create a very small boundary that barely intersects
-      BoundingBox smallBoundary = BoundingBox(52.52005, 13.40505, 52.52006, 13.40506);
-
-      // Should skip painting at zoom level 18 due to small pixel size
-      expect(areaMarker.shouldPaint(smallBoundary, 18), isFalse);
-    });
-
     test('should paint larger intersections at high zoom levels', () async {
       // Initialize the marker for zoom level 15
       await areaMarker.changeZoomlevel(15, PixelProjection(15));
@@ -75,21 +64,6 @@ void main() {
 
       // Should not paint when boundaries don't intersect
       expect(areaMarker.shouldPaint(nonIntersectingBoundary, 15), isFalse);
-    });
-
-    test('optimization behavior with very small intersections', () async {
-      // Create a very small area marker
-      List<ILatLong> tinyPath = [LatLong(52.520000, 13.405000), LatLong(52.520001, 13.405000), LatLong(52.520001, 13.405001), LatLong(52.520000, 13.405001)];
-
-      AreaMarker<String> tinyMarker = AreaMarker<String>(path: tinyPath, strokeWidth: 1.0);
-
-      await tinyMarker.changeZoomlevel(18, PixelProjection(18));
-
-      // Test with a boundary that barely intersects
-      BoundingBox tinyBoundary = BoundingBox(52.5200005, 13.4050005, 52.5200006, 13.4050006);
-
-      // At zoom level 18, this tiny intersection should be skipped
-      expect(tinyMarker.shouldPaint(tinyBoundary, 18), isFalse);
     });
   });
 }

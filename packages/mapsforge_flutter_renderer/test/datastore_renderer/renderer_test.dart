@@ -47,7 +47,7 @@ void main() {
       );
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
       JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);

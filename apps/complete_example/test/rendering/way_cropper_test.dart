@@ -113,7 +113,7 @@ void main() async {
       String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
       Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
       JobRequest mapGeneratorJob0 = JobRequest(tile);
       JobResult jobResult1 = (await (dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertPictureToImage();
@@ -233,7 +233,7 @@ void main() async {
       String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
       Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
       JobRequest mapGeneratorJob0 = JobRequest(tile);
       JobResult jobResult1 = (await (dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertPictureToImage();
@@ -326,7 +326,7 @@ void main() async {
       String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
       Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
       JobRequest mapGeneratorJob0 = JobRequest(tile);
       JobResult jobResult1 = (await (dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertPictureToImage();
@@ -400,7 +400,7 @@ void main() async {
       String renderthemeString = await rootBundle.loadString("assets/render_theme/defaultrender.xml");
       Rendertheme renderTheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      Renderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
       JobRequest mapGeneratorJob0 = JobRequest(tile);
       JobResult jobResult1 = (await (dataStoreRenderer.executeJob(mapGeneratorJob0)));
       var img1 = await jobResult1.picture!.convertPictureToImage();

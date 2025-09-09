@@ -41,7 +41,7 @@ class DatastoreRenderer extends Renderer {
   /// When true, labels are rendered onto tiles for better performance but
   /// prevent map rotation. When false, labels are rendered separately to
   /// support dynamic map rotation without label distortion.
-  final bool renderLabels;
+  final bool useSeparateLabelLayer;
 
   final Datastore datastore;
 
@@ -62,13 +62,13 @@ class DatastoreRenderer extends Renderer {
   ///
   /// [datastore] Data source providing map features
   /// [rendertheme] Theme defining visual styling rules
-  /// [renderLabels] Whether to render labels onto tile images
+  /// [useSeparateLabelLayer] Whether to render labels at a separate layer (true) or onto the tiles directly (false
   /// [useIsolateReader] Whether to use an isolate for rendering. If you use [IsolateMapfile] do NOT use an isolateReader
-  DatastoreRenderer(this.datastore, this.rendertheme, this.renderLabels, {bool useIsolateReader = false}) {
-    if (renderLabels) {
-      tileDependencies = TileDependencies();
-    } else {
+  DatastoreRenderer(this.datastore, this.rendertheme, {this.useSeparateLabelLayer = true, bool useIsolateReader = false}) {
+    if (useSeparateLabelLayer) {
       tileDependencies = null;
+    } else {
+      tileDependencies = TileDependencies();
     }
     if (!useIsolateReader) {
       _datastoreReader = DatastoreReaderImpl(datastore);
@@ -112,7 +112,10 @@ class DatastoreRenderer extends Renderer {
     UiRenderContext renderContext = UiRenderContext(canvas: canvas, reference: leftUpper, projection: projection);
     drawWays(layerContainers, renderContext);
 
-    if (renderLabels) {
+    if (useSeparateLabelLayer) {
+      // Returning the canvas with the map but without labels onto it. The labels have to be drawn directly into the view.
+      layerContainers.labels.clear();
+    } else {
       _LabelResult labelResult = _processLabels(renderContext, layerContainers.labels, job.tile);
       // rendering the labels directly into the canvas. Rotation of labels if the map rotates is not supported in this case.
       for (RenderInfo renderInfo in labelResult.labelsToDisposeAfterDrawing) {
@@ -121,9 +124,6 @@ class DatastoreRenderer extends Renderer {
       for (RenderInfo renderInfo in labelResult.labelsForNeighbours) {
         renderInfo.render(renderContext);
       }
-    } else {
-      // Returning the canvas with the map but without labels onto it. The labels have to be drawn directly into the view.
-      layerContainers.labels.clear();
     }
     session.checkpoint("data read and prepared");
     TilePicture? picture = await canvas.finalizeBitmap();
@@ -165,7 +165,7 @@ class DatastoreRenderer extends Renderer {
 
   @override
   bool supportLabels() {
-    return !renderLabels;
+    return useSeparateLabelLayer;
   }
 
   _LabelResult _processLabels(UiRenderContext renderContext, RenderInfoCollection renderInfoCollection, Tile tile) {
@@ -246,7 +246,7 @@ class DatastoreRenderer extends Renderer {
 
   @override
   String getRenderKey() {
-    return "${rendertheme.hashCode ^ renderLabels.hashCode}";
+    return "${rendertheme.hashCode ^ useSeparateLabelLayer.hashCode}";
   }
 }
 

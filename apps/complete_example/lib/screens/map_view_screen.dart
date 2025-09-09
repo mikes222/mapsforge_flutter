@@ -173,7 +173,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
       Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, rendertheme, false, useIsolateReader: !StorageMgr().isEnabled());
+      renderer = DatastoreRenderer(datastore!, rendertheme, useIsolateReader: !StorageMgr().isEnabled());
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {

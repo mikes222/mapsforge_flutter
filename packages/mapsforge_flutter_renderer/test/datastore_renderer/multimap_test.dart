@@ -28,7 +28,7 @@ main() async {
 
     Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
-    DatastoreRenderer renderer = DatastoreRenderer(datastore, renderTheme, true);
+    DatastoreRenderer renderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
     int zoomlevel = 18; //zoomlevel
     int indoorLevel = 0; // indoor level

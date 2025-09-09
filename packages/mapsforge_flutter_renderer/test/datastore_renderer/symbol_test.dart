@@ -35,7 +35,7 @@ void main() {
       datastore.addPoi(const PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'TestPOI'), Tag('ele', '500m')], LatLong(46, 18)));
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, true);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
       JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
