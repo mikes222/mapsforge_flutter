@@ -96,8 +96,12 @@ class TileJobQueue {
 
     // retrieve all available tiles from cache
     for (Tile tile in tiles) {
-      TilePicture? picture = _tileCache.get(tile);
-      if (picture != null) tileSet.images[tile] = picture;
+      try {
+        TilePicture? picture = _tileCache.get(tile);
+        if (picture != null) tileSet.images[tile] = picture;
+      } catch (error) {
+        // previous tile generation not yet done or another error occured, check in the second pass
+      }
     }
     if (myJob._abort) return;
     if (tileSet.images.isNotEmpty) {
