@@ -90,11 +90,11 @@ class PoiWayListPage extends StatelessWidget {
               RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(tile.zoomLevel);
               List renderers = _wayCount.isClosedWay
                   ? renderthemeLevel.matchClosedWay(tile, _wayCount.way)
-                  : renderthemeLevel.matchLinearWay(tile, _wayCount.way);
+                  : renderthemeLevel.matchOpenWay(tile, _wayCount.way);
               if (renderers.length == 0)
                 renderers = _wayCount.isClosedWay
                     ? renderthemeLevel.matchClosedWay(tileMax, _wayCount.way)
-                    : renderthemeLevel.matchLinearWay(tileMax, _wayCount.way);
+                    : renderthemeLevel.matchOpenWay(tileMax, _wayCount.way);
               return Card(
                 child: Row(
                   children: [

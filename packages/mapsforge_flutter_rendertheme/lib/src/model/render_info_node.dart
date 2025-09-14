@@ -6,7 +6,7 @@ import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
 class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
   final NodeProperties nodeProperties;
 
-  /// used for linesymbol
+  /// used for linesymbol and polyline_text
   final double rotateRadians;
 
   RenderInfoNode(this.nodeProperties, T renderinstruction, {this.rotateRadians = 0, super.caption}) : super(renderinstruction);

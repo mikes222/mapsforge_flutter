@@ -1,6 +1,6 @@
-import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 /// The TileDependecies class tracks the dependencies between tiles for labels.
 /// When the labels are drawn on a per-tile basis it is important to know where
@@ -17,101 +17,54 @@ class TileDependencies {
   ///
   /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
   /// Using a more efficient data structure for better performance
-  final Map<Tile, Set<Dependency>> _overlapData = {};
-
-  /// Cache for frequently accessed tiles to avoid repeated lookups
-  final Map<Tile, bool> _drawnTileCache = {};
+  final Map<Tile, Dependency> _overlapData = {};
 
   TileDependencies();
 
   void dispose() {
-    _overlapData.forEach((tile, set) {
-      for (var dependency in set) {
-        if (dependency.tiles.isNotEmpty) {
-          //dependency.element.dispose();
-          dependency.tiles.clear();
-        }
-      }
+    _overlapData.forEach((tile, dependency) {
+      dependency.clear();
     });
     _overlapData.clear();
-    _drawnTileCache.clear();
   }
 
   /// stores an MapElementContainer that clashesWith from one tile (the one being drawn) to
   /// another (which must not have been drawn before).
   ///
-  /// @param from    origin tile
-  /// @param to      tile the label clashesWith to
-  /// @param element the MapElementContainer in question
-  void addOverlappingElement(RenderInfo element, List<Tile> tiles) {
-    if (tiles.isEmpty) return; // Early exit for empty tiles
-
-    Dependency dependency = Dependency(element, List.from(tiles)); // Create copy to avoid mutation issues
-    for (var tile in tiles) {
-      _overlapData.putIfAbsent(tile, () => <Dependency>{}).add(dependency);
-    }
+  void addOverlappingElement(RenderInfo renderInfo, Tile tile) {
+    _overlapData.putIfAbsent(tile, () => Dependency()).add(renderInfo);
   }
 
   /// Returns true if the given neighbour is already drawn
-  bool isDrawn(Tile neighbour) {
+  bool isDrawn(Tile tile) {
     // Check cache first for frequently accessed tiles
-    if (_drawnTileCache.containsKey(neighbour)) {
-      return _drawnTileCache[neighbour]!;
+    Dependency? dependency = _overlapData[tile];
+    if (dependency != null) {
+      return dependency.drawn;
     }
-
-    bool drawn = _overlapData.containsKey(neighbour) && _overlapData[neighbour]!.isEmpty;
-
-    // Cache the result for future lookups
-    _drawnTileCache[neighbour] = drawn;
-    return drawn;
+    return false;
   }
-
-  /// If we want to draw an overlapping element and find out that this element
-  /// overlaps to an neighbour which is already drawn (see [addOverlappingElement]
-  /// We want to revert it and do not draw that element at all.
-  // void removeOverlappingElement(Tile neighbour, MapElementContainer element) {
-  //   if (_overlapData[neighbour] == null) return;
-  //   if (_overlapData[neighbour]!.length > 0) {
-  //     _overlapData[neighbour]?.remove(element);
-  //     if (_overlapData[neighbour]!.length == 0) {
-  //       // we removed the last element, remove the key so that we treat the neighbour as "not yet seen"
-  //       _overlapData.remove(neighbour);
-  //     }
-  //   }
-  // }
 
   /// Retrieves the overlap data from the neighbouring tiles and removes them from cache
   ///
   /// @param tileToDraw the tile which we want to draw now
   /// @param neighbour the tile the label clashesWith from. This is the originating tile where the label was not fully fit into
   /// @return a List of the elements
-  Set<Dependency>? getOverlappingElements(Tile tileToDraw) {
-    Set<Dependency>? map = _overlapData[tileToDraw];
-    if (map == null) {
-      // we do not have anything for this tile but mark it as "drawn" now
-      _overlapData[tileToDraw] = <Dependency>{};
-      _drawnTileCache[tileToDraw] = true; // Update cache
-      return null;
-    }
+  Set<RenderInfo>? getOverlappingElements(Tile tileToDraw) {
+    return _overlapData[tileToDraw]?.renderInfos;
+  }
 
-    if (map.isEmpty) {
-      _drawnTileCache[tileToDraw] = true; // Update cache
-      return null;
+  void setDrawn(Tile tile) {
+    Dependency? dependency = _overlapData[tile];
+    if (dependency != null) {
+      dependency.drawn = true;
+      dependency.renderInfos.clear();
     }
+  }
 
-    Set<Dependency> result = <Dependency>{};
-    // Use iterator for better performance with large sets
-    final iterator = map.iterator;
-    while (iterator.moveNext()) {
-      final dependency = iterator.current;
-      bool removed = dependency.tiles.remove(tileToDraw);
-      assert(removed);
-      result.add(dependency);
-    }
-
-    // mark as drawn
-    map.clear();
-    _drawnTileCache[tileToDraw] = true; // Update cache
+  Set<Tile> getNeighbours(Tile tile) {
+    Set<Tile> result = tile.getNeighbours();
+    result.removeWhere((test) => isDrawn(test));
     return result;
   }
 
@@ -130,9 +83,20 @@ class TileDependencies {
 /////////////////////////////////////////////////////////////////////////////
 
 class Dependency {
-  final RenderInfo element;
+  final Set<RenderInfo> renderInfos = {};
 
-  List<Tile> tiles;
+  bool drawn = false;
 
-  Dependency(this.element, this.tiles);
+  Dependency();
+
+  void add(RenderInfo renderInfo) {
+    // is already rendered, makes no sense to store additional renderinfos
+    if (drawn) return;
+    renderInfos.add(renderInfo);
+  }
+
+  void clear() {
+    renderInfos.clear();
+    drawn = false;
+  }
 }

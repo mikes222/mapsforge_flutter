@@ -106,7 +106,7 @@ class RenderthemeZoomlevel {
   /// [tile] Tile context containing indoor level information
   /// [way] Linear way to match against rules
   /// Returns list of applicable rendering instructions
-  List<Renderinstruction> matchLinearWay(final Tile tile, Way way) {
+  List<Renderinstruction> matchOpenWay(final Tile tile, Way way) {
     MatchingCacheKey matchingCacheKey = MatchingCacheKey(way.tags, tile.indoorLevel);
 
     List<Renderinstruction>? matchingList = openWayMatchingCache[matchingCacheKey];

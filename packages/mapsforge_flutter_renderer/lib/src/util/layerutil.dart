@@ -1,35 +1,17 @@
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 class LayerUtil {
-  static Set<Tile> getTilesByTile(Tile upperLeft, Tile lowerRight) {
-    Set<Tile> tiles = {};
-    for (int tileY = upperLeft.tileY; tileY <= lowerRight.tileY; ++tileY) {
-      for (int tileX = upperLeft.tileX; tileX <= lowerRight.tileX; ++tileX) {
-        tiles.add(Tile(tileX, tileY, upperLeft.zoomLevel, upperLeft.indoorLevel));
-        //        tiles.add(tileCache.getTile(tileX, tileY, zoomLevel, tileSize));
-      }
-    }
-    return tiles;
-  }
-
-  static bool haveSpace(RenderInfo item, List<RenderInfo> list) {
+  static bool _haveSpace(RenderInfo item, List<RenderInfo> list) {
     for (RenderInfo outputElement in list) {
-      try {
-        if (outputElement.clashesWith(item)) {
-          //print("$outputElement --------clashesWith-------- $item");
-          return false;
-        }
-      } catch (error) {
-        // seems we cannot find out if we clash, so just use it for now
-        return true;
+      if (outputElement.clashesWith(item)) {
+        return false;
       }
     }
     return true;
   }
 
-  /// returns the list of elements which can be added without collisions and disposes() elements which cannot be added
+  /// returns the list of elements which can be added without collisions
   static List<RenderInfo> removeCollisions(List<RenderInfo> addElements, List<RenderInfo> keepElements) {
     // Use spatial indexing for better performance when dealing with many elements
     if (addElements.length > 10 || keepElements.length > 10) {
@@ -39,7 +21,7 @@ class LayerUtil {
     // Use original algorithm for small lists
     List<RenderInfo> toDraw2 = [];
     for (var newElement in addElements) {
-      if (haveSpace(newElement, keepElements)) {
+      if (_haveSpace(newElement, keepElements)) {
         toDraw2.add(newElement);
       } else {
         //newElement.dispose();

@@ -123,6 +123,7 @@ abstract class Renderinstruction {
   /// Display mode controlling when this instruction should be rendered.
   MapDisplay display = MapDisplay.IFSPACE;
 
+  /// ShapePainter for LineSymbol and Symbol needs to be disposed. This is called when the rule is disposed.
   void dispose() {}
 
   /// Scales rendering parameters based on zoom level and base instruction.

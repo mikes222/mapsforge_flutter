@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
@@ -103,7 +105,20 @@ class RenderinstructionPolylineText extends Renderinstruction
   @override
   MapRectangle getBoundary(RenderInfo renderInfo) {
     MapSize textSize = getEstimatedTextBoundary(renderInfo.caption ?? "", strokeWidth);
+    if (renderInfo is RenderInfoNode) {
+      if (!_isBoxMoreHorizontal(renderInfo.rotateRadians)) {
+        textSize = MapSize(width: textSize.height, height: textSize.width);
+      }
+    }
     return MapRectangle(-textSize.width / 2, -textSize.height / 2, textSize.width / 2, textSize.height / 2);
+  }
+
+  bool _isBoxMoreHorizontal(double rotationRadians) {
+    // Normalize rotation to [0, π/2] range
+    double normalizedRotation = (rotationRadians.abs()) % (pi / 2);
+
+    // If closer to 0, it's horizontal; if closer to π/2, it's vertical
+    return normalizedRotation < pi / 4;
   }
 
   @override

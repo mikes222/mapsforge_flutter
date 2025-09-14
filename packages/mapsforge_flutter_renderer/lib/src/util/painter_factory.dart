@@ -99,25 +99,11 @@ class PainterFactory {
     }
   }
 
-  Future<void> initDrawingLayers(LayerContainerCollection layerContainers) async {
+  Future<void> initDrawingLayers(RenderInfoCollection renderInfoCollection) async {
     var session = PerformanceProfiler().startSession(category: "PainterFactory.initDrawingLayers");
     List<Future> futures = [];
 
-    for (RenderInfo renderInfo in layerContainers.drawings.renderInfos) {
-      futures.add(createShapePainter(renderInfo));
-      if (futures.length > 200) {
-        await Future.wait(futures);
-        futures.clear();
-      }
-    }
-    for (RenderInfo renderInfo in layerContainers.clashingInfoCollection.renderInfos) {
-      futures.add(createShapePainter(renderInfo));
-      if (futures.length > 200) {
-        await Future.wait(futures);
-        futures.clear();
-      }
-    }
-    for (RenderInfo renderInfo in layerContainers.labels.renderInfos) {
+    for (RenderInfo renderInfo in renderInfoCollection.renderInfos) {
       futures.add(createShapePainter(renderInfo));
       if (futures.length > 200) {
         await Future.wait(futures);

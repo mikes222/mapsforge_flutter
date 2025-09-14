@@ -17,8 +17,8 @@ import 'renderinstruction.dart';
 
 /// Represents an icon along a polyline on the map.
 class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, RepeatSrcMixin implements RenderinstructionWay {
-  static final double REPEAT_GAP_DEFAULT = 150;
-  static final double REPEAT_START_DEFAULT = 30;
+  static final double REPEAT_GAP_DEFAULT = 100;
+  static final double REPEAT_START_DEFAULT = 20;
 
   MapPositioning position = MapPositioning.CENTER;
 
@@ -49,6 +49,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
     return renderinstruction;
   }
 
+  @override
   void dispose() {
     shapePainter?.dispose();
   }

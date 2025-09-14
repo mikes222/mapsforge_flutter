@@ -20,14 +20,18 @@ class LayerContainer {
     levels = List.generate(maxLevels + 1, (int idx) => RenderInfoCollection([]));
   }
 
+  /// adds a renderinfo to a level. This will be rendered into a tile in the order given by level.
   void add(int level, RenderInfo element) {
     levels[level].renderInfos.add(element);
   }
 
+  /// Adds a potential clashing renderinfo for label-rendering. Clashes will be sorted out and the non-clashing elements will be drawn into the ui if specified so that the
+  /// labels can rotate with the map OR rendered into the tile.
   void addLabel(RenderInfo element) {
     _labels.renderInfos.add(element);
   }
 
+  /// Adds a potential clashing renderinfo. Clashes will be sorted out and the non-clashing elements will be rendered into the tile
   void addClash(RenderInfo element) {
     _clashingInfoCollection.renderInfos.add(element);
   }

@@ -61,12 +61,13 @@ class DatastoreReaderIsolateRequest {
 //////////////////////////////////////////////////////////////////////////////
 
 /// Reads the content of a datastore - e.g. MapFile - either via isolate or direct
-/// in the main thread.
+/// in the main thread. Returns the [LayerContainerCollection] whereas the clashingInfoCollection is already ordered and clash-free.
 class DatastoreReaderImpl implements DatastoreReader {
   final Datastore datastore;
 
   DatastoreReaderImpl(this.datastore);
 
+  @override
   Future<LayerContainerCollection?> read(Tile tile, RenderthemeZoomlevel renderthemeLevel) async {
     if (!(await datastore.supportsTile(tile))) {
       return null;
@@ -81,6 +82,7 @@ class DatastoreReaderImpl implements DatastoreReader {
     return layerContainerCollection;
   }
 
+  @override
   Future<LayerContainerCollection?> readLabels(Tile leftUpper, Tile rightLower, RenderthemeZoomlevel renderthemeLevel) async {
     // if (!(await datastore.supportsTile(leftUpper))) {
     //   return null;
@@ -105,6 +107,7 @@ class DatastoreReaderImpl implements DatastoreReader {
     PixelProjection projection = PixelProjection(tile.zoomLevel);
     for (PointOfInterest pointOfInterest in datastoreBundle.pointOfInterests) {
       List<Renderinstruction> renderinstructions = renderthemeLevel.matchNode(tile.indoorLevel, pointOfInterest);
+      if (renderinstructions.isEmpty) continue;
       LayerContainer layerContainer = layerContainerCollection.getLayer(pointOfInterest.layer);
       NodeProperties nodeProperties = NodeProperties(pointOfInterest, projection);
       for (Renderinstruction renderinstruction in renderinstructions) {
@@ -126,6 +129,7 @@ class DatastoreReaderImpl implements DatastoreReader {
         } else {
           renderinstructions = _retrieveShapesForOpenWay(tile, renderthemeLevel, wayProperties);
         }
+        if (renderinstructions.isEmpty) continue;
         LayerContainer layerContainer = layerContainerCollection.getLayer(way.layer);
         for (Renderinstruction renderinstruction in renderinstructions) {
           renderinstruction.matchWay(layerContainer, wayProperties);
@@ -144,7 +148,7 @@ class DatastoreReaderImpl implements DatastoreReader {
   }
 
   List<Renderinstruction> _retrieveShapesForOpenWay(Tile tile, RenderthemeZoomlevel renderthemeLevel, WayProperties wayProperties) {
-    List<Renderinstruction> shapes = renderthemeLevel.matchLinearWay(tile, wayProperties.way);
+    List<Renderinstruction> shapes = renderthemeLevel.matchOpenWay(tile, wayProperties.way);
     return shapes;
   }
 }
