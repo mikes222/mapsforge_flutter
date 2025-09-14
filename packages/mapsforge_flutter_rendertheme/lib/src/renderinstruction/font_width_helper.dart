@@ -20,15 +20,15 @@ class FontWidthHelper {
     double weightMultiplier = fontStyle == MapFontStyle.BOLD || fontStyle == MapFontStyle.BOLD_ITALIC ? 1.1 : 1.0;
 
     // Add stroke padding if present
-    double strokePadding = strokeWidth > 0 ? strokeWidth * 2 : 0;
+    double strokePadding = strokeWidth * 2;
 
-    double width = text.length * fontSize * charWidthFactor * weightMultiplier + strokePadding * 2;
+    double width = text.length * fontSize * charWidthFactor * weightMultiplier + strokePadding;
 
     int lines = (width / maxTextLength).ceil();
     if (lines > 1) {
-      width = maxTextLength;
+      width = maxTextLength + strokePadding;
     }
-    return MapSize(width: width, height: fontSize * lines);
+    return MapSize(width: width, height: (fontSize + strokePadding) * lines);
   }
 
   /// Gets the font family name for TextStyle creation.
@@ -60,12 +60,12 @@ class FontWidthHelper {
   double _getCharacterWidthFactor(MapFontFamily fontFamily) {
     switch (fontFamily) {
       case MapFontFamily.MONOSPACE:
-        return 0.6; // Monospace characters are wider
+        return 0.9; // Monospace characters are wider
       case MapFontFamily.SERIF:
-        return 0.55; // Serif fonts are slightly wider
+        return 0.9; // Serif fonts are slightly wider
       case MapFontFamily.SANS_SERIF:
       case MapFontFamily.DEFAULT:
-        return 0.5; // Sans-serif average
+        return 0.9; // Sans-serif average
     }
   }
 }
