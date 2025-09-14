@@ -5,4 +5,6 @@ class MapSize {
   final double height;
 
   const MapSize({required this.width, required this.height});
+
+  const MapSize.empty() : width = 0, height = 0;
 }

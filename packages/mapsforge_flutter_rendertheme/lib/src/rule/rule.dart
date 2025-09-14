@@ -139,6 +139,7 @@ abstract class Rule implements SymbolSearcher {
     }
   }
 
+  /// Searches for the boundary of a symbol denoted by the given [id]. Returns null if the symbol is not found.
   @override
   MapRectangle? searchForSymbolBoundary(String id) {
     Renderinstruction? result = renderinstructionNodes.firstWhereOrNull((element) => element is RenderinstructionSymbol && element.id == id);

@@ -132,11 +132,9 @@ class RenderinstructionCaption extends Renderinstruction
   }
 
   @override
-  MapRectangle getBoundary() {
-    // boundary depends on the text, so fake it
-    double widthEstimated = MapsforgeSettingsMgr().maxTextWidth;
-    double heightEstimated = fontSize;
-    return calculateBoundaryWithSymbol(position, widthEstimated, heightEstimated);
+  MapRectangle getBoundary(RenderInfo renderInfo) {
+    MapSize textSize = getEstimatedTextBoundary(renderInfo.caption ?? "", strokeWidth);
+    return calculateBoundaryWithSymbol(position, textSize.width, textSize.height);
   }
 
   MapRectangle calculateBoundaryWithSymbol(MapPositioning pos, double fontWidth, double fontHeight) {

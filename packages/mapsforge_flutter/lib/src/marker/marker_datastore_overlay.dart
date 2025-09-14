@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter/src/marker/marker_datastore_painter.dart';
 import 'package:mapsforge_flutter/src/transform_widget.dart';
 import 'package:mapsforge_flutter/src/util/tile_helper.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 /// A Flutter widget overlay that renders markers from a [MarkerDatastore] on a map.
 ///
@@ -194,7 +195,10 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
 
             // Handle position changes at the same zoom level
             if (_cachedZoomlevel == position.zoomlevel) {
-              BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
+              BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(
+                mapPosition: position,
+                screensize: screensize * MapsforgeSettingsMgr().getDeviceScaleFactor(),
+              );
 
               // Check if we've moved outside the cached bounding box
               if (_cachedBoundingBox == null || !_cachedBoundingBox!.containsBoundingBox(boundingBox)) {
@@ -209,7 +213,10 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
             // Handle zoom level changes
             if (_cachedZoomlevel != position.zoomlevel) {
               if (widget.zoomlevelRange.isWithin(position.zoomlevel)) {
-                BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(mapPosition: position, screensize: screensize);
+                BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(
+                  mapPosition: position,
+                  screensize: screensize * MapsforgeSettingsMgr().getDeviceScaleFactor(),
+                );
                 boundingBox = boundingBox.extendMargin(widget.extendMargin);
 
                 // Notify datastore of zoom level change - this may trigger

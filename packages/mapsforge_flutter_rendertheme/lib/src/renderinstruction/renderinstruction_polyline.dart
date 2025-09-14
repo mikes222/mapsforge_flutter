@@ -1,13 +1,8 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/layer_container.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/map_cap.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/map_join.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/nodeproperties.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/render_info_way.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/scale.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/wayproperties.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/renderinstruction.dart';
@@ -136,7 +131,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary(RenderInfo renderInfo) {
     // boundary depends on the area
     throw UnimplementedError();
   }

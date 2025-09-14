@@ -74,7 +74,7 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   bool isTapped(TapEvent tapEvent) {
     Mappoint absolute = renderInfo!.nodeProperties.getCoordinatesAbsolute();
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
-    MapRectangle boundary = renderinstruction.getBoundary();
+    MapRectangle boundary = renderinstruction.getBoundary(renderInfo!);
     bool tpd =
         tapped.x >= absolute.x + boundary.left &&
         tapped.x <= absolute.x + boundary.right &&
@@ -115,6 +115,6 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   @override
   MapRectangle? searchForSymbolBoundary(String symbolId) {
-    return renderInfo?.renderInstruction.getBoundary();
+    return renderInfo?.renderInstruction.getBoundary(renderInfo!);
   }
 }

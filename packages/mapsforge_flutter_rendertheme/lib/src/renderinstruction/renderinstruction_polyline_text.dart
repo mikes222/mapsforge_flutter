@@ -101,11 +101,9 @@ class RenderinstructionPolylineText extends Renderinstruction
   }
 
   @override
-  MapRectangle getBoundary() {
-    // boundary depends on the text, so fake it
-    double widthEstimated = getMaxTextWidth();
-    double heightEstimated = fontSize;
-    return MapRectangle(-widthEstimated / 2, -heightEstimated / 2, widthEstimated / 2, heightEstimated / 2);
+  MapRectangle getBoundary(RenderInfo renderInfo) {
+    MapSize textSize = getEstimatedTextBoundary(renderInfo.caption ?? "", strokeWidth);
+    return MapRectangle(-textSize.width / 2, -textSize.height / 2, textSize.width / 2, textSize.height / 2);
   }
 
   @override
@@ -117,13 +115,14 @@ class RenderinstructionPolylineText extends Renderinstruction
     if (caption == null || caption.trim().isEmpty) {
       return;
     }
+    caption = caption.trim();
     LineSegmentPath? lineSegmentPath = wayProperties.calculateStringPath(dy);
     if (lineSegmentPath == null || lineSegmentPath.segments.isEmpty) {
       return;
     }
 
-    double widthEstimated = getMaxTextWidth();
-    lineSegmentPath = lineSegmentPath.reducePathForText(widthEstimated, repeatStart, repeatGap);
+    MapSize textSize = getEstimatedTextBoundary(caption, strokeWidth);
+    lineSegmentPath = lineSegmentPath.reducePathForText(textSize.width, repeatStart, repeatGap);
     if (lineSegmentPath.segments.isEmpty) return;
 
     PixelProjection projection = PixelProjection(zoomlevel);
@@ -131,10 +130,10 @@ class RenderinstructionPolylineText extends Renderinstruction
       // So text isn't upside down
       bool doInvert = segment.end.x < segment.start.x;
       Mappoint start;
-      double diff = (segment.length() - widthEstimated) / 2;
+      double diff = (segment.length() - textSize.width) / 2;
       if (doInvert) {
         //start = segment.end.offset(-origin.x, -origin.y);
-        start = segment.pointAlongLineSegment(diff + widthEstimated);
+        start = segment.pointAlongLineSegment(diff + textSize.width);
       } else {
         //start = segment.start.offset(-origin.x, -origin.y);
         start = segment.pointAlongLineSegment(diff);

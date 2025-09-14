@@ -17,6 +17,8 @@ import 'package:xml/xml.dart';
 class RenderinstructionRect extends Renderinstruction with BaseSrcMixin, BitmapSrcMixin, FillSrcMixin, StrokeSrcMixin implements RenderinstructionWay {
   String? id;
 
+  int zoomlevel = -1;
+
   RenderinstructionRect(int level) {
     this.level = level;
     setBitmapPercent(100);
@@ -32,6 +34,7 @@ class RenderinstructionRect extends Renderinstruction with BaseSrcMixin, BitmapS
       ..fillSrcMixinScale(this, zoomlevel)
       ..strokeSrcMixinScale(this, zoomlevel);
     renderinstruction.id = id;
+    renderinstruction.zoomlevel = zoomlevel;
     return renderinstruction;
   }
 
@@ -71,10 +74,10 @@ class RenderinstructionRect extends Renderinstruction with BaseSrcMixin, BitmapS
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary(RenderInfo renderInfo) {
     if (boundary != null) return boundary!;
-
-    boundary = const MapRectangle(0, 0, 0, 0);
+    // the boundary is in the WayProperties which are not available yet
+    boundary = const MapRectangle.zero();
     return boundary!;
   }
 

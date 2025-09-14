@@ -195,7 +195,7 @@ abstract class Renderinstruction {
 
   /// Returns the boundary of this object around the center of the area or the poi. If the boundary cannot determined exactly we need to estimate it.
   /// This method is used only if the renderinstruction adds itself to label or clash (see [LayerContainer])
-  MapRectangle getBoundary();
+  MapRectangle getBoundary(RenderInfo renderInfo);
 
   /// Checks the nodeProperties and adds itself to the layerContainer if there is something to draw.
   void matchNode(LayerContainer layerContainer, NodeProperties nodeProperties);

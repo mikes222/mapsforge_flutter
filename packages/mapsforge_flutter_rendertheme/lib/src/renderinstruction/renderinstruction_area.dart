@@ -99,7 +99,7 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary(RenderInfo renderInfo) {
     // boundary depends on the way
     throw UnimplementedError();
   }

@@ -1,8 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/layer_container.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/nodeproperties.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/wayproperties.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
@@ -63,7 +61,7 @@ class RenderinstructionHillshading extends Renderinstruction with BaseSrcMixin i
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary(RenderInfo renderInfo) {
     throw UnimplementedError();
   }
 

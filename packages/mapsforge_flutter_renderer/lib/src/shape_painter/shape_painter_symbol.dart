@@ -61,7 +61,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (symbolImage == null) return;
     MappointRelative relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
-    MapRectangle boundary = renderinstruction.getBoundary();
+    MapRectangle boundary = renderinstruction.getBoundary(renderInfo);
     UiMatrix? matrix;
     if (renderinstruction.rotateWithMap) {
       if (renderinstruction.theta != 0) {
@@ -108,7 +108,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     if (symbolImage == null) return;
     Mappoint point = wayProperties.getCenterAbsolute(renderContext.projection);
     MappointRelative relative = point.offset(renderContext.reference);
-    MapRectangle boundary = renderinstruction.getBoundary();
+    MapRectangle boundary = renderinstruction.getBoundary(renderInfo);
     UiMatrix? matrix;
     if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
       matrix = UiMatrix();

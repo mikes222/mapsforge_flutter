@@ -3,13 +3,9 @@ import 'dart:math';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/layer_container.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/map_positioning.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/nodeproperties.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/render_info_node.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/scale.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/wayproperties.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/renderinstruction_way.dart';
@@ -107,7 +103,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary(RenderInfo renderInfo) {
     double halfWidth = getBitmapWidth() / 2;
     double halfHeight = getBitmapHeight() / 2;
     MapRectangle boundary = MapRectangle(-halfWidth, -halfHeight, halfWidth, halfHeight);

@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_font_family.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_font_style.dart';
+import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/font_width_helper.dart';
 
 mixin TextSrcMixin {
   /// stroke will be drawn thicker at or above this zoomlevel
@@ -58,6 +60,10 @@ mixin TextSrcMixin {
 
   double getMaxTextWidth() {
     return _maxTextWidth;
+  }
+
+  MapSize getEstimatedTextBoundary(String caption, double strokeWidth) {
+    return FontWidthHelper().getBoundaryForText(caption, fontFamily, fontStyle, fontSize, strokeWidth, _maxTextWidth);
   }
 
   MapFontStyle get fontStyle => _fontStyle;

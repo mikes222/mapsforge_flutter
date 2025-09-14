@@ -13,7 +13,7 @@ void main() {
 
   testWidgets('Check labels test', (WidgetTester tester) async {
     int l = 0;
-    int zoomlevel = 21;
+    int zoomlevel = 20;
     int x = MercatorProjection.fromZoomlevel(zoomlevel).longitudeToTileX(7.42238); // lat/lon: 43.73954/7.42238;
     int y = MercatorProjection.fromZoomlevel(zoomlevel).latitudeToTileY(43.73954);
 
@@ -89,6 +89,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await expectLater(find.byType(Center), matchesGoldenFile('goldens/check_labels.png'));
+    await expectLater(find.byType(Center), matchesGoldenFile('goldens/labels.png'));
   });
 }

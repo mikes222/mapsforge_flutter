@@ -114,7 +114,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary([RenderInfo? renderInfo]) {
     if (boundary != null) return boundary!;
 
     double halfWidth = getBitmapWidth() / 2;

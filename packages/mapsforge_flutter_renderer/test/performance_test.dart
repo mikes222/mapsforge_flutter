@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// Mock RenderInstruction for testing
 class _MockRenderInstruction extends Renderinstruction {
   @override
-  MapRectangle getBoundary() => MapRectangle(0, 0, 0, 0);
+  MapRectangle getBoundary(RenderInfo renderInfo) => const MapRectangle.zero();
 
   @override
   ShapePainter? getPainter() => null;

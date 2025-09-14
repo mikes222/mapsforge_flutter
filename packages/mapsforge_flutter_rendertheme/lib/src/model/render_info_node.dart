@@ -40,7 +40,7 @@ class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
   @override
   MapRectangle getBoundaryAbsolute() {
     if (boundaryAbsolute != null) return boundaryAbsolute!;
-    MapRectangle boundary = renderInstruction.getBoundary();
+    MapRectangle boundary = renderInstruction.getBoundary(this);
     Mappoint mappoint = nodeProperties.getCoordinatesAbsolute();
     boundaryAbsolute = boundary.shift(mappoint);
     return boundaryAbsolute!;

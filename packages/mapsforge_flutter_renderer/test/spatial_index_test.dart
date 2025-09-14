@@ -1,8 +1,8 @@
-import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 /// Simple mock RenderInfo for testing spatial index functionality
 class TestRenderInfo extends RenderInfo {
@@ -55,7 +55,7 @@ class ExceptionRenderInfo extends TestRenderInfo {
 /// Minimal mock RenderInstruction
 class _MockRenderInstruction extends Renderinstruction {
   @override
-  MapRectangle getBoundary() => MapRectangle(0, 0, 0, 0);
+  MapRectangle getBoundary(RenderInfo renderInfo) => const MapRectangle.zero();
 
   @override
   ShapePainter? getPainter() => null;

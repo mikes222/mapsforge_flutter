@@ -123,7 +123,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
 
   @override
   MapRectangle? searchForSymbolBoundary(String symbolId) {
-    return renderInfo?.renderInstruction.getBoundary();
+    return renderInfo?.renderInstruction.getBoundary(renderInfo!);
   }
 
   @override

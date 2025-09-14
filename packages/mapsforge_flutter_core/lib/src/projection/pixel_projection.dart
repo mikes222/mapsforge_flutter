@@ -57,8 +57,8 @@ class PixelProjection extends MercatorProjection {
   /// [pixelY] The pixel Y coordinate to convert
   /// Returns the tile Y coordinate containing this pixel
   int pixelYToTileY(double pixelY) {
-    assert(pixelY >= 0);
-    assert(pixelY <= _mapSize);
+    assert(pixelY >= 0, "pixelY ($pixelY) should be >= 0");
+    assert(pixelY <= _mapSize, "pixelY ($pixelY) should be <= mapSize ($_mapSize)");
     return max(min(pixelY / tileSize, scalefactor.scalefactor - 1), 0).floor();
   }
 
@@ -85,8 +85,8 @@ class PixelProjection extends MercatorProjection {
   /// Returns the latitude in degrees
   double pixelYToLatitude(double pixelY) {
     pixelY = min(max(0, pixelY), _mapSize.toDouble());
-    assert(pixelY >= 0);
-    assert(pixelY <= _mapSize);
+    assert(pixelY >= 0, "pixelY ($pixelY) should be >= 0");
+    assert(pixelY <= _mapSize, "pixelY ($pixelY) should be <= mapSize ($_mapSize)");
     const double pi2 = 2 * pi;
     const double pi360 = 360 / pi;
     double y = 0.5 - (pixelY / _mapSize);

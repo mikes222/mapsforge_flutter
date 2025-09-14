@@ -106,7 +106,7 @@ class RenderinstructionCircle extends Renderinstruction with BaseSrcMixin, FillS
   }
 
   @override
-  MapRectangle getBoundary() {
+  MapRectangle getBoundary(RenderInfo renderInfo) {
     if (boundary != null) return boundary!;
     double halfWidth = radius;
     if (!isStrokeTransparent()) halfWidth += strokeWidth / 2;

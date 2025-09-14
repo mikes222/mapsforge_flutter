@@ -116,7 +116,7 @@ class MyContextMenu extends StatelessWidget {
     if (marker.key is PointOfInterest) {
       PointOfInterest poi = marker.key;
       return _buildPoiInfo(poi, tile);
-    } else if (marker.key == "tile") {
+    } else if (marker.key is! WayInfo) {
       // tile
       return const SizedBox();
     } else {

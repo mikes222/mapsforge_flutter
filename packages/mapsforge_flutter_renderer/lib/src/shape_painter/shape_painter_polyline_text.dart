@@ -76,17 +76,17 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
       return;
     }
 
-    double widthEstimated = renderinstruction.getMaxTextWidth();
-    lineSegmentPath = lineSegmentPath.reducePathForText(widthEstimated, renderinstruction.repeatStart, renderinstruction.repeatGap);
+    MapSize textSize = renderinstruction.getEstimatedTextBoundary(renderInfo.caption!, renderinstruction.strokeWidth);
+    lineSegmentPath = lineSegmentPath.reducePathForText(textSize.width, renderinstruction.repeatStart, renderinstruction.repeatGap);
     if (lineSegmentPath.segments.isEmpty) return;
 
     for (var segment in lineSegmentPath.segments) {
       // So text isn't upside down
       bool doInvert = segment.end.x <= segment.start.x;
       Mappoint start;
-      double diff = (segment.length() - widthEstimated) / 2;
+      double diff = (segment.length() - textSize.width) / 2;
       if (doInvert) {
-        start = segment.pointAlongLineSegment(diff + widthEstimated);
+        start = segment.pointAlongLineSegment(diff + textSize.width);
       } else {
         start = segment.pointAlongLineSegment(diff);
       }
