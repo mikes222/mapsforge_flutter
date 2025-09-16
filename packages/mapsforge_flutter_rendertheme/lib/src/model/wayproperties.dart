@@ -82,8 +82,7 @@ class WayProperties implements NodeWayProperties {
   /// distance: positive -> left offset, negative -> right
   static List<Mappoint> parallelPath(List<Mappoint> originals, double distance) {
     int n = originals.length - 1;
-    List<Mappoint> u = [];
-    List<Mappoint> offsets = [];
+    List<MappointRelative> u = [];
 
     // Generate an array u[] of unity vectors of each direction
     for (int k = 0; k < n; ++k) {
@@ -91,23 +90,35 @@ class WayProperties implements NodeWayProperties {
       double s = originals[k + 1].y - originals[k].y;
       double l = sqrt(c * c + s * s);
       if (l == 0) {
-        u.add(const Mappoint(0, 0));
+        u.add(const MappointRelative.zero());
       } else {
-        u.add(Mappoint(c / l, s / l));
+        u.add(MappointRelative(c / l, s / l));
       }
     }
 
+    List<Mappoint> offsets = [];
     // For the start point calculate the normal
-    offsets.add(Mappoint(originals[0].x - distance * u[0].y, originals[0].y + distance * u[0].x));
+    offsets.add(Mappoint(originals[0].x - distance * u[0].dy, originals[0].y + distance * u[0].dx));
 
     // For 1 to N-1 calculate the intersection of the offset lines
     for (int k = 1; k < n; k++) {
-      double l = distance / (1 + u[k].x * u[k - 1].x + u[k].y * u[k - 1].y);
-      offsets.add(Mappoint(originals[k].x - l * (u[k].y + u[k - 1].y), originals[k].y + l * (u[k].x + u[k - 1].x)));
+      double denominator = 1 + u[k].dx * u[k - 1].dx + u[k].dy * u[k - 1].dy;
+      if (denominator.abs() < 1e-10) {
+        // Near zero, would cause infinity
+        // Use simple perpendicular offset instead of intersection
+        double x = originals[k].x - distance * u[k].dy;
+        double y = originals[k].y + distance * u[k].dx;
+        offsets.add(Mappoint(x, y));
+      } else {
+        double l = distance / denominator;
+        double x = originals[k].x - l * (u[k].dy + u[k - 1].dy);
+        double y = originals[k].y + l * (u[k].dx + u[k - 1].dx);
+        offsets.add(Mappoint(x, y));
+      }
     }
 
     // For the end point use the normal
-    offsets.add(Mappoint(originals[n].x - distance * u[n - 1].y, originals[n].y + distance * u[n - 1].x));
+    offsets.add(Mappoint(originals[n].x - distance * u[n - 1].dy, originals[n].y + distance * u[n - 1].dx));
 
     return offsets;
   }

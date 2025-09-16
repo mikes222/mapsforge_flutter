@@ -100,3 +100,30 @@ Afterwards:
 ```bash
 melos bootstrap
 ```
+
+# Test your mapfile with complete_example
+
+Complete example provides useful tools such as 
+
+- Debug-info to see the contents of a mapfile for a certain location
+- Debug-info to examine the structure of a mapfile
+- Performance profiles to see potential memory- and timing issues
+
+Step 1: Download the project from git
+
+Step 2: Activate melos and perform ``melos bootstrap``. See section above.
+
+Step 3: Start complete_example in your emulator or at your device to see if everything works
+
+Step 4: To use a custom rendertheme perform the following steps:
+
+- Copy the rendertheme to complete_example/assets/render_theme
+- add the rendertheme to pubspec.yaml
+- open complete_example/lib/models/app_models.dart and add the new rendertheme to ``RenderTheme``
+- Start the application again and choose the new rendertheme in the configuration section.
+
+Step 5: To use a custom mapfile perform the following steps:
+
+- open complete_example/lib/models/app_models.dart and add a new ``MapLocation`` to ``MapLocations``
+- Start the application again and choose the new mapfile in the configuration section.
+

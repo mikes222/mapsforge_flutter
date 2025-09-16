@@ -15,7 +15,9 @@ class Mappoint {
 
   /// @param x the x coordinate of this point.
   /// @param y the y coordinate of this point.
-  const Mappoint(this.x, this.y);
+  const Mappoint(this.x, this.y) : assert(x >= 0, "x ($x) must be >= 0"), assert(y >= 0, "y ($y) must be >= 0");
+
+  const Mappoint.zero() : x = 0, y = 0;
 
   /// @return the euclidian distance from this point to the given point.
   double distance(Mappoint point) {

@@ -14,6 +14,8 @@ class MappointRelative {
   /// @param y the y coordinate of this point.
   const MappointRelative(this.dx, this.dy);
 
+  const MappointRelative.zero() : dx = 0, dy = 0;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is Mappoint && runtimeType == other.runtimeType && dx == other.x && dy == other.y;
 

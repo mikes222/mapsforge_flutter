@@ -45,13 +45,14 @@ class PlatformFileDownloadService {
 
   /// Download file for native platforms
   Future<void> _downloadForNative(String url, String filename, String? savePath, Function(int received, int total)? onProgress) async {
-    final response = await _dio.get(
+    final response = await _dio.download(
       url,
+      savePath ?? filename,
       onReceiveProgress: onProgress,
-      options: Options(responseType: ResponseType.bytes, followRedirects: false, validateStatus: (status) => status != null && status < 400),
+      options: Options(responseType: ResponseType.stream, followRedirects: false, validateStatus: (status) => status != null && status < 400),
     );
 
-    await _saveNativeFile(response.data, savePath ?? filename);
+    await _saveNativeFile(savePath ?? filename);
   }
 
   /// Trigger download on web platform
@@ -74,9 +75,9 @@ class PlatformFileDownloadService {
   }
 
   /// Save file on native platforms
-  Future<void> _saveNativeFile(List<int> data, String filePath) async {
-    File file = File(filePath);
-    await file.writeAsBytes(data);
+  Future<void> _saveNativeFile(String filePath) async {
+    // File file = File(filePath);
+    // await file.writeAsBytes(data);
 
     if (filePath.endsWith(".zip")) {
       String destination = filePath.substring(0, filePath.lastIndexOf("/"));

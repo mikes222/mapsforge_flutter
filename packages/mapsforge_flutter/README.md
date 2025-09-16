@@ -310,7 +310,7 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 
 Decision why/how we use melos: [doc/melos](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/melos.md)
 
-Setting up a new project which contains mapsforge_flutter: [doc/install](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/install.md)
+Setting up a new project which contains mapsforge_flutter: [doc/development](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/development.md)
 
 Upgrading to a newer version: [doc/changes](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/changes.md)
 
