@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/paragraph_cache_mgr.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
@@ -32,11 +33,11 @@ class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
 
   static Future<ShapePainterCaption> create(RenderinstructionCaption renderinstruction) async {
     return _taskQueue.add(() async {
-      //if (shape.shapePaint != null) return shape.shapePaint! as ShapePaintCaption;
-      ShapePainterCaption shapePaint = ShapePainterCaption._(renderinstruction);
-      //await shapePaint.init(symbolCache);
-      renderinstruction.shapePainter = shapePaint;
-      return shapePaint;
+      ShapePainterCaption? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterCaption?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterCaption._(renderinstruction);
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
     });
   }
 

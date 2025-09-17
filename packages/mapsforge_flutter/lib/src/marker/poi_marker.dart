@@ -43,7 +43,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   @override
   @mustCallSuper
   void dispose() {
-    renderinstruction.dispose();
+    //    renderinstruction.dispose();
     super.dispose();
   }
 

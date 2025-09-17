@@ -42,9 +42,7 @@ class RenderthemeZoomlevel {
   }
 
   void dispose() {
-    for (var element in rulesList) {
-      element.dispose();
-    }
+    rulesList.clear();
     nodeMatchingCache.dispose();
     openWayMatchingCache.dispose();
     closedWayMatchingCache.dispose();

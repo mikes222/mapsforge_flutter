@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_path.dart';
@@ -33,11 +34,12 @@ class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
 
   static Future<ShapePainterPolyline> create(RenderinstructionPolyline renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterPolyline;
-      ShapePainterPolyline shapePaint = ShapePainterPolyline._(renderinstruction);
-      await shapePaint.init();
-      renderinstruction.shapePainter = shapePaint;
-      return shapePaint;
+      ShapePainterPolyline? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterPolyline?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterPolyline._(renderinstruction);
+      await shapePainter.init();
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
     });
   }
 

@@ -19,6 +19,8 @@ typedef CreatePainter<T extends Renderinstruction> = Future<ShapePainter<T>> Fun
 /// - Provide XML attribute constants for theme parsing
 /// - Support symbol lookup and resource management
 abstract class Renderinstruction {
+  static int _nextId = 0;
+
   // XML attribute constants for theme parsing
 
   /// Text alignment attribute for centering text elements.
@@ -123,9 +125,6 @@ abstract class Renderinstruction {
   /// Display mode controlling when this instruction should be rendered.
   MapDisplay display = MapDisplay.IFSPACE;
 
-  /// ShapePainter for LineSymbol and Symbol needs to be disposed. This is called when the rule is disposed.
-  void dispose() {}
-
   /// Scales rendering parameters based on zoom level and base instruction.
   ///
   /// Copies display properties from the base instruction and applies
@@ -142,58 +141,6 @@ abstract class Renderinstruction {
   /// Used for debugging, logging, and instruction classification.
   String getType();
 
-  /// do not clone the painter
-  ShapePainter? shapePainter;
-
-  /// Completer for coordinating parallel creation attempts
-  Completer<ShapePainter?>? _painterCompleter;
-
-  ShapePainter? getPainter() => shapePainter;
-
-  /// Ultra-fast painter creation using Completer pattern
-  /// This is the fastest approach for high-concurrency scenarios
-  Future<ShapePainter<T>> createPainter<T extends Renderinstruction>(CreatePainter createPainter) async {
-    // Fast path: painter already exists
-    if (shapePainter != null) return shapePainter! as ShapePainter<T>;
-
-    // If creation is in progress, wait for it
-    if (_painterCompleter != null) {
-      final result = await _painterCompleter!.future;
-      if (result != null) return result as ShapePainter<T>;
-      // If result was null (cancelled), fall through to create new one
-    }
-
-    // Start new creation process
-    _painterCompleter = Completer<ShapePainter?>();
-
-    try {
-      // Double-check pattern in case another thread completed while we waited
-      if (shapePainter != null) {
-        _painterCompleter!.complete(shapePainter);
-        return shapePainter! as ShapePainter<T>;
-      }
-
-      // Create the painter
-      shapePainter = await createPainter();
-
-      // Complete the completer for any waiting threads
-      if (!_painterCompleter!.isCompleted) {
-        _painterCompleter!.complete(shapePainter);
-      }
-
-      return shapePainter! as ShapePainter<T>;
-    } catch (error, stackTrace) {
-      // Complete with error for any waiting threads
-      if (!_painterCompleter!.isCompleted) {
-        _painterCompleter!.completeError(error, stackTrace);
-      }
-      rethrow;
-    } finally {
-      // Clear the completer
-      _painterCompleter = null;
-    }
-  }
-
   /// Returns the boundary of this object around the center of the area or the poi. If the boundary cannot determined exactly we need to estimate it.
   /// This method is used only if the renderinstruction adds itself to label or clash (see [LayerContainer])
   MapRectangle getBoundary(RenderInfo renderInfo);
@@ -209,4 +156,8 @@ abstract class Renderinstruction {
   void secondPass(SymbolSearcher symbolSearcher) {}
 
   abstract int level;
+
+  final int serial;
+
+  Renderinstruction() : serial = _nextId++;
 }

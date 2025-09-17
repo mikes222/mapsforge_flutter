@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
@@ -34,10 +35,11 @@ class ShapePainterCircle extends UiShapePainter<RenderinstructionCircle> {
 
   static Future<ShapePainterCircle> create(RenderinstructionCircle renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterCircle;
-      ShapePainterCircle shapePaint = ShapePainterCircle._(renderinstruction);
-      renderinstruction.shapePainter = shapePaint;
-      return shapePaint;
+      ShapePainterCircle? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterCircle?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterCircle._(renderinstruction);
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
     });
   }
 

@@ -5,6 +5,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:mapsforge_flutter_renderer/online_renderer.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
 
 void main() {
@@ -54,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // The following caches also may be disposed. If you intend to start a new map it may make sense to keep them for faster startup
     SymbolCacheMgr().dispose();
     ParagraphCacheMgr().dispose();
+    PainterFactory().dispose();
     super.dispose();
   }
 

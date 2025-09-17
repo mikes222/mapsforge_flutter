@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_matrix.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
@@ -31,11 +32,12 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
 
   static Future<ShapePainterSymbol> create(RenderinstructionSymbol renderinstruction) async {
     return await _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterSymbol;
-      ShapePainterSymbol shapePaint = ShapePainterSymbol._(renderinstruction);
-      await shapePaint.init();
-      renderinstruction.shapePainter = shapePaint;
-      return shapePaint;
+      ShapePainterSymbol? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterSymbol?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterSymbol._(renderinstruction);
+      await shapePainter.init();
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
     });
   }
 

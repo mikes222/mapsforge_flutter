@@ -22,6 +22,32 @@ class PainterFactory {
   /// Counter tracking the number of painters created by this factory.
   int created = 0;
 
+  static PainterFactory? _instance;
+
+  final Map<int, ShapePainter> _shapePainters = {};
+
+  PainterFactory._();
+
+  factory PainterFactory() {
+    _instance ??= PainterFactory._();
+    return _instance!;
+  }
+
+  void dispose() {
+    for (var painter in _shapePainters.values) {
+      painter.dispose();
+    }
+    _shapePainters.clear();
+  }
+
+  ShapePainter<T>? getPainterForSerial<T extends Renderinstruction>(int serial) {
+    return _shapePainters[serial] as ShapePainter<T>?;
+  }
+
+  void setPainterForSerial(int serial, ShapePainter painter) {
+    _shapePainters[serial] = painter;
+  }
+
   /// Creates a shape painter for the given render information.
   ///
   /// Returns cached painter if available, otherwise creates a new painter
@@ -33,15 +59,17 @@ class PainterFactory {
   Future<ShapePainter<T>> createShapePainter<T extends Renderinstruction>(RenderInfo<T> renderInfo) async {
     if (renderInfo.shapePainter != null) return renderInfo.shapePainter!;
 
-    if (renderInfo.renderInstruction.getPainter() != null) {
-      renderInfo.shapePainter = renderInfo.renderInstruction.getPainter()! as ShapePainter<T>;
-      return renderInfo.renderInstruction.getPainter() as ShapePainter<T>;
+    ShapePainter? shapePainter = _shapePainters[renderInfo.renderInstruction.serial];
+    if (shapePainter != null) {
+      renderInfo.shapePainter = shapePainter as ShapePainter<T>;
+      return shapePainter;
     }
 
     switch (renderInfo.renderInstruction.getType()) {
       case "area":
         ShapePainter<T> shapePainter = await ShapePainterArea.create(renderInfo.renderInstruction as RenderinstructionArea) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       case "caption":
@@ -51,12 +79,14 @@ class PainterFactory {
         /// calculate the width/height of the caption.
         ShapePainter<T> shapePainter = await ShapePainterCaption.create(renderInfo.renderInstruction as RenderinstructionCaption) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePainter
         return shapePainter;
       case "circle":
         ShapePainter<T> shapePainter = await ShapePainterCircle.create(renderInfo.renderInstruction as RenderinstructionCircle) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       // case "Hillshading":
@@ -65,33 +95,39 @@ class PainterFactory {
       case "icon":
         ShapePainter<T> shapePainter = await ShapePainterIcon.create(renderInfo.renderInstruction as RenderinstructionIcon) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       case "linesymbol":
         ShapePainter<T> shapePainter = await ShapePainterLinesymbol.create(renderInfo.renderInstruction as RenderinstructionLinesymbol) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       case "polyline":
         // same as area but for open ways
         ShapePainter<T> shapePainter = await ShapePainterPolyline.create(renderInfo.renderInstruction as RenderinstructionPolyline) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       case "polylinetext":
         ShapePainter<T> shapePainter = await ShapePainterPolylineText.create(renderInfo.renderInstruction as RenderinstructionPolylineText) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         // since captions are dependent on the node/way properties we are not allowed to use this instance for other shapes, so do not assign it to shape.shapePainter
         return shapePainter;
       case "rect":
         ShapePainter<T> shapePainter = await ShapePainterRect.create(renderInfo.renderInstruction as RenderinstructionRect) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       case "symbol":
         ShapePainter<T> shapePainter = await ShapePainterSymbol.create(renderInfo.renderInstruction as RenderinstructionSymbol) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
+        _shapePainters[renderInfo.renderInstruction.serial] = shapePainter;
         ++created;
         return shapePainter;
       default:

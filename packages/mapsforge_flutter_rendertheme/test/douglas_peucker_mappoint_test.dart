@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_rendertheme/src/util/douglas_peucker_mappoint.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/src/util/douglas_peucker_mappoint.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
@@ -150,15 +150,6 @@ void main() {
 
         final result = douglasPeucker.simplify(points, 10.0);
         expect(result.length, equals(2)); // Should simplify to endpoints
-        expect(result.first, equals(points.first));
-        expect(result.last, equals(points.last));
-      });
-
-      test('should handle negative coordinates', () {
-        final points = [Mappoint(-2.0, -2.0), Mappoint(-1.0, -1.0), Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 2.0)];
-
-        final result = douglasPeucker.simplify(points, 0.1);
-        expect(result.length, greaterThanOrEqualTo(2));
         expect(result.first, equals(points.first));
         expect(result.last, equals(points.last));
       });

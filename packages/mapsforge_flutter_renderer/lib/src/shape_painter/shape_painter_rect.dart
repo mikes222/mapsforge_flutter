@@ -2,6 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_rect.dart';
@@ -37,11 +38,12 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
 
   static Future<ShapePainterRect> create(RenderinstructionRect renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterRect;
-      ShapePainterRect shapePaint = ShapePainterRect._(renderinstruction);
-      await shapePaint.init();
-      renderinstruction.shapePainter = shapePaint;
-      return shapePaint;
+      ShapePainterRect? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterRect?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterRect._(renderinstruction);
+      await shapePainter.init();
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
     });
   }
 

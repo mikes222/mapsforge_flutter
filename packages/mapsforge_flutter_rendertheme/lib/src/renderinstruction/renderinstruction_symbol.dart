@@ -64,11 +64,6 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
     return renderinstruction;
   }
 
-  @override
-  void dispose() {
-    shapePainter?.dispose();
-  }
-
   /// Returns the type identifier for this rendering instruction.
   @override
   String getType() {

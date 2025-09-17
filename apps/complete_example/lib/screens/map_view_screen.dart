@@ -16,6 +16,7 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:mapsforge_flutter_renderer/online_renderer.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:path_provider/path_provider.dart';
@@ -59,9 +60,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
   void dispose() {
     // mapModel must be disposed after use
     _mapModel?.dispose();
-    // disposing the symbolcache also frees a lot of memory
+    // The following caches also may be disposed. If you intend to start a new map it may make sense to keep them for faster startup
     SymbolCacheMgr().dispose();
     ParagraphCacheMgr().dispose();
+    PainterFactory().dispose();
     super.dispose();
   }
 
@@ -166,7 +168,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      datastore = await Mapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
+      datastore = await IsolateMapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);

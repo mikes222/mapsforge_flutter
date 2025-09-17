@@ -50,11 +50,6 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
   }
 
   @override
-  void dispose() {
-    shapePainter?.dispose();
-  }
-
-  @override
   String getType() {
     return "linesymbol";
   }

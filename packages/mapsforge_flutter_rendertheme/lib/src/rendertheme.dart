@@ -117,9 +117,7 @@ class Rendertheme {
   }
 
   void dispose() {
-    for (var element in rulesList) {
-      element.dispose();
-    }
+    rulesList.clear();
     for (var element in _renderthemeZoomlevels.values) {
       element.dispose();
     }

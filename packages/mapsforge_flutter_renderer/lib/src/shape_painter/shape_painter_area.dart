@@ -1,6 +1,7 @@
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_path.dart';
@@ -64,11 +65,12 @@ class ShapePainterArea extends UiShapePainter<RenderinstructionArea> {
   /// Returns initialized area shape painter
   static Future<ShapePainterArea> create(RenderinstructionArea renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterArea;
-      ShapePainterArea shapePaint = ShapePainterArea._(renderinstruction);
-      await shapePaint.init();
-      renderinstruction.shapePainter = shapePaint;
-      return shapePaint;
+      ShapePainterArea? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterArea?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterArea._(renderinstruction);
+      await shapePainter.init();
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
     });
   }
 
