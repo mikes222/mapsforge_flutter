@@ -15,7 +15,7 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
 
   late final UiTextPaint textPaint;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintPolylineText");
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterPolylineText");
 
   ShapePainterPolylineText._(RenderinstructionPolylineText renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {

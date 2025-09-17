@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
@@ -10,11 +11,12 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
+  static final _log = Logger('ShapePainterRect');
   UiPaint? fill;
 
   late final UiPaint? stroke;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintRect");
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterRect");
 
   ShapePainterRect._(RenderinstructionRect renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
@@ -45,15 +47,19 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
 
   Future<void> init() async {
     if (renderinstruction.bitmapSrc != null) {
-      SymbolImage? symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
-        renderinstruction.bitmapSrc!,
-        renderinstruction.getBitmapWidth(),
-        renderinstruction.getBitmapHeight(),
-      );
-      if (symbolImage == null) return;
-      fill ??= UiPaint.fill();
-      fill!.setBitmapShader(symbolImage);
-      symbolImage.dispose();
+      try {
+        SymbolImage? symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
+          renderinstruction.bitmapSrc!,
+          renderinstruction.getBitmapWidth(),
+          renderinstruction.getBitmapHeight(),
+        );
+        if (symbolImage == null) return;
+        fill ??= UiPaint.fill();
+        fill!.setBitmapShader(symbolImage);
+        symbolImage.dispose();
+      } catch (error) {
+        _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
+      }
     }
   }
 

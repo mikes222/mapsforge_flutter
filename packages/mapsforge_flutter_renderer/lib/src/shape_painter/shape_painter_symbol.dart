@@ -15,7 +15,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 /// This class must be disposed after use
 class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
-  static final _log = Logger('ShapePaintSymbol');
+  static final _log = Logger('ShapePainterSymbol');
 
   static const bool debug = false;
 

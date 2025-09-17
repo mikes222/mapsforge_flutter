@@ -18,7 +18,8 @@ enum RenderTheme {
   defaultTheme('Default Theme', 'assets/render_theme/defaultrender.xml'),
   darkTheme('Dark Theme', 'assets/render_theme/darkrender.xml'),
   mapsforgeTheme('Maspforge Default Theme', 'assets/render_theme/mapsforge_default.xml'),
-  siziliaTheme('Sicilia Hillshading Theme', 'assets/render_theme/sicilia_oam.xml');
+  siziliaTheme('Sicilia Hillshading Theme', 'assets/render_theme/sicilia_oam.xml'),
+  bikerTheme('Biker Theme', 'assets/render_theme/biker.xml');
 
   const RenderTheme(this.displayName, this.fileName);
   final String displayName;
@@ -186,6 +187,15 @@ class MapLocations {
       centerLongitude: 10,
       defaultZoomLevel: 4,
       country: 'World',
+    ),
+    MapLocation(
+      name: 'Biker',
+      description: 'Biker',
+      url: 'https://hiker.bg/bgmountains.map',
+      centerLatitude: 41,
+      centerLongitude: 23,
+      defaultZoomLevel: 11,
+      country: 'Unknown',
     ),
   ];
 

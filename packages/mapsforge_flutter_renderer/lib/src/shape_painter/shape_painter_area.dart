@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
@@ -19,7 +20,9 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// - Stroke outlines with customizable properties
 /// - Asynchronous initialization for bitmap loading
 /// - Task queue management for thread safety
-class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
+class ShapePainterArea extends UiShapePainter<RenderinstructionArea> {
+  static final _log = Logger('ShapePainterArea');
+
   /// Paint object for area fill rendering, null if transparent.
   UiPaint? fill;
 
@@ -27,7 +30,7 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   late final UiPaint? stroke;
 
   /// Task queue for managing asynchronous painter creation.
-  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintArea");
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterArea");
 
   /// Private constructor for creating area shape painters.
   ///
@@ -35,7 +38,7 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   /// configuration. Transparent fills and strokes are set to null for optimization.
   ///
   /// [renderinstruction] Area rendering instruction with styling parameters
-  ShapePaintArea._(RenderinstructionArea renderinstruction) : super(renderinstruction) {
+  ShapePainterArea._(RenderinstructionArea renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
       fill = UiPaint.fill(color: renderinstruction.fillColor);
     }
@@ -59,10 +62,10 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   ///
   /// [renderinstruction] Area rendering instruction to create painter for
   /// Returns initialized area shape painter
-  static Future<ShapePaintArea> create(RenderinstructionArea renderinstruction) async {
+  static Future<ShapePainterArea> create(RenderinstructionArea renderinstruction) async {
     return _taskQueue.add(() async {
-      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePaintArea;
-      ShapePaintArea shapePaint = ShapePaintArea._(renderinstruction);
+      if (renderinstruction.shapePainter != null) return renderinstruction.shapePainter! as ShapePainterArea;
+      ShapePainterArea shapePaint = ShapePainterArea._(renderinstruction);
       await shapePaint.init();
       renderinstruction.shapePainter = shapePaint;
       return shapePaint;
@@ -75,15 +78,19 @@ class ShapePaintArea extends UiShapePainter<RenderinstructionArea> {
   /// configures the fill paint accordingly.
   Future<void> init() async {
     if (renderinstruction.bitmapSrc != null) {
-      SymbolImage? symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
-        renderinstruction.bitmapSrc!,
-        renderinstruction.getBitmapWidth(),
-        renderinstruction.getBitmapHeight(),
-      );
-      if (symbolImage == null) return;
-      fill ??= UiPaint.fill();
-      fill!.setBitmapShader(symbolImage);
-      symbolImage.dispose();
+      try {
+        SymbolImage? symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
+          renderinstruction.bitmapSrc!,
+          renderinstruction.getBitmapWidth(),
+          renderinstruction.getBitmapHeight(),
+        );
+        if (symbolImage == null) return;
+        fill ??= UiPaint.fill();
+        fill!.setBitmapShader(symbolImage);
+        symbolImage.dispose();
+      } catch (error) {
+        _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
+      }
     }
   }
 

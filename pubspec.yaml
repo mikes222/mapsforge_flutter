@@ -6,11 +6,11 @@ environment:
   sdk: ^3.9.0
 
 dependency_overrides:
-  ecache:
-    path: ../ecache
+  #ecache:
+  #  path: ../ecache
 
 dev_dependencies:
-  melos: ^7.1.0
+  melos: ^7.1.1
 workspace:
   - packages/mapsforge_flutter_core
   - packages/mapsforge_flutter_mapfile

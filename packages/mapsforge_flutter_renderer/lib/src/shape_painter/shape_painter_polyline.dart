@@ -11,11 +11,11 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
-  static final _log = Logger('ShapePaintPolyline');
+  static final _log = Logger('ShapePainterPolyline');
 
   late final UiPaint? stroke;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintPolyline");
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterPolyline");
 
   ShapePainterPolyline._(RenderinstructionPolyline renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isStrokeTransparent() || renderinstruction.bitmapSrc != null) {

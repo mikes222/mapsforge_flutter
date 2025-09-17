@@ -12,7 +12,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
-  static final _log = Logger('ShapePaintSymbol');
+  static final _log = Logger('ShapePainterIcon');
 
   static const bool debug = false;
 

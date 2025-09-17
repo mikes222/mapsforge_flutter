@@ -40,7 +40,7 @@ class PainterFactory {
 
     switch (renderInfo.renderInstruction.getType()) {
       case "area":
-        ShapePainter<T> shapePainter = await ShapePaintArea.create(renderInfo.renderInstruction as RenderinstructionArea) as ShapePainter<T>;
+        ShapePainter<T> shapePainter = await ShapePainterArea.create(renderInfo.renderInstruction as RenderinstructionArea) as ShapePainter<T>;
         renderInfo.shapePainter = shapePainter;
         ++created;
         return shapePainter;

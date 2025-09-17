@@ -12,13 +12,13 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 /// Linesymbols must be disposed after use
 class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
-  static final _log = Logger('ShapePaintLinesymbol');
+  static final _log = Logger('ShapePainterLinesymbol');
 
   late final UiPaint fill;
 
   SymbolImage? symbolImage;
 
-  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePaintLinesymbol");
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterLinesymbol");
 
   ShapePainterLinesymbol._(RenderinstructionLinesymbol renderinstruction) : super(renderinstruction) {
     fill = UiPaint.fill(color: 0xff000000);
