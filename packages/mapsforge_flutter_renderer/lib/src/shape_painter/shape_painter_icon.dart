@@ -25,6 +25,7 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
 
   ShapePainterIcon._(RenderinstructionIcon renderinstruction) : super(renderinstruction) {
     fill = UiPaint.fill(color: renderinstruction.getBitmapColor());
+    init();
   }
 
   static Future<ShapePainterIcon> create(RenderinstructionIcon renderinstruction) async {
@@ -37,7 +38,7 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
     });
   }
 
-  Future<void> init() async {
+  void init() {
     try {
       textPainter = TextPainter(
         text: TextSpan(
@@ -57,6 +58,7 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
     }
   }
 
+  @override
   void dispose() {
     textPainter?.dispose();
     textPainter = null;

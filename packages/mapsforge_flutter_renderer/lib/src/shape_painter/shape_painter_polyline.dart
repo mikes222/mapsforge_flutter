@@ -57,7 +57,7 @@ class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
             stroke!.setColor(Colors.black);
           }
           stroke!.setBitmapShader(symbolImage);
-          symbolImage.dispose();
+          //symbolImage.dispose();
         }
       } catch (error) {
         _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);

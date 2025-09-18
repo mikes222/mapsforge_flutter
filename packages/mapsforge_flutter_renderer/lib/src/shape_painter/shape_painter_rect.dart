@@ -58,7 +58,7 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
         if (symbolImage == null) return;
         fill ??= UiPaint.fill();
         fill!.setBitmapShader(symbolImage);
-        symbolImage.dispose();
+        //symbolImage.dispose();
       } catch (error) {
         _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
       }

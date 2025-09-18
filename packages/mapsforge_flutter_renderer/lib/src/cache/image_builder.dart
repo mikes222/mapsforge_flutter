@@ -7,6 +7,9 @@ import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 class ImageBuilder {
   const ImageBuilder();
 
+  /// Make sure this method runs in a real loop, not a fake-loop while testing. Use e.g.
+  ///
+  ///     await tester.runAsync(() async {...});
   Future<SymbolImage> createPngSymbol(Uint8List bytes, int width, int height) async {
     if (width != 0 && height != 0) {
       var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);

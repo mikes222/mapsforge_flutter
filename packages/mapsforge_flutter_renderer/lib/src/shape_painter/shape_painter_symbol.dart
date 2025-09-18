@@ -43,11 +43,9 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
 
   Future<void> init() async {
     try {
-      symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
-        renderinstruction.bitmapSrc!,
-        renderinstruction.getBitmapWidth(),
-        renderinstruction.getBitmapHeight(),
-      );
+      symbolImage =
+          await SymbolCacheMgr().getOrCreateSymbol(renderinstruction.bitmapSrc!, renderinstruction.getBitmapWidth(), renderinstruction.getBitmapHeight())
+            ?..clone();
     } catch (error) {
       _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
     }
@@ -56,6 +54,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
   @override
   void dispose() {
     symbolImage?.dispose();
+    symbolImage = null;
   }
 
   @override

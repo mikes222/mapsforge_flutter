@@ -27,11 +27,9 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
 
   Future<void> init() async {
     try {
-      symbolImage = await SymbolCacheMgr().getOrCreateSymbol(
-        renderinstruction.bitmapSrc!,
-        renderinstruction.getBitmapWidth(),
-        renderinstruction.getBitmapHeight(),
-      );
+      symbolImage =
+          await SymbolCacheMgr().getOrCreateSymbol(renderinstruction.bitmapSrc!, renderinstruction.getBitmapWidth(), renderinstruction.getBitmapHeight())
+            ?..clone();
     } catch (error) {
       _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
     }
@@ -40,6 +38,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
   @override
   void dispose() {
     symbolImage?.dispose();
+    symbolImage = null;
   }
 
   static Future<ShapePainterLinesymbol> create(RenderinstructionLinesymbol renderinstruction) async {
