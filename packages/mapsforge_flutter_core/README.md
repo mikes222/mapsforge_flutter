@@ -2,6 +2,18 @@
 
 Core utilities and common components for the Mapsforge Flutter project.
 
+## Screenshots
+
+![Austria offline](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
+![Austria Satellite](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
+![Indoor navigation](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
+![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
+![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
+
+See [mapsforge_flutter](../mapsforge_flutter/README.md) for more details.
+
+----
+
 ## Overview
 
 The `mapsforge_flutter_core` package provides essential building blocks and utilities used throughout the Mapsforge Flutter ecosystem. It contains fundamental data structures, algorithms, and interfaces for map rendering, geographic calculations, and data management.
@@ -29,16 +41,6 @@ The `mapsforge_flutter_core` package provides essential building blocks and util
 - **Line Simplification**: Douglas-Peucker algorithm for polyline optimization
 - **Performance Tools**: Timing utilities for debugging and profiling
 - **Settings Management**: Global configuration for rendering parameters
-
-## Installation
-
-Add this package to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  mapsforge_flutter_core:
-    path: ../mapsforge_flutter_core
-```
 
 ## Usage Examples
 
@@ -110,45 +112,6 @@ final distance = LatLongUtils.euclideanDistance(berlin, munich);
 final simplifier = DouglasPeuckerLatLong();
 final simplified = simplifier.simplify(coordinates, tolerance: 0.001);
 ```
-
-## Package Structure
-
-```
-lib/
-├── buffer.dart          # Binary data reading utilities
-├── datastore.dart       # Data storage interfaces
-├── model.dart           # Core data models
-├── projection.dart      # Geographic projections
-├── utils.dart           # Utility functions
-└── src/
-    ├── buffer/          # Buffer implementations
-    ├── datastore/       # Datastore implementations
-    ├── model/           # Model classes
-    ├── projection/      # Projection implementations
-    └── utils/           # Utility implementations
-```
-
-## Performance Considerations
-
-- **Spatial Indexing**: Efficient tile-based data organization
-- **Memory Management**: Optimized buffer handling for large datasets
-- **Algorithm Optimization**: Performance-tuned geometric calculations
-- **Caching**: Strategic caching of frequently used computations
-
-## Contributing
-
-This package is part of the larger Mapsforge Flutter project. When contributing:
-
-1. Follow Dart coding conventions
-2. Add comprehensive documentation for new APIs
-3. Include unit tests for new functionality
-4. Consider performance implications of changes
-5. Maintain backward compatibility where possible
-
-## Dependencies
-
-- `logging`: For debug and performance logging
-- Standard Dart libraries (`dart:math`, `dart:typed_data`, etc.)
 
 ## License
 

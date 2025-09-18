@@ -1,3 +1,5 @@
+<a href="https://buymeacoffee.com/mikes222" target="_blank"><img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" height="48"></a>
+
 # mapsforge_flutter
 
 A comprehensive Flutter widget library for interactive map visualization with advanced marker and overlay support. 
@@ -10,6 +12,18 @@ This package provides the main UI components for the Mapsforge Flutter ecosystem
 ![Indoor navigation](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
 ![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
 ![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
+
+# Why mapsforge_flutter?
+
+*Fully Offline*: No internet? No problem! Load and render maps without network access.
+
+*Support for online maps*: If you ADDITIONALLY need online maps you can do so easily with the same codebase and api.
+
+*High Customizability*: Supports custom rendering themes, allowing you to tailor the map’s look and feel.
+
+*Lightweight & Efficient*: Designed for mobile, mapsforge uses optimized mapfiles that provide rich geographical data in a compact format.
+
+*Advanced Features*: Indoor navigation, hillshading, map rotation and more!
 
 # Overview
 
@@ -44,6 +58,7 @@ mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting
 - **`MapModel`**: Central state management for map data
 
 ## Gesture System
+- **`GenericGestureDetector`**: Generic gesture handling
 - **`MoveGestureDetector`**: Pan and drag gestures
 - **`ScaleGestureDetector`**: Pinch-to-zoom gestures
 - **`RotationGestureDetector`**: Two-finger rotation
@@ -78,6 +93,18 @@ dependencies:
 ```
 
 Note: See [doc/install](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/install.md) for working with a local copy of mapsforge_flutter. 
+
+List all required assets in your ``pubspec.yaml`` (see pubspec file from ``simple_example`` project)
+
+```yaml
+    flutter:
+
+      assets:
+        - packages/mapsforge_flutter/assets/patterns/coniferous.svg
+        - packages/mapsforge_flutter/assets/patterns/coniferous_and_deciduous.svg
+        - packages/mapsforge_flutter/assets/patterns/deciduous.svg
+      # and more
+```
 
 
 # Quick Start
@@ -120,6 +147,8 @@ Note that this information would come from e.g. a gps provider in the real world
 MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
 _mapModel!.setPosition(mapPosition);
 ```
+
+__Note:__ There are many methods in ``MapModel`` to move/zoom/rotate the map. 
 
 Use the MapModel to view the map
 
@@ -281,6 +310,8 @@ class CustomMapView extends StatelessWidget {
 3. Update documentation for API changes
 4. Ensure performance optimizations are maintained
 5. Test with various map data sources and scenarios
+6. **Buy me a coffee:** If you'd like to support the project financially, consider [buying me a coffee](https://buymeacoffee.com/mikes222). Your support helps cover the costs of development and keeps the project growing.
+
 
 # Examples
 
@@ -298,13 +329,18 @@ Check the `apps/complete_example` directory for comprehensive usage examples inc
 
 This package is part of the Mapsforge Flutter ecosystem. See the main project license for details.
 
+# Credits
+
+A huge shout-out to the original mapsforge developer for building such an incredible project!
+Also, thanks to Chemnitz University of Technology for implementing indoor map support.
+
 # Related Packages
 
 - **`mapsforge_flutter_core`**: Core utilities and data structures
 - **`mapsforge_flutter_renderer`**: High-performance tile rendering for offline mapfiles as well as online renderers
 - **`mapsforge_flutter_rendertheme`**: Theme processing and styling for offline mapfiles
 - **`mapsforge_flutter_mapfile`**: Map file reading and processing
-- **`mapsforge_flutter`**: Complete Flutter mapping solution with markers, overlays, and gesture handling
+- **`mapsforge_flutter`**: Complete Flutter UI mapping solution with markers, overlays, and gesture handling
 
 # Documentation
 
