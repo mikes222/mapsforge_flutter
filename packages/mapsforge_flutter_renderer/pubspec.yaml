@@ -17,7 +17,7 @@ description: "Renderer to produce a picture for a tile."
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 4.0.0
 
 environment:
   sdk: ^3.9.0
@@ -38,9 +38,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  # Workspace
-  mapsforge_flutter_rendertheme: ^1.0.0
-
   # For the online renderers
   dio: ^5.9.0
 
@@ -53,7 +50,10 @@ dependencies:
   logging: ^1.3.0
 
   # Workspace
-  mapsforge_flutter_core: ^1.0.0
+  mapsforge_flutter_core: ^4.0.0
+
+  # Workspace
+  mapsforge_flutter_rendertheme: ^4.0.0
 
 dev_dependencies:
   flutter_test:
