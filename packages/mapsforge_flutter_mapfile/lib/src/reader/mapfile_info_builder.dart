@@ -6,6 +6,10 @@ import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/map_header_info_builder.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/subfile_parameter_builder.dart';
 
+/// A builder that reads the complete header of a map file, including all sub-file
+/// parameters, and constructs a [MapfileInfo] object.
+///
+/// This is the main entry point for parsing the metadata of a map file.
 class MapfileInfoBuilder {
   /// Magic byte at the beginning of a valid binary map file.
   static final String BINARY_OSM_MAGIC_BYTE = "mapsforge binary OSM";
@@ -24,15 +28,18 @@ class MapfileInfoBuilder {
 
   MapHeaderInfo? mapHeaderInfo;
 
+    /// Builds the immutable [MapfileInfo] object from the parsed data.
   MapfileInfo build() {
     return MapfileInfo(mapHeaderInfo!, subFileParameters, ZoomlevelRange(zoomLevelMinimum, zoomLevelMaximum));
   }
 
-  /// Reads and validates the header block from the map file.
+    /// Reads and validates the entire header block from the map file.
   ///
-  /// @param readBuffer the ReadBuffer for the file data.
-  /// @param fileSize   the size of the map file in bytes.
-  /// @throws IOException if an error occurs while reading the file.
+  /// This includes the magic byte, the main header information, and the parameters
+  /// for all sub-files.
+  ///
+  /// [readBufferSource] is the file handle to read from.
+  /// [fileSize] is the total size of the map file.
   Future<void> readHeader(ReadbufferSource readBufferSource, int fileSize) async {
     Readbuffer? readBuffer = await _readMagicByte(readBufferSource);
 

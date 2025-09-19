@@ -2,8 +2,12 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
-/// Filter ways by size. If the way would be too small in max zoom of the desired
-/// subfile (hence maxZoomlevel) we do not want to include it at all.
+/// A filter that removes ways that are too small to be visually significant at a
+/// given zoom level.
+///
+/// This is an important optimization to avoid processing and rendering ways that
+/// would only cover a few pixels on the screen. The size threshold is defined in
+/// pixels and converted to a geographical distance.
 class WaySizeFilter {
   final PixelProjection projection;
 
@@ -13,6 +17,12 @@ class WaySizeFilter {
 
   WaySizeFilter(int zoomlevel, this.filterSizePixels) : projection = PixelProjection(zoomlevel);
 
+    /// Filters the ways within a [wayholder], removing any that are smaller than
+  /// the configured pixel size.
+  ///
+  /// Returns a new [Wayholder] containing only the ways that passed the filter.
+  /// If all ways are filtered out, this method returns `null`.
+  /// If no ways are filtered, the original [wayholder] is returned.
   Wayholder? filter(Wayholder wayholder) {
     maxDeviationLatLong = projection.latitudeDiffPerPixel(
       (wayholder.boundingBoxCached.minLatitude + wayholder.boundingBoxCached.maxLatitude) / 2,

@@ -4,6 +4,11 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 
+/// A mixin that provides shared functionality for handling OpenStreetMap tags
+/// during the map file writing process.
+///
+/// This includes logic for analyzing tags, extracting special features like names
+/// and house numbers, and serializing the tag data to a [Writebuffer].
 mixin TagholderMixin {
   List<Tagholder> tagholders = [];
 
@@ -24,6 +29,8 @@ mixin TagholderMixin {
   /// distinct values so it is a waste of time and space to normalize it
   static Set<String> DO_NOT_NORMALIZE = {"admin_level"};
 
+    /// Analyzes a list of [tags], identifying special features and counting the
+  /// occurrences of each tag.
   void analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
     Set<String> names = {};
     String? original;
@@ -115,6 +122,7 @@ mixin TagholderMixin {
     }
   }
 
+    /// Writes the analyzed tag data to the given [writebuffer].
   void writeTags(Writebuffer writebuffer) {
     for (var tagholder in tagholders) {
       writebuffer.appendUnsignedInt(tagholder.index!);

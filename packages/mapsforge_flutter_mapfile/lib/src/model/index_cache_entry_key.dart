@@ -1,14 +1,17 @@
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 
-/// An immutable container class which is the key for the index cache.
+/// An immutable key for an entry in the [IndexCache].
+///
+/// This key uniquely identifies an index block by combining the parameters of the
+/// sub-file it belongs to with the block number within that sub-file.
 class IndexCacheEntryKey {
   final int indexBlockNumber;
   final SubFileParameter subFileParameter;
 
-  /// Creates an immutable key to be stored in a map.
+    /// Creates an immutable key for an index cache entry.
   ///
-  /// @param subFileParameter the parameters of the map file.
-  /// @param indexBlockNumber the number of the index block.
+  /// [subFileParameter] defines the sub-file that the index block belongs to.
+  /// [indexBlockNumber] is the number of the index block within the sub-file.
   IndexCacheEntryKey(this.subFileParameter, this.indexBlockNumber);
 
   @override

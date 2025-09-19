@@ -3,7 +3,11 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 
-/// Reads and validates the header data from a binary map file.
+/// A data holder for the complete, parsed metadata of a map file.
+///
+/// This class combines the high-level [MapHeaderInfo] with the detailed
+/// parameters of each [SubFileParameter], providing a complete overview of the
+/// map file's structure and contents.
 class MapfileInfo {
   static final _log = Logger('MapFileHeader');
 
@@ -18,21 +22,22 @@ class MapfileInfo {
 
   MapfileInfo(this.mapHeaderInfo, this.subFileParameters, this.zoomlevelRange);
 
-  /// @return a MapFileInfo containing the header data. [readHeader] must be
-  /// executed first
+    /// Returns the high-level metadata for this map file.
   MapHeaderInfo getMapHeaderInfo() {
     // execute the init() method before using mapfiles
     return mapHeaderInfo;
   }
 
-  /// @param zoomLevel the originally requested zoom level.
-  /// @return the closest possible zoom level which is covered by a sub-file.
+    /// Returns the closest zoom level that is actually available in the map file
+  /// for a given requested [zoomlevel].
   int getQueryZoomLevel(int zoomlevel) {
     return zoomlevelRange.ensureBounds(zoomlevel);
   }
 
-  /// @param queryZoomLevel the zoom level for which the sub-file parameters are needed.
-  /// @return the sub-file parameters for the given zoom level.
+    /// Returns the [SubFileParameter] for a given [queryZoomLevel].
+  ///
+  /// The [queryZoomLevel] should be a value that is supported by the map file
+  /// (i.e., a value returned by [getQueryZoomLevel]).
   SubFileParameter? getSubFileParameter(int queryZoomLevel) {
     return subFileParameters[queryZoomLevel];
   }

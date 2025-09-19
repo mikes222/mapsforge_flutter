@@ -1,6 +1,13 @@
 import 'package:mapsforge_flutter_core/model.dart';
 
+/// A utility class with static methods for calculating tile bitmasks.
+///
+/// These bitmasks are a core concept in the Mapsforge file format, used to
+/// efficiently determine if a way is present in a specific tile without having
+/// to fully decode the way's geometry. Each way has a 16-bit mask where each
+/// bit corresponds to one of the 16 sub-tiles of the way's parent tile.
 class QueryCalculations {
+    /// Calculates the bitmask for a single tile.
   static int calculateSingleTileBitmask(Tile tile, int zoomLevelDifference) {
     if (zoomLevelDifference == 1) {
       return getFirstLevelTileBitmask(tile);
@@ -26,6 +33,7 @@ class QueryCalculations {
     }
   }
 
+    /// Calculates the combined bitmask for a rectangular area of tiles.
   static int calculateTileBitmask(Tile upperLeft, Tile lowerRight, int zoomLevelDifference) {
     int bitmask = 0;
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {

@@ -4,6 +4,11 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/querycalculations.dart';
 
+/// A mutable data class that holds the calculated parameters for a map data query.
+///
+/// This class translates a request for a specific tile or area at a given zoom
+/// level into the corresponding base tile and block coordinates needed to read the
+/// data from a sub-file.
 class QueryParameters {
   int fromBaseTileX = 0;
   int fromBaseTileY = 0;
@@ -17,6 +22,7 @@ class QueryParameters {
   int toBlockY = 0;
   bool useTileBitmask = false;
 
+    /// Calculates the query parameters for a single [tile].
   void calculateBaseTilesSingle(Tile tile, SubFileParameter subFileParameter) {
     if (tile.zoomLevel < subFileParameter.baseZoomLevel) {
       // calculate the XY numbers of the upper left and lower right sub-tiles
@@ -45,6 +51,7 @@ class QueryParameters {
     }
   }
 
+    /// Calculates the query parameters for a rectangular area of tiles.
   void calculateBaseTiles(Tile upperLeft, Tile lowerRight, SubFileParameter subFileParameter) {
     if (upperLeft.zoomLevel < subFileParameter.baseZoomLevel) {
       // here we need to combine multiple base tiles
@@ -76,6 +83,7 @@ class QueryParameters {
     }
   }
 
+    /// Calculates the block range within the sub-file that needs to be read.
   void calculateBlocks(SubFileParameter subFileParameter) {
     // calculate the blocks (tiles) in the subfile which need to be read
     fromBlockX = max(fromBaseTileX - subFileParameter.boundaryTileLeft, 0);

@@ -8,9 +8,12 @@ import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/index_cache_entry_key.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/subfile_parameter_builder.dart';
 
+/// A cache for map file index blocks with a fixed size and a Last Recently Used (LRU)
+/// eviction policy.
 ///
-/// A cache for database index blocks with a fixed size and LRU policy.
-///
+/// The map file index is divided into blocks. Caching these blocks in memory
+/// significantly improves performance by reducing the number of disk reads required
+/// to find the location of a specific map data block.
 class IndexCache {
   static final _log = Logger('IndexCache');
 
@@ -22,23 +25,28 @@ class IndexCache {
 
   final LruCache<IndexCacheEntryKey, Uint8List> _cache;
 
-  /// @param inputChannel the map file from which the index should be read and cached.
-  /// @param capacity     the maximum number of entries in the cache.
-  /// @throws IllegalArgumentException if the capacity is negative.
+    /// Constructs an [IndexCache] with a given [capacity].
+  ///
+  /// [capacity] is the maximum number of index blocks to store in the cache.
   IndexCache(int capacity) : _cache = LruCache<IndexCacheEntryKey, Uint8List>(capacity: capacity, name: "MapfileIndexCache");
 
-  /// Destroy the cache at the end of its lifetime.
+    /// Destroys the cache and releases all stored resources.
   void dispose() {
     _cache.dispose();
   }
 
-  /// Returns the index entry of a block in the given map file. If the required index entry is not cached, it will be
-  /// read from the map file index and put in the cache.
+    /// Returns the index entry for a given data block.
   ///
-  /// @param subFileParameter the parameters of the map file for which the index entry is needed.
-  /// @param blockNumber      the number of the block in the map file.
-  /// @return the index entry.
-  /// @throws IOException if an I/O error occurs during reading.
+  /// An index entry is a 5-byte value that contains the offset of a data block
+  /// within its sub-file, as well as a flag indicating if the block contains only
+  /// water tiles.
+  ///
+  /// If the required index block is not already in the cache, it will be read
+  /// from the [readBufferSource] and stored in the cache before the entry is returned.
+  ///
+  /// [subFileParameter] describes the sub-file being queried.
+  /// [blockNumber] is the absolute number of the data block within the sub-file.
+  /// [readBufferSource] is the file handle to read from if a cache miss occurs.
   Future<int> getIndexEntry(SubFileParameter subFileParameter, int blockNumber, ReadbufferSource readBufferSource) async {
     // check if the block number is out of bounds
     assert(blockNumber < subFileParameter.numberOfBlocks);

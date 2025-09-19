@@ -5,11 +5,21 @@ import 'package:mapsforge_flutter_mapfile/src/model/map_header_optional_fields.d
 import 'package:mapsforge_flutter_mapfile/src/reader/map_header_info_builder.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/mapfile_info_builder.dart';
 
+/// A class that writes the main header of a Mapsforge map file.
+///
+/// This class takes a [MapHeaderInfo] object and serializes it into a binary
+/// format according to the Mapsforge file specification.
 class MapfileHeaderWriter {
   final MapHeaderInfo mapHeaderInfo;
 
   MapfileHeaderWriter(this.mapHeaderInfo);
 
+    /// Writes the map file header to a new [Writebuffer].
+  ///
+  /// [tagSubfileSize] is the size of the tag sub-file, which is needed to
+  /// calculate the total file size placeholder.
+  ///
+  /// Returns a [Writebuffer] containing the serialized header data.
   Writebuffer write(int tagSubfileSize) {
     Writebuffer writebuffer = Writebuffer();
     _writeFileVersion(writebuffer);

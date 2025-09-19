@@ -7,6 +7,12 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 
+/// A utility class for cropping and simplifying way geometries to fit within a
+/// given bounding box (typically a map tile).
+///
+/// This is essential for rendering performance, as it reduces the number of
+/// vertices that need to be processed and drawn, especially for large polygons
+/// or long ways that only partially intersect a tile.
 class WayCropper {
   final _log = Logger('WayCropper');
 
@@ -14,6 +20,14 @@ class WayCropper {
 
   WayCropper({required this.maxDeviationPixel});
 
+    /// Crops the ways within a [wayholder] to the given [boundingBox].
+  ///
+  /// This method processes the inner and outer ways of the wayholder, optimizing
+  /// them to include only the segments that are visible within the bounding box.
+  /// It also simplifies the geometry if it contains too many points.
+  ///
+  /// Returns a new [Wayholder] with the cropped ways, or `null` if no part of
+  /// the way is within the bounding box.
   Wayholder? cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
     List<Waypath> inner = wayholder.innerRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
       ..removeWhere((Waypath test) => test.isEmpty);
@@ -39,6 +53,11 @@ class WayCropper {
     return wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
   }
 
+    /// An alternative cropping method that reduces the nodes of a way that are
+  /// outside the given [boundingBox].
+  ///
+  /// This is a less aggressive optimization than [cropWay] and is used in
+  /// specific scenarios.
   Wayholder? cropOutsideWay(Wayholder wayholder, BoundingBox boundingBox) {
     List<Waypath> inner = wayholder.innerRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
       ..removeWhere((Waypath test) => test.isEmpty);
@@ -65,12 +84,13 @@ class WayCropper {
     return result;
   }
 
-  /// Optimiert eine Liste von Wegpunkten, indem unnötige Punkte entfernt werden,
-  /// während der Teil des Weges innerhalb der Tile-Boundary erhalten bleibt.
+    /// Optimizes a way by cropping it to the tile boundary and simplifying it.
   ///
-  /// @param waypoints Die Liste der Wegpunkte.
-  /// @param tileBoundary Die Tile-Boundary (Bounding Box).
-  /// @return Die optimierte Liste der Wegpunkte.
+  /// This is the core method for processing a single way. It handles cases where
+  /// the way is completely inside, completely outside, or intersecting the tile.
+  /// For intersecting ways, it calculates the intersection points and adds the
+  /// necessary corner points of the tile boundary to create a closed polygon
+  /// that can be filled.
   Waypath _optimizeWaypoints(Waypath waypath, BoundingBox tileBoundary, int maxZoomlevel) {
     if (waypath.isEmpty) return Waypath.empty();
 
@@ -240,7 +260,12 @@ class WayCropper {
     return Waypath(path: optimizedWaypoints);
   }
 
-  /// Reduces the nodes outside the given boundary.
+    /// Reduces the number of nodes in a way that are outside the given [tileBoundary].
+  ///
+  /// This method uses a queue-based approach to recursively subdivide the way
+  /// and discard segments that do not intersect with the tile boundary. This can
+  /// significantly reduce the number of points for long ways that are mostly
+  /// outside the tile.
   List<ILatLong> _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
     if (tileBoundary.containsBoundingBox(waypath.boundingBox)) return waypath.path;
     List<ILatLong> result = [];
@@ -340,12 +365,11 @@ class WayCropper {
     }
   }
 
-  /// Findet den Schnittpunkt eines Liniensegments mit den Kanten der Tile-Boundary.
+    /// Finds the intersection point of a line segment with the edges of the tile boundary.
   ///
-  /// @param start Der Startpunkt des Liniensegments.
-  /// @param end Der Endpunkt des Liniensegments.
-  /// @param tileBoundary Die Tile-Boundary (Bounding Box).
-  /// @return Der Schnittpunkt als ILatLong oder null, wenn kein Schnittpunkt gefunden wurde.
+  /// Assumes one point is inside and one is outside the boundary.
+  /// Returns the intersection point and the direction of the edge that was hit
+  /// (0=top, 1=right, 2=bottom, 3=left).
   (ILatLong?, int) _findIntersectionPoint(ILatLong start, ILatLong end, BoundingBox tileBoundary) {
     final topLeft = LatLong(tileBoundary.maxLatitude, tileBoundary.minLongitude);
     final topRight = LatLong(tileBoundary.maxLatitude, tileBoundary.maxLongitude);
@@ -369,13 +393,12 @@ class WayCropper {
     return (null, -1);
   }
 
-  /// Find the intersection point with the tile where the intersectionpoint is
-  /// the nearest to the start assuming that both points are outside the tile.
+    /// Finds the intersection point of a line segment with the tile boundary, assuming
+  /// both start and end points are outside the tile.
   ///
-  /// @param start Der Startpunkt des Liniensegments.
-  /// @param end Der Endpunkt des Liniensegments.
-  /// @param tileBoundary Die Tile-Boundary (Bounding Box).
-  /// @return Der Schnittpunkt als ILatLong oder null, wenn kein Schnittpunkt gefunden wurde.
+  /// This is used to detect cases where a way passes through a tile without having
+  /// any of its nodes inside the tile.
+  /// Returns the intersection point and the direction of the edge that was hit.
   (ILatLong?, int) _findIntersectionPointOutside(ILatLong start, ILatLong end, BoundingBox tileBoundary) {
     final topLeft = LatLong(tileBoundary.maxLatitude, tileBoundary.minLongitude);
     final topRight = LatLong(tileBoundary.maxLatitude, tileBoundary.maxLongitude);

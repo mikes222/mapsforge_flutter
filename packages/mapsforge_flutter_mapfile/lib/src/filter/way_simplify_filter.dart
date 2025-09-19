@@ -4,6 +4,12 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
+/// A filter that simplifies way geometries using the Douglas-Peucker algorithm.
+///
+/// This is a crucial performance optimization that reduces the number of vertices
+/// in a way while preserving its general shape. The level of simplification is
+/// determined by a maximum allowed deviation in pixels, which is converted to a
+/// geographical distance based on the current zoom level and latitude.
 class WaySimplifyFilter {
   final _log = Logger('WaySimplifyFilter');
 
@@ -20,6 +26,11 @@ class WaySimplifyFilter {
     //     "maxDeviationLatLong: $maxDeviationLatLong from $maxDeviationPixel for maxZoom: $zoomlevel in boundingbox $boundingBox would result to ${LatLongUtils.euclideanDistance(boundingBox.getCenterPoint(), LatLong(boundingBox.getCenterPoint().latitude + maxDeviationLatLong, boundingBox.getCenterPoint().longitude + maxDeviationLatLong))}");
   }
 
+    /// Reduces the complexity of all ways within a [wayholder].
+  ///
+  /// This method calculates the appropriate simplification tolerance based on the
+  /// wayholder's bounding box and then applies the Douglas-Peucker algorithm to
+  /// each way path (inner, closed outer, and open outer).
   Wayholder reduce(Wayholder wayholder) {
     maxDeviationLatLong = projection.latitudeDiffPerPixel(
       (wayholder.boundingBoxCached.minLatitude + wayholder.boundingBoxCached.maxLatitude) / 2,
@@ -46,6 +57,12 @@ class WaySimplifyFilter {
     return Waypath(path: res1);
   }
 
+    /// Reduces the complexity of a single [waypath], ensuring that the resulting
+  /// number of points does not exceed the maximum allowed (32767).
+  ///
+  /// If the initial simplification still results in too many points, this method
+  /// will iteratively increase the simplification tolerance until the point count
+  /// is within the limit.
   Waypath reduceWayEnsureMax(Waypath waypath) {
     maxDeviationLatLong = projection.latitudeDiffPerPixel((waypath.boundingBox.minLatitude + waypath.boundingBox.maxLatitude) / 2, maxDeviationPixel);
     if (waypath.length <= 5) {

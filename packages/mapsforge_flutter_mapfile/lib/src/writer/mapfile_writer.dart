@@ -8,7 +8,14 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/mapfile_header_writer.dart';
 
-/// see https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md
+/// The main class for writing a Mapsforge binary map file (`.map`).
+///
+/// This class orchestrates the entire process of creating a map file, from
+/// writing the header and tag information to creating and filling the sub-files
+/// with tile data.
+///
+/// See the official specification for more details:
+/// https://github.com/mapsforge/mapsforge/blob/master/docs/Specification-Binary-Map-File.md
 class MapfileWriter {
   static final _log = Logger('MapfileWriter');
 
@@ -30,6 +37,11 @@ class MapfileWriter {
     : _sink = SinkWithCounter(File(filename).openWrite()),
       _zoomlevelRange = mapHeaderInfo.zoomlevelRange;
 
+    /// Closes the writer and finalizes the map file.
+  ///
+  /// This method closes the underlying file sink and then re-opens the file to
+  /// write the final, correct file size into the header, as this value is not
+  /// known until all data has been written.
   Future<void> close() async {
     await _sink.close();
     // todo correct invalid data in file
@@ -42,8 +54,12 @@ class MapfileWriter {
     await raf.close();
   }
 
-  /// Writes the mapfile to the given sink.
-  /// @param maxDeviationPixel The maximum deviation in pixels if we need to simplify a polygon because only 32767 points are supported in a polygon.
+    /// Writes the complete map file structure to the file sink.
+  ///
+  /// [maxDeviationPixel] is the maximum allowed deviation in pixels when simplifying
+  /// way geometries. This is used to prevent polygons from having more than 32767
+  /// points, which is a limitation of the format.
+  /// [instanceCount] is the number of parallel instances to use for tile processing.
   Future<void> write(double maxDeviationPixel, int instanceCount) async {
     //createSubfiles();
 

@@ -3,37 +3,44 @@ import 'dart:core';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/src/exceptions/mapfile_exception.dart';
 
-/// Base class for map data retrieval.
+/// An abstract class that defines the contract for reading map data from a
+/// Mapsforge `.map` file.
+///
+/// This class extends the generic `Datastore` and specializes it for the
+/// hierarchical and tile-based structure of map files. It provides methods to
+/// read different types of data (ways, POIs, labels) for single tiles or
+/// rectangular areas of tiles.
+///
+/// Concrete implementations of this class are responsible for opening a map file,
+/// parsing its header and index, and efficiently retrieving the requested data
+/// for a given tile or area.
 abstract class MapDatastore extends Datastore {
-  /// the preferred language when extracting labels from this data store. The actual
-  /// implementation is up to the concrete implementation, which can also simply ignore
-  /// this setting.
+  /// The preferred language to use when extracting labels from the data store.
+  ///
+  /// This is used by the `extractLocalized` method to select the best-matching
+  /// name from multilingual strings. If `null`, the default name is used.
   final String? preferredLanguage;
 
-  /// Ctor for MapDataStore setting preferred language.
+  /// Constructs a [MapDatastore].
   ///
-  /// @param language the preferred language or null if default language is used.
-  /// Make sure the language is trim()-ed and toLowerCase()-ed and not empty like so:
-  /// super((language?.trim().toLowerCase().isEmpty ?? true) ? null : language?.trim().toLowerCase())
+  /// [preferredLanguage] is the preferred language to use for labels. It should
+  /// be a lowercase, trimmed language code (e.g., 'en', 'de').
   const MapDatastore(this.preferredLanguage);
 
-  /// Reads only labels for tile. Labels are pois as well as ways that carry a name tag.
-  /// It is permissible for the MapDataStore to return more data.
-  /// This default implementation returns all map data, which is inefficient, but works.
+  /// Reads only label data (POIs and named ways) for a single [tile].
   ///
-  /// @param tile tile for which data is requested.
-  /// @return label data for the tile.
+  /// It is permissible for implementations to return more data than just labels.
+  /// This abstract method must be implemented by concrete subclasses.
   @override
   Future<DatastoreBundle?> readLabelsSingle(Tile tile);
 
-  /// Reads data for an area defined by the tile in the upper left and the tile in
-  /// the lower right corner. The default implementation combines the results from
-  /// all tiles, a possibly inefficient solution.
-  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  /// Reads label data for a rectangular area of tiles.
   ///
-  /// @param upperLeft  tile that defines the upper left corner of the requested area.
-  /// @param lowerRight tile that defines the lower right corner of the requested area.
-  /// @return map data for the tile.
+  /// The default implementation iterates through all tiles from [upperLeft] to
+  /// [lowerRight] and calls `readLabelsSingle` for each, combining the results.
+  /// This may be inefficient and can be overridden by subclasses for better performance.
+  ///
+  /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
   Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
@@ -50,21 +57,19 @@ abstract class MapDatastore extends Datastore {
     return result;
   }
 
-  /// Reads data for tile.
+  /// Reads all map data (ways and POIs) for a single [tile].
   ///
-  /// @param tile tile for which data is requested.
-  /// @return map data for the tile.
+  /// This abstract method must be implemented by concrete subclasses.
   @override
   Future<DatastoreBundle?> readMapDataSingle(Tile tile);
 
-  /// Reads data for an area defined by the tile in the upper left and the tile in
-  /// the lower right corner. The default implementation combines the results from
-  /// all tiles, a possibly inefficient solution.
-  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  /// Reads all map data for a rectangular area of tiles.
   ///
-  /// @param upperLeft  tile that defines the upper left corner of the requested area.
-  /// @param lowerRight tile that defines the lower right corner of the requested area.
-  /// @return map data for the tile.
+  /// The default implementation iterates through all tiles from [upperLeft] to
+  /// [lowerRight] and calls `readMapDataSingle` for each, combining the results.
+  /// This may be inefficient and can be overridden by subclasses for better performance.
+  ///
+  /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
   Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
@@ -81,21 +86,19 @@ abstract class MapDatastore extends Datastore {
     return result;
   }
 
-  /// Reads only POI data for tile.
+  /// Reads only Point of Interest (POI) data for a single [tile].
   ///
-  /// @param tile tile for which data is requested.
-  /// @return poi data for the tile.
+  /// This abstract method must be implemented by concrete subclasses.
   @override
   Future<DatastoreBundle?> readPoiDataSingle(Tile tile);
 
-  /// Reads POI data for an area defined by the tile in the upper left and the tile in
-  /// the lower right corner. The default implementation combines the results from
-  /// all tiles, a possibly inefficient solution.
-  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+  /// Reads POI data for a rectangular area of tiles.
   ///
-  /// @param upperLeft  tile that defines the upper left corner of the requested area.
-  /// @param lowerRight tile that defines the lower right corner of the requested area.
-  /// @return map data for the tile.
+  /// The default implementation iterates through all tiles from [upperLeft] to
+  /// [lowerRight] and calls `readPoiDataSingle` for each, combining the results.
+  /// This may be inefficient and can be overridden by subclasses for better performance.
+  ///
+  /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
   Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     if (upperLeft.tileX > lowerRight.tileX || upperLeft.tileY > lowerRight.tileY) {
@@ -112,29 +115,36 @@ abstract class MapDatastore extends Datastore {
     return result;
   }
 
-  /// Gets the initial map position.
+  /// Gets the initial map position defined in the map file header.
   ///
-  /// @return the start position, if available.
+  /// Returns the start position as a `LatLong`, or `null` if not available.
   Future<LatLong?> getStartPosition();
 
-  /// Gets the initial zoom level.
+  /// Gets the initial zoom level defined in the map file header.
   ///
-  /// @return the start zoom level.
+  /// Returns the start zoom level, or `null` if not available.
   Future<int?> getStartZoomLevel();
 
-  /// Returns true if a way should be included in the result set for readLabels()
-  /// By default only ways with names, house numbers or a ref are included in the result set
-  /// of readLabels(). This is to reduce the set of ways as much as possible to save memory.
-  /// @param tags the tags associated with the way
-  /// @return true if the way should be included in the result set
+  /// A filter to determine if a way should be included in the result set of `readLabels`.
+  ///
+  /// By default, this returns `false` to exclude all ways from the label set to save
+  /// memory. Subclasses can override this to include ways with specific tags
+  /// (e.g., ways with names, house numbers, or refs).
+  ///
+  /// [tags] is the list of tags associated with the way.
   bool wayAsLabelTagFilter(List<Tag> tags) {
     return false;
   }
 
-  /// Extracts substring of preferred language from multilingual string.<br/>
-  /// Example multilingual string: "Base\ren\bEnglish\rjp\bJapan\rzh_py\bPin-yin".
-  /// <p/>
-  /// Use '\r' delimiter among names and '\b' delimiter between each language and name.
+  /// Extracts a localized name from a multilingual string based on the [preferredLanguage].
+  ///
+  /// The multilingual string format consists of language-name pairs delimited by
+  /// `\r`, with the language and name separated by `\b`.
+  /// Example: `"Base\ren\bEnglish\rjp\bJapan\rzh_py\bPin-yin"`
+  ///
+  /// If a perfect match for [preferredLanguage] is found, it is returned.
+  /// Otherwise, it attempts to find a fallback for a base language (e.g., 'zh' for 'zh-cn').
+  /// If no match is found, the default name (the first in the string) is returned.
   String? extractLocalized(String s) {
     if (s.trim().isEmpty) {
       return null;

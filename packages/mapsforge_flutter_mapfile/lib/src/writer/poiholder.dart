@@ -5,18 +5,29 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
-/// Holds one poi and its tags
+/// A data holder for a single Point of Interest (POI) during the map file
+/// writing process.
+///
+/// This class encapsulates a [PointOfInterest] and uses the [TagholderMixin]
+/// to manage the analysis and serialization of its tags.
 class Poiholder with TagholderMixin {
   final PointOfInterest poi;
 
   Poiholder(this.poi);
 
+    /// Analyzes the tags of the POI, counting their occurrences and preparing them
+  /// for serialization.
   void analyze(List<Tagholder> tagholders, String? languagesPreference) {
     if (languagesPreference != null) super.languagesPreference.addAll(languagesPreference.split(","));
     analyzeTags(poi.tags, tagholders);
   }
 
-  /// can be done when the tags are sorted
+    /// Serializes the POI data to a [Writebuffer].
+  ///
+  /// This must be called after the tags have been analyzed and sorted.
+  /// [debugFile] determines whether to include a debug signature.
+  /// [tileLatitude] and [tileLongitude] are the base coordinates from which the
+  /// POI's delta-encoded position is calculated.
   Writebuffer writePoidata(bool debugFile, double tileLatitude, double tileLongitude) {
     Writebuffer writebuffer = Writebuffer();
     _writePoiSignature(debugFile, writebuffer);

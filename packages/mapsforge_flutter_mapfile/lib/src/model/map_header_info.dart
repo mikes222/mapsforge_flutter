@@ -1,52 +1,54 @@
 import 'package:mapsforge_flutter_core/model.dart';
 
-/// Contains the immutable metadata of a map file.
+/// Contains the high-level, immutable metadata of a map file.
 ///
-/// @see org.mapsforge.map.reader.MapFile#getMapFileInfo()
+/// This class holds the information stored in the map file header, such as the
+/// bounding box, file version, creation date, and projection details.
 class MapHeaderInfo {
-  /// The bounding box of the map file.
+    /// The geographical bounding box that this map file covers.
   final BoundingBox boundingBox;
 
-  /// The comment field of the map file (may be null).
+    /// An optional comment string included in the map file.
   final String? comment;
 
-  /// The created by field of the map file (may be null).
+    /// The name of the tool or person that created the map file.
   final String? createdBy;
 
-  /// True if the map file includes debug information, false otherwise.
+    /// Whether the map file includes special debugging information.
   final bool debugFile;
 
-  /// The size of the map file, measured in bytes.
+    /// The total size of the map file in bytes.
   final int? fileSize;
 
-  /// The file version number of the map file.
+    /// The version of the Mapsforge file format used.
   final int? fileVersion;
 
-  /// The preferred language(s) separated with ',' for names as defined in ISO 639-1 or ISO 639-2 (may be null).
+    /// A comma-separated list of preferred languages for labels, as defined in
+  /// ISO 639-1 or ISO 639-2.
   final String? languagesPreference;
 
-  /// The date of the map data in milliseconds since January 1, 1970.
+    /// The creation date of the map data, in milliseconds since the Unix epoch.
   final int? mapDate;
 
-  /// The number of sub-files in the map file.
+    /// The number of zoom-specific sub-files contained within this map file.
   final int? numberOfSubFiles;
 
-  /// The POI tags.
+    /// The list of predefined tags for Points of Interest (POIs).
   final List<Tag> poiTags;
 
-  /// The name of the projection used in the map file.
+    /// The name of the projection used in the map file (e.g., 'mercator').
   final String? projectionName;
 
-  /// The map start position from the file header (may be null).
+    /// The recommended starting position (latitude/longitude) for the map view.
   final LatLong? startPosition;
 
-  /// The map start zoom level from the file header (may be null).
+    /// The recommended starting zoom level for the map view.
   final int? startZoomLevel;
 
-  /// The size of the tiles in pixels.
+    /// The size of the map tiles in pixels (e.g., 256 or 512).
   final int tilePixelSize;
 
-  /// The way tags.
+    /// The list of predefined tags for ways (lines and polygons).
   final List<Tag> wayTags;
 
   final ZoomlevelRange zoomlevelRange;

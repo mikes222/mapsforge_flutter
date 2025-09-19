@@ -1,54 +1,59 @@
 import 'package:mapsforge_flutter_core/src/projection/mercator_projection.dart';
 
-/// Holds all parameters of a sub-file. A subfile is a portion of a map. It is not necessarily dependent on a mapFILE.
+/// An immutable data class that holds all parameters of a map file's sub-file.
+///
+/// A Mapsforge map file is divided into several sub-files, each containing the
+/// map data for a specific range of zoom levels. This class stores the metadata
+/// for one such sub-file, including its zoom range, size, and the location of its
+/// index and data blocks within the main map file.
 class SubFileParameter {
-  /// The id of this class. We have several SubFileParameters and one SubFileParameter may be responsible for several zoomLevels. To
-  /// distinguish between the different parameters we need this id
+    /// A unique identifier for this sub-file parameter set.
   final int id;
 
-  /// Base zoom level of the sub-file, which equals to one block.
+    /// The base zoom level of this sub-file. All data within this sub-file is
+  /// stored relative to this zoom level.
   final int baseZoomLevel;
 
-  /// Vertical amount of blocks in the grid.
+    /// The height of the sub-file's grid in blocks.
   final int blocksHeight;
 
-  /// Horizontal amount of blocks in the grid.
+    /// The width of the sub-file's grid in blocks.
   final int blocksWidth;
 
-  /// Y number of the tile at the bottom boundary in the grid.
+    /// The Y-coordinate of the bottom-most tile at the base zoom level.
   final int boundaryTileBottom;
 
-  /// X number of the tile at the left boundary in the grid.
+    /// The X-coordinate of the left-most tile at the base zoom level.
   final int boundaryTileLeft;
 
-  /// X number of the tile at the right boundary in the grid.
+    /// The X-coordinate of the right-most tile at the base zoom level.
   final int boundaryTileRight;
 
-  /// Y number of the tile at the top boundary in the grid.
+    /// The Y-coordinate of the top-most tile at the base zoom level.
   final int boundaryTileTop;
 
-  /// Absolute end address of the index in the enclosing file.
+    /// The absolute end address of this sub-file's index within the main map file.
   final int indexEndAddress;
 
-  /// Absolute start address of the index in the enclosing file.
+    /// The absolute start address of this sub-file's index within the main map file.
   final int indexStartAddress;
 
-  /// Total number of blocks in the grid.
+    /// The total number of data blocks in this sub-file.
   final int numberOfBlocks;
 
-  /// Absolute start address of the sub-file in the enclosing file.
+    /// The absolute start address of this sub-file's data within the main map file.
   final int startAddress;
 
-  /// Size of the sub-file in bytes.
+    /// The total size of this sub-file in bytes.
   final int subFileSize;
 
-  /// Maximum zoom level for which the block entries tables are made.
+    /// The maximum zoom level that this sub-file provides data for.
   final int zoomLevelMax;
 
-  /// Minimum zoom level for which the block entries tables are made.
+    /// The minimum zoom level that this sub-file provides data for.
   final int zoomLevelMin;
 
-  /// A cache for the projection for [baseZoomLevel].
+    /// A cached [MercatorProjection] instance for this sub-file's base zoom level.
   final MercatorProjection projection;
 
   SubFileParameter(

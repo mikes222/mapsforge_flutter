@@ -17,6 +17,12 @@ import 'package:mapsforge_flutter_mapfile/src/map_datastore.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/mapfile_info_builder.dart';
 
+/// An implementation of `Datastore` that runs a `Mapfile` instance in a separate
+/// isolate.
+///
+/// This is crucial for performance, as it offloads the heavy file I/O and parsing
+/// operations from the main UI thread, preventing jank and keeping the application
+/// responsive. It communicates with the `Mapfile` isolate using message passing.
 @pragma("vm:entry-point")
 class IsolateMapfile implements Datastore {
   /// The instance of the mapfile in the isolate
@@ -32,6 +38,10 @@ class IsolateMapfile implements Datastore {
 
   IsolateMapfile._();
 
+    /// Creates a new `IsolateMapfile` instance.
+  ///
+  /// This will spawn a new isolate and initialize a `Mapfile` within it using
+  /// the provided [filename] and [preferredLanguage].
   static Future<IsolateMapfile> createFromFile({required String filename, String? preferredLanguage}) async {
     IsolateMapfile instance = IsolateMapfile._();
     await instance._isolateInstance.spawn(_createInstanceStatic, _MapfileInstanceRequest(filename, preferredLanguage));
@@ -111,6 +121,7 @@ class IsolateMapfile implements Datastore {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to initialize the Mapfile instance in the isolate.
 class _MapfileInstanceRequest {
   final String filename;
 
@@ -121,12 +132,14 @@ class _MapfileInstanceRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to request the bounding box from the Mapfile instance.
 class _MapfileBoundingBoxRequest {
   _MapfileBoundingBoxRequest();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to request label data for a single tile.
 class _MapfileReadSingleRequest {
   final Tile tile;
 
@@ -135,6 +148,7 @@ class _MapfileReadSingleRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to request map data for a single tile.
 class _MapfileReadDataSingleRequest {
   final Tile tile;
 
@@ -143,6 +157,7 @@ class _MapfileReadDataSingleRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to request label data for a tile range.
 class _MapfileReadRequest {
   final Tile upperLeft;
 
@@ -153,6 +168,7 @@ class _MapfileReadRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to check if a tile is supported by the Mapfile.
 class _MapfileSupportsTileRequest {
   final Tile tile;
 
@@ -161,8 +177,19 @@ class _MapfileSupportsTileRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// A class for reading binary map files.
-/// The mapFile should be disposed if not needed anymore
+/// The main class for reading and parsing Mapsforge binary map files (`.map`).
+///
+/// This class provides low-level access to the map file's contents, including
+/// its header, index, and the tile data for ways and points of interest (POIs).
+/// It handles the complexities of the binary format, such as variable byte
+/// encoding, zoom level intervals, and data block caching.
+///
+/// For performance-critical applications, it is highly recommended to use the
+/// [IsolateMapfile] wrapper, which runs all file operations in a separate
+/// isolate to avoid blocking the main UI thread.
+///
+/// The `Mapfile` instance must be disposed via the `dispose()` method when it is
+/// no longer needed to release file handles and clear caches.
 class Mapfile extends MapDatastore {
   static final _log = Logger('MapFile');
 
@@ -203,12 +230,24 @@ class Mapfile extends MapDatastore {
 
   final Cache<String, Readbuffer> _cache = LfuCache(capacity: 100);
 
+    /// Creates a `Mapfile` instance from a file path.
+  ///
+  /// This is the standard way to open a .map file from the file system.
+  /// [filename] is the path to the .map file.
+  /// [preferredLanguage] can be used to select a specific language for labels.
+  /// [source] is an optional override for the read buffer source, mainly for testing.
   static Future<Mapfile> createFromFile({required String filename, String? preferredLanguage, ReadbufferSource? source}) async {
     Mapfile mapFile = Mapfile._(preferredLanguage);
     await mapFile._init(source ?? createReadbufferSource(filename));
     return mapFile;
   }
 
+    /// Creates a `Mapfile` instance from a byte array in memory.
+  ///
+  /// This is useful for loading map files that are not stored on the local file
+  /// system, such as those downloaded from a network.
+  /// [content] is the byte content of the .map file.
+  /// [preferredLanguage] can be used to select a specific language for labels.
   static Future<Mapfile> createFromContent({required Uint8List content, String? preferredLanguage}) async {
     assert(content.isNotEmpty);
     Mapfile mapFile = Mapfile._(preferredLanguage);
@@ -240,6 +279,10 @@ class Mapfile extends MapDatastore {
     return 'MapFile{_fileSize: $_fileSize, _mapFileHeader: $_mapFileInfo, zoomlevelRange: $zoomlevelRange, readBufferSource: $readBufferSource}';
   }
 
+  /// Closes the map file and releases all associated resources.
+  ///
+  /// This includes clearing the index cache, closing the file handle
+  /// ([ReadbufferSource]), and clearing the block cache.
   @override
   void dispose() {
     _databaseIndexCache.dispose();
@@ -248,18 +291,27 @@ class Mapfile extends MapDatastore {
     _queue.dispose();
   }
 
-  /// @return the header data for the current map file.
+    /// Returns the low-level header and sub-file information for this map file.
+  ///
+  /// This is generally used for internal or debugging purposes. For high-level
+  /// metadata, use [getMapHeaderInfo].
+  /// Requires [_lateOpen] to have been completed.
   MapfileInfo getMapFileInfo() {
     return _mapFileInfo;
   }
 
-  /// @return the metadata for the current map file. Make sure [lateOpen] is
-  /// already executed
+    /// Returns the high-level metadata for this map file, such as its bounding
+  /// box, start position, and available languages.
+  ///
+  /// Requires [_lateOpen] to have been completed.
   MapHeaderInfo getMapHeaderInfo() {
     return _mapFileInfo.getMapHeaderInfo();
   }
 
-  /// @return the map file supported languages (may be null).
+    /// Returns a list of all languages available in this map file.
+  ///
+  /// This is parsed from the languages preference string in the map file header.
+  /// Returns `null` if no language information is available.
   List<String>? getMapLanguages() {
     String? languagesPreference = getMapHeaderInfo().languagesPreference;
     if (languagesPreference != null && languagesPreference.trim().isNotEmpty) {
@@ -450,33 +502,23 @@ class Mapfile extends MapDatastore {
     return datastoreBundle;
   }
 
-  /// Reads only labels for tile.
-  ///
-  /// @param tile tile for which data is requested.
-  /// @return label data for the tile.
+    /// Reads only label data (POIs and named ways) for a single [tile].
   @override
   Future<DatastoreBundle> readLabelsSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.LABELS);
   }
 
-  /// Reads data for an area defined by the tile in the upper left and the tile in
-  /// the lower right corner.
-  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+    /// Reads label data for a rectangular area of tiles.
   ///
-  /// @param upperLeft  tile that defines the upper left corner of the requested area.
-  /// @param lowerRight tile that defines the lower right corner of the requested area.
-  /// @return map data for the tile.
+  /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
   Future<DatastoreBundle> readLabels(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.LABELS);
   }
 
-  /// Reads all map data for the area covered by the given tile at the tile zoom level.
-  ///
-  /// @param tile defines area and zoom level of read map data.
-  /// @return the read map data.
+    /// Reads all map data (ways and POIs) for a single [tile].
   @override
   Future<DatastoreBundle> readMapDataSingle(Tile tile) async {
     await _lateOpen();
@@ -484,36 +526,25 @@ class Mapfile extends MapDatastore {
     return result;
   }
 
-  /// Reads data for an area defined by the tile in the upper left and the tile in
-  /// the lower right corner.
-  /// Precondition: upperLeft.tileX <= lowerRight.tileX && upperLeft.tileY <= lowerRight.tileY
+    /// Reads all map data for a rectangular area of tiles.
   ///
-  /// @param upperLeft  tile that defines the upper left corner of the requested area.
-  /// @param lowerRight tile that defines the lower right corner of the requested area.
-  /// @return map data for the tile.
+  /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
   Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.ALL);
   }
 
-  /// Reads only POI data for tile.
-  ///
-  /// @param tile tile for which data is requested.
-  /// @return POI data for the tile.
+    /// Reads only Point of Interest (POI) data for a single [tile].
   @override
   Future<DatastoreBundle?> readPoiDataSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.POIS);
   }
 
-  /// Reads POI data for an area defined by the tile in the upper left and the tile in
-  /// the lower right corner.
-  /// This implementation takes the data storage of a MapFile into account for greater efficiency.
+    /// Reads POI data for a rectangular area of tiles.
   ///
-  /// @param upperLeft  tile that defines the upper left corner of the requested area.
-  /// @param lowerRight tile that defines the lower right corner of the requested area.
-  /// @return map data for the tile.
+  /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
   Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) async {
     await _lateOpen();
@@ -589,17 +620,19 @@ class Mapfile extends MapDatastore {
     return zoomTable;
   }
 
-  /// Restricts returns of data to zoom level range specified. This can be used to restrict
-  /// the use of this map data base when used in MultiMapDatabase settings.
+    /// Restricts the zoom levels for which this datastore will provide data.
   ///
-  /// @param minZoom minimum zoom level supported
-  /// @param maxZoom maximum zoom level supported
+  /// This is useful when combining multiple map files in a `MultiMapDatabase`
+  /// to ensure that each map is only used for its intended zoom range.
   void restrictToZoomRange(int minZoom, int maxZoom) {
     zoomlevelRange = ZoomlevelRange(minZoom, maxZoom);
   }
 
-  /// @return the default start position for the current map file. Make sure [lateOpen] is
-  /// already executed
+    /// Returns the recommended start position for this map file.
+  ///
+  /// If a start position is defined in the map header, it is returned.
+  /// Otherwise, the center of the map's bounding box is returned.
+  /// Requires [_lateOpen] to have been completed.
   @override
   Future<LatLong?> getStartPosition() async {
     await _lateOpen();
@@ -609,6 +642,11 @@ class Mapfile extends MapDatastore {
     return getMapHeaderInfo().boundingBox.getCenterPoint();
   }
 
+    /// Returns the recommended start zoom level for this map file.
+  ///
+  /// If a start zoom level is defined in the map header, it is returned.
+  /// Otherwise, [DEFAULT_START_ZOOM_LEVEL] is returned.
+  /// Requires [_lateOpen] to have been completed.
   @override
   Future<int?> getStartZoomLevel() async {
     await _lateOpen();
@@ -618,6 +656,12 @@ class Mapfile extends MapDatastore {
     return DEFAULT_START_ZOOM_LEVEL;
   }
 
+  /// Checks if this map file contains data for the given [tile].
+  ///
+  /// This is determined by checking if the tile's zoom level is within the
+  /// map's zoom range and if the tile's bounding box intersects with the map's
+  /// bounding box.
+  /// Requires [_lateOpen] to have been completed.
   @override
   Future<bool> supportsTile(Tile tile) async {
     await _lateOpen();
@@ -625,6 +669,9 @@ class Mapfile extends MapDatastore {
     return tile.getBoundingBox().intersects(getMapHeaderInfo().boundingBox);
   }
 
+  /// Returns the geographical bounding box that this map file covers.
+  ///
+  /// Requires [_lateOpen] to have been completed.
   @override
   Future<BoundingBox> getBoundingBox() async {
     await _lateOpen();
@@ -640,7 +687,10 @@ class Mapfile extends MapDatastore {
 
 /////////////////////////////////////////////////////////////////////////////
 
-/// The Selector enum is used to specify which data subset is to be retrieved from a MapFile:
+/// An enum to specify which subset of data to retrieve from a `Mapfile`.
+///
+/// This allows for optimized queries that only read the necessary data from the
+/// file, improving performance.
 enum MapfileSelector {
   /// ALL: all data (as in version 0.6.0)
   ALL,

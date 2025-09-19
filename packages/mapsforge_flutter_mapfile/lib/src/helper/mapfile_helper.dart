@@ -9,6 +9,12 @@ import 'package:mapsforge_flutter_mapfile/src/exceptions/mapfile_exception.dart'
 import 'package:mapsforge_flutter_mapfile/src/map_datastore.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 
+/// A helper class that contains the core logic for parsing the binary data of
+/// ways and points of interest (POIs) from a map file data block.
+///
+/// This class is responsible for decoding the variable byte-encoded integers,
+/// reading tag IDs, handling delta-encoded coordinates, and reconstructing the
+/// geographical data.
 class MapfileHelper {
   static final _log = Logger('MapfileHelper');
 
@@ -98,6 +104,10 @@ class MapfileHelper {
 
   MapfileHelper(this._mapFileHeader, this.preferredLanguage);
 
+    /// Processes all ways from a data block in the given [readBuffer].
+  ///
+  /// This method iterates [numberOfWays] times, calling [read1Way] for each way
+  /// and collecting the results.
   List<Way> processWays(
     QueryParameters queryParameters,
     int numberOfWays,
@@ -130,6 +140,11 @@ class MapfileHelper {
     return ways;
   }
 
+    /// Reads a single way from the given [readBuffer] and returns it as a list
+  /// containing one or more [Way] objects.
+  ///
+  /// A single way entry in the map file can result in multiple [Way] objects if
+  /// it consists of multiple data blocks (e.g., for multipolygons).
   List<Way> read1Way(
     Readbuffer readBuffer,
     QueryParameters queryParameters,
@@ -255,10 +270,8 @@ class MapfileHelper {
     return ways;
   }
 
-  /// reads all data blocks of a way. Each datablock consists of a number of way nodes
-  /// which comprises one way, e.g. the outer way of a pond or one of several outer ways.
-  /// See https://wiki.openstreetmap.org/wiki/Relation:multipolygon for a detailed
-  /// explanation.
+    /// Reads all data blocks for a single way. A way can be composed of multiple
+  /// data blocks, which correspond to the inner and outer rings of a multipolygon.
   List<List<LatLong>> _processWayDataBlock(double tileLatitude, double tileLongitude, bool doubleDeltaEncoding, Readbuffer readBuffer) {
     // get and check the number of way coordinate blocks (VBE-U)
     int numberOfWayCoordinateBlocks = readBuffer.readUnsignedInt();
@@ -295,7 +308,10 @@ class MapfileHelper {
     return wayCoordinates;
   }
 
-  /// decodes the coordinates of a way which was encoded with double encoding algorithm
+    /// Decodes a list of way nodes that were encoded using double-delta encoding.
+  ///
+  /// In double-delta encoding, each coordinate is stored as a delta from the
+  /// previous coordinate's delta, which provides high compression for smooth curves.
   List<LatLong> _decodeWayNodesDoubleDelta(int numberOfWayNodes, double tileLatitude, double tileLongitude, Readbuffer readBuffer) {
     // get the first way node latitude offset (VBE-S)
     double wayNodeLatitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
@@ -341,7 +357,10 @@ class MapfileHelper {
     return waySegment;
   }
 
-  /// decodes the coordinates of a way which was encoded with single encoding algorithm
+    /// Decodes a list of way nodes that were encoded using single-delta encoding.
+  ///
+  /// In single-delta encoding, each coordinate is stored as a delta from the
+  /// previous coordinate.
   List<LatLong> _decodeWayNodesSingleDelta(int numberOfWayNodes, double tileLatitude, double tileLongitude, Readbuffer readBuffer) {
     // get the first way node latitude single-delta offset (VBE-S)
     double wayNodeLatitude = tileLatitude + LatLongUtils.microdegreesToDegrees(readBuffer.readSignedInt());
@@ -375,6 +394,11 @@ class MapfileHelper {
     return waySegment;
   }
 
+    /// Processes all points of interest (POIs) from a data block in the given [readBuffer].
+  ///
+  /// This method iterates [numberOfPois] times, calling [read1Poi] for each POI.
+  /// It filters out POIs that are outside the requested [boundingBox] if
+  /// [filterRequired] is true.
   List<PointOfInterest> processPOIs(
     double tileLatitude,
     double tileLongitude,
@@ -400,6 +424,7 @@ class MapfileHelper {
     return pois;
   }
 
+    /// Reads a single Point of Interest (POI) from the given [readBuffer].
   PointOfInterest read1Poi(Readbuffer readBuffer, double tileLatitude, double tileLongitude, MapDatastore mapDataStore, List<Tag> poiTags) {
     if (_mapFileHeader.getMapHeaderInfo().debugFile) {
       // get and check the POI signature

@@ -11,6 +11,11 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
 
+/// An isolate-based wrapper for [TileConstructor] to perform tile construction
+/// in the background.
+///
+/// This is essential for performance, as it offloads the CPU-intensive work of
+/// filtering, cropping, and serializing tile data from the main UI thread.
 @pragma("vm:entry-point")
 class IsolateTileConstructor {
   late final FlutterIsolateInstance _isolateInstance = FlutterIsolateInstance();
@@ -133,6 +138,7 @@ class IsolateTileConstructor {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to initialize the TileConstructor instance in the isolate.
 class _TileConstructorInstanceRequest {
   final Map<int, Poiinfo> poiinfos;
 
@@ -158,6 +164,7 @@ class _TileConstructorInstanceRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to request the construction of a single tile.
 class _TileConstructorRequest {
   final Tile tile;
 
@@ -166,7 +173,11 @@ class _TileConstructorRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// Constructs a single tile.
+/// A class that constructs a single map tile from a given set of POIs and ways.
+///
+/// This involves filtering the data to include only the elements relevant to the
+/// tile, cropping way geometries to the tile boundaries, and serializing the
+/// final data into the binary tile format.
 class TileConstructor {
   final _log = Logger('TileConstructor');
 
@@ -345,6 +356,11 @@ class TileConstructor {
     }
   }
 
+  /// Constructs and writes a single [tile] to a byte array.
+  ///
+  /// This is the main entry point for the class. It filters the available POIs
+  /// and ways for the given tile, processes them, and serializes them into a
+  /// [Uint8List] representing the binary tile data.
   Future<Uint8List> writeTile(Tile tile) async {
     first ??= tile;
     Writebuffer writebuffer = Writebuffer();

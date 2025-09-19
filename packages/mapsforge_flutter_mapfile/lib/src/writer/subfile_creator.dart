@@ -25,6 +25,10 @@ import 'package:mapsforge_flutter_mapfile/src/writer/tile_constructor.dart';
 
 typedef ProcessFunc = Future<void> Function(Tile tile);
 
+/// A class responsible for creating a single sub-file within a Mapsforge map file.
+///
+/// This involves collecting all POIs and ways for a given zoom level range,
+/// processing them into tiles, and writing the tile index and tile data.
 class SubfileCreator {
   final _log = Logger('SubfileCreator');
 
@@ -72,6 +76,7 @@ class SubfileCreator {
     tileBuffer.dispose();
   }
 
+    /// Adds a list of POIs to the appropriate zoom level within this sub-file.
   void addPoidata(ZoomlevelRange zoomlevelRange, List<PointOfInterest> pois) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
@@ -81,6 +86,7 @@ class SubfileCreator {
     }
   }
 
+    /// Adds a list of ways to the appropriate zoom level within this sub-file.
   void addWaydata(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
@@ -98,6 +104,7 @@ class SubfileCreator {
     }
   }
 
+    /// Analyzes the tags of all POIs and ways in this sub-file.
   void analyze(List<Tagholder> poiTagholders, List<Tagholder> wayTagholders, String? languagesPreference) {
     _poiinfos.forEach((zoomlevel, poiinfo) {
       poiinfo.analyze(poiTagholders, languagesPreference);
@@ -161,6 +168,8 @@ class SubfileCreator {
     }
   }
 
+    /// Prepares all tiles for this sub-file by processing the POIs and ways in
+  /// parallel isolates.
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
     List<IsolateTileConstructor> tileConstructor = [];
@@ -210,6 +219,7 @@ class SubfileCreator {
     tileBuffer.set(tile, writebufferTile);
   }
 
+    /// Writes the tile index for this sub-file to a [Writebuffer].
   Writebuffer writeTileIndex(bool debugFile) {
     if (_writebufferTileIndex != null) return _writebufferTileIndex!;
     _writebufferTileIndex = Writebuffer();
@@ -241,6 +251,7 @@ class SubfileCreator {
     writebuffer.appendInt5(indexEntry);
   }
 
+    /// Calculates the total length of all tile data in this sub-file.
   Future<int> getTilesLength(bool debugFile) async {
     int result = 0;
     _processSync("getting tiles length", (tile) {
@@ -249,6 +260,7 @@ class SubfileCreator {
     return result;
   }
 
+    /// Writes all tile data for this sub-file to the given [ioSink].
   Future<void> writeTiles(bool debugFile, SinkWithCounter ioSink) async {
     await _processAsync("writing tiles", (tile) async {
       Uint8List contentForTile = await tileBuffer.getAndRemove(tile);
@@ -258,6 +270,7 @@ class SubfileCreator {
 
   int get tileCount => (_maxX - _minX + 1) * (_maxY - _minY + 1);
 
+    /// Logs statistics about the contents of this sub-file.
   void statistics() {
     int poiCount = _poiinfos.values.fold(0, (int combine, Poiinfo poiinfo) => combine + poiinfo.count);
     int wayCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
@@ -274,7 +287,8 @@ class SubfileCreator {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// All pois for one zoomlevel.
+/// A helper class to hold all POIs for a specific zoom level during the
+/// sub-file creation process.
 class Poiinfo {
   Set<Poiholder> poiholders = {};
 
@@ -323,7 +337,8 @@ class Poiinfo {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// All ways for one zoomlevel.
+/// A helper class to hold all ways for a specific zoom level during the
+/// sub-file creation process.
 class Wayinfo {
   Set<Wayholder> wayholders = {};
 

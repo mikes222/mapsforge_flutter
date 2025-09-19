@@ -5,6 +5,8 @@ import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 import 'package:mapsforge_flutter_mapfile/src/exceptions/mapfile_exception.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/mapfile_info_builder.dart';
 
+/// A builder that reads the parameters of a sub-file from the map file header and
+/// constructs a [SubFileParameter] object.
 class SubFileParameterBuilder {
   /// Maximum valid base zoom level of a sub-file.
   static final int BASE_ZOOM_LEVEL_MAX = 20;
@@ -28,6 +30,7 @@ class SubFileParameterBuilder {
     ++id;
   }
 
+    /// Reads the sub-file parameters from the given [readbuffer].
   void read(Readbuffer readbuffer, int fileSize, bool isDebug, BoundingBox boundingBox) {
     // get and check the base zoom level (1 byte)
     int baseZoomLevel = readbuffer.readByte();
@@ -79,6 +82,10 @@ class SubFileParameterBuilder {
     this.boundingBox = boundingBox;
   }
 
+    /// Builds the immutable [SubFileParameter] object from the parsed data.
+  ///
+  /// This method also calculates derived values such as the number of blocks and
+  /// the tile boundaries.
   SubFileParameter build() {
     assert(boundingBox!.minLatitude <= boundingBox!.maxLatitude);
     assert(boundingBox!.minLongitude <= boundingBox!.maxLongitude);

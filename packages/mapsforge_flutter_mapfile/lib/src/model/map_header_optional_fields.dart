@@ -2,6 +2,11 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 
+/// A data holder for the optional fields that can be present in a map file header.
+///
+/// The presence of each optional field is determined by a single byte flag in the
+/// header. This class parses that flag and provides methods to read the fields
+/// from the read buffer if they exist.
 class MapHeaderOptionalFields {
   /// Bitmask for the comment field in the file header.
   static final int HEADER_BITMASK_COMMENT = 0x08;
@@ -45,12 +50,14 @@ class MapHeaderOptionalFields {
     hasCreatedBy = (flags & HEADER_BITMASK_CREATED_BY) != 0;
   }
 
+    /// Reads the languages preference string from the buffer, if present.
   void readLanguagesPreference(Readbuffer readBuffer) {
     if (hasLanguagesPreference) {
       languagesPreference = readBuffer.readUTF8EncodedString();
     }
   }
 
+    /// Reads the map start position from the buffer, if present.
   void readMapStartPosition(Readbuffer readBuffer) {
     if (hasStartPosition) {
       double mapStartLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
@@ -59,6 +66,7 @@ class MapHeaderOptionalFields {
     }
   }
 
+    /// Reads the map start zoom level from the buffer, if present.
   void readMapStartZoomLevel(Readbuffer readBuffer) {
     if (hasStartZoomLevel) {
       // get and check the start zoom level (1 byte)
@@ -71,6 +79,7 @@ class MapHeaderOptionalFields {
     }
   }
 
+    /// Reads all optional fields from the buffer based on the flags set in the constructor.
   void readOptionalFields(Readbuffer readBuffer) {
     readMapStartPosition(readBuffer);
 
