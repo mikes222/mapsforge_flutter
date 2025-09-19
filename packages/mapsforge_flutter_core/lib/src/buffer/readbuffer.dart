@@ -104,7 +104,7 @@ class Readbuffer {
   /// Returns the signed short integer value
   int readShort() {
     assert(_bufferPosition < _bufferData.length);
-    this._bufferPosition += 2;
+    _bufferPosition += 2;
     return Deserializer.getShort(_bufferData, _bufferPosition - 2);
   }
 
@@ -153,7 +153,7 @@ class Readbuffer {
         } else if (value == '%s') {
           value = readUTF8EncodedString();
         }
-        tag = new Tag(tag.key, value);
+        tag = Tag(tag.key, value);
       }
       tags.add(tag);
     }

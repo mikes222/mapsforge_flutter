@@ -5,7 +5,7 @@ import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
 void main() {
-  final Pattern SPLIT_PATTERN = ("|");
+  final Pattern splitPattern = ("|");
 
   test('Should read 8-byte integer from buffer', () {
     Uint8List content = Uint8List.fromList([0x0, 0x0, 0x1, 0x73, 0x3a, 0x46, 0x78, 0x8a]);

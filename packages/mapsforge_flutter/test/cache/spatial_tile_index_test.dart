@@ -37,8 +37,8 @@ void main() {
       });
 
       test('should add and track tiles correctly', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
@@ -48,8 +48,8 @@ void main() {
       });
 
       test('should remove tiles correctly', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
@@ -59,8 +59,8 @@ void main() {
       });
 
       test('should clear all tiles', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
@@ -73,16 +73,16 @@ void main() {
 
     group('Spatial Queries', () {
       test('should find tiles within boundary', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
-        final tile3 = MockTile('tile3', BoundingBox(0.5, 0.5, 1.5, 1.5));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile3 = MockTile('tile3', const BoundingBox(0.5, 0.5, 1.5, 1.5));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
         spatialIndex.addTile(tile3);
 
         // Query overlapping with tile1 and tile3
-        final queryBounds = BoundingBox(0.0, 0.0, 1.2, 1.2);
+        final queryBounds = const BoundingBox(0.0, 0.0, 1.2, 1.2);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.length, equals(2));
@@ -92,11 +92,11 @@ void main() {
       });
 
       test('should handle empty query results', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
         spatialIndex.addTile(tile1);
 
         // Query far from tile1
-        final queryBounds = BoundingBox(10.0, 10.0, 11.0, 11.0);
+        final queryBounds = const BoundingBox(10.0, 10.0, 11.0, 11.0);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.isEmpty, isTrue);
@@ -104,12 +104,12 @@ void main() {
 
       test('should handle tiles spanning multiple cells', () {
         // Large tile spanning multiple grid cells
-        final largeTile = MockTile('large', BoundingBox(0.0, 0.0, 2.5, 2.5));
+        final largeTile = MockTile('large', const BoundingBox(0.0, 0.0, 2.5, 2.5));
         spatialIndex.addTile(largeTile);
 
         // Query in different corners should find the same tile
-        final query1 = BoundingBox(0.0, 0.0, 0.5, 0.5);
-        final query2 = BoundingBox(2.0, 2.0, 2.5, 2.5);
+        final query1 = const BoundingBox(0.0, 0.0, 0.5, 0.5);
+        final query2 = const BoundingBox(2.0, 2.0, 2.5, 2.5);
 
         final result1 = spatialIndex.getTilesInBoundary(query1);
         final result2 = spatialIndex.getTilesInBoundary(query2);
@@ -150,7 +150,7 @@ void main() {
 
         // Perform multiple queries
         for (int i = 0; i < 100; i++) {
-          final queryBounds = BoundingBox(0.0, 0.0, 2.0, 2.0);
+          final queryBounds = const BoundingBox(0.0, 0.0, 2.0, 2.0);
           spatialIndex.getTilesInBoundary(queryBounds);
         }
 
@@ -161,30 +161,30 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle tiles with zero-size boundaries', () {
-        final pointTile = MockTile('point', BoundingBox(1.0, 1.0, 1.0, 1.0));
+        final pointTile = MockTile('point', const BoundingBox(1.0, 1.0, 1.0, 1.0));
         spatialIndex.addTile(pointTile);
 
-        final queryBounds = BoundingBox(0.5, 0.5, 1.5, 1.5);
+        final queryBounds = const BoundingBox(0.5, 0.5, 1.5, 1.5);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.contains(pointTile), isTrue);
       });
 
       test('should handle negative coordinates', () {
-        final tile = MockTile('negative', BoundingBox(-2.0, -2.0, -1.0, -1.0));
+        final tile = MockTile('negative', const BoundingBox(-2.0, -2.0, -1.0, -1.0));
         spatialIndex.addTile(tile);
 
-        final queryBounds = BoundingBox(-2.5, -2.5, -0.5, -0.5);
+        final queryBounds = const BoundingBox(-2.5, -2.5, -0.5, -0.5);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.contains(tile), isTrue);
       });
 
       test('should handle very large coordinates', () {
-        final tile = MockTile('large_coords', BoundingBox(1000.0, 1000.0, 1001.0, 1001.0));
+        final tile = MockTile('large_coords', const BoundingBox(1000.0, 1000.0, 1001.0, 1001.0));
         spatialIndex.addTile(tile);
 
-        final queryBounds = BoundingBox(999.5, 999.5, 1001.5, 1001.5);
+        final queryBounds = const BoundingBox(999.5, 999.5, 1001.5, 1001.5);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.contains(tile), isTrue);
@@ -193,8 +193,8 @@ void main() {
 
     group('Statistics', () {
       test('should provide accurate statistics', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
@@ -221,7 +221,7 @@ void main() {
         final smallCellIndex = SpatialTileIndex(cellSize: 0.1);
         final largeCellIndex = SpatialTileIndex(cellSize: 10.0);
 
-        final tile = MockTile('tile', BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile = MockTile('tile', const BoundingBox(0.0, 0.0, 1.0, 1.0));
 
         smallCellIndex.addTile(tile);
         largeCellIndex.addTile(tile);

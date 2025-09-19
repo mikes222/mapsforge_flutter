@@ -124,7 +124,7 @@ class PlatformReadbufferExample {
   /// Process a chunk of data (placeholder for actual processing logic)
   static Future<void> processChunk(dynamic buffer) async {
     // Your map file processing logic here
-    await Future.delayed(Duration(milliseconds: 1));
+    await Future.delayed(const Duration(milliseconds: 1));
   }
 }
 

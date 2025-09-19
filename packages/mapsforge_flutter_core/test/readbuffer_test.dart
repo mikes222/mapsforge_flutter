@@ -308,7 +308,7 @@ void main() {
 
     group('readTags()', () {
       test('should read simple tags', () {
-        final tagsArray = [Tag('highway', 'primary'), Tag('name', 'Main Street'), Tag('maxspeed', '50')];
+        final tagsArray = [const Tag('highway', 'primary'), const Tag('name', 'Main Street'), const Tag('maxspeed', '50')];
 
         // Create buffer with tag IDs: [0, 1] (2 tags)
         final data = Uint8List.fromList([0, 1]); // Simple tag IDs
@@ -325,9 +325,9 @@ void main() {
 
       test('should handle variable value tags', () {
         final tagsArray = [
-          Tag('elevation', '%i'), // Integer variable
-          Tag('name', '%s'), // String variable
-          Tag('temperature', '%f'), // Float variable
+          const Tag('elevation', '%i'), // Integer variable
+          const Tag('name', '%s'), // String variable
+          const Tag('temperature', '%f'), // Float variable
         ];
 
         // Create buffer with tag ID 0 (elevation), followed by int value 1234
@@ -345,7 +345,7 @@ void main() {
       });
 
       test('should handle invalid tag IDs gracefully', () {
-        final tagsArray = [Tag('highway', 'primary')];
+        final tagsArray = [const Tag('highway', 'primary')];
 
         // Create buffer with invalid tag ID 99
         final data = Uint8List.fromList([99]);
@@ -593,7 +593,7 @@ void main() {
 
     group('Complete readTags Variable Value Tests', () {
       test('should handle %b (byte) variable values', () {
-        final tagsArray = [Tag('level', '%b')];
+        final tagsArray = [const Tag('level', '%b')];
 
         final data = Uint8List.fromList([
           0, // Tag ID 0
@@ -609,7 +609,7 @@ void main() {
       });
 
       test('should handle %h (short) variable values', () {
-        final tagsArray = [Tag('height', '%h')];
+        final tagsArray = [const Tag('height', '%h')];
 
         final data = Uint8List.fromList([
           0, // Tag ID 0
@@ -625,7 +625,7 @@ void main() {
       });
 
       test('should handle %f (float) variable values', () {
-        final tagsArray = [Tag('temperature', '%f')];
+        final tagsArray = [const Tag('temperature', '%f')];
 
         final data = Uint8List.fromList([
           0, // Tag ID 0
@@ -641,7 +641,7 @@ void main() {
       });
 
       test('should handle %s (string) variable values', () {
-        final tagsArray = [Tag('name', '%s')];
+        final tagsArray = [const Tag('name', '%s')];
 
         final stringBytes = 'Test Street'.codeUnits;
         final data = Uint8List.fromList([
@@ -658,7 +658,7 @@ void main() {
       });
 
       test('should handle %i with color formatting', () {
-        final tagsArray = [Tag('building:colour', '%i')];
+        final tagsArray = [const Tag('building:colour', '%i')];
 
         final data = Uint8List.fromList([
           0, // Tag ID 0
@@ -674,7 +674,7 @@ void main() {
       });
 
       test('should handle %i without color formatting', () {
-        final tagsArray = [Tag('lanes', '%i')];
+        final tagsArray = [const Tag('lanes', '%i')];
 
         final data = Uint8List.fromList([
           0, // Tag ID 0
@@ -690,7 +690,7 @@ void main() {
       });
 
       test('should handle mixed variable and fixed tags', () {
-        final tagsArray = [Tag('highway', 'primary'), Tag('maxspeed', '%i')];
+        final tagsArray = [const Tag('highway', 'primary'), const Tag('maxspeed', '%i')];
 
         final data = Uint8List.fromList([
           0, // Tag ID 0 (highway=primary)
@@ -709,7 +709,7 @@ void main() {
       });
 
       test('should handle unknown variable value types gracefully', () {
-        final tagsArray = [Tag('unknown', '%x')]; // Unknown type
+        final tagsArray = [const Tag('unknown', '%x')]; // Unknown type
 
         final data = Uint8List.fromList([0]); // Tag ID 0
         final buffer = Readbuffer(data, 0);

@@ -23,8 +23,6 @@ class _IndoorlevelOverlayState extends State<IndoorlevelOverlay> with SingleTick
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
 
-  @override
-  IndoorlevelOverlay get widget => super.widget;
 
   @override
   void initState() {

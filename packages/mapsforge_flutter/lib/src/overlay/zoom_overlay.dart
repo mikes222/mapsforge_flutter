@@ -29,8 +29,6 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
 
-  @override
-  ZoomOverlay get widget => super.widget;
 
   @override
   void initState() {

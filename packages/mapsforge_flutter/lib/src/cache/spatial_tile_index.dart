@@ -114,7 +114,7 @@ class SpatialTileIndex {
 
     for (int lat = minLatCell; lat <= maxLatCell; lat++) {
       for (int lon = minLonCell; lon <= maxLonCell; lon++) {
-        cells.add('${lat}_${lon}');
+        cells.add('${lat}_$lon');
       }
     }
 

@@ -25,7 +25,7 @@ void main() {
   group('MemoryTileCache Basic Tests', () {
     group('Boundary Operations', () {
       test('should handle boundary box creation', () {
-        final bounds = BoundingBox(0.0, 0.0, 1.0, 1.0);
+        final bounds = const BoundingBox(0.0, 0.0, 1.0, 1.0);
         expect(bounds.minLatitude, equals(0.0));
         expect(bounds.maxLatitude, equals(1.0));
         expect(bounds.minLongitude, equals(0.0));
@@ -33,7 +33,7 @@ void main() {
       });
 
       test('should handle tile creation', () {
-        final tile = MockTile('test', BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile = MockTile('test', const BoundingBox(0.0, 0.0, 1.0, 1.0));
         expect(tile.toString(), contains('test'));
         expect(tile.getBoundingBox().minLatitude, equals(0.0));
       });

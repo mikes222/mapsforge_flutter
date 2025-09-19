@@ -27,6 +27,7 @@ class HighPerformanceSimpleTaskQueue implements TaskQueue {
   final int batchSize;
 
   // Performance metrics
+  @override
   late final TaskQueueMetrics metrics;
 
   int _totalDropped = 0;

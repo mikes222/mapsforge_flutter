@@ -43,7 +43,7 @@ void main() {
       for (int i = 0; i < 10; i++) {
         futures.add(
           queue.add(() async {
-            await Future.delayed(Duration(milliseconds: 10));
+            await Future.delayed(const Duration(milliseconds: 10));
             results.add(i);
             return i;
           }),
@@ -73,7 +73,7 @@ void main() {
       futures.add(
         queue.add(() async {
           executionOrder.add('task1_start');
-          await Future.delayed(Duration(milliseconds: 50));
+          await Future.delayed(const Duration(milliseconds: 50));
           executionOrder.add('task1_end');
           return 1;
         }),
@@ -82,7 +82,7 @@ void main() {
       futures.add(
         queue.add(() async {
           executionOrder.add('task2_start');
-          await Future.delayed(Duration(milliseconds: 20));
+          await Future.delayed(const Duration(milliseconds: 20));
           executionOrder.add('task2_end');
           return 2;
         }),
@@ -91,7 +91,7 @@ void main() {
       futures.add(
         queue.add(() async {
           executionOrder.add('task3_start');
-          await Future.delayed(Duration(milliseconds: 30));
+          await Future.delayed(const Duration(milliseconds: 30));
           executionOrder.add('task3_end');
           return 3;
         }),
@@ -112,7 +112,7 @@ void main() {
       // Add tasks where some fail
       futures.add(
         queue.add(() async {
-          await Future.delayed(Duration(milliseconds: 10));
+          await Future.delayed(const Duration(milliseconds: 10));
           results.add('task1_success');
           return 1;
         }),
@@ -121,7 +121,7 @@ void main() {
       futures.add(
         queue
             .add(() async {
-              await Future.delayed(Duration(milliseconds: 10));
+              await Future.delayed(const Duration(milliseconds: 10));
               results.add('task2_before_error');
               throw Exception('Test error');
             })
@@ -136,7 +136,7 @@ void main() {
 
       futures.add(
         queue.add(() async {
-          await Future.delayed(Duration(milliseconds: 10));
+          await Future.delayed(const Duration(milliseconds: 10));
           results.add('task3_success');
           return 3;
         }),
@@ -163,7 +163,7 @@ void main() {
       for (int i = 0; i < taskCount; i++) {
         futures.add(
           queue.add(() async {
-            await Future.delayed(Duration(milliseconds: 1));
+            await Future.delayed(const Duration(milliseconds: 1));
             results.add(i);
             return i;
           }),
@@ -192,7 +192,7 @@ void main() {
       for (int i = 0; i < 5; i++) {
         futures.add(
           queue.add(() async {
-            await Future.delayed(Duration(milliseconds: 20));
+            await Future.delayed(const Duration(milliseconds: 20));
             return i;
           }),
         );

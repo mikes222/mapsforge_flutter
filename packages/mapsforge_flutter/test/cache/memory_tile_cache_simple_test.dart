@@ -37,8 +37,8 @@ void main() {
       });
 
       test('should add and track tiles correctly', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
@@ -48,8 +48,8 @@ void main() {
       });
 
       test('should remove tiles correctly', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
@@ -61,16 +61,16 @@ void main() {
 
     group('Boundary-Based Queries', () {
       test('should find tiles within boundary efficiently', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
-        final tile3 = MockTile('tile3', BoundingBox(0.5, 0.5, 1.5, 1.5));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile3 = MockTile('tile3', const BoundingBox(0.5, 0.5, 1.5, 1.5));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);
         spatialIndex.addTile(tile3);
 
         // Query overlapping with tile1 and tile3
-        final queryBounds = BoundingBox(0.0, 0.0, 1.2, 1.2);
+        final queryBounds = const BoundingBox(0.0, 0.0, 1.2, 1.2);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.length, equals(2));
@@ -80,11 +80,11 @@ void main() {
       });
 
       test('should handle empty query results', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
         spatialIndex.addTile(tile1);
 
         // Query far from tile1
-        final queryBounds = BoundingBox(10.0, 10.0, 11.0, 11.0);
+        final queryBounds = const BoundingBox(10.0, 10.0, 11.0, 11.0);
         final result = spatialIndex.getTilesInBoundary(queryBounds);
 
         expect(result.isEmpty, isTrue);
@@ -122,7 +122,7 @@ void main() {
 
         // Perform multiple queries
         for (int i = 0; i < 100; i++) {
-          final queryBounds = BoundingBox(0.0, 0.0, 2.0, 2.0);
+          final queryBounds = const BoundingBox(0.0, 0.0, 2.0, 2.0);
           spatialIndex.getTilesInBoundary(queryBounds);
         }
 
@@ -133,8 +133,8 @@ void main() {
 
     group('Statistics and Monitoring', () {
       test('should provide accurate statistics', () {
-        final tile1 = MockTile('tile1', BoundingBox(0.0, 0.0, 1.0, 1.0));
-        final tile2 = MockTile('tile2', BoundingBox(2.0, 2.0, 3.0, 3.0));
+        final tile1 = MockTile('tile1', const BoundingBox(0.0, 0.0, 1.0, 1.0));
+        final tile2 = MockTile('tile2', const BoundingBox(2.0, 2.0, 3.0, 3.0));
 
         spatialIndex.addTile(tile1);
         spatialIndex.addTile(tile2);

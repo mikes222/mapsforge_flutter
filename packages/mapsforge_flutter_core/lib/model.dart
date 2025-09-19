@@ -8,6 +8,7 @@
 /// - Data organization (Tag, DatastoreBundle)
 /// - Zoom level management (ZoomlevelRange)
 /// - Coordinate utilities and transformations
+library;
 export 'src/model/boundingbox.dart';
 export 'src/model/datastore.dart';
 export 'src/model/datastore_bundle.dart';

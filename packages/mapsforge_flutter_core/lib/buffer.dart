@@ -5,6 +5,7 @@
 /// - Writing binary data with proper serialization
 /// - Deserializing complex data structures from binary formats
 /// - Cross-platform buffer handling for Mapsforge data
+library;
 export 'src/buffer/deserializer.dart';
 export 'src/buffer/readbuffer.dart';
 export 'src/buffer/readbuffer_file.dart';

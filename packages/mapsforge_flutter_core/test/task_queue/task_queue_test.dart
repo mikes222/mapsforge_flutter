@@ -17,10 +17,10 @@ void main() {
       List<Future> futures = [];
       TaskQueue taskQueue = SimpleTaskQueue();
       int time = DateTime.now().millisecondsSinceEpoch;
-      futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
-      futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
-      futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
-      futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
+      futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
+      futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
+      futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
+      futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
       int diff = DateTime.now().millisecondsSinceEpoch - time;
       expect(diff, lessThan(50));
 
@@ -36,10 +36,10 @@ void main() {
     List<Future> futures = [];
     TaskQueue taskQueue = ParallelTaskQueue(2);
     int time = DateTime.now().millisecondsSinceEpoch;
-    futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
-    futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
-    futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
-    futures.add(taskQueue.add(() async => Future.delayed(Duration(seconds: 1))));
+    futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
+    futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
+    futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
+    futures.add(taskQueue.add(() async => Future.delayed(const Duration(seconds: 1))));
     int diff = DateTime.now().millisecondsSinceEpoch - time;
     expect(diff, lessThan(50));
 

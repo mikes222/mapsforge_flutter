@@ -4,7 +4,7 @@ import 'dart:math' as Math;
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/src/utils/douglas_peucker_latlong.dart';
 
-import '../lib/src/utils/performance_profiler.dart';
+import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 
 /// Comprehensive integration benchmark to measure overall performance improvements
 class IntegrationBenchmark {

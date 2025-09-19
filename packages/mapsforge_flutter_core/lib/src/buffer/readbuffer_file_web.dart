@@ -67,9 +67,9 @@ class ReadbufferFileWeb implements ReadbufferSource {
     if (_length != null) return _length!;
 
     if (_source is html.File) {
-      _length = (_source as html.File).size;
+      _length = (_source).size;
     } else if (_source is String) {
-      _length = await _getRemoteFileSize(_source as String);
+      _length = await _getRemoteFileSize(_source);
     } else {
       throw UnsupportedError('Unsupported source type: ${_source.runtimeType}');
     }
@@ -101,9 +101,9 @@ class ReadbufferFileWeb implements ReadbufferSource {
   /// Read bytes from the source (File or URL)
   Future<Uint8List> _readBytes(int position, int length) async {
     if (_source is html.File) {
-      return _readFromFile(_source as html.File, position, length);
+      return _readFromFile(_source, position, length);
     } else if (_source is String) {
-      return _readFromUrl(_source as String, position, length);
+      return _readFromUrl(_source, position, length);
     } else {
       throw UnsupportedError('Unsupported source type: ${_source.runtimeType}');
     }

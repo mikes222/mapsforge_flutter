@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-typedef void OnChange(int level);
+typedef OnChange = void Function(int level);
 
 /// Statefull Widget to display a level bar
 /// requires a BehaviourSubject of type int for the current indoor level
@@ -21,7 +21,7 @@ class IndoorLevelBar extends StatefulWidget {
   final int initialLevel;
 
   const IndoorLevelBar({
-    Key? key,
+    super.key,
     required this.indoorLevels,
     required this.onChange,
     this.width = 30,
@@ -32,7 +32,7 @@ class IndoorLevelBar extends StatefulWidget {
     this.elevation = 2,
     this.borderRadius = const BorderRadius.all(Radius.circular(20)),
     this.initialLevel = 0,
-  }) : super(key: key);
+  });
 
   @override
   IndoorLevelBarState createState() => IndoorLevelBarState();
@@ -43,8 +43,8 @@ class IndoorLevelBar extends StatefulWidget {
 class IndoorLevelBarState extends State<IndoorLevelBar> {
   ScrollController? _scrollController;
 
-  ValueNotifier<bool> _onTop = ValueNotifier<bool>(false);
-  ValueNotifier<bool> _onBottom = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _onTop = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _onBottom = ValueNotifier<bool>(false);
 
   late int _level;
 
@@ -166,10 +166,11 @@ class IndoorLevelBarState extends State<IndoorLevelBar> {
                           // do nothing if already selected
                           if (_level != itemIndoorLevel) {
                             widget.onChange(itemIndoorLevel);
-                            if (mounted)
+                            if (mounted) {
                               setState(() {
                                 _level = itemIndoorLevel;
                               });
+                            }
                           }
                         },
                         child: Text(

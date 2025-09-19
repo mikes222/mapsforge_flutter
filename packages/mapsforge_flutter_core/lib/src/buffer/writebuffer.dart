@@ -6,7 +6,7 @@ class Writebuffer {
   static final int ENHANCE_BUFFER_BYTES = 10000;
 
   /// A chunk of data read from the underlying file
-  List<int> _bufferData = [];
+  final List<int> _bufferData = [];
 
   int _bufferPosition = 0;
 
@@ -36,7 +36,7 @@ class Writebuffer {
   ///
   /// @return the int value.
   void appendInt2(int value) {
-    this._bufferPosition += 2;
+    _bufferPosition += 2;
     _ensureBuffer();
     if (value >= 0) {
       _bufferData.add((value >> 8) & 0x7f);
@@ -53,7 +53,7 @@ class Writebuffer {
   ///
   /// @return the int value.
   void appendUInt2(int value) {
-    this._bufferPosition += 2;
+    _bufferPosition += 2;
     _ensureBuffer();
     _bufferData.add((value >> 8) & 0xff);
     _bufferData.add((value) & 0xff);
@@ -65,7 +65,7 @@ class Writebuffer {
   ///
   /// @return the int value.
   void appendInt4(int value) {
-    this._bufferPosition += 4;
+    _bufferPosition += 4;
     _ensureBuffer();
     if (value >= 0) {
       _bufferData.add((value >> 24) & 0x7f);
@@ -98,7 +98,7 @@ class Writebuffer {
   }
 
   void appendInt5(int value) {
-    this._bufferPosition += 5;
+    _bufferPosition += 5;
     _ensureBuffer();
     _bufferData.add((value >> 32) & 0xff);
     _bufferData.add((value >> 24) & 0xff);
@@ -113,7 +113,7 @@ class Writebuffer {
   ///
   /// @return the int value.
   void appendInt8(int value) {
-    this._bufferPosition += 8;
+    _bufferPosition += 8;
     _ensureBuffer();
     if (value >= 0) {
       _bufferData.add((value >> 56) & 0x7f);

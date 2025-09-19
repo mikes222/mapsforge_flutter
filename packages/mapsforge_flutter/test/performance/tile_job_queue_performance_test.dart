@@ -110,7 +110,7 @@ void main() {
           for (int i = 0; i < batchSize; i++) {
             batchOps.add(
               Future.delayed(
-                Duration(milliseconds: 1),
+                const Duration(milliseconds: 1),
                 () => {}, // Simulate work
               ),
             );
@@ -173,7 +173,7 @@ void main() {
 
     group('Edge Cases and Robustness', () {
       test('should handle zero-size dimensions', () {
-        final bounds = BoundingBox(1.0, 1.0, 1.0, 1.0); // Zero area
+        final bounds = const BoundingBox(1.0, 1.0, 1.0, 1.0); // Zero area
 
         expect(() {
           final area = (bounds.maxLatitude - bounds.minLatitude) * (bounds.maxLongitude - bounds.minLongitude);
@@ -194,7 +194,7 @@ void main() {
       });
 
       test('should handle negative coordinates', () {
-        final bounds = BoundingBox(-45.0, -90.0, 45.0, 90.0);
+        final bounds = const BoundingBox(-45.0, -90.0, 45.0, 90.0);
 
         expect(() {
           final centerLat = (bounds.minLatitude + bounds.maxLatitude) / 2;

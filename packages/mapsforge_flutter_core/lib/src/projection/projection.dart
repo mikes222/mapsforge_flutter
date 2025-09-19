@@ -85,7 +85,7 @@ abstract class Projection {
     final double lng2 =
         degToRadian(from.longitude) + atan2(sin(h) * sin(a) * cos(degToRadian(from.latitude)), cos(a) - sin(degToRadian(from.latitude)) * sin(lat2));
 
-    return new LatLong(radianToDeg(lat2), radianToDeg(lng2));
+    return LatLong(radianToDeg(lat2), radianToDeg(lng2));
   }
 
   /// calculates the startbearing in degrees of the distance from [p1] to [p2]
@@ -117,22 +117,20 @@ abstract class Projection {
     return EQUATORIAL_RADIUS * c;
   }
 
-  /**
-   * Calculates geodetic distance between two LatLongs using Vincenty inverse formula
-   * for ellipsoids. This is very accurate but consumes more resources and time than the
-   * sphericalDistance method.
-   * <p/>
-   * Adaptation of Chriss Veness' JavaScript Code on
-   * http://www.movable-type.co.uk/scripts/latlong-vincenty.html
-   * <p/>
-   * Paper: Vincenty inverse formula - T Vincenty, "Direct and Inverse Solutions of Geodesics
-   * on the Ellipsoid with application of nested equations", Survey Review, vol XXII no 176,
-   * 1975 (http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf)
-   *
-   * @param latLong1 first LatLong
-   * @param latLong2 second LatLong
-   * @return distance in meters between points as a double
-   */
+  /// Calculates geodetic distance between two LatLongs using Vincenty inverse formula
+  /// for ellipsoids. This is very accurate but consumes more resources and time than the
+  /// sphericalDistance method.
+  /// <p/>
+  /// Adaptation of Chriss Veness' JavaScript Code on
+  /// http://www.movable-type.co.uk/scripts/latlong-vincenty.html
+  /// <p/>
+  /// Paper: Vincenty inverse formula - T Vincenty, "Direct and Inverse Solutions of Geodesics
+  /// on the Ellipsoid with application of nested equations", Survey Review, vol XXII no 176,
+  /// 1975 (http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf)
+  ///
+  /// @param latLong1 first LatLong
+  /// @param latLong2 second LatLong
+  /// @return distance in meters between points as a double
   static double vincentyDistance(ILatLong latLong1, ILatLong latLong2) {
     double f = 1 / INVERSE_FLATTENING;
     double L = degToRadian(latLong2.longitude - latLong1.longitude);
@@ -196,26 +194,22 @@ abstract class Projection {
     double phi2 = asin(sin(phi1) * cos(delta) + cos(phi1) * sin(delta) * cos(theta));
     double lambda2 = lambda1 + atan2(sin(theta) * sin(delta) * cos(phi1), cos(delta) - sin(phi1) * sin(phi2));
 
-    return new LatLong(radianToDeg(phi2), radianToDeg(lambda2));
+    return LatLong(radianToDeg(phi2), radianToDeg(lambda2));
   }
 
-  /**
-   * Calculates the amount of degrees of latitude for a given distance in meters.
-   *
-   * @param meters distance in meters
-   * @return latitude degrees
-   */
+  /// Calculates the amount of degrees of latitude for a given distance in meters.
+  ///
+  /// @param meters distance in meters
+  /// @return latitude degrees
   static double latitudeDistance(int meters) {
     return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS);
   }
 
-  /**
-   * Calculates the amount of degrees of longitude for a given distance in meters.
-   *
-   * @param meters   distance in meters
-   * @param latitude the latitude at which the calculation should be performed
-   * @return longitude degrees
-   */
+  /// Calculates the amount of degrees of longitude for a given distance in meters.
+  ///
+  /// @param meters   distance in meters
+  /// @param latitude the latitude at which the calculation should be performed
+  /// @return longitude degrees
   static double longitudeDistance(int meters, double latitude) {
     return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS * cos(degToRadian(latitude)));
   }

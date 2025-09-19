@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
-import '../lib/src/utils/performance_profiler.dart';
+import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 
 void main() {
   group('PerformanceProfiler', () {

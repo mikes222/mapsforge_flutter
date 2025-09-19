@@ -24,7 +24,7 @@ void main() {
       for (int i = 0; i < taskCount; i++) {
         originalFutures.add(
           originalQueue.add(() async {
-            await Future.delayed(Duration(milliseconds: taskDuration));
+            await Future.delayed(const Duration(milliseconds: taskDuration));
             return i;
           }),
         );
@@ -42,7 +42,7 @@ void main() {
       for (int i = 0; i < taskCount; i++) {
         highPerfFutures.add(
           highPerfQueue.add(() async {
-            await Future.delayed(Duration(milliseconds: taskDuration));
+            await Future.delayed(const Duration(milliseconds: taskDuration));
             return i;
           }),
         );
@@ -125,7 +125,7 @@ void main() {
       for (int i = 0; i < taskCount; i++) {
         futures.add(
           highPerfQueue.add(() async {
-            await Future.delayed(Duration(milliseconds: 1));
+            await Future.delayed(const Duration(milliseconds: 1));
             return i;
           }),
         );
@@ -159,7 +159,7 @@ void main() {
         optimizedFutures.add(
           optimizedQueue
               .add(() async {
-                await Future.delayed(Duration(milliseconds: 1));
+                await Future.delayed(const Duration(milliseconds: 1));
                 if (random.nextDouble() < errorRate) {
                   throw Exception('Test error $i');
                 }
@@ -176,7 +176,7 @@ void main() {
         highPerfFutures.add(
           highPerfQueue
               .add(() async {
-                await Future.delayed(Duration(milliseconds: 1));
+                await Future.delayed(const Duration(milliseconds: 1));
                 if (random.nextDouble() < errorRate) {
                   throw Exception('Test error $i');
                 }
@@ -216,7 +216,7 @@ void main() {
           futures.add(
             highPerfQueue
                 .add(() async {
-                  await Future.delayed(Duration(milliseconds: 50)); // Longer delay to fill queue
+                  await Future.delayed(const Duration(milliseconds: 50)); // Longer delay to fill queue
                   return i;
                 })
                 .catchError((_) => -1),
@@ -227,7 +227,7 @@ void main() {
       }
 
       // Wait a bit to let queue fill up
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final stats = highPerfQueue.getPerformanceStats();
       print('\nBackpressure Test:');
@@ -255,7 +255,7 @@ void main() {
       for (int i = 0; i < taskCount; i++) {
         futures.add(
           highPerfQueue.add(() async {
-            await Future.delayed(Duration(milliseconds: taskDuration));
+            await Future.delayed(const Duration(milliseconds: taskDuration));
             return i;
           }),
         );

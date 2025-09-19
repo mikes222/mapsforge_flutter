@@ -77,7 +77,7 @@ class MercatorProjection implements Projection {
   double tileXToLongitude(int tileX) {
     assert(tileX >= 0);
     // allow one more so that we can find the end of the tile from the left
-    assert(tileX <= _maxTileCount, "$tileX > ${_maxTileCount} of zoomlevel ${scalefactor.zoomlevel}");
+    assert(tileX <= _maxTileCount, "$tileX > $_maxTileCount of zoomlevel ${scalefactor.zoomlevel}");
     double result = (tileX / _scalefactor.scalefactor * 360 - 180);
     return result;
     //return pixelXToLongitude(tileX * tileSize.toDouble());
@@ -94,7 +94,7 @@ class MercatorProjection implements Projection {
   double tileYToLatitude(int tileY) {
     assert(tileY >= 0);
     // allow one more so that we can find the end of the tile from the top
-    assert(tileY <= _maxTileCount, "$tileY > ${_maxTileCount} of zoomlevel ${scalefactor.zoomlevel}");
+    assert(tileY <= _maxTileCount, "$tileY > $_maxTileCount of zoomlevel ${scalefactor.zoomlevel}");
     const double pi2 = 2 * pi;
     const double pi360 = 360 / pi;
     double y = 0.5 - (tileY / _scalefactor.scalefactor);

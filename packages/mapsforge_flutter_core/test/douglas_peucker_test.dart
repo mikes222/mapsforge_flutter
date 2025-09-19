@@ -14,8 +14,8 @@ void main() {
 
     group('Basic Functionality', () {
       test('should return same points for lists with 2 or fewer points', () {
-        final singlePoint = [LatLong(0.0, 0.0)];
-        final twoPoints = [LatLong(0.0, 0.0), LatLong(1.0, 1.0)];
+        final singlePoint = [const LatLong(0.0, 0.0)];
+        final twoPoints = [const LatLong(0.0, 0.0), const LatLong(1.0, 1.0)];
 
         expect(simplifier.simplify(singlePoint, 0.1), equals(singlePoint));
         expect(simplifier.simplify(twoPoints, 0.1), equals(twoPoints));
@@ -23,7 +23,7 @@ void main() {
       });
 
       test('should preserve first and last points', () {
-        final points = [LatLong(0.0, 0.0), LatLong(0.5, 0.1), LatLong(1.0, 0.0), LatLong(1.5, 0.1), LatLong(2.0, 0.0)];
+        final points = [const LatLong(0.0, 0.0), const LatLong(0.5, 0.1), const LatLong(1.0, 0.0), const LatLong(1.5, 0.1), const LatLong(2.0, 0.0)];
 
         final result = simplifier.simplify(points, 0.05);
 
@@ -34,7 +34,7 @@ void main() {
       });
 
       test('should simplify straight line to endpoints only', () {
-        final straightLine = [LatLong(0.0, 0.0), LatLong(0.25, 0.25), LatLong(0.5, 0.5), LatLong(0.75, 0.75), LatLong(1.0, 1.0)];
+        final straightLine = [const LatLong(0.0, 0.0), const LatLong(0.25, 0.25), const LatLong(0.5, 0.5), const LatLong(0.75, 0.75), const LatLong(1.0, 1.0)];
 
         final result = simplifier.simplify(straightLine, 0.01);
 
@@ -45,9 +45,9 @@ void main() {
 
       test('should keep significant deviation points', () {
         final zigzagLine = [
-          LatLong(0.0, 0.0),
-          LatLong(0.5, 1.0), // Significant deviation
-          LatLong(1.0, 0.0),
+          const LatLong(0.0, 0.0),
+          const LatLong(0.5, 1.0), // Significant deviation
+          const LatLong(1.0, 0.0),
         ];
 
         final result = simplifier.simplify(zigzagLine, 0.1);
@@ -60,13 +60,13 @@ void main() {
     group('Tolerance Handling', () {
       test('should remove more points with higher tolerance', () {
         final noisyLine = [
-          LatLong(0.0, 0.0),
-          LatLong(0.1, 0.01),
-          LatLong(0.2, 0.02),
-          LatLong(0.3, 0.01),
-          LatLong(0.4, 0.02),
-          LatLong(0.5, 0.01),
-          LatLong(1.0, 0.0),
+          const LatLong(0.0, 0.0),
+          const LatLong(0.1, 0.01),
+          const LatLong(0.2, 0.02),
+          const LatLong(0.3, 0.01),
+          const LatLong(0.4, 0.02),
+          const LatLong(0.5, 0.01),
+          const LatLong(1.0, 0.0),
         ];
 
         final lowTolerance = simplifier.simplify(noisyLine, 0.005);
@@ -77,7 +77,7 @@ void main() {
       });
 
       test('should handle zero tolerance correctly', () {
-        final points = [LatLong(0.0, 0.0), LatLong(0.5, 0.0001), LatLong(1.0, 0.0)];
+        final points = [const LatLong(0.0, 0.0), const LatLong(0.5, 0.0001), const LatLong(1.0, 0.0)];
 
         final result = simplifier.simplify(points, 0.0);
 
@@ -86,7 +86,7 @@ void main() {
       });
 
       test('should handle very large tolerance', () {
-        final points = [LatLong(0.0, 0.0), LatLong(0.5, 0.1), LatLong(1.0, 0.0)];
+        final points = [const LatLong(0.0, 0.0), const LatLong(0.5, 0.1), const LatLong(1.0, 0.0)];
 
         final result = simplifier.simplify(points, 1000.0);
 
@@ -99,11 +99,11 @@ void main() {
     group('Edge Cases', () {
       test('should handle duplicate points', () {
         final duplicatePoints = [
-          LatLong(0.0, 0.0),
-          LatLong(0.0, 0.0), // Duplicate
-          LatLong(1.0, 1.0),
-          LatLong(1.0, 1.0), // Duplicate
-          LatLong(2.0, 0.0),
+          const LatLong(0.0, 0.0),
+          const LatLong(0.0, 0.0), // Duplicate
+          const LatLong(1.0, 1.0),
+          const LatLong(1.0, 1.0), // Duplicate
+          const LatLong(2.0, 0.0),
         ];
 
         final result = simplifier.simplify(duplicatePoints, 0.01);
@@ -114,7 +114,7 @@ void main() {
       });
 
       test('should handle collinear points', () {
-        final collinearPoints = [LatLong(0.0, 0.0), LatLong(1.0, 1.0), LatLong(2.0, 2.0), LatLong(3.0, 3.0)];
+        final collinearPoints = [const LatLong(0.0, 0.0), const LatLong(1.0, 1.0), const LatLong(2.0, 2.0), const LatLong(3.0, 3.0)];
 
         final result = simplifier.simplify(collinearPoints, 0.001);
 
@@ -124,7 +124,7 @@ void main() {
       });
 
       test('should handle very close points', () {
-        final closePoints = [LatLong(0.0, 0.0), LatLong(0.0000001, 0.0000001), LatLong(1.0, 1.0)];
+        final closePoints = [const LatLong(0.0, 0.0), const LatLong(0.0000001, 0.0000001), const LatLong(1.0, 1.0)];
 
         final result = simplifier.simplify(closePoints, 0.01);
 
@@ -132,7 +132,7 @@ void main() {
       });
 
       test('should handle points with same coordinates but different objects', () {
-        final points = [LatLong(0.0, 0.0), LatLong(0.5, 0.5), LatLong(1.0, 1.0)];
+        final points = [const LatLong(0.0, 0.0), const LatLong(0.5, 0.5), const LatLong(1.0, 1.0)];
 
         final result = simplifier.simplify(points, 0.01);
 
@@ -165,14 +165,14 @@ void main() {
 
       test('should maintain geometric properties', () {
         final complexPath = [
-          LatLong(0.0, 0.0),
-          LatLong(0.1, 0.1),
-          LatLong(0.2, 0.5), // Significant point
-          LatLong(0.3, 0.1),
-          LatLong(0.4, 0.1),
-          LatLong(0.5, 0.6), // Significant point
-          LatLong(0.6, 0.1),
-          LatLong(1.0, 0.0),
+          const LatLong(0.0, 0.0),
+          const LatLong(0.1, 0.1),
+          const LatLong(0.2, 0.5), // Significant point
+          const LatLong(0.3, 0.1),
+          const LatLong(0.4, 0.1),
+          const LatLong(0.5, 0.6), // Significant point
+          const LatLong(0.6, 0.1),
+          const LatLong(1.0, 0.0),
         ];
 
         final result = simplifier.simplify(complexPath, 0.05);
@@ -183,7 +183,7 @@ void main() {
       });
 
       test('should be deterministic', () {
-        final points = [LatLong(0.0, 0.0), LatLong(0.1, 0.05), LatLong(0.2, 0.1), LatLong(0.3, 0.05), LatLong(0.4, 0.1), LatLong(0.5, 0.0)];
+        final points = [const LatLong(0.0, 0.0), const LatLong(0.1, 0.05), const LatLong(0.2, 0.1), const LatLong(0.3, 0.05), const LatLong(0.4, 0.1), const LatLong(0.5, 0.0)];
 
         final result1 = simplifier.simplify(points, 0.02);
         final result2 = simplifier.simplify(points, 0.02);
@@ -198,7 +198,7 @@ void main() {
 
     group('Numerical Stability', () {
       test('should handle very small coordinates', () {
-        final smallCoords = [LatLong(1e-10, 1e-10), LatLong(2e-10, 1.1e-10), LatLong(3e-10, 2e-10)];
+        final smallCoords = [const LatLong(1e-10, 1e-10), const LatLong(2e-10, 1.1e-10), const LatLong(3e-10, 2e-10)];
 
         final result = simplifier.simplify(smallCoords, 1e-12);
 
@@ -208,7 +208,7 @@ void main() {
       });
 
       test('should handle very large coordinates', () {
-        final largeCoords = [LatLong(1e6, 1e6), LatLong(1e6 + 0.1, 1e6 + 0.1), LatLong(1e6 + 0.2, 1e6 + 0.2)];
+        final largeCoords = [const LatLong(1e6, 1e6), const LatLong(1e6 + 0.1, 1e6 + 0.1), const LatLong(1e6 + 0.2, 1e6 + 0.2)];
 
         final result = simplifier.simplify(largeCoords, 0.05);
 
@@ -218,7 +218,7 @@ void main() {
       });
 
       test('should handle mixed coordinate scales', () {
-        final mixedCoords = [LatLong(0.0, 0.0), LatLong(1e-6, 1000.0), LatLong(1000.0, 1e-6)];
+        final mixedCoords = [const LatLong(0.0, 0.0), const LatLong(1e-6, 1000.0), const LatLong(1000.0, 1e-6)];
 
         final result = simplifier.simplify(mixedCoords, 0.1);
 
@@ -230,13 +230,13 @@ void main() {
       test('should handle the original problematic case from plan', () {
         // Test case that would have used expensive Math.pow operations
         final points = [
-          LatLong(52.5200, 13.4050), // Berlin
-          LatLong(52.5201, 13.4051),
-          LatLong(52.5202, 13.4052),
-          LatLong(52.5203, 13.4053),
-          LatLong(52.5300, 13.4150), // Significant deviation
-          LatLong(52.5301, 13.4151),
-          LatLong(52.5400, 13.4250), // End point
+          const LatLong(52.5200, 13.4050), // Berlin
+          const LatLong(52.5201, 13.4051),
+          const LatLong(52.5202, 13.4052),
+          const LatLong(52.5203, 13.4053),
+          const LatLong(52.5300, 13.4150), // Significant deviation
+          const LatLong(52.5301, 13.4151),
+          const LatLong(52.5400, 13.4250), // End point
         ];
 
         final result = simplifier.simplify(points, 0.001);
@@ -252,16 +252,16 @@ void main() {
       test('should produce same results as reference implementation', () {
         // Known test case with expected results
         final referencePoints = [
-          LatLong(0.0, 0.0),
-          LatLong(1.0, 0.1),
-          LatLong(2.0, -0.1),
-          LatLong(3.0, 5.0),
-          LatLong(4.0, 6.0),
-          LatLong(5.0, 7.0),
-          LatLong(6.0, 8.1),
-          LatLong(7.0, 9.0),
-          LatLong(8.0, 9.0),
-          LatLong(9.0, 9.0),
+          const LatLong(0.0, 0.0),
+          const LatLong(1.0, 0.1),
+          const LatLong(2.0, -0.1),
+          const LatLong(3.0, 5.0),
+          const LatLong(4.0, 6.0),
+          const LatLong(5.0, 7.0),
+          const LatLong(6.0, 8.1),
+          const LatLong(7.0, 9.0),
+          const LatLong(8.0, 9.0),
+          const LatLong(9.0, 9.0),
         ];
 
         final result = simplifier.simplify(referencePoints, 0.5);

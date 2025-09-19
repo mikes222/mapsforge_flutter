@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 
 /// Reads chunks of a file from the disc. Supports reading multiple chunks concurrently (underlying RandomAccessFile forbids this).
 class ReadbufferFile implements ReadbufferSource {
-  static final _log = new Logger('ReadbufferFile');
+  static final _log = Logger('ReadbufferFile');
 
   /// ressource for consecutive reads
   _ReadbufferFileResource? _resource;

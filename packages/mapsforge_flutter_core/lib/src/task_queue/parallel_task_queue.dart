@@ -9,6 +9,7 @@ class ParallelTaskQueue implements TaskQueue {
   final Queue<_QueuedFuture> _nextCycle = Queue();
 
   // Performance monitoring
+  @override
   late final TaskQueueMetrics metrics;
 
   bool _isCancelled = false;

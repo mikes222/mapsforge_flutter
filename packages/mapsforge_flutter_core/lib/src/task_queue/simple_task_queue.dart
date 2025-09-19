@@ -21,13 +21,15 @@ class SimpleTaskQueue implements TaskQueue {
   bool _isProcessing = false;
 
   // Performance monitoring
+  @override
   late final TaskQueueMetrics metrics;
 
   SimpleTaskQueue({String? name}) {
-    metrics = TaskQueueMetrics(name: name ?? this.runtimeType.toString());
+    metrics = TaskQueueMetrics(name: name ?? runtimeType.toString());
     TaskQueueMgr().register(this);
   }
 
+  @override
   void dispose() {
     TaskQueueMgr().unregister(this);
   }

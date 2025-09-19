@@ -91,7 +91,7 @@ class BoundingBox {
   /// [longitude] The longitude coordinate to test
   /// Returns true if the coordinates are within the boundary (inclusive)
   bool contains(double latitude, double longitude) {
-    return this.minLatitude <= latitude && this.maxLatitude >= latitude && this.minLongitude <= longitude && this.maxLongitude >= longitude;
+    return minLatitude <= latitude && maxLatitude >= latitude && minLongitude <= longitude && maxLongitude >= longitude;
   }
 
   /// Tests if the given LatLong point is within this bounding box.
@@ -129,10 +129,10 @@ class BoundingBox {
   /// Returns a new BoundingBox covering both boundaries
   BoundingBox extendBoundingBox(BoundingBox boundingBox) {
     return BoundingBox(
-      min(this.minLatitude, boundingBox.minLatitude),
-      min(this.minLongitude, boundingBox.minLongitude),
-      max(this.maxLatitude, boundingBox.maxLatitude),
-      max(this.maxLongitude, boundingBox.maxLongitude),
+      min(minLatitude, boundingBox.minLatitude),
+      min(minLongitude, boundingBox.minLongitude),
+      max(maxLatitude, boundingBox.maxLatitude),
+      max(maxLongitude, boundingBox.maxLongitude),
     );
   }
 
@@ -308,35 +308,29 @@ class BoundingBox {
     double verticalExpansion = Projection.latitudeDistance(meters);
     double horizontalExpansion = Projection.longitudeDistance(meters, max(minLatitude.abs(), maxLatitude.abs()));
 
-    double minLat = max(Projection.LATITUDE_MIN, this.minLatitude - verticalExpansion);
-    double minLon = max(Projection.LONGITUDE_MIN, this.minLongitude - horizontalExpansion);
-    double maxLat = min(Projection.LATITUDE_MAX, this.maxLatitude + verticalExpansion);
-    double maxLon = min(Projection.LONGITUDE_MAX, this.maxLongitude + horizontalExpansion);
+    double minLat = max(Projection.LATITUDE_MIN, minLatitude - verticalExpansion);
+    double minLon = max(Projection.LONGITUDE_MIN, minLongitude - horizontalExpansion);
+    double maxLat = min(Projection.LATITUDE_MAX, maxLatitude + verticalExpansion);
+    double maxLon = min(Projection.LONGITUDE_MAX, maxLongitude + horizontalExpansion);
 
     return BoundingBox(minLat, minLon, maxLat, maxLon);
   }
 
-  /**
-   * @return a new LatLong at the horizontal and vertical center of this BoundingBox.
-   */
+  /// @return a new LatLong at the horizontal and vertical center of this BoundingBox.
   LatLong getCenterPoint() {
-    double latitudeOffset = (this.maxLatitude - this.minLatitude) / 2;
-    double longitudeOffset = (this.maxLongitude - this.minLongitude) / 2;
-    return new LatLong(this.minLatitude + latitudeOffset, this.minLongitude + longitudeOffset);
+    double latitudeOffset = (maxLatitude - minLatitude) / 2;
+    double longitudeOffset = (maxLongitude - minLongitude) / 2;
+    return LatLong(minLatitude + latitudeOffset, minLongitude + longitudeOffset);
   }
 
-  /**
-   * @return the latitude span of this BoundingBox in degrees.
-   */
+  /// @return the latitude span of this BoundingBox in degrees.
   double getLatitudeSpan() {
-    return this.maxLatitude - this.minLatitude;
+    return maxLatitude - minLatitude;
   }
 
-  /**
-   * @return the longitude span of this BoundingBox in degrees.
-   */
+  /// @return the longitude span of this BoundingBox in degrees.
   double getLongitudeSpan() {
-    return this.maxLongitude - this.minLongitude;
+    return maxLongitude - minLongitude;
   }
 
   /**
@@ -363,29 +357,27 @@ class BoundingBox {
       return true;
     }
 
-    return this.maxLatitude >= boundingBox.minLatitude &&
-        this.maxLongitude >= boundingBox.minLongitude &&
-        this.minLatitude <= boundingBox.maxLatitude &&
-        this.minLongitude <= boundingBox.maxLongitude;
+    return maxLatitude >= boundingBox.minLatitude &&
+        maxLongitude >= boundingBox.minLongitude &&
+        minLatitude <= boundingBox.maxLatitude &&
+        minLongitude <= boundingBox.maxLongitude;
   }
 
-  /**
-   * Returns if an area built from the latLongs intersects with a bias towards
-   * returning true.
-   * The method returns fast if any of the points lie within the bbox. If none of the points
-   * lie inside the box, it constructs the outer bbox for all the points and tests for intersection
-   * (so it is possible that the area defined by the points does not actually intersect)
-   *
-   * @param latLongs the points that define an area
-   * @return false if there is no intersection, true if there could be an intersection
-   */
+  /// Returns if an area built from the latLongs intersects with a bias towards
+  /// returning true.
+  /// The method returns fast if any of the points lie within the bbox. If none of the points
+  /// lie inside the box, it constructs the outer bbox for all the points and tests for intersection
+  /// (so it is possible that the area defined by the points does not actually intersect)
+  ///
+  /// @param latLongs the points that define an area
+  /// @return false if there is no intersection, true if there could be an intersection
   bool intersectsArea(List<List<ILatLong>> latLongs) {
-    if (latLongs.length == 0 || latLongs[0].length == 0) {
+    if (latLongs.isEmpty || latLongs[0].isEmpty) {
       return false;
     }
     for (List<ILatLong> outer in latLongs) {
       for (ILatLong latLong in outer) {
-        if (this.containsLatLong(latLong)) {
+        if (containsLatLong(latLong)) {
           // if any of the points is inside the bbox return early
           return true;
         }
@@ -406,7 +398,7 @@ class BoundingBox {
         tmpMaxLon = max(tmpMaxLon, latLong.longitude);
       }
     }
-    return this.intersects(new BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
+    return intersects(BoundingBox(tmpMinLat, tmpMinLon, tmpMaxLat, tmpMaxLon));
   }
 
   /// Checks if a line intersects with the rectangle.
@@ -417,7 +409,7 @@ class BoundingBox {
   /// @return `true`, wenn die Linie das Rechteck überschneidet oder berührt, andernfalls `false`.
   bool intersectsLine(ILatLong lineStart, ILatLong lineEnd) {
     // 1. Überprüfe, ob einer der Linienendpunkte innerhalb des Rechtecks liegt.
-    if (this.containsLatLong(lineStart) || this.containsLatLong(lineEnd)) {
+    if (containsLatLong(lineStart) || containsLatLong(lineEnd)) {
       return true;
     }
 

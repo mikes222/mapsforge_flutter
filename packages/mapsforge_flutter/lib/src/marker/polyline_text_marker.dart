@@ -17,7 +17,7 @@ class PolylineTextMarker<T> extends Marker<T> {
 
   RenderInfoWay<RenderinstructionPolylineText>? renderInfo;
 
-  List<ILatLong> _path = [];
+  final List<ILatLong> _path = [];
 
   final String caption;
 

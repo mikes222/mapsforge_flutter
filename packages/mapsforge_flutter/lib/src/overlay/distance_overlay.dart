@@ -36,8 +36,6 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
 
   String _toDisplay = "unknown";
 
-  @override
-  DistanceOverlay get widget => super.widget;
 
   @override
   void initState() {
@@ -126,8 +124,7 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
 
   void _recalc(MapPosition position) {
     // get the meters per pixel, always calculate with meters!
-    if (position.latitude == null || position.longitude == null) return;
-    double meterPerPixel = position.projection.meterPerPixel(LatLong(position.latitude!, position.longitude!));
+    double meterPerPixel = position.projection.meterPerPixel(LatLong(position.latitude, position.longitude));
     // default is 100 pixels in ui
     _pixel = 100;
     // how many meters are that?

@@ -29,7 +29,7 @@ mixin class CaptionMixin {
       strokeColor: strokeColor,
       fillColor: fillColor,
       fontSize: fontSize,
-      zoomlevelRange: zoomlevelRange ?? ZoomlevelRange.standard(),
+      zoomlevelRange: zoomlevelRange ?? const ZoomlevelRange.standard(),
       position: position,
       dy: dy,
       gap: gap,

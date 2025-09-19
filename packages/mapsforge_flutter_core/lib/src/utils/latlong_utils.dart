@@ -182,10 +182,10 @@ class LatLongUtils {
 
     ILatLong? previous;
 
-    polygon.forEach((current) {
+    for (var current in polygon) {
       if (previous != null) {
-        final double x1 = previous!.longitude;
-        final double y1 = previous!.latitude;
+        final double x1 = previous.longitude;
+        final double y1 = previous.latitude;
         final double x2 = current.longitude;
         final double y2 = current.latitude;
 
@@ -201,7 +201,7 @@ class LatLongUtils {
         }
       }
       previous = current;
-    });
+    }
 
     // If the number of intersections is odd, the point is inside the polygon; otherwise, it's outside
     return intersectionCount % 2 == 1;
@@ -323,17 +323,17 @@ class LatLongUtils {
     for (var latlongs in way.latLongs) {
       List<String> results = [];
       String result = "";
-      latlongs.forEach((latlong) {
+      for (var latlong in latlongs) {
         result += "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
         if (result.length > 250) {
           results.add(result);
           result = "";
         }
-      });
+      }
       if (result.isNotEmpty) results.add(result);
-      results.forEach((action) {
+      for (var action in results) {
         print("  $action");
-      });
+      }
     }
   }
 

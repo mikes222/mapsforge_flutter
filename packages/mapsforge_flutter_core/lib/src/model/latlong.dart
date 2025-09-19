@@ -86,12 +86,10 @@ class LatLong implements ILatLong {
   //   return LatLongUtils.destinationPoint(this, distance, bearing);
   // }
 
-  /**
-   * Calculate the Euclidean distance from this LatLong to another.
-   *
-   * @param other The LatLong to calculate the distance to
-   * @return the distance in degrees as a double
-   */
+  /// Calculate the Euclidean distance from this LatLong to another.
+  ///
+  /// @param other The LatLong to calculate the distance to
+  /// @return the distance in degrees as a double
   // double distance(LatLong other) {
   //   return LatLongUtils.distance(this, other);
   // }
@@ -112,7 +110,7 @@ class LatLong implements ILatLong {
   /// [longitudeE6] The longitude value in microdegrees
   /// Returns a new LatLong with converted decimal degree values
   static LatLong fromMicroDegrees(int latitudeE6, int longitudeE6) {
-    return new LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6), LatLongUtils.microdegreesToDegrees(longitudeE6));
+    return LatLong(LatLongUtils.microdegreesToDegrees(latitudeE6), LatLongUtils.microdegreesToDegrees(longitudeE6));
   }
 
   /// Parses a LatLong from a string with latitude and longitude values.
@@ -125,48 +123,46 @@ class LatLong implements ILatLong {
   /// Throws Exception if the string format is invalid
   static LatLong fromString(String latLonString) {
     List<String> split = latLonString.split("[,;:\\s]");
-    if (split.length != 2) throw new Exception("cannot read coordinate, not a valid format");
+    if (split.length != 2) throw Exception("cannot read coordinate, not a valid format");
     double latitude = double.parse(split[0]);
     double longitude = double.parse(split[1]);
-    return new LatLong(latitude, longitude);
+    return LatLong(latitude, longitude);
   }
 
   /// Gets the latitude value in decimal degrees.
   ///
   /// Returns the latitude coordinate (-90.0 to +90.0)
   double? getLatitude() {
-    return this.latitude;
+    return latitude;
   }
 
   /// Gets the latitude value in microdegrees.
   ///
   /// Returns the latitude as an integer in microdegrees (degrees × 10^6)
   int getLatitudeE6() {
-    return degreesToMicrodegrees(this.latitude);
+    return degreesToMicrodegrees(latitude);
   }
 
   /// Gets the longitude value in decimal degrees.
   ///
   /// Returns the longitude coordinate (-180.0 to +180.0)
   double? getLongitude() {
-    return this.longitude;
+    return longitude;
   }
 
   /// Gets the longitude value in microdegrees.
   ///
   /// Returns the longitude as an integer in microdegrees (degrees × 10^6)
   int getLongitudeE6() {
-    return degreesToMicrodegrees(this.longitude);
+    return degreesToMicrodegrees(longitude);
   }
 
-  /**
-   * Calculate the spherical distance from this LatLong to another.
-   * <p/>
-   * Use vincentyDistance for more accuracy but less performance.
-   *
-   * @param other The LatLong to calculate the distance to
-   * @return the distance in meters as a double
-   */
+  /// Calculate the spherical distance from this LatLong to another.
+  /// <p/>
+  /// Use vincentyDistance for more accuracy but less performance.
+  ///
+  /// @param other The LatLong to calculate the distance to
+  /// @return the distance in meters as a double
   // double sphericalDistance(LatLong other) {
   //   return LatLongUtils.sphericalDistance(this, other);
   // }
