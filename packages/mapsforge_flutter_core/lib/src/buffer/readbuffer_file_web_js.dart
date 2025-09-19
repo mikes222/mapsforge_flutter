@@ -2,25 +2,24 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:typed_data';
 
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer_source.dart';
 import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 
 /// Web-compatible implementation for reading chunks of files.
 /// Supports both local files (via File API) and remote files (via HTTP Range requests).
-class ReadbufferFileWeb implements ReadbufferSource {
-  static final _log = Logger('ReadbufferFileWeb');
+class ReadbufferFileWebJs implements ReadbufferSource {
+    // static final _log = Logger('ReadbufferFileWeb'); // Commented out as it is unused
 
   final dynamic _source; // html.File or String (URL)
   int? _length;
   int _position = 0;
 
   /// Create from a File object (user-selected file)
-  ReadbufferFileWeb.fromFile(html.File file) : _source = file;
+  ReadbufferFileWebJs.fromFile(html.File file) : _source = file;
 
   /// Create from a URL (remote file with Range request support)
-  ReadbufferFileWeb.fromUrl(String url) : _source = url;
+  ReadbufferFileWebJs.fromUrl(String url) : _source = url;
 
   @override
   void dispose() {

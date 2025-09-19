@@ -80,8 +80,7 @@ class TileindexPage extends StatelessWidget {
   /// Reads the tileIndexes for a subfile. Each index has 5 byte and points to the
   /// beginning of a tile.
   Future<List<int>> _readTileIndex() async {
-    ReadbufferFile readBufferMaster = ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
-    Readbuffer readBuffer = await readBufferMaster.readFromFileAt(
+    Readbuffer readBuffer = await mapFile.readBufferSource.readFromFileAt(
       subFileParameter.indexStartAddress,
       subFileParameter.indexEndAddress - subFileParameter.indexStartAddress,
     );
@@ -106,8 +105,7 @@ class TileindexPage extends StatelessWidget {
 
     int nextOffset = index + 1 == subFileParameter.numberOfBlocks ? subFileParameter.subFileSize : indexes[index + 1];
 
-    ReadbufferFile readBufferMaster = ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
-    Readbuffer readBuffer = await readBufferMaster.readFromFileAt(subFileParameter.startAddress + offset, nextOffset - offset);
+    Readbuffer readBuffer = await mapFile.readBufferSource.readFromFileAt(subFileParameter.startAddress + offset, nextOffset - offset);
     List<Widget> res = [];
     if (mapFile.getMapHeaderInfo().debugFile) readBuffer.readUTF8EncodedString2(32);
     List<_Zoomtable> zoomtable = _readZoomtable(readBuffer);

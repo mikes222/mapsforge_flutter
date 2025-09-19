@@ -1,9 +1,9 @@
-import 'package:mapsforge_flutter_core/buffer.dart';
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class PbfStatistics {
   final _log = Logger('PbfStatistics');
@@ -37,7 +37,7 @@ class PbfStatistics {
   PbfStatistics._(this.converter);
 
   static Future<PbfStatistics> readFile(String filename, DefaultOsmPrimitiveConverter converter) async {
-    ReadbufferSource readbufferSource = ReadbufferFile(filename);
+    ReadbufferSource readbufferSource = createReadbufferSource(filename);
     PbfStatistics statistics = await readSource(readbufferSource, converter);
     readbufferSource.dispose();
     return statistics;

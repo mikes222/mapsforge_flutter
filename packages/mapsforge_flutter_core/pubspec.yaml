@@ -15,7 +15,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-
+  http: ^1.2.1
   collection: ^1.19.1
 
   ecache: ^2.1.1

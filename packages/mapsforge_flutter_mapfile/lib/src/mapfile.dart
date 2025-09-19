@@ -205,7 +205,7 @@ class Mapfile extends MapDatastore {
 
   static Future<Mapfile> createFromFile({required String filename, String? preferredLanguage, ReadbufferSource? source}) async {
     Mapfile mapFile = Mapfile._(preferredLanguage);
-    await mapFile._init(source ?? ReadbufferFile(filename));
+    await mapFile._init(source ?? createReadbufferSource(filename));
     return mapFile;
   }
 

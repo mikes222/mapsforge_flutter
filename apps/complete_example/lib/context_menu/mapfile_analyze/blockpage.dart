@@ -1,7 +1,6 @@
 import 'package:complete_example/context_menu/mapfile_analyze/poipage.dart';
 import 'package:complete_example/context_menu/mapfile_analyze/waypage.dart';
 import 'package:flutter/material.dart';
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
@@ -71,8 +70,6 @@ class BlockPage extends StatelessWidget {
 
   Future<DatastoreBundle?> _readBlock() async {
     try {
-      ReadbufferFile readBufferMaster = ReadbufferFile((mapFile.readBufferSource as ReadbufferFile).filename);
-
       QueryParameters queryParameters = new QueryParameters();
       queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
       MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
@@ -84,7 +81,7 @@ class BlockPage extends StatelessWidget {
 
       BoundingBox boundingBox = mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
       MapfileSelector selector = MapfileSelector.ALL;
-      DatastoreBundle? result = await mapFile.processBlocks(readBufferMaster, queryParameters, subFileParameter, boundingBox, selector);
+      DatastoreBundle? result = await mapFile.processBlocks(mapFile.readBufferSource, queryParameters, subFileParameter, boundingBox, selector);
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {

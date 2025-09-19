@@ -3,14 +3,13 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer_source.dart';
 import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 
 /// Reads chunks of a file from the disc. Supports reading multiple chunks concurrently (underlying RandomAccessFile forbids this).
 class ReadbufferFile implements ReadbufferSource {
-  static final _log = Logger('ReadbufferFile');
+  // static final _log = Logger('ReadbufferFile'); // Commented out as it is unused
 
   /// ressource for consecutive reads
   _ReadbufferFileResource? _resource;

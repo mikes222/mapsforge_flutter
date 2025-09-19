@@ -84,7 +84,7 @@ class PbfAnalyzer {
     double maxGapMeter = 200,
     BoundingBox? finalBoundingBox,
   }) async {
-    ReadbufferSource readbufferSource = ReadbufferFile(filename);
+    ReadbufferSource readbufferSource = createReadbufferSource(filename);
     PbfAnalyzer result = await readSource(readbufferSource, converter, maxGapMeter: maxGapMeter, finalBoundingBox: finalBoundingBox);
     readbufferSource.dispose();
     return result;
@@ -486,7 +486,7 @@ class WayholderUnion {
 
   static SinkWithCounter? _sinkWithCounter;
 
-  static ReadbufferFile? _readbufferFile;
+  static ReadbufferSource? _readbufferFile;
 
   static int _count = 0;
 
@@ -528,7 +528,7 @@ class WayholderUnion {
 
   Future<Wayholder> _fromFile() async {
     assert(_temp != null);
-    _readbufferFile ??= ReadbufferFile(_filename!);
+    _readbufferFile ??= createReadbufferSource(_filename!);
     await _sinkWithCounter!.flush();
     Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(_temp!.pos, _temp!.length);
     Uint8List uint8list = readbuffer.getBuffer(0, _temp!.length);

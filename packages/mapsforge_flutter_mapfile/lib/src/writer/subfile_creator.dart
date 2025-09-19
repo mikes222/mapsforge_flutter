@@ -394,7 +394,7 @@ class TileBuffer {
 
   SinkWithCounter? _ioSink;
 
-  ReadbufferFile? _readbufferFile;
+  ReadbufferSource? _readbufferFile;
 
   late final String _filename;
 
@@ -481,7 +481,7 @@ class TileBuffer {
       // close the writing and start reading
       await _ioSink?.close();
       _ioSink = null;
-      _readbufferFile = ReadbufferFile(_filename);
+      _readbufferFile = createReadbufferSource(_filename);
     }
   }
 }

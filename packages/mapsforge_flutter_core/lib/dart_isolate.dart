@@ -1,1 +1,1 @@
-export 'src/isolate/dart_isolate.dart';
+export 'src/isolate/dart_isolate_platform.dart';
