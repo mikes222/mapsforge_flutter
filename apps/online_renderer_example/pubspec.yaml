@@ -37,7 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Mapsforge UI libraries
-  mapsforge_flutter: ^1.0.0
+  mapsforge_flutter: ^4.0.0
 
   # Mapsforge renderers
   mapsforge_flutter_renderer: ^1.0.0

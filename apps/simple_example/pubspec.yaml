@@ -42,7 +42,7 @@ dependencies:
   mapsforge_flutter_core: ^1.0.0
 
   # Workspace
-  mapsforge_flutter: ^1.0.0
+  mapsforge_flutter: ^4.0.0
 
   # Workspace
   mapsforge_flutter_mapfile: ^1.0.0

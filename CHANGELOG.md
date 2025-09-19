@@ -1,3 +1,28 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 2025-09-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`mapsforge_flutter` - `v4.0.0`](#mapsforge_flutter---v400)
+
+---
+
+#### `mapsforge_flutter` - `v4.0.0`
+
+ - Refactored code
+
 ## 3.0.2 - 2025-06-11
 
 * Introducing mapfile-converter
