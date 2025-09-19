@@ -16,6 +16,32 @@ See [mapsforge_flutter](https://pub.dev/packages/mapsforge_flutter) for more det
 
 ----
 
+## Quick Start
+
+### 1. Clone and Setup
+
+```bash
+# Navigate to the simple_example directory
+cd apps/simple_example
+
+# Get dependencies
+flutter pub get
+```
+
+### 2. Run the Application
+
+```bash
+# Create the necessary runtime
+flutter create .
+
+# Run on connected device/emulator
+flutter run
+
+# Or run in debug mode
+flutter run --debug
+```
+
+
 ## Features
 
 ### 🎯 **Renderer Selection**
@@ -41,30 +67,6 @@ See [mapsforge_flutter](https://pub.dev/packages/mapsforge_flutter) for more det
 - **Enhanced Task Queue**: Priority-based task scheduling
 - **Adaptive Memory Management**: Dynamic cache sizing based on memory pressure
 - **Real-time Monitoring**: Performance profiling and metrics
-
-## Usage
-
-### 1. **Initial Setup**
-```bash
-cd apps/complete_example
-flutter pub get
-flutter run
-```
-
-### 2. **Configuration Flow**
-1. Launch app → Main navigation screen
-2. Tap "Configure Map Settings"
-3. Select renderer type (offline/online)
-4. Choose render theme (if offline selected)
-5. Pick location from dropdown
-6. Review configuration summary
-7. Tap "Start Map View"
-
-### 3. **Map View Features**
-- **Performance Overlay**: Toggle with analytics icon
-- **Live Metrics**: Memory pressure, cache capacity, active tasks
-- **Performance Tests**: Run with floating action button
-- **Configuration Info**: Current settings displayed at bottom
 
 ## Development
 

@@ -117,14 +117,14 @@ Step 3: Start complete_example in your emulator or at your device to see if ever
 
 Step 4: To use a custom rendertheme perform the following steps:
 
-- Copy the rendertheme to complete_example/assets/render_theme
-- add the rendertheme to pubspec.yaml
-- open complete_example/lib/models/app_models.dart and add the new rendertheme to ``RenderTheme``
+- Copy the rendertheme to ``complete_example/assets/render_theme``
+- add the rendertheme to ``pubspec.yaml``
+- open ``complete_example/lib/models/app_models.dart`` and add the new rendertheme to ``RenderTheme``
 - Start the application again and choose the new rendertheme in the configuration section.
 
 Step 5: To use a custom mapfile perform the following steps:
 
-- open complete_example/lib/models/app_models.dart and add a new ``MapLocation`` to ``MapLocations``
+- open ``complete_example/lib/models/app_models.dart`` and add a new ``MapLocation`` to ``MapLocations``
 - Start the application again and choose the new mapfile in the configuration section.
 
 # Testing
@@ -231,7 +231,7 @@ void main() {
       // Assert
       await expectLater(
         find.byType(MapWidget),
-        matchesGoldenFile('golden_tests/map_widget_basic.png'),
+        matchesGoldenFile('golden/map_widget_basic.png'),
       );
     });
     
@@ -258,7 +258,7 @@ void main() {
       // Assert
       await expectLater(
         find.byType(MapWidget),
-        matchesGoldenFile('golden_tests/map_widget_with_markers.png'),
+        matchesGoldenFile('golden/map_widget_with_markers.png'),
       );
     });
   });
@@ -269,7 +269,7 @@ void main() {
 
 ```
 test/
-├── golden_tests/
+├── golden/
 │   ├── map_widget_basic.png
 │   ├── map_widget_with_markers.png
 │   └── overlay_zoom_controls.png

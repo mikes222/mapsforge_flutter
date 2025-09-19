@@ -168,7 +168,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      datastore = await IsolateMapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
+      datastore = await Mapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);

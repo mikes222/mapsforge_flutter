@@ -72,57 +72,6 @@ Memory management is currently fully automatic.
 
 ---
 
-## Concurrency and Threading
-
-### Task Queue Performance
-
-The task queue system has been completely optimized:
-
-### Parallel Processing Guidelines
-
-```dart
-// For CPU-intensive operations
-await Future.wait([
-  processMapData(),
-  loadTileData(),
-  renderSymbols(),
-]);
-
-// For I/O operations with controlled concurrency
-final semaphore = Semaphore(4); // Limit to 4 concurrent operations
-await Future.wait(files.map((file) => 
-  semaphore.acquire().then((_) => 
-    processFile(file).whenComplete(() => semaphore.release())
-  )
-));
-```
-
----
-
-## Spatial Indexing
-
-### Grid-Based Collision Detection
-
-The spatial indexing system provides O(log n) collision detection:
-
-```dart
-// Configure spatial index
-SpatialIndex spatialIndex = SpatialIndex(cellSize: 64);
-
-// Add items with boundaries
-spatialIndex.addItem(item, boundary);
-
-// Efficient collision detection
-List<Item> collisions = spatialIndex.findCollisions(targetBoundary);
-
-// Performance monitoring
-print('Grid efficiency: ${spatialIndex.getStatistics()}');
-```
-
-**Performance Impact**: 60-80% improvement in collision detection for large datasets.
-
----
-
 ## Performance Monitoring
 
 ### Built-in Performance Panel
@@ -165,10 +114,8 @@ Monitor these critical metrics:
 ```dart
 // Symptoms: Low FPS, stuttering during zoom/pan
 // Solutions:
-- Optimize shape painter creation (automatic with recent updates)
-- Use spatial indexing for collision detection
-- Implement efficient caching strategies
 - Profile and optimize custom rendering code
+- Examine the renderfile for optimizations
 ```
 
 ### Development Best Practices

@@ -2,7 +2,9 @@
 
 
 [ ] Test the ``simple_example`` in the emulator
+
 [ ] Test the ``simple_example`` in the Webbrowser
+
 [ ] Perform unittests
 
 ````bash
@@ -11,6 +13,7 @@
 ````
 
 [ ] Update documentation
+
 [ ] Format source
 
 ````bash
@@ -18,6 +21,7 @@
 ````
 
 [ ] Increase version in pubspec.yaml
+
 [ ] Analyze package quality with pana (https://pub.dev/packages/pana)
 
 ````bash
@@ -34,7 +38,9 @@ Note: git must be installed and accessible via path
 ````
 
 [ ] Checkin into git
+
 [ ] Create a tag for the new version
+
 [ ] flutter publish
 
 ````bash

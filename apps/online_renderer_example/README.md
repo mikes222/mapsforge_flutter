@@ -11,3 +11,30 @@ A simple example for using online renderers.
 ![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
 See [mapsforge_flutter](https://pub.dev/packages/mapsforge_flutter) for more details.
+
+
+## Quick Start
+
+### 1. Clone and Setup
+
+```bash
+# Navigate to the simple_example directory
+cd apps/online_renderer_example
+
+# Get dependencies
+flutter pub get
+```
+
+### 2. Run the Application
+
+```bash
+# Create the necessary runtime
+flutter create .
+
+# Run on connected device/emulator
+flutter run
+
+# Or run in debug mode
+flutter run --debug
+```
+

@@ -92,7 +92,7 @@ dependencies:
   mapsforge_flutter_rendertheme: ^4.0.0
 ```
 
-Note: See [doc/install](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/install.md) for working with a local copy of mapsforge_flutter. 
+Note: See [doc/development](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/development.md) for working with a local copy of mapsforge_flutter. 
 
 List all required assets in your ``pubspec.yaml`` (see pubspec file from ``simple_example`` project)
 
@@ -106,6 +106,16 @@ List all required assets in your ``pubspec.yaml`` (see pubspec file from ``simpl
       # and more
 ```
 
+add your rendertheme to your ``pubspec.yaml``
+
+```yaml
+    flutter:
+
+      assets:
+      - assets/defaultrender.xml
+```
+
+and to your assets folder.
 
 # Quick Start
 
@@ -119,7 +129,7 @@ double ratio = MediaQuery.devicePixelRatioOf(context);
 MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
 ```
 
-Read the map from the assets folder. Since monaco is small, we can keep it in memory
+Read the map from the assets folder. Since monaco is small, we can keep it in memory. 
 
 ```dart
 ByteData mapContent = await rootBundle.load("assets/monaco.map");
@@ -132,16 +142,15 @@ Alternatively read the map from the file system.
 datastore = await Mapfile.createFromFile(filename: filename);
 ```
 
-Now create the MapModel. 
-Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range. 
-MapModel must be disposed after use.
+Now create the MapModel. In our example we restrict the max zoomlevel. 
+The MapModel must be disposed after use.
 
 ```dart
 _mapModel = await MapModelHelper.createOfflineMapModel(datastore: datastore, zoomlevelRange: const ZoomlevelRange(0, 21));
 ```
 
 For demo purposes set a position and zoomlevel. 
-Note that this information would come from e.g. a gps provider in the real world.
+Note that this information would come from e.g. a gps provider in the real world. 
 
 ```dart
 MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
@@ -174,10 +183,14 @@ Use the MapModel to view the map
             // mapModel is still not availabe or no position defined
             return const CircularProgressIndicator();
           },
+        ),
       ),
     );
   }
 ```
+
+**voilà you have a running map!**
+
 
 # Markers
 
@@ -201,7 +214,7 @@ Stack(
 )
 ```
 
-See also [doc/marker](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/marker.md)
+See also [doc/marker](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/marker.md)
 
 # Overlays
 
@@ -223,7 +236,7 @@ ZoomInOverlay(
 )
 ```
 
-See also [doc/overlay](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/overlay.md)
+See also [doc/overlay](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/overlay.md)
 
 # Context Menus
 
@@ -347,16 +360,16 @@ A big thank you to all of you who uses that library and supports me with ideas, 
 
 # Documentation
 
-Decision why/how we use melos: [doc/melos](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/melos.md)
+Decision why/how we use melos: [doc/melos](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/melos.md)
 
-Setting up a new project which contains mapsforge_flutter: [doc/development](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/development.md)
+Setting up a new project which contains mapsforge_flutter: [doc/development](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/development.md)
 
-Upgrading to a newer version: [doc/changes](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/changes.md)
+Upgrading to a newer version: [doc/changes](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/changes.md)
 
-Known issue: [doc/known_issues](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/known_issues.md)
+Known issue: [doc/known_issues](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/known_issues.md)
 
-Working with markers: [doc/marker](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/marker.md)
+Working with markers: [doc/marker](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/marker.md)
 
-Performance considerations during development: [doc/performance](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/performance.md)
+Performance considerations during development: [doc/performance](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/performance.md)
 
-Enhanced usage of the library:  [doc/enhanced_usage](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/enhanced_usage.md)
+Enhanced usage of the library:  [doc/enhanced_usage](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/enhanced_usage.md)

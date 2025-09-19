@@ -47,6 +47,9 @@ flutter pub get
 ### 2. Run the Application
 
 ```bash
+# Create the necessary runtime
+flutter create .
+
 # Run on connected device/emulator
 flutter run
 
