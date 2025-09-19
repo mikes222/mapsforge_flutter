@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_mapfile/src/map_datastore.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 
 class MapfileHelper {
-  static final _log = new Logger('MapfileHelper');
+  static final _log = Logger('MapfileHelper');
 
   /// The key of the elevation OpenStreetMap tag.
   static final String TAG_KEY_ELE = "ele";

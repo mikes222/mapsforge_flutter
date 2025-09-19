@@ -21,7 +21,7 @@ class PositiveRule extends Rule {
   });
 
   @override
-  PositiveRule? forZoomlevel(int zoomlevel, int getMaxLevel()) {
+  PositiveRule? forZoomlevel(int zoomlevel, int Function() getMaxLevel) {
     if (!matchesForZoomLevel(zoomlevel)) {
       return null;
     }

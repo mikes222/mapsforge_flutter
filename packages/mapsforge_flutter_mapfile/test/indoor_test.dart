@@ -17,17 +17,17 @@ void main() async {
     //x- and y-Coordinates from upperLeft- and lowerRight-Tile that define the map-area,
     //here we are using the coordinates of 4 Tiles around the NHG in Reichenhainer Straße 70, 09126
     //Coordinates and zoomlevel were taken from http://tools.geofabrik.de/map/#18/50.8137/12.9301&type=Geofabrik_Standard&grid=1&mlat=50.81374&mlon=12.92947
-    int ul_x = 140486; //x of upperLeft
-    int ul_y = 87974; //y of upperLeft
-    int lr_x = 140487; //x of lowerRight
-    int lr_y = 87975; //y of lowerRight
+    int ulX = 140486; //x of upperLeft
+    int ulY = 87974; //y of upperLeft
+    int lrX = 140487; //x of lowerRight
+    int lrY = 87975; //y of lowerRight
     int zoomlevel = 18; //zoomlevel
     int indoorLevel = 0; // indoor level
 
     //initialize 2 Tiles with the coordinates, zoomlevel and tilesize
-    Tile upperLeft = new Tile(ul_x, ul_y, zoomlevel, indoorLevel);
-    Tile lowerRight = new Tile(lr_x, lr_y, zoomlevel, indoorLevel);
-    Tile single = new Tile(140486, 87975, zoomlevel, indoorLevel);
+    Tile upperLeft = Tile(ulX, ulY, zoomlevel, indoorLevel);
+    Tile lowerRight = Tile(lrX, lrY, zoomlevel, indoorLevel);
+    Tile single = Tile(140486, 87975, zoomlevel, indoorLevel);
 
     //initialize MapReadResult as Container for the data of the area defined by upperLeft and lowerRight in the mapfile
     //Campus
@@ -215,17 +215,17 @@ void main() async {
   bool levelDetector() {
     bool levelDetector = false;
     //POI's
-    mapReadResult.pointOfInterests.forEach((poi) {
-      poi.tags.forEach((tag) {
+    for (var poi in mapReadResult.pointOfInterests) {
+      for (var tag in poi.tags) {
         if (tag.key == "level") levelDetector = true;
-      });
-    });
+      }
+    }
     //Ways
-    mapReadResult.ways.forEach((way) {
-      way.tags.forEach((tag) {
+    for (var way in mapReadResult.ways) {
+      for (var tag in way.tags) {
         if (tag.key == "level") levelDetector = true;
-      });
-    });
+      }
+    }
     return levelDetector;
   }
 }

@@ -32,10 +32,12 @@ class IsolateDatastoreReader implements DatastoreReader {
     return _reader!.readLabels(r.tile, r.rightLower!, r.renderthemeLevel);
   }
 
+  @override
   Future<LayerContainerCollection?> read(Tile tile, RenderthemeZoomlevel renderthemeLevel) async {
     return await _isolateInstance.compute(DatastoreReaderIsolateRequest(tile, renderthemeLevel));
   }
 
+  @override
   Future<LayerContainerCollection?> readLabels(Tile leftUpper, Tile rightLower, RenderthemeZoomlevel renderthemeLevel) async {
     return await _isolateInstance.compute(DatastoreReaderIsolateRequest(leftUpper, renderthemeLevel, rightLower: rightLower));
   }

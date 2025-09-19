@@ -23,7 +23,7 @@ class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
 
   static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterCaption");
 
-  ShapePainterCaption._(RenderinstructionCaption renderinstruction) : super(renderinstruction) {
+  ShapePainterCaption._(super.renderinstruction) {
     reinit();
   }
 

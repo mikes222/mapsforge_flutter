@@ -109,7 +109,7 @@ class RuleBuilder {
       case Element.ANY:
         result = const AnyMatcher();
     }
-    return RuleOptimizer.optimizeElementMatcher(result, this.ruleBuilderStack);
+    return RuleOptimizer.optimizeElementMatcher(result, ruleBuilderStack);
   }
 
   RuleBuilder(this.renderThemeBuilder, {Set<String>? excludeIds})
@@ -201,7 +201,7 @@ class RuleBuilder {
   }
 
   void parse(XmlNode rootElement) {
-    rootElement.attributes.forEach((XmlAttribute attribute) {
+    for (var attribute in rootElement.attributes) {
       String name = attribute.name.toString();
 
       String value = attribute.value;
@@ -233,7 +233,7 @@ class RuleBuilder {
       } else {
         throw Exception("Invalid $name = $value in rule");
       }
-    });
+    }
 
     validate(rootElement.toString());
 
@@ -338,7 +338,7 @@ class RuleBuilder {
       }
     } else if ("caption" == qName) {
       checkState(qName, XmlElementType.RENDERING_INSTRUCTION);
-      RenderinstructionCaption caption = new RenderinstructionCaption(getNextLevel());
+      RenderinstructionCaption caption = RenderinstructionCaption(getNextLevel());
       caption.parse(rootElement);
       if (isVisible(caption)) {
         if (element != Element.WAY) addRenderingInstructionNode(caption);

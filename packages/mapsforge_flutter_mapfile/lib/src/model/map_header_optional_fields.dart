@@ -37,37 +37,37 @@ class MapHeaderOptionalFields {
   int? startZoomLevel;
 
   MapHeaderOptionalFields(int flags) {
-    this.isDebugFile = (flags & HEADER_BITMASK_DEBUG) != 0;
-    this.hasStartPosition = (flags & HEADER_BITMASK_START_POSITION) != 0;
-    this.hasStartZoomLevel = (flags & HEADER_BITMASK_START_ZOOM_LEVEL) != 0;
-    this.hasLanguagesPreference = (flags & HEADER_BITMASK_LANGUAGES_PREFERENCE) != 0;
-    this.hasComment = (flags & HEADER_BITMASK_COMMENT) != 0;
-    this.hasCreatedBy = (flags & HEADER_BITMASK_CREATED_BY) != 0;
+    isDebugFile = (flags & HEADER_BITMASK_DEBUG) != 0;
+    hasStartPosition = (flags & HEADER_BITMASK_START_POSITION) != 0;
+    hasStartZoomLevel = (flags & HEADER_BITMASK_START_ZOOM_LEVEL) != 0;
+    hasLanguagesPreference = (flags & HEADER_BITMASK_LANGUAGES_PREFERENCE) != 0;
+    hasComment = (flags & HEADER_BITMASK_COMMENT) != 0;
+    hasCreatedBy = (flags & HEADER_BITMASK_CREATED_BY) != 0;
   }
 
   void readLanguagesPreference(Readbuffer readBuffer) {
-    if (this.hasLanguagesPreference) {
-      this.languagesPreference = readBuffer.readUTF8EncodedString();
+    if (hasLanguagesPreference) {
+      languagesPreference = readBuffer.readUTF8EncodedString();
     }
   }
 
   void readMapStartPosition(Readbuffer readBuffer) {
-    if (this.hasStartPosition) {
+    if (hasStartPosition) {
       double mapStartLatitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
       double mapStartLongitude = LatLongUtils.microdegreesToDegrees(readBuffer.readInt());
-      this.startPosition = LatLong(mapStartLatitude, mapStartLongitude);
+      startPosition = LatLong(mapStartLatitude, mapStartLongitude);
     }
   }
 
   void readMapStartZoomLevel(Readbuffer readBuffer) {
-    if (this.hasStartZoomLevel) {
+    if (hasStartZoomLevel) {
       // get and check the start zoom level (1 byte)
       int mapStartZoomLevel = readBuffer.readByte();
       if (mapStartZoomLevel < 0 || mapStartZoomLevel > START_ZOOM_LEVEL_MAX) {
-        throw new Exception("invalid map start zoom level: $mapStartZoomLevel");
+        throw Exception("invalid map start zoom level: $mapStartZoomLevel");
       }
 
-      this.startZoomLevel = mapStartZoomLevel;
+      startZoomLevel = mapStartZoomLevel;
     }
   }
 
@@ -78,12 +78,12 @@ class MapHeaderOptionalFields {
 
     readLanguagesPreference(readBuffer);
 
-    if (this.hasComment) {
-      this.comment = readBuffer.readUTF8EncodedString();
+    if (hasComment) {
+      comment = readBuffer.readUTF8EncodedString();
     }
 
-    if (this.hasCreatedBy) {
-      this.createdBy = readBuffer.readUTF8EncodedString();
+    if (hasCreatedBy) {
+      createdBy = readBuffer.readUTF8EncodedString();
     }
   }
 }

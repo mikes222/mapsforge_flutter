@@ -28,10 +28,11 @@ class WayCropper {
       // only inner is set, move the first inner to the respective outer
       Waypath waypath = inner.first;
       inner.remove(waypath);
-      if (waypath.isClosedWay())
+      if (waypath.isClosedWay()) {
         closedOuters.add(waypath);
-      else
+      } else {
         openOuters.add(waypath);
+      }
     }
 
     // return a new wayholder instance
@@ -52,10 +53,11 @@ class WayCropper {
       // only inner is set, move the first inner to the respective outer
       Waypath waypath = inner.first;
       inner.remove(waypath);
-      if (waypath.isClosedWay())
+      if (waypath.isClosedWay()) {
         closedOuters.add(waypath);
-      else
+      } else {
         openOuters.add(waypath);
+      }
     }
 
     // return a new wayholder instance
@@ -123,13 +125,13 @@ class WayCropper {
       optimizedWaypoints.add(tileBoundary.getLeftUpper());
       return Waypath(path: optimizedWaypoints);
     }
-    path.forEach((waypoint) {
+    for (var waypoint in path) {
       bool isInside = tileBoundary.containsLatLong(waypoint);
 
       if (isInside) {
         if (previousWaypoint != null && !previousIsInside) {
           // Previous waypoint was outside, new waypoint is inside of the tile. Find the intersection point.
-          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint!, waypoint, tileBoundary);
+          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint, waypoint, tileBoundary);
           if (firstEntryDirection == -1) firstEntryDirection = direction;
           lastEntryDirection = direction;
           _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, path);
@@ -139,7 +141,7 @@ class WayCropper {
       } else {
         if (previousWaypoint != null && previousIsInside) {
           // Previous waypoint was inside, the new waypoint is outside of the tile. We must find the intersection point.
-          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint!, waypoint, tileBoundary);
+          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint, waypoint, tileBoundary);
           optimizedWaypoints.add(intersectionPoint!);
           if (firstExitDirection == -1) firstExitDirection = direction;
           lastExitDirection = direction;
@@ -150,7 +152,7 @@ class WayCropper {
           //   // no intersection, this should be a quick test
           //   return;
           // }
-          final (intersectionPoint, direction) = _findIntersectionPointOutside(previousWaypoint!, waypoint, tileBoundary);
+          final (intersectionPoint, direction) = _findIntersectionPointOutside(previousWaypoint, waypoint, tileBoundary);
           if (intersectionPoint != null) {
             // yes, they intersect (twice)
             if (firstEntryDirection == -1) firstEntryDirection = direction;
@@ -169,7 +171,7 @@ class WayCropper {
 
       previousWaypoint = waypoint;
       previousIsInside = isInside;
-    });
+    }
 
     if (!waypath.isClosedWay()) {
       // never touched the tile boundary

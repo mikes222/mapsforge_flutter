@@ -10,7 +10,7 @@ import '../test_asset_bundle.dart';
 /// http://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/europe/austria.map
 /// ```
 ///
-main() async {
+Future<void> main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {

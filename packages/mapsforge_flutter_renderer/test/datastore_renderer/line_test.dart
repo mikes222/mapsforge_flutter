@@ -48,11 +48,11 @@ void main() {
       //                     <line stroke="#D9D0C7" stroke-dasharray="20,5,8,5" stroke-linecap="butt"
       //                         stroke-width="0.8" />
 
-      Tile tile = new Tile(x, y, zoomlevel, l);
-      JobRequest mapGeneratorJob = new JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      Tile tile = Tile(x, y, zoomlevel, l);
+      JobRequest mapGeneratorJob = JobRequest(tile);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));
@@ -104,11 +104,11 @@ void main() {
       //             <line stroke="#60999999" stroke-dasharray="16,6" stroke-linecap="butt"
       //                 stroke-width="1.5" />
 
-      Tile tile = new Tile(x, y, zoomlevel, l);
+      Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));
@@ -157,11 +157,11 @@ void main() {
           null,
         ),
       );
-      Tile tile = new Tile(x, y, zoomlevel, l);
-      JobRequest mapGeneratorJob = new JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      Tile tile = Tile(x, y, zoomlevel, l);
+      JobRequest mapGeneratorJob = JobRequest(tile);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));

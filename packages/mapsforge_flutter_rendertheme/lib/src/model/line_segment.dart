@@ -34,14 +34,14 @@ class LineSegment {
   /// @param start     start point
   /// @param direction point that defines the direction (a line from start to direction point)
   /// @param distance  how long to move along the line between start and direction
-  LineSegment.direction(this.start, Mappoint direction, double distance) : end = new LineSegment(start, direction).pointAlongLineSegment(distance);
+  LineSegment.direction(this.start, Mappoint direction, double distance) : end = LineSegment(start, direction).pointAlongLineSegment(distance);
 
   /// Returns the degree of this segment. 0 means vector to the right side -->
   /// Since positive values in y-direction points towards the bottom of the screen
   /// the angle runs clockwise.
   double getAngle() {
     if (_angle != null) return _angle!;
-    _angle = atan2(this.end.y - this.start.y, this.end.x - this.start.x);
+    _angle = atan2(end.y - start.y, end.x - start.x);
     _angle = toDegrees(_angle!);
     return _angle!;
   }
@@ -95,7 +95,7 @@ class LineSegment {
     while (true) {
       if (0 == (codeStart | codeEnd)) {
         // both points are inside, intersection is the computed line
-        return new LineSegment(a, b);
+        return LineSegment(a, b);
       } else if (0 != (codeStart & codeEnd)) {
         // both points are either below, above, left or right of the box, no intersection
         return null;

@@ -19,7 +19,7 @@ class NegativeRule extends Rule {
   });
 
   @override
-  NegativeRule? forZoomlevel(int zoomlevel, int getMaxLevel()) {
+  NegativeRule? forZoomlevel(int zoomlevel, int Function() getMaxLevel) {
     if (!matchesForZoomLevel(zoomlevel)) {
       return null;
     }

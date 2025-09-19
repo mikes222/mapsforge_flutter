@@ -48,13 +48,13 @@ mixin TagholderMixin {
       if (tag.key?.startsWith("name:") ?? false) {
         String language = tag.key!.substring(5);
         if (languagesPreference.isNotEmpty && !languagesPreference.contains(language)) continue;
-        if (tag.value != null && tag.value!.isNotEmpty) names.add("${language}\b${tag.value!}");
+        if (tag.value != null && tag.value!.isNotEmpty) names.add("$language\b${tag.value!}");
         continue;
       }
       if (tag.key?.startsWith("official_name:") ?? false) {
         String language = tag.key!.substring(5);
         if (languagesPreference.isNotEmpty && !languagesPreference.contains(language)) continue;
-        if (tag.value != null && tag.value!.isNotEmpty) names.add("${language}\b${tag.value!}");
+        if (tag.value != null && tag.value!.isNotEmpty) names.add("$language\b${tag.value!}");
         continue;
       }
       if (tag.key == MapfileHelper.TAG_KEY_HOUSE_NUMBER) {
@@ -102,19 +102,23 @@ mixin TagholderMixin {
     featureName = original ?? fallback;
     if (names.isNotEmpty) {
       if (featureName != null) {
-        featureName = featureName! + "\r" + names.join("\r");
+        featureName = "${featureName!}\r${names.join("\r")}";
       } else {
         featureName = names.join("\r");
       }
     }
     if (tagholders.length > 15) {
-      tagholders.forEach((test) => print("${test.tag.key}=${test.tag.value}"));
+      for (var test in tagholders) {
+        print("${test.tag.key}=${test.tag.value}");
+      }
       throw Exception("more than 15 tags are not supported");
     }
   }
 
   void writeTags(Writebuffer writebuffer) {
-    tagholders.forEach((tagholder) => writebuffer.appendUnsignedInt(tagholder.index!));
-    writebuffer.appendWritebuffer(this.writebufferTagvalues);
+    for (var tagholder in tagholders) {
+      writebuffer.appendUnsignedInt(tagholder.index!);
+    }
+    writebuffer.appendWritebuffer(writebufferTagvalues);
   }
 }

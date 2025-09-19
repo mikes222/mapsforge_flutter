@@ -23,10 +23,10 @@ import 'package:mapsforge_flutter_mapfile/src/writer/tile_constructor.dart';
 //         for each way: way properties
 //             for each wayblock: way data
 
-typedef Future<void> ProcessFunc(Tile tile);
+typedef ProcessFunc = Future<void> Function(Tile tile);
 
 class SubfileCreator {
-  final _log = new Logger('SubfileCreator');
+  final _log = Logger('SubfileCreator');
 
   /// Base zoom level of the sub-file, which equals to one block.
   final int baseZoomLevel;
@@ -35,9 +35,9 @@ class SubfileCreator {
 
   final MapHeaderInfo mapHeaderInfo;
 
-  Map<int, Poiinfo> _poiinfos = {};
+  final Map<int, Poiinfo> _poiinfos = {};
 
-  Map<int, Wayinfo> _wayinfos = {};
+  final Map<int, Wayinfo> _wayinfos = {};
 
   late final int _minX;
 
@@ -107,7 +107,7 @@ class SubfileCreator {
     });
   }
 
-  Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess = null]) async {
+  Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess]) async {
     int started = DateTime.now().millisecondsSinceEpoch;
     int lastProcessedTiles = 0;
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
@@ -131,7 +131,7 @@ class SubfileCreator {
     }
   }
 
-  void _processSync(String title, Function(Tile tile) process, [Function(int processedTiles, int sumTiles)? lineProcess = null]) {
+  void _processSync(String title, Function(Tile tile) process, [Function(int processedTiles, int sumTiles)? lineProcess]) {
     int started = DateTime.now().millisecondsSinceEpoch;
     int lastProcessedTiles = 0;
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
@@ -335,9 +335,9 @@ class Wayinfo {
 
   int get nodeCount {
     int result = 0;
-    wayholders.forEach((Wayholder wayholder) {
+    for (var wayholder in wayholders) {
       result += wayholder.nodeCount();
-    });
+    }
     return result;
   }
 
@@ -350,9 +350,9 @@ class Wayinfo {
   }
 
   void addWayholders(List<Wayholder> wayholders) {
-    wayholders.forEach((test) {
+    for (var test in wayholders) {
       assert(test.openOutersRead.isNotEmpty || test.closedOutersRead.isNotEmpty);
-    });
+    }
     assert(content == null);
     this.wayholders.addAll(wayholders);
     wayCount += wayholders.length;
@@ -386,11 +386,11 @@ class Wayinfo {
 //////////////////////////////////////////////////////////////////////////////
 
 class TileBuffer {
-  Map<Tile, Uint8List> _writebufferForTiles = {};
+  final Map<Tile, Uint8List> _writebufferForTiles = {};
 
-  Map<Tile, _TempfileIndex> _indexes = {};
+  final Map<Tile, _TempfileIndex> _indexes = {};
 
-  Map<Tile, int> _sizes = {};
+  final Map<Tile, int> _sizes = {};
 
   SinkWithCounter? _ioSink;
 
@@ -401,7 +401,7 @@ class TileBuffer {
   int _length = 0;
 
   TileBuffer(int baseZoomlevel) {
-    _filename = "tiles_${DateTime.now().millisecondsSinceEpoch}_${baseZoomlevel}.tmp";
+    _filename = "tiles_${DateTime.now().millisecondsSinceEpoch}_$baseZoomlevel.tmp";
   }
 
   void dispose() {

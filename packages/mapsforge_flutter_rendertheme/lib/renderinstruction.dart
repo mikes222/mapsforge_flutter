@@ -13,7 +13,7 @@
 /// - **Shapes**: [RenderInstructionCircle], [RenderInstructionRect] - Geometric shapes
 /// - **Special**: [RenderInstructionHillshading] - Terrain visualization
 /// - **Decorations**: [RenderInstructionLinesymbol] - Line decorations
-library renderinstruction;
+library;
 
 export 'src/renderinstruction/renderinstruction.dart';
 export 'src/renderinstruction/renderinstruction_area.dart';

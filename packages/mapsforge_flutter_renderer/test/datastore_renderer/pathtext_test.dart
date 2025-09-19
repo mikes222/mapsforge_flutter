@@ -45,9 +45,9 @@ void main() {
       );
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));
@@ -95,9 +95,9 @@ void main() {
       );
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));
@@ -145,9 +145,9 @@ void main() {
       );
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));

@@ -68,10 +68,10 @@ class MultimapDatastore extends Datastore {
         datastores.remove(datastore);
         _datastoreBoundaries.remove(datastore);
       } else {
-        if (null == this._boundingBox) {
-          this._boundingBox = datastoreBoundary;
+        if (null == _boundingBox) {
+          _boundingBox = datastoreBoundary;
         } else {
-          this._boundingBox = this._boundingBox!.extendBoundingBox(datastoreBoundary);
+          _boundingBox = _boundingBox!.extendBoundingBox(datastoreBoundary);
         }
       }
     }
@@ -217,7 +217,7 @@ class MultimapDatastore extends Datastore {
           return null;
         }());
       } on Exception catch (error) {
-        _log.warning("File error ${error} missing, removing mapfile now");
+        _log.warning("File error $error missing, removing mapfile now");
         datastores.remove(mdb);
       }
     }
@@ -375,10 +375,10 @@ class MultimapDatastore extends Datastore {
       boundingBox ??= await datastore.getBoundingBox();
       _datastoreBoundaries[datastore] = boundingBox;
 
-      if (null == this._boundingBox) {
-        this._boundingBox = boundingBox;
+      if (null == _boundingBox) {
+        _boundingBox = boundingBox;
       } else {
-        this._boundingBox = this._boundingBox!.extendBoundingBox(boundingBox);
+        _boundingBox = _boundingBox!.extendBoundingBox(boundingBox);
       }
     }
     return _boundingBox!;

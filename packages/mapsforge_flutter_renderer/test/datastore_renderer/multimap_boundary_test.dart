@@ -82,19 +82,19 @@ void main() {
       // Datastore 1: Europe region (approximate)
       datastore1 = MockDatastore(
         'Europe',
-        BoundingBox(35.0, -10.0, 70.0, 40.0), // minLat, minLon, maxLat, maxLon
+        const BoundingBox(35.0, -10.0, 70.0, 40.0), // minLat, minLon, maxLat, maxLon
       );
       
       // Datastore 2: North America region (approximate)
       datastore2 = MockDatastore(
         'North America',
-        BoundingBox(25.0, -125.0, 60.0, -60.0),
+        const BoundingBox(25.0, -125.0, 60.0, -60.0),
       );
       
       // Datastore 3: Asia region (approximate)
       datastore3 = MockDatastore(
         'Asia',
-        BoundingBox(10.0, 60.0, 55.0, 150.0),
+        const BoundingBox(10.0, 60.0, 55.0, 150.0),
       );
 
       await multimap.addDatastore(datastore1);

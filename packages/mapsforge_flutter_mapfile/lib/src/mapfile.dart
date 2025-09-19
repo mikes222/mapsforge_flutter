@@ -164,7 +164,7 @@ class _MapfileSupportsTileRequest {
 /// A class for reading binary map files.
 /// The mapFile should be disposed if not needed anymore
 class Mapfile extends MapDatastore {
-  static final _log = new Logger('MapFile');
+  static final _log = Logger('MapFile');
 
   /// Bitmask to extract the block offset from an index entry.
   static final int BITMASK_INDEX_OFFSET = 0x7FFFFFFFFF;
@@ -330,7 +330,7 @@ class Mapfile extends MapDatastore {
       // get and check the block signature
       String signatureBlock = readBuffer.readUTF8EncodedString2(SIGNATURE_LENGTH_BLOCK);
       if (!signatureBlock.startsWith("###TileStart")) {
-        _log.warning("invalid block signature: " + signatureBlock);
+        _log.warning("invalid block signature: $signatureBlock");
         return false;
       }
     }

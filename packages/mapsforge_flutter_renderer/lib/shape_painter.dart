@@ -15,6 +15,7 @@
 /// - **ShapePainterRect**: Renders rectangular shapes
 /// - **ShapePainterSymbol**: Renders bitmap symbols and images
 /// - **PainterFactory**: Factory for creating appropriate painters
+library;
 
 export 'src/shape_painter/shape_painter_area.dart';
 export 'src/shape_painter/shape_painter_caption.dart';

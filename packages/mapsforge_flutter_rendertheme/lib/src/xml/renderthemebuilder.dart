@@ -22,7 +22,7 @@ import 'package:xml/xml.dart';
 /// - Version compatibility checking
 /// - Comprehensive error reporting
 class RenderThemeBuilder {
-  static final _log = new Logger('RenderThemeBuilder');
+  static final _log = Logger('RenderThemeBuilder');
 
   // XML attribute and element constants
 

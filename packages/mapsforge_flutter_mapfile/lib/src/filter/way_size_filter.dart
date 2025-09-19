@@ -11,7 +11,7 @@ class WaySizeFilter {
 
   double? maxDeviationLatLong;
 
-  WaySizeFilter(int zoomlevel, this.filterSizePixels) : projection = PixelProjection(zoomlevel) {}
+  WaySizeFilter(int zoomlevel, this.filterSizePixels) : projection = PixelProjection(zoomlevel);
 
   Wayholder? filter(Wayholder wayholder) {
     maxDeviationLatLong = projection.latitudeDiffPerPixel(

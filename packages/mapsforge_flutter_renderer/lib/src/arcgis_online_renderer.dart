@@ -16,7 +16,7 @@ import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 class ArcgisOnlineRenderer extends Renderer {
   static final String uriPrefix = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile";
 
-  ArcgisOnlineRenderer() {}
+  ArcgisOnlineRenderer();
 
   @override
   Future<JobResult> executeJob(JobRequest job) async {

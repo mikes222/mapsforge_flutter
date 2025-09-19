@@ -33,8 +33,8 @@ void main() {
       Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
       MemoryDatastore datastore = MemoryDatastore();
-      datastore.addPoi(const PointOfInterest(0, [const Tag('place', 'suburb'), Tag('name', 'TestSuburb')], LatLong(46, 17.998)));
-      datastore.addPoi(const PointOfInterest(0, [const Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')], LatLong(45.999, 17.996)));
+      datastore.addPoi(const PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'TestSuburb')], LatLong(46, 17.998)));
+      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')], LatLong(45.999, 17.996)));
       datastore.addWay(
         const Way(
           0,
@@ -47,9 +47,9 @@ void main() {
       );
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
       return await jobResult.picture!.convertPictureToImage();
     }));

@@ -39,7 +39,7 @@ class Wayholder with TagholderMixin {
   /// Cache for the bounding box of the way
   BoundingBox? _boundingBox;
 
-  Wayholder() {}
+  Wayholder();
 
   /// Creates a new wayholder from a existing way. Note that the existing way may NOT contain any path (if created from a OsmRelation)
   Wayholder.fromWay(Way way) {
@@ -180,14 +180,18 @@ class Wayholder with TagholderMixin {
 
   BoundingBox get boundingBoxCached {
     if (_boundingBox != null) return _boundingBox!;
-    assert(_closedOuters.isNotEmpty || _openOuters.isNotEmpty || _master != null, "No bounding box available for ${this.toStringWithoutNames()}");
+    assert(_closedOuters.isNotEmpty || _openOuters.isNotEmpty || _master != null, "No bounding box available for ${toStringWithoutNames()}");
     _boundingBox = _master != null
         ? _master!.boundingBox
         : _closedOuters.isNotEmpty
         ? _closedOuters.first.boundingBox
         : _openOuters.first.boundingBox;
-    _closedOuters.forEach((action) => _boundingBox = _boundingBox!.extendBoundingBox(action.boundingBox));
-    _openOuters.forEach((action) => _boundingBox = _boundingBox!.extendBoundingBox(action.boundingBox));
+    for (var action in _closedOuters) {
+      _boundingBox = _boundingBox!.extendBoundingBox(action.boundingBox);
+    }
+    for (var action in _openOuters) {
+      _boundingBox = _boundingBox!.extendBoundingBox(action.boundingBox);
+    }
     return _boundingBox!;
   }
 
@@ -266,7 +270,7 @@ class Wayholder with TagholderMixin {
 
   void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
-      writebuffer.appendStringWithoutLength("---WayStart${hashCode}---".padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
+      writebuffer.appendStringWithoutLength("---WayStart$hashCode---".padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
     }
   }
 
@@ -298,7 +302,7 @@ class Wayholder with TagholderMixin {
     writebuffer.appendInt1(specialByte);
     writeTags(writebuffer);
 
-    Waypath _master = _extractMaster();
+    Waypath master = _extractMaster();
 
     // get the feature bitmask (1 byte)
     int featureByte = 0;
@@ -312,26 +316,34 @@ class Wayholder with TagholderMixin {
     bool featureWayDataBlocksByte = _openOuters.isNotEmpty | _closedOuters.isNotEmpty;
     if (featureWayDataBlocksByte) featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
 
-    bool? expectDouble = null;
+    bool? expectDouble;
     // less than 10 coordinates? Use singe encoding
     int sum = nodeCount();
-    if (sum <= 30)
+    if (sum <= 30) {
       expectDouble = false;
-    else if (sum >= 100)
+    } else if (sum >= 100)
       expectDouble = true;
 
     Writebuffer singleWritebuffer = Writebuffer();
     if (expectDouble == null || !expectDouble) {
-      _writeSingleDeltaEncoding(singleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
-      _closedOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
-      _openOuters.forEach((action) => _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude));
+      _writeSingleDeltaEncoding(singleWritebuffer, [master, ..._inner], tileLatitude, tileLongitude);
+      for (var action in _closedOuters) {
+        _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude);
+      }
+      for (var action in _openOuters) {
+        _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude);
+      }
     }
 
     Writebuffer doubleWritebuffer = Writebuffer();
     if (expectDouble == null || expectDouble) {
-      _writeDoubleDeltaEncoding(doubleWritebuffer, [_master]..addAll(_inner), tileLatitude, tileLongitude);
-      _closedOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
-      _openOuters.forEach((action) => _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude));
+      _writeDoubleDeltaEncoding(doubleWritebuffer, [master, ..._inner], tileLatitude, tileLongitude);
+      for (var action in _closedOuters) {
+        _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude);
+      }
+      for (var action in _openOuters) {
+        _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude);
+      }
     }
 
     bool featureWayDoubleDeltaEncoding = singleWritebuffer.length == 0
@@ -354,7 +366,7 @@ class Wayholder with TagholderMixin {
     }
 
     if (featureLabelPosition) {
-      ILatLong first = _master.first;
+      ILatLong first = master.first;
       writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(labelPosition!.latitude - first.latitude));
       writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(labelPosition!.longitude - first.longitude));
     }
@@ -363,10 +375,11 @@ class Wayholder with TagholderMixin {
       writebuffer.appendUnsignedInt(_closedOuters.length + _openOuters.length + 1);
     }
 
-    if (featureWayDoubleDeltaEncoding)
+    if (featureWayDoubleDeltaEncoding) {
       writebuffer.appendWritebuffer(doubleWritebuffer);
-    else
+    } else {
       writebuffer.appendWritebuffer(singleWritebuffer);
+    }
 
     return writebuffer;
   }
@@ -375,11 +388,11 @@ class Wayholder with TagholderMixin {
   void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
     if (waypaths.isEmpty) return;
-    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${this.toStringWithoutNames()}");
+    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${toStringWithoutNames()}");
     writebuffer.appendUnsignedInt(waypaths.length);
     for (Waypath waypath in waypaths) {
-      assert(waypath.length >= 2, "${waypath.length} too little for ${this.toStringWithoutNames()}");
-      assert(waypath.length <= 32767, "${waypath.length} too much for ${this.toStringWithoutNames()}");
+      assert(waypath.length >= 2, "${waypath.length} too little for ${toStringWithoutNames()}");
+      assert(waypath.length <= 32767, "${waypath.length} too much for ${toStringWithoutNames()}");
       // amount of way nodes of this way (see docu)
       writebuffer.appendUnsignedInt(waypath.length);
       bool first = true;
@@ -410,11 +423,11 @@ class Wayholder with TagholderMixin {
   void _writeDoubleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
     if (waypaths.isEmpty) return;
-    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${this.toStringWithoutNames()}");
+    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${toStringWithoutNames()}");
     writebuffer.appendUnsignedInt(waypaths.length);
     for (Waypath waypath in waypaths) {
-      assert(waypath.length >= 2, "${waypath.length} too little for ${this.toStringWithoutNames()}");
-      assert(waypath.length <= 32767, "${waypath.length} too much for ${this.toStringWithoutNames()}");
+      assert(waypath.length >= 2, "${waypath.length} too little for ${toStringWithoutNames()}");
+      assert(waypath.length <= 32767, "${waypath.length} too much for ${toStringWithoutNames()}");
       // amount of way nodes of this way (see docu)
       writebuffer.appendUnsignedInt(waypath.length);
       bool first = true;

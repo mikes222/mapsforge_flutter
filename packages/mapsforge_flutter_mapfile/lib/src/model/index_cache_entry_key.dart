@@ -9,7 +9,7 @@ class IndexCacheEntryKey {
   ///
   /// @param subFileParameter the parameters of the map file.
   /// @param indexBlockNumber the number of the index block.
-  IndexCacheEntryKey(this.subFileParameter, this.indexBlockNumber) {}
+  IndexCacheEntryKey(this.subFileParameter, this.indexBlockNumber);
 
   @override
   bool operator ==(Object other) =>

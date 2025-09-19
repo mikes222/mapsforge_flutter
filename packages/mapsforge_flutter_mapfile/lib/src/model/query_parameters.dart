@@ -21,27 +21,27 @@ class QueryParameters {
     if (tile.zoomLevel < subFileParameter.baseZoomLevel) {
       // calculate the XY numbers of the upper left and lower right sub-tiles
       int zoomLevelDifference = subFileParameter.baseZoomLevel - tile.zoomLevel;
-      this.fromBaseTileX = tile.tileX << zoomLevelDifference;
-      this.fromBaseTileY = tile.tileY << zoomLevelDifference;
-      this.toBaseTileX = this.fromBaseTileX + (1 << zoomLevelDifference) - 1;
-      this.toBaseTileY = this.fromBaseTileY + (1 << zoomLevelDifference) - 1;
-      this.useTileBitmask = false;
+      fromBaseTileX = tile.tileX << zoomLevelDifference;
+      fromBaseTileY = tile.tileY << zoomLevelDifference;
+      toBaseTileX = fromBaseTileX + (1 << zoomLevelDifference) - 1;
+      toBaseTileY = fromBaseTileY + (1 << zoomLevelDifference) - 1;
+      useTileBitmask = false;
     } else if (tile.zoomLevel > subFileParameter.baseZoomLevel) {
       // calculate the XY numbers of the parent base tile
       int zoomLevelDifference = tile.zoomLevel - subFileParameter.baseZoomLevel;
-      this.fromBaseTileX = tile.tileX >> zoomLevelDifference;
-      this.fromBaseTileY = tile.tileY >> zoomLevelDifference;
-      this.toBaseTileX = this.fromBaseTileX;
-      this.toBaseTileY = this.fromBaseTileY;
-      this.useTileBitmask = true;
-      this.queryTileBitmask = QueryCalculations.calculateSingleTileBitmask(tile, zoomLevelDifference);
+      fromBaseTileX = tile.tileX >> zoomLevelDifference;
+      fromBaseTileY = tile.tileY >> zoomLevelDifference;
+      toBaseTileX = fromBaseTileX;
+      toBaseTileY = fromBaseTileY;
+      useTileBitmask = true;
+      queryTileBitmask = QueryCalculations.calculateSingleTileBitmask(tile, zoomLevelDifference);
     } else {
       // use the tile XY numbers of the requested tile
-      this.fromBaseTileX = tile.tileX;
-      this.fromBaseTileY = tile.tileY;
-      this.toBaseTileX = this.fromBaseTileX;
-      this.toBaseTileY = this.fromBaseTileY;
-      this.useTileBitmask = false;
+      fromBaseTileX = tile.tileX;
+      fromBaseTileY = tile.tileY;
+      toBaseTileX = fromBaseTileX;
+      toBaseTileY = fromBaseTileY;
+      useTileBitmask = false;
     }
   }
 
@@ -49,39 +49,39 @@ class QueryParameters {
     if (upperLeft.zoomLevel < subFileParameter.baseZoomLevel) {
       // here we need to combine multiple base tiles
       int zoomLevelDifference = subFileParameter.baseZoomLevel - upperLeft.zoomLevel;
-      this.fromBaseTileX = upperLeft.tileX << zoomLevelDifference;
-      this.fromBaseTileY = upperLeft.tileY << zoomLevelDifference;
-      this.toBaseTileX = (lowerRight.tileX << zoomLevelDifference) + (1 << zoomLevelDifference) - 1;
-      this.toBaseTileY = (lowerRight.tileY << zoomLevelDifference) + (1 << zoomLevelDifference) - 1;
-      this.useTileBitmask = false;
+      fromBaseTileX = upperLeft.tileX << zoomLevelDifference;
+      fromBaseTileY = upperLeft.tileY << zoomLevelDifference;
+      toBaseTileX = (lowerRight.tileX << zoomLevelDifference) + (1 << zoomLevelDifference) - 1;
+      toBaseTileY = (lowerRight.tileY << zoomLevelDifference) + (1 << zoomLevelDifference) - 1;
+      useTileBitmask = false;
     } else if (upperLeft.zoomLevel > subFileParameter.baseZoomLevel) {
       // we might have more than just one base tile as we might span boundaries
       int zoomLevelDifference = upperLeft.zoomLevel - subFileParameter.baseZoomLevel;
-      this.fromBaseTileX = upperLeft.tileX >> zoomLevelDifference;
-      this.fromBaseTileY = upperLeft.tileY >> zoomLevelDifference;
-      this.toBaseTileX = lowerRight.tileX >> zoomLevelDifference;
-      this.toBaseTileY = lowerRight.tileY >> zoomLevelDifference;
+      fromBaseTileX = upperLeft.tileX >> zoomLevelDifference;
+      fromBaseTileY = upperLeft.tileY >> zoomLevelDifference;
+      toBaseTileX = lowerRight.tileX >> zoomLevelDifference;
+      toBaseTileY = lowerRight.tileY >> zoomLevelDifference;
       // TODO understand what is going on here. The tileBitmask is used to extract just
       // the data from the base tiles that is relevant for the area, but how can this work
       // for a set of tiles, so not using tileBitmask for the moment.
-      this.useTileBitmask = true;
-      this.queryTileBitmask = QueryCalculations.calculateTileBitmask(upperLeft, lowerRight, zoomLevelDifference);
+      useTileBitmask = true;
+      queryTileBitmask = QueryCalculations.calculateTileBitmask(upperLeft, lowerRight, zoomLevelDifference);
     } else {
       // we are on the base zoom level, so we just need all tiles in range
-      this.fromBaseTileX = upperLeft.tileX;
-      this.fromBaseTileY = upperLeft.tileY;
-      this.toBaseTileX = lowerRight.tileX;
-      this.toBaseTileY = lowerRight.tileY;
-      this.useTileBitmask = false;
+      fromBaseTileX = upperLeft.tileX;
+      fromBaseTileY = upperLeft.tileY;
+      toBaseTileX = lowerRight.tileX;
+      toBaseTileY = lowerRight.tileY;
+      useTileBitmask = false;
     }
   }
 
   void calculateBlocks(SubFileParameter subFileParameter) {
     // calculate the blocks (tiles) in the subfile which need to be read
-    this.fromBlockX = max(this.fromBaseTileX - subFileParameter.boundaryTileLeft, 0);
-    this.fromBlockY = max(this.fromBaseTileY - subFileParameter.boundaryTileTop, 0);
-    this.toBlockX = min(this.toBaseTileX - subFileParameter.boundaryTileLeft, subFileParameter.blocksWidth - 1);
-    this.toBlockY = min(this.toBaseTileY - subFileParameter.boundaryTileTop, subFileParameter.blocksHeight - 1);
+    fromBlockX = max(fromBaseTileX - subFileParameter.boundaryTileLeft, 0);
+    fromBlockY = max(fromBaseTileY - subFileParameter.boundaryTileTop, 0);
+    toBlockX = min(toBaseTileX - subFileParameter.boundaryTileLeft, subFileParameter.blocksWidth - 1);
+    toBlockY = min(toBaseTileY - subFileParameter.boundaryTileTop, subFileParameter.blocksHeight - 1);
   }
 
   @override

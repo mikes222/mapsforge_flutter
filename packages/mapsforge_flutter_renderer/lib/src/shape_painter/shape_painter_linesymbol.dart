@@ -21,7 +21,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
 
   static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterLinesymbol");
 
-  ShapePainterLinesymbol._(RenderinstructionLinesymbol renderinstruction) : super(renderinstruction) {
+  ShapePainterLinesymbol._(super.renderinstruction) {
     fill = UiPaint.fill(color: 0xff000000);
   }
 

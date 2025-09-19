@@ -12,7 +12,7 @@
 /// - [RuleAnalyzer]: Analysis tools for rule optimization
 /// - [SymbolSearcher]: Symbol lookup and management
 /// - [RenderThemeBuilder]: XML theme file parser
-library rendertheme;
+library;
 
 export 'src/renderinstruction/renderinstruction.dart';
 export 'src/rendertheme.dart';

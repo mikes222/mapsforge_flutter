@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 class Poiholder with TagholderMixin {
   final PointOfInterest poi;
 
-  Poiholder(this.poi) {}
+  Poiholder(this.poi);
 
   void analyze(List<Tagholder> tagholders, String? languagesPreference) {
     if (languagesPreference != null) super.languagesPreference.addAll(languagesPreference.split(","));

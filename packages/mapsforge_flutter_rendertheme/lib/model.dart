@@ -12,7 +12,7 @@
 /// - **Feature Properties**: [NodeProperties], [WayProperties]
 /// - **Rendering Context**: [RenderContext], [RenderInfo] and variants
 /// - **Graphics**: [ShapePainter] for custom drawing operations
-library model;
+library;
 
 export 'src/model/layer_container.dart';
 export 'src/model/layer_container_collection.dart';

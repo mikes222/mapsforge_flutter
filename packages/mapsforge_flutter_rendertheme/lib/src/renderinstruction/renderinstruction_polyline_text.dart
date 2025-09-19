@@ -17,9 +17,7 @@ import 'package:xml/xml.dart';
 
 import 'renderinstruction.dart';
 
-/**
- * Represents a text along a polyline on the map.
- */
+/// Represents a text along a polyline on the map.
 class RenderinstructionPolylineText extends Renderinstruction
     with BaseSrcMixin, TextSrcMixin, StrokeSrcMixin, FillSrcMixin, RepeatSrcMixin
     implements RenderinstructionWay {

@@ -24,13 +24,13 @@ class TestRenderInfo extends RenderInfo {
 
   @override
   MapRectangle getBoundaryAbsolute() {
-    return _boundary ?? MapRectangle(0, 0, 0, 0);
+    return _boundary ?? const MapRectangle(0, 0, 0, 0);
   }
 
   @override
   bool intersects(MapRectangle other) {
     if (_boundary == null) return false;
-    return _boundary!.intersects(other);
+    return _boundary.intersects(other);
   }
 
   @override
@@ -44,7 +44,7 @@ class TestRenderInfo extends RenderInfo {
 
 /// Mock RenderInfo that throws exception during collision check
 class ExceptionRenderInfo extends TestRenderInfo {
-  ExceptionRenderInfo(String id, MapRectangle? boundary) : super(id, boundary);
+  ExceptionRenderInfo(super.id, super.boundary);
 
   @override
   bool clashesWith(RenderInfo other) {
@@ -69,6 +69,7 @@ class _MockRenderInstruction extends Renderinstruction {
   @override
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}
 
+  @override
   int level = 0;
 }
 
@@ -94,7 +95,7 @@ void main() {
 
     group('add()', () {
       test('should add item with boundary to index', () {
-        final boundary = MapRectangle(0, 0, 50, 50);
+        final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -115,7 +116,7 @@ void main() {
       });
 
       test('should add item spanning multiple cells', () {
-        final boundary = MapRectangle(0, 0, 150, 150); // Spans 4 cells with cellSize=100
+        final boundary = const MapRectangle(0, 0, 150, 150); // Spans 4 cells with cellSize=100
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -126,8 +127,8 @@ void main() {
       });
 
       test('should add multiple items to same cell', () {
-        final boundary1 = MapRectangle(10, 10, 20, 20);
-        final boundary2 = MapRectangle(30, 30, 40, 40);
+        final boundary1 = const MapRectangle(10, 10, 20, 20);
+        final boundary2 = const MapRectangle(30, 30, 40, 40);
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
@@ -151,7 +152,7 @@ void main() {
       });
 
       test('should return false when no items in index', () {
-        final boundary = MapRectangle(0, 0, 50, 50);
+        final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
         final hasCollision = spatialIndex.hasCollision(item);
@@ -160,8 +161,8 @@ void main() {
       });
 
       test('should return false when no collision occurs', () {
-        final boundary1 = MapRectangle(0, 0, 50, 50);
-        final boundary2 = MapRectangle(60, 60, 110, 110);
+        final boundary1 = const MapRectangle(0, 0, 50, 50);
+        final boundary2 = const MapRectangle(60, 60, 110, 110);
         final item1 = TestRenderInfo('item1', boundary1, shouldClash: false);
         final item2 = TestRenderInfo('item2', boundary2, shouldClash: false);
 
@@ -172,8 +173,8 @@ void main() {
       });
 
       test('should return true when collision occurs', () {
-        final boundary1 = MapRectangle(0, 0, 50, 50);
-        final boundary2 = MapRectangle(25, 25, 75, 75);
+        final boundary1 = const MapRectangle(0, 0, 50, 50);
+        final boundary2 = const MapRectangle(25, 25, 75, 75);
         final item1 = TestRenderInfo('item1', boundary1, shouldClash: true);
         final item2 = TestRenderInfo('item2', boundary2, shouldClash: true);
 
@@ -184,8 +185,8 @@ void main() {
       });
 
       test('should handle exception during collision check gracefully', () {
-        final boundary1 = MapRectangle(0, 0, 50, 50);
-        final boundary2 = MapRectangle(25, 25, 75, 75);
+        final boundary1 = const MapRectangle(0, 0, 50, 50);
+        final boundary2 = const MapRectangle(25, 25, 75, 75);
         final item1 = ExceptionRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
@@ -197,8 +198,8 @@ void main() {
       });
 
       test('should check collision across multiple cells', () {
-        final boundary1 = MapRectangle(0, 0, 150, 150); // Spans multiple cells
-        final boundary2 = MapRectangle(120, 120, 170, 170); // Overlaps with item1
+        final boundary1 = const MapRectangle(0, 0, 150, 150); // Spans multiple cells
+        final boundary2 = const MapRectangle(120, 120, 170, 170); // Overlaps with item1
         final item1 = TestRenderInfo('item1', boundary1, shouldClash: true);
         final item2 = TestRenderInfo('item2', boundary2, shouldClash: true);
 
@@ -211,7 +212,7 @@ void main() {
 
     group('_getCells()', () {
       test('should return single cell for small boundary', () {
-        final boundary = MapRectangle(10, 10, 50, 50);
+        final boundary = const MapRectangle(10, 10, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -221,7 +222,7 @@ void main() {
       });
 
       test('should return multiple cells for boundary spanning cells', () {
-        final boundary = MapRectangle(50, 50, 150, 150); // Crosses cell boundaries
+        final boundary = const MapRectangle(50, 50, 150, 150); // Crosses cell boundaries
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -231,7 +232,7 @@ void main() {
       });
 
       test('should handle negative coordinates', () {
-        final boundary = MapRectangle(-50, -50, 50, 50);
+        final boundary = const MapRectangle(-50, -50, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -241,7 +242,7 @@ void main() {
       });
 
       test('should handle zero-size boundary', () {
-        final boundary = MapRectangle(100, 100, 100, 100);
+        final boundary = const MapRectangle(100, 100, 100, 100);
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -254,8 +255,8 @@ void main() {
 
     group('clear()', () {
       test('should clear all items from index', () {
-        final boundary1 = MapRectangle(0, 0, 50, 50);
-        final boundary2 = MapRectangle(100, 100, 150, 150);
+        final boundary1 = const MapRectangle(0, 0, 50, 50);
+        final boundary2 = const MapRectangle(100, 100, 150, 150);
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
@@ -273,7 +274,7 @@ void main() {
       });
 
       test('should allow adding items after clear', () {
-        final boundary = MapRectangle(0, 0, 50, 50);
+        final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -296,7 +297,7 @@ void main() {
       });
 
       test('should return correct stats for single item', () {
-        final boundary = MapRectangle(0, 0, 50, 50);
+        final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -309,9 +310,9 @@ void main() {
       });
 
       test('should return correct stats for multiple items', () {
-        final boundary1 = MapRectangle(0, 0, 50, 50);
-        final boundary2 = MapRectangle(25, 25, 75, 75); // Same cell as item1
-        final boundary3 = MapRectangle(200, 200, 250, 250); // Different cell
+        final boundary1 = const MapRectangle(0, 0, 50, 50);
+        final boundary2 = const MapRectangle(25, 25, 75, 75); // Same cell as item1
+        final boundary3 = const MapRectangle(200, 200, 250, 250); // Different cell
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
         final item3 = TestRenderInfo('item3', boundary3);
@@ -328,7 +329,7 @@ void main() {
       });
 
       test('should handle item spanning multiple cells in stats', () {
-        final boundary = MapRectangle(0, 0, 250, 250); // Spans 9 cells (3x3)
+        final boundary = const MapRectangle(0, 0, 250, 250); // Spans 9 cells (3x3)
         final item = TestRenderInfo('item1', boundary);
 
         spatialIndex.add(item);
@@ -387,7 +388,7 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle large boundaries', () {
-        final boundary = MapRectangle(-1000, -1000, 1000, 1000);
+        final boundary = const MapRectangle(-1000, -1000, 1000, 1000);
         final item = TestRenderInfo('large', boundary);
 
         spatialIndex.add(item);
@@ -398,7 +399,7 @@ void main() {
       });
 
       test('should handle boundaries at cell boundaries', () {
-        final boundary = MapRectangle(100, 100, 200, 200); // Exactly on cell boundaries
+        final boundary = const MapRectangle(100, 100, 200, 200); // Exactly on cell boundaries
         final item = TestRenderInfo('boundary', boundary);
 
         spatialIndex.add(item);
@@ -409,7 +410,7 @@ void main() {
 
       test('should handle very small cell size', () {
         final smallCellIndex = SpatialIndex(cellSize: 1.0);
-        final boundary = MapRectangle(0, 0, 5, 5);
+        final boundary = const MapRectangle(0, 0, 5, 5);
         final item = TestRenderInfo('small', boundary);
 
         smallCellIndex.add(item);
@@ -420,8 +421,8 @@ void main() {
 
       test('should handle very large cell size', () {
         final largeCellIndex = SpatialIndex(cellSize: 10000.0);
-        final boundary1 = MapRectangle(0, 0, 50, 50);
-        final boundary2 = MapRectangle(1000, 1000, 1050, 1050);
+        final boundary1 = const MapRectangle(0, 0, 50, 50);
+        final boundary2 = const MapRectangle(1000, 1000, 1050, 1050);
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 

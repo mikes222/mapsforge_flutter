@@ -28,7 +28,7 @@ class MapfileWriter {
 
   MapfileWriter({required this.filename, required this.mapHeaderInfo})
     : _sink = SinkWithCounter(File(filename).openWrite()),
-      _zoomlevelRange = mapHeaderInfo.zoomlevelRange {}
+      _zoomlevelRange = mapHeaderInfo.zoomlevelRange;
 
   Future<void> close() async {
     await _sink.close();

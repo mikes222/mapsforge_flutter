@@ -11,6 +11,7 @@
 /// - **JobRequest/JobResult**: Asynchronous rendering job management
 /// - **UIRenderContext**: Rendering context and state management
 /// - **ImageHelper**: Utilities for image processing and manipulation
+library;
 
 export 'src/arcgis_online_renderer.dart';
 export 'src/datastore_renderer.dart';

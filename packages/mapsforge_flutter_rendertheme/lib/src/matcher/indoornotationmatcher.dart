@@ -5,13 +5,13 @@ import 'package:mapsforge_flutter_core/model.dart';
 
 class IndoorNotationMatcher {
   // match single value : 1 or -1.5
-  static final RegExp _matchSingleNotation = new RegExp(r"^-?\d+(\.\d+)?$");
+  static final RegExp _matchSingleNotation = RegExp(r"^-?\d+(\.\d+)?$");
 
   // match multiple values notation : 1;3;4 or 1.4;-4;2
-  static final RegExp _matchMultipleNotation = new RegExp(r"^(-?\d+(\.\d+)?)(;-?\d+(\.\d+)?)+$");
+  static final RegExp _matchMultipleNotation = RegExp(r"^(-?\d+(\.\d+)?)(;-?\d+(\.\d+)?)+$");
 
   // match value range notation : 1-2 or -1--5
-  static final RegExp _matchRangeNotation = new RegExp(r"^-?\d+(\.\d+)?--?\d+(\.\d+)?$");
+  static final RegExp _matchRangeNotation = RegExp(r"^-?\d+(\.\d+)?--?\d+(\.\d+)?$");
 
   static bool matchesSingleNotation(String levelTagValue) {
     return _matchSingleNotation.hasMatch(levelTagValue);

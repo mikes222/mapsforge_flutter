@@ -39,7 +39,7 @@ class MapfileInfoBuilder {
     // get and check the size of the remaining file header (4 bytes)
     int remainingHeaderSize = readBuffer.readInt();
     if (remainingHeaderSize < HEADER_SIZE_MIN || remainingHeaderSize > HEADER_SIZE_MAX) {
-      throw new Exception("invalid remaining header size: $remainingHeaderSize");
+      throw Exception("invalid remaining header size: $remainingHeaderSize");
     }
 
     // read the header data into the buffer
@@ -50,7 +50,7 @@ class MapfileInfoBuilder {
 
     _readSubFileParameters(readBuffer, fileSize, mapHeaderInfoBuilder);
 
-    this.mapHeaderInfo = mapHeaderInfoBuilder.build();
+    mapHeaderInfo = mapHeaderInfoBuilder.build();
   }
 
   /// Reads the macic bytes of the mapfile. This is the very first part of the file.
@@ -65,7 +65,7 @@ class MapfileInfoBuilder {
     String magicByte = readBuffer.readUTF8EncodedString2(magicByteLength);
 
     if (BINARY_OSM_MAGIC_BYTE != (magicByte)) {
-      throw new Exception("invalid magic byte: $magicByte");
+      throw Exception("invalid magic byte: $magicByte");
     }
     return readBuffer;
   }
@@ -74,13 +74,13 @@ class MapfileInfoBuilder {
     // get and check the number of sub-files (1 byte)
     int numberOfSubFiles = readbuffer.readByte();
     if (numberOfSubFiles < 1) {
-      throw new Exception("invalid number of sub-files: $numberOfSubFiles");
+      throw Exception("invalid number of sub-files: $numberOfSubFiles");
     }
     mapHeaderInfoBuilder.numberOfSubFiles = numberOfSubFiles;
 
     List<SubFileParameter> tempSubFileParameters = [];
-    this.zoomLevelMinimum = 65536;
-    this.zoomLevelMaximum = -65536;
+    zoomLevelMinimum = 65536;
+    zoomLevelMaximum = -65536;
 
     // get and check the information for each sub-file
     for (int currentSubFile = 0; currentSubFile < numberOfSubFiles; ++currentSubFile) {
@@ -92,13 +92,13 @@ class MapfileInfoBuilder {
       tempSubFileParameters.add(subFileParameter);
 
       // update the global minimum and maximum zoom level information
-      if (this.zoomLevelMinimum > subFileParameter.zoomLevelMin) {
-        this.zoomLevelMinimum = subFileParameter.zoomLevelMin;
-        mapHeaderInfoBuilder.zoomlevelMin = this.zoomLevelMinimum;
+      if (zoomLevelMinimum > subFileParameter.zoomLevelMin) {
+        zoomLevelMinimum = subFileParameter.zoomLevelMin;
+        mapHeaderInfoBuilder.zoomlevelMin = zoomLevelMinimum;
       }
-      if (this.zoomLevelMaximum < subFileParameter.zoomLevelMax) {
-        this.zoomLevelMaximum = subFileParameter.zoomLevelMax;
-        mapHeaderInfoBuilder.zoomlevelMax = this.zoomLevelMaximum;
+      if (zoomLevelMaximum < subFileParameter.zoomLevelMax) {
+        zoomLevelMaximum = subFileParameter.zoomLevelMax;
+        mapHeaderInfoBuilder.zoomlevelMax = zoomLevelMaximum;
       }
     }
 
@@ -106,7 +106,7 @@ class MapfileInfoBuilder {
     for (int currentMapFile = 0; currentMapFile < numberOfSubFiles; ++currentMapFile) {
       SubFileParameter subFileParameter = tempSubFileParameters.elementAt(currentMapFile);
       for (int zoomLevel = subFileParameter.zoomLevelMin; zoomLevel <= subFileParameter.zoomLevelMax; ++zoomLevel) {
-        this.subFileParameters[zoomLevel] = subFileParameter;
+        subFileParameters[zoomLevel] = subFileParameter;
       }
     }
   }

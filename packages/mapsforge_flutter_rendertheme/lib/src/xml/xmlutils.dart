@@ -20,25 +20,23 @@ class XmlUtils {
   //    return getColor(graphicFactory, colorString, null, null);
   //  }
 
-  /**
-   * Supported formats are {@code #RRGGBB} and {@code #AARRGGBB}.
-   */
+  /// Supported formats are {@code #RRGGBB} and {@code #AARRGGBB}.
   static int getColor(String colorString) {
     if (colorString.isEmpty || !colorString.startsWith("#")) {
-      throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
+      throw Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     } else if (colorString.length == 7) {
       return getColorAlpha(colorString, 255, 1);
     } else if (colorString.length == 9) {
       return getColorAlpha(colorString, int.parse(colorString.substring(1, 3), radix: 16), 3);
     } else {
-      throw new Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
+      throw Exception(UNSUPPORTED_COLOR_FORMAT + colorString);
     }
   }
 
   static int parseNonNegativeByte(String name, String value) {
     int parsedByte = int.parse(value);
     if (parsedByte < 0) {
-      throw new Exception("Attribute '$name' must not be negative: $value");
+      throw Exception("Attribute '$name' must not be negative: $value");
     }
     return parsedByte;
   }
@@ -52,14 +50,14 @@ class XmlUtils {
   static int parseNonNegativeInteger(String name, String value) {
     int parsedInt = int.parse(value);
     if (parsedInt < 0) {
-      throw new Exception("Attribute '$name' must not be negative: $value");
+      throw Exception("Attribute '$name' must not be negative: $value");
     }
     return parsedInt;
   }
 
   static void checkForNegativeValue(String name, double value) {
     if (value < 0) {
-      throw new Exception("Attribute '$name' must not be negative: $value");
+      throw Exception("Attribute '$name' must not be negative: $value");
     }
   }
 
@@ -77,9 +75,7 @@ class XmlUtils {
   //   return null;
   // }
 
-  /**
-   * Create InputStream from jar resource.
-   */
+  /// Create InputStream from jar resource.
   //  static InputStream inputStreamFromJar(String relativePathPrefix, String src) {
   //    String absoluteName = getAbsoluteName(relativePathPrefix, src);
   //    return XmlUtils

@@ -13,7 +13,7 @@ void main() {
 
     group('Basic Functionality', () {
       test('should return original points when count <= 2', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 1.0)];
 
         final result = douglasPeucker.simplify(points, 0.1);
         expect(result.length, equals(2));
@@ -21,7 +21,7 @@ void main() {
       });
 
       test('should handle single point', () {
-        final points = [Mappoint(0.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0)];
         final result = douglasPeucker.simplify(points, 0.1);
         expect(result.length, equals(1));
         expect(result.first, equals(points.first));
@@ -36,7 +36,7 @@ void main() {
 
     group('Line Simplification', () {
       test('should preserve straight line with collinear points', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 2.0), Mappoint(3.0, 3.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 1.0), const Mappoint(2.0, 2.0), const Mappoint(3.0, 3.0)];
 
         final result = douglasPeucker.simplify(points, 0.1);
         expect(result.length, equals(2));
@@ -46,11 +46,11 @@ void main() {
 
       test('should preserve significant deviation points', () {
         final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(1.0, 0.0),
-          Mappoint(1.0, 1.0), // Significant deviation
-          Mappoint(2.0, 1.0),
-          Mappoint(2.0, 0.0),
+          const Mappoint(0.0, 0.0),
+          const Mappoint(1.0, 0.0),
+          const Mappoint(1.0, 1.0), // Significant deviation
+          const Mappoint(2.0, 1.0),
+          const Mappoint(2.0, 0.0),
         ];
 
         final result = douglasPeucker.simplify(points, 0.1);
@@ -61,9 +61,9 @@ void main() {
 
       test('should remove points within tolerance', () {
         final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(0.5, 0.01), // Small deviation
-          Mappoint(1.0, 0.0),
+          const Mappoint(0.0, 0.0),
+          const Mappoint(0.5, 0.01), // Small deviation
+          const Mappoint(1.0, 0.0),
         ];
 
         final result = douglasPeucker.simplify(points, 0.1);
@@ -108,7 +108,7 @@ void main() {
       });
 
       test('should handle repeated calculations efficiently', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.1), Mappoint(2.0, 0.0), Mappoint(3.0, 0.1), Mappoint(4.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 0.1), const Mappoint(2.0, 0.0), const Mappoint(3.0, 0.1), const Mappoint(4.0, 0.0)];
 
         final stopwatch = Stopwatch()..start();
 
@@ -125,11 +125,11 @@ void main() {
     group('Edge Cases', () {
       test('should handle identical consecutive points', () {
         final points = [
-          Mappoint(0.0, 0.0),
-          Mappoint(0.0, 0.0), // Duplicate
-          Mappoint(1.0, 1.0),
-          Mappoint(1.0, 1.0), // Duplicate
-          Mappoint(2.0, 0.0),
+          const Mappoint(0.0, 0.0),
+          const Mappoint(0.0, 0.0), // Duplicate
+          const Mappoint(1.0, 1.0),
+          const Mappoint(1.0, 1.0), // Duplicate
+          const Mappoint(2.0, 0.0),
         ];
 
         final result = douglasPeucker.simplify(points, 0.1);
@@ -139,14 +139,14 @@ void main() {
       });
 
       test('should handle zero tolerance', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.001), Mappoint(2.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 0.001), const Mappoint(2.0, 0.0)];
 
         final result = douglasPeucker.simplify(points, 0.0);
         expect(result.length, equals(3)); // Should keep all points
       });
 
       test('should handle very high tolerance', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 0.0), Mappoint(3.0, 1.0), Mappoint(4.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 1.0), const Mappoint(2.0, 0.0), const Mappoint(3.0, 1.0), const Mappoint(4.0, 0.0)];
 
         final result = douglasPeucker.simplify(points, 10.0);
         expect(result.length, equals(2)); // Should simplify to endpoints
@@ -155,14 +155,14 @@ void main() {
       });
 
       test('should handle very small coordinates', () {
-        final points = [Mappoint(0.0001, 0.0001), Mappoint(0.0002, 0.0002), Mappoint(0.0003, 0.0001)];
+        final points = [const Mappoint(0.0001, 0.0001), const Mappoint(0.0002, 0.0002), const Mappoint(0.0003, 0.0001)];
 
         final result = douglasPeucker.simplify(points, 0.00001);
         expect(result.length, greaterThanOrEqualTo(2));
       });
 
       test('should handle very large coordinates', () {
-        final points = [Mappoint(1000000.0, 1000000.0), Mappoint(1000001.0, 1000001.0), Mappoint(1000002.0, 1000000.0)];
+        final points = [const Mappoint(1000000.0, 1000000.0), const Mappoint(1000001.0, 1000001.0), const Mappoint(1000002.0, 1000000.0)];
 
         final result = douglasPeucker.simplify(points, 0.5);
         expect(result.length, greaterThanOrEqualTo(2));
@@ -171,7 +171,7 @@ void main() {
 
     group('Algorithm Correctness', () {
       test('should maintain path topology', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 1.0), Mappoint(2.0, 0.5), Mappoint(3.0, 1.5), Mappoint(4.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 1.0), const Mappoint(2.0, 0.5), const Mappoint(3.0, 1.5), const Mappoint(4.0, 0.0)];
 
         final result = douglasPeucker.simplify(points, 0.3);
 
@@ -186,7 +186,7 @@ void main() {
       });
 
       test('should be deterministic', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.1), Mappoint(2.0, 0.0), Mappoint(3.0, 0.1), Mappoint(4.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 0.1), const Mappoint(2.0, 0.0), const Mappoint(3.0, 0.1), const Mappoint(4.0, 0.0)];
 
         final result1 = douglasPeucker.simplify(points, 0.05);
         final result2 = douglasPeucker.simplify(points, 0.05);
@@ -230,7 +230,7 @@ void main() {
       });
 
       test('should handle rapid tolerance changes', () {
-        final points = [Mappoint(0.0, 0.0), Mappoint(1.0, 0.1), Mappoint(2.0, 0.0), Mappoint(3.0, 0.1), Mappoint(4.0, 0.0)];
+        final points = [const Mappoint(0.0, 0.0), const Mappoint(1.0, 0.1), const Mappoint(2.0, 0.0), const Mappoint(3.0, 0.1), const Mappoint(4.0, 0.0)];
 
         final tolerances = [0.01, 0.1, 1.0, 0.05, 0.5];
 

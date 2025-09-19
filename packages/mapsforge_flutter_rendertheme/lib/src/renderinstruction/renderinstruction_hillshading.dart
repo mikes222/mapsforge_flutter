@@ -5,10 +5,8 @@ import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mix
 import 'package:mapsforge_flutter_rendertheme/src/xml/xmlutils.dart';
 import 'package:xml/xml.dart';
 
-/**
- * Represents hillshading on a painter algorithm layer/level in the parsed rendertheme
- * (but without a rule, we don't need to increase waymatching complexity here)
- */
+/// Represents hillshading on a painter algorithm layer/level in the parsed rendertheme
+/// (but without a rule, we don't need to increase waymatching complexity here)
 class RenderinstructionHillshading extends Renderinstruction with BaseSrcMixin implements RenderinstructionWay {
   bool always = true;
   int layer = 0;
@@ -49,7 +47,7 @@ class RenderinstructionHillshading extends Renderinstruction with BaseSrcMixin i
         maxZoom = XmlUtils.parseNonNegativeByte("zoom-max", value);
       } else if ("magnitude" == name) {
         magnitude = XmlUtils.parseNonNegativeInteger("magnitude", value).toDouble();
-        if (magnitude > 255) throw new Exception("Attribute 'magnitude' must not be > 255");
+        if (magnitude > 255) throw Exception("Attribute 'magnitude' must not be > 255");
       } else if ("always" == name) {
         always = "true" == (value);
       } else if ("layer" == name) {

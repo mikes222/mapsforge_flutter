@@ -9,6 +9,7 @@
 /// - **FileSymbolCache**: File-based symbol caching implementation
 /// - **ImageBundleLoader**: Efficient loading of bundled image assets
 /// - **SymbolCacheMgr**: Central management of symbol caching operations
+library;
 
 export 'src/cache/file_symbol_cache.dart';
 export 'src/cache/image_bundle_loader.dart';

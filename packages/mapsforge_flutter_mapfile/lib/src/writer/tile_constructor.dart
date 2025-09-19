@@ -25,7 +25,7 @@ class IsolateTileConstructor {
     double maxDeviationPixel,
     int tileCountX,
   ) async {
-    _TileConstructorInstanceRequest _request = _TileConstructorInstanceRequest(
+    _TileConstructorInstanceRequest request = _TileConstructorInstanceRequest(
       debugFile: debugFile,
       poiinfos: poiinfos,
       wayinfos: wayinfos,
@@ -33,9 +33,9 @@ class IsolateTileConstructor {
       maxDeviationPixel: maxDeviationPixel,
       tileCountX: tileCountX,
     );
-    IsolateTileConstructor _instance = IsolateTileConstructor._();
-    await _instance._isolateInstance.spawn(createInstance, _request);
-    return _instance;
+    IsolateTileConstructor instance = IsolateTileConstructor._();
+    await instance._isolateInstance.spawn(createInstance, request);
+    return instance;
   }
 
   void dispose() {
@@ -168,7 +168,7 @@ class _TileConstructorRequest {
 
 /// Constructs a single tile.
 class TileConstructor {
-  final _log = new Logger('TileConstructor');
+  final _log = Logger('TileConstructor');
 
   /// depending on the thickest line we draw we have to extend the margin so that
   /// a surrounding area is not visible in the tile.
@@ -182,7 +182,7 @@ class TileConstructor {
 
   final _PoiWayInfos _poiWayInfos;
 
-  SimpleCache<BoundingBox, _PoiWayInfos> _cache = SimpleCache(capacity: 1);
+  final SimpleCache<BoundingBox, _PoiWayInfos> _cache = SimpleCache(capacity: 1);
 
   BoundingBox _boundingBox = BoundingBox.fromLatLongs([const LatLong(0, 0)]);
 
@@ -203,18 +203,18 @@ class TileConstructor {
     Map<int, Poiinfo> resultPoi = {};
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       Poiinfo newPoiinfo = Poiinfo();
-      poiinfo.poiholders.forEach((poiholder) {
+      for (var poiholder in poiinfo.poiholders) {
         if (tileBoundingBox.containsLatLong(poiholder.poi.position)) {
           newPoiinfo.addPoiholder(poiholder);
         }
-      });
+      }
       resultPoi[zoomlevel] = newPoiinfo;
     });
 
     Map<int, Wayinfo> resultWay = {};
     _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
       Wayinfo newWayinfo = Wayinfo();
-      wayinfo.wayholders.forEach((wayholder) {
+      for (var wayholder in wayinfo.wayholders) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
           newWayinfo.addWayholder(wayholder);
@@ -239,7 +239,7 @@ class TileConstructor {
         } else if (tileBoundingBox.intersects(wayBoundingBox)) {
           newWayinfo.addWayholder(wayholder);
         }
-      });
+      }
       resultWay[zoomlevel] = newWayinfo;
     });
     _boundingBox = tileBoundingBox;
@@ -251,11 +251,11 @@ class TileConstructor {
     Map<int, Poiinfo> resultPoi = {};
     poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       Poiinfo newPoiinfo = Poiinfo();
-      poiinfo.poiholders.forEach((poiholder) {
+      for (var poiholder in poiinfo.poiholders) {
         if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
           newPoiinfo.addPoiholder(poiholder);
         }
-      });
+      }
       resultPoi[zoomlevel] = newPoiinfo;
     });
     Map<int, Wayinfo> resultWay = {};
@@ -263,7 +263,7 @@ class TileConstructor {
     BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
     poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
       Wayinfo newWayinfo = Wayinfo();
-      wayinfo.wayholders.forEach((wayholder) {
+      for (var wayholder in wayinfo.wayholders) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tile.getBoundingBox().intersects(wayBoundingBox) ||
             tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
@@ -271,7 +271,7 @@ class TileConstructor {
           Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
           if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
         }
-      });
+      }
       resultWay[zoomlevel] = newWayinfo;
     });
     return _PoiWayInfos(resultPoi, resultWay);
@@ -291,22 +291,22 @@ class TileConstructor {
     BoundingBox boundingBox = newTile.getBoundingBox().extendBoundingBox(first!.getBoundingBox());
     int poicountBefore = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
-      List.from(poiinfo.poiholders).forEach((poiholder) {
+      for (var poiholder in List.from(poiinfo.poiholders)) {
         if (boundingBox.containsLatLong(poiholder.poi.positioning)) {
           poiinfo.poiholders.remove(poiholder);
         }
-      });
+      }
     });
     int poicountAfter = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
     session.checkpoint("$poicountBefore -> $poicountAfter");
     int waycountBefore = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
     _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
-      List.from(wayinfo.wayholders).forEach((wayholder) {
+      for (var wayholder in List.from(wayinfo.wayholders)) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (boundingBox.containsBoundingBox(wayBoundingBox)) {
           wayinfo.wayholders.remove(wayholder);
         }
-      });
+      }
     });
     int waycountAfter = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
     session.complete();

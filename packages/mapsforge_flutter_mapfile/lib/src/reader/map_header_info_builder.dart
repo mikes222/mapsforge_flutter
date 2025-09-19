@@ -82,7 +82,7 @@ class MapHeaderInfoBuilder {
     // get and check the file size (8 bytes)
     int headerFileSize = readbuffer.readLong();
     if (headerFileSize != fileSize) {
-      throw new Exception("invalid file size: $headerFileSize, expected $fileSize bytes instead");
+      throw Exception("invalid file size: $headerFileSize, expected $fileSize bytes instead");
     }
     this.fileSize = fileSize;
   }
@@ -92,7 +92,7 @@ class MapHeaderInfoBuilder {
     int mapDate = readbuffer.readLong();
     // is the map date before 2010-01-10 ?
     if (mapDate < 1200000000000) {
-      throw new Exception("invalid map date: $mapDate");
+      throw Exception("invalid map date: $mapDate");
     }
     this.mapDate = mapDate;
   }
@@ -103,7 +103,7 @@ class MapHeaderInfoBuilder {
     double maxLatitude = LatLongUtils.microdegreesToDegrees(readbuffer.readInt());
     double maxLongitude = LatLongUtils.microdegreesToDegrees(readbuffer.readInt());
 
-    this.boundingBox = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
+    boundingBox = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 
   void readTilePixelSize(Readbuffer readbuffer) {

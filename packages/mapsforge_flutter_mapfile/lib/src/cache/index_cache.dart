@@ -12,7 +12,7 @@ import 'package:mapsforge_flutter_mapfile/src/reader/subfile_parameter_builder.d
 /// A cache for database index blocks with a fixed size and LRU policy.
 ///
 class IndexCache {
-  static final _log = new Logger('IndexCache');
+  static final _log = Logger('IndexCache');
 
   /// Number of index entries that one index block consists of.
   static const int INDEX_ENTRIES_PER_BLOCK = 128;

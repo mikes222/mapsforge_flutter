@@ -11,7 +11,7 @@ import 'package:logging/logging.dart';
 
 // TODO implement RuleOptimizer again
 class RuleOptimizer {
-  static final _log = new Logger('RuleOptimizer');
+  static final _log = Logger('RuleOptimizer');
 
   static AttributeMatcher optimize(AttributeMatcher attributeMatcher, List<RuleBuilder> ruleStack) {
     if (attributeMatcher is AnyMatcher || attributeMatcher is NegativeMatcher) {
@@ -22,7 +22,7 @@ class RuleOptimizer {
       return optimizeValueMatcher(attributeMatcher, ruleStack);
     }
 
-    throw new Exception("unknown AttributeMatcher:$attributeMatcher");
+    throw Exception("unknown AttributeMatcher:$attributeMatcher");
   }
 
   static ClosedMatcher optimizeClosedMatcher(ClosedMatcher closedMatcher, List<RuleBuilder> ruleStack) {

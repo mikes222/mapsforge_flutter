@@ -23,6 +23,7 @@ class _MockRenderInstruction extends Renderinstruction {
   @override
   void matchWay(LayerContainer layerContainer, WayProperties wayProperties) {}
 
+  @override
   int level = 0;
 }
 
@@ -139,7 +140,7 @@ void main() {
     });
 
     test('Cache Key Hashing Performance', () {
-      final tags = [Tag('highway', 'primary'), Tag('name', 'Main Street'), Tag('maxspeed', '50'), Tag('surface', 'asphalt')];
+      final tags = [const Tag('highway', 'primary'), const Tag('name', 'Main Street'), const Tag('maxspeed', '50'), const Tag('surface', 'asphalt')];
 
       final stopwatch = Stopwatch()..start();
 

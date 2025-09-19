@@ -7,9 +7,9 @@ void main() {
   group('MatchingCacheKey Performance Optimizations', () {
     group('Hash Function Optimization', () {
       test('should generate different hashes for different tag combinations', () {
-        final tags1 = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
-        final tags2 = [Tag('highway', 'secondary'), Tag('name', 'Main Street')];
-        final tags3 = [Tag('highway', 'primary'), Tag('name', 'Side Street')];
+        final tags1 = [const Tag('highway', 'primary'), const Tag('name', 'Main Street')];
+        final tags2 = [const Tag('highway', 'secondary'), const Tag('name', 'Main Street')];
+        final tags3 = [const Tag('highway', 'primary'), const Tag('name', 'Side Street')];
 
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);
@@ -21,7 +21,7 @@ void main() {
       });
 
       test('should generate same hash for identical keys', () {
-        final tags = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
+        final tags = [const Tag('highway', 'primary'), const Tag('name', 'Main Street')];
 
         final key1 = MatchingCacheKey(tags, 0);
         final key2 = MatchingCacheKey(tags, 0);
@@ -31,16 +31,16 @@ void main() {
       });
 
       test('should handle empty tag lists', () {
-        final key1 = MatchingCacheKey([], 0);
-        final key2 = MatchingCacheKey([], 0);
-        final key3 = MatchingCacheKey([], 1);
+        final key1 = const MatchingCacheKey([], 0);
+        final key2 = const MatchingCacheKey([], 0);
+        final key3 = const MatchingCacheKey([], 1);
 
         expect(key1.hashCode, equals(key2.hashCode));
         expect(key1.hashCode, isNot(equals(key3.hashCode)));
       });
 
       test('should incorporate indoor level in hash', () {
-        final tags = [Tag('highway', 'primary')];
+        final tags = [const Tag('highway', 'primary')];
 
         final key1 = MatchingCacheKey(tags, 0);
         final key2 = MatchingCacheKey(tags, 1);
@@ -58,7 +58,7 @@ void main() {
 
         // Generate many similar but different tag combinations
         for (int i = 0; i < 100; i++) {
-          final tags = [Tag('highway', 'primary'), Tag('name', 'Street $i'), Tag('ref', 'A$i')];
+          final tags = [const Tag('highway', 'primary'), Tag('name', 'Street $i'), Tag('ref', 'A$i')];
           final key = MatchingCacheKey(tags, i % 5);
           hashCodes.add(key.hashCode);
         }
@@ -68,8 +68,8 @@ void main() {
       });
 
       test('should handle hash collisions gracefully with equality check', () {
-        final tags1 = [Tag('highway', 'primary'), Tag('name', 'Main')];
-        final tags2 = [Tag('highway', 'secondary'), Tag('name', 'Side')];
+        final tags1 = [const Tag('highway', 'primary'), const Tag('name', 'Main')];
+        final tags2 = [const Tag('highway', 'secondary'), const Tag('name', 'Side')];
 
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);
@@ -125,8 +125,8 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle null and empty values in tags', () {
-        final tags1 = [Tag('highway', ''), Tag('', 'value')];
-        final tags2 = [Tag('highway', null), Tag(null, 'value')];
+        final tags1 = [const Tag('highway', ''), const Tag('', 'value')];
+        final tags2 = [const Tag('highway', null), const Tag(null, 'value')];
 
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);
@@ -138,7 +138,7 @@ void main() {
       });
 
       test('should handle extreme indoor levels', () {
-        final tags = [Tag('highway', 'primary')];
+        final tags = [const Tag('highway', 'primary')];
 
         final keyMin = MatchingCacheKey(tags, -1000000);
         final keyMax = MatchingCacheKey(tags, 1000000);
@@ -160,7 +160,7 @@ void main() {
 
     group('Hash Algorithm Validation', () {
       test('should use FNV-1a algorithm characteristics', () {
-        final tags = [Tag('test', 'value')];
+        final tags = [const Tag('test', 'value')];
         final key = MatchingCacheKey(tags, 0);
 
         final hash = key.hashCode;
@@ -192,7 +192,7 @@ void main() {
 
     group('Memory Efficiency', () {
       test('should not create unnecessary objects during hashing', () {
-        final tags = [Tag('highway', 'primary'), Tag('name', 'Main Street')];
+        final tags = [const Tag('highway', 'primary'), const Tag('name', 'Main Street')];
         final key = MatchingCacheKey(tags, 0);
 
         // Hash computation should not allocate significant memory
@@ -201,7 +201,7 @@ void main() {
       });
 
       test('should handle repeated hash computations efficiently', () {
-        final tags = [Tag('highway', 'primary')];
+        final tags = [const Tag('highway', 'primary')];
         final key = MatchingCacheKey(tags, 0);
 
         final stopwatch = Stopwatch()..start();

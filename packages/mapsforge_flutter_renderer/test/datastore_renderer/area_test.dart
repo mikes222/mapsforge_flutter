@@ -37,7 +37,7 @@ void main() {
           0,
           [
             Tag('name', 'OurForest'),
-            const Tag('natural', 'wood'),
+            Tag('natural', 'wood'),
             //const Tag('wood', 'deciduous')
           ],
           [
@@ -46,11 +46,11 @@ void main() {
           null,
         ),
       );
-      Tile tile = new Tile(x, y, zoomlevel, l);
+      Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
-      DatastoreRenderer _dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
+      DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
-      JobResult jobResult = (await (_dataStoreRenderer.executeJob(mapGeneratorJob)));
+      JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       return await jobResult.picture!.convertPictureToImage();
     }));
 

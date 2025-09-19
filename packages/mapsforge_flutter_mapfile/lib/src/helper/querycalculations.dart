@@ -30,7 +30,7 @@ class QueryCalculations {
     int bitmask = 0;
     for (int x = upperLeft.tileX; x <= lowerRight.tileX; x++) {
       for (int y = upperLeft.tileY; y <= lowerRight.tileY; y++) {
-        Tile current = new Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
+        Tile current = Tile(x, y, upperLeft.zoomLevel, upperLeft.indoorLevel);
         bitmask |= calculateSingleTileBitmask(current, zoomLevelDifference);
       }
     }
@@ -119,6 +119,6 @@ class QueryCalculations {
   }
 
   QueryCalculations() {
-    throw new Exception();
+    throw Exception();
   }
 }

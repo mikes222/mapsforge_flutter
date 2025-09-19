@@ -7,6 +7,7 @@
 /// Key exports:
 /// - **TilePicture**: Manages rendered tile images and caching
 /// - **UICanvas**: Canvas abstraction for cross-platform rendering
+library;
 
 export 'src/ui/paragraph_cache_mgr.dart';
 export 'src/ui/symbol_image.dart';
