@@ -1,6 +1,8 @@
 name: simple_example
 resolution: workspace
 description: "A simple example to show how mapsforge works"
+homepage: https://github.com/mikes222/mapsforge_flutter
+repository: https://github.com/mikes222/mapsforge_flutter
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

@@ -1,6 +1,8 @@
 name: mapsforge_flutter_renderer
 resolution: workspace
-description: "Renderer to produce a picture for a tile."
+description: "Renderer to produce a picture for a tile in mapsforge_flutter"
+homepage: https://github.com/mikes222/mapsforge_flutter
+repository: https://github.com/mikes222/mapsforge_flutter
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 #publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -66,6 +68,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  test: ^1.26.2
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

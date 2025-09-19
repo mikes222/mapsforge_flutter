@@ -22,6 +22,12 @@
 
 [ ] Increase version in pubspec.yaml
 
+manual:
+
+```bash
+melos version -V mapsforge_flutter:4.0.0 -V mapsforge_flutter_core:4.0.0 -V mapsforge_flutter_mapfile:4.0.0 -V mapsforge_flutter_renderer:4.0.0 -V mapsforge_flutter_rendertheme:4.0.0
+```
+
 [ ] Analyze package quality with pana (https://pub.dev/packages/pana)
 
 ````bash
