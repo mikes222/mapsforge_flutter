@@ -1,0 +1,131 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
+import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/shape_painter.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_matrix.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_render_context.dart';
+import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
+
+/// This class must be disposed after use
+class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
+  static final _log = Logger('ShapePainterSymbol');
+
+  static const bool debug = false;
+
+  late final UiPaint fill;
+
+  SymbolImage? symbolImage;
+
+  static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterSymbol");
+
+  ShapePainterSymbol._(RenderinstructionSymbol renderinstruction) : super(renderinstruction) {
+    fill = UiPaint.fill(color: renderinstruction.getBitmapColor());
+  }
+
+  static Future<ShapePainterSymbol> create(RenderinstructionSymbol renderinstruction) async {
+    return await _taskQueue.add(() async {
+      ShapePainterSymbol? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterSymbol?;
+      if (shapePainter != null) return shapePainter;
+      shapePainter = ShapePainterSymbol._(renderinstruction);
+      await shapePainter.init();
+      PainterFactory().setPainterForSerial(renderinstruction.serial, shapePainter);
+      return shapePainter;
+    });
+  }
+
+  Future<void> init() async {
+    try {
+      symbolImage =
+          await SymbolCacheMgr().getOrCreateSymbol(renderinstruction.bitmapSrc!, renderinstruction.getBitmapWidth(), renderinstruction.getBitmapHeight())
+            ?..clone();
+    } catch (error) {
+      _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
+    }
+  }
+
+  @override
+  void dispose() {
+    symbolImage?.dispose();
+    symbolImage = null;
+  }
+
+  @override
+  void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
+    if (symbolImage == null) return;
+    MappointRelative relative = nodeProperties.getCoordinatesAbsolute().offset(renderContext.reference).offset(0, renderinstruction.dy);
+    MapRectangle boundary = renderinstruction.getBoundary(renderInfo);
+    UiMatrix? matrix;
+    if (renderinstruction.rotateWithMap) {
+      if (renderinstruction.theta != 0) {
+        matrix = UiMatrix();
+        // rotation of the rotationRadian parameter is always in the opposite direction.
+        // If the map is moving clockwise we must rotate the symbol counterclockwise
+        // to keep it horizontal
+        matrix.rotate(renderinstruction.theta, pivotX: boundary.left, pivotY: boundary.top);
+      }
+    } else {
+      if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
+        matrix = UiMatrix();
+        // rotation of the rotationRadian parameter is always in the opposite direction.
+        // If the map is moving clockwise we must rotate the symbol counterclockwise
+        // to keep it horizontal
+        matrix.rotate(renderinstruction.theta - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
+      }
+    }
+
+    if (debug) {
+      // print(
+      //   "drawing ${symbolImage} ${fill.getColorAsNumber().toRadixString(16)} at ${relative.x + boundary.left} / ${relative.y + boundary.top} (${boundary.getWidth()},${boundary.getHeight()}) ${renderinstruction.theta}/$rotationRadian at size ${(canvas as FlutterCanvas).size}",
+      // ); //bitmap.debugGetOpenHandleStackTraces();
+      ui.Canvas? uiCanvas = renderContext.canvas.expose();
+      uiCanvas.drawRect(
+        ui.Rect.fromLTWH(relative.dx + boundary.left, relative.dy + boundary.top, boundary.getWidth(), boundary.getHeight()),
+        ui.Paint()..color = Colors.red.withOpacity(0.5),
+      );
+      uiCanvas.drawCircle(ui.Offset(relative.dx, relative.dy), 10, ui.Paint()..color = Colors.green.withOpacity(0.5));
+    }
+
+    renderContext.canvas.drawPicture(
+      symbolImage: symbolImage!,
+      matrix: matrix,
+      left: relative.dx + boundary.left,
+      top: relative.dy + boundary.top,
+      paint: fill,
+    );
+  }
+
+  @override
+  void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
+    if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
+    if (symbolImage == null) return;
+    Mappoint point = wayProperties.getCenterAbsolute(renderContext.projection);
+    MappointRelative relative = point.offset(renderContext.reference);
+    MapRectangle boundary = renderinstruction.getBoundary(renderInfo);
+    UiMatrix? matrix;
+    if (renderinstruction.theta != 0 || renderContext.rotationRadian != 0) {
+      matrix = UiMatrix();
+      matrix.rotate(renderinstruction.theta - renderContext.rotationRadian, pivotX: boundary.left, pivotY: boundary.top);
+    }
+
+    //if (bitmap.debugDisposed())
+    // print(
+    //     "drawing ${bitmap} at ${this.xy.x - origin.x + boundary!.left} / ${this.xy.y - origin.y + boundary!.top} $theta"); //bitmap.debugGetOpenHandleStackTraces();
+    //print(StackTrace.current);
+    renderContext.canvas.drawPicture(
+      symbolImage: symbolImage!,
+      matrix: matrix,
+      left: relative.dx + boundary.left,
+      top: relative.dy + boundary.top,
+      paint: fill,
+    );
+  }
+}

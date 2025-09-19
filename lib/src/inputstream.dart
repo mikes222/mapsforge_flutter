@@ -1,3 +1,0 @@
-class InputStream {
-  void close() {}
-}

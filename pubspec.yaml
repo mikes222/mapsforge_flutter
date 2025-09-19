@@ -1,103 +1,56 @@
-name: mapsforge_flutter
-description: Offline maps with pure flutter code. Provides rotation, markers, hillshading and much more.
-version: 3.0.2
-homepage: https://github.com/mikes222/mapsforge_flutter
-repository: https://github.com/mikes222/mapsforge_flutter
-
+name: mapsforge_flutter_monorepo
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 environment:
-  # switched from 2.12 to 2.15 to support unawaited()
-  # 2.17 needed for weakreference
-  # 3.0.0 for record feature (see flutterpath)
-  # 4.0.0 for future dart versions
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ^3.9.0
 
-dependencies:
-  flutter:
-    sdk: flutter
-
-  # BSD License
-  logging: ^1.3.0
-
-  collection: ^1.19.1
-
-  # BSD License
-  convert: ^3.1.2
-
-  # MIT License
-  ecache: ^2.0.7
-    # path: ../ecache
-
-  # for reading pbf files
-  # A fixed-width 32- and 64- bit integer library for Dart.
-  # BSD-3
-  fixnum: ^1.1.1
-
-  # BSD License
-  flutter_svg: ^2.1.0
-
-  # BSD License
-  http: ^1.4.0
-
-  idb_shim: ^2.6.6+2
-
-  isolate_task_queue: ^1.0.1
-    # path: ../isolate_task_queue
-
-  # for reading pbf files
-  # BSD-3
-  protobuf: ^4.1.0
-
-  # Apache 2.0 License
-  rxdart: ^0.28.0
-
-  # BSD License
-  synchronized: ^3.3.1
-
-  # BSD License, currently no WEB support
-  path_provider: ^2.1.5
-
-  # MIT License
-  provider: ^6.1.5
-
-
-  # MIT License
-  xml: ^6.5.0
+dependency_overrides:
+  #ecache:
+  #  path: ../ecache
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  melos: ^7.1.1
+workspace:
+  - packages/mapsforge_flutter_core
+  - packages/mapsforge_flutter_mapfile
+  - packages/mapsforge_flutter_renderer
+  - packages/mapsforge_flutter
+  - packages/mapsforge_flutter_rendertheme
+  - apps/mapfile_converter
+  - apps/simple_example
+  - apps/online_renderer_example
+  - apps/complete_example
 
-  # BSD License, needed for json_serializable
-  build_runner: ^2.4.15
+melos:
+  command:
+    bootstrap:
+      dependencies:
+        # Upgraded for getOrProduceSync()
+        ecache: ^2.1.1
 
-#  golden_toolkit: ^0.15.0
+        # flutter_test is not compatible with newer versions currently (08/2025)
+        test: ^1.26.2
+      hooks:
+        post: flutter pub upgrade
 
-  # BSD License
-  #test: 1.15.2
+  scripts:
+    build:
+      description: Generates dart files
+      run: dart run build_runner build --delete-conflicting-outputs
+      packageFilters:
+        dependsOn: build_runner
 
-  #mockito: ^5.4.4
+    flutter_test:
+      run: melos exec -c 1 --dir-exists="test" --flutter --fail-fast -- flutter test --no-pub --coverage
+      description: Run Flutter tests for a specific package in this project.
+      select-package:
+        flutter: true
+        dir-exists: test
 
-# For information on the generic Dart part of this file, see the
-# following page: https://www.dartlang.org/tools/pub/pubspec
-
-flutter_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/ic_launcher.png"
-
-
-# The following section is specific to Flutter.
-flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
-  uses-material-design: true
-
-#  assets:
-#    - assets/defaultrender.xml
-#    - assets/simplerender.xml
-
-screenshots:
-  - description: "Example map screenshot"
-    path: doc/Screenshot_2021-11-30-13-30-30-638.jpg
+    dart_test:
+      run: melos exec -c 1 --dir-exists="test" --depends-on="test" --fail-fast -- dart test
+      description: Run Dart tests for a specific package in this project.
+      select-package:
+        flutter: false
+        dir-exists: test

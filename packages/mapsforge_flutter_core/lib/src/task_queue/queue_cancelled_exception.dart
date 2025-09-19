@@ -1,0 +1,1 @@
+class QueueCancelledException implements Exception {}
