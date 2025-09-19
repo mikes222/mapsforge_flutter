@@ -2,15 +2,15 @@
 
 A beginner-friendly Flutter application demonstrating how to use the Mapsforge library for offline map rendering. This example shows a basic implementation of displaying an interactive map using Mapsforge's vector map format.
 
-## What is Mapsforge?
+## Screenshots
 
-Mapsforge is a powerful library for rendering offline vector maps in mobile applications. Unlike traditional raster maps (image tiles), Mapsforge uses vector data that allows for:
+![Austria offline](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-30-638.jpeg)
+![Austria Satellite](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-30-50-948.jpeg)
+![Indoor navigation](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
+![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
+![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
-- **Offline functionality** - No internet connection required
-- **Smooth zooming and panning** - Vector graphics scale perfectly
-- **Customizable styling** - Control colors, fonts, and map appearance
-- **Small file sizes** - Vector maps are more compact than raster tiles
-- **High performance** - Optimized rendering with spatial indexing
+See [mapsforge_flutter](https://pub.dev/packages/mapsforge_flutter) for more details.
 
 ## Features Demonstrated
 
@@ -64,23 +64,6 @@ The app will display:
 
 ## Understanding the Code Structure
 
-### Key Components
-
-- **`main.dart`** - Entry point and main application logic
-- **`assets/monaco.map`** - Sample Mapsforge vector map file
-- **`assets/defaultrender.xml`** - Render theme defining map styling
-- **`pubspec.yaml`** - Dependencies and asset declarations
-
-### Core Mapsforge Classes
-
-| Class | Purpose |
-|-------|---------|
-| `MapFile` | Loads and manages the vector map data |
-| `Rendertheme` | Defines how map features are styled |
-| `DatastoreRenderer` | Converts map data to visual elements |
-| `MapModel` | Manages map state (position, zoom, etc.) |
-| `MapsforgeView` | Flutter widget that displays the map |
-
 ### Code Flow
 
 1. **Initialization** - App starts and creates the map model asynchronously
@@ -122,16 +105,6 @@ Edit `assets/defaultrender.xml` to change:
 
 ## Common Issues and Solutions
 
-### Map Not Loading
-- **Check asset paths** in `pubspec.yaml`
-- **Verify map file format** - must be Mapsforge `.map` format
-- **Check device storage** - ensure sufficient space
-
-### Performance Issues
-- **Adjust zoom level range** - limit max zoom for better performance
-- **Optimize render theme** - reduce complex styling rules
-- **Check device capabilities** - older devices may need lower settings
-
 ### Position Not Set
 - **Always set initial position** - maps won't display without coordinates
 - **Use map file bounds** - get default position from `mapFile.boundingBox`
@@ -143,26 +116,6 @@ After understanding this simple example, explore:
 1. **Complete Example** (`../complete_example/`) - Advanced features like GPS, file downloads
 2. **Custom Render Themes** - Create your own map styling
 3. **Multiple Map Layers** - Overlay additional data
-4. **GPS Integration** - Real-time location tracking
-5. **Offline Routing** - Add navigation capabilities
-
-## Dependencies
-
-This example uses these Mapsforge packages:
-
-- `mapsforge_flutter_core` - Common utilities and models
-- `dart_mapfile` - Map file reading and parsing
-- `mapsforge_flutter_rendertheme` - Render theme processing
-- `mapsforge_flutter_renderer` - Map rendering engine
-- `mapsforge_view` - Flutter UI components
-- `mapsforge_flutter_rendertheme` - Map symbols and patterns
-
-## Resources
-
-- [Mapsforge Project](https://github.com/mapsforge/mapsforge) - Original Java library
-- [OpenStreetMap](https://www.openstreetmap.org/) - Map data source
-- [Flutter Documentation](https://docs.flutter.dev/) - Flutter framework guide
-- [Dart Language](https://dart.dev/) - Programming language documentation
 
 ## License
 

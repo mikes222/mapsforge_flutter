@@ -168,8 +168,8 @@ Use the MapModel to view the map
             }
             if (snapshot.data != null) {
               // cool we have already the MapModel so we can start the view
-              MapModel mapsforgeModel = snapshot.data;
-              return MapsforgeView(mapModel: mapsforgeModel);
+              MapModel mapModel = snapshot.data;
+              return MapsforgeView(mapModel: mapModel);
             }
             // mapModel is still not availabe or no position defined
             return const CircularProgressIndicator();
@@ -332,7 +332,10 @@ This package is part of the Mapsforge Flutter ecosystem. See the main project li
 # Credits
 
 A huge shout-out to the original mapsforge developer for building such an incredible project!
+
 Also, thanks to Chemnitz University of Technology for implementing indoor map support.
+
+A big thank you to all of you who uses that library and supports me with ideas, bugfixes, PullRequests and even a coffee!
 
 # Related Packages
 

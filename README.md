@@ -10,4 +10,4 @@ A comprehensive Flutter widget library for interactive map visualization with ad
 ![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
 ![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
 
-See [mapsforge_flutter](packages/mapsforge_flutter/README.md) for more details.
+See [mapsforge_flutter](https://pub.dev/packages/mapsforge_flutter) for more details.
