@@ -4,12 +4,19 @@ import 'dart:ui' as ui;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 
+/// A utility class for creating `SymbolImage` objects from raw byte data.
+///
+/// This class handles the decoding and resizing of PNG and SVG images.
 class ImageBuilder {
   const ImageBuilder();
 
-  /// Make sure this method runs in a real loop, not a fake-loop while testing. Use e.g.
+  /// Creates a `SymbolImage` from PNG data.
   ///
-  ///     await tester.runAsync(() async {...});
+  /// If [width] and [height] are specified, the image is resized to the given
+  /// dimensions.
+  ///
+  /// When using this in tests, ensure it runs in a real async zone, for example
+  /// by wrapping it with `tester.runAsync()`.
   Future<SymbolImage> createPngSymbol(Uint8List bytes, int width, int height) async {
     if (width != 0 && height != 0) {
       var codec = await ui.instantiateImageCodec(bytes, targetHeight: height, targetWidth: width);
@@ -30,9 +37,13 @@ class ImageBuilder {
     }
   }
 
-  /// Make sure this method runs in a real loop, not a fake-loop while testing. Use e.g.
+  /// Creates a `SymbolImage` from SVG data.
   ///
-  ///     await tester.runAsync(() async {...});
+  /// The SVG is first rendered to a `ui.Picture`, then converted to a PNG, and
+  /// finally decoded and resized as specified.
+  ///
+  /// When using this in tests, ensure it runs in a real async zone, for example
+  /// by wrapping it with `tester.runAsync()`.
   Future<SymbolImage> createSvgSymbol(Uint8List bytes, int width, int height) async {
     PictureInfo pictureInfo = await vg.loadPicture(SvgBytesLoader(bytes), null);
     final ui.Picture picture = pictureInfo.picture;

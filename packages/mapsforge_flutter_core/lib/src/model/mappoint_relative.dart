@@ -1,6 +1,8 @@
 import 'package:mapsforge_flutter_core/src/model/mappoint.dart';
 
-/// A Point represents an immutable pair of double coordinates in map pixels.
+/// An immutable pair of relative double coordinates in map pixels.
+///
+/// This is used to represent an offset from a reference point.
 class MappointRelative {
   /// The x coordinate of this point in pixels. Positive values points towards
   /// the right side of the screen.
@@ -10,10 +12,10 @@ class MappointRelative {
   /// the bottom of the screen.
   final double dy;
 
-  /// @param x the x coordinate of this point.
-  /// @param y the y coordinate of this point.
+  /// Creates a new `MappointRelative`.
   const MappointRelative(this.dx, this.dy);
 
+  /// Creates a new `MappointRelative` at the origin (0,0).
   const MappointRelative.zero() : dx = 0, dy = 0;
 
   @override
@@ -22,6 +24,7 @@ class MappointRelative {
   @override
   int get hashCode => dx.hashCode ^ dy.hashCode;
 
+  /// Creates a new `MappointRelative` that is offset by the given dx and dy values.
   MappointRelative offset(double dx, double dy) {
     if (0 == dx && 0 == dy) {
       return this;

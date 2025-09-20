@@ -9,15 +9,24 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_text_paint.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
+/// Shape painter for rendering text along a polyline.
+///
+/// This painter is responsible for drawing text that follows the path of a line,
+/// such as a street name. It handles text styling, including fill and stroke
+/// (for halo effects), and calculates the correct position and rotation for the
+/// text along the line.
 class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineText> {
+  /// The paint used for the text stroke (halo). Null if the stroke is transparent.
   late final UiPaint? paintBack;
 
+  /// The paint used for the text fill. Null if the fill is transparent.
   late final UiPaint? paintFront;
 
   late final UiTextPaint textPaint;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterPolylineText");
 
+  /// Creates a new polyline text shape painter.
   ShapePainterPolylineText._(RenderinstructionPolylineText renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
       paintFront = UiPaint.fill(color: renderinstruction.fillColor);
@@ -41,6 +50,10 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
     textPaint.setTextSize(renderinstruction.fontSize);
   }
 
+  /// Creates a new polyline text shape painter with asynchronous initialization.
+  ///
+  /// Uses a task queue to ensure thread-safe creation and caches the result
+  /// in the rendering instruction to avoid duplicate creation.
   static Future<ShapePainterPolylineText> create(RenderinstructionPolylineText renderinstruction) async {
     return _taskQueue.add(() async {
       ShapePainterPolylineText? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterPolylineText?;
@@ -51,6 +64,8 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
     });
   }
 
+  @override
+  /// Renders text for a node.
   @override
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
@@ -67,7 +82,7 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
     }
   }
 
-  /// PolylineTextMarker uses this method
+  /// Renders text along a way.
   @override
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");

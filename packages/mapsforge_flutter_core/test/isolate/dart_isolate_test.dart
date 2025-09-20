@@ -1,4 +1,4 @@
-import 'package:mapsforge_flutter_core/src/isolate/dart_isolate.dart';
+import 'package:mapsforge_flutter_core/src/isolate/dart_isolate_io.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 

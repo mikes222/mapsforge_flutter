@@ -11,7 +11,10 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
-/// Linesymbols must be disposed after use
+/// Shape painter for rendering symbols along a line.
+///
+/// This painter is responsible for drawing a symbol at each node of a way.
+/// The symbol can be rotated to align with the direction of the line.
 class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol> {
   static final _log = Logger('ShapePainterLinesymbol');
 
@@ -25,6 +28,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
     fill = UiPaint.fill(color: 0xff000000);
   }
 
+  /// Initializes the shape painter by loading the symbol from the cache.
   Future<void> init() async {
     try {
       symbolImage =
@@ -36,11 +40,17 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
   }
 
   @override
+  /// Disposes the [symbolImage].
+  @override
   void dispose() {
     symbolImage?.dispose();
     symbolImage = null;
   }
 
+  /// Creates a new linesymbol shape painter with asynchronous initialization.
+  ///
+  /// Uses a task queue to ensure thread-safe creation and caches the result
+  /// in the rendering instruction to avoid duplicate creation.
   static Future<ShapePainterLinesymbol> create(RenderinstructionLinesymbol renderinstruction) async {
     return _taskQueue.add(() async {
       ShapePainterLinesymbol? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterLinesymbol?;
@@ -52,6 +62,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
     });
   }
 
+  /// Renders a symbol for a node.
   @override
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (symbolImage == null) return;
@@ -85,6 +96,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
     // renderContext.canvas.drawCircle(relative.dx, relative.dy, boundary.getWidth() / 2, UiPaint.stroke(color: 0x80ff0000));
   }
 
+  /// Line symbols are rendered per node, not for the entire way at once.
   @override
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {}
 }

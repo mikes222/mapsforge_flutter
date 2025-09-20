@@ -9,10 +9,14 @@ import 'package:mapsforge_flutter_renderer/src/cache/symbol_cache.dart';
 import 'package:mapsforge_flutter_renderer/src/exception/symbol_not_found_exception.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/symbol_image.dart';
 
+/// A cache for symbols (small bitmaps used in the map, e.g., stop signs, arrows).
 ///
-/// A cache for symbols (small bitmaps used in the map, eg. stopsigns, arrows). The [src] parameter specifies the filename including the
-/// extension starting from the assets-path. eg. "patterns/arrow.png"
+/// This class loads symbols from various sources (e.g., assets, files) and
+/// caches them in memory to improve performance. It supports different image
+/// formats like SVG and PNG, and can resize symbols on the fly.
 ///
+/// The [src] parameter for symbols specifies the filename, including the
+/// extension, starting from the assets path (e.g., "patterns/arrow.png").
 class FileSymbolCache extends SymbolCache {
   final Map<String, ImageLoader> imageLoaders = {};
 
@@ -28,11 +32,10 @@ class FileSymbolCache extends SymbolCache {
 
   final LruCache<String, Uint8List?> _resourceCache = LruCache<String, Uint8List?>(capacity: 500, name: "FileSymbolCache.Original");
 
+  /// Creates a new `FileSymbolCache`.
   ///
-  /// Creates a new FileSymbolCache which loads symbols from file-sources and
-  /// holds them in memory. By specifying the [imageLoader] one can define the
-  /// source or method how to retrieve the binary data for a symbol.
-  ///
+  /// By default, it includes a loader for symbols from the app's asset bundle
+  /// (using the "jar:" prefix). Additional loaders can be added with [addLoader].
   FileSymbolCache({this.imageBuilder = const ImageBuilder()}) {
     imageLoaders["jar:"] = ImageBundleLoader(bundle: rootBundle);
   }
@@ -44,11 +47,17 @@ class FileSymbolCache extends SymbolCache {
   }
 
   @override
+  /// Adds a new [ImageLoader] for a given [prefix].
+  ///
+  /// This allows extending the cache to load symbols from different sources.
+  @override
   void addLoader(String prefix, ImageLoader imageLoader) {
     imageLoaders[prefix] = imageLoader;
   }
 
-  // Returns or creates the requested symbol image. The returned image must be dispose()-ed
+  /// Retrieves a symbol from the cache or creates it if it doesn't exist.
+  ///
+  /// The returned [SymbolImage] is a clone and must be disposed by the caller.
   @override
   Future<SymbolImage?> getOrCreateSymbol(String? src, int width, int height) async {
     if (src == null || src.isEmpty) {

@@ -1,5 +1,9 @@
 import 'package:mapsforge_flutter_core/src/task_queue/task_queue.dart';
 
+/// A singleton manager for all `TaskQueue` instances.
+///
+/// This class provides a central point for registering, unregistering, and
+/// monitoring task queues. It can be enabled or disabled for performance profiling.
 class TaskQueueMgr {
   static TaskQueueMgr? _instance;
 
@@ -19,6 +23,10 @@ class TaskQueueMgr {
     return _instance!;
   }
 
+  /// Enables or disables the task queue manager.
+  ///
+  /// When disabled, no queues are registered and no metrics are collected.
+  /// This can only be enabled in debug mode.
   void setEnabled(bool enabled) {
     // assertions are not included in production code so it is impossible to enable profiling in release mode
     assert(() {
@@ -27,19 +35,23 @@ class TaskQueueMgr {
     }());
   }
 
+  /// Returns true if the task queue manager is enabled.
   bool isEnabled() => _enabled;
 
+  /// Registers a `TaskQueue` with the manager.
   void register(TaskQueue taskQueue) {
     if (!_enabled) return;
     _queues.add(taskQueue);
     ++_registered;
   }
 
+  /// Unregisters a `TaskQueue` from the manager.
   void unregister(TaskQueue taskQueue) {
     _queues.remove(taskQueue);
     ++_unregisterd;
   }
 
+  /// Clears the metrics of all registered queues.
   void clear() {
     for (var queue in _queues) {
       queue.metrics.clear();
@@ -48,6 +60,7 @@ class TaskQueueMgr {
     _unregisterd = 0;
   }
 
+  /// Creates a report with the current metrics of all registered queues.
   TaskQueueReport createReport() {
     final report = TaskQueueReport();
     for (var queue in _queues) {
@@ -65,6 +78,7 @@ class TaskQueueMgr {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A report containing performance metrics for all registered task queues.
 class TaskQueueReport {
   final DateTime timestamp;
 
@@ -82,7 +96,7 @@ class TaskQueueReport {
       enabled = TaskQueueMgr().isEnabled(),
       timestamp = DateTime.now();
 
-  /// Returns the storage metrics map
+  /// A list of metrics for each registered queue.
   List<TaskQueueMetrics> get queueMetrics => _queueMetrics;
 
   @override

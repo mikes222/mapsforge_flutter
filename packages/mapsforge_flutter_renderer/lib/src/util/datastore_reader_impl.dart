@@ -5,6 +5,12 @@ import 'package:mapsforge_flutter_renderer/src/datastore_reader.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
+/// An implementation of `DatastoreReader` that performs the reading and processing
+/// of map data in a separate isolate.
+///
+/// This is crucial for performance, as it prevents the UI thread from being
+/// blocked by the CPU-intensive work of reading map files and matching them
+/// against a render theme.
 class IsolateDatastoreReader implements DatastoreReader {
   static DatastoreReaderImpl? _reader;
 
@@ -13,6 +19,7 @@ class IsolateDatastoreReader implements DatastoreReader {
 
   IsolateDatastoreReader._(Datastore datastore);
 
+  /// Creates and spawns a new `IsolateDatastoreReader`.
   static Future<IsolateDatastoreReader> create(Datastore datastore) async {
     IsolateDatastoreReader instance = IsolateDatastoreReader._(datastore);
     await instance._isolateInstance.spawn(_createInstanceStatic, DatastoreReaderIsolateInitRequest(datastore));
@@ -45,6 +52,7 @@ class IsolateDatastoreReader implements DatastoreReader {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to initialize the `DatastoreReaderImpl` in the isolate.
 class DatastoreReaderIsolateInitRequest {
   final Datastore datastore;
 
@@ -52,6 +60,7 @@ class DatastoreReaderIsolateInitRequest {
 }
 //////////////////////////////////////////////////////////////////////////////
 
+/// A message to request the reading of map data in the isolate.
 class DatastoreReaderIsolateRequest {
   final Tile tile;
   final Tile? rightLower;
@@ -62,13 +71,19 @@ class DatastoreReaderIsolateRequest {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// Reads the content of a datastore - e.g. MapFile - either via isolate or direct
-/// in the main thread. Returns the [LayerContainerCollection] whereas the clashingInfoCollection is already ordered and clash-free.
+/// An implementation of `DatastoreReader` that performs the reading and processing
+/// of map data in the same thread.
+///
+/// This class reads data from a `Datastore` (e.g., a .map file), matches it
+/// against a `RenderTheme`, and produces a `LayerContainerCollection` that can
+/// be rendered.
 class DatastoreReaderImpl implements DatastoreReader {
   final Datastore datastore;
 
   DatastoreReaderImpl(this.datastore);
 
+  /// Reads the map data for a single [tile] and processes it against the
+  /// [renderthemeLevel].
   @override
   Future<LayerContainerCollection?> read(Tile tile, RenderthemeZoomlevel renderthemeLevel) async {
     if (!(await datastore.supportsTile(tile))) {
@@ -84,6 +99,8 @@ class DatastoreReaderImpl implements DatastoreReader {
     return layerContainerCollection;
   }
 
+  /// Reads the label data for a given tile range and processes it against the
+  /// [renderthemeLevel].
   @override
   Future<LayerContainerCollection?> readLabels(Tile leftUpper, Tile rightLower, RenderthemeZoomlevel renderthemeLevel) async {
     // if (!(await datastore.supportsTile(leftUpper))) {

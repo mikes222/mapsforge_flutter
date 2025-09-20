@@ -3,14 +3,16 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter_renderer/src/cache/image_loader.dart';
 
+/// An `ImageLoader` that loads image resources from the local file system.
 class ImageFileLoader implements ImageLoader {
   final String pathPrefix;
 
+  /// Creates a new `ImageFileLoader`.
+  ///
+  /// [pathPrefix] The prefix to prepend to the resource path.
   const ImageFileLoader({required this.pathPrefix});
 
-  ///
-  /// Returns the content of the symbol given as [src] as [ByteData]. This method reads the file or resource and returns the requested bytes.
-  ///
+  /// Fetches the image resource from the file system.
   @override
   Future<Uint8List?> fetchResource(String src) async {
     src = "$pathPrefix$src";

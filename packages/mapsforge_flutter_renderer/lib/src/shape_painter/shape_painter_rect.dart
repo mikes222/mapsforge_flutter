@@ -11,14 +11,22 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
+/// Shape painter for rendering rectangles on the map.
+///
+/// This painter is responsible for drawing rectangles, which can be used to
+/// represent building footprints or other rectangular areas. It supports both
+/// solid fill colors and bitmap pattern fills, along with optional stroke outlines.
 class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
   static final _log = Logger('ShapePainterRect');
+  /// The paint used for the rectangle fill. Null if the fill is transparent.
   UiPaint? fill;
 
+  /// The paint used for the rectangle stroke. Null if the stroke is transparent.
   late final UiPaint? stroke;
 
   static final TaskQueue _taskQueue = SimpleTaskQueue(name: "ShapePainterRect");
 
+  /// Creates a new rectangle shape painter.
   ShapePainterRect._(RenderinstructionRect renderinstruction) : super(renderinstruction) {
     if (!renderinstruction.isFillTransparent()) {
       fill = UiPaint.fill(color: renderinstruction.fillColor);
@@ -36,6 +44,10 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
     }
   }
 
+  /// Creates a new rectangle shape painter with asynchronous initialization.
+  ///
+  /// Uses a task queue to ensure thread-safe creation and caches the result
+  /// in the rendering instruction to avoid duplicate creation.
   static Future<ShapePainterRect> create(RenderinstructionRect renderinstruction) async {
     return _taskQueue.add(() async {
       ShapePainterRect? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterRect?;
@@ -47,6 +59,7 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
     });
   }
 
+  /// Initializes the shape painter by loading the bitmap pattern if specified.
   Future<void> init() async {
     if (renderinstruction.bitmapSrc != null) {
       try {
@@ -65,9 +78,11 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
     }
   }
 
+  /// Rectangles are not rendered for nodes.
   @override
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {}
 
+  /// Renders a rectangle for a way.
   @override
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");

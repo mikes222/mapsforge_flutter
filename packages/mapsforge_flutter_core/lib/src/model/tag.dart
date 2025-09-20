@@ -1,4 +1,4 @@
-/// A tag represents an immutable key-value pair.
+/// An immutable key-value pair, used to store metadata for map elements.
 class Tag implements Comparable<Tag> {
   static final String KEY_VALUE_SEPARATOR = '=';
 
@@ -8,13 +8,13 @@ class Tag implements Comparable<Tag> {
   /// The value of this tag.
   final String? value;
 
-  /// @param key   the key of the tag.
-  /// @param value the value of the tag.
+  /// Creates a new `Tag`.
   const Tag(this.key, this.value);
 
-  /// @param tag the textual representation of the tag.
-  Tag.fromTag(tag) : key = tag.substring(0, tag.indexOf(KEY_VALUE_SEPARATOR)), value = tag.substring(tag.indexOf(KEY_VALUE_SEPARATOR) + 1);
+  /// Creates a new `Tag` from a string in the format "key=value".
+  Tag.fromTag(String tag) : key = tag.substring(0, tag.indexOf(KEY_VALUE_SEPARATOR)), value = tag.substring(tag.indexOf(KEY_VALUE_SEPARATOR) + 1);
 
+  /// Creates a list of `Tag` objects from a map of key-value pairs.
   static List<Tag> from(Map<String, String> tags) {
     List<Tag> list = [];
     tags.forEach((key, value) {
@@ -23,11 +23,7 @@ class Tag implements Comparable<Tag> {
     return list;
   }
 
-  /// Compares this tag to the specified tag.
-  /// The tag comparison is based on a comparison of key and value in that order.
-  ///
-  /// @param tag The tag to compare to.
-  /// @return 0 if equal, &lt; 0 if considered "smaller", and &gt; 0 if considered "bigger".
+  /// Compares this tag to another tag, first by key, then by value.
   @override
   int compareTo(Tag tag) {
     int keyResult = key!.compareTo(tag.key!);
@@ -50,6 +46,8 @@ class Tag implements Comparable<Tag> {
     return 'Tag{key: $key, value: $value}';
   }
 
+  /// Returns a string representation of the given list of tags, excluding any
+  /// name-related tags.
   static String tagsWithoutNames(List<Tag> tags) {
     String result = '';
     for (var tag in tags) {

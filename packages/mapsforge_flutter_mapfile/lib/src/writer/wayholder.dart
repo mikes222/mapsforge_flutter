@@ -321,9 +321,9 @@ class Wayholder with TagholderMixin {
     int sum = nodeCount();
     if (sum <= 30) {
       expectDouble = false;
-    } else if (sum >= 100)
+    } else if (sum >= 100) {
       expectDouble = true;
-
+    }
     Writebuffer singleWritebuffer = Writebuffer();
     if (expectDouble == null || !expectDouble) {
       _writeSingleDeltaEncoding(singleWritebuffer, [master, ..._inner], tileLatitude, tileLongitude);

@@ -1,6 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 
-/// An immutable container for the data returned from a Datastore.
+/// A container for the data returned from a `Datastore`.
 class DatastoreBundle {
   /// True if the read area is completely covered by water, false otherwise.
   bool isWater = false;
@@ -11,18 +11,20 @@ class DatastoreBundle {
   /// The read ways.
   final List<Way> ways;
 
+  /// Creates a new `DatastoreBundle`.
   DatastoreBundle({required this.pointOfInterests, required this.ways});
 
+  /// Adds the content of another `DatastoreBundle` to this one.
   void add(DatastoreBundle poiWayBundle) {
     pointOfInterests.addAll(poiWayBundle.pointOfInterests);
     ways.addAll(poiWayBundle.ways);
   }
 
-  /// Adds other MapReadResult by combining pois and ways. Optionally, deduplication can
-  /// be requested (much more expensive).
+  /// Adds the content of another `DatastoreBundle` to this one, with an option
+  /// to deduplicate the elements.
   ///
-  /// @param other       the MapReadResult to add to this.
-  /// @param deduplicate true if check for duplicates is required.
+  /// If [deduplicate] is true, this method will check for duplicates before
+  /// adding elements, which is more expensive.
   void addDeduplicate(DatastoreBundle other, bool deduplicate) {
     if (deduplicate) {
       for (PointOfInterest poi in other.pointOfInterests) {

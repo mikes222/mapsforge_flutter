@@ -3,7 +3,10 @@ import 'dart:ui';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 
-/// The properties to draw a text. Normally used in conjunction with a FlutterPaint which defines, color of the text.
+/// A class that holds the styling information for rendering text.
+///
+/// This includes properties like font size, font style, and font family.
+/// It is used in conjunction with a `UiPaint` which defines the color of the text.
 class UiTextPaint {
   double _textSize = 10;
 
@@ -13,34 +16,43 @@ class UiTextPaint {
 
   UiTextPaint();
 
+  /// Creates a new `UiTextPaint` as a copy of another `UiTextPaint`.
   UiTextPaint.from(UiTextPaint other) {
     _textSize = other.getTextSize();
     _fontStyle = other.getFontStyle();
     _fontFamily = other.getFontFamily();
   }
 
+  /// Sets the text size.
   void setTextSize(double textSize) {
     _textSize = textSize;
   }
 
+  /// Returns the text size.
   double getTextSize() {
     return _textSize;
   }
 
+  /// Sets the font family.
   void setFontFamily(MapFontFamily fontFamily) {
     _fontFamily = fontFamily;
   }
 
+  /// Sets the font style.
   void setFontStyle(MapFontStyle fontStyle) {
     _fontStyle = fontStyle;
   }
 
+  /// Returns the font style.
   MapFontStyle getFontStyle() {
     return _fontStyle;
   }
 
+  /// Returns the font family.
   MapFontFamily getFontFamily() => _fontFamily;
 
+  /// Creates a `ParagraphBuilder` with the text style defined by this `UiTextPaint`
+  /// and the given `UiPaint`.
   ParagraphBuilder getParagraphBuilder(UiPaint paint) {
     String fontFamily = _fontFamily.name.toLowerCase();
 

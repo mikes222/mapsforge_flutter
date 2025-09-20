@@ -2,8 +2,9 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter_core/model.dart';
 
-/// A Point represents an immutable pair of absolute double coordinates in map pixels. 0/0 represents the
-/// upper-left corner of the complete map (=lat/lon 90/-180).
+/// An immutable pair of absolute double coordinates in map pixels.
+///
+/// 0/0 represents the upper-left corner of the complete map (latitude 90, longitude -180).
 class Mappoint {
   /// The x coordinate of this point in pixels. Positive values points towards
   /// the right side of the screen.
@@ -13,13 +14,13 @@ class Mappoint {
   /// the bottom of the screen.
   final double y;
 
-  /// @param x the x coordinate of this point.
-  /// @param y the y coordinate of this point.
+  /// Creates a new `Mappoint`.
   const Mappoint(this.x, this.y) : assert(x >= 0, "x ($x) must be >= 0"), assert(y >= 0, "y ($y) must be >= 0");
 
+  /// Creates a new `Mappoint` at the origin (0,0).
   const Mappoint.zero() : x = 0, y = 0;
 
-  /// @return the euclidian distance from this point to the given point.
+  /// Calculates the Euclidean distance from this point to the given [point].
   double distance(Mappoint point) {
     return sqrt((x - point.x) * (x - point.x) + (y - point.y) * (y - point.y));
   }
@@ -30,6 +31,7 @@ class Mappoint {
   @override
   int get hashCode => x.hashCode ^ y.hashCode;
 
+  /// Creates a new `Mappoint` that is offset by the given dx and dy values.
   Mappoint offsetAbsolute(double dx, double dy) {
     if (0 == dx && 0 == dy) {
       return this;
@@ -37,16 +39,15 @@ class Mappoint {
     return Mappoint(x + dx, y + dy);
   }
 
-  /// Returns a mappoint which represents a relative offset in map-coordinates
+  /// Creates a `MappointRelative` that represents the offset from a given
+  /// [reference] point.
   MappointRelative offset(Mappoint reference) {
     return MappointRelative(x - reference.x, y - reference.y);
   }
 
-  /// Returns the radians to the other object.
-  /// 0 rad if point2 is to the right of point1
-  // π/2 rad if point2 is above point1
-  // -π/2 rad if point2 is below point1
-  // π rad if point2 is directly left of point1
+  /// Calculates the angle in radians from this point to the [other] point.
+  ///
+  /// The angle is measured counter-clockwise from the positive x-axis.
   double radiansTo(Mappoint other) {
     return atan2(other.y - y, other.x - x);
   }

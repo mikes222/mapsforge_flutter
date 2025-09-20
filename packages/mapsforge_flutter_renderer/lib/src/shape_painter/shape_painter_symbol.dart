@@ -14,7 +14,11 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
-/// This class must be disposed after use
+/// Shape painter for rendering bitmap symbols on the map.
+///
+/// This painter is responsible for drawing bitmap images (symbols) for POIs or
+/// other map features. It handles loading the symbol from the cache, applying
+/// color tinting, and managing rotation.
 class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
   static final _log = Logger('ShapePainterSymbol');
 
@@ -30,6 +34,10 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     fill = UiPaint.fill(color: renderinstruction.getBitmapColor());
   }
 
+  /// Creates a new symbol shape painter with asynchronous initialization.
+  ///
+  /// Uses a task queue to ensure thread-safe creation and caches the result
+  /// in the rendering instruction to avoid duplicate creation.
   static Future<ShapePainterSymbol> create(RenderinstructionSymbol renderinstruction) async {
     return await _taskQueue.add(() async {
       ShapePainterSymbol? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterSymbol?;
@@ -41,6 +49,7 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     });
   }
 
+  /// Initializes the shape painter by loading the symbol from the cache.
   Future<void> init() async {
     try {
       symbolImage =
@@ -52,11 +61,14 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
   }
 
   @override
+  /// Disposes the [symbolImage].
+  @override
   void dispose() {
     symbolImage?.dispose();
     symbolImage = null;
   }
 
+  /// Renders a symbol for a node (e.g., a POI).
   @override
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
@@ -103,6 +115,9 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
     );
   }
 
+  /// Renders a symbol for a way.
+  ///
+  /// The symbol is drawn at the center of the way's bounding box.
   @override
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");

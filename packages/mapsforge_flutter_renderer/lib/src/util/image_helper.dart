@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 
+/// A helper class for creating placeholder and error tile bitmaps.
 class ImageHelper {
   static final double _margin = 5;
 
@@ -12,11 +13,9 @@ class ImageHelper {
 
   static TilePicture? _noData;
 
+  /// Creates a tile bitmap to indicate that the tile is currently being rendered.
   ///
-  /// creates a tile bitmap with the information that the rendering of the given tile is not yet finished. This tile will normally
-  /// be replaced
-  /// when the rendering finishes.
-  ///
+  /// This is used as a placeholder until the actual tile data is available.
   Future<TilePicture> createMissingBitmap() async {
     if (_missing != null) return _missing!.clone();
     double tileSize = MapsforgeSettingsMgr().tileSize;
@@ -42,9 +41,7 @@ class ImageHelper {
     return _missing!;
   }
 
-  ///
-  /// Creates a tilebitmap which denotes that there are no maps with any data found for the given tile.
-  ///
+  /// Creates a tile bitmap to indicate that no map data is available for this tile.
   Future<TilePicture> createNoDataBitmap() async {
     if (_noData != null) return _noData!.clone();
     double tileSize = MapsforgeSettingsMgr().tileSize;
@@ -71,9 +68,7 @@ class ImageHelper {
     return _noData!;
   }
 
-  ///
-  /// creates a bitmap tile with the given errormessage
-  ///
+  /// Creates a tile bitmap to display an error message.
   Future<TilePicture> createErrorBitmap(dynamic error) async {
     double tileSize = MapsforgeSettingsMgr().tileSize;
     var pictureRecorder = ui.PictureRecorder();

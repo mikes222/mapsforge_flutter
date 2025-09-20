@@ -12,6 +12,10 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_shape_painter.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
+/// Shape painter for rendering icons from a font on the map.
+///
+/// This painter is responsible for drawing icons using a specific character
+/// from a font file. It handles the color, size, and rotation of the icon.
 class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
   static final _log = Logger('ShapePainterIcon');
 
@@ -28,6 +32,10 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
     init();
   }
 
+  /// Creates a new icon shape painter with asynchronous initialization.
+  ///
+  /// Uses a task queue to ensure thread-safe creation and caches the result
+  /// in the rendering instruction to avoid duplicate creation.
   static Future<ShapePainterIcon> create(RenderinstructionIcon renderinstruction) async {
     return _taskQueue.add(() async {
       ShapePainterIcon? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterIcon?;
@@ -38,6 +46,7 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
     });
   }
 
+  /// Initializes the [TextPainter] for rendering the icon.
   void init() {
     try {
       textPainter = TextPainter(
@@ -58,12 +67,14 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
     }
   }
 
+  /// Disposes the [TextPainter].
   @override
   void dispose() {
     textPainter?.dispose();
     textPainter = null;
   }
 
+  /// Renders an icon for a node (e.g., a POI).
   @override
   void renderNode(RenderInfo renderInfo, RenderContext renderContext, NodeProperties nodeProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
@@ -103,6 +114,9 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
     renderContext.canvas.drawIcon(textPainter: textPainter!, left: relative.dx + boundary.left, top: relative.dy + boundary.top, matrix: matrix);
   }
 
+  /// Renders an icon for a way.
+  ///
+  /// The icon is drawn at the center of the way's bounding box.
   @override
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");

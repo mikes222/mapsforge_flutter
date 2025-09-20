@@ -2,33 +2,39 @@ import 'dart:async';
 
 import 'package:mapsforge_flutter_core/src/task_queue/queue_cancelled_exception.dart';
 
-/// Abstract class for a queue to execute Futures in order.
+/// An abstract class that defines the interface for a queue that executes
+/// `Future`-returning closures in a controlled manner.
 abstract class TaskQueue {
   // Performance monitoring
   TaskQueueMetrics get metrics;
 
-  /// Cancels the queue. Also cancels any unprocessed items throwing a [QueueCancelledException]
-  /// Subsquent calls to [add] will throw a [QueueCancelledException].
+  /// Cancels the queue.
+  ///
+  /// Any unprocessed items will be completed with a [QueueCancelledException].
+  /// Subsequent calls to [add] will also throw a [QueueCancelledException].
   void cancel();
 
+  /// Disposes the queue and releases any associated resources.
   void dispose();
 
   bool get isCancelled;
 
-  /// Removes all unstarted jobs from the queue. The future of these jobs will never return.
+  /// Removes all pending tasks from the queue.
+  ///
+  /// The `Future`s of these tasks will be completed with a [QueueCancelledException].
   void clear();
 
-  /// Adds the future-returning closure to the queue.
+  /// Adds a `Future`-returning closure to the queue.
   ///
-  /// It will be executed after futures returned
-  /// by preceding closures have been awaited.
+  /// The closure will be executed when its turn comes up in the queue.
   ///
-  /// Will throw an exception if the queue has been cancelled.
+  /// Throws a [QueueCancelledException] if the queue has been cancelled.
   Future<T> add<T>(Future<T> Function() closure);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A class that holds performance metrics for a `TaskQueue`.
 class TaskQueueMetrics {
   final String name;
 
@@ -47,7 +53,7 @@ class TaskQueueMetrics {
 
   TaskQueueMetrics({required this.name});
 
-  /// Reset performance counters
+  /// Resets all performance counters.
   void clear() {
     peakQueueSize = 0;
     totalProcessed = 0;

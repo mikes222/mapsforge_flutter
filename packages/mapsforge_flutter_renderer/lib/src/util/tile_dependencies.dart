@@ -2,25 +2,20 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 
-/// The TileDependecies class tracks the dependencies between tiles for labels.
-/// When the labels are drawn on a per-tile basis it is important to know where
-/// labels overlap the tile boundaries. A single label can overlap several neighbouring
-/// tiles (even, as we do here, ignore the case where a long or tall label will overlap
-/// onto tiles further removed -- with line breaks for long labels this should happen
-/// much less frequently now.).
-/// For every tile drawn we must therefore enquire which labels from neighbouring tiles
-/// overlap onto it and these labels must be drawn regardless of priority as part of the
-/// label has already been drawn.
+/// Tracks the dependencies between tiles for labels that cross tile boundaries.
+///
+/// When a label from one tile overlaps onto a neighboring tile, this class ensures
+/// that the label is drawn correctly when the neighboring tile is rendered.
 class TileDependencies {
   static final _log = Logger('TileDependencies');
 
-  ///
-  /// Data which the first tile (outer [Map]) has identified which should be drawn on the second tile (inner [Map]).
-  /// Using a more efficient data structure for better performance
+  /// A map from a tile to the set of `RenderInfo` objects from other tiles
+  /// that overlap with it.
   final Map<Tile, Dependency> _overlapData = {};
 
   TileDependencies();
 
+  /// Clears all dependency data.
   void dispose() {
     _overlapData.forEach((tile, dependency) {
       dependency.clear();
@@ -28,14 +23,12 @@ class TileDependencies {
     _overlapData.clear();
   }
 
-  /// stores an MapElementContainer that clashesWith from one tile (the one being drawn) to
-  /// another (which must not have been drawn before).
-  ///
+  /// Adds a `RenderInfo` that overlaps from its original tile onto the given [tile].
   void addOverlappingElement(RenderInfo renderInfo, Tile tile) {
     _overlapData.putIfAbsent(tile, () => Dependency()).add(renderInfo);
   }
 
-  /// Returns true if the given neighbour is already drawn
+  /// Returns true if the given [tile] has already been marked as drawn.
   bool isDrawn(Tile tile) {
     // Check cache first for frequently accessed tiles
     Dependency? dependency = _overlapData[tile];
@@ -45,15 +38,12 @@ class TileDependencies {
     return false;
   }
 
-  /// Retrieves the overlap data from the neighbouring tiles and removes them from cache
-  ///
-  /// @param tileToDraw the tile which we want to draw now
-  /// @param neighbour the tile the label clashesWith from. This is the originating tile where the label was not fully fit into
-  /// @return a List of the elements
+  /// Retrieves the set of `RenderInfo` objects that overlap with the given [tileToDraw].
   Set<RenderInfo>? getOverlappingElements(Tile tileToDraw) {
     return _overlapData[tileToDraw]?.renderInfos;
   }
 
+  /// Marks a [tile] as drawn and clears its associated dependency data.
   void setDrawn(Tile tile) {
     Dependency? dependency = _overlapData[tile];
     if (dependency != null) {
@@ -62,6 +52,7 @@ class TileDependencies {
     }
   }
 
+  /// Returns the set of neighboring tiles that have not yet been drawn.
   Set<Tile> getNeighbours(Tile tile) {
     Set<Tile> result = tile.getNeighbours();
     result.removeWhere((test) => isDrawn(test));
@@ -73,6 +64,7 @@ class TileDependencies {
     return 'TileDependencies{overlapData: $_overlapData}';
   }
 
+  /// Logs the current state of the overlap data for debugging purposes.
   void debug() {
     _overlapData.forEach((key, innerMap) {
       _log.info("OverlapData: $key with $innerMap");
@@ -82,6 +74,7 @@ class TileDependencies {
 
 /////////////////////////////////////////////////////////////////////////////
 
+/// A helper class to hold the dependency information for a single tile.
 class Dependency {
   final Set<RenderInfo> renderInfos = {};
 
@@ -89,12 +82,14 @@ class Dependency {
 
   Dependency();
 
+  /// Adds a `RenderInfo` to this dependency.
   void add(RenderInfo renderInfo) {
     // is already rendered, makes no sense to store additional renderinfos
     if (drawn) return;
     renderInfos.add(renderInfo);
   }
 
+  /// Clears the dependency information.
   void clear() {
     renderInfos.clear();
     drawn = false;

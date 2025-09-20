@@ -2,9 +2,12 @@ import 'dart:math';
 
 import 'package:mapsforge_flutter_core/model.dart';
 
+/// An abstract class that defines the interface for a map projection.
 ///
-/// This class provides the calculation from Lat/Lon to pixelY/pixelX and vice versa
-///
+/// A projection is responsible for converting between geographical coordinates
+/// (latitude and longitude) and tile coordinates.
+/// This class also provides utility methods for distance calculations and other
+/// geo-related operations.
 abstract class Projection {
   /// The equatorial radius as defined by the <a href="http://en.wikipedia.org/wiki/World_Geodetic_System">WGS84
   /// ellipsoid</a>. WGS84 is the reference coordinate system used by the Global Positioning System.
@@ -44,32 +47,22 @@ abstract class Projection {
   // assert(longitude <= LONGITUDE_MAX);
   //  }
 
-  /// Converts degree to radian
+  /// Converts an angle from degrees to radians.
   static double degToRadian(final double deg) => deg * (pi / 180.0);
 
-  /// Radian to degree
+  /// Converts an angle from radians to degrees.
   static double radianToDeg(final double rad) => rad * (180.0 / pi);
 
-  /// Normalize an angle to the range [0, 360).
+  /// Normalizes an angle to the range [0, 360).
   static double normalizeRotation(double rotation) {
     double normalized = rotation % 360;
     return normalized < 0 ? normalized + 360 : normalized;
   }
 
-  /// Returns a destination point based on the given [distance] and [bearing]
+  /// Calculates a destination point from a given starting point, distance, and bearing.
   ///
-  /// Given a [from] (start) point, initial [bearing], and [distance],
-  /// this will calculate the destination point and
-  /// final bearing travelling along a (shortest distance) great circle arc.
-  ///
-  ///     final Haversine distance = const Haversine();
-  ///
-  ///     final num distanceInMeter = (EARTH_RADIUS * math.PI / 4).round();
-  ///
-  ///     final p1 = new LatLng(0.0, 0.0);
-  ///     final p2 = distance.offset(p1, distanceInMeter, 180);
-  ///
-  //@override
+  /// This uses the Haversine formula to calculate the destination point along a
+  /// great circle arc.
   static ILatLong offset(final ILatLong from, final double distanceInMeter, double bearing) {
     assert(bearing >= 0 && bearing <= 360);
     // bearing: 0: north, 90: east, 180: south, 270: west
@@ -88,8 +81,9 @@ abstract class Projection {
     return LatLong(radianToDeg(lat2), radianToDeg(lng2));
   }
 
-  /// calculates the startbearing in degrees of the distance from [p1] to [p2]
-  /// see https://www.movable-type.co.uk/scripts/latlong.html
+  /// Calculates the initial bearing in degrees from point [p1] to point [p2].
+  ///
+  /// See https://www.movable-type.co.uk/scripts/latlong.html
   static double startBearing(final ILatLong p1, final ILatLong p2) {
     double longDiff = degToRadian(p2.longitude) - degToRadian(p1.longitude);
     double cosP2Lat = cos(degToRadian(p2.latitude));
@@ -100,12 +94,11 @@ abstract class Projection {
     return result;
   }
 
-  /// Calculates distance in meters with Haversine algorithm.
+  /// Calculates the great-circle distance in meters between two points using the
+  /// Haversine formula.
   ///
-  /// Accuracy can be out by 0.3%
-  /// More on [Wikipedia](https://en.wikipedia.org/wiki/Haversine_formula)
-  /// @return the distance in meters
-  //@override
+  /// This formula is fast but can have an error of up to 0.3%.
+  /// For higher accuracy, use [vincentyDistance].
   static double distance(final ILatLong p1, final ILatLong p2) {
     final sinDLat = sin((degToRadian(p2.latitude) - degToRadian(p1.latitude)) / 2);
     final sinDLng = sin((degToRadian(p2.longitude) - degToRadian(p1.longitude)) / 2);
@@ -117,20 +110,11 @@ abstract class Projection {
     return EQUATORIAL_RADIUS * c;
   }
 
-  /// Calculates geodetic distance between two LatLongs using Vincenty inverse formula
-  /// for ellipsoids. This is very accurate but consumes more resources and time than the
-  /// sphericalDistance method.
-  /// <p/>
-  /// Adaptation of Chriss Veness' JavaScript Code on
-  /// http://www.movable-type.co.uk/scripts/latlong-vincenty.html
-  /// <p/>
-  /// Paper: Vincenty inverse formula - T Vincenty, "Direct and Inverse Solutions of Geodesics
-  /// on the Ellipsoid with application of nested equations", Survey Review, vol XXII no 176,
-  /// 1975 (http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf)
+  /// Calculates the geodetic distance in meters between two points using the
+  /// Vincenty inverse formula for ellipsoids.
   ///
-  /// @param latLong1 first LatLong
-  /// @param latLong2 second LatLong
-  /// @return distance in meters between points as a double
+  /// This formula is very accurate but computationally more expensive than the
+  /// Haversine formula.
   static double vincentyDistance(ILatLong latLong1, ILatLong latLong2) {
     double f = 1 / INVERSE_FLATTENING;
     double L = degToRadian(latLong2.longitude - latLong1.longitude);
@@ -176,14 +160,10 @@ abstract class Projection {
     return s;
   }
 
-  /// Returns the destination point from this point having travelled the given distance on the
-  /// given initial bearing (bearing normally varies around path followed).
+  /// Calculates a destination point from a given starting point, distance, and bearing.
   ///
-  /// @param start    the start point
-  /// @param distance the distance travelled, in same units as earth radius (default: meters)
-  /// @param bearing  the initial bearing in degrees from north
-  /// @return the destination point
-  /// @see <a href="http://www.movable-type.co.uk/scripts/latlon.js">latlon.js</a>
+  /// This is an alternative implementation to [offset].
+  /// See http://www.movable-type.co.uk/scripts/latlon.js
   static ILatLong destinationPoint(ILatLong start, double distance, double bearing) {
     double theta = degToRadian(bearing);
     double delta = distance / EQUATORIAL_RADIUS; // angular distance in radians
@@ -197,19 +177,13 @@ abstract class Projection {
     return LatLong(radianToDeg(phi2), radianToDeg(lambda2));
   }
 
-  /// Calculates the amount of degrees of latitude for a given distance in meters.
-  ///
-  /// @param meters distance in meters
-  /// @return latitude degrees
+  /// Calculates the latitude difference in degrees for a given distance in meters.
   static double latitudeDistance(int meters) {
     return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS);
   }
 
-  /// Calculates the amount of degrees of longitude for a given distance in meters.
-  ///
-  /// @param meters   distance in meters
-  /// @param latitude the latitude at which the calculation should be performed
-  /// @return longitude degrees
+  /// Calculates the longitude difference in degrees for a given distance in meters
+  /// at a specific [latitude].
   static double longitudeDistance(int meters, double latitude) {
     return (meters * 360) / (2 * pi * EQUATORIAL_RADIUS * cos(degToRadian(latitude)));
   }
@@ -218,32 +192,16 @@ abstract class Projection {
 
   //double get scaleFactor;
 
-  /// Converts a tile Y number at a certain zoom level to a latitude coordinate.
-  ///
-  /// @param tileY     the tile Y number that should be converted.
-  /// @param zoomLevel the zoom level at which the number should be converted.
-  /// @return the latitude value of the tile Y number.
+  /// Converts a tile Y number to a latitude coordinate.
   double tileYToLatitude(int tileY);
 
-  /// Converts a tile X number at a certain zoom level to a longitude coordinate.
-  ///
-  /// @param tileX     the tile X number that should be converted.
-  /// @param zoomLevel the zoom level at which the number should be converted.
-  /// @return the longitude value of the tile X number.
+  /// Converts a tile X number to a longitude coordinate.
   double tileXToLongitude(int tileX);
 
-  /// Converts a latitude coordinate (in degrees) to a tile Y number at a certain zoom level.
-  ///
-  /// @param latitude  the latitude coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the tile Y number of the latitude value.
+  /// Converts a latitude coordinate to a tile Y number.
   int latitudeToTileY(double latitude);
 
-  /// Converts a longitude coordinate (in degrees) to the tile X number at a certain zoom level.
-  ///
-  /// @param longitude the longitude coordinate that should be converted.
-  /// @param zoomLevel the zoom level at which the coordinate should be converted.
-  /// @return the tile X number of the longitude value.
+  /// Converts a longitude coordinate to a tile X number.
   int longitudeToTileX(double longitude);
 
   // BoundingBox boundingBoxOfTile(Tile tile);

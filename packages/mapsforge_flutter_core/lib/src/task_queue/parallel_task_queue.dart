@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'package:mapsforge_flutter_core/src/task_queue/queue_cancelled_exception.dart';
 import 'package:mapsforge_flutter_core/src/task_queue/task_queue.dart';
 
-/// Queue to execute Futures in order.
+/// A queue that executes a limited number of Futures in parallel.
 class ParallelTaskQueue implements TaskQueue {
   final Queue<_QueuedFuture> _nextCycle = Queue();
 
@@ -21,6 +21,9 @@ class ParallelTaskQueue implements TaskQueue {
 
   final int maxParallel;
 
+  /// Creates a new `ParallelTaskQueue`.
+  ///
+  /// [maxParallel] The maximum number of tasks to run in parallel.
   ParallelTaskQueue(this.maxParallel, {String? name}) {
     metrics = TaskQueueMetrics(name: name ?? runtimeType.toString());
   }
@@ -51,13 +54,8 @@ class ParallelTaskQueue implements TaskQueue {
     return item.completer.future;
   }
 
-  /// Handles the number of parallel tasks firing at any one time
-  ///
-  /// It does this by checking how many streams are running by querying active
-  /// items, and then if it has less than the number of parallel operations fire off another stream.
-  ///
-  /// When each item completes it will only fire up one othe process
-  ///
+  /// Processes the next task in the queue if the number of running tasks is
+  /// less than the maximum allowed.
   Future<void> _process() async {
     if (_runningCount >= maxParallel || _nextCycle.isEmpty) {
       return;

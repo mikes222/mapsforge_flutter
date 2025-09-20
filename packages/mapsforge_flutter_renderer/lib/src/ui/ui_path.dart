@@ -9,6 +9,12 @@ import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_rect.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 
+/// A wrapper around Flutter's `ui.Path` to simplify path creation and drawing
+/// for map rendering.
+///
+/// This class provides methods for adding points, lines, and rectangles to a path.
+/// It also includes custom logic for drawing dashed lines, which is not natively
+/// supported by Flutter's `Canvas.drawPath` in all cases.
 class UiPath {
   static final _log = Logger('FlutterPath');
 
@@ -21,32 +27,38 @@ class UiPath {
 
   UiPath();
 
+  /// Clears the path and resets all internal state.
   void clear() {
     _path.reset();
     _points.clear();
     _dashedPaths.clear();
   }
 
+  /// Closes the current sub-path by connecting the last point to the first.
   void close() {
     _path.close();
   }
 
+  /// Returns true if the path is empty.
   bool isEmpty() {
     return _points.isEmpty;
   }
 
+  /// Adds a straight line segment from the current point to the given point.
   void lineTo(double x, double y) {
     _path.lineTo(x, y);
     _points.add(Pointinfo(false, x, y));
     _dashedPaths.clear();
   }
 
+  /// Starts a new sub-path at the given point.
   void moveTo(double x, double y) {
     _path.moveTo(x, y);
     _points.add(Pointinfo(true, x, y));
     _dashedPaths.clear();
   }
 
+  /// Sets the fill rule for this path.
   void setFillRule(MapFillRule fillRule) {
     switch (fillRule) {
       case MapFillRule.EVEN_ODD:
@@ -58,18 +70,24 @@ class UiPath {
     }
   }
 
+  /// Adds a straight line segment from the current point to the given [MappointRelative].
   void lineToMappoint(MappointRelative point) {
     _path.lineTo(point.dx, point.dy);
     _points.add(Pointinfo(false, point.dx, point.dy));
     _dashedPaths.clear();
   }
 
+  /// Starts a new sub-path at the given [MappointRelative].
   void moveToMappoint(MappointRelative point) {
     _path.moveTo(point.dx, point.dy);
     _points.add(Pointinfo(true, point.dx, point.dy));
     _dashedPaths.clear();
   }
 
+  /// Draws a dashed line along the path.
+  ///
+  /// This method manually calculates and draws the dashes and gaps, as Flutter's
+  /// native dash support can be inconsistent.
   void drawDash(UiPaint paint, Canvas uiCanvas) {
     List<double> dasharray = paint.getStrokeDasharray()!;
     List<Offsets>? dashed = _dashedPaths[dasharray.hashCode];
@@ -144,6 +162,9 @@ class UiPath {
     return (newDirectionVector, remainingLength);
   }
 
+  /// Draws the path on the given canvas with the specified paint.
+  ///
+  /// This method handles both solid and dashed lines.
   void drawPath(UiPaint paint, ui.Canvas uiCanvas) {
     List<double>? dasharray = paint.getStrokeDasharray();
     if (dasharray != null && dasharray.length >= 2) {
@@ -165,6 +186,7 @@ class UiPath {
     });
   }
 
+  /// Adds a closed rectangle to the path.
   void addRect(UiRect rect) {
     _path.addRect(rect.expose());
     _points.add(Pointinfo(true, rect.getLeft(), rect.getTop()));
@@ -182,7 +204,9 @@ class UiPath {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// A line from [firstVector] to [secondVector].
+/// A helper class representing a directional vector between two points.
+///
+/// This is used for calculations involving dashed lines.
 class DirectionVector {
   /// the relative width/height of the vector
   final Offset vector;
@@ -235,6 +259,9 @@ class DirectionVector {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// A simple data class to hold a start and end offset.
+///
+/// This is used for caching dashed line segments.
 class Offsets {
   final Offset start;
 
@@ -245,8 +272,10 @@ class Offsets {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Infos about the point for a path. Whenever a new path should start
-/// the [start] property is true
+/// A helper class that holds information about a point in a `UiPath`.
+///
+/// It stores the [offset] of the point and a boolean [start] flag to indicate
+/// if this point begins a new sub-path.
 class Pointinfo {
   /// true if a new path should start, can be multiple times in the array. Normally the
   /// first Pointinfo has the start=true
