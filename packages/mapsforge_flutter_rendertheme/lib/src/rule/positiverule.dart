@@ -66,12 +66,12 @@ class PositiveRule extends Rule {
   }
 
   @override
-  bool matches(List<Tag> tags, int indoorLevel) {
+  bool matches(TagCollection tags, int indoorLevel) {
     return IndoorNotationMatcher.isOutdoorOrMatchesIndoorLevel(tags, indoorLevel) && keyMatcher.matchesTagList(tags) && valueMatcher.matchesTagList(tags);
   }
 
   @override
-  bool matchesTags(List<Tag> tags) {
+  bool matchesTags(TagCollection tags) {
     return keyMatcher.matchesTagList(tags) && valueMatcher.matchesTagList(tags);
   }
 

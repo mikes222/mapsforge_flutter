@@ -54,7 +54,7 @@ class PolylineMarker<T> extends Marker<T> {
       return;
     }
     RenderinstructionPolyline renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    WayProperties wayProperties = WayProperties(Way(0, [], [_path.path], null), projection);
+    WayProperties wayProperties = WayProperties(Way.simple(_path.path), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
   }

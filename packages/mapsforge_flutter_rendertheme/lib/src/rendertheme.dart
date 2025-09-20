@@ -163,7 +163,7 @@ class Rendertheme {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, List<Tag> tags) {
+  ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, TagCollection tags) {
     bool isClosedWay = waypath.isClosedWay();
     ZoomlevelRange? result;
     for (var rule in rulesList) {

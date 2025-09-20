@@ -7,7 +7,7 @@ import '../osm/osm_data.dart';
 
 class DefaultOsmPrimitiveConverter {
   PointOfInterest? createNode(OsmNode osmNode) {
-    List<Tag> tags = Tag.from(osmNode.tags);
+    List<Tag> tags = TagCollection.from(osmNode.tags).tags;
     int layer = findLayer(tags);
     modifyNodeTags(osmNode, tags);
     // even with no tags the node may belong to a relation, so keep it
@@ -19,7 +19,7 @@ class DefaultOsmPrimitiveConverter {
   }
 
   Way? createWay(OsmWay osmWay, List<List<ILatLong>> latLongs) {
-    List<Tag> tags = Tag.from(osmWay.tags);
+    List<Tag> tags = TagCollection.from(osmWay.tags).tags;
     int layer = findLayer(tags);
     modifyWayTags(osmWay, tags);
     // even with no tags the way may belong to a relation, so keep it
@@ -29,7 +29,7 @@ class DefaultOsmPrimitiveConverter {
   }
 
   Way? createMergedWay(OsmRelation relation) {
-    List<Tag> tags = Tag.from(relation.tags);
+    List<Tag> tags = TagCollection.from(relation.tags).tags;
     int layer = findLayer(tags);
     modifyRelationTags(relation, tags);
     // topmost structure, if we have no tags, we cannot render anything

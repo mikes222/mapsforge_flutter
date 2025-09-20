@@ -137,7 +137,7 @@ class MyContextMenu extends StatelessWidget {
               const SizedBox(width: 4),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: poi.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
+                children: poi.tags.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
               ),
             ],
           ),
@@ -170,7 +170,7 @@ class MyContextMenu extends StatelessWidget {
               const SizedBox(width: 4),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: wayinfo.way.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
+                children: wayinfo.way.tags.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
               ),
             ],
           ),

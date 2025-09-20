@@ -34,7 +34,7 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       // <line stroke="#66320D" stroke-dasharray="20,5,8,5" stroke-linecap="butt" stroke-width="1.2" />
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('highway', 'track'), Tag('tracktype', 'grade4')],
           [
@@ -89,7 +89,7 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       // <line stroke="#66320D" stroke-dasharray="20,5,8,5" stroke-linecap="butt" stroke-width="1.2" />
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('highway', 'primary'), Tag('tunnel', 'yes'), Tag('oneway', 'yes')],
           [
@@ -144,7 +144,7 @@ void main() {
 
       MemoryDatastore datastore = MemoryDatastore();
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [
             Tag('highway', 'service'),

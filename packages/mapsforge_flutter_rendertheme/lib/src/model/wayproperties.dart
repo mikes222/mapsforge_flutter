@@ -64,7 +64,7 @@ class WayProperties implements NodeWayProperties {
     return layer;
   }
 
-  List<Tag> getTags() {
+  TagCollection getTags() {
     return way.tags;
   }
 

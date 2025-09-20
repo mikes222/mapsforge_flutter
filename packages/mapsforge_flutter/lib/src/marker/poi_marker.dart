@@ -51,7 +51,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionSymbol renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
+    NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
 

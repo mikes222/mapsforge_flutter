@@ -95,7 +95,7 @@ class PbfStatistics {
       if (pointOfInterest != null) {
         assert(!_nodeHolders.containsKey(osmNode.id), "node already exists ${osmNode.id} -> ${_nodeHolders[osmNode.id]}");
         _nodeHolders[osmNode.id] = pointOfInterest;
-        for (var tag in pointOfInterest.tags) {
+        for (var tag in pointOfInterest.tags.tags) {
           _increment(_nodeTags, tag, 1);
         }
       }
@@ -126,7 +126,7 @@ class PbfStatistics {
       _relations[osmRelation.id] = StatsRelation(osmRelation);
       Way? relationWay = converter.createMergedWay(osmRelation);
       if (relationWay != null) {
-        for (var tag in relationWay.tags) {
+        for (var tag in relationWay.tags.tags) {
           _increment(_relationTags, tag, 1);
         }
       } else {
@@ -223,7 +223,7 @@ class PbfStatistics {
       _log.info("Searching for key $key and value $value");
     }
 
-    List<PointOfInterest> nodes = _nodeHolders.values.where((test) => value != null ? test.hasTagValue(key, value) : test.hasTag(key)).toList();
+    List<PointOfInterest> nodes = _nodeHolders.values.where((test) => value != null ? test.tags.hasTagValue(key, value) : test.tags.hasTag(key)).toList();
     nodes.forEach((action) {
       _log.info("Found node ${action.toStringWithoutNames()}");
     });

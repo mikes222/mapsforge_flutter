@@ -58,10 +58,10 @@ abstract class Rule implements SymbolSearcher {
   bool matchesForZoomLevel(int zoomLevel);
 
   /// Returns true if the rule matches the given tags and inddor level
-  bool matches(List<Tag> tags, int indoorLevel);
+  bool matches(TagCollection tags, int indoorLevel);
 
   /// Checks the tags if the rule matches, does NOT take the indoorLevel into account.
-  bool matchesTags(List<Tag> tags);
+  bool matchesTags(TagCollection tags);
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
@@ -86,7 +86,7 @@ abstract class Rule implements SymbolSearcher {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeOpenWay(List<Tag> tags) {
+  ZoomlevelRange? getZoomlevelRangeOpenWay(TagCollection tags) {
     if (!matchesTags(tags)) return null;
 
     if (renderinstructionOpenWays.isNotEmpty) return zoomlevelRange;
@@ -103,7 +103,7 @@ abstract class Rule implements SymbolSearcher {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeClosedWay(List<Tag> tags) {
+  ZoomlevelRange? getZoomlevelRangeClosedWay(TagCollection tags) {
     if (!matchesTags(tags)) return null;
 
     if (renderinstructionClosedWays.isNotEmpty) return zoomlevelRange;

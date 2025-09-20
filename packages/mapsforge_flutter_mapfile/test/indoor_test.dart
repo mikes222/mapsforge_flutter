@@ -216,13 +216,13 @@ void main() async {
     bool levelDetector = false;
     //POI's
     for (var poi in mapReadResult.pointOfInterests) {
-      for (var tag in poi.tags) {
+      for (var tag in poi.tags.tags) {
         if (tag.key == "level") levelDetector = true;
       }
     }
     //Ways
     for (var way in mapReadResult.ways) {
-      for (var tag in way.tags) {
+      for (var tag in way.tags.tags) {
         if (tag.key == "level") levelDetector = true;
       }
     }
@@ -235,14 +235,14 @@ bool objectDetected(DatastoreBundle mapReadResult, String tagname) {
   bool objectDetector = false;
   //POI's
   for (var poi in mapReadResult.pointOfInterests) {
-    for (var tag in poi.tags) {
+    for (var tag in poi.tags.tags) {
       if (tag.key == tagname || tag.value == tagname) objectDetector = true; //stop search, if tag was found
       //return objectDetector;
     }
   }
   //Ways
   for (var way in mapReadResult.ways) {
-    for (var tag in way.tags) {
+    for (var tag in way.tags.tags) {
       if (tag.key == tagname || tag.value == tagname) objectDetector = true;
       //return objectDetector; //stop search, if tag was found
     }
@@ -259,14 +259,14 @@ bool indoorDetector(DatastoreBundle mapReadResult) {
   expect(mapReadResult.pointOfInterests.length, 111);
   //POI's
   for (var poi in mapReadResult.pointOfInterests) {
-    for (var tag in poi.tags) {
+    for (var tag in poi.tags.tags) {
       if (tag.key == "indoor") indoorPois = true;
     }
   }
 
   //Ways
   for (var way in mapReadResult.ways) {
-    for (var tag in way.tags) {
+    for (var tag in way.tags.tags) {
       if (tag.key == "indoor") indoorWays = true;
     }
   }

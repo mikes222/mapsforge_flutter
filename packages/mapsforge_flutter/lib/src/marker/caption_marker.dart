@@ -50,7 +50,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
+    NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePainter(renderInfo!);
   }
@@ -80,7 +80,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
 
   void setLatLong(ILatLong latLong, PixelProjection projection) {
     super.latLong = latLong;
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest(0, [], latLong), projection);
+    NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     RenderInfoNode<RenderinstructionCaption> renderInfoNew = RenderInfoNode(nodeProperties, renderInfo!.renderInstruction, caption: caption);
     renderInfoNew.shapePainter = renderInfo?.shapePainter;
     renderInfo = renderInfoNew;

@@ -68,7 +68,7 @@ class PoiWayListPage extends StatelessWidget {
                     const SizedBox(width: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _poiCount.poi.tags.map((e) => LabeltextCustom(label: e.key ?? "unknown", value: e.value)).toList(),
+                      children: _poiCount.poi.tags.tags.map((e) => LabeltextCustom(label: e.key ?? "unknown", value: e.value)).toList(),
                     ),
                   ],
                 ),
@@ -90,10 +90,11 @@ class PoiWayListPage extends StatelessWidget {
               List renderers = _wayCount.isClosedWay
                   ? renderthemeLevel.matchClosedWay(tile, _wayCount.way)
                   : renderthemeLevel.matchOpenWay(tile, _wayCount.way);
-              if (renderers.length == 0)
+              if (renderers.isEmpty) {
                 renderers = _wayCount.isClosedWay
                     ? renderthemeLevel.matchClosedWay(tileMax, _wayCount.way)
                     : renderthemeLevel.matchOpenWay(tileMax, _wayCount.way);
+              }
               return Card(
                 child: Row(
                   children: [
@@ -101,13 +102,13 @@ class PoiWayListPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         LabeltextCustom(label: "Count", value: "${_wayCount.count}"),
-                        renderers.length > 0 ? LabeltextCustom(label: "Renderers", value: "${renderers.length}") : const Icon(Icons.warning_amber_outlined),
+                        renderers.isNotEmpty ? LabeltextCustom(label: "Renderers", value: "${renderers.length}") : const Icon(Icons.warning_amber_outlined),
                       ],
                     ),
                     const SizedBox(width: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _wayCount.way.tags.map((e) => LabeltextCustom(label: e.key ?? "unknown", value: e.value)).toList(),
+                      children: _wayCount.way.tags.tags.map((e) => LabeltextCustom(label: e.key ?? "unknown", value: e.value)).toList(),
                     ),
                     const Spacer(),
                     _wayCount.isClosedWay ? const Icon(Icons.circle_outlined) : const SizedBox(),
@@ -121,16 +122,16 @@ class PoiWayListPage extends StatelessWidget {
   void _reducePois(DatastoreBundle mapReadResult, List<_PoiCount> pois) {
     mapReadResult.pointOfInterests.forEach((mapPoi) {
       List<Tag> tags = [];
-      mapPoi.tags.forEach((tag) {
-        if (tag.key == "name")
+      for (var tag in mapPoi.tags.tags) {
+        if (tag.key == "name") {
           tags.add(const Tag("name", "xxx"));
-        else if (tag.key == "ele")
+        } else if (tag.key == "ele")
           tags.add(const Tag("ele", "xxx"));
         else if (tag.key == "addr:housenumber")
           tags.add(const Tag("addr:housenumber", "xxx"));
         else
           tags.add(tag);
-      });
+      }
       PointOfInterest newPoi = PointOfInterest(0, tags, const LatLong(0, 0));
       _PoiCount? _poiCount = pois.firstWhereOrNull((_PoiCount poi) => poi.compare(newPoi));
       if (_poiCount == null) {
@@ -142,87 +143,83 @@ class PoiWayListPage extends StatelessWidget {
   }
 
   void _reduceWays(DatastoreBundle mapReadResult, List<_WayCount> ways) {
-    mapReadResult.ways.forEach((mapWay) {
-      List<Tag> tags = [];
-      mapWay.tags.forEach((tag) {
-        if (tag.key == "name")
-          tags.add(const Tag("name", "xxx"));
-        else if (tag.key == "height")
-          tags.add(const Tag("height", "xxx"));
-        else if (tag.key == "addr:housenumber")
-          tags.add(const Tag("addr:housenumber", "xxx"));
-        else if (tag.key == "building:levels")
-          tags.add(const Tag("building:levels", "xxx"));
-        else if (tag.key == "building:colour")
-          tags.add(const Tag("building:colour", "xxx"));
-        else if (tag.key == "roof:colour")
-          tags.add(const Tag("roof:colour", "xxx"));
-        else if (tag.key == "roof:levels")
-          tags.add(const Tag("roof:levels", "xxx"));
-        else if (tag.key == "roof:height")
-          tags.add(const Tag("roof:height", "xxx"));
-        else if (tag.key == "min_height")
-          tags.add(const Tag("min_height", "xxx"));
-        else if (tag.key == "id")
-          tags.add(const Tag("id", "xxx"));
-        else if (tag.key == "ele")
-          tags.add(const Tag("ele", "xxx"));
-        else if (tag.key == "ref") {
+    for (var mapWay in mapReadResult.ways) {
+      List<Tag> newTags = [];
+      List<Tag> wayTags = mapWay.tags.tags;
+      wayTags.forEach((tag) {
+        if (tag.key == "name") {
+          newTags.add(const Tag("name", "xxx"));
+        } else if (tag.key == "height") {
+          newTags.add(const Tag("height", "xxx"));
+        } else if (tag.key == "addr:housenumber") {
+          newTags.add(const Tag("addr:housenumber", "xxx"));
+        } else if (tag.key == "building:levels") {
+          newTags.add(const Tag("building:levels", "xxx"));
+        } else if (tag.key == "building:colour") {
+          newTags.add(const Tag("building:colour", "xxx"));
+        } else if (tag.key == "roof:colour") {
+          newTags.add(const Tag("roof:colour", "xxx"));
+        } else if (tag.key == "roof:levels") {
+          newTags.add(const Tag("roof:levels", "xxx"));
+        } else if (tag.key == "roof:height") {
+          newTags.add(const Tag("roof:height", "xxx"));
+        } else if (tag.key == "min_height") {
+          newTags.add(const Tag("min_height", "xxx"));
+        } else if (tag.key == "id") {
+          newTags.add(const Tag("id", "xxx"));
+        } else if (tag.key == "ele") {
+          newTags.add(const Tag("ele", "xxx"));
+        } else if (tag.key == "ref") {
           // ignore this tag
-        } else
-          tags.add(tag);
+        } else {
+          newTags.add(tag);
+        }
       });
       bool isClosedWay = LatLongUtils.isClosedWay(mapWay.latLongs[0]);
-      Way newWay = Way(mapWay.layer, tags, [], null);
-      _WayCount? _wayCount = ways.firstWhereOrNull((_WayCount poi) => poi.compare(newWay, isClosedWay));
-      if (_wayCount == null) {
-        _wayCount = _WayCount(newWay, isClosedWay);
-        ways.add(_wayCount);
+      Way newWay = Way(mapWay.layer, newTags, [], null);
+      _WayCount? wayCount = ways.firstWhereOrNull((_WayCount poi) => poi.compare(newWay, isClosedWay));
+      if (wayCount == null) {
+        wayCount = _WayCount(newWay, isClosedWay);
+        ways.add(wayCount);
       }
-      _wayCount.count++;
-    });
+      wayCount.count++;
+    }
   }
 
   Future<_PoiWayCount> _readBlock() async {
-    try {
-      QueryParameters queryParameters = new QueryParameters();
-      queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
-      MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
-      _PoiWayCount _poiWayCount = _PoiWayCount();
-      int step = 20;
-      for (int x = subFileParameter.boundaryTileLeft; x < subFileParameter.boundaryTileRight; x += step) {
-        for (int y = subFileParameter.boundaryTileTop; y < subFileParameter.boundaryTileBottom; y += step) {
-          Tile upperLeft = Tile(x, y, subFileParameter.baseZoomLevel, 0);
-          Tile lowerRight = Tile(
-            min(x + step - 1, subFileParameter.boundaryTileRight),
-            min(y + step - 1, subFileParameter.boundaryTileBottom),
-            subFileParameter.baseZoomLevel,
-            0,
-          );
-          queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
-          queryParameters.calculateBlocks(subFileParameter);
-          print(
-            "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}",
-          );
+    QueryParameters queryParameters = new QueryParameters();
+    queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
+    MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
+    _PoiWayCount _poiWayCount = _PoiWayCount();
+    int step = 20;
+    for (int x = subFileParameter.boundaryTileLeft; x < subFileParameter.boundaryTileRight; x += step) {
+      for (int y = subFileParameter.boundaryTileTop; y < subFileParameter.boundaryTileBottom; y += step) {
+        Tile upperLeft = Tile(x, y, subFileParameter.baseZoomLevel, 0);
+        Tile lowerRight = Tile(
+          min(x + step - 1, subFileParameter.boundaryTileRight),
+          min(y + step - 1, subFileParameter.boundaryTileBottom),
+          subFileParameter.baseZoomLevel,
+          0,
+        );
+        queryParameters.calculateBaseTiles(upperLeft, lowerRight, subFileParameter);
+        queryParameters.calculateBlocks(subFileParameter);
+        print(
+          "Querying Blocks from ${queryParameters.fromBlockX} - ${queryParameters.toBlockX} and ${queryParameters.fromBlockY} - ${queryParameters.toBlockY}",
+        );
 
-          BoundingBox boundingBox = mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
-          MapfileSelector selector = MapfileSelector.ALL;
-          DatastoreBundle? result = await mapFile.processBlocks(mapFile.readBufferSource, queryParameters, subFileParameter, boundingBox, selector);
-          //print("result: $result");
+        BoundingBox boundingBox = mercatorProjection.boundingBoxOfTiles(upperLeft, lowerRight);
+        MapfileSelector selector = MapfileSelector.ALL;
+        DatastoreBundle? result = await mapFile.processBlocks(mapFile.readBufferSource, queryParameters, subFileParameter, boundingBox, selector);
+        //print("result: $result");
 
-          _reducePois(result, _poiWayCount.poiCounts);
-          _reduceWays(result, _poiWayCount.wayCounts);
-        }
+        _reducePois(result, _poiWayCount.poiCounts);
+        _reduceWays(result, _poiWayCount.wayCounts);
       }
-      _poiWayCount.poiCounts = _poiWayCount.poiCounts.sorted((a, b) => b.count - a.count);
-      _poiWayCount.wayCounts = _poiWayCount.wayCounts.sorted((a, b) => b.count - a.count);
-
-      return _poiWayCount;
-    } catch (e, stacktrace) {
-      print("${e.toString()}");
-      print("${stacktrace.toString()}");
-      throw e;
     }
+    _poiWayCount.poiCounts = _poiWayCount.poiCounts.sorted((a, b) => b.count - a.count);
+    _poiWayCount.wayCounts = _poiWayCount.wayCounts.sorted((a, b) => b.count - a.count);
+
+    return _poiWayCount;
   }
 }
 
@@ -236,7 +233,7 @@ class _PoiCount {
   _PoiCount(this.poi);
 
   bool compare(PointOfInterest other) {
-    return const IterableEquality<Tag>().equals(poi.tags, other.tags);
+    return poi.tags == other.tags;
   }
 }
 
@@ -253,7 +250,7 @@ class _WayCount {
 
   bool compare(Way other, bool isClosedWay) {
     if (isClosedWay != this.isClosedWay) return false;
-    return const IterableEquality<Tag>().equals(way.tags, other.tags);
+    return way.tags == other.tags;
   }
 }
 

@@ -35,7 +35,7 @@ class OsmWriter {
     );
   }
 
-  int writeNode(ILatLong node, List<Tag> tags) {
+  int writeNode(ILatLong node, TagCollection tags) {
     if (tags.isEmpty) {
       _writeString('<node id="$_nextId" lat="${node.latitude}" lon="${node.longitude}"/>', _sink);
     } else {
@@ -72,29 +72,29 @@ class OsmWriter {
     List<int> nodes = [];
     bool closed = waypath.isClosedWay();
     if (closed) {
-      int firstId = writeNode(waypath.path.first, []);
+      int firstId = writeNode(waypath.path.first, const TagCollection.empty());
       nodes.add(firstId);
       for (var latLong in waypath.path.skip(1).take(waypath.path.length - 2)) {
-        nodes.add(writeNode(latLong, []));
+        nodes.add(writeNode(latLong, const TagCollection.empty()));
       }
       nodes.add(firstId);
     } else {
       for (var latLong in waypath.path) {
-        nodes.add(writeNode(latLong, []));
+        nodes.add(writeNode(latLong, const TagCollection.empty()));
       }
     }
     return nodes;
   }
 
-  void _writeTags(List<Tag> tags, IOSink sink) {
+  void _writeTags(TagCollection tags, IOSink sink) {
     ++_currentIdent;
-    for (var tag in tags) {
+    for (var tag in tags.tags) {
       _writeString('<tag k="${const HtmlEscape().convert(tag.key!)}" v="${const HtmlEscape().convert(tag.value!)}"/>', sink);
     }
     --_currentIdent;
   }
 
-  int _writeWay(List<int> nodes, List<Tag> tags, IOSink sink) {
+  int _writeWay(List<int> nodes, TagCollection tags, IOSink sink) {
     _writeString('<way id="$_nextId">', sink);
     ++_currentIdent;
     for (var node in nodes) {
@@ -106,7 +106,7 @@ class OsmWriter {
     return _nextId++;
   }
 
-  int _writeRelation(List<int> members, List<int> outerMembers, List<Tag> tags) {
+  int _writeRelation(List<int> members, List<int> outerMembers, TagCollection tags) {
     _writeString('<relation id="$_nextId">', _sink);
     ++_currentIdent;
     int idx = 0;
@@ -154,12 +154,12 @@ class OsmWriter {
       // the conditions are changing in the for loop, so check before
       bool relationNeeded = _relationNeeded(way);
       for (List<int> nodes in way.nodes) {
-        wayIds.add(_writeWay(nodes, !relationNeeded ? way.tags : [], sink));
+        wayIds.add(_writeWay(nodes, !relationNeeded ? way.tags : const TagCollection.empty(), sink));
       }
       way.addWayIds(wayIds);
       wayIds.clear();
       for (List<int> nodes in way.outerNodes) {
-        wayIds.add(_writeWay(nodes, !relationNeeded ? way.tags : [], sink));
+        wayIds.add(_writeWay(nodes, !relationNeeded ? way.tags : const TagCollection.empty(), sink));
       }
       way.addOuterWayIds(wayIds);
       way.nodes.clear();
@@ -220,7 +220,7 @@ class _Way {
 
   final List<List<int>> outerNodes = [];
 
-  final List<Tag> tags;
+  final TagCollection tags;
 
   /// The ids of the ways for this relation. The first way is the master, all others should be inner ways
   List<int> wayIds = [];

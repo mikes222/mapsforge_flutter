@@ -29,13 +29,13 @@ mixin TagholderMixin {
   /// distinct values so it is a waste of time and space to normalize it
   static Set<String> DO_NOT_NORMALIZE = {"admin_level"};
 
-    /// Analyzes a list of [tags], identifying special features and counting the
+  /// Analyzes a list of [tags], identifying special features and counting the
   /// occurrences of each tag.
-  void analyzeTags(List<Tag> tags, List<Tagholder> tagsArray) {
+  void analyzeTags(TagCollection tags, List<Tagholder> tagsArray) {
     Set<String> names = {};
     String? original;
     String? fallback;
-    for (Tag tag in tags) {
+    for (Tag tag in tags.tags) {
       if (tag.key == MapfileHelper.TAG_KEY_NAME) {
         if (tag.value != null && tag.value!.isNotEmpty) original = tag.value;
         continue;
@@ -122,7 +122,7 @@ mixin TagholderMixin {
     }
   }
 
-    /// Writes the analyzed tag data to the given [writebuffer].
+  /// Writes the analyzed tag data to the given [writebuffer].
   void writeTags(Writebuffer writebuffer) {
     for (var tagholder in tagholders) {
       writebuffer.appendUnsignedInt(tagholder.index!);

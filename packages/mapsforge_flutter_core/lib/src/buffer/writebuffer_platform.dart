@@ -9,4 +9,4 @@
 /// functionality on platforms that support file system operations.
 
 // Conditional exports based on platform
-export 'writebuffer_web.dart' if (dart.library.io) 'writebuffer.dart';
+export 'writebuffer_web.dart' if (dart.library.io) 'writebuffer_io.dart';

@@ -9,6 +9,7 @@
 /// - Zoom level management (ZoomlevelRange)
 /// - Coordinate utilities and transformations
 library;
+
 export 'src/model/boundingbox.dart';
 export 'src/model/datastore.dart';
 export 'src/model/datastore_bundle.dart';
@@ -20,6 +21,7 @@ export 'src/model/maprectangle.dart';
 export 'src/model/mapsize.dart';
 export 'src/model/pointofinterest.dart';
 export 'src/model/tag.dart';
+export 'src/model/tag_collection.dart';
 export 'src/model/tile.dart';
 export 'src/model/way.dart';
 export 'src/model/waypath.dart';

@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class WayPage extends StatelessWidget {
   /// The read POIs.
@@ -23,7 +23,7 @@ class WayPage extends StatelessWidget {
                   Text(
                     "Layer ${e.layer}, labelPosition ${e.labelPosition}, ${e.latLongs.length} coordinate with ${e.latLongs[0].length} segments in coordinate 0",
                   ),
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: e.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList()),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: e.tags.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList()),
                 ],
               ),
             ),

@@ -15,17 +15,17 @@ class NegativeMatcher implements AttributeMatcher {
   }
 
   @override
-  bool matchesTagList(List<Tag> tags) {
+  bool matchesTagList(TagCollection tags) {
     if (keyListDoesNotContainKeys(tags)) {
       return true;
     }
 
-    Tag? tag = tags.firstWhereOrNull((element) => values.contains(element.value));
+    Tag? tag = tags.tags.firstWhereOrNull((element) => values.contains(element.value));
     return tag != null;
   }
 
-  bool keyListDoesNotContainKeys(List<Tag> tags) {
-    Tag? tag = tags.firstWhereOrNull((element) => keys.contains(element.key));
+  bool keyListDoesNotContainKeys(TagCollection tags) {
+    Tag? tag = tags.tags.firstWhereOrNull((element) => keys.contains(element.key));
     return tag == null;
   }
 

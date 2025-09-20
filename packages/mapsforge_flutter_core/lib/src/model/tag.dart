@@ -14,15 +14,6 @@ class Tag implements Comparable<Tag> {
   /// Creates a new `Tag` from a string in the format "key=value".
   Tag.fromTag(String tag) : key = tag.substring(0, tag.indexOf(KEY_VALUE_SEPARATOR)), value = tag.substring(tag.indexOf(KEY_VALUE_SEPARATOR) + 1);
 
-  /// Creates a list of `Tag` objects from a map of key-value pairs.
-  static List<Tag> from(Map<String, String> tags) {
-    List<Tag> list = [];
-    tags.forEach((key, value) {
-      list.add(Tag(key, value));
-    });
-    return list;
-  }
-
   /// Compares this tag to another tag, first by key, then by value.
   @override
   int compareTo(Tag tag) {

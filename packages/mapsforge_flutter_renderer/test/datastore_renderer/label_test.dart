@@ -33,13 +33,13 @@ void main() {
 
       MemoryDatastore datastore = MemoryDatastore();
       // to check if the position of the symbol is correct. One cirlce above, one below, one to the right
-      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(45.99998, 18.00005)));
-      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00006, 18.00005)));
-      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00002, 18.00009)));
-      datastore.addPoi(const PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'atLeftTile'), Tag('ele', '5645')], LatLong(46.00002, 18.00005)));
+      datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(45.99998, 18.00005)));
+      datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00006, 18.00005)));
+      datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00002, 18.00009)));
+      datastore.addPoi(PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'atLeftTile'), Tag('ele', '5645')], LatLong(46.00002, 18.00005)));
 
       //datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle')], LatLong(46.00000, 18.00007)));
-      datastore.addPoi(const PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
+      datastore.addPoi(PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'atRightTile')], LatLong(45.99997, 18.00007)));
 
       Tile tile0 = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob0 = JobRequest(tile0);

@@ -16,7 +16,7 @@ class NodeProperties implements NodeWayProperties {
 
   int get layer => pointOfInterest.layer;
 
-  List<Tag> get tags => pointOfInterest.tags;
+  TagCollection get tags => pointOfInterest.tags;
 
   /// Returns the absolute coordinates in pixel of this node
   Mappoint getCoordinatesAbsolute() {

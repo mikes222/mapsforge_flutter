@@ -57,18 +57,18 @@ class PbfWriter {
     sink.add(headerBlobContent);
   }
 
-  Future<void> writeNode(ILatLong position, List<Tag> tags) async {
+  Future<void> writeNode(ILatLong position, TagCollection tags) async {
     _writeNode(position, tags);
   }
 
-  _DenseNode _writeNode(ILatLong position, List<Tag> tags) {
+  _DenseNode _writeNode(ILatLong position, TagCollection tags) {
     _DenseNode denseNode = _DenseNode(tags: tags, positions: [position], ids: [$fixnum.Int64(_nextId++)]);
     _nodes.add(denseNode);
     _tryWriteDenseNodes();
     return denseNode;
   }
 
-  (List<int>, List<int>) _convertTags(List<Tag> tags, List<String> strings, StringTable stringTable) {
+  (List<int>, List<int>) _convertTags(TagCollection tags, List<String> strings, StringTable stringTable) {
     if (strings.isEmpty) {
       // make sure index 0 is not used for productive purposes since 0 is a marker to skip tags
       stringTable.s.add(utf8.encode(""));
@@ -76,7 +76,7 @@ class PbfWriter {
     }
     List<int> keys = [];
     List<int> values = [];
-    for (var tag in tags) {
+    for (var tag in tags.tags) {
       if (strings.contains(tag.key!)) {
         keys.add(strings.indexOf(tag.key!));
       } else {
@@ -239,7 +239,7 @@ class PbfWriter {
     _relations.clear();
   }
 
-  _Way _writeWayOnePath(List<Tag> tags, Waypath waypath) {
+  _Way _writeWayOnePath(TagCollection tags, Waypath waypath) {
     const int maxWaysPerGroup = 100000;
     List<$fixnum.Int64> allrefs = [];
     List<ILatLong> path = List.from(waypath.path);
@@ -251,7 +251,7 @@ class PbfWriter {
       });
       allrefs.addAll(refs);
       // do not write tags for the nodes, we have them at the way-level
-      _DenseNode denseNode = _DenseNode(tags: [], positions: path2, ids: refs);
+      _DenseNode denseNode = _DenseNode(tags: const TagCollection.empty(), positions: path2, ids: refs);
       _nodes.add(denseNode);
       _tryWriteDenseNodes();
     }
@@ -261,7 +261,7 @@ class PbfWriter {
       });
       allrefs.addAll(refs);
       // do not write tags for the nodes, we have them at the way-level
-      _DenseNode denseNode = _DenseNode(tags: [], positions: path, ids: refs);
+      _DenseNode denseNode = _DenseNode(tags: const TagCollection.empty(), positions: path, ids: refs);
       _nodes.add(denseNode);
       _tryWriteDenseNodes();
     }
@@ -279,19 +279,19 @@ class PbfWriter {
     } else {
       List<OsmRelationMember> members = [];
       for (Waypath waypath in wayholder.innerRead) {
-        _Way way = _writeWayOnePath([], waypath);
+        _Way way = _writeWayOnePath(const TagCollection.empty(), waypath);
         members.add(OsmRelationMember(memberId: way.id.toInt(), memberType: MemberType.way, role: "inner"));
       }
       for (Waypath waypath in wayholder.closedOutersRead) {
-        _Way way = _writeWayOnePath([], waypath);
+        _Way way = _writeWayOnePath(const TagCollection.empty(), waypath);
         members.add(OsmRelationMember(memberId: way.id.toInt(), memberType: MemberType.way, role: "outer"));
       }
       for (Waypath waypath in wayholder.openOutersRead) {
-        _Way way = _writeWayOnePath([], waypath);
+        _Way way = _writeWayOnePath(const TagCollection.empty(), waypath);
         members.add(OsmRelationMember(memberId: way.id.toInt(), memberType: MemberType.way, role: "outer"));
       }
       if (wayholder.labelPosition != null) {
-        _DenseNode node = _writeNode(wayholder.labelPosition!, []);
+        _DenseNode node = _writeNode(wayholder.labelPosition!, const TagCollection.empty());
         members.add(OsmRelationMember(memberId: node.ids.first.toInt(), memberType: MemberType.node, role: "label"));
       }
       assert(wayholder.tags.isNotEmpty);
@@ -312,7 +312,7 @@ class PbfWriter {
 //////////////////////////////////////////////////////////////////////////////
 
 class _DenseNode {
-  final List<Tag> tags;
+  final TagCollection tags;
 
   final List<ILatLong> positions;
 
@@ -324,7 +324,7 @@ class _DenseNode {
 //////////////////////////////////////////////////////////////////////////////
 
 class _Way {
-  final List<Tag> tags;
+  final TagCollection tags;
 
   final List<$fixnum.Int64> refs;
 
@@ -336,7 +336,7 @@ class _Way {
 //////////////////////////////////////////////////////////////////////////////
 
 class _Relation {
-  final List<Tag> tags;
+  final TagCollection tags;
 
   final List<OsmRelationMember> osmRelationMembers;
 

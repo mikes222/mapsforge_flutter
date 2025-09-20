@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 
 /// The key to search for in the tags of the node or way. If the key is found the corresponding value is normally used
@@ -9,8 +8,8 @@ class TextKey {
 
   const TextKey(this.key) : assert(key.length > 0);
 
-  String? getValue(List<Tag> tags) {
-    return tags.firstWhereOrNull((element) => element.key == key)?.value;
+  String? getValue(TagCollection tags) {
+    return tags.getTag(key);
   }
 
   @override

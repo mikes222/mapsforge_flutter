@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:flutter/material.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 
 class PoiPage extends StatelessWidget {
   /// The read POIs.
@@ -21,7 +21,7 @@ class PoiPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Layer ${e.layer}, Position ${formatLatLong(e.position)}"),
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: e.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList()),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: e.tags.tags.map((Tag e) => Text("${e.key} = ${e.value}")).toList()),
                 ],
               ),
             ),

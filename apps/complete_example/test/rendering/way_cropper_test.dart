@@ -96,7 +96,7 @@ void main() async {
       const LatLong(43.727250, 7.414498),
       const LatLong(43.727158, 7.414372),
     ];
-    Way way = Way(0, [const Tag("building", "stadium")], [points], null);
+    Way way = Way(0, [Tag("building", "stadium")], [points], null);
 
     Tile tile = Tile(68235, 47798, 17, 0);
 
@@ -216,7 +216,7 @@ void main() async {
       const LatLong(43.727250, 7.414498),
       const LatLong(43.727158, 7.414372),
     ];
-    Way way = Way(0, [const Tag("building", "stadium")], [points], null);
+    Way way = Way(0, [Tag("building", "stadium")], [points], null);
 
     Tile tile = Tile(68236, 47798, 17, 0);
 
@@ -294,7 +294,7 @@ void main() async {
       const LatLong(43.742195, 7.452435),
       const LatLong(43.536831, 7.532992),
     ];
-    Way way = Way(0, [const Tag("admin_level", "2")], [points], null);
+    Way way = Way(0, [Tag("admin_level", "2")], [points], null);
 
     Tile tile = Tile(4265, 2989, 13, 0);
 
@@ -387,7 +387,7 @@ void main() async {
       const LatLong(43.742195, 7.452435),
       const LatLong(43.536831, 7.532992),
     ];
-    Way way = Way(0, [const Tag("admin_level", "2")], [points], null);
+    Way way = Way(0, [Tag("admin_level", "2")], [points], null);
 
     Tile tile = Tile(4265, 2988, 13, 0);
 

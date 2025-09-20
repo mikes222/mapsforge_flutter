@@ -34,7 +34,7 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       // symbol in the center of the poi, name above, ele below
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('highway', 'motorway'), Tag('oneway', 'yes')],
           [
@@ -84,7 +84,7 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       // symbol in the center of the poi, name above, ele below
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('highway', 'motorway'), Tag('oneway', 'yes')],
           [
@@ -134,7 +134,7 @@ void main() {
       MemoryDatastore datastore = MemoryDatastore();
       // symbol in the center of the poi, name above, ele below
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('highway', 'motorway'), Tag('oneway', 'yes')],
           [

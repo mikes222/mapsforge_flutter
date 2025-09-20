@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
@@ -31,7 +30,7 @@ class Wayholder with TagholderMixin {
   ILatLong? labelPosition;
 
   /// The tags of this way.
-  List<Tag> tags = [];
+  TagCollection tags;
 
   /// The layer of this way + 5 (to avoid negative values).
   int layer = 0;
@@ -39,10 +38,10 @@ class Wayholder with TagholderMixin {
   /// Cache for the bounding box of the way
   BoundingBox? _boundingBox;
 
-  Wayholder();
+  Wayholder({this.tags = const TagCollection.empty()});
 
   /// Creates a new wayholder from a existing way. Note that the existing way may NOT contain any path (if created from a OsmRelation)
-  Wayholder.fromWay(Way way) {
+  Wayholder.fromWay(Way way) : tags = way.tags {
     _inner = way.latLongs.skip(1).map((toElement) => Waypath(path: toElement)).toList();
     _closedOuters = [];
     _openOuters = [];
@@ -54,7 +53,6 @@ class Wayholder with TagholderMixin {
       }
     }
 
-    tags = way.tags;
     layer = way.layer;
     labelPosition = way.labelPosition;
   }
@@ -66,7 +64,7 @@ class Wayholder with TagholderMixin {
     result._inner = inner ?? _inner.map((toElement) => toElement.clone()).toList();
     result.tileBitmask = tileBitmask;
     result.labelPosition = labelPosition;
-    result.tags = List.from(tags);
+    result.tags = tags.clone();
     result.layer = layer;
     result.mergedWithOtherWay = mergedWithOtherWay;
     result.featureElevation = featureElevation;
@@ -196,15 +194,15 @@ class Wayholder with TagholderMixin {
   }
 
   bool hasTag(String key) {
-    return tags.firstWhereOrNull((test) => test.key == key) != null;
+    return tags.hasTag(key);
   }
 
   bool hasTagValue(String key, String value) {
-    return tags.firstWhereOrNull((test) => test.key == key && test.value == value) != null;
+    return tags.hasTagValue(key, value);
   }
 
   String? getTag(String key) {
-    return tags.firstWhereOrNull((test) => test.key == key)?.value;
+    return tags.getTag(key);
   }
 
   /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
@@ -481,6 +479,6 @@ class Wayholder with TagholderMixin {
   }
 
   String toStringWithoutNames() {
-    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, mergedWithOtherWay: $mergedWithOtherWay, labelPosition: $labelPosition, tags: ${tags.where((test) => test.key?.startsWith("name:") == false && test.key?.startsWith("official_name") == false).map((toElement) => "${toElement.key}=${toElement.value}").join(",")}';
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, mergedWithOtherWay: $mergedWithOtherWay, labelPosition: $labelPosition, tags: ${tags.printTagsWithoutNames()}';
   }
 }

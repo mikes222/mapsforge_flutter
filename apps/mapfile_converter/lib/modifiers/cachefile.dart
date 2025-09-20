@@ -21,10 +21,10 @@ class CacheFile {
       cacheLabel.lon = $fixnum.Int64(degreeToMicrodegree(wayholder.labelPosition!.longitude));
       cacheWayholder.label = cacheLabel;
     }
-    wayholder.tags.forEach((tag) {
+    for (var tag in wayholder.tags.tags) {
       cacheWayholder.tagkeys.add(tag.key!);
       cacheWayholder.tagvals.add(tag.value!);
-    });
+    }
 
     for (var innerway in wayholder.innerRead) {
       CacheWay cacheWay = CacheWay();
@@ -55,15 +55,14 @@ class CacheFile {
 
   Wayholder fromFile(Uint8List file) {
     CacheWayholder cacheWayholder = CacheWayholder.fromBuffer(file);
-    Wayholder wayholder = Wayholder();
+    Wayholder wayholder = Wayholder(
+      tags: TagCollection(tags: cacheWayholder.tagkeys.map((tagkey) => Tag(tagkey, cacheWayholder.tagvals[cacheWayholder.tagkeys.indexOf(tagkey)])).toList()),
+    );
     wayholder.tileBitmask = cacheWayholder.tileBitmask;
     wayholder.layer = cacheWayholder.layer;
     wayholder.mergedWithOtherWay = cacheWayholder.mergedWithOtherWay;
     if (cacheWayholder.hasLabel()) {
       wayholder.labelPosition = LatLong(cacheWayholder.label.lat.toDouble() / 1e9, cacheWayholder.label.lon.toDouble() / 1e9);
-    }
-    for (var tagkey in cacheWayholder.tagkeys) {
-      wayholder.tags.add(Tag(tagkey, cacheWayholder.tagvals[cacheWayholder.tagkeys.indexOf(tagkey)]));
     }
     for (var action in cacheWayholder.innerways) {
       if (action.lat.isNotEmpty) {

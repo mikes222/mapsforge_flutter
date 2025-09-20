@@ -17,9 +17,8 @@ class KeyMatcher implements AttributeMatcher {
   }
 
   @override
-  bool matchesTagList(List<Tag> tags) {
-    Tag? tag = tags.firstWhereOrNull((element) => keys.contains(element.key));
-    return tag != null;
+  bool matchesTagList(TagCollection tags) {
+    return tags.matchesTagList(keys);
   }
 
   @override

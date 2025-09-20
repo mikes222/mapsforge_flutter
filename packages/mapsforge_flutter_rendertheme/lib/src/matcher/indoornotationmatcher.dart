@@ -92,27 +92,23 @@ class IndoorNotationMatcher {
    * If both tags are set their values are merged
    * null if no key is found
    */
-  static String? getLevelValue(List<Tag> tags) {
+  static String? getLevelValue(TagCollection tags) {
     // search for level key
-    final Tag? levelTag = tags.firstWhereOrNull((Tag element) {
-      return element.key == "level";
-    });
+    final String? levelTag = tags.getTag("level");
 
     // search for repeat_on key
-    final Tag? repeatOnTag = tags.firstWhereOrNull((Tag element) {
-      return element.key == "repeat_on";
-    });
+    final String? repeatOnTag = tags.getTag("repeat_on");
 
     // if both tags exist then merge their values together
     // https://wiki.openstreetmap.org/wiki/Talk:Simple_Indoor_Tagging#repeat_on_and_level_on_one_object
     if (levelTag != null && repeatOnTag != null) {
-      final Iterable<int?>? levelValues = parseLevelNumbers(levelTag.value!);
-      final Iterable<int?>? repeatOnValues = parseLevelNumbers(repeatOnTag.value!);
+      final Iterable<int?>? levelValues = parseLevelNumbers(levelTag);
+      final Iterable<int?>? repeatOnValues = parseLevelNumbers(repeatOnTag);
       // merge them in a Set to automatically remove duplicates
       return {...?levelValues, ...?repeatOnValues}.join(";");
     }
     // if no level tag exists use the repeat_on value as the level value else return null
-    return levelTag?.value ?? repeatOnTag?.value;
+    return levelTag ?? repeatOnTag;
   }
 
   /*
@@ -131,7 +127,7 @@ class IndoorNotationMatcher {
   /// Returns true if either the given level matches the given tags
   /// or the given tags do not contain any indoor level key
   /// otherwise false
-  static bool isOutdoorOrMatchesIndoorLevel(List<Tag> tags, int level) {
+  static bool isOutdoorOrMatchesIndoorLevel(TagCollection tags, int level) {
     String? levelValue = getLevelValue(tags);
     // return true if no level tag exists
     if (levelValue == null) return true;

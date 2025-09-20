@@ -33,15 +33,15 @@ void main() {
 
       MemoryDatastore datastore = MemoryDatastore();
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [
-            Tag('name', 'OurForest'),
-            Tag('natural', 'wood'),
+            const Tag('name', 'OurForest'),
+            const Tag('natural', 'wood'),
             //const Tag('wood', 'deciduous')
           ],
           [
-            [LatLong(45.95, 17.95), LatLong(46.05, 17.99), LatLong(46.00, 17.990), LatLong(45.95, 17.95)],
+            [const LatLong(45.95, 17.95), const LatLong(46.05, 17.99), const LatLong(46.00, 17.990), const LatLong(45.95, 17.95)],
           ],
           null,
         ),

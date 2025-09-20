@@ -37,7 +37,7 @@ void main() {
       // <line src="jar:patterns/access-destination.png" stroke-width="8.0" />
       // width changed to make the shader more visible
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('highway', 'track'), Tag('access', 'destination')],
           [

@@ -33,10 +33,10 @@ void main() {
       Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
 
       MemoryDatastore datastore = MemoryDatastore();
-      datastore.addPoi(const PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'TestSuburb')], LatLong(46, 17.998)));
-      datastore.addPoi(const PointOfInterest(0, [Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')], LatLong(45.999, 17.996)));
+      datastore.addPoi(PointOfInterest(0, [Tag('place', 'suburb'), Tag('name', 'TestSuburb')], LatLong(46, 17.998)));
+      datastore.addPoi(PointOfInterest(0, [Tag('highway', 'turning_circle'), Tag('name', 'Test Circle')], LatLong(45.999, 17.996)));
       datastore.addWay(
-        const Way(
+        Way(
           0,
           [Tag('name', 'TestWay'), Tag('tunnel', 'yes'), Tag('railway', 'rail')],
           [
