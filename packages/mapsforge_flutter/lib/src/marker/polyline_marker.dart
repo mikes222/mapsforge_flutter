@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
@@ -18,6 +17,8 @@ class PolylineMarker<T> extends Marker<T> {
   static final _log = Logger('PolylineMarker');
 
   late final RenderinstructionPolyline renderinstruction;
+
+  final Map<int, RenderinstructionPolyline> renderinstructionsZoomed = {};
 
   RenderInfoWay<RenderinstructionPolyline>? renderInfo;
 
@@ -41,19 +42,13 @@ class PolylineMarker<T> extends Marker<T> {
   }
 
   @override
-  @mustCallSuper
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     // we are unable to initialize without a path
     if (_path.isEmpty) {
       _log.warning("PolylineMarker has an empty path, cannot draw anyhting $this");
       return;
     }
-    RenderinstructionPolyline renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionPolyline renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     WayProperties wayProperties = WayProperties(Way.simple(_path.path), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
@@ -73,6 +68,7 @@ class PolylineMarker<T> extends Marker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     return indexOfTappedPath(tapEvent) >= 0;
   }
 

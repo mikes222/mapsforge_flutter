@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/abstract_poi_marker.dart';
 import 'package:mapsforge_flutter/src/marker/caption_mixin.dart';
@@ -12,6 +11,8 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   late final RenderinstructionSymbol renderinstruction;
+
+  final Map<int, RenderinstructionSymbol> renderinstructionsZoomed = {};
 
   RenderInfoNode<RenderinstructionSymbol>? renderInfo;
 
@@ -38,22 +39,16 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     renderinstruction.setBitmapHeight(height.round());
     renderinstruction.positioning = positioning;
     renderinstruction.rotateWithMap = rotateWithMap;
-  }
-
-  @override
-  @mustCallSuper
-  void dispose() {
-    //    renderinstruction.dispose();
-    super.dispose();
+    renderinstruction.display = MapDisplay.ALWAYS;
   }
 
   @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionSymbol renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionSymbol renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePainter(renderInfo!);
+    renderInfo!.shapePainter = await PainterFactory().createShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -73,6 +68,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     Mappoint absolute = renderInfo!.nodeProperties.getCoordinatesAbsolute();
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
     MapRectangle boundary = renderinstruction.getBoundary(renderInfo!);

@@ -20,6 +20,8 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 class AreaMarker<T> extends Marker<T> {
   late final RenderinstructionArea renderinstruction;
 
+  final Map<int, RenderinstructionArea> renderinstructionsZoomed = {};
+
   RenderInfoWay<RenderinstructionArea>? renderInfo;
 
   late final Waypath _path;
@@ -44,16 +46,10 @@ class AreaMarker<T> extends Marker<T> {
   }
 
   @override
-  @mustCallSuper
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     assert(_path.isNotEmpty);
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionArea renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionArea renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     WayProperties wayProperties = WayProperties(Way.simple(_path.path), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
@@ -71,6 +67,7 @@ class AreaMarker<T> extends Marker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     return _path.contains(tapEvent.latLong);
   }
 

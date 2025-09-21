@@ -19,6 +19,7 @@ export 'src/model/layer_container_collection.dart';
 export 'src/model/line_segment.dart';
 export 'src/model/line_segment_path.dart';
 export 'src/model/map_cap.dart';
+export 'src/model/map_display.dart';
 export 'src/model/map_fillrule.dart';
 export 'src/model/map_font_family.dart';
 export 'src/model/map_font_style.dart';

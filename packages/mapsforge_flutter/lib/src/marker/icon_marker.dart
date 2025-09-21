@@ -13,6 +13,8 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   late final RenderinstructionIcon renderinstruction;
 
+  final Map<int, RenderinstructionIcon> renderinstructionsZoomed = {};
+
   RenderInfoNode<RenderinstructionIcon>? renderInfo;
 
   IconMarker({
@@ -41,15 +43,8 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   }
 
   @override
-  @mustCallSuper
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
-    //renderInfo?.shapePainter?.dispose();
-    RenderinstructionIcon renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionIcon renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
     await PainterFactory().createShapePainter(renderInfo!);
@@ -72,6 +67,7 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     Mappoint absolute = renderInfo!.nodeProperties.getCoordinatesAbsolute();
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
     MapRectangle boundary = renderinstruction.getBoundary(renderInfo!);

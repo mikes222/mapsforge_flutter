@@ -19,7 +19,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 class PainterFactory {
   static PainterFactory? _instance;
 
-  final Cache<int, ShapePainter> _shapePainters = LruCache(capacity: 1000, onEvict: (_, test) => test.dispose(), name: "PainterFactory.Painters");
+  final Cache<int, ShapePainter> _shapePainters = LruCache(capacity: 20000, onEvict: (_, test) => test.dispose(), name: "PainterFactory.Painters");
 
   PainterFactory._();
 

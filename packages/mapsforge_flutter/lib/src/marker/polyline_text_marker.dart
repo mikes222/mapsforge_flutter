@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -14,6 +13,8 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// about the actual size of the rectangle).
 class PolylineTextMarker<T> extends Marker<T> {
   late final RenderinstructionPolylineText renderinstruction;
+
+  final Map<int, RenderinstructionPolylineText> renderinstructionsZoomed = {};
 
   RenderInfoWay<RenderinstructionPolylineText>? renderInfo;
 
@@ -50,15 +51,9 @@ class PolylineTextMarker<T> extends Marker<T> {
   }
 
   @override
-  @mustCallSuper
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionPolylineText renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionPolylineText renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     WayProperties wayProperties = WayProperties(Way.simple(_path), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePainter(renderInfo!);
@@ -77,6 +72,7 @@ class PolylineTextMarker<T> extends Marker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     return indexOfTappedPath(tapEvent) >= 0;
   }
 

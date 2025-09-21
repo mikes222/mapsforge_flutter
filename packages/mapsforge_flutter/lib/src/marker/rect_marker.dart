@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/caption_mixin.dart';
@@ -17,6 +16,8 @@ import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 /// about the actual size of the rectangle).
 class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearcher, CaptionReference {
   late final RenderinstructionRect renderinstruction;
+
+  final Map<int, RenderinstructionRect> renderinstructionsZoomed = {};
 
   RenderInfoWay<RenderinstructionRect>? renderInfo;
 
@@ -56,15 +57,9 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
   }
 
   @override
-  @mustCallSuper
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionRect renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionRect renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     nodeProperties = NodeProperties(PointOfInterest.simple(center), projection);
     WayProperties wayProperties = WayProperties(Way.simple([minLatLon, maxLatLon]), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
@@ -88,6 +83,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     return tapEvent.latitude >= minLatLon.latitude &&
         tapEvent.latitude <= maxLatLon.latitude &&
         tapEvent.longitude >= minLatLon.longitude &&

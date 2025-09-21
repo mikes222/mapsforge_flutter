@@ -120,7 +120,7 @@ class Caption {
     RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
     renderinstructionZoomed.secondPass(poiMarker);
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(poiMarker.getReference()), projection);
-    renderInfo = RenderInfoNode(nodeProperties, renderinstruction.forZoomlevel(zoomlevel, 0), caption: _caption);
+    renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed, caption: _caption);
     renderInfo?.shapePainter = await ShapePainterCaption.create(renderinstructionZoomed);
   }
 

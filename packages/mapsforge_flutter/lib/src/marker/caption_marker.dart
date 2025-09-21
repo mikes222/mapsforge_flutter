@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/marker/abstract_poi_marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -10,6 +9,8 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
 class CaptionMarker<T> extends AbstractPoiMarker<T> {
   late final RenderinstructionCaption renderinstruction;
+
+  final Map<int, RenderinstructionCaption> renderinstructionsZoomed = {};
 
   RenderInfoNode<RenderinstructionCaption>? renderInfo;
 
@@ -41,15 +42,9 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
   }
 
   @override
-  @mustCallSuper
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
-    RenderinstructionCaption renderinstructionZoomed = renderinstruction.forZoomlevel(zoomlevel, 0);
+    RenderinstructionCaption renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed, caption: caption);
     await PainterFactory().createShapePainter(renderInfo!);
@@ -67,6 +62,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
 
   @override
   bool isTapped(TapEvent tapEvent) {
+    if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     Mappoint absolute = renderInfo!.nodeProperties.getCoordinatesAbsolute();
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
     MapRectangle boundary = renderinstruction.getBoundary(renderInfo!);
