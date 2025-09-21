@@ -48,7 +48,7 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     RenderinstructionSymbol renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    renderInfo!.shapePainter = await PainterFactory().createShapePainter(renderInfo!);
+    renderInfo!.shapePainter = await PainterFactory().getOrCreateShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -82,19 +82,29 @@ class PoiMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   set rotation(double rotation) {
     renderinstruction.theta = Projection.degToRadian(rotation);
-    renderInfo?.renderInstruction.theta = Projection.degToRadian(rotation);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.theta = Projection.degToRadian(rotation);
+    }
   }
 
   // execute [markerChanged] after changing this property
-  void setBitmapColorFromNumber(int color) {
+  Future<void> setBitmapColorFromNumber(int color) async {
     renderinstruction.setBitmapColorFromNumber(color);
-    renderInfo?.renderInstruction.setBitmapColorFromNumber(color);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setBitmapColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property
-  void setAndLoadBitmapSrc(String bitmapSrc) {
+  Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
     renderinstruction.bitmapSrc = bitmapSrc;
-    renderInfo?.renderInstruction.setBitmapSrc(bitmapSrc);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.bitmapSrc = bitmapSrc;
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property

@@ -63,7 +63,7 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
     nodeProperties = NodeProperties(PointOfInterest.simple(center), projection);
     WayProperties wayProperties = WayProperties(Way.simple([minLatLon, maxLatLon]), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePainter(renderInfo!);
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -92,24 +92,40 @@ class RectMarker<T> extends Marker<T> with CaptionMixin implements SymbolSearche
 
   Future<void> setBitmapColorFromNumber(int color) async {
     renderinstruction.setBitmapColorFromNumber(color);
-    renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePainter(renderInfo!);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setBitmapColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
     renderinstruction.bitmapSrc = bitmapSrc;
-    renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePainter(renderInfo!);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.bitmapSrc = bitmapSrc;
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property
-  void setStrokeColorFromNumber(int color) {
+  Future<void> setStrokeColorFromNumber(int color) async {
     renderinstruction.setStrokeColorFromNumber(color);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setStrokeColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property
-  void setFillColorFromNumber(int color) {
+  Future<void> setFillColorFromNumber(int color) async {
     renderinstruction.setFillColorFromNumber(color);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setFillColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   @override

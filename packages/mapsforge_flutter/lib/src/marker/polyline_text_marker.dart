@@ -56,7 +56,7 @@ class PolylineTextMarker<T> extends Marker<T> {
     RenderinstructionPolylineText renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     WayProperties wayProperties = WayProperties(Way.simple(_path), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed, caption: caption);
-    await PainterFactory().createShapePainter(renderInfo!);
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
     assert(renderInfo!.shapePainter != null, "PainterFactory should create a painter");
   }
 

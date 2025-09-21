@@ -40,6 +40,30 @@ class PainterFactory {
     _shapePainters[serial] = painter;
   }
 
+  void removePainterForSerial(int serial) {
+    _shapePainters.remove(serial);
+  }
+
+  /// Creates a shape painter for the given render information.
+  ///
+  /// Returns cached painter if available, otherwise creates a new painter
+  /// based on the rendering instruction type. Some painters (like captions)
+  /// are context-dependent and not cached for reuse.
+  ///
+  /// [renderInfo] Render information containing the instruction and context
+  /// Returns appropriate shape painter for the instruction type
+  Future<ShapePainter<T>> getOrCreateShapePainter<T extends Renderinstruction>(RenderInfo<T> renderInfo) async {
+    if (renderInfo.shapePainter != null) return renderInfo.shapePainter!;
+
+    ShapePainter? shapePainter = _shapePainters[renderInfo.renderInstruction.serial];
+    if (shapePainter != null) {
+      renderInfo.shapePainter = shapePainter as ShapePainter<T>;
+      return shapePainter;
+    }
+
+    return await createShapePainter(renderInfo);
+  }
+
   /// Creates a shape painter for the given render information.
   ///
   /// Returns cached painter if available, otherwise creates a new painter
@@ -49,14 +73,6 @@ class PainterFactory {
   /// [renderInfo] Render information containing the instruction and context
   /// Returns appropriate shape painter for the instruction type
   Future<ShapePainter<T>> createShapePainter<T extends Renderinstruction>(RenderInfo<T> renderInfo) async {
-    if (renderInfo.shapePainter != null) return renderInfo.shapePainter!;
-
-    ShapePainter? shapePainter = _shapePainters[renderInfo.renderInstruction.serial];
-    if (shapePainter != null) {
-      renderInfo.shapePainter = shapePainter as ShapePainter<T>;
-      return shapePainter;
-    }
-
     switch (renderInfo.renderInstruction.getType()) {
       case "area":
         ShapePainter<T> shapePainter = await ShapePainterArea.create(renderInfo.renderInstruction as RenderinstructionArea) as ShapePainter<T>;
@@ -108,7 +124,7 @@ class PainterFactory {
     List<Future> futures = [];
 
     for (RenderInfo renderInfo in renderInfoCollection.renderInfos) {
-      futures.add(createShapePainter(renderInfo));
+      futures.add(getOrCreateShapePainter(renderInfo));
       if (futures.length > 200) {
         await Future.wait(futures);
         futures.clear();

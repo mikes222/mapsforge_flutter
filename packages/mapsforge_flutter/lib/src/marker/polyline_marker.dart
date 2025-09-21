@@ -51,7 +51,7 @@ class PolylineMarker<T> extends Marker<T> {
     RenderinstructionPolyline renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     WayProperties wayProperties = WayProperties(Way.simple(_path.path), projection);
     renderInfo = RenderInfoWay(wayProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePainter(renderInfo!);
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
   }
 
   ///
@@ -85,13 +85,23 @@ class PolylineMarker<T> extends Marker<T> {
   }
 
   // execute [markerChanged] after changing this property
-  void setBitmapColorFromNumber(int color) {
+  Future<void> setBitmapColorFromNumber(int color) async {
     renderinstruction.setBitmapColorFromNumber(color);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setBitmapColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property
-  void setAndLoadBitmapSrc(String bitmapSrc) {
+  Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
     renderinstruction.bitmapSrc = bitmapSrc;
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.bitmapSrc = bitmapSrc;
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property

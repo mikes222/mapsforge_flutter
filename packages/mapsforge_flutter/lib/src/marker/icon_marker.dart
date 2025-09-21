@@ -47,7 +47,7 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     RenderinstructionIcon renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePainter(renderInfo!);
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -81,19 +81,27 @@ class IconMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
 
   set rotation(double rotation) {
     renderinstruction.theta = Projection.degToRadian(rotation);
-    renderInfo?.renderInstruction.theta = Projection.degToRadian(rotation);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.theta = Projection.degToRadian(rotation);
+    }
   }
 
   Future<void> setBitmapColorFromNumber(int color) async {
     renderinstruction.setBitmapColorFromNumber(color);
-    renderInfo!.renderInstruction.setBitmapColorFromNumber(color);
-    await PainterFactory().createShapePainter(renderInfo!);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setBitmapColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
   }
 
   Future<void> setAndLoadBitmapSrc(String bitmapSrc) async {
     renderinstruction.bitmapSrc = bitmapSrc;
-    renderInfo!.renderInstruction.setBitmapSrc(bitmapSrc);
-    await PainterFactory().createShapePainter(renderInfo!);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.bitmapSrc = bitmapSrc;
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
   }
 
   void setLatLong(ILatLong latLong, PixelProjection projection) {

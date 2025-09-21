@@ -42,7 +42,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
     RenderinstructionCircle renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
     NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
     renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    await PainterFactory().createShapePainter(renderInfo!);
+    await PainterFactory().getOrCreateShapePainter(renderInfo!);
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -93,12 +93,22 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   }
 
   // execute [markerChanged] after changing this property
-  void setStrokeColorFromNumber(int color) {
+  Future<void> setStrokeColorFromNumber(int color) async {
     renderinstruction.setStrokeColorFromNumber(color);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setStrokeColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 
   // execute [markerChanged] after changing this property
-  void setFillColorFromNumber(int color) {
+  Future<void> setFillColorFromNumber(int color) async {
     renderinstruction.setFillColorFromNumber(color);
+    for (var renderinstruction in renderinstructionsZoomed.values) {
+      renderinstruction.setFillColorFromNumber(color);
+      PainterFactory().removePainterForSerial(renderinstruction.serial);
+    }
+    if (renderInfo != null) await PainterFactory().createShapePainter(renderInfo!);
   }
 }
