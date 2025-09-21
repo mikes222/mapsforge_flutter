@@ -97,6 +97,7 @@ class PolylineTextMarker<T> extends Marker<T> {
   @override
   bool shouldPaint(BoundingBox boundary, int zoomlevel) {
     if (!zoomlevelRange.isWithin(zoomlevel)) return false;
+    if (_path.isEmpty) return false;
     if (!(renderInfo?.wayProperties.way.getBoundingBox().intersects(boundary) ?? true)) return false;
     return true;
   }

@@ -119,6 +119,7 @@ class PolylineMarker<T> extends Marker<T> {
   @override
   bool shouldPaint(BoundingBox boundary, int zoomlevel) {
     if (!zoomlevelRange.isWithin(zoomlevel)) return false;
+    if (_path.isEmpty) return false;
     if (!(_path.boundingBox.intersects(boundary))) return false;
     return true;
   }
