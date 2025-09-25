@@ -34,6 +34,7 @@ class MapsforgeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    throw Exception("Please use the master branch!");
     return Stack(
       children: [
         // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop
