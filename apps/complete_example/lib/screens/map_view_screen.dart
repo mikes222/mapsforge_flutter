@@ -127,7 +127,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
               ZoomInOverlay(mapModel: mapModel),
               // shows additional overlays or custom overlays
               // shows the indoorlevel zoom buttons
-              //              IndoorlevelOverlay(mapModel: mapModel),
+              IndoorlevelOverlay(mapModel: mapModel),
 
               // listens to tap events (configurable) and shows a context menu (also configurable)
               ContextMenuOverlay(

@@ -4,133 +4,112 @@ import 'package:collection/collection.dart' show IterableExtension;
 import 'package:mapsforge_flutter_core/model.dart';
 
 class IndoorNotationMatcher {
-  // match single value : 1 or -1.5
-  static final RegExp _matchSingleNotation = RegExp(r"^-?\d+(\.\d+)?$");
+  // Use an Expando to associate cached level data with TagCollection instances.
+  // This avoids modifying the TagCollection class and works with const instances.
+  // Expando does not support nullable types, so we use a sentinel for null.
+  static final Expando<Object> _levelCache = Expando('indoorLevels');
+  static const _nullSentinel = Object();
 
-  // match multiple values notation : 1;3;4 or 1.4;-4;2
-  static final RegExp _matchMultipleNotation = RegExp(r"^(-?\d+(\.\d+)?)(;-?\d+(\.\d+)?)+$");
-
-  // match value range notation : 1-2 or -1--5
-  static final RegExp _matchRangeNotation = RegExp(r"^-?\d+(\.\d+)?--?\d+(\.\d+)?$");
-
-  static bool matchesSingleNotation(String levelTagValue) {
-    return _matchSingleNotation.hasMatch(levelTagValue);
-  }
-
-  static bool matchesMultipleNotation(String levelTagValue) {
-    return _matchMultipleNotation.hasMatch(levelTagValue);
-  }
-
-  static bool matchesRangeNotation(String levelTagValue) {
-    return _matchRangeNotation.hasMatch(levelTagValue);
-  }
-
-  /*
-   * Returns int or null if no number could be parsed
-   * Decimal numbers are round down to next int
-   */
-  static int? parseLevelNumber(String levelTagValue) {
+  /// Returns an int from a string, or null if no number could be parsed.
+  /// Decimal numbers are rounded down to the next int.
+  static int? _parseLevelNumber(String levelTagValue) {
     return double.tryParse(levelTagValue)?.floor();
   }
 
-  /*
-   * Returns all level values as integer in an Iterable
-   * Decimal numbers are round down to next int
-   * Range values are converted to multiple values
-   * Returns null if the String couldn't be parsed successfully
-   */
+  /// Returns all level values as integers in an Iterable.
+  ///
+  /// Decimal numbers are rounded down to the next int.
+  /// Range values are converted to multiple values.
+  /// Returns null if the String couldn't be parsed successfully.
   static Iterable<int>? parseLevelNumbers(String levelTagValue) {
-    if (IndoorNotationMatcher.matchesSingleNotation(levelTagValue)) {
-      return [IndoorNotationMatcher.parseLevelNumber(levelTagValue)].where((element) => element != null).map((e) => e as int).toList();
-    } else if (IndoorNotationMatcher.matchesMultipleNotation(levelTagValue)) {
-      // split on ";" and convert values to int
-      return levelTagValue.split(";").map(IndoorNotationMatcher.parseLevelNumber).where((element) => element != null).map((e) => e as int).toList();
-    } else if (IndoorNotationMatcher.matchesRangeNotation(levelTagValue)) {
-      // split on "-" if number precedes and convert to int
-      Iterable<int> levelRange = levelTagValue
-          .split(RegExp(r"(?<=\d)-"))
-          .map(IndoorNotationMatcher.parseLevelNumber)
-          .where((element) => element != null)
-          .map((e) => e as int)
-          .toList();
-      int lowerLevelValue = levelRange.reduce(min);
-      int upperLevelValue = levelRange.reduce(max);
-      int levelCount = (lowerLevelValue - upperLevelValue).abs() + 1;
-      return Iterable.generate(levelCount, (i) => lowerLevelValue + i);
+    if (levelTagValue.isEmpty) return null;
+    final parts = levelTagValue.split(';');
+    if (parts.length > 1) {
+      // Multiple values notation: 1;3;4 or 1.4;-4;2
+      final parsed = parts.map(_parseLevelNumber).toList();
+      if (parsed.contains(null)) {
+        return null; // If any part is invalid, the whole string is invalid
+      }
+      return parsed.map((e) => e as int).toList();
+    } else {
+      // Try to parse as a range or a single value
+      final rangeParts = levelTagValue.split(RegExp(r'(?<=\d)-'));
+      if (rangeParts.length == 2) {
+        // Range notation: 1-2 or -1--5
+        final start = _parseLevelNumber(rangeParts[0]);
+        final end = _parseLevelNumber(rangeParts[1]);
+        if (start != null && end != null) {
+          final lower = min(start, end);
+          final upper = max(start, end);
+          return Iterable.generate(upper - lower + 1, (i) => lower + i);
+        }
+      } else {
+        // Single value notation: 1 or -1.5
+        final level = _parseLevelNumber(levelTagValue);
+        if (level != null) {
+          return [level];
+        }
+      }
     }
     return null;
   }
 
-  /*
-   * Returns true if the given level matches the given level tag notation
-   * otherwise false
-   */
+  /// Returns true if the given level matches the given level tag notation, otherwise false.
   static bool matchesIndoorLevelNotation(String levelTagValue, int level) {
-    if (matchesSingleNotation(levelTagValue)) {
-      int? levelValue = parseLevelNumber(levelTagValue);
-      return (levelValue == level);
-    } else if (matchesMultipleNotation(levelTagValue)) {
-      // split on ";" and convert values to int
-      Iterable<int?> levelValues = levelTagValue.split(";").map(parseLevelNumber);
-      // check if at least one value matches the current level
-      return levelValues.contains(level);
-    } else if (matchesRangeNotation(levelTagValue)) {
-      // split on "-" if number precedes and convert to int
-      Iterable<int?> levelRange = levelTagValue.split(RegExp(r"(?<=\d)-")).map(parseLevelNumber);
-      List<int> levelRange2 = levelRange.where((element) => element != null).map((e) => e as int).toList();
-      // separate into max and min value
-      int lowerLevelValue = levelRange2.reduce(min);
-      int upperLevelValue = levelRange2.reduce(max);
-      // if level is in range return true else false
-      return (lowerLevelValue <= level && upperLevelValue >= level);
-    }
-    return false;
+    final levels = parseLevelNumbers(levelTagValue);
+    return levels?.contains(level) ?? false;
   }
 
-  /*
-   * Returns the level or repeat_on value string of a given tag list
-   * If both tags are set their values are merged
-   * null if no key is found
-   */
-  static String? getLevelValue(TagCollection tags) {
-    // search for level key
-    final String? levelTag = tags.getTag("level");
+  /// Returns the parsed level or repeat_on values from a given tag list.
+  ///
+  /// If both 'level' and 'repeat_on' tags are set, their values are merged.
+  /// The result is cached for subsequent calls.
+  /// Returns null if no relevant key is found.
+  static Iterable<int>? getLevelValues(TagCollection tags) {
+    final cached = _levelCache[tags];
+    if (cached != null) {
+      return cached == _nullSentinel ? null : cached as Iterable<int>;
+    }
 
-    // search for repeat_on key
+    final String? levelTag = tags.getTag("level");
     final String? repeatOnTag = tags.getTag("repeat_on");
 
-    // if both tags exist then merge their values together
-    // https://wiki.openstreetmap.org/wiki/Talk:Simple_Indoor_Tagging#repeat_on_and_level_on_one_object
-    if (levelTag != null && repeatOnTag != null) {
-      final Iterable<int?>? levelValues = parseLevelNumbers(levelTag);
-      final Iterable<int?>? repeatOnValues = parseLevelNumbers(repeatOnTag);
-      // merge them in a Set to automatically remove duplicates
-      return {...?levelValues, ...?repeatOnValues}.join(";");
+    Iterable<int>? levelValues;
+    if (levelTag != null) {
+      levelValues = parseLevelNumbers(levelTag);
     }
-    // if no level tag exists use the repeat_on value as the level value else return null
-    return levelTag ?? repeatOnTag;
+
+    Iterable<int>? repeatOnValues;
+    if (repeatOnTag != null) {
+      repeatOnValues = parseLevelNumbers(repeatOnTag);
+    }
+
+    Iterable<int>? result;
+    if (levelValues != null && repeatOnValues != null) {
+      // Merge them in a Set to automatically remove duplicates
+      result = {...levelValues, ...repeatOnValues};
+    } else {
+      result = levelValues ?? repeatOnValues;
+    }
+
+    // Cache the result, using the sentinel for null.
+    _levelCache[tags] = result ?? _nullSentinel;
+    return result;
   }
 
-  /*
-   * Returns the level ref value string of a given tag list
-   * null if no key is found
-   */
+  /// Returns the level ref value string of a given tag list, or null if no key is found.
   static String? getLevelRefValue(List<Tag> tags) {
-    // search for level key
-    Tag? levelRefTag = tags.firstWhereOrNull((Tag element) {
-      return element.key == "level:ref";
-    });
-
-    return levelRefTag?.value;
+    return tags
+        .firstWhereOrNull((Tag element) => element.key == "level:ref")
+        ?.value;
   }
 
-  /// Returns true if either the given level matches the given tags
-  /// or the given tags do not contain any indoor level key
-  /// otherwise false
+  /// Returns true if the given tags do not contain any indoor level key, or if the given level matches.
   static bool isOutdoorOrMatchesIndoorLevel(TagCollection tags, int level) {
-    String? levelValue = getLevelValue(tags);
-    // return true if no level tag exists
-    if (levelValue == null) return true;
-    return matchesIndoorLevelNotation(levelValue, level);
+    final levelValues = getLevelValues(tags);
+    // Return true if no level tag exists.
+    if (levelValues == null) return true;
+    // Otherwise, check if the level is contained in the parsed values.
+    return levelValues.contains(level);
   }
 }
