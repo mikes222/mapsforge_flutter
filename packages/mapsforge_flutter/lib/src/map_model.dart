@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -29,8 +30,14 @@ class MapModel {
 
   /// When using the context menu we often needs the markers which are tapped. To simplify that we register/unregister datastores to the map.
   final Set<MarkerDatastore> _datastores = {};
+  final ValueNotifier<double> rotationNotifier = ValueNotifier<double>(0.0);
 
-  MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
+  double get rotationDeg => _lastPosition?.rotation ?? 0.0;
+
+  MapModel({
+    required this.renderer,
+    this.zoomlevelRange = const ZoomlevelRange.standard(),
+  });
 
   void dispose() {
     _positionSubject.close();
@@ -40,6 +47,7 @@ class MapModel {
     _doubleTapSubject.close();
     _dragNdropSubject.close();
     renderer.dispose();
+    rotationNotifier.dispose();
     for (var datastore in List.of(_datastores)) {
       datastore.dispose();
     }
@@ -57,6 +65,14 @@ class MapModel {
   void setPosition(MapPosition position) {
     _lastPosition = position;
     _positionSubject.add(position);
+    rotationNotifier.value = _normalize180(position.rotation);
+  }
+
+  double _normalize180(double deg) {
+    deg = deg % 360;
+    if (deg >= 180) deg -= 360;
+    if (deg < -180) deg += 360;
+    return deg;
   }
 
   MapPosition? get lastPosition => _lastPosition;
@@ -128,7 +144,11 @@ class MapModel {
 
   void zoomToAround(double latitude, double longitude, int zoomLevel) {
     zoomLevel = zoomlevelRange.ensureBounds(zoomLevel);
-    MapPosition newPosition = _lastPosition!.zoomToAround(latitude, longitude, zoomLevel);
+    MapPosition newPosition = _lastPosition!.zoomToAround(
+      latitude,
+      longitude,
+      zoomLevel,
+    );
     setPosition(newPosition);
   }
 
@@ -209,7 +229,12 @@ class TapEvent implements ILatLong {
   /// The point of the event in absolute mappixels
   final Mappoint mappoint;
 
-  const TapEvent({required this.latitude, required this.longitude, required this.projection, required this.mappoint});
+  const TapEvent({
+    required this.latitude,
+    required this.longitude,
+    required this.projection,
+    required this.mappoint,
+  });
 
   LatLong get latLong => LatLong(latitude, longitude);
 
@@ -224,7 +249,13 @@ class TapEvent implements ILatLong {
 class DragNdropEvent extends TapEvent {
   final DragNdropEventType type;
 
-  DragNdropEvent({required super.latitude, required super.longitude, required super.projection, required super.mappoint, required this.type});
+  DragNdropEvent({
+    required super.latitude,
+    required super.longitude,
+    required super.projection,
+    required super.mappoint,
+    required this.type,
+  });
 }
 
 //////////////////////////////////////////////////////////////////////////////
