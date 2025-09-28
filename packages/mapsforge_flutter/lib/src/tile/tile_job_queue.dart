@@ -55,7 +55,11 @@ class TileJobQueue {
         }
       }
       _currentJob?.abort();
-      unawaited(_positionEvent(position, tileDimension));
+      unawaited(
+        _positionEvent(position, tileDimension).catchError((error) {
+          print(error);
+        }),
+      );
     });
   }
 
@@ -76,7 +80,11 @@ class TileJobQueue {
       if (mapModel.lastPosition != null) {
         TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: mapModel.lastPosition!, screensize: _size!);
         _currentJob?.abort();
-        unawaited(_positionEvent(mapModel.lastPosition!, tileDimension));
+        unawaited(
+          _positionEvent(mapModel.lastPosition!, tileDimension).catchError((error) {
+            print(error);
+          }),
+        );
       }
       return;
     }
@@ -171,6 +179,7 @@ class TileJobQueue {
       // ~60fps
       _batchTimer = null;
       if (_batchTileset != null) {
+        if (_tileStream.isClosed) return;
         _tileStream.add(_batchTileset!);
       }
     });

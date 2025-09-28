@@ -48,7 +48,7 @@ dependencies:
   dio: ^5.9.0
 
   # A very cool cache (ok, I am the maintainer, maybe a bit biased)
-  ecache: ^2.1.1
+  ecache: ^2.1.2
 
   # For downlaoding files in web
   file_picker: ^10.3.3
@@ -79,7 +79,7 @@ dependencies:
   path_provider: ^2.1.5
 
   # For memory monitoring
-  system_info2: ^4.0.0
+  system_info2: ^4.1.0
 
 dev_dependencies:
   flutter_test:

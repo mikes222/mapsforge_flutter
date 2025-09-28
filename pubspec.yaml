@@ -30,10 +30,12 @@ melos:
     bootstrap:
       dependencies:
         # Upgraded for getOrProduceSync()
-        ecache: ^2.1.1
+        ecache: ^2.1.2
 
         # flutter_test is not compatible with newer versions currently (08/2025)
         test: ^1.26.2
+
+        xml: ^6.6.1
       hooks:
         post: flutter pub upgrade
 

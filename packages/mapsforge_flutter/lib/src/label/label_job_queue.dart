@@ -93,6 +93,7 @@ class LabelJobQueue {
         });
         if (myJob._abort) return;
         labelSet.renderInfos.add(collection);
+        if (_labelStream.isClosed) return;
         _labelStream.add(labelSet);
         left += _range;
         if (left > tileDimension.right) break;

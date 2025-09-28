@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
@@ -62,8 +63,7 @@ class RotationGestureDetector extends StatefulWidget {
   });
 
   @override
-  State<RotationGestureDetector> createState() =>
-      _RotationGestureDetectorState();
+  State<RotationGestureDetector> createState() => _RotationGestureDetectorState();
 }
 
 class _RotationGestureDetectorState extends State<RotationGestureDetector> {
@@ -169,9 +169,7 @@ class _RotationGestureDetectorState extends State<RotationGestureDetector> {
       bottom: widget.bottom,
       child: Padding(
         padding: widget.resetPadding,
-        child: widget.wrapResetChildTap
-            ? GestureDetector(onTap: _performReset, child: widget.resetChild!)
-            : widget.resetChild!,
+        child: widget.wrapResetChildTap ? GestureDetector(onTap: _performReset, child: widget.resetChild!) : widget.resetChild!,
       ),
     );
   }
@@ -193,9 +191,7 @@ class _RotationGestureDetectorState extends State<RotationGestureDetector> {
           ValueListenableBuilder<double>(
             valueListenable: widget.rotationDeg!,
             builder: (_, angle, __) {
-              final visible =
-                  !widget.hideResetWhenZero ||
-                  angle.abs() > widget.zeroEpsilonDeg;
+              final visible = !widget.hideResetWhenZero || angle.abs() > widget.zeroEpsilonDeg;
               if (!visible) return const SizedBox.shrink();
               return _positionedResetChild(widget.resetChild!);
             },
@@ -206,12 +202,6 @@ class _RotationGestureDetectorState extends State<RotationGestureDetector> {
 
     // Fallback: single-shot check; parent should rebuild when rotation changes.
     final visible = _computeIsRotated();
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        overlay,
-        if (visible) _positionedResetChild(widget.resetChild!),
-      ],
-    );
+    return Stack(fit: StackFit.expand, children: [overlay, if (visible) _positionedResetChild(widget.resetChild!)]);
   }
 }

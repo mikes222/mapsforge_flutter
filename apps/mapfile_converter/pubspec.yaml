@@ -38,7 +38,7 @@ dependencies:
   # MIT License
   # for reading and writing osm files
   # compatibility problems with flutter_svg
-  xml: ^6.5.0
+  xml: ^6.6.1
 
 dev_dependencies:
 

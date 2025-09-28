@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_core/utils.dart';
 class TileView extends StatefulWidget {
   final MapModel mapModel;
 
-  TileView({super.key, required this.mapModel});
+  const TileView({super.key, required this.mapModel});
 
   @override
   State<TileView> createState() => _TileViewState();

@@ -197,10 +197,10 @@ packages:
     dependency: transitive
     description:
       name: ecache
-      sha256: f2c632ff198d0430b0c1d89484af425c5422bcc0195ae20aba7f97f64c153cad
+      sha256: ab6d58a05a81caaf8dee7cc87ceab8f7f5eb919dee28cd1fc19169d9edac70ee
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   fake_async:
     dependency: transitive
     description:
@@ -745,10 +745,10 @@ packages:
     dependency: transitive
     description:
       name: system_info2
-      sha256: "65206bbef475217008b5827374767550a5420ce70a04d2d7e94d1d2253f3efc9"
+      sha256: b937736ecfa63c45b10dde1ceb6bb30e5c0c340e14c441df024150679d65ac43
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "4.1.0"
   term_glyph:
     dependency: transitive
     description:

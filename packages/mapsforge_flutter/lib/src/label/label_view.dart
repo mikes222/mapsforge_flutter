@@ -12,7 +12,7 @@ import 'package:mapsforge_flutter_core/utils.dart';
 class LabelView extends StatefulWidget {
   final MapModel mapModel;
 
-  LabelView({super.key, required this.mapModel});
+  const LabelView({super.key, required this.mapModel});
 
   @override
   State<LabelView> createState() => _LabelViewState();
