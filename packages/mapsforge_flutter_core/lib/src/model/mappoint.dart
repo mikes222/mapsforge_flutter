@@ -25,6 +25,10 @@ class Mappoint {
     return sqrt((x - point.x) * (x - point.x) + (y - point.y) * (y - point.y));
   }
 
+  double distanceSquared(Mappoint point) {
+    return (x - point.x) * (x - point.x) + (y - point.y) * (y - point.y);
+  }
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is Mappoint && runtimeType == other.runtimeType && x == other.x && y == other.y;
 

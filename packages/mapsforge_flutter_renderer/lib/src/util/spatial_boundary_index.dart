@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 /// High-performance spatial index using grid-based partitioning for collision detection.
 ///
@@ -13,18 +13,18 @@ import 'package:mapsforge_flutter_core/model.dart';
 /// - Fast collision detection with boundary checking
 /// - Memory-efficient storage with sparse grid representation
 /// - Exception handling for robust collision detection
-class SpatialIndex {
+class SpatialBoundaryIndex<T> {
   /// Size of each grid cell in logical pixels.
   final double _cellSize;
 
   /// Sparse grid storage mapping cell coordinates to render items.
-  final Map<String, List<RenderInfo>> _grid = {};
+  final Map<String, List<T>> _grid = {};
 
   /// Creates a new spatial index with the specified cell size.
   ///
   /// [cellSize] Size of each grid cell in logical pixels (default: 256.0)
   /// Smaller cells provide more precise collision detection but use more memory
-  SpatialIndex({double cellSize = 256.0}) : _cellSize = cellSize;
+  SpatialBoundaryIndex({double cellSize = 256.0}) : _cellSize = cellSize;
 
   /// Adds a render item to the spatial index.
   ///
@@ -32,13 +32,10 @@ class SpatialIndex {
   /// Items without boundaries are ignored for performance.
   ///
   /// [item] Render item to add to the index
-  void add(RenderInfo item) {
-    final boundary = item.boundaryAbsolute;
-    if (boundary != null) {
-      final cells = _getCells(boundary);
-      for (final cell in cells) {
-        _grid.putIfAbsent(cell, () => <RenderInfo>[]).add(item);
-      }
+  void add(T item, MapRectangle boundary) {
+    final cells = _getCells(boundary);
+    for (final cell in cells) {
+      _grid.putIfAbsent(cell, () => <T>[]).add(item);
     }
   }
 
@@ -49,17 +46,14 @@ class SpatialIndex {
   ///
   /// [item] Item to check for collisions
   /// Returns true if collision detected, false otherwise
-  bool hasCollision(RenderInfo item) {
-    final boundary = item.boundaryAbsolute;
-    if (boundary == null) return false;
-
+  bool hasCollision(T item, MapRectangle boundary) {
     final cells = _getCells(boundary);
     for (final cell in cells) {
       final cellItems = _grid[cell];
       if (cellItems != null) {
         for (final existing in cellItems) {
           try {
-            if (existing.clashesWith(item)) {
+            if ((existing as RenderInfo).clashesWith((item as RenderInfo))) {
               return true;
             }
           } catch (error) {
@@ -97,6 +91,10 @@ class SpatialIndex {
   /// Clear the spatial index
   void clear() {
     _grid.clear();
+  }
+
+  Map<String, List<T>> getGrid() {
+    return _grid;
   }
 
   /// Get statistics about the spatial index

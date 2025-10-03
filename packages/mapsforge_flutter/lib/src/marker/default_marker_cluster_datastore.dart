@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter/src/marker/abstract_poi_marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_renderer/util.dart';
 
 /// A [MarkerDatastore] that clusters markers to avoid cluttering the map.
 ///
@@ -17,6 +18,7 @@ class DefaultMarkerClusterDatastore<T> extends MarkerDatastore {
   int _zoomlevel = -1;
   BoundingBox? _boundingBox;
   PixelProjection? _projection;
+  bool _disposed = false;
 
   /// Creates a new [DefaultMarkerClusterDatastore].
   ///
@@ -31,8 +33,11 @@ class DefaultMarkerClusterDatastore<T> extends MarkerDatastore {
   @override
   void dispose() {
     _markerDatastore.removeListener(_onDatastoreChanged);
+    _disposed = true;
     super.dispose();
   }
+
+  bool get disposed => _disposed;
 
   void _onDatastoreChanged() {
     // When the underlying datastore changes, we need to re-cluster.
@@ -68,41 +73,29 @@ class DefaultMarkerClusterDatastore<T> extends MarkerDatastore {
 
     final List<AbstractPoiMarker> markersToPaint = _markerDatastore.askRetrieveMarkersToPaint().toList().cast<AbstractPoiMarker>();
     final List<Marker> clustered = [];
-    final List<bool> visited = List.filled(markersToPaint.length, false);
+    if (markersToPaint.isEmpty) {
+      _clusteredMarkers[_zoomlevel] = clustered;
+      return;
+    }
 
-    for (int i = 0; i < markersToPaint.length; i++) {
-      if (visited[i]) {
-        continue;
-      }
+    final SpatialPositionIndex<AbstractPoiMarker> spatialIndex = SpatialPositionIndex(cellSize: _clusterDistance * 2);
+    for (var marker in markersToPaint) {
+      final point = _projection!.latLonToPixel(marker.latLong);
+      spatialIndex.add(marker, point);
+    }
 
-      final AbstractPoiMarker marker1 = markersToPaint[i];
-      final List<AbstractPoiMarker> cluster = [marker1];
-      visited[i] = true;
-
-      final Mappoint point1 = _projection!.latLonToPixel(marker1.latLong);
-
-      for (int j = i + 1; j < markersToPaint.length; j++) {
-        if (visited[j]) {
-          continue;
+    for (final list in spatialIndex.getGrid().values) {
+      if (list.length > 1) {
+        double totalLat = 0;
+        double totalLon = 0;
+        for (final neighbor in list) {
+          totalLat += neighbor.latLong.latitude;
+          totalLon += neighbor.latLong.longitude;
         }
-
-        final AbstractPoiMarker marker2 = markersToPaint[j];
-        final Mappoint point2 = _projection!.latLonToPixel(marker2.latLong);
-
-        if (point1.distance(point2) < _clusterDistance) {
-          cluster.add(marker2);
-          visited[j] = true;
-        }
-      }
-
-      if (cluster.length > 1) {
-        final double avgLat = cluster.map((m) => m.latLong.latitude).reduce((a, b) => a + b) / cluster.length;
-        final double avgLon = cluster.map((m) => m.latLong.longitude).reduce((a, b) => a + b) / cluster.length;
-        final LatLong clusterPosition = LatLong(avgLat, avgLon);
-
-        clustered.add(ClusterMarker(position: clusterPosition, markerCount: cluster.length));
+        final clusterPosition = LatLong(totalLat / list.length, totalLon / list.length);
+        clustered.add(ClusterMarker(position: clusterPosition, markerCount: list.length));
       } else {
-        clustered.add(marker1);
+        clustered.add(list.first);
       }
     }
     _clusteredMarkers[_zoomlevel] = clustered;
