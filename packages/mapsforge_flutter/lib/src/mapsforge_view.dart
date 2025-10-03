@@ -1,12 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/gesture.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
-import 'package:mapsforge_flutter/src/context_menu/context_menu_overlay.dart';
-import 'package:mapsforge_flutter/src/overlay/distance_overlay.dart';
-import 'package:mapsforge_flutter/src/overlay/indoorlevel_overlay.dart';
-import 'package:mapsforge_flutter/src/overlay/no_position_overlay.dart';
-import 'package:mapsforge_flutter/src/overlay/zoom_in_overlay.dart';
-import 'package:mapsforge_flutter/src/overlay/zoom_overlay.dart';
+import 'package:mapsforge_flutter/overlay.dart';
 
 /// Default view for many features of mapsforge. If you want to add or remove these features, just copy the stack() to your own application and modify it
 /// accordingly.
@@ -28,6 +23,8 @@ class MapsforgeView extends StatelessWidget {
         ZoomOverlay(mapModel: mapModel),
         // shows the indoorlevel zoom buttons
         IndoorlevelOverlay(mapModel: mapModel),
+        // shows an icon in the right-upper corner to reset rotation if rotation is active
+        RotationResetOverlay(mapModel: mapModel),
       ];
     }
   }
@@ -36,12 +33,8 @@ class MapsforgeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop
+        // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop, rotation and scaling
         GenericGestureDetector(mapModel: mapModel),
-        // rotates the map when two fingers are pressed and rotated
-        RotationGestureDetector(mapModel: mapModel),
-        // scales the map when two fingers are pressed and zoomed
-        ScaleGestureDetector(mapModel: mapModel),
         // Shows tiles according to the current position
         TileView(mapModel: mapModel),
         // Shows labels (and rotate them) according to the current position (if the renderer supports it)

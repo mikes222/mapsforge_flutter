@@ -108,10 +108,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
           return Stack(
             children: [
               GenericGestureDetector(mapModel: mapModel),
-              // rotates the map when two fingers are pressed and rotated
-              RotationGestureDetector(mapModel: mapModel),
-              // scales the map when two fingers are pressed and zoomed
-              ScaleGestureDetector(mapModel: mapModel),
               // Shows tiles according to the current position
               TileView(mapModel: mapModel),
               // Shows labels (and rotate them) according to the current position (if the renderer supports it)
@@ -128,6 +124,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
               // shows additional overlays or custom overlays
               // shows the indoorlevel zoom buttons
               IndoorlevelOverlay(mapModel: mapModel),
+              // shows a rotation-reset button if rotation is active
+              RotationResetOverlay(mapModel: mapModel),
 
               // listens to tap events (configurable) and shows a context menu (also configurable)
               ContextMenuOverlay(
