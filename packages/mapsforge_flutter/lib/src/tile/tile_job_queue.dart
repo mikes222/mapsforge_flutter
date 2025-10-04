@@ -42,7 +42,19 @@ class TileJobQueue {
     _tileTaskQueue = ParallelTaskQueue(_maxConcurrentTiles);
 
     _subscription = mapModel.positionStream.listen((MapPosition position) {
-      if (_currentJob?.position == position) {
+      if (_currentJob?.tileSet.mapPosition == position) {
+        return;
+      }
+      if (_currentJob?.tileSet.mapPosition.latitude == position.latitude &&
+          _currentJob?.tileSet.mapPosition.longitude == position.longitude &&
+          _currentJob?.tileSet.mapPosition.zoomlevel == position.zoomlevel &&
+          _currentJob?.tileSet.mapPosition.indoorLevel == position.indoorLevel) {
+        // do not recalculate for rotation or scaling
+        TileSet tileSet = TileSet(center: _currentJob!.tileSet.center, mapPosition: position);
+        tileSet.images.addEntries(_currentJob!.tileSet.images.entries);
+        _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, tileSet);
+        _currentJob = myJob;
+        _emitTileSetBatched(_currentJob!.tileSet);
         return;
       }
       TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
@@ -65,9 +77,9 @@ class TileJobQueue {
 
   void dispose() {
     _currentJob?.abort();
+    _batchTimer?.cancel();
     _subscription?.cancel();
     _tileTaskQueue.cancel();
-    _batchTimer?.cancel();
     _tileStream.close();
     _batchTileset = null;
     _tileCache.dispose();
@@ -98,7 +110,7 @@ class TileJobQueue {
     if (_size == null) return;
     final session = PerformanceProfiler().startSession(category: "TileJobQueue");
     TileSet tileSet = TileSet(center: position.getCenter(), mapPosition: position);
-    _CurrentJob myJob = _CurrentJob(position, tileDimension, tileSet);
+    _CurrentJob myJob = _CurrentJob(tileDimension, tileSet);
     _currentJob = myJob;
     List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
 
@@ -178,8 +190,7 @@ class TileJobQueue {
     _batchTimer ??= Timer(const Duration(milliseconds: 16), () {
       // ~60fps
       _batchTimer = null;
-      if (_batchTileset != null) {
-        if (_tileStream.isClosed) return;
+      if (_batchTileset != null && !_tileStream.isClosed) {
         _tileStream.add(_batchTileset!);
       }
     });
@@ -217,8 +228,6 @@ class TileJobQueue {
 //////////////////////////////////////////////////////////////////////////////
 
 class _CurrentJob {
-  final MapPosition position;
-
   final TileDimension tileDimension;
 
   final TileSet tileSet;
@@ -227,7 +236,7 @@ class _CurrentJob {
 
   bool _abort = false;
 
-  _CurrentJob(this.position, this.tileDimension, this.tileSet);
+  _CurrentJob(this.tileDimension, this.tileSet);
 
   void abort() => _abort = true;
 }

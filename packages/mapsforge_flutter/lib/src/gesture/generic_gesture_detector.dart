@@ -1,13 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mapsforge_flutter/gesture.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
-import 'package:mapsforge_flutter/src/gesture/default_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/double_tap_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/drag_n_drop_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/long_tap_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/move_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/rotation_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/scale_handler.dart';
-import 'package:mapsforge_flutter/src/gesture/single_tap_handler.dart';
 
 // todo implement lock for all handlers
 class GenericGestureDetector extends StatefulWidget {

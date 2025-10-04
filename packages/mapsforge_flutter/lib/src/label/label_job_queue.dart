@@ -28,15 +28,31 @@ class LabelJobQueue {
 
   final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
+  /// Stream emission batching timer
+  Timer? _batchTimer;
+
+  LabelSet? _batchLabelset;
+
   LabelJobQueue({required this.mapModel}) {
     _subscription = mapModel.positionStream.listen((MapPosition position) {
-      if (_currentJob?.position == position) {
+      if (_currentJob?.labelSet.mapPosition == position) {
+        return;
+      }
+      if (_currentJob?.labelSet.mapPosition.latitude == position.latitude &&
+          _currentJob?.labelSet.mapPosition.longitude == position.longitude &&
+          _currentJob?.labelSet.mapPosition.zoomlevel == position.zoomlevel &&
+          _currentJob?.labelSet.mapPosition.indoorLevel == position.indoorLevel) {
+        // do not recalculate for rotation or scaling
+        LabelSet labelSet = LabelSet(center: _currentJob!.labelSet.center, mapPosition: position, renderInfos: _currentJob!.labelSet.renderInfos);
+        _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, labelSet);
+        _currentJob = myJob;
+        _emitLabelSetBatched(_currentJob!.labelSet);
         return;
       }
       TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
       if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
         if (_currentJob!._done) {
-          _labelStream.add(_currentJob!.labelSet);
+          _emitLabelSetBatched(_currentJob!.labelSet);
         } else {
           // same information to draw, previous job is still running
           return;
@@ -48,6 +64,8 @@ class LabelJobQueue {
   }
 
   void dispose() {
+    _currentJob?.abort();
+    _batchTimer?.cancel();
     _subscription?.cancel();
     _labelStream.close();
     _cache.dispose();
@@ -74,7 +92,7 @@ class LabelJobQueue {
     if (_size == null) return;
     final session = PerformanceProfiler().startSession(category: "LabelJobQueue");
     LabelSet labelSet = LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: []);
-    _CurrentJob myJob = _CurrentJob(position, tileDimension, labelSet);
+    _CurrentJob myJob = _CurrentJob(tileDimension, labelSet);
     _currentJob = myJob;
     int left = tileDimension.left;
     int top = tileDimension.top;
@@ -93,8 +111,7 @@ class LabelJobQueue {
         });
         if (myJob._abort) return;
         labelSet.renderInfos.add(collection);
-        if (_labelStream.isClosed) return;
-        _labelStream.add(labelSet);
+        _emitLabelSetBatched(labelSet);
         left += _range;
         if (left > tileDimension.right) break;
       }
@@ -107,13 +124,24 @@ class LabelJobQueue {
   }
 
   Stream<LabelSet> get labelStream => _labelStream.stream;
+
+  /// Emit tile set with batching to reduce stream emissions
+  void _emitLabelSetBatched(LabelSet labelSet) {
+    _batchLabelset = labelSet;
+    // Set new timer for batching
+    _batchTimer ??= Timer(const Duration(milliseconds: 16), () {
+      // ~60fps
+      _batchTimer = null;
+      if (_batchLabelset != null && !_labelStream.isClosed) {
+        _labelStream.add(_batchLabelset!);
+      }
+    });
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 class _CurrentJob {
-  final MapPosition position;
-
   final TileDimension tileDimension;
 
   final LabelSet labelSet;
@@ -122,7 +150,7 @@ class _CurrentJob {
 
   bool _abort = false;
 
-  _CurrentJob(this.position, this.tileDimension, this.labelSet);
+  _CurrentJob(this.tileDimension, this.labelSet);
 
   void abort() => _abort = true;
 }

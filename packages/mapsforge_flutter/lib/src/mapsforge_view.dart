@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter/gesture.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/overlay.dart';
 
-/// Default view for many features of mapsforge. If you want to add or remove these features, just copy the stack() to your own application and modify it
+/// Default view for many features of mapsforge. If you want to add or remove these features, just copy the [Stack] to your own application and modify it
 /// accordingly.
 class MapsforgeView extends StatelessWidget {
   final MapModel mapModel;
@@ -21,7 +21,7 @@ class MapsforgeView extends StatelessWidget {
         DistanceOverlay(mapModel: mapModel),
         // Shows zoom-in and zoom-out buttons
         ZoomOverlay(mapModel: mapModel),
-        // shows the indoorlevel zoom buttons
+        // shows the indoorlevel buttons
         IndoorlevelOverlay(mapModel: mapModel),
         // shows an icon in the right-upper corner to reset rotation if rotation is active
         RotationResetOverlay(mapModel: mapModel),
@@ -33,7 +33,7 @@ class MapsforgeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop, rotation and scaling
+        // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop, rotation and scaling. You can plugin your own set of handlers.
         GenericGestureDetector(mapModel: mapModel),
         // Shows tiles according to the current position
         TileView(mapModel: mapModel),
