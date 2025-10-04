@@ -34,6 +34,10 @@ class MapModel {
 
   double get rotationDeg => _lastPosition?.rotation ?? 0.0;
 
+  int? _maxZoomOutLevel;
+
+  int? get maxZoomOutLevel => _maxZoomOutLevel;
+
   MapModel({
     required this.renderer,
     this.zoomlevelRange = const ZoomlevelRange.standard(),
@@ -74,6 +78,20 @@ class MapModel {
     if (deg < -180) deg += 360;
     return deg;
   }
+
+  /// Set or clear the max zoom-out boundary.
+  /// Passing null removes the extra constraint.
+  void setMaxZoomOutLevel(int? level) {
+    if (level == null) {
+      _maxZoomOutLevel = null;
+      return;
+    }
+    // Clamp to the model's overall range to avoid impossible values.
+    final clamped = zoomlevelRange.ensureBounds(level);
+    _maxZoomOutLevel = clamped;
+  }
+
+  int get _effectiveMinZoom => _maxZoomOutLevel ?? zoomlevelRange.zoomlevelMin;
 
   MapPosition? get lastPosition => _lastPosition;
 
@@ -130,24 +148,33 @@ class MapModel {
   }
 
   void zoomOut() {
-    if (_lastPosition!.zoomlevel == zoomlevelRange.zoomlevelMin) return;
+    final current = _lastPosition!.zoomlevel;
+    if (current <= _effectiveMinZoom) return;
     MapPosition newPosition = _lastPosition!.zoomOut();
+    if (newPosition.zoomlevel < _effectiveMinZoom) {
+      newPosition = _lastPosition!.zoomTo(_effectiveMinZoom);
+    }
     setPosition(newPosition);
   }
 
   void zoomTo(int zoomLevel) {
-    zoomLevel = zoomlevelRange.ensureBounds(zoomLevel);
-    if (zoomLevel == _lastPosition!.zoomlevel) return;
-    MapPosition newPosition = _lastPosition!.zoomTo(zoomLevel);
+    // Respect both the model's range and the optional floor.
+    final minZ = _effectiveMinZoom;
+    final maxZ = zoomlevelRange.zoomlevelMax;
+    final clamped = zoomLevel.clamp(minZ, maxZ);
+    if (clamped == _lastPosition!.zoomlevel) return;
+    MapPosition newPosition = _lastPosition!.zoomTo(clamped);
     setPosition(newPosition);
   }
 
   void zoomToAround(double latitude, double longitude, int zoomLevel) {
-    zoomLevel = zoomlevelRange.ensureBounds(zoomLevel);
+    final minZ = _effectiveMinZoom;
+    final maxZ = zoomlevelRange.zoomlevelMax;
+    final clamped = zoomLevel.clamp(minZ, maxZ);
     MapPosition newPosition = _lastPosition!.zoomToAround(
       latitude,
       longitude,
-      zoomLevel,
+      clamped,
     );
     setPosition(newPosition);
   }
