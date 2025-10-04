@@ -1,6 +1,8 @@
 export 'src/marker/area_marker.dart';
 export 'src/marker/caption_marker.dart';
 export 'src/marker/circle_marker.dart';
+export 'src/marker/cluster_marker.dart';
+export 'src/marker/default_marker_cluster_datastore.dart';
 export 'src/marker/default_marker_datastore.dart';
 export 'src/marker/icon_marker.dart';
 export 'src/marker/marker.dart';

@@ -6,5 +6,6 @@ export 'src/overlay/distance_overlay.dart';
 export 'src/overlay/indoor_level_bar.dart';
 export 'src/overlay/indoorlevel_overlay.dart';
 export 'src/overlay/no_position_overlay.dart';
+export 'src/overlay/rotation_reset_overlay.dart';
 export 'src/overlay/zoom_in_overlay.dart';
 export 'src/overlay/zoom_overlay.dart';

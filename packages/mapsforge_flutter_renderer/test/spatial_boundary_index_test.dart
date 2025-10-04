@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
+import 'package:mapsforge_flutter_renderer/src/util/spatial_boundary_index.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
@@ -75,20 +75,20 @@ class _MockRenderInstruction extends Renderinstruction {
 
 void main() {
   group('SpatialIndex', () {
-    late SpatialIndex spatialIndex;
+    late SpatialBoundaryIndex spatialIndex;
 
     setUp(() {
-      spatialIndex = SpatialIndex(cellSize: 100.0);
+      spatialIndex = SpatialBoundaryIndex(cellSize: 100.0);
     });
 
     group('Constructor', () {
       test('should create with default cell size', () {
-        final index = SpatialIndex();
+        final index = SpatialBoundaryIndex();
         expect(index, isNotNull);
       });
 
       test('should create with custom cell size', () {
-        final index = SpatialIndex(cellSize: 50.0);
+        final index = SpatialBoundaryIndex(cellSize: 50.0);
         expect(index, isNotNull);
       });
     });
@@ -98,7 +98,7 @@ void main() {
         final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(1));
@@ -108,7 +108,7 @@ void main() {
       test('should handle item with null boundary', () {
         final item = TestRenderInfo('item1', null);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(0));
@@ -119,7 +119,7 @@ void main() {
         final boundary = const MapRectangle(0, 0, 150, 150); // Spans 4 cells with cellSize=100
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(4)); // Item added to 4 cells
@@ -132,8 +132,8 @@ void main() {
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
-        spatialIndex.add(item1);
-        spatialIndex.add(item2);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        spatialIndex.add(item2, item2.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(2));
@@ -146,7 +146,7 @@ void main() {
       test('should return false for item with null boundary', () {
         final item = TestRenderInfo('item1', null);
 
-        final hasCollision = spatialIndex.hasCollision(item);
+        final hasCollision = spatialIndex.hasCollision(item, item.getBoundaryAbsolute());
 
         expect(hasCollision, isFalse);
       });
@@ -155,7 +155,7 @@ void main() {
         final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
-        final hasCollision = spatialIndex.hasCollision(item);
+        final hasCollision = spatialIndex.hasCollision(item, item.getBoundaryAbsolute());
 
         expect(hasCollision, isFalse);
       });
@@ -166,8 +166,8 @@ void main() {
         final item1 = TestRenderInfo('item1', boundary1, shouldClash: false);
         final item2 = TestRenderInfo('item2', boundary2, shouldClash: false);
 
-        spatialIndex.add(item1);
-        final hasCollision = spatialIndex.hasCollision(item2);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        final hasCollision = spatialIndex.hasCollision(item2, item2.getBoundaryAbsolute());
 
         expect(hasCollision, isFalse);
       });
@@ -178,8 +178,8 @@ void main() {
         final item1 = TestRenderInfo('item1', boundary1, shouldClash: true);
         final item2 = TestRenderInfo('item2', boundary2, shouldClash: true);
 
-        spatialIndex.add(item1);
-        final hasCollision = spatialIndex.hasCollision(item2);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        final hasCollision = spatialIndex.hasCollision(item2, item2.getBoundaryAbsolute());
 
         expect(hasCollision, isTrue);
       });
@@ -190,8 +190,8 @@ void main() {
         final item1 = ExceptionRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
-        spatialIndex.add(item1);
-        final hasCollision = spatialIndex.hasCollision(item2);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        final hasCollision = spatialIndex.hasCollision(item2, item2.getBoundaryAbsolute());
 
         // Should not throw exception and return false
         expect(hasCollision, isFalse);
@@ -203,8 +203,8 @@ void main() {
         final item1 = TestRenderInfo('item1', boundary1, shouldClash: true);
         final item2 = TestRenderInfo('item2', boundary2, shouldClash: true);
 
-        spatialIndex.add(item1);
-        final hasCollision = spatialIndex.hasCollision(item2);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        final hasCollision = spatialIndex.hasCollision(item2, item2.getBoundaryAbsolute());
 
         expect(hasCollision, isTrue);
       });
@@ -215,7 +215,7 @@ void main() {
         final boundary = const MapRectangle(10, 10, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalCells'], equals(1));
@@ -225,7 +225,7 @@ void main() {
         final boundary = const MapRectangle(50, 50, 150, 150); // Crosses cell boundaries
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalCells'], equals(4)); // 2x2 grid
@@ -235,7 +235,7 @@ void main() {
         final boundary = const MapRectangle(-50, -50, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], greaterThan(0));
@@ -245,7 +245,7 @@ void main() {
         final boundary = const MapRectangle(100, 100, 100, 100);
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(1));
@@ -260,8 +260,8 @@ void main() {
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
-        spatialIndex.add(item1);
-        spatialIndex.add(item2);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        spatialIndex.add(item2, item2.getBoundaryAbsolute());
 
         var stats = spatialIndex.getStats();
         expect(stats['totalItems'], greaterThan(0));
@@ -277,9 +277,9 @@ void main() {
         final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
         spatialIndex.clear();
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(1));
@@ -300,7 +300,7 @@ void main() {
         final boundary = const MapRectangle(0, 0, 50, 50);
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalCells'], equals(1));
@@ -317,9 +317,9 @@ void main() {
         final item2 = TestRenderInfo('item2', boundary2);
         final item3 = TestRenderInfo('item3', boundary3);
 
-        spatialIndex.add(item1);
-        spatialIndex.add(item2);
-        spatialIndex.add(item3);
+        spatialIndex.add(item1, item1.getBoundaryAbsolute());
+        spatialIndex.add(item2, item2.getBoundaryAbsolute());
+        spatialIndex.add(item3, item3.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalCells'], equals(2));
@@ -332,7 +332,7 @@ void main() {
         final boundary = const MapRectangle(0, 0, 250, 250); // Spans 9 cells (3x3)
         final item = TestRenderInfo('item1', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalCells'], equals(9));
@@ -352,7 +352,7 @@ void main() {
           final y = (i ~/ 100) * 10.0;
           final boundary = MapRectangle(x, y, x + 5, y + 5);
           final item = TestRenderInfo('item$i', boundary);
-          spatialIndex.add(item);
+          spatialIndex.add(item, item.getBoundaryAbsolute());
         }
 
         stopwatch.stop();
@@ -369,7 +369,7 @@ void main() {
           final y = (i ~/ 50) * 20.0;
           final boundary = MapRectangle(x, y, x + 10, y + 10);
           final item = TestRenderInfo('item$i', boundary, shouldClash: true);
-          spatialIndex.add(item);
+          spatialIndex.add(item, item.getBoundaryAbsolute());
         }
 
         final stopwatch = Stopwatch()..start();
@@ -378,7 +378,7 @@ void main() {
         for (int i = 0; i < 100; i++) {
           final boundary = MapRectangle(i * 5.0, i * 5.0, i * 5.0 + 15, i * 5.0 + 15);
           final testItem = TestRenderInfo('test$i', boundary, shouldClash: true);
-          spatialIndex.hasCollision(testItem);
+          spatialIndex.hasCollision(testItem, testItem.getBoundaryAbsolute());
         }
 
         stopwatch.stop();
@@ -391,7 +391,7 @@ void main() {
         final boundary = const MapRectangle(-1000, -1000, 1000, 1000);
         final item = TestRenderInfo('large', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], greaterThan(0));
@@ -402,32 +402,32 @@ void main() {
         final boundary = const MapRectangle(100, 100, 200, 200); // Exactly on cell boundaries
         final item = TestRenderInfo('boundary', boundary);
 
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = spatialIndex.getStats();
         expect(stats['totalItems'], equals(4)); // Should span 4 cells
       });
 
       test('should handle very small cell size', () {
-        final smallCellIndex = SpatialIndex(cellSize: 1.0);
+        final smallCellIndex = SpatialBoundaryIndex(cellSize: 1.0);
         final boundary = const MapRectangle(0, 0, 5, 5);
         final item = TestRenderInfo('small', boundary);
 
-        smallCellIndex.add(item);
+        smallCellIndex.add(item, item.getBoundaryAbsolute());
 
         final stats = smallCellIndex.getStats();
         expect(stats['totalItems'], equals(36)); // 6x6 grid
       });
 
       test('should handle very large cell size', () {
-        final largeCellIndex = SpatialIndex(cellSize: 10000.0);
+        final largeCellIndex = SpatialBoundaryIndex(cellSize: 10000.0);
         final boundary1 = const MapRectangle(0, 0, 50, 50);
         final boundary2 = const MapRectangle(1000, 1000, 1050, 1050);
         final item1 = TestRenderInfo('item1', boundary1);
         final item2 = TestRenderInfo('item2', boundary2);
 
-        largeCellIndex.add(item1);
-        largeCellIndex.add(item2);
+        largeCellIndex.add(item1, item1.getBoundaryAbsolute());
+        largeCellIndex.add(item2, item2.getBoundaryAbsolute());
 
         final stats = largeCellIndex.getStats();
         expect(stats['totalCells'], equals(1)); // Both in same large cell

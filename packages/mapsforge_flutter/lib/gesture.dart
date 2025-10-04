@@ -1,7 +1,15 @@
+export 'src/gesture/default_handler.dart';
 export 'src/gesture/double_tap_gesture_detector.dart';
+export 'src/gesture/double_tap_handler.dart';
 export 'src/gesture/drag_and_drop_gesture_detector.dart';
+export 'src/gesture/drag_n_drop_handler.dart';
 export 'src/gesture/generic_gesture_detector.dart';
+export 'src/gesture/long_tap_handler.dart';
 export 'src/gesture/move_gesture_detector.dart';
+export 'src/gesture/move_handler.dart';
 export 'src/gesture/rotation_gesture_detector.dart';
+export 'src/gesture/rotation_handler.dart';
 export 'src/gesture/scale_gesture_detector.dart';
+export 'src/gesture/scale_handler.dart';
+export 'src/gesture/single_tap_handler.dart';
 export 'src/gesture/tap_gesture_detector.dart';

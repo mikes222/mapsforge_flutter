@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/src/utils/object_pool.dart';
 import 'package:mapsforge_flutter_renderer/src/util/layerutil.dart';
-import 'package:mapsforge_flutter_renderer/src/util/spatial_index.dart';
+import 'package:mapsforge_flutter_renderer/src/util/spatial_boundary_index.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
@@ -59,7 +59,7 @@ class MockRenderInfo extends RenderInfo {
 void main() {
   group('Performance Optimization Tests', () {
     test('Spatial Index Performance', () {
-      final spatialIndex = SpatialIndex(cellSize: 100.0);
+      final spatialIndex = SpatialBoundaryIndex(cellSize: 100.0);
       final stopwatch = Stopwatch()..start();
 
       // Add 1000 items to spatial index
@@ -68,7 +68,7 @@ void main() {
         final boundary = MapRectangle(i.toDouble(), i.toDouble(), i + 10.0, i + 10.0);
         final item = MockRenderInfo(boundary);
         items.add(item);
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
       }
 
       stopwatch.stop();
@@ -82,7 +82,7 @@ void main() {
       for (int i = 0; i < 100; i++) {
         final testBoundary = MapRectangle(i * 5.0, i * 5.0, i * 5.0 + 15.0, i * 5.0 + 15.0);
         final testItem = MockRenderInfo(testBoundary);
-        if (spatialIndex.hasCollision(testItem)) {
+        if (spatialIndex.hasCollision(testItem, testItem.getBoundaryAbsolute())) {
           collisions++;
         }
       }
@@ -178,7 +178,7 @@ void main() {
       final overallStopwatch = Stopwatch()..start();
 
       // Simulate a complex rendering scenario
-      final spatialIndex = SpatialIndex();
+      final spatialIndex = SpatialBoundaryIndex();
       final renderItems = <MockRenderInfo>[];
 
       // Create 500 render items
@@ -186,7 +186,7 @@ void main() {
         final boundary = MapRectangle((i % 50).toDouble(), (i ~/ 50).toDouble(), (i % 50) + 2.0, (i ~/ 50) + 2.0);
         final item = MockRenderInfo(boundary);
         renderItems.add(item);
-        spatialIndex.add(item);
+        spatialIndex.add(item, item.getBoundaryAbsolute());
       }
 
       // Perform collision detection for 100 new items

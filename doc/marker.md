@@ -228,9 +228,26 @@ Stack(
 )
 ```
 
-## Query markers which are tapped
+## Clustering markers
 
-MapModel.getTappedMarkers()
+Use the ``DefaultMarkerClusterDatastore`` to wrap your marker datastore and cluster nearby markers.
+
+```dart
+// Add to marker datastore
+final markerDatastore = DefaultMarkerDatastore();
+markerDatastore.addMarker(poiMarker);
+
+// Add to your map stack
+Stack(
+  children: [
+    MapsforgeView(mapModel: mapModel),
+    MarkerDatastoreOverlay(markerDatastore: DefaultMarkerClusterDatastore(markerDatastore: markerDatastore)),
+  ],
+)
+```
+
+Note: When finding tapped markers (see below) the Cluster datastore returns the cluster marker instead of the underlying individual markers. 
+
 
 ## Working with markers
 
