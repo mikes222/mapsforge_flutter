@@ -9,3 +9,11 @@ export 'src/overlay/no_position_overlay.dart';
 export 'src/overlay/rotation_reset_overlay.dart';
 export 'src/overlay/zoom_in_overlay.dart';
 export 'src/overlay/zoom_overlay.dart';
+
+//test
+export 'src/camera/map_scene_view.dart';
+export 'src/camera/map_camera.dart';
+export 'src/camera/map_layer.dart';
+export 'src/camera/tile_engine.dart';
+export 'src/camera/tile_layer.dart';
+export 'src/camera/marker_layer.dart';

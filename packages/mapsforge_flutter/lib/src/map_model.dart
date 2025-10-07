@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -37,6 +38,10 @@ class MapModel {
   int? _maxZoomOutLevel;
 
   int? get maxZoomOutLevel => _maxZoomOutLevel;
+  bool _isZoomAnimating = false;
+  int _zoomAnimNonce = 0;
+  double _easeOutCubic(double t) => 1 - (1 - t) * (1 - t) * (1 - t);
+  double _easeOutExpo(double t) => t == 1 ? 1 : 1 - pow(2, -10 * t).toDouble();
 
   MapModel({
     required this.renderer,
@@ -135,10 +140,82 @@ class MapModel {
     _dragNdropSubject.add(event);
   }
 
+  Future<bool> _animateZoomStep({
+    required double endScale,
+    Duration duration = const Duration(milliseconds: 220),
+    int steps = 10,
+    Offset? focalPoint, // screen-space if you have it; null = center
+  }) async {
+    if (_lastPosition == null) return false;
+    final startZoom = _lastPosition!.zoomlevel;
+
+    // bounds check before anim
+    if (endScale > 1.0) {
+      if (startZoom >= zoomlevelRange.zoomlevelMax) return false; // in
+    } else {
+      if (startZoom <= _effectiveMinZoom) return false; // out
+    }
+
+    _isZoomAnimating = true;
+    final myNonce = ++_zoomAnimNonce;
+
+    // Choose easing per direction for a nicer feel
+    final ease = endScale > 1.0 ? _easeOutExpo : _easeOutCubic;
+
+    // Animate scale smoothly without changing discrete zoom level
+    for (int i = 1; i <= steps; i++) {
+      if (myNonce != _zoomAnimNonce) return false; // canceled by new request
+      final t = ease(i / steps);
+      final s = 1.0 + (endScale - 1.0) * t;
+      final fp = focalPoint ?? _lastPosition!.focalPoint;
+      setPosition(_lastPosition!.scaleAround(fp, s));
+      await Future.delayed(duration ~/ steps);
+    }
+
+    if (myNonce != _zoomAnimNonce) return false;
+
+    // Commit one discrete level (heavy work occurs only once)
+    MapPosition committed;
+    if (endScale > 1.0) {
+      committed = _lastPosition!.zoomIn();
+    } else {
+      committed = _lastPosition!.zoomOut();
+      if (committed.zoomlevel < _effectiveMinZoom) {
+        committed = _lastPosition!.zoomTo(_effectiveMinZoom);
+      }
+    }
+    setPosition(committed);
+    if (myNonce == _zoomAnimNonce) _isZoomAnimating = false;
+    return true;
+  }
+
+  Future<bool> zoomInSmooth({
+    int levels = 1,
+    Duration perLevelDuration = const Duration(milliseconds: 220),
+    int stepsPerLevel = 10,
+    Offset? focalPoint,
+  }) async {
+    if (_isZoomAnimating) return false;
+    for (int i = 0; i < levels; i++) {
+      final ok = await _animateZoomStep(
+        endScale: 2.0,
+        duration: perLevelDuration,
+        steps: stepsPerLevel,
+        focalPoint: focalPoint,
+      );
+      if (!ok) return i > 0; // partial success
+    }
+    return true;
+  }
+
   void zoomIn() {
-    if (_lastPosition!.zoomlevel == zoomlevelRange.zoomlevelMax) return;
-    MapPosition newPosition = _lastPosition!.zoomIn();
-    setPosition(newPosition);
+    zoomInSmooth().then((ok) {
+      if (!ok &&
+          _lastPosition != null &&
+          _lastPosition!.zoomlevel < zoomlevelRange.zoomlevelMax) {
+        setPosition(_lastPosition!.zoomIn()); // fallback
+      }
+    });
   }
 
   void zoomInAround(double latitude, double longitude) {
@@ -147,14 +224,37 @@ class MapModel {
     setPosition(newPosition);
   }
 
-  void zoomOut() {
-    final current = _lastPosition!.zoomlevel;
-    if (current <= _effectiveMinZoom) return;
-    MapPosition newPosition = _lastPosition!.zoomOut();
-    if (newPosition.zoomlevel < _effectiveMinZoom) {
-      newPosition = _lastPosition!.zoomTo(_effectiveMinZoom);
+  Future<bool> zoomOutSmooth({
+    int levels = 1,
+    Duration perLevelDuration = const Duration(milliseconds: 200),
+    int stepsPerLevel = 8,
+    Offset? focalPoint,
+  }) async {
+    if (_isZoomAnimating) return false;
+    for (int i = 0; i < levels; i++) {
+      final ok = await _animateZoomStep(
+        endScale: 0.5,
+        duration: perLevelDuration,
+        steps: stepsPerLevel,
+        focalPoint: focalPoint,
+      );
+      if (!ok) return i > 0; // partial success
     }
-    setPosition(newPosition);
+    return true;
+  }
+
+  void zoomOut() {
+    zoomOutSmooth().then((ok) {
+      if (!ok &&
+          _lastPosition != null &&
+          _lastPosition!.zoomlevel > _effectiveMinZoom) {
+        var np = _lastPosition!.zoomOut();
+        if (np.zoomlevel < _effectiveMinZoom) {
+          np = _lastPosition!.zoomTo(_effectiveMinZoom);
+        }
+        setPosition(np);
+      }
+    });
   }
 
   void zoomTo(int zoomLevel) {
