@@ -18,6 +18,8 @@ dependencies:
 
   collection: ^1.19.1
 
+  dio: ^5.9.0
+
   ecache: ^2.1.2
 
   logging: ^1.3.0

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:http/http.dart' as http;
+
+import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer.dart';
 import 'package:mapsforge_flutter_core/src/buffer/readbuffer_source.dart';
@@ -14,9 +15,9 @@ class ReadbufferFileWebWasm implements ReadbufferSource {
   final String _url;
   int? _length;
   int _position = 0;
-  final http.Client _client;
+  final Dio _client;
 
-  ReadbufferFileWebWasm.fromUrl(this._url) : _client = http.Client();
+  ReadbufferFileWebWasm.fromUrl(this._url) : _client = Dio();
 
   @override
   void dispose() {
@@ -63,11 +64,11 @@ class ReadbufferFileWebWasm implements ReadbufferSource {
     if (_length != null) return _length!;
 
     try {
-      final response = await _client.head(Uri.parse(_url));
+      final response = await _client.head(_url);
       if (response.statusCode == 200) {
         final contentLength = response.headers['content-length'];
         if (contentLength != null) {
-          _length = int.parse(contentLength);
+          _length = int.parse(contentLength.first);
           return _length!;
         }
       }
@@ -77,10 +78,13 @@ class ReadbufferFileWebWasm implements ReadbufferSource {
 
     // Fallback to a GET request if HEAD fails or doesn't provide content-length
     try {
-      final response = await _client.get(Uri.parse(_url));
+      final response = await _client.get(_url);
       if (response.statusCode == 200) {
-        _length = response.bodyBytes.length;
-        return _length!;
+        final contentLength = response.headers['content-length'];
+        if (contentLength != null) {
+          _length = int.parse(contentLength.first);
+          return _length!;
+        }
       }
     } catch (e) {
       _log.severe('Failed to get file size from URL: $_url', e);
@@ -106,13 +110,16 @@ class ReadbufferFileWebWasm implements ReadbufferSource {
 
   Future<Uint8List> _readBytes(int position, int length) async {
     final headers = {'Range': 'bytes=$position-${position + length - 1}'};
-    final response = await _client.get(Uri.parse(_url), headers: headers);
+    final response = await _client.request(
+      _url,
+      options: Options(method: "GET", headers: headers),
+    );
 
     if (response.statusCode == 206) {
-      return response.bodyBytes;
+      return response.data;
     } else if (response.statusCode == 200) {
       // Server doesn't support range requests, handle it gracefully
-      return response.bodyBytes.sublist(position, position + length);
+      return response.data.sublist(position, position + length);
     } else {
       throw Exception('HTTP request failed with status: ${response.statusCode}');
     }
