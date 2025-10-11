@@ -42,22 +42,33 @@ class TileJobQueue {
     _tileTaskQueue = ParallelTaskQueue(_maxConcurrentTiles);
 
     _subscription = mapModel.positionStream.listen((MapPosition position) {
+      if (_size == null) {
+        // optional: remember last position to kick a job after setSize()
+        return;
+      }
       if (_currentJob?.tileSet.mapPosition == position) {
         return;
       }
       if (_currentJob?.tileSet.mapPosition.latitude == position.latitude &&
           _currentJob?.tileSet.mapPosition.longitude == position.longitude &&
           _currentJob?.tileSet.mapPosition.zoomlevel == position.zoomlevel &&
-          _currentJob?.tileSet.mapPosition.indoorLevel == position.indoorLevel) {
+          _currentJob?.tileSet.mapPosition.indoorLevel ==
+              position.indoorLevel) {
         // do not recalculate for rotation or scaling
-        TileSet tileSet = TileSet(center: _currentJob!.tileSet.center, mapPosition: position);
+        TileSet tileSet = TileSet(
+          center: _currentJob!.tileSet.center,
+          mapPosition: position,
+        );
         tileSet.images.addEntries(_currentJob!.tileSet.images.entries);
         _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, tileSet);
         _currentJob = myJob;
         _emitTileSetBatched(_currentJob!.tileSet);
         return;
       }
-      TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
+      TileDimension tileDimension = TileHelper.calculateTiles(
+        mapViewPosition: position,
+        screensize: _size!,
+      );
       if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
         if (_currentJob!._done) {
           _emitTileSetBatched(_currentJob!.tileSet);
@@ -90,10 +101,15 @@ class TileJobQueue {
     if (_size == null || _size!.width != width || _size!.height != height) {
       _size = MapSize(width: width, height: height);
       if (mapModel.lastPosition != null) {
-        TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: mapModel.lastPosition!, screensize: _size!);
+        TileDimension tileDimension = TileHelper.calculateTiles(
+          mapViewPosition: mapModel.lastPosition!,
+          screensize: _size!,
+        );
         _currentJob?.abort();
         unawaited(
-          _positionEvent(mapModel.lastPosition!, tileDimension).catchError((error) {
+          _positionEvent(mapModel.lastPosition!, tileDimension).catchError((
+            error,
+          ) {
             print(error);
           }),
         );
@@ -105,14 +121,25 @@ class TileJobQueue {
 
   MapSize? getSize() => _size;
 
-  Future<void> _positionEvent(MapPosition position, TileDimension tileDimension) async {
+  Future<void> _positionEvent(
+    MapPosition position,
+    TileDimension tileDimension,
+  ) async {
     // stop if we do not yet have a size of the view
     if (_size == null) return;
-    final session = PerformanceProfiler().startSession(category: "TileJobQueue");
-    TileSet tileSet = TileSet(center: position.getCenter(), mapPosition: position);
+    final session = PerformanceProfiler().startSession(
+      category: "TileJobQueue",
+    );
+    TileSet tileSet = TileSet(
+      center: position.getCenter(),
+      mapPosition: position,
+    );
     _CurrentJob myJob = _CurrentJob(tileDimension, tileSet);
     _currentJob = myJob;
-    List<Tile> tiles = _createTiles(mapPosition: position, tileDimension: tileDimension);
+    List<Tile> tiles = _createTiles(
+      mapPosition: position,
+      tileDimension: tileDimension,
+    );
 
     // retrieve all available tiles from cache
     for (Tile tile in tiles) {
@@ -130,7 +157,9 @@ class TileJobQueue {
     }
 
     // Load missing tiles in parallel using task queue
-    final missingTiles = tiles.where((tile) => tileSet.images[tile] == null).toList();
+    final missingTiles = tiles
+        .where((tile) => tileSet.images[tile] == null)
+        .toList();
     final futures = <Future<void>>[];
 
     for (Tile tile in missingTiles) {
@@ -139,9 +168,13 @@ class TileJobQueue {
       final future = _tileTaskQueue.add(() async {
         if (myJob._abort) return;
 
-        TilePicture? picture = await _tileCache.getOrProduce(tile, (Tile tile) async {
+        TilePicture? picture = await _tileCache.getOrProduce(tile, (
+          Tile tile,
+        ) async {
           try {
-            JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
+            JobResult result = await mapModel.renderer.executeJob(
+              JobRequest(tile),
+            );
             if (result.picture == null) {
               return null;
               // print("No picture for tile $tile");
@@ -200,15 +233,31 @@ class TileJobQueue {
   /// Get all tiles needed for a given view. The tiles are in the order where it makes most sense for
   /// the user (tile in the middle should be created first
   ///
-  List<Tile> _createTiles({required MapPosition mapPosition, required TileDimension tileDimension}) {
+  List<Tile> _createTiles({
+    required MapPosition mapPosition,
+    required TileDimension tileDimension,
+  }) {
     int zoomLevel = mapPosition.zoomlevel;
     int indoorLevel = mapPosition.indoorLevel;
     Mappoint center = mapPosition.getCenter();
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
-    MappointRelative relative = center.offset(Mappoint(MapsforgeSettingsMgr().tileSize / 2, MapsforgeSettingsMgr().tileSize / 2));
+    MappointRelative relative = center.offset(
+      Mappoint(
+        MapsforgeSettingsMgr().tileSize / 2,
+        MapsforgeSettingsMgr().tileSize / 2,
+      ),
+    );
     Map<Tile, double> tileMap = <Tile, double>{};
-    for (int tileY = tileDimension.top; tileY <= tileDimension.bottom; ++tileY) {
-      for (int tileX = tileDimension.left; tileX <= tileDimension.right; ++tileX) {
+    for (
+      int tileY = tileDimension.top;
+      tileY <= tileDimension.bottom;
+      ++tileY
+    ) {
+      for (
+        int tileX = tileDimension.left;
+        tileX <= tileDimension.right;
+        ++tileX
+      ) {
         Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
         Mappoint leftUpper = tile.getLeftUpper();
         // Replace pow() with multiplication for better performance
@@ -219,7 +268,8 @@ class TileJobQueue {
     }
     //_log.info("$tileTop, $tileBottom, sort ${tileMap.length} items");
 
-    List<Tile> sortedKeys = tileMap.keys.toList(growable: false)..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
+    List<Tile> sortedKeys = tileMap.keys.toList(growable: false)
+      ..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
 
     return sortedKeys;
   }
