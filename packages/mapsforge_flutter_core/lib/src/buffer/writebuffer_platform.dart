@@ -7,6 +7,7 @@
 ///
 /// This allows the package to be compatible with web while maintaining full
 /// functionality on platforms that support file system operations.
+library;
 
 // Conditional exports based on platform
 export 'writebuffer_web.dart' if (dart.library.io) 'writebuffer_io.dart';
