@@ -1,6 +1,5 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rule/symbol_searcher.dart';
 
 /// Abstract base class for all rendering instructions in the theme system.

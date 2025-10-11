@@ -9,8 +9,8 @@ void main() {
     MatchingCacheKey m1 = MatchingCacheKey(tagList1, 0);
     MatchingCacheKey m2 = MatchingCacheKey(tagList1, 0);
     MatchingCacheKey m3 = MatchingCacheKey(TagCollection(tags: [tag1]), 0);
-    MatchingCacheKey m4 = MatchingCacheKey(TagCollection(tags: [Tag('', '')]), 0);
-    MatchingCacheKey m5 = MatchingCacheKey(TagCollection(tags: [Tag('test', '')]), 0);
+    MatchingCacheKey m4 = MatchingCacheKey(TagCollection(tags: [const Tag('', '')]), 0);
+    MatchingCacheKey m5 = MatchingCacheKey(TagCollection(tags: [const Tag('test', '')]), 0);
     expect(tag1 == const Tag('', ''), true);
     //    expect(tagList1 == [tag1], true);
     //    expect(m1.hashCode, m1.hashCode);

@@ -20,6 +20,12 @@
     flutter format .
 ````
 
+[ ] Fix issues
+
+````bash
+    dart fix --apply
+````
+
 [ ] Increase version in pubspec.yaml
 
 manual:

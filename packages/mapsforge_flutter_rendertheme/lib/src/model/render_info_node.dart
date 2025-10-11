@@ -1,7 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
 
 class RenderInfoNode<T extends Renderinstruction> extends RenderInfo<T> {
   final NodeProperties nodeProperties;

@@ -2,7 +2,6 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
-import 'package:mapsforge_flutter_rendertheme/src/model/map_display.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/fill_src_mixin.dart';

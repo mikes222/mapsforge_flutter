@@ -7,9 +7,9 @@ void main() {
   group('MatchingCacheKey Performance Optimizations', () {
     group('Hash Function Optimization', () {
       test('should generate different hashes for different tag combinations', () {
-        final tags1 = TagCollection(tags: [Tag('highway', 'primary'), Tag('name', 'Main Street')]);
-        final tags2 = TagCollection(tags: [Tag('highway', 'secondary'), Tag('name', 'Main Street')]);
-        final tags3 = TagCollection(tags: [Tag('highway', 'primary'), Tag('name', 'Side Street')]);
+        final tags1 = TagCollection(tags: [const Tag('highway', 'primary'), const Tag('name', 'Main Street')]);
+        final tags2 = TagCollection(tags: [const Tag('highway', 'secondary'), const Tag('name', 'Main Street')]);
+        final tags3 = TagCollection(tags: [const Tag('highway', 'primary'), const Tag('name', 'Side Street')]);
 
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);
@@ -21,7 +21,7 @@ void main() {
       });
 
       test('should generate same hash for identical keys', () {
-        final tags = TagCollection(tags: [Tag('highway', 'primary'), Tag('name', 'Main Street')]);
+        final tags = TagCollection(tags: [const Tag('highway', 'primary'), const Tag('name', 'Main Street')]);
 
         final key1 = MatchingCacheKey(tags, 0);
         final key2 = MatchingCacheKey(tags, 0);
@@ -50,7 +50,7 @@ void main() {
       });
 
       test('should incorporate indoor level in hash', () {
-        final tags = TagCollection(tags: [Tag('highway', 'primary')]);
+        final tags = TagCollection(tags: [const Tag('highway', 'primary')]);
 
         final key1 = MatchingCacheKey(tags, 0);
         final key2 = MatchingCacheKey(tags, 1);
