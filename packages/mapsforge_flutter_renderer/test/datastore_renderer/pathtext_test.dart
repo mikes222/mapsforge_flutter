@@ -36,9 +36,9 @@ void main() {
       datastore.addWay(
         Way(
           0,
-          [Tag('highway', 'motorway'), Tag('ref', 'A234')],
+          [const Tag('highway', 'motorway'), const Tag('ref', 'A234')],
           [
-            [LatLong(45.998, 17.996), LatLong(46.0006, 18.0006)],
+            [const LatLong(45.998, 17.996), const LatLong(46.0006, 18.0006)],
           ],
           null,
         ),
@@ -86,9 +86,9 @@ void main() {
       datastore.addWay(
         Way(
           0,
-          [Tag('highway', 'motorway'), Tag('ref', 'A246589')],
+          [const Tag('highway', 'motorway'), const Tag('ref', 'A246589')],
           [
-            [LatLong(46.0006, 18.0006), LatLong(45.998, 17.996)],
+            [const LatLong(46.0006, 18.0006), const LatLong(45.998, 17.996)],
           ],
           null,
         ),
@@ -136,9 +136,9 @@ void main() {
       datastore.addWay(
         Way(
           0,
-          [Tag('highway', 'motorway'), Tag('ref', 'A246589'), Tag('oneway', 'yes')],
+          [const Tag('highway', 'motorway'), const Tag('ref', 'A246589'), const Tag('oneway', 'yes')],
           [
-            [LatLong(46.0006, 18.0006), LatLong(45.998, 17.996)],
+            [const LatLong(46.0006, 18.0006), const LatLong(45.998, 17.996)],
           ],
           null,
         ),

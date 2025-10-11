@@ -32,7 +32,7 @@ void main() {
       Rendertheme renderTheme = await RenderThemeBuilder.createFromFile("test/datastore_renderer/defaultrender.xml");
       MemoryDatastore datastore = MemoryDatastore();
       // symbol in the center of the poi, name above, ele below
-      datastore.addPoi(PointOfInterest(0, [Tag('natural', 'peak'), Tag('name', 'TestPOI'), Tag('ele', '500m')], LatLong(46, 18)));
+      datastore.addPoi(PointOfInterest(0, [const Tag('natural', 'peak'), const Tag('name', 'TestPOI'), const Tag('ele', '500m')], const LatLong(46, 18)));
       Tile tile = Tile(x, y, zoomlevel, l);
       JobRequest mapGeneratorJob = JobRequest(tile);
       DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);

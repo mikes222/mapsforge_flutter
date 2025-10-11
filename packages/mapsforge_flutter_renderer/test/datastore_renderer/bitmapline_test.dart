@@ -39,9 +39,9 @@ void main() {
       datastore.addWay(
         Way(
           0,
-          [Tag('highway', 'track'), Tag('access', 'destination')],
+          [const Tag('highway', 'track'), const Tag('access', 'destination')],
           [
-            [LatLong(45.96, 17.953), LatLong(46.0006, 18.0006)],
+            [const LatLong(45.96, 17.953), const LatLong(46.0006, 18.0006)],
           ],
           null,
         ),
