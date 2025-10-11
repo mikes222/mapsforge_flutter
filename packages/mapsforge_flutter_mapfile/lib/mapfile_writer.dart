@@ -9,6 +9,7 @@
 /// - `SubfileCreator`: A helper for creating the various sub-files within a .map file.
 /// - `SubfileFiller`: A helper for populating the sub-files with data.
 /// - `WayHolder`: A data holder for way information during the writing process.
+library;
 export 'src/mapfile.dart';
 export 'src/model/map_header_info.dart';
 export 'src/writer/mapfile_writer.dart';

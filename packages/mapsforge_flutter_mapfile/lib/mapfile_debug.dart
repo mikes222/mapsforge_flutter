@@ -6,5 +6,6 @@
 /// It exports:
 /// - `QueryParameters`: A class to define parameters for querying map data.
 /// - `SubfileParameter`: An enum to specify which sub-file to inspect.
+library;
 export 'src/model/query_parameters.dart';
 export 'src/model/subfile_parameter.dart';
