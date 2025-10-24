@@ -47,7 +47,6 @@ class _LabelViewState extends State<LabelView> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        // Be defensive in case scale factor is unavailable early.
         final double scale = MapsforgeSettingsMgr().getDeviceScaleFactor();
 
         jobQueue.setSize(
