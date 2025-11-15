@@ -25,6 +25,8 @@ class MyContextMenu extends StatelessWidget {
 
   final Datastore? datastore;
 
+  final Rendertheme renderTheme;
+
   const MyContextMenu({
     super.key,
     required this.info,
@@ -34,6 +36,7 @@ class MyContextMenu extends StatelessWidget {
     required this.configuration,
     required this.downloadFile,
     this.datastore,
+    required this.renderTheme,
   });
 
   @override
@@ -158,16 +161,14 @@ class MyContextMenu extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(border: Border.all(color: LatLongUtils.isClosedWay(wayinfo.latLongs) ? Colors.yellow : Colors.red)),
           child: Row(
+            spacing: 4,
             children: [
               if (LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length > 1) const Icon(Icons.rectangle),
               if (LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length <= 1) const Icon(Icons.rectangle_outlined),
               if (!LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length > 1) const Icon(Icons.polymer),
               if (!LatLongUtils.isClosedWay(wayinfo.latLongs) && wayinfo.way.latLongs.length <= 1) const Icon(Icons.polyline_rounded),
-              const SizedBox(width: 4),
               Text("Layer ${wayinfo.way.layer}"),
-              const SizedBox(width: 4),
               Text("Idx ${wayinfo.idx}"),
-              const SizedBox(width: 4),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: wayinfo.way.tags.tags.map((e) => Text("${e.key} = ${e.value}", style: const TextStyle(fontSize: 10))).toList(),
@@ -179,14 +180,14 @@ class MyContextMenu extends StatelessWidget {
       onTap: () {
         //debugDatastore.createWayMarker(wayinfo.way, wayinfo.latLongs, wayinfo.idx);
         print("Way: ${wayinfo.way} (idx: ${wayinfo.idx}), ${LatLongUtils.isClosedWay(wayinfo.latLongs) ? "Closed" : "Open"}");
-        // RenderthemeLevel renderthemeLevel = renderTheme.prepareZoomlevel(tile.zoomLevel);
-        // if (LatLongUtils.isClosedWay(wayinfo.latLongs)) {
-        //   List<Shape> shapes = renderthemeLevel.matchClosedWay(tile, wayinfo.way);
-        //   shapes.forEach((shape) => print(shape.toString()));
-        // } else {
-        //   List<Shape> shapes = renderthemeLevel.matchLinearWay(tile, wayinfo.way);
-        //   shapes.forEach((shape) => print(shape.toString()));
-        // }
+        RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(tile.zoomLevel);
+        if (LatLongUtils.isClosedWay(wayinfo.latLongs)) {
+          List<Renderinstruction> shapes = renderthemeLevel.matchClosedWay(tile, wayinfo.way);
+          shapes.forEach((shape) => print(shape.toString()));
+        } else {
+          List<Renderinstruction> shapes = renderthemeLevel.matchOpenWay(tile, wayinfo.way);
+          shapes.forEach((shape) => print(shape.toString()));
+        }
       },
     );
   }
@@ -252,7 +253,7 @@ class MyContextMenu extends StatelessWidget {
     );
     debugDatastore.addMarker(circleMarker);
 
-    _createWayMarker(latLongs, idx, way, true);
+    _createWayMarker(latLongs, idx, way, false);
     circleMarker = CircleMarker(
       key: "$way $idx last",
       latLong: latLongs.last,

@@ -91,6 +91,10 @@ class RenderinstructionPolylineText extends Renderinstruction
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_WIDTH == name) {
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
+      } else if (Renderinstruction.TEXT_ORIENTATION == name) {
+        // left, not yet implemented
+      } else if (Renderinstruction.CAT == name) {
+        cat = value;
       } else {
         throw Exception("Parsing problems $name=$value");
       }

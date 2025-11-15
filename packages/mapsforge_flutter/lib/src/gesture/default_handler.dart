@@ -74,6 +74,7 @@ class DefaultHandler {
   }
 
   bool hasMoved(Offset offset) {
+    if (startOffset == null) return false;
     if ((startOffset!.dx - offset.dx).abs() > maxDistance || (startOffset!.dy - offset.dy).abs() > maxDistance) {
       return true;
     }

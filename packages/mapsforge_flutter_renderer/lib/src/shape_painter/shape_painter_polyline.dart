@@ -85,6 +85,7 @@ class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
   void renderWay(RenderInfo renderInfo, RenderContext renderContext, WayProperties wayProperties) {
     if (renderContext is! UiRenderContext) throw Exception("renderContext is not UiRenderContext ${renderContext.runtimeType}");
     if (stroke == null) return;
+
     UiPath path = calculatePath(wayProperties.getCoordinatesAbsolute(), renderContext.reference, renderinstruction.dy);
     renderContext.canvas.drawPath(path, stroke!);
   }

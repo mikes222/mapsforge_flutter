@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_path.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
+import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 /// An abstract base class for shape painters that provides a utility method for
 /// converting a list of geo-coordinates into a `UiPath`.
@@ -20,12 +20,17 @@ abstract class UiShapePainter<T extends Renderinstruction> extends ShapePainter<
     // omit holes in the area. Without this the hole is also drawn.
     path.setFillRule(MapFillRule.EVEN_ODD);
     for (var outerList in coordinatesAbsolute) {
+      if (outerList.length < 2) continue;
       if (_isOutside(outerList, 5000)) continue;
-      outerList.forEachIndexed((int idx, Mappoint point) {
+      List<Mappoint> c = outerList;
+      if (dy.abs() >= 2) {
+        c = MapPathHelper.parallelPath(outerList, dy);
+      }
+      c.forEachIndexed((int idx, Mappoint point) {
         if (idx == 0) {
-          path.moveToMappoint(point.offset(reference).offset(0, dy));
+          path.moveToMappoint(point.offset(reference));
         } else {
-          path.lineToMappoint(point.offset(reference).offset(0, dy));
+          path.lineToMappoint(point.offset(reference));
         }
       });
     }

@@ -25,7 +25,7 @@ class UiPaint {
     if (strokeWidth != null) _paint.strokeWidth = strokeWidth;
     if (cap != null) setStrokeCap(cap);
     if (join != null) setStrokeJoin(join);
-    if (strokeDasharray != null) _strokeDasharray = strokeDasharray;
+    _strokeDasharray = strokeDasharray;
   }
 
   /// Creates a new paint object for filling paths.

@@ -122,6 +122,10 @@ class RenderinstructionCaption extends Renderinstruction
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.SYMBOL_ID == name) {
         symbolId = value;
+      } else if (Renderinstruction.CAT == name) {
+        cat = value;
+      } else if (Renderinstruction.TEXT_WRAP_WIDTH == name) {
+        // todo
       } else {
         throw Exception("Parsing problems $name=$value");
       }

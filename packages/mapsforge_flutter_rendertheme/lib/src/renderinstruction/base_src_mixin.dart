@@ -7,7 +7,7 @@ mixin BaseSrcMixin {
 
   int priority = 0;
 
-  double dy = 0;
+  double _dy = 0;
 
   Scale scale = Scale.STROKE;
 
@@ -21,21 +21,30 @@ mixin BaseSrcMixin {
   /// If true the symbol rotates with the map.
   bool rotateWithMap = false;
 
+  String? cat;
+
+  double get dy => _dy;
+
   void setDy(double value) {
-    dy = value * MapsforgeSettingsMgr().getUserScaleFactor();
+    _dy = value * MapsforgeSettingsMgr().getDeviceScaleFactor();
   }
 
   void baseSrcMixinClone(BaseSrcMixin base) {
     // level is set via constructor
     //level = base.level;
     priority = base.priority;
-    dy = base.dy;
+    _dy = base._dy;
     scale = base.scale;
     rotateWithMap = base.rotateWithMap;
+    cat = base.cat;
   }
 
   void baseSrcMixinScale(BaseSrcMixin base, int zoomlevel) {
     baseSrcMixinClone(base);
+    if (zoomlevel >= MapsforgeSettingsMgr().strokeMinZoomlevel) {
+      double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, MapsforgeSettingsMgr().strokeMinZoomlevel);
+      _dy = _dy * scaleFactor;
+    }
   }
 
   void setScaleFromValue(String value) {

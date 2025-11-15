@@ -29,7 +29,6 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
 
-
   @override
   void initState() {
     super.initState();
@@ -80,7 +79,10 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             RawMaterialButton(
-              onPressed: () => widget.mapModel.zoomIn(),
+              onPressed: () {
+                if (widget.mapModel.lastPosition == null) return;
+                widget.mapModel.zoomIn();
+              },
               elevation: 2.0,
               fillColor: fillColor,
               child: const Icon(Icons.add),
@@ -91,7 +93,10 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
             ),
             SizedBox(height: toolbarSpacing),
             RawMaterialButton(
-              onPressed: () => widget.mapModel.zoomOut(),
+              onPressed: () {
+                if (widget.mapModel.lastPosition == null) return;
+                widget.mapModel.zoomOut();
+              },
               elevation: 2.0,
               fillColor: fillColor,
               child: const Icon(Icons.remove),

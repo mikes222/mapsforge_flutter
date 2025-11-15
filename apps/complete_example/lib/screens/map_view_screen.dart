@@ -47,12 +47,13 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
   MapModel? _mapModel;
 
+  Rendertheme? _rendertheme;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // FutureBuilder should NOT call the future directly because we would risk creating the model multiple times. Instead this is the first
     // time we can create the future AND having the context.
-    print("new CreateModleFuture");
     _createModelFuture ??= createModel(context);
   }
 
@@ -141,6 +142,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                   configuration: widget.configuration,
                   downloadFile: widget.downloadPath,
                   datastore: datastore,
+                  renderTheme: _rendertheme!,
                 );
               },
             ),
@@ -153,15 +155,15 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   Future<MapModel> createModel(BuildContext context) async {
-    // Hillshading needs resources from filesystem
-    Directory directory = await getTemporaryDirectory();
-    // configure a loader to read images from the filesystem for hillshading
-    SymbolCacheMgr().addLoader("file:ele_res/", ImageFileLoader(pathPrefix: "${directory.path}/sicilia_oam/"));
-
     // find the device to pixel ratio end set the global property accordingly. This will shrink the tiles, requires to produce more tiles but makes the
     // map crispier.
     double ratio = MediaQuery.devicePixelRatioOf(context);
     MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
+
+    // Hillshading needs resources from filesystem
+    Directory directory = await getTemporaryDirectory();
+    // configure a loader to read images from the filesystem for hillshading
+    SymbolCacheMgr().addLoader("file:ele_res/", ImageFileLoader(pathPrefix: "${directory.path}/sicilia_oam/"));
 
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
@@ -170,10 +172,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);
-      Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
+      _rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, rendertheme, useIsolateReader: !StorageMgr().isEnabled());
+      renderer = DatastoreRenderer(datastore!, _rendertheme!, useIsolateReader: !StorageMgr().isEnabled());
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {

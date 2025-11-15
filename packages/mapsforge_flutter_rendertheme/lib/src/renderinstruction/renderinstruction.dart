@@ -117,6 +117,15 @@ abstract class Renderinstruction {
   /// Symbol width attribute for icon sizing.
   static final String SYMBOL_WIDTH = "symbol-width";
 
+  /// curve for lines. Introduced for Tiramisu theme.
+  static final String CURVE = "curve";
+
+  /// Text orientation for polyline_text. Introduced for Tiramisu theme.
+  static final String TEXT_ORIENTATION = "text-orientation";
+
+  /// max text width before wrapping occurs. Introduced for Tiramisu theme.
+  static final String TEXT_WRAP_WIDTH = "text-wrap-width";
+
   /// Display mode controlling when this instruction should be rendered.
   MapDisplay display = MapDisplay.IFSPACE;
 
@@ -155,4 +164,9 @@ abstract class Renderinstruction {
   final int serial;
 
   Renderinstruction() : serial = _nextId++;
+
+  @override
+  String toString() {
+    return 'Renderinstruction{display: $display, level: $level, serial: $serial}';
+  }
 }

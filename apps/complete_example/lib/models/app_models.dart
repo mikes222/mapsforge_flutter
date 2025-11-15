@@ -19,7 +19,8 @@ enum RenderTheme {
   darkTheme('Dark Theme', 'assets/render_theme/darkrender.xml'),
   mapsforgeTheme('Maspforge Default Theme', 'assets/render_theme/mapsforge_default.xml'),
   siziliaTheme('Sicilia Hillshading Theme', 'assets/render_theme/sicilia_oam.xml'),
-  bikerTheme('Biker Theme', 'assets/render_theme/biker.xml');
+  bikerTheme('Biker Theme', 'assets/render_theme/biker.xml'),
+  tiramisuTheme('Tiramisu Theme', 'assets/render_theme/Tiramisu.xml');
 
   const RenderTheme(this.displayName, this.fileName);
   final String displayName;
@@ -194,6 +195,15 @@ class MapLocations {
       url: 'https://hiker.bg/bgmountains.map',
       centerLatitude: 41,
       centerLongitude: 23,
+      defaultZoomLevel: 11,
+      country: 'Unknown',
+    ),
+    MapLocation(
+      name: 'Spain-Portugal',
+      description: 'Spain-Portugal',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/Spain-Portugal_oam.osm.map',
+      centerLatitude: 37.6374038,
+      centerLongitude: -6.0195851,
       defaultZoomLevel: 11,
       country: 'Unknown',
     ),

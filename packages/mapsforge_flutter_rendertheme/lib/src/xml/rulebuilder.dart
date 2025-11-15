@@ -313,6 +313,8 @@ class RuleBuilder {
         ruleBuilder.parse(rootElement);
       } catch (error, stacktrace) {
         _log.warning("Error while parsing rule $ruleBuilder which is a subrule of $this", error, stacktrace);
+        print("error: $error");
+        print("stacktrace: $stacktrace");
       }
       ruleBuilderStack.add(ruleBuilder);
       // after parsing we get the current max levels from this subrule and use it for the next subrules.

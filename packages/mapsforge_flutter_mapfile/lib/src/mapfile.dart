@@ -38,7 +38,7 @@ class IsolateMapfile implements Datastore {
 
   IsolateMapfile._();
 
-    /// Creates a new `IsolateMapfile` instance.
+  /// Creates a new `IsolateMapfile` instance.
   ///
   /// This will spawn a new isolate and initialize a `Mapfile` within it using
   /// the provided [filename] and [preferredLanguage].
@@ -230,7 +230,7 @@ class Mapfile extends MapDatastore {
 
   final Cache<String, Readbuffer> _cache = LfuCache(capacity: 100);
 
-    /// Creates a `Mapfile` instance from a file path.
+  /// Creates a `Mapfile` instance from a file path.
   ///
   /// This is the standard way to open a .map file from the file system.
   /// [filename] is the path to the .map file.
@@ -242,7 +242,7 @@ class Mapfile extends MapDatastore {
     return mapFile;
   }
 
-    /// Creates a `Mapfile` instance from a byte array in memory.
+  /// Creates a `Mapfile` instance from a byte array in memory.
   ///
   /// This is useful for loading map files that are not stored on the local file
   /// system, such as those downloaded from a network.
@@ -291,7 +291,7 @@ class Mapfile extends MapDatastore {
     _queue.dispose();
   }
 
-    /// Returns the low-level header and sub-file information for this map file.
+  /// Returns the low-level header and sub-file information for this map file.
   ///
   /// This is generally used for internal or debugging purposes. For high-level
   /// metadata, use [getMapHeaderInfo].
@@ -300,7 +300,7 @@ class Mapfile extends MapDatastore {
     return _mapFileInfo;
   }
 
-    /// Returns the high-level metadata for this map file, such as its bounding
+  /// Returns the high-level metadata for this map file, such as its bounding
   /// box, start position, and available languages.
   ///
   /// Requires [_lateOpen] to have been completed.
@@ -308,7 +308,7 @@ class Mapfile extends MapDatastore {
     return _mapFileInfo.getMapHeaderInfo();
   }
 
-    /// Returns a list of all languages available in this map file.
+  /// Returns a list of all languages available in this map file.
   ///
   /// This is parsed from the languages preference string in the map file header.
   /// Returns `null` if no language information is available.
@@ -502,14 +502,14 @@ class Mapfile extends MapDatastore {
     return datastoreBundle;
   }
 
-    /// Reads only label data (POIs and named ways) for a single [tile].
+  /// Reads only label data (POIs and named ways) for a single [tile].
   @override
   Future<DatastoreBundle> readLabelsSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.LABELS);
   }
 
-    /// Reads label data for a rectangular area of tiles.
+  /// Reads label data for a rectangular area of tiles.
   ///
   /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
@@ -518,7 +518,7 @@ class Mapfile extends MapDatastore {
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.LABELS);
   }
 
-    /// Reads all map data (ways and POIs) for a single [tile].
+  /// Reads all map data (ways and POIs) for a single [tile].
   @override
   Future<DatastoreBundle> readMapDataSingle(Tile tile) async {
     await _lateOpen();
@@ -526,7 +526,7 @@ class Mapfile extends MapDatastore {
     return result;
   }
 
-    /// Reads all map data for a rectangular area of tiles.
+  /// Reads all map data for a rectangular area of tiles.
   ///
   /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
@@ -535,14 +535,14 @@ class Mapfile extends MapDatastore {
     return _readMapDataComplete(upperLeft, lowerRight, MapfileSelector.ALL);
   }
 
-    /// Reads only Point of Interest (POI) data for a single [tile].
+  /// Reads only Point of Interest (POI) data for a single [tile].
   @override
   Future<DatastoreBundle?> readPoiDataSingle(Tile tile) async {
     await _lateOpen();
     return _readMapDataComplete(tile, tile, MapfileSelector.POIS);
   }
 
-    /// Reads POI data for a rectangular area of tiles.
+  /// Reads POI data for a rectangular area of tiles.
   ///
   /// Precondition: `upperLeft.tileX <= lowerRight.tileX` and `upperLeft.tileY <= lowerRight.tileY`.
   @override
@@ -620,7 +620,7 @@ class Mapfile extends MapDatastore {
     return zoomTable;
   }
 
-    /// Restricts the zoom levels for which this datastore will provide data.
+  /// Restricts the zoom levels for which this datastore will provide data.
   ///
   /// This is useful when combining multiple map files in a `MultiMapDatabase`
   /// to ensure that each map is only used for its intended zoom range.
@@ -628,7 +628,7 @@ class Mapfile extends MapDatastore {
     zoomlevelRange = ZoomlevelRange(minZoom, maxZoom);
   }
 
-    /// Returns the recommended start position for this map file.
+  /// Returns the recommended start position for this map file.
   ///
   /// If a start position is defined in the map header, it is returned.
   /// Otherwise, the center of the map's bounding box is returned.
@@ -642,7 +642,7 @@ class Mapfile extends MapDatastore {
     return getMapHeaderInfo().boundingBox.getCenterPoint();
   }
 
-    /// Returns the recommended start zoom level for this map file.
+  /// Returns the recommended start zoom level for this map file.
   ///
   /// If a start zoom level is defined in the map header, it is returned.
   /// Otherwise, [DEFAULT_START_ZOOM_LEVEL] is returned.

@@ -15,13 +15,15 @@ mixin StrokeSrcMixin {
 
   int _strokeMinZoomLevel = MapsforgeSettingsMgr().strokeMinZoomlevel;
 
+  int _dashMinZoomlevel = MapsforgeSettingsMgr().dashMinZoomlevel;
+
   void setStrokeColorFromNumber(int color) {
     _strokeColor = color;
   }
 
   void setStrokeWidth(double strokeWidth) {
     assert(strokeWidth >= 0);
-    _strokeWidth = strokeWidth * MapsforgeSettingsMgr().getUserScaleFactor();
+    _strokeWidth = strokeWidth * MapsforgeSettingsMgr().getDeviceScaleFactor();
   }
 
   double get strokeWidth => _strokeWidth;
@@ -41,6 +43,7 @@ mixin StrokeSrcMixin {
     _strokeJoin = base._strokeJoin;
     _strokeDashArray = base._strokeDashArray;
     _strokeMinZoomLevel = base._strokeMinZoomLevel;
+    _dashMinZoomlevel = base._dashMinZoomlevel;
   }
 
   void strokeSrcMixinScale(StrokeSrcMixin base, int zoomlevel) {
@@ -48,7 +51,10 @@ mixin StrokeSrcMixin {
     if (zoomlevel >= _strokeMinZoomLevel) {
       double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _strokeMinZoomLevel);
       _strokeWidth = _strokeWidth * scaleFactor;
+    }
+    if (zoomlevel >= _dashMinZoomlevel) {
       if (_strokeDashArray != null) {
+        double scaleFactor = MapsforgeSettingsMgr().calculateScaleFactor(zoomlevel, _dashMinZoomlevel);
         List<double> newStrokeDashArray = [];
         for (var element in _strokeDashArray!) {
           newStrokeDashArray.add(element * scaleFactor);

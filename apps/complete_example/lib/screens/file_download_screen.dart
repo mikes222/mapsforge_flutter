@@ -27,6 +27,7 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
   String? _downloadPath;
   bool _isDownloadStarted = false;
   String? _errorMessage;
+  StackTrace? _stacktrace;
 
   @override
   void initState() {
@@ -74,7 +75,7 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
                   ],
 
                   // Error message
-                  if (_errorMessage != null) ErrorhelperWidget(error: _errorMessage!),
+                  if (_errorMessage != null) ErrorhelperWidget(error: _errorMessage!, stackTrace: _stacktrace),
 
                   if (!kIsWeb && !_isDownloadStarted) _buildStartDownloadButton(),
                   // Web download info
@@ -83,6 +84,25 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
                   if (percent == 100 && _errorMessage == null) _buildNavigateToMapButton(),
                   // Retry button
                   if (_errorMessage != null) _buildRetryButton(),
+                  // Container(
+                  //   width: double.infinity,
+                  //   margin: const EdgeInsets.only(top: 16),
+                  //   child: ElevatedButton.icon(
+                  //     onPressed: () async {
+                  //       String destination = _downloadPath!.substring(0, _downloadPath!.lastIndexOf("/"));
+                  //       await UnzipService().unzipAbsolute(
+                  //         _downloadPath!,
+                  //         destination,
+                  //         onProgress: (int received, int total, String what) {
+                  //           print("$what: $received / $total");
+                  //         },
+                  //       );
+                  //     },
+                  //     icon: const Icon(Icons.folder_zip),
+                  //     label: const Text('Unzip'),
+                  //     style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                  //   ),
+                  // ),
                 ],
               );
             },
@@ -98,6 +118,7 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
     setState(() {
       _isDownloadStarted = true;
       _errorMessage = null;
+      _stacktrace = null;
       percent = 0;
     });
 
@@ -123,9 +144,11 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stacktrace) {
+      print(stacktrace);
       setState(() {
         _errorMessage = e.toString();
+        _stacktrace = stacktrace;
       });
 
       if (mounted) {
@@ -262,6 +285,7 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
           setState(() {
             _isDownloadStarted = false;
             _errorMessage = null;
+            _stacktrace = null;
             percent = 0;
           });
           _startDownload();

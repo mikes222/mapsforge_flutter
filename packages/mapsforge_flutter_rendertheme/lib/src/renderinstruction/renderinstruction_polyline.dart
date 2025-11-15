@@ -26,6 +26,9 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
   /// Optional identifier for this polyline instruction.
   String? id;
 
+  /// From Tiramisu theme. curve=cubic. Not implemented yet
+  String? curve;
+
   /// Creates a new polyline rendering instruction for the specified drawing level.
   ///
   /// Initializes bitmap settings to maintain visual quality by disabling
@@ -54,6 +57,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       ..bitmapSrcMixinScale(this, zoomlevel)
       ..strokeSrcMixinScale(this, zoomlevel);
     renderinstruction.id = id;
+    renderinstruction.curve = curve;
     return renderinstruction;
   }
 
@@ -92,12 +96,7 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
       } else if (Renderinstruction.STROKE == name) {
         setStrokeColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE_DASHARRAY == name) {
-        List<double> dashArray = parseFloatArray(name, value);
-        if (MapsforgeSettingsMgr().getUserScaleFactor() != 1) {
-          for (int f = 0; f < dashArray.length; ++f) {
-            dashArray[f] = dashArray[f] * MapsforgeSettingsMgr().getUserScaleFactor();
-          }
-        }
+        List<double> dashArray = _parseFloatArray(name, value);
         setStrokeDashArray(dashArray);
       } else if (Renderinstruction.STROKE_LINECAP == name) {
         setStrokeCap(MapCap.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
@@ -113,19 +112,28 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
         // no-op
       } else if (Renderinstruction.SYMBOL_WIDTH == name) {
         setBitmapWidth(XmlUtils.parseNonNegativeInteger(name, value));
+      } else if (Renderinstruction.CURVE == name) {
+        curve = value;
       } else {
         throw Exception("Parsing problems $name=$value");
       }
     }
   }
 
-  static List<double> parseFloatArray(String name, String dashString) {
+  List<double> _parseFloatArray(String name, String dashString) {
     List<String> dashEntries = dashString.split(",");
     List<double> dashIntervals = dashEntries.map((e) => XmlUtils.parseNonNegativeFloat(name, e)).toList();
-    // List<double>(dashEntries.length);
-    // for (int i = 0; i < dashEntries.length; ++i) {
-    //   dashIntervals[i] = XmlUtils.parseNonNegativeFloat(name, dashEntries[i]);
-    // }
+    if (dashIntervals.isEmpty) {
+      throw Exception("Attribute '$name' must have at least 2 comma-separated values: $dashString");
+    }
+    if (dashIntervals.length % 2 == 1) {
+      dashIntervals.add(0);
+    }
+    if (MapsforgeSettingsMgr().getDeviceScaleFactor() != 1) {
+      for (int f = 0; f < dashIntervals.length; ++f) {
+        dashIntervals[f] = dashIntervals[f] * MapsforgeSettingsMgr().getDeviceScaleFactor();
+      }
+    }
     return dashIntervals;
   }
 
@@ -144,5 +152,10 @@ class RenderinstructionPolyline extends Renderinstruction with BaseSrcMixin, Bit
     if (wayProperties.getCoordinatesAbsolute().isEmpty) return;
 
     layerContainer.add(level, RenderInfoWay<RenderinstructionPolyline>(wayProperties, this));
+  }
+
+  @override
+  String toString() {
+    return 'RenderinstructionPolyline{id: $id, curve: $curve, strokeDashArray: $strokeDashArray, dy: $dy, scale: $scale, strokeCap: $strokeCap, strokeJoin: $strokeJoin, strokeWidth: $strokeWidth, strokeColor: ${strokeColor.toRadixString(16)}, bitmapSrc: $bitmapSrc, super: ${super.toString()}}';
   }
 }

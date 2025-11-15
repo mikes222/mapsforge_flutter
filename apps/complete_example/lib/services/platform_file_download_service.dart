@@ -1,15 +1,16 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+import 'unzip_service.dart';
 
 /// Cross-platform file download service
 /// Handles downloads for both native platforms and web
 class PlatformFileDownloadService {
   final Dio _dio = Dio();
+  final UnzipService _unzipService = UnzipService();
 
   /// Download a file with progress tracking
   ///
@@ -49,10 +50,15 @@ class PlatformFileDownloadService {
       url,
       savePath ?? filename,
       onReceiveProgress: onProgress,
-      options: Options(responseType: ResponseType.stream, followRedirects: false, validateStatus: (status) => status != null && status < 400),
+      options: Options(
+        responseType: ResponseType.stream,
+        followRedirects: false,
+        validateStatus: (status) => status != null && status < 400,
+        receiveTimeout: const Duration(seconds: 100),
+      ),
     );
 
-    await _saveNativeFile(savePath ?? filename);
+    await saveNativeFile(savePath ?? filename);
   }
 
   /// Trigger download on web platform
@@ -75,33 +81,13 @@ class PlatformFileDownloadService {
   }
 
   /// Save file on native platforms
-  Future<void> _saveNativeFile(String filePath) async {
+  Future<void> saveNativeFile(String filePath) async {
     // File file = File(filePath);
     // await file.writeAsBytes(data);
 
     if (filePath.endsWith(".zip")) {
       String destination = filePath.substring(0, filePath.lastIndexOf("/"));
-      await unzipAbsolute(filePath, destination);
-    }
-  }
-
-  /// unzipping a file into the specified [destinationDirectory]
-  Future<void> unzipAbsolute(String sourceFilename, String destinationDirectory) async {
-    List<int> content = await File(sourceFilename).readAsBytes();
-    Archive archive = ZipDecoder().decodeBytes(content);
-    for (ArchiveFile file in archive) {
-      if (file.isFile) {
-        //        _log.info("Unzipping ${file.name} to $destinationDirectory/${file.name}");
-        List<int> unzipped = file.content;
-        File destinationFile = File("$destinationDirectory/${file.name}");
-        // wait until the file has been written
-        await destinationFile.writeAsBytes(unzipped);
-      } else {
-        //      _log.info("Unzipping directory ${file.name} to $destinationDirectory/${file.name}");
-        Directory directory = Directory("$destinationDirectory/${file.name}");
-        await directory.create(recursive: true);
-      }
-      //break;
+      await _unzipService.unzipAbsolute(filePath, destination);
     }
   }
 
