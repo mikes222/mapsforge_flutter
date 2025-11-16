@@ -61,7 +61,7 @@ mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting
 - **`GenericGestureDetector`**: Generic gesture handling
 - **`MoveGestureDetector`**: Pan and drag gestures
 - **`ScaleGestureDetector`**: Pinch-to-zoom gestures
-- **`RotationGestureDetector`**: Two-finger rotation
+- **`RotationGestureDetector`**: Two- or Three-finger rotation
 - **`TapGestureDetector`**: Single and long tap handling
 - **`DoubleTapGestureDetector`**: Double-tap zoom
 
@@ -282,23 +282,19 @@ ContextMenuOverlay(
 // Create custom map widget with selective gestures
 class CustomMapView extends StatelessWidget {
   final MapModel mapModel;
-  final bool enableRotation;
-  final bool enableZoom;
   
   const CustomMapView({
     required this.mapModel,
-    this.enableRotation = true,
-    this.enableZoom = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        MoveGestureDetector(mapModel: mapModel),
-        if (enableRotation) RotationGestureDetector(mapModel: mapModel),
-        if (enableZoom) ScaleGestureDetector(mapModel: mapModel),
-        TapGestureDetector(mapModel: mapModel),
+        GenericGestureDetector(mapModel: mapModel, handlers: [
+          SingleTapHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel),
+          // add more handlers here
+        ]),
         TileView(mapModel: mapModel),
         // Add your custom overlays
       ],
@@ -366,7 +362,7 @@ Setting up a new project which contains mapsforge_flutter: [doc/development](htt
 
 Upgrading to a newer version: [doc/changes](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/changes.md)
 
-Known issue: [doc/known_issues](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/known_issues.md)
+Known issues: [doc/known_issues](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/known_issues.md)
 
 Working with markers: [doc/marker](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/marker.md)
 

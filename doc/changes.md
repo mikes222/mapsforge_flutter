@@ -1,3 +1,8 @@
+# Version 4.0.1
+
+- Rotation works now with 3 fingers (configurable) to distinguish from zooming which works with 2 fingers
+- Support for dy parameter in renderthemes
+
 # To Version 4.0.0
 
 Major rework.

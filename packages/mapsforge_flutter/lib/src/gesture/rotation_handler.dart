@@ -8,13 +8,15 @@ class RotationHandler extends DefaultHandler {
   /// degrees of twist before we start rotating
   final double thresholdDeg;
 
+  final int pointerCount;
+
   bool _active = false;
 
   bool _rotating = false;
 
   double? _baselineAngle;
 
-  RotationHandler({required super.longPressDuration, required super.mapModel, this.thresholdDeg = 5.0});
+  RotationHandler({required super.longPressDuration, required super.mapModel, this.thresholdDeg = 5.0, this.pointerCount = 3});
 
   @override
   void cancelTimer() {
@@ -26,7 +28,7 @@ class RotationHandler extends DefaultHandler {
 
   @override
   void onPointerDown(MapPosition position, int pointerId, Offset offset, Map<int, Offset> pointers) {
-    if (pointers.length != 2) {
+    if (pointers.length != pointerCount) {
       cancelTimer();
       return;
     }
@@ -68,6 +70,8 @@ class RotationHandler extends DefaultHandler {
     return deg < 0 ? deg + 360 : deg;
   }
 
+  /// returns the angle between the two fingers. Even if 3 fingers are required for rotation this method only uses the
+  /// angle of the first 2 fingers. This should be sufficient in most cases.
   double _twoFingerAngle(Map<int, Offset> pointers) {
     final pts = pointers.values.toList();
     final theta = atan2(pts[1].dy - pts[0].dy, pts[1].dx - pts[0].dx);
