@@ -24,12 +24,21 @@ class TileHelper {
     // if (degreeDiff > 5) {
     // the map is rotated. To avoid empty corners enhance each side by one tile
     int diff = (MapsforgeSettingsMgr().getDeviceScaleFactor().ceil());
-    tileLeft = max(tileLeft - diff, 0);
-    tileRight = min(tileRight + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
-    tileTop = max(tileTop - diff, 0);
-    tileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
+    int minTileLeft = max(tileLeft - diff, 0);
+    int minTileRight = min(tileRight + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
+    int minTileTop = max(tileTop - diff, 0);
+    int minTileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
     //    }
-    return TileDimension(left: tileLeft, right: tileRight, top: tileTop, bottom: tileBottom);
+    return TileDimension(
+      minLeft: minTileLeft,
+      minRight: minTileRight,
+      minTop: minTileTop,
+      minBottom: minTileBottom,
+      left: tileLeft,
+      right: tileRight,
+      top: tileTop,
+      bottom: tileBottom,
+    );
   }
 
   /// Calculates all tiles needed to display the map on the available view area

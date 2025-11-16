@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter/src/label/label_set.dart';
 import 'package:mapsforge_flutter/src/tile/tile_dimension.dart';
 import 'package:mapsforge_flutter/src/util/tile_helper.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
@@ -28,12 +29,15 @@ class LabelJobQueue {
 
   final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
-  /// Stream emission batching timer
-  Timer? _batchTimer;
+  /// Parallel task queue for tile loading optimization
+  late final TaskQueue _taskQueue;
 
-  LabelSet? _batchLabelset;
+  /// Maximum number of concurrent tile loading operations
+  static const int _maxConcurrentTiles = 4;
 
   LabelJobQueue({required this.mapModel}) {
+    _taskQueue = ParallelTaskQueue(_maxConcurrentTiles);
+
     _subscription = mapModel.positionStream.listen((MapPosition position) {
       if (_currentJob?.labelSet.mapPosition == position) {
         return;
@@ -50,14 +54,14 @@ class LabelJobQueue {
         return;
       }
       TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
-      if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
-        if (_currentJob!._done) {
-          _emitLabelSetBatched(_currentJob!.labelSet);
-        } else {
-          // same information to draw, previous job is still running
-          return;
-        }
-      }
+      // if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
+      //   if (_currentJob!._done) {
+      //     _emitLabelSetBatched(_currentJob!.labelSet);
+      //   } else {
+      //     // same information to draw, previous job is still running
+      //     return;
+      //   }
+      // }
       _currentJob?.abort();
       unawaited(_positionEvent(position, tileDimension));
     });
@@ -65,7 +69,6 @@ class LabelJobQueue {
 
   void dispose() {
     _currentJob?.abort();
-    _batchTimer?.cancel();
     _subscription?.cancel();
     _labelStream.close();
     _cache.dispose();
@@ -88,54 +91,62 @@ class LabelJobQueue {
   MapSize? getSize() => _size;
 
   Future<void> _positionEvent(MapPosition position, TileDimension tileDimension) async {
-    // stop if we do not yet have a size of the view
-    if (_size == null) return;
     final session = PerformanceProfiler().startSession(category: "LabelJobQueue");
     LabelSet labelSet = LabelSet(center: position.getCenter(), mapPosition: position, renderInfos: []);
     _CurrentJob myJob = _CurrentJob(tileDimension, labelSet);
     _currentJob = myJob;
-    int left = tileDimension.left;
-    int top = tileDimension.top;
     // find a common base (multiplies of 5) to start with
-    left = (left / _range).floor() * _range;
-    top = (top / _range).floor() * _range;
     int maxTileNbr = Tile.getMaxTileNumber(position.zoomlevel);
-    while (true) {
-      while (true) {
+    List<Tile> missingTiles = [];
+    for (int top = (tileDimension.top / _range).floor() * _range; top <= tileDimension.bottom; top += _range) {
+      for (int left = (tileDimension.left / _range).floor() * _range; left <= tileDimension.right; left += _range) {
         Tile leftUpper = Tile(left, top, position.zoomlevel, position.indoorLevel);
-        Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomlevel, position.indoorLevel);
-        RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
-          JobResult result = await mapModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
-          if (result.renderInfo == null) throw Exception("No renderInfo for $tile");
-          return result.renderInfo!;
-        });
-        if (myJob._abort) return;
-        labelSet.renderInfos.add(collection);
-        _emitLabelSetBatched(labelSet);
-        left += _range;
-        if (left > tileDimension.right) break;
+        try {
+          RenderInfoCollection? collection = _cache.get(leftUpper);
+          if (collection != null) {
+            labelSet.renderInfos.add(collection);
+          } else {
+            missingTiles.add(leftUpper);
+          }
+        } catch (e) {
+          missingTiles.add(leftUpper);
+        }
       }
-      top += _range;
-      left = (tileDimension.left / _range).floor() * _range;
-      if (top > tileDimension.bottom) break;
     }
-    myJob._done = true;
+    if (myJob._abort) return;
+    if (labelSet.renderInfos.isNotEmpty) {
+      _emitLabelSetBatched(labelSet);
+    }
+    for (Tile tile in missingTiles) {
+      unawaited(_taskQueue.add(() => _produceLabel(myJob, labelSet, tile.tileX, tile.tileY, position, maxTileNbr)));
+    }
+    unawaited(
+      _taskQueue.add(() async {
+        myJob._done = true;
+      }),
+    );
     session.complete();
   }
 
-  Stream<LabelSet> get labelStream => _labelStream.stream;
+  Future<void> _produceLabel(_CurrentJob myJob, LabelSet labelSet, int left, int top, MapPosition position, int maxTileNbr) async {
+    if (myJob._abort) return;
+    Tile leftUpper = Tile(left, top, position.zoomlevel, position.indoorLevel);
+    Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomlevel, position.indoorLevel);
+    RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
+      JobResult result = await mapModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
+      if (result.renderInfo == null) throw Exception("No renderInfo for $tile");
+      return result.renderInfo!;
+    });
+    if (myJob._abort) return;
+    labelSet.renderInfos.add(collection);
+    _emitLabelSetBatched(labelSet);
+  }
+
+  Stream<LabelSet> get labelStream => _labelStream.stream.throttleTime(const Duration(milliseconds: 16), trailing: true, leading: false);
 
   /// Emit tile set with batching to reduce stream emissions
   void _emitLabelSetBatched(LabelSet labelSet) {
-    _batchLabelset = labelSet;
-    // Set new timer for batching
-    _batchTimer ??= Timer(const Duration(milliseconds: 16), () {
-      // ~60fps
-      _batchTimer = null;
-      if (_batchLabelset != null && !_labelStream.isClosed) {
-        _labelStream.add(_batchLabelset!);
-      }
-    });
+    _labelStream.add(labelSet);
   }
 }
 

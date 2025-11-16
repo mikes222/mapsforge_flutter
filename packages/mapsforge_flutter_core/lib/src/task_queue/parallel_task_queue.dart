@@ -62,10 +62,12 @@ class ParallelTaskQueue implements TaskQueue {
     }
     final item = _nextCycle.removeFirst();
     ++_runningCount;
-    item.execute().whenComplete(() {
-      --_runningCount;
-      unawaited(_process());
-    });
+    unawaited(
+      item.execute().whenComplete(() {
+        --_runningCount;
+        unawaited(_process());
+      }),
+    );
   }
 }
 

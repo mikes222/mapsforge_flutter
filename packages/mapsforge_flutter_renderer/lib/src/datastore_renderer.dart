@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
@@ -13,6 +14,97 @@ import 'package:mapsforge_flutter_renderer/src/util/datastore_reader_impl.dart';
 import 'package:mapsforge_flutter_renderer/src/util/tile_dependencies.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
+
+/// Testing if rendering in an isolate works. Unfortunately not since it is currently not allowed to call ui methods from another isolate.
+@pragma("vm:entry-point")
+class IsolateDatastoreRenderer implements Renderer {
+  /// The instance of the mapfile in the isolate
+  static DatastoreRenderer? renderer;
+
+  /// a long-running instance of an isolate
+  late final FlutterIsolateInstance _isolateInstance = FlutterIsolateInstance();
+
+  IsolateDatastoreRenderer._();
+
+  /// Creates a new `IsolateMapfile` instance.
+  ///
+  /// This will spawn a new isolate and initialize a `Mapfile` within it using
+  /// the provided [filename] and [preferredLanguage].
+  static Future<IsolateDatastoreRenderer> createRenderer({required Rendertheme rendertheme, required Datastore datastore}) async {
+    IsolateDatastoreRenderer instance = IsolateDatastoreRenderer._();
+    await instance._isolateInstance.spawn(_createInstanceStatic, _RendererInstanceRequest(rendertheme, datastore));
+    return instance;
+  }
+
+  @override
+  void dispose() {
+    _isolateInstance.dispose();
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> _createInstanceStatic(IsolateInitInstanceParams request) async {
+    final rendertheme = (request.initObject as _RendererInstanceRequest).rendertheme;
+    final datastore = request.initObject.datastore;
+    renderer ??= DatastoreRenderer(datastore, rendertheme);
+    await FlutterIsolateInstance.isolateInit(request, _acceptRequestsStatic);
+  }
+
+  @pragma('vm:entry-point')
+  static Future _acceptRequestsStatic(Object request) async {
+    if (request is _RendererExecuteRequest) return renderer!.executeJob(request.jobRequest);
+    if (request is _RendererRetrieveLabelsRequest) return renderer!.retrieveLabels(request.jobRequest);
+  }
+
+  @override
+  Future<JobResult> executeJob(JobRequest jobRequest) async {
+    JobResult result = await _isolateInstance.compute(_RendererExecuteRequest(jobRequest));
+    return result;
+  }
+
+  @override
+  String getRenderKey() {
+    return "1";
+  }
+
+  @override
+  Future<JobResult> retrieveLabels(JobRequest jobRequest) async {
+    JobResult result = await _isolateInstance.compute(_RendererRetrieveLabelsRequest(jobRequest));
+    return result;
+  }
+
+  @override
+  bool supportLabels() {
+    return true;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _RendererInstanceRequest {
+  final Rendertheme rendertheme;
+
+  final Datastore datastore;
+
+  _RendererInstanceRequest(this.rendertheme, this.datastore);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _RendererExecuteRequest {
+  final JobRequest jobRequest;
+
+  _RendererExecuteRequest(this.jobRequest);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _RendererRetrieveLabelsRequest {
+  final JobRequest jobRequest;
+
+  _RendererRetrieveLabelsRequest(this.jobRequest);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 /// High-performance tile renderer for datastore-based map data.
 ///

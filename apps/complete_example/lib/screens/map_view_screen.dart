@@ -168,7 +168,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     Renderer renderer;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
-      datastore = await Mapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
+      datastore = await IsolateMapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
 
       // Read the rendertheme from the assets folder.
       String renderthemeString = await rootBundle.loadString(widget.configuration.renderTheme!.fileName);
@@ -176,6 +176,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
       renderer = DatastoreRenderer(datastore!, _rendertheme!, useIsolateReader: !StorageMgr().isEnabled());
+      //renderer = DummyRenderer(delayMilliseconds: 500);
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {

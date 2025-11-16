@@ -33,7 +33,7 @@ class _GenericGestureDetectorState extends State<GenericGestureDetector> {
     if (widget.handlers.isNotEmpty) {
       _handlers.addAll(widget.handlers);
     } else {
-      _createDefaultHandler();
+      _handlers.addAll(getDefaultHandlers(widget.longPressDuration, widget.mapModel));
     }
   }
 
@@ -75,14 +75,16 @@ class _GenericGestureDetectorState extends State<GenericGestureDetector> {
     );
   }
 
-  void _createDefaultHandler() {
-    _handlers.add(SingleTapHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
-    _handlers.add(LongTapHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
-    _handlers.add(DoubleTapHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
-    _handlers.add(DragNdropHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
-    _handlers.add(MoveHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
-    _handlers.add(RotationHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
-    _handlers.add(ScaleHandler(longPressDuration: widget.longPressDuration, mapModel: widget.mapModel));
+  static List<DefaultHandler> getDefaultHandlers(int longPressDuration, MapModel mapModel) {
+    return [
+      SingleTapHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+      LongTapHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+      DoubleTapHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+      DragNdropHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+      MoveHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+      RotationHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+      ScaleHandler(longPressDuration: longPressDuration, mapModel: mapModel),
+    ];
   }
 
   void _setSize(Size size) {
