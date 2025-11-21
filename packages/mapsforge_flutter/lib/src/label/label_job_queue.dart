@@ -24,6 +24,8 @@ class LabelJobQueue {
 
   StreamSubscription<MapPosition>? _subscription;
 
+  late final StreamSubscription<RenderChangedEvent> _renderChangedSubscription;
+
   /// We split the labels into a 5 by 5 tiles matrix and retrieve the labels for these 25 tiles at once.
   final int _range = 5;
 
@@ -37,6 +39,20 @@ class LabelJobQueue {
 
   LabelJobQueue({required this.mapModel}) {
     _taskQueue = ParallelTaskQueue(_maxConcurrentTiles);
+
+    _renderChangedSubscription = mapModel.renderChangedStream.listen((RenderChangedEvent event) {
+      // simple approach, clear all
+      _cache.purgeAll();
+      _CurrentJob? myJob = _currentJob;
+      if (myJob != null) {
+        _currentJob?.abort();
+        unawaited(
+          _positionEvent(myJob.labelSet.mapPosition, myJob.tileDimension).catchError((error) {
+            print(error);
+          }),
+        );
+      }
+    });
 
     _subscription = mapModel.positionStream.listen((MapPosition position) {
       if (_currentJob?.labelSet.mapPosition == position) {
@@ -70,6 +86,7 @@ class LabelJobQueue {
   void dispose() {
     _currentJob?.abort();
     _subscription?.cancel();
+    _renderChangedSubscription.cancel();
     _labelStream.close();
     _cache.dispose();
   }

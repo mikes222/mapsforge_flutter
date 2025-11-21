@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ecache/ecache.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/tile/tile_dimension.dart';
 import 'package:mapsforge_flutter/src/tile/tile_set.dart';
@@ -10,10 +11,11 @@ import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
-import 'package:rxdart/rxdart.dart';
 
-// todo we need a method to invalidate the tileset
-class TileJobQueue {
+/// The jobqueue for a tile. It gets informed if the size of the view changes with [setSize] and if the
+/// position of the map changes [setPosition]. Based on these informations the tiles will be prepared
+/// and the painter will be triggered with [notifyListeners] as soon as tiles are available.
+class TileJobQueue extends ChangeNotifier {
   final MapModel mapModel;
 
   MapSize? _size;
@@ -28,9 +30,10 @@ class TileJobQueue {
 
   static _CurrentJob? _currentJob;
 
-  StreamSubscription<MapPosition>? _subscription;
-
-  final Subject<TileSet> _tileStream = PublishSubject<TileSet>();
+  /// subscribe to renderChanged events which are triggered when the underlying renderdata has
+  /// been changed, e.g. if a map has been added to a multimap. This should force a revalidation of the cache and
+  /// a redraw of the backed view.
+  late final StreamSubscription<RenderChangedEvent> _renderChangedSubscription;
 
   /// Parallel task queue for tile loading optimization
   late final TaskQueue _taskQueue;
@@ -41,58 +44,76 @@ class TileJobQueue {
   TileJobQueue({required this.mapModel}) {
     _taskQueue = ParallelTaskQueue(_maxConcurrentTiles);
 
-    _subscription = mapModel.positionStream.listen((MapPosition position) {
-      if (_currentJob?.tileSet.mapPosition == position) {
-        return;
+    _renderChangedSubscription = mapModel.renderChangedStream.listen((RenderChangedEvent event) {
+      // simple approach, clear all
+      _cache.clear();
+      _CurrentJob? myJob = _currentJob;
+      if (myJob != null) {
+        _currentJob?.abort();
+        unawaited(
+          _positionEvent(myJob.tileSet.mapPosition, myJob.tileDimension).catchError((error) {
+            print(error);
+          }),
+        );
       }
-      if (_currentJob?.tileSet.mapPosition.latitude == position.latitude &&
-          _currentJob?.tileSet.mapPosition.longitude == position.longitude &&
-          _currentJob?.tileSet.mapPosition.zoomlevel == position.zoomlevel &&
-          _currentJob?.tileSet.mapPosition.indoorLevel == position.indoorLevel) {
-        // do not recalculate for rotation or scaling
-        TileSet tileSet = TileSet(center: _currentJob!.tileSet.center, mapPosition: position);
-        tileSet.images.addEntries(_currentJob!.tileSet.images.entries);
-        _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, tileSet);
-        _currentJob = myJob;
-        _emitTileSetBatched(_currentJob!.tileSet);
-        return;
-      }
-      TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
-      // if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
-      //   if (_currentJob!._done) {
-      //     _emitTileSetBatched(_currentJob!.tileSet);
-      //   } else {
-      //     // same information to draw, previous job is still running, but we have to update the position anyway
-      //     _emitTileSetBatched(_currentJob!.tileSet);
-      //     return;
-      //   }
-      // }
-      _currentJob?.abort();
-      unawaited(
-        _positionEvent(position, tileDimension).catchError((error) {
-          print(error);
-        }),
-      );
     });
   }
 
-  void dispose() {
+  void setPosition(MapPosition position) {
+    if (_currentJob?.tileSet.mapPosition == position) {
+      return;
+    }
+    if (_currentJob?.tileSet.mapPosition.latitude == position.latitude &&
+        _currentJob?.tileSet.mapPosition.longitude == position.longitude &&
+        _currentJob?.tileSet.mapPosition.zoomlevel == position.zoomlevel &&
+        _currentJob?.tileSet.mapPosition.indoorLevel == position.indoorLevel) {
+      // do not recalculate for rotation or scaling
+      TileSet tileSet = TileSet(center: _currentJob!.tileSet.center, mapPosition: position);
+      tileSet.images.addEntries(_currentJob!.tileSet.images.entries);
+      _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, tileSet);
+      _currentJob = myJob;
+      _emitTileSetBatched(_currentJob!.tileSet);
+      return;
+    }
+    TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
+    // if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
+    //   if (_currentJob!._done) {
+    //     _emitTileSetBatched(_currentJob!.tileSet);
+    //   } else {
+    //     // same information to draw, previous job is still running, but we have to update the position anyway
+    //     _emitTileSetBatched(_currentJob!.tileSet);
+    //     return;
+    //   }
+    // }
     _currentJob?.abort();
-    _subscription?.cancel();
+    unawaited(
+      _positionEvent(position, tileDimension).catchError((error) {
+        print(error);
+      }),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _currentJob?.abort();
+    _renderChangedSubscription.cancel();
     _taskQueue.cancel();
-    _tileStream.close();
     _cache.dispose();
   }
+
+  TileSet? get tileSet => _currentJob?.tileSet;
 
   /// Sets the current size of the mapview so that we know which and how many tiles we need for the whole view
   void setSize(double width, double height) {
     if (_size == null || _size!.width != width || _size!.height != height) {
       _size = MapSize(width: width, height: height);
-      if (mapModel.lastPosition != null) {
-        TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: mapModel.lastPosition!, screensize: _size!);
+      MapPosition? position = _currentJob?.tileSet.mapPosition;
+      if (position != null) {
+        TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
         _currentJob?.abort();
         unawaited(
-          _positionEvent(mapModel.lastPosition!, tileDimension).catchError((error) {
+          _positionEvent(position, tileDimension).catchError((error) {
             print(error);
           }),
         );
@@ -172,11 +193,9 @@ class TileJobQueue {
     _emitTileSetBatched(tileSet);
   }
 
-  Stream<TileSet> get tileStream => _tileStream.stream.throttleTime(const Duration(milliseconds: 16), trailing: true, leading: false);
-
   /// Emit tile set with batching to reduce stream emissions
   void _emitTileSetBatched(TileSet tileSet) {
-    _tileStream.add(tileSet);
+    notifyListeners();
     // _batchTileset = tileSet;
     // // Set new timer for batching
     // _batchTimer ??= Timer(const Duration(milliseconds: 16), () {

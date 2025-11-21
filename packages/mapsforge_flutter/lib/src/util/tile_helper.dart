@@ -9,6 +9,8 @@ import 'package:mapsforge_flutter_core/utils.dart';
 class TileHelper {
   /// Calculates all tiles needed to display the map on the available view area. Leave a margin so that we do not need to refetch everything for tiny position changes.
   static TileDimension calculateTiles({required MapPosition mapViewPosition, required MapSize screensize}) {
+    // Start performance monitoring for this render cycle
+    final session = PerformanceProfiler().startSession(category: "TileDimension");
     Mappoint center = mapViewPosition.getCenter();
     double halfWidth = screensize.width / 2;
     double halfHeight = screensize.height / 2;
@@ -29,6 +31,9 @@ class TileHelper {
     int minTileTop = max(tileTop - diff, 0);
     int minTileBottom = min(tileBottom + diff, Tile.getMaxTileNumber(mapViewPosition.zoomlevel));
     //    }
+    // Complete performance profiling
+    session.complete();
+
     return TileDimension(
       minLeft: minTileLeft,
       minRight: minTileRight,

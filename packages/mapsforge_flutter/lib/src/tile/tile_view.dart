@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/tile/tile_job_queue.dart';
 import 'package:mapsforge_flutter/src/tile/tile_painter.dart';
-import 'package:mapsforge_flutter/src/tile/tile_set.dart';
 import 'package:mapsforge_flutter/src/transform_widget.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 
@@ -50,22 +49,21 @@ class _TileViewState extends State<TileView> {
           constraints.maxWidth * MapsforgeSettingsMgr().getDeviceScaleFactor(),
           constraints.maxHeight * MapsforgeSettingsMgr().getDeviceScaleFactor(),
         );
-        return StreamBuilder(
-          stream: jobQueue.tileStream,
-          builder: (BuildContext context, AsyncSnapshot<TileSet> snapshot) {
-            if (snapshot.error != null) {
-              return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
-            }
-            if (snapshot.data != null) {
-              return TransformWidget(
-                mapCenter: snapshot.data!.center,
-                mapPosition: snapshot.data!.mapPosition,
-                screensize: Size(constraints.maxWidth, constraints.maxHeight),
-                child: CustomPaint(foregroundPainter: TilePainter(snapshot.data!), child: const SizedBox.expand()),
-              );
-            }
+        // use notifier instead of stream because it should be faster
+        return AnimatedBuilder(
+          animation: widget.mapModel,
+          builder: (BuildContext context, Widget? child) {
+            MapPosition position = widget.mapModel.lastPosition!;
+            jobQueue.setPosition(position);
+            return TransformWidget(
+              mapCenter: position.getCenter(),
+              mapPosition: position,
+              screensize: Size(constraints.maxWidth, constraints.maxHeight),
+              child: CustomPaint(foregroundPainter: TilePainter(jobQueue), child: const SizedBox.expand()),
+            );
+            //            }
             // We do not have a position yet or we wait for processing of the first tiles
-            return const SizedBox.expand();
+            //          return const SizedBox.expand();
           },
         );
       },

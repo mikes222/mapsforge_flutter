@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:rxdart/rxdart.dart';
 
-class MapModel {
+class MapModel extends ChangeNotifier {
   final Renderer renderer;
 
   MapPosition? _lastPosition;
@@ -28,18 +28,20 @@ class MapModel {
 
   final Subject<DragNdropEvent> _dragNdropSubject = PublishSubject();
 
+  final Subject<RenderChangedEvent> _renderChangedSubject = PublishSubject();
+
   /// When using the context menu we often needs the markers which are tapped. To simplify that we register/unregister datastores to the map.
-  final Set<MarkerDatastore> _datastores = {};
+  final Set<MarkerDatastore> _markerDatastores = {};
+
   final ValueNotifier<double> rotationNotifier = ValueNotifier<double>(0.0);
 
   double get rotationDeg => _lastPosition?.rotation ?? 0.0;
 
-  MapModel({
-    required this.renderer,
-    this.zoomlevelRange = const ZoomlevelRange.standard(),
-  });
+  MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
+  @override
   void dispose() {
+    super.dispose();
     _positionSubject.close();
     _manualMoveSubject.close();
     _tapSubject.close();
@@ -48,15 +50,15 @@ class MapModel {
     _dragNdropSubject.close();
     renderer.dispose();
     rotationNotifier.dispose();
-    for (var datastore in List.of(_datastores)) {
+    for (var datastore in List.of(_markerDatastores)) {
       datastore.dispose();
     }
-    _datastores.clear();
+    _markerDatastores.clear();
   }
 
   List<Marker> getTappedMarkers(TapEvent event) {
     List<Marker> tappedMarkers = [];
-    for (var datastore in _datastores) {
+    for (var datastore in _markerDatastores) {
       tappedMarkers.addAll(datastore.getTappedMarkers(event));
     }
     return tappedMarkers;
@@ -66,6 +68,7 @@ class MapModel {
     _lastPosition = position;
     _positionSubject.add(position);
     rotationNotifier.value = _normalize180(position.rotation);
+    notifyListeners();
   }
 
   double _normalize180(double deg) {
@@ -96,6 +99,10 @@ class MapModel {
 
   Stream<DragNdropEvent> get dragNdropStream => _dragNdropSubject.stream;
 
+  /// Listens to [RenderChangedEvent] events.
+  /// @see [RenderChangedEvent]
+  Stream<RenderChangedEvent> get renderChangedStream => _renderChangedSubject.stream;
+
   void manualMove(Object object) {
     _manualMoveSubject.add(object);
   }
@@ -115,6 +122,12 @@ class MapModel {
 
   void dragNdrop(DragNdropEvent event) {
     _dragNdropSubject.add(event);
+  }
+
+  /// Triggers a [RenderChangedEvent] event.
+  /// @see [RenderChangedEvent]
+  void renderChanged(RenderChangedEvent event) {
+    _renderChangedSubject.add(event);
   }
 
   void zoomIn() {
@@ -144,11 +157,7 @@ class MapModel {
 
   void zoomToAround(double latitude, double longitude, int zoomLevel) {
     zoomLevel = zoomlevelRange.ensureBounds(zoomLevel);
-    MapPosition newPosition = _lastPosition!.zoomToAround(
-      latitude,
-      longitude,
-      zoomLevel,
-    );
+    MapPosition newPosition = _lastPosition!.zoomToAround(latitude, longitude, zoomLevel);
     setPosition(newPosition);
   }
 
@@ -204,11 +213,11 @@ class MapModel {
   }
 
   void registerMarkerDatastore(MarkerDatastore datastore) {
-    _datastores.add(datastore);
+    _markerDatastores.add(datastore);
   }
 
   void unregisterMarkerDatastore(MarkerDatastore datastore) {
-    _datastores.remove(datastore);
+    _markerDatastores.remove(datastore);
   }
 }
 
@@ -229,12 +238,7 @@ class TapEvent implements ILatLong {
   /// The point of the event in absolute mappixels
   final Mappoint mappoint;
 
-  const TapEvent({
-    required this.latitude,
-    required this.longitude,
-    required this.projection,
-    required this.mappoint,
-  });
+  const TapEvent({required this.latitude, required this.longitude, required this.projection, required this.mappoint});
 
   LatLong get latLong => LatLong(latitude, longitude);
 
@@ -249,13 +253,7 @@ class TapEvent implements ILatLong {
 class DragNdropEvent extends TapEvent {
   final DragNdropEventType type;
 
-  DragNdropEvent({
-    required super.latitude,
-    required super.longitude,
-    required super.projection,
-    required super.mappoint,
-    required this.type,
-  });
+  DragNdropEvent({required super.latitude, required super.longitude, required super.projection, required super.mappoint, required this.type});
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -296,4 +294,18 @@ enum TapEventListener {
         return mapModel.longTapStream;
     }
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+/// Event which is triggered when a part of the render area (hence a part of the map) has been changed.
+/// This may occur if a [MultimapDatastore] adds or removes datastores.
+/// This forces eventual caches to revalidate and redraw the screen if the
+/// currently shown area is affected.
+/// Since the current implementation does not change the rendering by itself this event is
+/// NOT triggered by this library. Instead you need to trigger it from outside if needed.
+class RenderChangedEvent {
+  final BoundingBox boundingBox;
+
+  RenderChangedEvent(this.boundingBox);
 }
