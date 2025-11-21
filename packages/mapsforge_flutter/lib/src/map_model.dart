@@ -33,6 +33,7 @@ class MapModel extends ChangeNotifier {
   /// When using the context menu we often needs the markers which are tapped. To simplify that we register/unregister datastores to the map.
   final Set<MarkerDatastore> _markerDatastores = {};
 
+  @Deprecated("Since 4.0.1. Use MapModel itself instead of MapModel.rotationNotifier for listening to map-changes")
   final ValueNotifier<double> rotationNotifier = ValueNotifier<double>(0.0);
 
   double get rotationDeg => _lastPosition?.rotation ?? 0.0;
