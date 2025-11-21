@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/label/label_job_queue.dart';
 import 'package:mapsforge_flutter/src/label/label_painter.dart';
-import 'package:mapsforge_flutter/src/label/label_set.dart';
 import 'package:mapsforge_flutter/src/transform_widget.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 
@@ -49,47 +48,21 @@ class _LabelViewState extends State<LabelView> {
       builder: (BuildContext context, BoxConstraints constraints) {
         final double scale = MapsforgeSettingsMgr().getDeviceScaleFactor();
 
-        jobQueue.setSize(
-          constraints.maxWidth * scale,
-          constraints.maxHeight * scale,
-        );
-
-        // If a cutoff is configured, and the last known position is below it, render nothing.
-        final cutoff = widget.minLabelZoom;
-        final last = widget.mapModel.lastPosition;
-        if (cutoff != null && last != null && last.zoomlevel < cutoff) {
-          return const SizedBox.expand();
-        }
-
-        // Optionally filter the stream when a cutoff is set.
-        final Stream<LabelSet> stream = (cutoff == null)
-            ? jobQueue.labelStream
-            : jobQueue.labelStream.where(
-                (ls) => ls.mapPosition.zoomlevel >= cutoff,
-              );
-
-        return StreamBuilder<LabelSet>(
-          stream: stream,
-          builder: (BuildContext context, AsyncSnapshot<LabelSet> snapshot) {
-            if (snapshot.error != null) {
-              return ErrorhelperWidget(
-                error: snapshot.error!,
-                stackTrace: snapshot.stackTrace,
-              );
+        jobQueue.setSize(constraints.maxWidth * scale, constraints.maxHeight * scale);
+        // use notifier instead of stream because it should be faster
+        return AnimatedBuilder(
+          animation: widget.mapModel,
+          builder: (BuildContext context, Widget? child) {
+            MapPosition position = widget.mapModel.lastPosition!;
+            if (widget.minLabelZoom != null && widget.minLabelZoom! >= position.zoomlevel) {
+              return const SizedBox();
             }
-            final data = snapshot.data;
-            if (data == null) {
-              // Waiting for data or suppressed by cutoff.
-              return const SizedBox.expand();
-            }
+            jobQueue.setPosition(position);
             return TransformWidget(
-              mapCenter: data.center,
-              mapPosition: data.mapPosition,
+              mapCenter: position.getCenter(),
+              mapPosition: position,
               screensize: Size(constraints.maxWidth, constraints.maxHeight),
-              child: CustomPaint(
-                foregroundPainter: LabelPainter(data),
-                child: const SizedBox.expand(),
-              ),
+              child: CustomPaint(foregroundPainter: LabelPainter(jobQueue), child: const SizedBox.expand()),
             );
           },
         );

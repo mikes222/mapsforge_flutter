@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/cache/memory_label_cache.dart';
 import 'package:mapsforge_flutter/src/label/label_set.dart';
@@ -11,9 +12,8 @@ import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
-import 'package:rxdart/rxdart.dart';
 
-class LabelJobQueue {
+class LabelJobQueue extends ChangeNotifier {
   final MapModel mapModel;
 
   MapSize? _size;
@@ -22,14 +22,10 @@ class LabelJobQueue {
 
   static _CurrentJob? _currentJob;
 
-  StreamSubscription<MapPosition>? _subscription;
-
   late final StreamSubscription<RenderChangedEvent> _renderChangedSubscription;
 
   /// We split the labels into a 5 by 5 tiles matrix and retrieve the labels for these 25 tiles at once.
   final int _range = 5;
-
-  final Subject<LabelSet> _labelStream = PublishSubject<LabelSet>();
 
   /// Parallel task queue for tile loading optimization
   late final TaskQueue _taskQueue;
@@ -53,41 +49,43 @@ class LabelJobQueue {
         );
       }
     });
-
-    _subscription = mapModel.positionStream.listen((MapPosition position) {
-      if (_currentJob?.labelSet.mapPosition == position) {
-        return;
-      }
-      if (_currentJob?.labelSet.mapPosition.latitude == position.latitude &&
-          _currentJob?.labelSet.mapPosition.longitude == position.longitude &&
-          _currentJob?.labelSet.mapPosition.zoomlevel == position.zoomlevel &&
-          _currentJob?.labelSet.mapPosition.indoorLevel == position.indoorLevel) {
-        // do not recalculate for rotation or scaling
-        LabelSet labelSet = LabelSet(center: _currentJob!.labelSet.center, mapPosition: position, renderInfos: _currentJob!.labelSet.renderInfos);
-        _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, labelSet);
-        _currentJob = myJob;
-        _emitLabelSetBatched(_currentJob!.labelSet);
-        return;
-      }
-      TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
-      // if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
-      //   if (_currentJob!._done) {
-      //     _emitLabelSetBatched(_currentJob!.labelSet);
-      //   } else {
-      //     // same information to draw, previous job is still running
-      //     return;
-      //   }
-      // }
-      _currentJob?.abort();
-      unawaited(_positionEvent(position, tileDimension));
-    });
   }
 
-  void dispose() {
+  LabelSet get labelSet => _currentJob!.labelSet;
+
+  void setPosition(MapPosition position) {
+    if (_currentJob?.labelSet.mapPosition == position) {
+      return;
+    }
+    if (_currentJob?.labelSet.mapPosition.latitude == position.latitude &&
+        _currentJob?.labelSet.mapPosition.longitude == position.longitude &&
+        _currentJob?.labelSet.mapPosition.zoomlevel == position.zoomlevel &&
+        _currentJob?.labelSet.mapPosition.indoorLevel == position.indoorLevel) {
+      // do not recalculate for rotation or scaling
+      LabelSet labelSet = LabelSet(center: _currentJob!.labelSet.center, mapPosition: position, renderInfos: _currentJob!.labelSet.renderInfos);
+      _CurrentJob myJob = _CurrentJob(_currentJob!.tileDimension, labelSet);
+      _currentJob = myJob;
+      _emitLabelSetBatched(_currentJob!.labelSet);
+      return;
+    }
+    TileDimension tileDimension = TileHelper.calculateTiles(mapViewPosition: position, screensize: _size!);
+    // if (_currentJob?.tileDimension.contains(tileDimension) ?? false) {
+    //   if (_currentJob!._done) {
+    //     _emitLabelSetBatched(_currentJob!.labelSet);
+    //   } else {
+    //     // same information to draw, previous job is still running
+    //     return;
+    //   }
+    // }
     _currentJob?.abort();
-    _subscription?.cancel();
+    unawaited(_positionEvent(position, tileDimension));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _currentJob?.abort();
     _renderChangedSubscription.cancel();
-    _labelStream.close();
     _cache.dispose();
   }
 
@@ -159,11 +157,9 @@ class LabelJobQueue {
     _emitLabelSetBatched(labelSet);
   }
 
-  Stream<LabelSet> get labelStream => _labelStream.stream.throttleTime(const Duration(milliseconds: 16), trailing: true, leading: false);
-
   /// Emit tile set with batching to reduce stream emissions
   void _emitLabelSetBatched(LabelSet labelSet) {
-    _labelStream.add(labelSet);
+    notifyListeners();
   }
 }
 

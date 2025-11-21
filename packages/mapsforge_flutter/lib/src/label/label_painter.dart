@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mapsforge_flutter/src/label/label_job_queue.dart';
 import 'package:mapsforge_flutter/src/label/label_set.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
@@ -6,13 +7,14 @@ import 'package:mapsforge_flutter_renderer/ui.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 class LabelPainter extends CustomPainter {
-  final LabelSet labelSet;
+  final LabelJobQueue labelJobQueue;
 
-  LabelPainter(this.labelSet);
+  LabelPainter(this.labelJobQueue) : super(repaint: labelJobQueue);
 
   @override
   void paint(Canvas canvas, Size size) {
     UiCanvas uiCanvas = UiCanvas(canvas, size);
+    LabelSet labelSet = labelJobQueue.labelSet;
     Mappoint center = labelSet.getCenter();
     PixelProjection projection = labelSet.mapPosition.projection;
     UiRenderContext renderContext = UiRenderContext(
@@ -30,7 +32,7 @@ class LabelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant LabelPainter oldDelegate) {
-    if (oldDelegate.labelSet != labelSet) return true;
+    if (oldDelegate.labelJobQueue.labelSet != labelJobQueue.labelSet) return true;
     return false;
   }
 }
