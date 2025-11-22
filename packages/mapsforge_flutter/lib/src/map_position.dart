@@ -260,6 +260,7 @@ class MapPosition {
     );
   }
 
+  /// The center of the map in absolute pixel coordinates.
   MapPosition setCenter(double x, double y) {
     return MapPosition._(
       latitude: _projection.pixelYToLatitude(y),
