@@ -220,6 +220,10 @@ class Mapfile extends MapDatastore {
 
   ZoomlevelRange zoomlevelRange = const ZoomlevelRange.standard();
 
+  /// true if the zoomlevel is overridden manually. Normally the zoomlevel will be set when the map is opened. When overriding that value,
+  /// we set this value to true and preventing setting it afterwards.
+  bool _zoomlevelOverridden = false;
+
   late final MapfileInfo _mapFileInfo;
 
   late final MapfileHelper _helper;
@@ -562,7 +566,7 @@ class Mapfile extends MapDatastore {
       await mapfileInfoBuilder.readHeader(readBufferSource, fileSize);
       _mapFileInfo = mapfileInfoBuilder.build();
       _helper = MapfileHelper(_mapFileInfo, preferredLanguage);
-      zoomlevelRange = _mapFileInfo.zoomlevelRange;
+      if (!_zoomlevelOverridden) zoomlevelRange = _mapFileInfo.zoomlevelRange;
       _fileSize = fileSize;
     });
   }
@@ -626,6 +630,7 @@ class Mapfile extends MapDatastore {
   /// to ensure that each map is only used for its intended zoom range.
   void restrictToZoomRange(int minZoom, int maxZoom) {
     zoomlevelRange = ZoomlevelRange(minZoom, maxZoom);
+    _zoomlevelOverridden = true;
   }
 
   /// Returns the recommended start position for this map file.

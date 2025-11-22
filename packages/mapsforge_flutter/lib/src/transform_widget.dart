@@ -22,29 +22,36 @@ class TransformWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     Mappoint centerPosition = mapPosition.getCenter();
     double viewScaleFactor = MapsforgeSettingsMgr().getDeviceScaleFactor();
+    
+    // Cache repeated calculations to avoid redundant arithmetic
+    double halfWidth = screensize.width / 2;
+    double halfHeight = screensize.height / 2;
+    double dx = mapCenter.x - centerPosition.x;
+    double dy = mapCenter.y - centerPosition.y;
+    
     // print(
-    //     "center: ${mapCenter.x - centerPosition.x} / ${mapCenter.y - centerPosition.y}, scaleFactor ${viewModel.viewScaleFactor}, focal ${mapViewPosition.focalPoint}");
+    //     "center: $dx / $dy, scaleFactor $viewScaleFactor, focal ${mapViewPosition.focalPoint}");
     return ClipRect(
       child: Transform.scale(
         scale: 1 / viewScaleFactor,
         child: Transform.translate(
-          offset: Offset(screensize.width / 2, screensize.height / 2),
+          offset: Offset(halfWidth, halfHeight),
           child: Transform.scale(
             //scale for pinch'n'zoom (see FlutterGestureDetector._ScaleEvent)
             scale: mapPosition.scale,
             origin: mapPosition.focalPoint != null
                 ? Offset(
-                    -screensize.width / 2 - (screensize.width / 2 - mapPosition.focalPoint!.dx) * viewScaleFactor,
-                    -screensize.height / 2 - (screensize.height / 2 - mapPosition.focalPoint!.dy) * viewScaleFactor,
+                    -halfWidth - (halfWidth - mapPosition.focalPoint!.dx) * viewScaleFactor,
+                    -halfHeight - (halfHeight - mapPosition.focalPoint!.dy) * viewScaleFactor,
                   )
                 : null,
             child: Transform.rotate(
               // rotate if the map should be rotated
               angle: mapPosition.rotationRadian,
-              origin: Offset(-screensize.width / 2, -screensize.height / 2),
+              origin: Offset(-halfWidth, -halfHeight),
               child: Transform.translate(
                 // shift the map according the the centerposition set with viewModel.setPosition() et al
-                offset: Offset((mapCenter.x - centerPosition.x), (mapCenter.y - centerPosition.y)),
+                offset: Offset(dx, dy),
                 child: child,
               ),
             ),
