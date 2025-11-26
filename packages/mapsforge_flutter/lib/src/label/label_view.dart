@@ -50,10 +50,13 @@ class _LabelViewState extends State<LabelView> {
 
         jobQueue.setSize(constraints.maxWidth * scale, constraints.maxHeight * scale);
         // use notifier instead of stream because it should be faster
-        return AnimatedBuilder(
-          animation: widget.mapModel,
+        return ListenableBuilder(
+          listenable: widget.mapModel,
           builder: (BuildContext context, Widget? child) {
-            MapPosition position = widget.mapModel.lastPosition!;
+            MapPosition? position = widget.mapModel.lastPosition;
+            if (position == null) {
+              return const SizedBox();
+            }
             if (widget.minLabelZoom != null && widget.minLabelZoom! >= position.zoomlevel) {
               return const SizedBox();
             }
@@ -62,9 +65,10 @@ class _LabelViewState extends State<LabelView> {
               mapCenter: position.getCenter(),
               mapPosition: position,
               screensize: Size(constraints.maxWidth, constraints.maxHeight),
-              child: CustomPaint(foregroundPainter: LabelPainter(jobQueue), child: const SizedBox.expand()),
+              child: child!,
             );
           },
+          child: CustomPaint(foregroundPainter: LabelPainter(jobQueue), child: const SizedBox.expand()),
         );
       },
     );

@@ -260,6 +260,22 @@ class MapPosition {
     );
   }
 
+  /// Moves to a new latitude and longitude and rotates to a specific angle in degrees clockwise.
+  MapPosition moveRotateTo(double latitude, double longitude, double rotation) {
+    assert(rotation >= 0 && rotation < 360, 'Rotation must be between 0 and 360: $rotation');
+    return MapPosition._(
+      latitude: latitude,
+      longitude: longitude,
+      zoomlevel: zoomlevel,
+      indoorLevel: indoorLevel,
+      rotation: rotation,
+      rotationRadian: Projection.degToRadian(rotation),
+      scale: scale,
+      focalPoint: null,
+      projection: _projection,
+    );
+  }
+
   /// The center of the map in absolute pixel coordinates.
   MapPosition setCenter(double x, double y) {
     return MapPosition._(

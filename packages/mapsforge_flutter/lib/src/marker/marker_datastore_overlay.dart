@@ -181,25 +181,13 @@ class _MarkerDatastoreOverlayState extends State<MarkerDatastoreOverlay> {
       builder: (BuildContext context, BoxConstraints constraints) {
         Size screensize = constraints.biggest;
         // use notifier instead of stream because it should be faster
-        return AnimatedBuilder(
-          animation: widget.mapModel,
+        return ListenableBuilder(
+          listenable: widget.mapModel,
           builder: (BuildContext context, Widget? child) {
-            MapPosition position = widget.mapModel.lastPosition!;
-            //   },
-            // );
-            // return StreamBuilder(
-            //   stream: widget.mapModel.positionStream,
-            //   builder: (BuildContext context, AsyncSnapshot<MapPosition> snapshot) {
-            //     // Handle stream errors gracefully
-            //     if (snapshot.error != null) {
-            //       return ErrorhelperWidget(error: snapshot.error!, stackTrace: snapshot.stackTrace);
-            //     }
-            //     // Wait for initial position data
-            //     if (snapshot.data == null) {
-            //       return const SizedBox();
-            //     }
-            //     MapPosition position = snapshot.data!;
-
+            MapPosition? position = widget.mapModel.lastPosition;
+            if (position == null) {
+              return const SizedBox();
+            }
             // Handle position changes at the same zoom level
             if (_cachedZoomlevel == position.zoomlevel) {
               BoundingBox boundingBox = TileHelper.calculateBoundingBoxOfScreen(

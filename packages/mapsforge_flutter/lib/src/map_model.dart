@@ -207,6 +207,12 @@ class MapModel extends ChangeNotifier {
     setPosition(newPosition);
   }
 
+  /// Moves to a new latitude and longitude and rotates to a specific angle in degrees clockwise.
+  void moveRotateTo(double latitude, double longitude, double rotation) {
+    MapPosition newPosition = _lastPosition!.moveRotateTo(latitude, longitude, rotation);
+    setPosition(newPosition);
+  }
+
   /// Sets the center of the mapmodel to the given coordinates in mappixel. There must already be a position set.
   void setCenter(double x, double y) {
     MapPosition newPosition = _lastPosition!.setCenter(x, y);

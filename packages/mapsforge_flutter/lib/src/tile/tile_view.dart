@@ -50,21 +50,25 @@ class _TileViewState extends State<TileView> {
           constraints.maxHeight * MapsforgeSettingsMgr().getDeviceScaleFactor(),
         );
         // use notifier instead of stream because it should be faster
-        return AnimatedBuilder(
-          animation: widget.mapModel,
+        return ListenableBuilder(
+          listenable: widget.mapModel,
           builder: (BuildContext context, Widget? child) {
-            MapPosition position = widget.mapModel.lastPosition!;
+            MapPosition? position = widget.mapModel.lastPosition;
+            if (position == null) {
+              return const SizedBox();
+            }
             jobQueue.setPosition(position);
             return TransformWidget(
               mapCenter: position.getCenter(),
               mapPosition: position,
               screensize: Size(constraints.maxWidth, constraints.maxHeight),
-              child: CustomPaint(foregroundPainter: TilePainter(jobQueue), child: const SizedBox.expand()),
+              child: child!,
             );
             //            }
             // We do not have a position yet or we wait for processing of the first tiles
             //          return const SizedBox.expand();
           },
+          child: CustomPaint(foregroundPainter: TilePainter(jobQueue), child: const SizedBox.expand()),
         );
       },
     );
