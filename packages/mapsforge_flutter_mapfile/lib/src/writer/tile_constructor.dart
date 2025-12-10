@@ -10,6 +10,7 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
+import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
 
 /// An isolate-based wrapper for [TileConstructor] to perform tile construction
 /// in the background.
@@ -214,7 +215,7 @@ class TileConstructor {
     Map<int, Poiinfo> resultPoi = {};
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       Poiinfo newPoiinfo = Poiinfo();
-      for (var poiholder in poiinfo.poiholders) {
+      for (Poiholder poiholder in poiinfo.poiholders) {
         if (tileBoundingBox.containsLatLong(poiholder.poi.position)) {
           newPoiinfo.addPoiholder(poiholder);
         }
@@ -225,7 +226,7 @@ class TileConstructor {
     Map<int, Wayinfo> resultWay = {};
     _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
       Wayinfo newWayinfo = Wayinfo();
-      for (var wayholder in wayinfo.wayholders) {
+      for (Wayholder wayholder in wayinfo.wayholders) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
           newWayinfo.addWayholder(wayholder);
@@ -262,7 +263,7 @@ class TileConstructor {
     Map<int, Poiinfo> resultPoi = {};
     poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
       Poiinfo newPoiinfo = Poiinfo();
-      for (var poiholder in poiinfo.poiholders) {
+      for (Poiholder poiholder in poiinfo.poiholders) {
         if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
           newPoiinfo.addPoiholder(poiholder);
         }
@@ -274,7 +275,7 @@ class TileConstructor {
     BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
     poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
       Wayinfo newWayinfo = Wayinfo();
-      for (var wayholder in wayinfo.wayholders) {
+      for (Wayholder wayholder in wayinfo.wayholders) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tile.getBoundingBox().intersects(wayBoundingBox) ||
             tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
@@ -302,8 +303,8 @@ class TileConstructor {
     BoundingBox boundingBox = newTile.getBoundingBox().extendBoundingBox(first!.getBoundingBox());
     int poicountBefore = _poiWayInfos.poiinfos.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
     _poiWayInfos.poiinfos.forEach((zoomlevel, poiinfo) {
-      for (var poiholder in List.from(poiinfo.poiholders)) {
-        if (boundingBox.containsLatLong(poiholder.poi.positioning)) {
+      for (Poiholder poiholder in List.from(poiinfo.poiholders)) {
+        if (boundingBox.containsLatLong(poiholder.poi.position)) {
           poiinfo.poiholders.remove(poiholder);
         }
       }
@@ -312,7 +313,7 @@ class TileConstructor {
     session.checkpoint("$poicountBefore -> $poicountAfter");
     int waycountBefore = _poiWayInfos.wayinfos.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
     _poiWayInfos.wayinfos.forEach((zoomlevel, wayinfo) {
-      for (var wayholder in List.from(wayinfo.wayholders)) {
+      for (Wayholder wayholder in List.from(wayinfo.wayholders)) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (boundingBox.containsBoundingBox(wayBoundingBox)) {
           wayinfo.wayholders.remove(wayholder);
