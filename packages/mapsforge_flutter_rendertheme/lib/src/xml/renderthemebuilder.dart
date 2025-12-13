@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/renderinstruction_hillshading.dart';
 import 'package:mapsforge_flutter_rendertheme/src/xml/rulebuilder.dart';
@@ -71,6 +72,8 @@ class RenderThemeBuilder {
   /// Theme file version number.
   late int version;
 
+  StyleMenu? _styleMenu;
+
   /// Stack of rule builders for hierarchical rule construction.
   final List<RuleBuilder> ruleBuilderStack = [];
 
@@ -127,7 +130,16 @@ class RenderThemeBuilder {
         rule.parent = null;
       }
     }
-    Rendertheme renderTheme = Rendertheme(maxLevels: _level, rulesList: rules);
+    Rendertheme renderTheme = Rendertheme(
+      maxLevels: _level,
+      rulesList: rules,
+      mapBackground: mapBackground,
+      mapBackgroundOutside: mapBackgroundOutside,
+      hasBackgroundOutside: hasBackgroundOutside,
+      styleMenu: _styleMenu,
+    );
+    renderTheme.baseStrokeWidth = baseStrokeWidth;
+    renderTheme.baseTextSize = baseTextSize;
     for (Rule rule in rules) {
       rule.secondPass();
     }
@@ -206,11 +218,9 @@ class RenderThemeBuilder {
           throw Exception("unsupported render theme version: $version");
         }
       } else if (MAP_BACKGROUND == name) {
-        //        this.mapBackground = XmlUtils.getColor(
-        //            graphicFactory, value, displayModel.getThemeCallback(), null);
+        mapBackground = XmlUtils.getColor(value);
       } else if (MAP_BACKGROUND_OUTSIDE == name) {
-        //        this.mapBackgroundOutside = XmlUtils.getColor(
-        //            graphicFactory, value, displayModel.getThemeCallback(), null);
+        mapBackgroundOutside = XmlUtils.getColor(value);
         hasBackgroundOutside = true;
       } else if (BASE_STROKE_WIDTH == name) {
         baseStrokeWidth = XmlUtils.parseNonNegativeFloat(name, value);
@@ -248,7 +258,7 @@ class RenderThemeBuilder {
               //print("Time ${DateTime.now().millisecondsSinceEpoch - time} after hillshading");
               break;
             } else if ("stylemenu" == element.name.toString()) {
-              // TODO: handle stylemenu if needed.
+              _styleMenu = _parseStyleMenu(element);
               break;
             }
             throw Exception("Invalid node ${element.name.toString()}");
@@ -272,5 +282,75 @@ class RenderThemeBuilder {
       }
     }
     assert(foundElement);
+  }
+
+  StyleMenu _parseStyleMenu(XmlElement styleMenuElement) {
+    final String? id = styleMenuElement.getAttribute('id');
+    if (id == null || id.isEmpty) {
+      throw Exception("missing attribute 'id' for element: stylemenu");
+    }
+
+    final String? defaultValue = styleMenuElement.getAttribute('defaultvalue');
+    final String? defaultLang = styleMenuElement.getAttribute('defaultlang');
+
+    final List<StyleMenuLayer> layers = [];
+    for (final XmlNode node in styleMenuElement.children) {
+      if (node is! XmlElement) continue;
+      if (node.name.toString() != 'layer') continue;
+      layers.add(_parseStyleMenuLayer(node, defaultLang: defaultLang));
+    }
+
+    return StyleMenu(id: id, defaultValue: defaultValue, defaultLang: defaultLang, layers: layers);
+  }
+
+  StyleMenuLayer _parseStyleMenuLayer(XmlElement layerElement, {String? defaultLang}) {
+    final String? id = layerElement.getAttribute('id');
+    if (id == null || id.isEmpty) {
+      throw Exception("missing attribute 'id' for element: layer");
+    }
+
+    bool? enabled;
+    bool? visible;
+    final String? enabledAttr = layerElement.getAttribute('enabled');
+    if (enabledAttr != null) {
+      enabled = enabledAttr.toLowerCase() == 'true';
+    }
+    final String? visibleAttr = layerElement.getAttribute('visible');
+    if (visibleAttr != null) {
+      visible = visibleAttr.toLowerCase() == 'true';
+    }
+    final String? parent = layerElement.getAttribute('parent');
+
+    final List<StyleMenuTranslation> names = [];
+    final List<String> categories = [];
+    final List<String> overlays = [];
+
+    for (final XmlNode node in layerElement.children) {
+      if (node is! XmlElement) continue;
+      final String nodeName = node.name.toString();
+      if (nodeName == 'name') {
+        final String? lang = node.getAttribute('lang');
+        final String? value = node.getAttribute('value');
+        if (lang != null && value != null) {
+          names.add(StyleMenuTranslation(lang: lang, value: value));
+        }
+      } else if (nodeName == 'cat') {
+        final String? catId = node.getAttribute('id');
+        if (catId != null && catId.isNotEmpty) {
+          categories.add(catId);
+        }
+      } else if (nodeName == 'overlay') {
+        final String? overlayId = node.getAttribute('id');
+        if (overlayId != null && overlayId.isNotEmpty) {
+          overlays.add(overlayId);
+        }
+      }
+    }
+
+    if (names.isEmpty) {
+      names.add(StyleMenuTranslation(lang: defaultLang ?? '', value: id));
+    }
+
+    return StyleMenuLayer(id: id, enabled: enabled, visible: visible, parent: parent, names: names, categories: categories, overlays: overlays);
   }
 }

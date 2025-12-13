@@ -127,6 +127,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             // shows additional overlays or custom overlays
             // shows the indoorlevel buttons
             IndoorlevelOverlay(mapModel: mapModel),
+            if (_rendertheme?.styleMenu != null) StyleMenuOverlay(styleMenu: _rendertheme!.styleMenu!, onChange: (String layerId) {}),
             // shows a rotation-reset button if rotation is active
             RotationResetOverlay(mapModel: mapModel),
 

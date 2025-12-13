@@ -43,6 +43,43 @@ void main() {
   test('should handle invalid file path', () async {
     expect(() => RenderThemeBuilder.createFromFile("nonexistent.xml"), throwsA(isA<FileSystemException>()));
   });
+
+  test('should parse stylemenu', () {
+    final xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<rendertheme xmlns="http://mapsforge.org/renderTheme" version="6">
+  <stylemenu id="menu" defaultvalue="main" defaultlang="en">
+    <layer id="overlay1" enabled="true">
+      <name lang="en" value="Overlay" />
+      <cat id="c1" />
+      <cat id="c2" />
+    </layer>
+    <layer id="main" parent="base" visible="true">
+      <name lang="en" value="Main" />
+      <overlay id="overlay1" />
+    </layer>
+  </stylemenu>
+  <rule e="way" k="natural" v="sea"><area fill="#ffffff" /></rule>
+</rendertheme>
+''';
+
+    final theme = RenderThemeBuilder.createFromString(xml);
+    expect(theme.styleMenu, isNotNull);
+    expect(theme.styleMenu!.id, 'menu');
+    expect(theme.styleMenu!.defaultValue, 'main');
+    expect(theme.styleMenu!.defaultLang, 'en');
+
+    final overlay = theme.styleMenu!.layerById('overlay1');
+    expect(overlay, isNotNull);
+    expect(overlay!.enabled, isTrue);
+    expect(overlay.categories, containsAll(['c1', 'c2']));
+    expect(overlay.nameForLang('en'), 'Overlay');
+
+    final main = theme.styleMenu!.layerById('main');
+    expect(main, isNotNull);
+    expect(main!.visible, isTrue);
+    expect(main.parent, 'base');
+    expect(main.overlays, ['overlay1']);
+  });
 }
 
 void _initLogging() {

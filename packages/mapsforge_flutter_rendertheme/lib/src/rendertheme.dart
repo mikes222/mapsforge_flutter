@@ -1,5 +1,6 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rule/rule.dart';
 
@@ -46,6 +47,8 @@ class Rendertheme {
   /// sub-rules. See defaultrender.xml for example structure.
   final List<Rule> rulesList;
 
+  final StyleMenu? styleMenu;
+
   /// Zoom level specific rule collections for performance optimization.
   ///
   /// Pre-computed rule sets for each zoom level to avoid repeated
@@ -55,7 +58,7 @@ class Rendertheme {
   /// Hash string used for theme identification and caching.
   late final String forHash;
 
-  Rendertheme({required this.maxLevels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside});
+  Rendertheme({required this.maxLevels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside, this.styleMenu});
 
   /// Returns the number of distinct drawing levels required by this theme.
   ///

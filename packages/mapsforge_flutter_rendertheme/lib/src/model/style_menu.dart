@@ -1,0 +1,40 @@
+import 'package:mapsforge_flutter_rendertheme/src/model/style_menu_layer.dart';
+
+/// Model for Mapsforge RenderTheme `<stylemenu>`.
+///
+/// A `<stylemenu>` defines a set of layers (and their categories / overlays)
+/// which can be toggled by the host application.
+///
+/// Documentation:
+/// https://github.com/mapsforge/mapsforge/blob/master/docs/Rendertheme.md#stylemenus
+class StyleMenu {
+  /// The unique identifier of the style menu.
+  ///
+  /// XML: `<stylemenu id="...">`
+  final String id;
+
+  /// The default layer id to be selected.
+  ///
+  /// XML: `<stylemenu defaultvalue="...">`
+  final String? defaultValue;
+
+  /// The default language for localized layer names.
+  ///
+  /// XML: `<stylemenu defaultlang="...">`
+  final String? defaultLang;
+
+  /// All layer definitions contained in this menu.
+  ///
+  /// These are parsed from nested `<layer ...>` elements.
+  final List<StyleMenuLayer> layers;
+
+  const StyleMenu({required this.id, this.defaultValue, this.defaultLang, required this.layers});
+
+  /// Returns the layer with the given [id], or null if it does not exist.
+  StyleMenuLayer? layerById(String id) {
+    for (final layer in layers) {
+      if (layer.id == id) return layer;
+    }
+    return null;
+  }
+}

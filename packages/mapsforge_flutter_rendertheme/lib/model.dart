@@ -31,5 +31,8 @@ export 'src/model/render_info.dart';
 export 'src/model/render_info_collection.dart';
 export 'src/model/render_info_node.dart';
 export 'src/model/render_info_way.dart';
+export 'src/model/style_menu.dart';
+export 'src/model/style_menu_layer.dart';
+export 'src/model/style_menu_translation.dart';
 export 'src/model/shape_painter.dart';
 export 'src/model/wayproperties.dart';
