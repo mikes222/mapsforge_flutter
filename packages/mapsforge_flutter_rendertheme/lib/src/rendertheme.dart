@@ -49,6 +49,8 @@ class Rendertheme {
 
   final StyleMenu? styleMenu;
 
+  Set<String>? _categories;
+
   /// Zoom level specific rule collections for performance optimization.
   ///
   /// Pre-computed rule sets for each zoom level to avoid repeated
@@ -89,6 +91,15 @@ class Rendertheme {
     return hasBackgroundOutside;
   }
 
+  void setCategories(Set<String>? categories) {
+    _categories = categories;
+    if (_categories != null && _categories!.isEmpty) _categories = null;
+    for (var element in _renderthemeZoomlevels.values) {
+      element.dispose();
+    }
+    _renderthemeZoomlevels.clear();
+  }
+
   /// Prepares and caches zoom level specific rendering rules.
   ///
   /// Creates an optimized rule set for the specified zoom level by filtering
@@ -102,7 +113,7 @@ class Rendertheme {
     int maxLevels = -1;
     List<Rule> rules = [];
     for (Rule rule in rulesList) {
-      Rule? r = rule.forZoomlevel(zoomlevel, () {
+      Rule? r = rule.forZoomlevel(zoomlevel, _categories, () {
         return ++maxLevels;
       });
       if (r != null) {

@@ -140,6 +140,10 @@ class RenderThemeBuilder {
     );
     renderTheme.baseStrokeWidth = baseStrokeWidth;
     renderTheme.baseTextSize = baseTextSize;
+    if (_styleMenu != null && _styleMenu!.defaultValue != null) {
+      Set<String> categories = _styleMenu!.categoriesForLayerId(_styleMenu!.defaultValue!);
+      renderTheme.setCategories(categories);
+    }
     for (Rule rule in rules) {
       rule.secondPass();
     }

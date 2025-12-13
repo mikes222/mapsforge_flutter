@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 
-typedef OnStyleChange = void Function(String layerId);
+typedef OnStyleChange = void Function(StyleMenuLayer layer);
 
 /// Stateful widget to display a vertical style menu bar.
 ///
@@ -115,10 +115,7 @@ class StyleMenuBarState extends State<StyleMenuBar> {
             final int itemIndex = layers.indexWhere((l) => l.id == _layerId);
             final int safeIndex = itemIndex < 0 ? 0 : itemIndex;
 
-            final double selectedItemOffset = max<double>(
-              safeIndex * widget.itemHeight - (maxHeight - 3 * widget.itemHeight),
-              0.0,
-            );
+            final double selectedItemOffset = max<double>(safeIndex * widget.itemHeight - (maxHeight - 3 * widget.itemHeight), 0.0);
 
             _scrollController ??= ScrollController(initialScrollOffset: selectedItemOffset);
 
@@ -174,7 +171,7 @@ class StyleMenuBarState extends State<StyleMenuBar> {
                           ),
                           onPressed: () {
                             if (_layerId != layer.id) {
-                              widget.onChange(layer.id);
+                              widget.onChange(layer);
                               if (mounted) {
                                 setState(() {
                                   _layerId = layer.id;
@@ -182,12 +179,7 @@ class StyleMenuBarState extends State<StyleMenuBar> {
                               }
                             }
                           },
-                          child: Text(
-                            _layerLabel(layer),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
+                          child: Text(_layerLabel(layer), textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, maxLines: 2),
                         );
                       },
                     ),
@@ -265,11 +257,7 @@ class StyleMenuBarState extends State<StyleMenuBar> {
     final nextPosition = _scrollController!.offset - itemHeight;
     final roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
 
-    _scrollController!.animateTo(
-      roundToNextItemPosition,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.fastOutSlowIn,
-    );
+    _scrollController!.animateTo(roundToNextItemPosition, duration: const Duration(milliseconds: 200), curve: Curves.fastOutSlowIn);
   }
 
   void _scrollDown() {
@@ -279,10 +267,6 @@ class StyleMenuBarState extends State<StyleMenuBar> {
     final nextPosition = _scrollController!.offset + itemHeight;
     final roundToNextItemPosition = (nextPosition / itemHeight).round() * itemHeight;
 
-    _scrollController!.animateTo(
-      roundToNextItemPosition,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.fastOutSlowIn,
-    );
+    _scrollController!.animateTo(roundToNextItemPosition, duration: const Duration(milliseconds: 200), curve: Curves.fastOutSlowIn);
   }
 }

@@ -76,6 +76,10 @@ class BoundingBox {
     return BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
   }
 
+  factory BoundingBox.max() {
+    return BoundingBox(Projection.LATITUDE_MIN, Projection.LONGITUDE_MIN, Projection.LATITUDE_MAX, Projection.LONGITUDE_MAX);
+  }
+
   factory BoundingBox.from2(ILatLong first, ILatLong second) {
     return BoundingBox(
       Math.min(first.latitude, second.latitude),

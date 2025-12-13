@@ -48,7 +48,7 @@ abstract class Rule implements SymbolSearcher {
     }
   }
 
-  Rule? forZoomlevel(int zoomlevel, int Function() Function);
+  Rule? forZoomlevel(int zoomlevel, Set<String>? categories, int Function() Function);
 
   void apply(RuleVisitor v) {
     v.apply(this);

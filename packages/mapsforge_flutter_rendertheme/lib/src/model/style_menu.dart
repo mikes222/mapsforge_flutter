@@ -37,4 +37,34 @@ class StyleMenu {
     }
     return null;
   }
+
+  Set<String> categoriesForLayer(StyleMenuLayer layer) {
+    return categoriesForLayerId(layer.id);
+  }
+
+  Set<String> categoriesForLayerId(String layerId) {
+    final result = <String>{};
+    final visited = <String>{};
+    _collectCategories(layerId, result, visited);
+    return result;
+  }
+
+  void _collectCategories(String layerId, Set<String> result, Set<String> visited) {
+    if (!visited.add(layerId)) return;
+
+    final layer = layerById(layerId);
+    if (layer == null) return;
+
+    result.addAll(layer.categories);
+
+    final parentId = layer.parent;
+    if (parentId != null && parentId.isNotEmpty) {
+      _collectCategories(parentId, result, visited);
+    }
+
+    for (final overlayId in layer.overlays) {
+      if (overlayId.isEmpty) continue;
+      _collectCategories(overlayId, result, visited);
+    }
+  }
 }

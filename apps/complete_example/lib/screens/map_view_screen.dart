@@ -18,6 +18,7 @@ import 'package:mapsforge_flutter_renderer/cache.dart';
 import 'package:mapsforge_flutter_renderer/online_renderer.dart';
 import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -127,7 +128,15 @@ class _MapViewScreenState extends State<MapViewScreen> {
             // shows additional overlays or custom overlays
             // shows the indoorlevel buttons
             IndoorlevelOverlay(mapModel: mapModel),
-            if (_rendertheme?.styleMenu != null) StyleMenuOverlay(styleMenu: _rendertheme!.styleMenu!, onChange: (String layerId) {}),
+            if (_rendertheme?.styleMenu != null)
+              StyleMenuOverlay(
+                styleMenu: _rendertheme!.styleMenu!,
+                onChange: (StyleMenuLayer layer) {
+                  Set<String> categories = _rendertheme!.styleMenu!.categoriesForLayer(layer);
+                  _rendertheme!.setCategories(categories);
+                  mapModel.renderChanged(RenderChangedEvent(BoundingBox.max()));
+                },
+              ),
             // shows a rotation-reset button if rotation is active
             RotationResetOverlay(mapModel: mapModel),
 

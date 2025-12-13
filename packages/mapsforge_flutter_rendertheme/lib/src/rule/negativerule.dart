@@ -16,10 +16,12 @@ class NegativeRule extends Rule {
     required super.renderinstructionNodes,
     required super.renderinstructionOpenWays,
     required super.renderinstructionClosedWays,
+    super.cat,
   });
 
   @override
-  NegativeRule? forZoomlevel(int zoomlevel, int Function() getMaxLevel) {
+  NegativeRule? forZoomlevel(int zoomlevel, Set<String>? categories, int Function() getMaxLevel) {
+    if (categories != null && cat != null && !categories.contains(cat)) return null;
     if (!matchesForZoomLevel(zoomlevel)) {
       return null;
     }
@@ -42,7 +44,7 @@ class NegativeRule extends Rule {
     }
     List<Rule> subRules = [];
     for (var subRule in super.subRules) {
-      Rule? rule = subRule.forZoomlevel(zoomlevel, getMaxLevel);
+      Rule? rule = subRule.forZoomlevel(zoomlevel, categories, getMaxLevel);
       if (rule != null) subRules.add(rule);
     }
 

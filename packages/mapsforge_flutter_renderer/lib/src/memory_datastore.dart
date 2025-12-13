@@ -1,5 +1,4 @@
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_core/projection.dart';
 
 /// In-memory datastore implementation for testing and dynamic tile generation.
 ///
@@ -115,6 +114,6 @@ class MemoryDatastore extends Datastore {
   /// Returns the maximum possible bounding box as this datastore has no fixed bounds.
   @override
   Future<BoundingBox> getBoundingBox() {
-    return Future.value(Projection.BOUNDINGBOX_MAX);
+    return Future.value(BoundingBox.max());
   }
 }

@@ -181,6 +181,7 @@ class RuleBuilder {
         renderinstructionNodes: renderinstructionNodes,
         renderinstructionOpenWays: renderinstructionOpenWays,
         renderinstructionClosedWays: renderinstructionClosedWays,
+        cat: cat,
       );
     }
 
@@ -197,6 +198,7 @@ class RuleBuilder {
       renderinstructionNodes: renderinstructionNodes,
       renderinstructionOpenWays: renderinstructionOpenWays,
       renderinstructionClosedWays: renderinstructionClosedWays,
+      cat: cat,
     );
   }
 

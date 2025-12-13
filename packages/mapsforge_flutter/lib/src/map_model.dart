@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter/marker.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:rxdart/rxdart.dart';
 
 class MapModel extends ChangeNotifier {
@@ -305,12 +306,10 @@ enum TapEventListener {
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// Event which is triggered when a part of the render area (hence a part of the map) has been changed.
-/// This may occur if a [MultimapDatastore] adds or removes datastores.
+/// Event which is triggered when a part of the render area (hence a part of the map) has been changed so that a rerender is required.
 /// This forces eventual caches to revalidate and redraw the screen if the
 /// currently shown area is affected.
-/// Since the current implementation does not change the rendering by itself this event is
-/// NOT triggered by this library. Instead you need to trigger it from outside if needed.
+/// This may occur if a [MultimapDatastore] adds or removes datastores or if the user changes the desired [StyleMenuLayer].
 class RenderChangedEvent {
   final BoundingBox boundingBox;
 
