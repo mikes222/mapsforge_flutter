@@ -21,6 +21,7 @@ workspace:
   - packages/mapsforge_flutter
   - packages/mapsforge_flutter_rendertheme
   - apps/mapfile_converter
+  - apps/globe_dem_converter
   - apps/simple_example
   - apps/online_renderer_example
   - apps/complete_example
