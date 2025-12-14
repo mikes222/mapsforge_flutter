@@ -30,7 +30,7 @@ This package provides the main UI components for the Mapsforge Flutter ecosystem
 With this library, you can load and render *mapfiles* directly from a user’s device. **No internet connection required!**
 Perfect for offline navigation, custom mapping applications, and seamless user experiences!
 
-The `mapsforge_view` package is the primary UI layer for Mapsforge Flutter applications. 
+The `mapsforge_flutter` package is the primary UI layer for Mapsforge Flutter applications. 
 It provides a complete set of widgets, overlays, and markers that work seamlessly with the underlying rendering engine to create interactive, feature-rich map applications.
 
 mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting the well-established [mapsforge library](https://github.com/mapsforge/mapsforge) from Java/Android.
@@ -42,6 +42,7 @@ mapsforge_flutter brings pure offline mapping capabilities to Flutter by porting
 - Context menu support with customizable actions
 - Indoor mapping support with level controls
 - Performance-optimized rendering with caching
+- Support for StyleMenus
 - Hillshading
 - Drag-and-drop support
 - Online and Offline Maps
@@ -150,7 +151,7 @@ _mapModel = await MapModelHelper.createOfflineMapModel(datastore: datastore, zoo
 ```
 
 For demo purposes set a position and zoomlevel. 
-Note that this information would come from e.g. a gps provider in the real world. 
+Note that this information would come from e.g. a gps provider in real applications. 
 
 ```dart
 MapPosition mapPosition = MapPosition(43.7399, 7.4262, 18);
@@ -333,6 +334,7 @@ Check the `apps/complete_example` directory for comprehensive usage examples inc
 - Custom marker implementations
 - Advanced gesture handling
 - Indoor mapping integration
+- Style menus if supported by the rendertheme
 
 # License
 

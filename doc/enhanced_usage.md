@@ -8,6 +8,7 @@ This guide covers advanced asset management and symbol loading configurations fo
 - [Custom Asset Configuration](#custom-asset-configuration)
 - [Image Loaders](#image-loaders)
 - [Practical Examples](#practical-examples)
+- [Style Menus](#style-menus)
 - [Best Practices](#best-practices)
 
 ## Asset Management Overview
@@ -195,6 +196,30 @@ class _CustomMapViewState extends State<CustomMapView> {
   }
 }
 ```
+
+## Style Menus
+
+Mapsforge xml files support style menus. These are definitions of layers what may be rendered on the screen. 
+
+See https://github.com/mapsforge/mapsforge/blob/master/docs/Rendertheme.md#stylemenus for more information.
+
+A stylemenu may be configured in the rendertheme xml file. 
+It will be loaded automatically and the layer defined as standard layer will be shown per default. 
+
+In order to change the layer used to render execute the following code:
+
+```dart
+Set<String> categories = _rendertheme!.styleMenu!.categoriesForLayer(layer);
+_rendertheme!.setCategories(categories);
+mapModel.renderChanged(RenderChangedEvent(BoundingBox.max()));
+```
+
+The first line retrieves all categories defined by the selected layer iteratively. 
+``Rendertheme.setCategories()`` sets the categories and hence defines what to render. 
+``MapModel.renderChanged()`` instructs the MapModel to clear the cache and rerender the view. 
+
+For demo purposes there is a ``StyleMenuOverlay`` available which shows the possible layers on screen. 
+See complete_example how to use it. 
 
 ## Best Practices
 

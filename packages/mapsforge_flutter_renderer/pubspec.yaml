@@ -47,7 +47,7 @@ dependencies:
 
   # BSD License
   # for importing svg files
-  flutter_svg: ^2.2.1
+  flutter_svg: ^2.2.3
 
   logging: ^1.3.0
 

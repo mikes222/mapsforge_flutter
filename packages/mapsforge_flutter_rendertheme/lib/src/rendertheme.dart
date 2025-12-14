@@ -91,6 +91,9 @@ class Rendertheme {
     return hasBackgroundOutside;
   }
 
+  /// Sets the categories used for rendering. Rules can have a category parameter. When a list of categories is set with this method
+  /// rules which do not match the categories will not be rendered.
+  /// See also https://github.com/mapsforge/mapsforge/blob/master/docs/Rendertheme.md#stylemenus
   void setCategories(Set<String>? categories) {
     _categories = categories;
     if (_categories != null && _categories!.isEmpty) _categories = null;
