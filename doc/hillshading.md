@@ -173,15 +173,10 @@ Reference: https://www.ngdc.noaa.gov/mgg/topo/report/s3/s3B.html
 
 ### Suggested chunking strategies
 
-You mentioned “one chunk per lat/lon”. There are two practical interpretations:
-
 1) **One chunk per 1°x1°** (recommended)
    - Contains `120 x 120` samples
    - Natural unit because GLOBE is 120 samples per degree
    - Small enough to load quickly, big enough for good I/O amortization
-2) **One chunk per integer latitude row or longitude column** (not recommended)
-   - Extremely wide/long strips (poor cache behavior)
-   - Harder to manage for random access
 
 For hillshading you also often need a 1-sample border to compute gradients.
 So for 1°x1° chunks, consider storing `122 x 122` (1-sample padding all sides), or handle borders by reading neighboring chunks.

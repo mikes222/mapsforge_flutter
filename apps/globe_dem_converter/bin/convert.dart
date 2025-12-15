@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:logging/logging.dart';
 
-import 'globe_converter.dart';
+import '../lib/src/globe_converter.dart';
 
 class ConvertCommand extends Command {
   final _log = Logger('ConvertCommand');
@@ -15,17 +15,23 @@ class ConvertCommand extends Command {
   String get name => 'convert';
 
   ConvertCommand() {
-    argParser.addOption('input', abbr: 'i', help: 'Input directory containing uncompressed GLOBE tiles (A10G..P10G).', mandatory: true);
+    argParser.addOption('input', abbr: 'i', help: 'Input directory containing uncompressed GLOBE tiles (A10G..P10G).', defaultsTo: ".");
 
     argParser.addOption('output', abbr: 'o', help: 'Output directory.', defaultsTo: 'output_globe_tiles');
 
-    argParser.addOption('tileWidth', abbr: 'w', help: 'Output tile width in degrees longitude (double).', mandatory: true);
-    argParser.addOption('tileHeight', help: 'Output tile height in degrees latitude (double).', mandatory: true);
+    argParser.addOption('tileWidth', abbr: 'w', help: 'Output tile width in degrees longitude (double).', defaultsTo: "1");
+    argParser.addOption('tileHeight', help: 'Output tile height in degrees latitude (double).', defaultsTo: "1");
 
-    argParser.addOption('startLat', help: 'Output extent start latitude (minLat).', mandatory: true);
-    argParser.addOption('startLon', help: 'Output extent start longitude (minLon).', mandatory: true);
-    argParser.addOption('endLat', help: 'Output extent end latitude (maxLat).', mandatory: true);
-    argParser.addOption('endLon', help: 'Output extent end longitude (maxLon).', mandatory: true);
+    argParser.addOption('startLat', help: 'Output extent start latitude (minLat).', defaultsTo: "-90");
+    argParser.addOption('startLon', help: 'Output extent start longitude (minLon).', defaultsTo: "-180");
+    argParser.addOption('endLat', help: 'Output extent end latitude (maxLat).', defaultsTo: "90");
+    argParser.addOption('endLon', help: 'Output extent end longitude (maxLon).', defaultsTo: "180");
+
+    argParser.addOption(
+      'resample',
+      help: 'Resampling factor (1..100). Output grid cell size becomes resample*(1/120°). 1 keeps original resolution.',
+      defaultsTo: '1',
+    );
 
     argParser.addFlag('dryRun', defaultsTo: false, help: 'Print planned output tiles without writing files.');
   }
@@ -43,6 +49,11 @@ class ConvertCommand extends Command {
     final endLat = double.parse(argResults!.option('endLat')!);
     final endLon = double.parse(argResults!.option('endLon')!);
 
+    final resampleFactor = int.parse(argResults!.option('resample')!);
+    if (resampleFactor < 1 || resampleFactor > 100) {
+      throw UsageException('resample must be in range 1..100', usage);
+    }
+
     if (startLat >= endLat) throw UsageException('startLat must be < endLat', usage);
     if (startLon >= endLon) throw UsageException('startLon must be < endLon', usage);
 
@@ -51,7 +62,7 @@ class ConvertCommand extends Command {
     _log.info('Input : ${inputDir.path}');
     _log.info('Output: ${outputDir.path}');
 
-    final converter = GlobeDemConverter(log: _log);
+    final converter = GlobeDemConverter();
 
     await converter.convert(
       inputDir: inputDir,
@@ -62,6 +73,7 @@ class ConvertCommand extends Command {
       startLon: startLon,
       endLat: endLat,
       endLon: endLon,
+      resampleFactor: resampleFactor,
       dryRun: dryRun,
     );
   }

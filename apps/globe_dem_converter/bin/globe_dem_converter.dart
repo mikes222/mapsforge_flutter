@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:logging/logging.dart';
 
-import 'package:globe_dem_converter/src/convert_command.dart';
+import 'convert.dart';
 
 void main(List<String> arguments) async {
   _initLogging();

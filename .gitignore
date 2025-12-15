@@ -93,3 +93,4 @@ windows/
 devtools_options.yaml
 *.tmp
 **/coverage/
+apps/globe_dem_converter/output_globe_tiles/
