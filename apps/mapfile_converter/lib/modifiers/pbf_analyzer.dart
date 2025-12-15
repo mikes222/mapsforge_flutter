@@ -24,9 +24,9 @@ class PbfAnalyzer {
 
   final double maxGapMeter;
 
-  final Map<int, _PoiHolder> _nodeHolders = {};
+  final Map<int, _OsmNodeHolder> _nodeHolders = {};
 
-  final Map<int, WayholderUnion> _wayHolders = {};
+  final Map<int, _WayholderUnion> _wayHolders = {};
 
   final List<Wayholder> _wayHoldersMerged = [];
 
@@ -52,7 +52,7 @@ class PbfAnalyzer {
 
   final DefaultOsmPrimitiveConverter converter;
 
-  List<PointOfInterest> get pois => _nodeHolders.values.map((e) => e.pointOfInterest).toList();
+  List<OsmNode> get nodes => _nodeHolders.values.map((e) => e.osmNode).toList();
 
   Future<List<Wayholder>> get ways async {
     List<Wayholder> result = [];
@@ -152,7 +152,7 @@ class PbfAnalyzer {
   Future<void> analyze() async {
     /// nodes are done, remove superflous nodes to free memory
     int count = _nodeHolders.length;
-    _nodeHolders.removeWhere((key, value) => value.pointOfInterest.tags.isEmpty);
+    _nodeHolders.removeWhere((key, value) => value.osmNode.tags.isEmpty);
     nodesWithoutTagsRemoved = count - _nodeHolders.length;
 
     await _mergeRelationsToWays();
@@ -252,8 +252,7 @@ class PbfAnalyzer {
 
   Future<void> _analyze1Block(OsmData blockData) async {
     for (var osmNode in blockData.nodes) {
-      PointOfInterest? pointOfInterest = converter.createNode(osmNode);
-      if (pointOfInterest != null) _nodeHolders[osmNode.id] = _PoiHolder(pointOfInterest);
+      _nodeHolders[osmNode.id] = _OsmNodeHolder(osmNode);
     }
     for (var osmWay in blockData.ways) {
       List<ILatLong> latLongs = [];
@@ -261,9 +260,9 @@ class PbfAnalyzer {
         if (nodeNotFound.contains(ref)) {
           continue;
         }
-        PointOfInterest? pointOfInterest = _searchPoi(ref);
+        OsmNode? pointOfInterest = _searchPoi(ref);
         if (pointOfInterest != null) {
-          latLongs.add(pointOfInterest.position);
+          latLongs.add(pointOfInterest.latLong);
         }
       }
       if (latLongs.length >= 2) {
@@ -272,7 +271,7 @@ class PbfAnalyzer {
           assert(!_wayHolders.containsKey(osmWay.id));
           assert(way.latLongs.isNotEmpty);
           assert(way.latLongs[0].length >= 2);
-          _wayHolders[osmWay.id] = WayholderUnion(Wayholder.fromWay(way));
+          _wayHolders[osmWay.id] = _WayholderUnion(Wayholder.fromWay(way));
         }
       }
     }
@@ -305,9 +304,9 @@ class PbfAnalyzer {
       // search for outer and inner ways and for possible label position
       for (var member in osmRelation.members) {
         if (member.role == "label") {
-          PointOfInterest? pointOfInterest = _searchPoi(member.memberId);
+          OsmNode? pointOfInterest = _searchPoi(member.memberId);
           if (pointOfInterest != null) {
-            labelPosition = pointOfInterest.position;
+            labelPosition = pointOfInterest.latLong;
           }
         } else if (member.role == "outer" && member.memberType == MemberType.way) {
           Wayholder? wayHolder = await _searchWayHolder(member.memberId);
@@ -356,11 +355,11 @@ class PbfAnalyzer {
     }
   }
 
-  PointOfInterest? _searchPoi(int id) {
-    _PoiHolder? poiHolder = _nodeHolders[id];
-    if (poiHolder != null) {
-      poiHolder.useCount++;
-      return poiHolder.pointOfInterest;
+  OsmNode? _searchPoi(int id) {
+    _OsmNodeHolder? nodeHolder = _nodeHolders[id];
+    if (nodeHolder != null) {
+      nodeHolder.useCount++;
+      return nodeHolder.osmNode;
     }
     if (nodeNotFound.contains(id)) {
       return null;
@@ -391,12 +390,12 @@ class PbfAnalyzer {
     relations.clear();
     nodeNotFound.clear();
     wayNotFound.clear();
-    WayholderUnion.dispose();
+    _WayholderUnion.dispose();
   }
 
   Future<void> filterByBoundingBox(BoundingBox boundingBox) async {
     int count = _nodeHolders.length;
-    _nodeHolders.removeWhere((id, test) => !boundingBox.containsLatLong(test.pointOfInterest.position));
+    _nodeHolders.removeWhere((id, test) => !boundingBox.containsLatLong(test.osmNode.latLong));
     nodesFiltered = count - _nodeHolders.length;
 
     count = _wayHoldersMerged.length;
@@ -464,18 +463,26 @@ class PbfAnalyzer {
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _PoiHolder {
-  final PointOfInterest pointOfInterest;
+class _OsmNodeHolder {
+  final OsmNode osmNode;
 
   int useCount = 0;
 
-  _PoiHolder(this.pointOfInterest);
+  _OsmNodeHolder(this.osmNode);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _OsmWayHolder {
+  final OsmWay osmWay;
+
+  _OsmWayHolder(this.osmWay);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// Holds one way in memory or holds a reference to one way in a temp-file
-class WayholderUnion {
+class _WayholderUnion {
   Wayholder? _wayholder;
 
   _Temp? _temp;
@@ -490,7 +497,7 @@ class WayholderUnion {
 
   static int _count = 0;
 
-  WayholderUnion(Wayholder wayholder) {
+  _WayholderUnion(Wayholder wayholder) {
     ++_count;
     if (wayholder.hasTagValue("natural", "coastline")) {
       coastLine = true;

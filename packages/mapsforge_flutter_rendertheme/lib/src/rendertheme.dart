@@ -167,10 +167,10 @@ class Rendertheme {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if the argument is never accepted.
-  ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
+  ZoomlevelRange? getZoomlevelRangeNode(TagCollection tags) {
     ZoomlevelRange? result;
     for (var rule in rulesList) {
-      ZoomlevelRange? range = rule.getZoomlevelRangeNode(pointOfInterest);
+      ZoomlevelRange? range = rule.getZoomlevelRangeNode(tags);
       if (range != null) {
         result = result?.widenTo(range) ?? range;
       }

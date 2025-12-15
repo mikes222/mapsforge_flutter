@@ -33,7 +33,7 @@ dependencies:
   mapsforge_flutter_rendertheme: ^4.0.0
 
   # for pbf format
-  protobuf: ^4.2.0
+  protobuf: ^6.0.0
 
   # MIT License
   # for reading and writing osm files

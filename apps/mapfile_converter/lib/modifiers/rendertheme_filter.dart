@@ -1,4 +1,6 @@
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
+import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
@@ -6,27 +8,34 @@ import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 class RenderthemeFilter {
   final _log = Logger('RenderthemeFilter');
 
-  Map<ZoomlevelRange, List<PointOfInterest>> convertNodes(List<PointOfInterest> pois) {
+  final DefaultOsmPrimitiveConverter converter;
+
+  RenderthemeFilter({required this.converter});
+
+  Map<ZoomlevelRange, List<PointOfInterest>> convertNodes(List<OsmNode> osmNodes) {
     ZoomlevelRange range = const ZoomlevelRange.standard();
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
-    for (var pointOfInterest in pois) {
-      List<PointOfInterest>? bag = nodes[range];
-      if (bag == null) {
-        bag = [];
-        nodes[range] = bag;
-      }
-      bag.add(pointOfInterest);
+    List<PointOfInterest>? bag = nodes[range];
+    if (bag == null) {
+      bag = [];
+      nodes[range] = bag;
+    }
+    for (OsmNode osmNode in osmNodes) {
+      PointOfInterest? pointOfInterest = converter.createNode(osmNode);
+      if (pointOfInterest != null) bag.add(pointOfInterest);
     }
     return nodes;
   }
 
-  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<PointOfInterest> pois, Rendertheme renderTheme) {
+  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<OsmNode> osmNodes, Rendertheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
     int noRangeNodes = 0;
-    for (var pointOfInterest in pois) {
-      ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest);
+    for (OsmNode osmNode in osmNodes) {
+      PointOfInterest? pointOfInterest = converter.createNode(osmNode);
+      if (pointOfInterest == null) continue;
+      ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest.tags);
       if (range == null) {
         ++noRangeNodes;
         continue;

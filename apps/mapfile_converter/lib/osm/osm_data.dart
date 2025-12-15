@@ -1,7 +1,8 @@
+import 'dart:math';
+
 import 'package:mapsforge_flutter_core/model.dart';
 
-/// Holds data returned from the PbfReader. These data must be converted
-/// to PointOfInterest and Way objects before being used.
+/// Holds data returned from the [PbfReader] or [OsmReader].
 class OsmData {
   final List<OsmNode> nodes;
   final List<OsmWay> ways;
@@ -40,15 +41,15 @@ sealed class _OsmPrimitive {
 /// OSM node
 class OsmNode extends _OsmPrimitive implements ILatLong {
   /// OsmNode default constructor
-  const OsmNode({required super.id, required super.tags, required this.latitude, required this.longitude});
+  OsmNode({required super.id, required super.tags, required double latitude, required double longitude})
+    : latLong = LatLong(_roundDouble(latitude, 6), _roundDouble(longitude, 6));
 
-  /// Latitude
-  @override
-  final double latitude;
+  final ILatLong latLong;
 
-  /// Longitude
-  @override
-  final double longitude;
+  static double _roundDouble(double value, int places) {
+    num mod = pow(10.0, places);
+    return ((value * mod).round().toDouble() / mod);
+  }
 
   @override
   String toString() {
@@ -59,6 +60,12 @@ class OsmNode extends _OsmPrimitive implements ILatLong {
     List<Tag> ts = tags.entries.map((entry) => Tag(entry.key, entry.value)).toList();
     return 'OsmNode{id: $id, tags: ${Tag.tagsWithoutNames(ts)}, lat: $latitude, lon: $longitude}';
   }
+
+  @override
+  double get latitude => latLong.latitude;
+
+  @override
+  double get longitude => latLong.longitude;
 }
 
 //////////////////////////////////////////////////////////////////////////////

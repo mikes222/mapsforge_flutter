@@ -1,13 +1,15 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: lib/pbfreader/waycacheproto/cache.pbfproto
-//
+// Generated from lib/waycacheproto/cache.proto.
+
 // @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -37,7 +39,8 @@ const CacheWay$json = {
 };
 
 /// Descriptor for `CacheWay`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cacheWayDescriptor = $convert.base64Decode('CghDYWNoZVdheRIUCgNsYXQYCSADKBJCAhABUgNsYXQSFAoDbG9uGAogAygSQgIQAVIDbG9u');
+final $typed_data.Uint8List cacheWayDescriptor = $convert.base64Decode(
+    'CghDYWNoZVdheRIUCgNsYXQYCSADKBJCAhABUgNsYXQSFAoDbG9uGAogAygSQgIQAVIDbG9u');
 
 @$core.Deprecated('Use cacheLabelDescriptor instead')
 const CacheLabel$json = {
@@ -49,7 +52,8 @@ const CacheLabel$json = {
 };
 
 /// Descriptor for `CacheLabel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cacheLabelDescriptor = $convert.base64Decode('CgpDYWNoZUxhYmVsEhAKA2xhdBgIIAIoElIDbGF0EhAKA2xvbhgJIAIoElIDbG9u');
+final $typed_data.Uint8List cacheLabelDescriptor = $convert.base64Decode(
+    'CgpDYWNoZUxhYmVsEhAKA2xhdBgIIAIoElIDbGF0EhAKA2xvbhgJIAIoElIDbG9u');
 
 @$core.Deprecated('Use cacheWayholderDescriptor instead')
 const CacheWayholder$json = {
@@ -57,18 +61,46 @@ const CacheWayholder$json = {
   '2': [
     {'1': 'tagkeys', '3': 2, '4': 3, '5': 9, '10': 'tagkeys'},
     {'1': 'tagvals', '3': 3, '4': 3, '5': 9, '10': 'tagvals'},
-    {'1': 'innerways', '3': 4, '4': 3, '5': 11, '6': '.CacheWay', '10': 'innerways'},
-    {'1': 'closedways', '3': 5, '4': 3, '5': 11, '6': '.CacheWay', '10': 'closedways'},
-    {'1': 'openways', '3': 6, '4': 3, '5': 11, '6': '.CacheWay', '10': 'openways'},
+    {
+      '1': 'innerways',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.CacheWay',
+      '10': 'innerways'
+    },
+    {
+      '1': 'closedways',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.CacheWay',
+      '10': 'closedways'
+    },
+    {
+      '1': 'openways',
+      '3': 6,
+      '4': 3,
+      '5': 11,
+      '6': '.CacheWay',
+      '10': 'openways'
+    },
     {'1': 'label', '3': 11, '4': 1, '5': 11, '6': '.CacheLabel', '10': 'label'},
     {'1': 'layer', '3': 13, '4': 2, '5': 5, '10': 'layer'},
     {'1': 'tileBitmask', '3': 14, '4': 2, '5': 5, '10': 'tileBitmask'},
-    {'1': 'mergedWithOtherWay', '3': 15, '4': 2, '5': 8, '10': 'mergedWithOtherWay'},
+    {
+      '1': 'mergedWithOtherWay',
+      '3': 15,
+      '4': 2,
+      '5': 8,
+      '10': 'mergedWithOtherWay'
+    },
   ],
 };
 
 /// Descriptor for `CacheWayholder`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cacheWayholderDescriptor = $convert.base64Decode('Cg5DYWNoZVdheWhvbGRlchIYCgd0YWdrZXlzGAIgAygJUgd0YWdrZXlzEhgKB3RhZ3ZhbHMYAy'
+final $typed_data.Uint8List cacheWayholderDescriptor = $convert.base64Decode(
+    'Cg5DYWNoZVdheWhvbGRlchIYCgd0YWdrZXlzGAIgAygJUgd0YWdrZXlzEhgKB3RhZ3ZhbHMYAy'
     'ADKAlSB3RhZ3ZhbHMSJwoJaW5uZXJ3YXlzGAQgAygLMgkuQ2FjaGVXYXlSCWlubmVyd2F5cxIp'
     'CgpjbG9zZWR3YXlzGAUgAygLMgkuQ2FjaGVXYXlSCmNsb3NlZHdheXMSJQoIb3BlbndheXMYBi'
     'ADKAsyCS5DYWNoZVdheVIIb3BlbndheXMSIQoFbGFiZWwYCyABKAsyCy5DYWNoZUxhYmVsUgVs'

@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: lib/pbfreader/pbfproto/osmformat.pbfproto
-//
+// Generated from lib/pbfproto/osmformat.proto.
+
 // @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -31,74 +32,70 @@ class HeaderBlock extends $pb.GeneratedMessage {
     $fixnum.Int64? osmosisReplicationSequenceNumber,
     $core.String? osmosisReplicationBaseUrl,
   }) {
-    final $result = create();
-    if (bbox != null) {
-      $result.bbox = bbox;
-    }
-    if (requiredFeatures != null) {
-      $result.requiredFeatures.addAll(requiredFeatures);
-    }
-    if (optionalFeatures != null) {
-      $result.optionalFeatures.addAll(optionalFeatures);
-    }
-    if (writingprogram != null) {
-      $result.writingprogram = writingprogram;
-    }
-    if (source != null) {
-      $result.source = source;
-    }
-    if (osmosisReplicationTimestamp != null) {
-      $result.osmosisReplicationTimestamp = osmosisReplicationTimestamp;
-    }
-    if (osmosisReplicationSequenceNumber != null) {
-      $result.osmosisReplicationSequenceNumber = osmosisReplicationSequenceNumber;
-    }
-    if (osmosisReplicationBaseUrl != null) {
-      $result.osmosisReplicationBaseUrl = osmosisReplicationBaseUrl;
-    }
-    return $result;
+    final result = create();
+    if (bbox != null) result.bbox = bbox;
+    if (requiredFeatures != null)
+      result.requiredFeatures.addAll(requiredFeatures);
+    if (optionalFeatures != null)
+      result.optionalFeatures.addAll(optionalFeatures);
+    if (writingprogram != null) result.writingprogram = writingprogram;
+    if (source != null) result.source = source;
+    if (osmosisReplicationTimestamp != null)
+      result.osmosisReplicationTimestamp = osmosisReplicationTimestamp;
+    if (osmosisReplicationSequenceNumber != null)
+      result.osmosisReplicationSequenceNumber =
+          osmosisReplicationSequenceNumber;
+    if (osmosisReplicationBaseUrl != null)
+      result.osmosisReplicationBaseUrl = osmosisReplicationBaseUrl;
+    return result;
   }
-  HeaderBlock._() : super();
-  factory HeaderBlock.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory HeaderBlock.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'HeaderBlock', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..aOM<HeaderBBox>(1, _omitFieldNames ? '' : 'bbox', subBuilder: HeaderBBox.create)
-        ..pPS(4, _omitFieldNames ? '' : 'requiredFeatures')
-        ..pPS(5, _omitFieldNames ? '' : 'optionalFeatures')
-        ..aOS(16, _omitFieldNames ? '' : 'writingprogram')
-        ..aOS(17, _omitFieldNames ? '' : 'source')
-        ..aInt64(32, _omitFieldNames ? '' : 'osmosisReplicationTimestamp')
-        ..aInt64(33, _omitFieldNames ? '' : 'osmosisReplicationSequenceNumber')
-        ..aOS(34, _omitFieldNames ? '' : 'osmosisReplicationBaseUrl');
+  HeaderBlock._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  HeaderBlock clone() => HeaderBlock()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  HeaderBlock copyWith(void Function(HeaderBlock) updates) => super.copyWith((message) => updates(message as HeaderBlock)) as HeaderBlock;
+  factory HeaderBlock.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HeaderBlock.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HeaderBlock',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..aOM<HeaderBBox>(1, _omitFieldNames ? '' : 'bbox',
+        subBuilder: HeaderBBox.create)
+    ..pPS(4, _omitFieldNames ? '' : 'requiredFeatures')
+    ..pPS(5, _omitFieldNames ? '' : 'optionalFeatures')
+    ..aOS(16, _omitFieldNames ? '' : 'writingprogram')
+    ..aOS(17, _omitFieldNames ? '' : 'source')
+    ..aInt64(32, _omitFieldNames ? '' : 'osmosisReplicationTimestamp')
+    ..aInt64(33, _omitFieldNames ? '' : 'osmosisReplicationSequenceNumber')
+    ..aOS(34, _omitFieldNames ? '' : 'osmosisReplicationBaseUrl');
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HeaderBlock clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HeaderBlock copyWith(void Function(HeaderBlock) updates) =>
+      super.copyWith((message) => updates(message as HeaderBlock))
+          as HeaderBlock;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static HeaderBlock create() => HeaderBlock._();
+  @$core.override
   HeaderBlock createEmptyInstance() => create();
-  static $pb.PbList<HeaderBlock> createRepeated() => $pb.PbList<HeaderBlock>();
   @$core.pragma('dart2js:noInline')
-  static HeaderBlock getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HeaderBlock>(create);
+  static HeaderBlock getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HeaderBlock>(create);
   static HeaderBlock? _defaultInstance;
 
   @$pb.TagNumber(1)
   HeaderBBox get bbox => $_getN(0);
   @$pb.TagNumber(1)
-  set bbox(HeaderBBox v) {
-    $_setField(1, v);
-  }
-
+  set bbox(HeaderBBox value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasBbox() => $_has(0);
   @$pb.TagNumber(1)
@@ -116,10 +113,7 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   $core.String get writingprogram => $_getSZ(3);
   @$pb.TagNumber(16)
-  set writingprogram($core.String v) {
-    $_setString(3, v);
-  }
-
+  set writingprogram($core.String value) => $_setString(3, value);
   @$pb.TagNumber(16)
   $core.bool hasWritingprogram() => $_has(3);
   @$pb.TagNumber(16)
@@ -128,10 +122,7 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   $core.String get source => $_getSZ(4);
   @$pb.TagNumber(17)
-  set source($core.String v) {
-    $_setString(4, v);
-  }
-
+  set source($core.String value) => $_setString(4, value);
   @$pb.TagNumber(17)
   $core.bool hasSource() => $_has(4);
   @$pb.TagNumber(17)
@@ -143,10 +134,7 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(32)
   $fixnum.Int64 get osmosisReplicationTimestamp => $_getI64(5);
   @$pb.TagNumber(32)
-  set osmosisReplicationTimestamp($fixnum.Int64 v) {
-    $_setInt64(5, v);
-  }
-
+  set osmosisReplicationTimestamp($fixnum.Int64 value) => $_setInt64(5, value);
   @$pb.TagNumber(32)
   $core.bool hasOsmosisReplicationTimestamp() => $_has(5);
   @$pb.TagNumber(32)
@@ -156,10 +144,8 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(33)
   $fixnum.Int64 get osmosisReplicationSequenceNumber => $_getI64(6);
   @$pb.TagNumber(33)
-  set osmosisReplicationSequenceNumber($fixnum.Int64 v) {
-    $_setInt64(6, v);
-  }
-
+  set osmosisReplicationSequenceNumber($fixnum.Int64 value) =>
+      $_setInt64(6, value);
   @$pb.TagNumber(33)
   $core.bool hasOsmosisReplicationSequenceNumber() => $_has(6);
   @$pb.TagNumber(33)
@@ -169,10 +155,7 @@ class HeaderBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(34)
   $core.String get osmosisReplicationBaseUrl => $_getSZ(7);
   @$pb.TagNumber(34)
-  set osmosisReplicationBaseUrl($core.String v) {
-    $_setString(7, v);
-  }
-
+  set osmosisReplicationBaseUrl($core.String value) => $_setString(7, value);
   @$pb.TagNumber(34)
   $core.bool hasOsmosisReplicationBaseUrl() => $_has(7);
   @$pb.TagNumber(34)
@@ -186,58 +169,58 @@ class HeaderBBox extends $pb.GeneratedMessage {
     $fixnum.Int64? top,
     $fixnum.Int64? bottom,
   }) {
-    final $result = create();
-    if (left != null) {
-      $result.left = left;
-    }
-    if (right != null) {
-      $result.right = right;
-    }
-    if (top != null) {
-      $result.top = top;
-    }
-    if (bottom != null) {
-      $result.bottom = bottom;
-    }
-    return $result;
+    final result = create();
+    if (left != null) result.left = left;
+    if (right != null) result.right = right;
+    if (top != null) result.top = top;
+    if (bottom != null) result.bottom = bottom;
+    return result;
   }
-  HeaderBBox._() : super();
-  factory HeaderBBox.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory HeaderBBox.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'HeaderBBox', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'left', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'right', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'top', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'bottom', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO);
+  HeaderBBox._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  HeaderBBox clone() => HeaderBBox()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  HeaderBBox copyWith(void Function(HeaderBBox) updates) => super.copyWith((message) => updates(message as HeaderBBox)) as HeaderBBox;
+  factory HeaderBBox.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HeaderBBox.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HeaderBBox',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'left', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'right', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'top', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'bottom', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO);
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HeaderBBox clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HeaderBBox copyWith(void Function(HeaderBBox) updates) =>
+      super.copyWith((message) => updates(message as HeaderBBox)) as HeaderBBox;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static HeaderBBox create() => HeaderBBox._();
+  @$core.override
   HeaderBBox createEmptyInstance() => create();
-  static $pb.PbList<HeaderBBox> createRepeated() => $pb.PbList<HeaderBBox>();
   @$core.pragma('dart2js:noInline')
-  static HeaderBBox getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HeaderBBox>(create);
+  static HeaderBBox getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HeaderBBox>(create);
   static HeaderBBox? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get left => $_getI64(0);
   @$pb.TagNumber(1)
-  set left($fixnum.Int64 v) {
-    $_setInt64(0, v);
-  }
-
+  set left($fixnum.Int64 value) => $_setInt64(0, value);
   @$pb.TagNumber(1)
   $core.bool hasLeft() => $_has(0);
   @$pb.TagNumber(1)
@@ -246,10 +229,7 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get right => $_getI64(1);
   @$pb.TagNumber(2)
-  set right($fixnum.Int64 v) {
-    $_setInt64(1, v);
-  }
-
+  set right($fixnum.Int64 value) => $_setInt64(1, value);
   @$pb.TagNumber(2)
   $core.bool hasRight() => $_has(1);
   @$pb.TagNumber(2)
@@ -258,10 +238,7 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get top => $_getI64(2);
   @$pb.TagNumber(3)
-  set top($fixnum.Int64 v) {
-    $_setInt64(2, v);
-  }
-
+  set top($fixnum.Int64 value) => $_setInt64(2, value);
   @$pb.TagNumber(3)
   $core.bool hasTop() => $_has(2);
   @$pb.TagNumber(3)
@@ -270,10 +247,7 @@ class HeaderBBox extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $fixnum.Int64 get bottom => $_getI64(3);
   @$pb.TagNumber(4)
-  set bottom($fixnum.Int64 v) {
-    $_setInt64(3, v);
-  }
-
+  set bottom($fixnum.Int64 value) => $_setInt64(3, value);
   @$pb.TagNumber(4)
   $core.bool hasBottom() => $_has(3);
   @$pb.TagNumber(4)
@@ -289,66 +263,61 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
     $fixnum.Int64? latOffset,
     $fixnum.Int64? lonOffset,
   }) {
-    final $result = create();
-    if (stringtable != null) {
-      $result.stringtable = stringtable;
-    }
-    if (primitivegroup != null) {
-      $result.primitivegroup.addAll(primitivegroup);
-    }
-    if (granularity != null) {
-      $result.granularity = granularity;
-    }
-    if (dateGranularity != null) {
-      $result.dateGranularity = dateGranularity;
-    }
-    if (latOffset != null) {
-      $result.latOffset = latOffset;
-    }
-    if (lonOffset != null) {
-      $result.lonOffset = lonOffset;
-    }
-    return $result;
+    final result = create();
+    if (stringtable != null) result.stringtable = stringtable;
+    if (primitivegroup != null) result.primitivegroup.addAll(primitivegroup);
+    if (granularity != null) result.granularity = granularity;
+    if (dateGranularity != null) result.dateGranularity = dateGranularity;
+    if (latOffset != null) result.latOffset = latOffset;
+    if (lonOffset != null) result.lonOffset = lonOffset;
+    return result;
   }
-  PrimitiveBlock._() : super();
-  factory PrimitiveBlock.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PrimitiveBlock.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimitiveBlock', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..aQM<StringTable>(1, _omitFieldNames ? '' : 'stringtable', subBuilder: StringTable.create)
-        ..pc<PrimitiveGroup>(2, _omitFieldNames ? '' : 'primitivegroup', $pb.PbFieldType.PM, subBuilder: PrimitiveGroup.create)
-        ..a<$core.int>(17, _omitFieldNames ? '' : 'granularity', $pb.PbFieldType.O3, defaultOrMaker: 100)
-        ..a<$core.int>(18, _omitFieldNames ? '' : 'dateGranularity', $pb.PbFieldType.O3, defaultOrMaker: 1000)
-        ..aInt64(19, _omitFieldNames ? '' : 'latOffset')
-        ..aInt64(20, _omitFieldNames ? '' : 'lonOffset');
+  PrimitiveBlock._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  PrimitiveBlock clone() => PrimitiveBlock()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  PrimitiveBlock copyWith(void Function(PrimitiveBlock) updates) => super.copyWith((message) => updates(message as PrimitiveBlock)) as PrimitiveBlock;
+  factory PrimitiveBlock.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PrimitiveBlock.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PrimitiveBlock',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..aQM<StringTable>(1, _omitFieldNames ? '' : 'stringtable',
+        subBuilder: StringTable.create)
+    ..pPM<PrimitiveGroup>(2, _omitFieldNames ? '' : 'primitivegroup',
+        subBuilder: PrimitiveGroup.create)
+    ..aI(17, _omitFieldNames ? '' : 'granularity', defaultOrMaker: 100)
+    ..aI(18, _omitFieldNames ? '' : 'dateGranularity', defaultOrMaker: 1000)
+    ..aInt64(19, _omitFieldNames ? '' : 'latOffset')
+    ..aInt64(20, _omitFieldNames ? '' : 'lonOffset');
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PrimitiveBlock clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PrimitiveBlock copyWith(void Function(PrimitiveBlock) updates) =>
+      super.copyWith((message) => updates(message as PrimitiveBlock))
+          as PrimitiveBlock;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static PrimitiveBlock create() => PrimitiveBlock._();
+  @$core.override
   PrimitiveBlock createEmptyInstance() => create();
-  static $pb.PbList<PrimitiveBlock> createRepeated() => $pb.PbList<PrimitiveBlock>();
   @$core.pragma('dart2js:noInline')
-  static PrimitiveBlock getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PrimitiveBlock>(create);
+  static PrimitiveBlock getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PrimitiveBlock>(create);
   static PrimitiveBlock? _defaultInstance;
 
   @$pb.TagNumber(1)
   StringTable get stringtable => $_getN(0);
   @$pb.TagNumber(1)
-  set stringtable(StringTable v) {
-    $_setField(1, v);
-  }
-
+  set stringtable(StringTable value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasStringtable() => $_has(0);
   @$pb.TagNumber(1)
@@ -363,10 +332,7 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   $core.int get granularity => $_getI(2, 100);
   @$pb.TagNumber(17)
-  set granularity($core.int v) {
-    $_setSignedInt32(2, v);
-  }
-
+  set granularity($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(17)
   $core.bool hasGranularity() => $_has(2);
   @$pb.TagNumber(17)
@@ -376,10 +342,7 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(18)
   $core.int get dateGranularity => $_getI(3, 1000);
   @$pb.TagNumber(18)
-  set dateGranularity($core.int v) {
-    $_setSignedInt32(3, v);
-  }
-
+  set dateGranularity($core.int value) => $_setSignedInt32(3, value);
   @$pb.TagNumber(18)
   $core.bool hasDateGranularity() => $_has(3);
   @$pb.TagNumber(18)
@@ -389,10 +352,7 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(19)
   $fixnum.Int64 get latOffset => $_getI64(4);
   @$pb.TagNumber(19)
-  set latOffset($fixnum.Int64 v) {
-    $_setInt64(4, v);
-  }
-
+  set latOffset($fixnum.Int64 value) => $_setInt64(4, value);
   @$pb.TagNumber(19)
   $core.bool hasLatOffset() => $_has(4);
   @$pb.TagNumber(19)
@@ -401,10 +361,7 @@ class PrimitiveBlock extends $pb.GeneratedMessage {
   @$pb.TagNumber(20)
   $fixnum.Int64 get lonOffset => $_getI64(5);
   @$pb.TagNumber(20)
-  set lonOffset($fixnum.Int64 v) {
-    $_setInt64(5, v);
-  }
-
+  set lonOffset($fixnum.Int64 value) => $_setInt64(5, value);
   @$pb.TagNumber(20)
   $core.bool hasLonOffset() => $_has(5);
   @$pb.TagNumber(20)
@@ -420,53 +377,54 @@ class PrimitiveGroup extends $pb.GeneratedMessage {
     $core.Iterable<Relation>? relations,
     $core.Iterable<ChangeSet>? changesets,
   }) {
-    final $result = create();
-    if (nodes != null) {
-      $result.nodes.addAll(nodes);
-    }
-    if (dense != null) {
-      $result.dense = dense;
-    }
-    if (ways != null) {
-      $result.ways.addAll(ways);
-    }
-    if (relations != null) {
-      $result.relations.addAll(relations);
-    }
-    if (changesets != null) {
-      $result.changesets.addAll(changesets);
-    }
-    return $result;
+    final result = create();
+    if (nodes != null) result.nodes.addAll(nodes);
+    if (dense != null) result.dense = dense;
+    if (ways != null) result.ways.addAll(ways);
+    if (relations != null) result.relations.addAll(relations);
+    if (changesets != null) result.changesets.addAll(changesets);
+    return result;
   }
-  PrimitiveGroup._() : super();
-  factory PrimitiveGroup.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PrimitiveGroup.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimitiveGroup', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..pc<Node>(1, _omitFieldNames ? '' : 'nodes', $pb.PbFieldType.PM, subBuilder: Node.create)
-        ..aOM<DenseNodes>(2, _omitFieldNames ? '' : 'dense', subBuilder: DenseNodes.create)
-        ..pc<Way>(3, _omitFieldNames ? '' : 'ways', $pb.PbFieldType.PM, subBuilder: Way.create)
-        ..pc<Relation>(4, _omitFieldNames ? '' : 'relations', $pb.PbFieldType.PM, subBuilder: Relation.create)
-        ..pc<ChangeSet>(5, _omitFieldNames ? '' : 'changesets', $pb.PbFieldType.PM, subBuilder: ChangeSet.create);
+  PrimitiveGroup._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  PrimitiveGroup clone() => PrimitiveGroup()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  PrimitiveGroup copyWith(void Function(PrimitiveGroup) updates) => super.copyWith((message) => updates(message as PrimitiveGroup)) as PrimitiveGroup;
+  factory PrimitiveGroup.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PrimitiveGroup.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PrimitiveGroup',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..pPM<Node>(1, _omitFieldNames ? '' : 'nodes', subBuilder: Node.create)
+    ..aOM<DenseNodes>(2, _omitFieldNames ? '' : 'dense',
+        subBuilder: DenseNodes.create)
+    ..pPM<Way>(3, _omitFieldNames ? '' : 'ways', subBuilder: Way.create)
+    ..pPM<Relation>(4, _omitFieldNames ? '' : 'relations',
+        subBuilder: Relation.create)
+    ..pPM<ChangeSet>(5, _omitFieldNames ? '' : 'changesets',
+        subBuilder: ChangeSet.create);
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PrimitiveGroup clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PrimitiveGroup copyWith(void Function(PrimitiveGroup) updates) =>
+      super.copyWith((message) => updates(message as PrimitiveGroup))
+          as PrimitiveGroup;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static PrimitiveGroup create() => PrimitiveGroup._();
+  @$core.override
   PrimitiveGroup createEmptyInstance() => create();
-  static $pb.PbList<PrimitiveGroup> createRepeated() => $pb.PbList<PrimitiveGroup>();
   @$core.pragma('dart2js:noInline')
-  static PrimitiveGroup getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PrimitiveGroup>(create);
+  static PrimitiveGroup getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PrimitiveGroup>(create);
   static PrimitiveGroup? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -475,10 +433,7 @@ class PrimitiveGroup extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   DenseNodes get dense => $_getN(1);
   @$pb.TagNumber(2)
-  set dense(DenseNodes v) {
-    $_setField(2, v);
-  }
-
+  set dense(DenseNodes value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasDense() => $_has(1);
   @$pb.TagNumber(2)
@@ -504,38 +459,45 @@ class StringTable extends $pb.GeneratedMessage {
   factory StringTable({
     $core.Iterable<$core.List<$core.int>>? s,
   }) {
-    final $result = create();
-    if (s != null) {
-      $result.s.addAll(s);
-    }
-    return $result;
+    final result = create();
+    if (s != null) result.s.addAll(s);
+    return result;
   }
-  StringTable._() : super();
-  factory StringTable.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory StringTable.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'StringTable', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..p<$core.List<$core.int>>(1, _omitFieldNames ? '' : 's', $pb.PbFieldType.PY)
-        ..hasRequiredFields = false;
+  StringTable._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  StringTable clone() => StringTable()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  StringTable copyWith(void Function(StringTable) updates) => super.copyWith((message) => updates(message as StringTable)) as StringTable;
+  factory StringTable.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory StringTable.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StringTable',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..p<$core.List<$core.int>>(
+        1, _omitFieldNames ? '' : 's', $pb.PbFieldType.PY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StringTable clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StringTable copyWith(void Function(StringTable) updates) =>
+      super.copyWith((message) => updates(message as StringTable))
+          as StringTable;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static StringTable create() => StringTable._();
+  @$core.override
   StringTable createEmptyInstance() => create();
-  static $pb.PbList<StringTable> createRepeated() => $pb.PbList<StringTable>();
   @$core.pragma('dart2js:noInline')
-  static StringTable getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StringTable>(create);
+  static StringTable getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<StringTable>(create);
   static StringTable? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -552,67 +514,59 @@ class Info extends $pb.GeneratedMessage {
     $core.int? userSid,
     $core.bool? visible,
   }) {
-    final $result = create();
-    if (version != null) {
-      $result.version = version;
-    }
-    if (timestamp != null) {
-      $result.timestamp = timestamp;
-    }
-    if (changeset != null) {
-      $result.changeset = changeset;
-    }
-    if (uid != null) {
-      $result.uid = uid;
-    }
-    if (userSid != null) {
-      $result.userSid = userSid;
-    }
-    if (visible != null) {
-      $result.visible = visible;
-    }
-    return $result;
+    final result = create();
+    if (version != null) result.version = version;
+    if (timestamp != null) result.timestamp = timestamp;
+    if (changeset != null) result.changeset = changeset;
+    if (uid != null) result.uid = uid;
+    if (userSid != null) result.userSid = userSid;
+    if (visible != null) result.visible = visible;
+    return result;
   }
-  Info._() : super();
-  factory Info.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Info.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'Info', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..a<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.O3, defaultOrMaker: -1)
-        ..aInt64(2, _omitFieldNames ? '' : 'timestamp')
-        ..aInt64(3, _omitFieldNames ? '' : 'changeset')
-        ..a<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.O3)
-        ..a<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.OU3)
-        ..aOB(6, _omitFieldNames ? '' : 'visible')
-        ..hasRequiredFields = false;
+  Info._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Info clone() => Info()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  Info copyWith(void Function(Info) updates) => super.copyWith((message) => updates(message as Info)) as Info;
+  factory Info.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Info.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Info',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'version', defaultOrMaker: -1)
+    ..aInt64(2, _omitFieldNames ? '' : 'timestamp')
+    ..aInt64(3, _omitFieldNames ? '' : 'changeset')
+    ..aI(4, _omitFieldNames ? '' : 'uid')
+    ..aI(5, _omitFieldNames ? '' : 'userSid', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(6, _omitFieldNames ? '' : 'visible')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Info clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Info copyWith(void Function(Info) updates) =>
+      super.copyWith((message) => updates(message as Info)) as Info;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Info create() => Info._();
+  @$core.override
   Info createEmptyInstance() => create();
-  static $pb.PbList<Info> createRepeated() => $pb.PbList<Info>();
   @$core.pragma('dart2js:noInline')
-  static Info getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Info>(create);
+  static Info getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Info>(create);
   static Info? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get version => $_getI(0, -1);
   @$pb.TagNumber(1)
-  set version($core.int v) {
-    $_setSignedInt32(0, v);
-  }
-
+  set version($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasVersion() => $_has(0);
   @$pb.TagNumber(1)
@@ -621,10 +575,7 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get timestamp => $_getI64(1);
   @$pb.TagNumber(2)
-  set timestamp($fixnum.Int64 v) {
-    $_setInt64(1, v);
-  }
-
+  set timestamp($fixnum.Int64 value) => $_setInt64(1, value);
   @$pb.TagNumber(2)
   $core.bool hasTimestamp() => $_has(1);
   @$pb.TagNumber(2)
@@ -633,10 +584,7 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get changeset => $_getI64(2);
   @$pb.TagNumber(3)
-  set changeset($fixnum.Int64 v) {
-    $_setInt64(2, v);
-  }
-
+  set changeset($fixnum.Int64 value) => $_setInt64(2, value);
   @$pb.TagNumber(3)
   $core.bool hasChangeset() => $_has(2);
   @$pb.TagNumber(3)
@@ -645,10 +593,7 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.int get uid => $_getIZ(3);
   @$pb.TagNumber(4)
-  set uid($core.int v) {
-    $_setSignedInt32(3, v);
-  }
-
+  set uid($core.int value) => $_setSignedInt32(3, value);
   @$pb.TagNumber(4)
   $core.bool hasUid() => $_has(3);
   @$pb.TagNumber(4)
@@ -657,10 +602,7 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.int get userSid => $_getIZ(4);
   @$pb.TagNumber(5)
-  set userSid($core.int v) {
-    $_setUnsignedInt32(4, v);
-  }
-
+  set userSid($core.int value) => $_setUnsignedInt32(4, value);
   @$pb.TagNumber(5)
   $core.bool hasUserSid() => $_has(4);
   @$pb.TagNumber(5)
@@ -677,10 +619,7 @@ class Info extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool get visible => $_getBF(5);
   @$pb.TagNumber(6)
-  set visible($core.bool v) {
-    $_setBool(5, v);
-  }
-
+  set visible($core.bool value) => $_setBool(5, value);
   @$pb.TagNumber(6)
   $core.bool hasVisible() => $_has(5);
   @$pb.TagNumber(6)
@@ -697,58 +636,55 @@ class DenseInfo extends $pb.GeneratedMessage {
     $core.Iterable<$core.int>? userSid,
     $core.Iterable<$core.bool>? visible,
   }) {
-    final $result = create();
-    if (version != null) {
-      $result.version.addAll(version);
-    }
-    if (timestamp != null) {
-      $result.timestamp.addAll(timestamp);
-    }
-    if (changeset != null) {
-      $result.changeset.addAll(changeset);
-    }
-    if (uid != null) {
-      $result.uid.addAll(uid);
-    }
-    if (userSid != null) {
-      $result.userSid.addAll(userSid);
-    }
-    if (visible != null) {
-      $result.visible.addAll(visible);
-    }
-    return $result;
+    final result = create();
+    if (version != null) result.version.addAll(version);
+    if (timestamp != null) result.timestamp.addAll(timestamp);
+    if (changeset != null) result.changeset.addAll(changeset);
+    if (uid != null) result.uid.addAll(uid);
+    if (userSid != null) result.userSid.addAll(userSid);
+    if (visible != null) result.visible.addAll(visible);
+    return result;
   }
-  DenseInfo._() : super();
-  factory DenseInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DenseInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'DenseInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..p<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.K3)
-        ..p<$fixnum.Int64>(2, _omitFieldNames ? '' : 'timestamp', $pb.PbFieldType.KS6)
-        ..p<$fixnum.Int64>(3, _omitFieldNames ? '' : 'changeset', $pb.PbFieldType.KS6)
-        ..p<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.KS3)
-        ..p<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.KS3)
-        ..p<$core.bool>(6, _omitFieldNames ? '' : 'visible', $pb.PbFieldType.KB)
-        ..hasRequiredFields = false;
+  DenseInfo._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  DenseInfo clone() => DenseInfo()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  DenseInfo copyWith(void Function(DenseInfo) updates) => super.copyWith((message) => updates(message as DenseInfo)) as DenseInfo;
+  factory DenseInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DenseInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DenseInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..p<$core.int>(1, _omitFieldNames ? '' : 'version', $pb.PbFieldType.K3)
+    ..p<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'timestamp', $pb.PbFieldType.KS6)
+    ..p<$fixnum.Int64>(
+        3, _omitFieldNames ? '' : 'changeset', $pb.PbFieldType.KS6)
+    ..p<$core.int>(4, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.KS3)
+    ..p<$core.int>(5, _omitFieldNames ? '' : 'userSid', $pb.PbFieldType.KS3)
+    ..p<$core.bool>(6, _omitFieldNames ? '' : 'visible', $pb.PbFieldType.KB)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DenseInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DenseInfo copyWith(void Function(DenseInfo) updates) =>
+      super.copyWith((message) => updates(message as DenseInfo)) as DenseInfo;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static DenseInfo create() => DenseInfo._();
+  @$core.override
   DenseInfo createEmptyInstance() => create();
-  static $pb.PbList<DenseInfo> createRepeated() => $pb.PbList<DenseInfo>();
   @$core.pragma('dart2js:noInline')
-  static DenseInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DenseInfo>(create);
+  static DenseInfo getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DenseInfo>(create);
   static DenseInfo? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -783,46 +719,49 @@ class ChangeSet extends $pb.GeneratedMessage {
   factory ChangeSet({
     $fixnum.Int64? id,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    return result;
   }
-  ChangeSet._() : super();
-  factory ChangeSet.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ChangeSet.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangeSet', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO);
+  ChangeSet._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  ChangeSet clone() => ChangeSet()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  ChangeSet copyWith(void Function(ChangeSet) updates) => super.copyWith((message) => updates(message as ChangeSet)) as ChangeSet;
+  factory ChangeSet.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ChangeSet.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ChangeSet',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6,
+        defaultOrMaker: $fixnum.Int64.ZERO);
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChangeSet clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChangeSet copyWith(void Function(ChangeSet) updates) =>
+      super.copyWith((message) => updates(message as ChangeSet)) as ChangeSet;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ChangeSet create() => ChangeSet._();
+  @$core.override
   ChangeSet createEmptyInstance() => create();
-  static $pb.PbList<ChangeSet> createRepeated() => $pb.PbList<ChangeSet>();
   @$core.pragma('dart2js:noInline')
-  static ChangeSet getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChangeSet>(create);
+  static ChangeSet getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChangeSet>(create);
   static ChangeSet? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) {
-    $_setInt64(0, v);
-  }
-
+  set id($fixnum.Int64 value) => $_setInt64(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -838,66 +777,61 @@ class Node extends $pb.GeneratedMessage {
     $fixnum.Int64? lat,
     $fixnum.Int64? lon,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (keys != null) {
-      $result.keys.addAll(keys);
-    }
-    if (vals != null) {
-      $result.vals.addAll(vals);
-    }
-    if (info != null) {
-      $result.info = info;
-    }
-    if (lat != null) {
-      $result.lat = lat;
-    }
-    if (lon != null) {
-      $result.lon = lon;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (keys != null) result.keys.addAll(keys);
+    if (vals != null) result.vals.addAll(vals);
+    if (info != null) result.info = info;
+    if (lat != null) result.lat = lat;
+    if (lon != null) result.lon = lon;
+    return result;
   }
-  Node._() : super();
-  factory Node.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Node.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'Node', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
-        ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
-        ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
-        ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.QS6, defaultOrMaker: $fixnum.Int64.ZERO);
+  Node._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Node clone() => Node()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  Node copyWith(void Function(Node) updates) => super.copyWith((message) => updates(message as Node)) as Node;
+  factory Node.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Node.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Node',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
+    ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
+    ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
+    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.QS6,
+        defaultOrMaker: $fixnum.Int64.ZERO);
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Node clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Node copyWith(void Function(Node) updates) =>
+      super.copyWith((message) => updates(message as Node)) as Node;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Node create() => Node._();
+  @$core.override
   Node createEmptyInstance() => create();
-  static $pb.PbList<Node> createRepeated() => $pb.PbList<Node>();
   @$core.pragma('dart2js:noInline')
-  static Node getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Node>(create);
+  static Node getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Node>(create);
   static Node? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) {
-    $_setInt64(0, v);
-  }
-
+  set id($fixnum.Int64 value) => $_setInt64(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -913,10 +847,7 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   Info get info => $_getN(3);
   @$pb.TagNumber(4)
-  set info(Info v) {
-    $_setField(4, v);
-  }
-
+  set info(Info value) => $_setField(4, value);
   @$pb.TagNumber(4)
   $core.bool hasInfo() => $_has(3);
   @$pb.TagNumber(4)
@@ -927,10 +858,7 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $fixnum.Int64 get lat => $_getI64(4);
   @$pb.TagNumber(8)
-  set lat($fixnum.Int64 v) {
-    $_setInt64(4, v);
-  }
-
+  set lat($fixnum.Int64 value) => $_setInt64(4, value);
   @$pb.TagNumber(8)
   $core.bool hasLat() => $_has(4);
   @$pb.TagNumber(8)
@@ -939,10 +867,7 @@ class Node extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $fixnum.Int64 get lon => $_getI64(5);
   @$pb.TagNumber(9)
-  set lon($fixnum.Int64 v) {
-    $_setInt64(5, v);
-  }
-
+  set lon($fixnum.Int64 value) => $_setInt64(5, value);
   @$pb.TagNumber(9)
   $core.bool hasLon() => $_has(5);
   @$pb.TagNumber(9)
@@ -957,54 +882,52 @@ class DenseNodes extends $pb.GeneratedMessage {
     $core.Iterable<$fixnum.Int64>? lon,
     $core.Iterable<$core.int>? keysVals,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id.addAll(id);
-    }
-    if (denseinfo != null) {
-      $result.denseinfo = denseinfo;
-    }
-    if (lat != null) {
-      $result.lat.addAll(lat);
-    }
-    if (lon != null) {
-      $result.lon.addAll(lon);
-    }
-    if (keysVals != null) {
-      $result.keysVals.addAll(keysVals);
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id.addAll(id);
+    if (denseinfo != null) result.denseinfo = denseinfo;
+    if (lat != null) result.lat.addAll(lat);
+    if (lon != null) result.lon.addAll(lon);
+    if (keysVals != null) result.keysVals.addAll(keysVals);
+    return result;
   }
-  DenseNodes._() : super();
-  factory DenseNodes.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DenseNodes.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'DenseNodes', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..p<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.KS6)
-        ..aOM<DenseInfo>(5, _omitFieldNames ? '' : 'denseinfo', subBuilder: DenseInfo.create)
-        ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
-        ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6)
-        ..p<$core.int>(10, _omitFieldNames ? '' : 'keysVals', $pb.PbFieldType.K3)
-        ..hasRequiredFields = false;
+  DenseNodes._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  DenseNodes clone() => DenseNodes()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  DenseNodes copyWith(void Function(DenseNodes) updates) => super.copyWith((message) => updates(message as DenseNodes)) as DenseNodes;
+  factory DenseNodes.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DenseNodes.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DenseNodes',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..p<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.KS6)
+    ..aOM<DenseInfo>(5, _omitFieldNames ? '' : 'denseinfo',
+        subBuilder: DenseInfo.create)
+    ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
+    ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6)
+    ..p<$core.int>(10, _omitFieldNames ? '' : 'keysVals', $pb.PbFieldType.K3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DenseNodes clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DenseNodes copyWith(void Function(DenseNodes) updates) =>
+      super.copyWith((message) => updates(message as DenseNodes)) as DenseNodes;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static DenseNodes create() => DenseNodes._();
+  @$core.override
   DenseNodes createEmptyInstance() => create();
-  static $pb.PbList<DenseNodes> createRepeated() => $pb.PbList<DenseNodes>();
   @$core.pragma('dart2js:noInline')
-  static DenseNodes getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DenseNodes>(create);
+  static DenseNodes getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DenseNodes>(create);
   static DenseNodes? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -1013,10 +936,7 @@ class DenseNodes extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   DenseInfo get denseinfo => $_getN(1);
   @$pb.TagNumber(5)
-  set denseinfo(DenseInfo v) {
-    $_setField(5, v);
-  }
-
+  set denseinfo(DenseInfo value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasDenseinfo() => $_has(1);
   @$pb.TagNumber(5)
@@ -1045,70 +965,61 @@ class Way extends $pb.GeneratedMessage {
     $core.Iterable<$fixnum.Int64>? lat,
     $core.Iterable<$fixnum.Int64>? lon,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (keys != null) {
-      $result.keys.addAll(keys);
-    }
-    if (vals != null) {
-      $result.vals.addAll(vals);
-    }
-    if (info != null) {
-      $result.info = info;
-    }
-    if (refs != null) {
-      $result.refs.addAll(refs);
-    }
-    if (lat != null) {
-      $result.lat.addAll(lat);
-    }
-    if (lon != null) {
-      $result.lon.addAll(lon);
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (keys != null) result.keys.addAll(keys);
+    if (vals != null) result.vals.addAll(vals);
+    if (info != null) result.info = info;
+    if (refs != null) result.refs.addAll(refs);
+    if (lat != null) result.lat.addAll(lat);
+    if (lon != null) result.lon.addAll(lon);
+    return result;
   }
-  Way._() : super();
-  factory Way.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Way.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'Way', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
-        ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
-        ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
-        ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'refs', $pb.PbFieldType.KS6)
-        ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
-        ..p<$fixnum.Int64>(10, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6);
+  Way._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Way clone() => Way()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  Way copyWith(void Function(Way) updates) => super.copyWith((message) => updates(message as Way)) as Way;
+  factory Way.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Way.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Way',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
+    ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
+    ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
+    ..p<$fixnum.Int64>(8, _omitFieldNames ? '' : 'refs', $pb.PbFieldType.KS6)
+    ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'lat', $pb.PbFieldType.KS6)
+    ..p<$fixnum.Int64>(10, _omitFieldNames ? '' : 'lon', $pb.PbFieldType.KS6);
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Way clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Way copyWith(void Function(Way) updates) =>
+      super.copyWith((message) => updates(message as Way)) as Way;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Way create() => Way._();
+  @$core.override
   Way createEmptyInstance() => create();
-  static $pb.PbList<Way> createRepeated() => $pb.PbList<Way>();
   @$core.pragma('dart2js:noInline')
-  static Way getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Way>(create);
+  static Way getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Way>(create);
   static Way? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) {
-    $_setInt64(0, v);
-  }
-
+  set id($fixnum.Int64 value) => $_setInt64(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1124,10 +1035,7 @@ class Way extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   Info get info => $_getN(3);
   @$pb.TagNumber(4)
-  set info(Info v) {
-    $_setField(4, v);
-  }
-
+  set info(Info value) => $_setField(4, value);
   @$pb.TagNumber(4)
   $core.bool hasInfo() => $_has(3);
   @$pb.TagNumber(4)
@@ -1138,12 +1046,12 @@ class Way extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $pb.PbList<$fixnum.Int64> get refs => $_getList(4);
 
-  ///  The following two fields are optional. They are only used in a special
-  ///  format where node locations are also added to the ways. This makes the
-  ///  files larger, but allows creating way geometries directly.
+  /// The following two fields are optional. They are only used in a special
+  /// format where node locations are also added to the ways. This makes the
+  /// files larger, but allows creating way geometries directly.
   ///
-  ///  If this is used, you MUST set the optional_features tag "LocationsOnWays"
-  ///  and the number of values in refs, lat, and lon MUST be the same.
+  /// If this is used, you MUST set the optional_features tag "LocationsOnWays"
+  /// and the number of values in refs, lat, and lon MUST be the same.
   @$pb.TagNumber(9)
   $pb.PbList<$fixnum.Int64> get lat => $_getList(5);
 
@@ -1161,71 +1069,65 @@ class Relation extends $pb.GeneratedMessage {
     $core.Iterable<$fixnum.Int64>? memids,
     $core.Iterable<Relation_MemberType>? types,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (keys != null) {
-      $result.keys.addAll(keys);
-    }
-    if (vals != null) {
-      $result.vals.addAll(vals);
-    }
-    if (info != null) {
-      $result.info = info;
-    }
-    if (rolesSid != null) {
-      $result.rolesSid.addAll(rolesSid);
-    }
-    if (memids != null) {
-      $result.memids.addAll(memids);
-    }
-    if (types != null) {
-      $result.types.addAll(types);
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (keys != null) result.keys.addAll(keys);
+    if (vals != null) result.vals.addAll(vals);
+    if (info != null) result.info = info;
+    if (rolesSid != null) result.rolesSid.addAll(rolesSid);
+    if (memids != null) result.memids.addAll(memids);
+    if (types != null) result.types.addAll(types);
+    return result;
   }
-  Relation._() : super();
-  factory Relation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Relation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i =
-      $pb.BuilderInfo(_omitMessageNames ? '' : 'Relation', package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'), createEmptyInstance: create)
-        ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-        ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
-        ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
-        ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
-        ..p<$core.int>(8, _omitFieldNames ? '' : 'rolesSid', $pb.PbFieldType.K3)
-        ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'memids', $pb.PbFieldType.KS6)
-        ..pc<Relation_MemberType>(10, _omitFieldNames ? '' : 'types', $pb.PbFieldType.KE,
-            valueOf: Relation_MemberType.valueOf, enumValues: Relation_MemberType.values, defaultEnumValue: Relation_MemberType.NODE);
+  Relation._();
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Relation clone() => Relation()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
-  Relation copyWith(void Function(Relation) updates) => super.copyWith((message) => updates(message as Relation)) as Relation;
+  factory Relation.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Relation.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Relation',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'OSMPBF'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..p<$core.int>(2, _omitFieldNames ? '' : 'keys', $pb.PbFieldType.KU3)
+    ..p<$core.int>(3, _omitFieldNames ? '' : 'vals', $pb.PbFieldType.KU3)
+    ..aOM<Info>(4, _omitFieldNames ? '' : 'info', subBuilder: Info.create)
+    ..p<$core.int>(8, _omitFieldNames ? '' : 'rolesSid', $pb.PbFieldType.K3)
+    ..p<$fixnum.Int64>(9, _omitFieldNames ? '' : 'memids', $pb.PbFieldType.KS6)
+    ..pc<Relation_MemberType>(
+        10, _omitFieldNames ? '' : 'types', $pb.PbFieldType.KE,
+        valueOf: Relation_MemberType.valueOf,
+        enumValues: Relation_MemberType.values,
+        defaultEnumValue: Relation_MemberType.NODE);
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Relation clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Relation copyWith(void Function(Relation) updates) =>
+      super.copyWith((message) => updates(message as Relation)) as Relation;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Relation create() => Relation._();
+  @$core.override
   Relation createEmptyInstance() => create();
-  static $pb.PbList<Relation> createRepeated() => $pb.PbList<Relation>();
   @$core.pragma('dart2js:noInline')
-  static Relation getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Relation>(create);
+  static Relation getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Relation>(create);
   static Relation? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) {
-    $_setInt64(0, v);
-  }
-
+  set id($fixnum.Int64 value) => $_setInt64(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1241,10 +1143,7 @@ class Relation extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   Info get info => $_getN(3);
   @$pb.TagNumber(4)
-  set info(Info v) {
-    $_setField(4, v);
-  }
-
+  set info(Info value) => $_setField(4, value);
   @$pb.TagNumber(4)
   $core.bool hasInfo() => $_has(3);
   @$pb.TagNumber(4)
@@ -1263,5 +1162,7 @@ class Relation extends $pb.GeneratedMessage {
   $pb.PbList<Relation_MemberType> get types => $_getList(6);
 }
 
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

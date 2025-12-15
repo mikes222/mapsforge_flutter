@@ -13,7 +13,7 @@ void main() {
 
   test('should return zoomlevel range for point of interest', () {
     PointOfInterest pointOfInterest = PointOfInterest(0, [const Tag("place", "village")], const LatLong(0, 0));
-    ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest);
+    ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest.tags);
     expect(range.toString(), "ZoomlevelRange{12 - 25}");
   });
 }

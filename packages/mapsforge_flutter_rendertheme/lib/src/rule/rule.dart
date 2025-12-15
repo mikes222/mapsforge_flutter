@@ -65,9 +65,9 @@ abstract class Rule implements SymbolSearcher {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeNode(PointOfInterest pointOfInterest) {
+  ZoomlevelRange? getZoomlevelRangeNode(TagCollection tags) {
     // tag not accepted by this rule.
-    if (!matchesTags(pointOfInterest.tags)) return null;
+    if (!matchesTags(tags)) return null;
     if (renderinstructionNodes.isNotEmpty) {
       // this rule supports the argument. Returns this zoomlevel range which is
       // the widest possible range.
@@ -76,7 +76,7 @@ abstract class Rule implements SymbolSearcher {
 
     ZoomlevelRange? result;
     for (var rule in subRules) {
-      ZoomlevelRange? range = rule.getZoomlevelRangeNode(pointOfInterest);
+      ZoomlevelRange? range = rule.getZoomlevelRangeNode(tags);
       if (range != null) {
         result = result?.widenTo(range) ?? range;
       }

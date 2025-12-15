@@ -1,13 +1,15 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: lib/pbfreader/pbfproto/osmformat.pbfproto
-//
+// Generated from lib/pbfproto/osmformat.proto.
+
 // @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -17,19 +19,57 @@ import 'dart:typed_data' as $typed_data;
 const HeaderBlock$json = {
   '1': 'HeaderBlock',
   '2': [
-    {'1': 'bbox', '3': 1, '4': 1, '5': 11, '6': '.OSMPBF.HeaderBBox', '10': 'bbox'},
-    {'1': 'required_features', '3': 4, '4': 3, '5': 9, '10': 'requiredFeatures'},
-    {'1': 'optional_features', '3': 5, '4': 3, '5': 9, '10': 'optionalFeatures'},
+    {
+      '1': 'bbox',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.OSMPBF.HeaderBBox',
+      '10': 'bbox'
+    },
+    {
+      '1': 'required_features',
+      '3': 4,
+      '4': 3,
+      '5': 9,
+      '10': 'requiredFeatures'
+    },
+    {
+      '1': 'optional_features',
+      '3': 5,
+      '4': 3,
+      '5': 9,
+      '10': 'optionalFeatures'
+    },
     {'1': 'writingprogram', '3': 16, '4': 1, '5': 9, '10': 'writingprogram'},
     {'1': 'source', '3': 17, '4': 1, '5': 9, '10': 'source'},
-    {'1': 'osmosis_replication_timestamp', '3': 32, '4': 1, '5': 3, '10': 'osmosisReplicationTimestamp'},
-    {'1': 'osmosis_replication_sequence_number', '3': 33, '4': 1, '5': 3, '10': 'osmosisReplicationSequenceNumber'},
-    {'1': 'osmosis_replication_base_url', '3': 34, '4': 1, '5': 9, '10': 'osmosisReplicationBaseUrl'},
+    {
+      '1': 'osmosis_replication_timestamp',
+      '3': 32,
+      '4': 1,
+      '5': 3,
+      '10': 'osmosisReplicationTimestamp'
+    },
+    {
+      '1': 'osmosis_replication_sequence_number',
+      '3': 33,
+      '4': 1,
+      '5': 3,
+      '10': 'osmosisReplicationSequenceNumber'
+    },
+    {
+      '1': 'osmosis_replication_base_url',
+      '3': 34,
+      '4': 1,
+      '5': 9,
+      '10': 'osmosisReplicationBaseUrl'
+    },
   ],
 };
 
 /// Descriptor for `HeaderBlock`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List headerBlockDescriptor = $convert.base64Decode('CgtIZWFkZXJCbG9jaxImCgRiYm94GAEgASgLMhIuT1NNUEJGLkhlYWRlckJCb3hSBGJib3gSKw'
+final $typed_data.Uint8List headerBlockDescriptor = $convert.base64Decode(
+    'CgtIZWFkZXJCbG9jaxImCgRiYm94GAEgASgLMhIuT1NNUEJGLkhlYWRlckJCb3hSBGJib3gSKw'
     'oRcmVxdWlyZWRfZmVhdHVyZXMYBCADKAlSEHJlcXVpcmVkRmVhdHVyZXMSKwoRb3B0aW9uYWxf'
     'ZmVhdHVyZXMYBSADKAlSEG9wdGlvbmFsRmVhdHVyZXMSJgoOd3JpdGluZ3Byb2dyYW0YECABKA'
     'lSDndyaXRpbmdwcm9ncmFtEhYKBnNvdXJjZRgRIAEoCVIGc291cmNlEkIKHW9zbW9zaXNfcmVw'
@@ -50,24 +90,54 @@ const HeaderBBox$json = {
 };
 
 /// Descriptor for `HeaderBBox`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List headerBBoxDescriptor = $convert.base64Decode('CgpIZWFkZXJCQm94EhIKBGxlZnQYASACKBJSBGxlZnQSFAoFcmlnaHQYAiACKBJSBXJpZ2h0Eh'
+final $typed_data.Uint8List headerBBoxDescriptor = $convert.base64Decode(
+    'CgpIZWFkZXJCQm94EhIKBGxlZnQYASACKBJSBGxlZnQSFAoFcmlnaHQYAiACKBJSBXJpZ2h0Eh'
     'AKA3RvcBgDIAIoElIDdG9wEhYKBmJvdHRvbRgEIAIoElIGYm90dG9t');
 
 @$core.Deprecated('Use primitiveBlockDescriptor instead')
 const PrimitiveBlock$json = {
   '1': 'PrimitiveBlock',
   '2': [
-    {'1': 'stringtable', '3': 1, '4': 2, '5': 11, '6': '.OSMPBF.StringTable', '10': 'stringtable'},
-    {'1': 'primitivegroup', '3': 2, '4': 3, '5': 11, '6': '.OSMPBF.PrimitiveGroup', '10': 'primitivegroup'},
-    {'1': 'granularity', '3': 17, '4': 1, '5': 5, '7': '100', '10': 'granularity'},
+    {
+      '1': 'stringtable',
+      '3': 1,
+      '4': 2,
+      '5': 11,
+      '6': '.OSMPBF.StringTable',
+      '10': 'stringtable'
+    },
+    {
+      '1': 'primitivegroup',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.OSMPBF.PrimitiveGroup',
+      '10': 'primitivegroup'
+    },
+    {
+      '1': 'granularity',
+      '3': 17,
+      '4': 1,
+      '5': 5,
+      '7': '100',
+      '10': 'granularity'
+    },
     {'1': 'lat_offset', '3': 19, '4': 1, '5': 3, '7': '0', '10': 'latOffset'},
     {'1': 'lon_offset', '3': 20, '4': 1, '5': 3, '7': '0', '10': 'lonOffset'},
-    {'1': 'date_granularity', '3': 18, '4': 1, '5': 5, '7': '1000', '10': 'dateGranularity'},
+    {
+      '1': 'date_granularity',
+      '3': 18,
+      '4': 1,
+      '5': 5,
+      '7': '1000',
+      '10': 'dateGranularity'
+    },
   ],
 };
 
 /// Descriptor for `PrimitiveBlock`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List primitiveBlockDescriptor = $convert.base64Decode('Cg5QcmltaXRpdmVCbG9jaxI1CgtzdHJpbmd0YWJsZRgBIAIoCzITLk9TTVBCRi5TdHJpbmdUYW'
+final $typed_data.Uint8List primitiveBlockDescriptor = $convert.base64Decode(
+    'Cg5QcmltaXRpdmVCbG9jaxI1CgtzdHJpbmd0YWJsZRgBIAIoCzITLk9TTVBCRi5TdHJpbmdUYW'
     'JsZVILc3RyaW5ndGFibGUSPgoOcHJpbWl0aXZlZ3JvdXAYAiADKAsyFi5PU01QQkYuUHJpbWl0'
     'aXZlR3JvdXBSDnByaW1pdGl2ZWdyb3VwEiUKC2dyYW51bGFyaXR5GBEgASgFOgMxMDBSC2dyYW'
     '51bGFyaXR5EiAKCmxhdF9vZmZzZXQYEyABKAM6ATBSCWxhdE9mZnNldBIgCgpsb25fb2Zmc2V0'
@@ -79,15 +149,37 @@ const PrimitiveGroup$json = {
   '1': 'PrimitiveGroup',
   '2': [
     {'1': 'nodes', '3': 1, '4': 3, '5': 11, '6': '.OSMPBF.Node', '10': 'nodes'},
-    {'1': 'dense', '3': 2, '4': 1, '5': 11, '6': '.OSMPBF.DenseNodes', '10': 'dense'},
+    {
+      '1': 'dense',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.OSMPBF.DenseNodes',
+      '10': 'dense'
+    },
     {'1': 'ways', '3': 3, '4': 3, '5': 11, '6': '.OSMPBF.Way', '10': 'ways'},
-    {'1': 'relations', '3': 4, '4': 3, '5': 11, '6': '.OSMPBF.Relation', '10': 'relations'},
-    {'1': 'changesets', '3': 5, '4': 3, '5': 11, '6': '.OSMPBF.ChangeSet', '10': 'changesets'},
+    {
+      '1': 'relations',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.OSMPBF.Relation',
+      '10': 'relations'
+    },
+    {
+      '1': 'changesets',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.OSMPBF.ChangeSet',
+      '10': 'changesets'
+    },
   ],
 };
 
 /// Descriptor for `PrimitiveGroup`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List primitiveGroupDescriptor = $convert.base64Decode('Cg5QcmltaXRpdmVHcm91cBIiCgVub2RlcxgBIAMoCzIMLk9TTVBCRi5Ob2RlUgVub2RlcxIoCg'
+final $typed_data.Uint8List primitiveGroupDescriptor = $convert.base64Decode(
+    'Cg5QcmltaXRpdmVHcm91cBIiCgVub2RlcxgBIAMoCzIMLk9TTVBCRi5Ob2RlUgVub2RlcxIoCg'
     'VkZW5zZRgCIAEoCzISLk9TTVBCRi5EZW5zZU5vZGVzUgVkZW5zZRIfCgR3YXlzGAMgAygLMgsu'
     'T1NNUEJGLldheVIEd2F5cxIuCglyZWxhdGlvbnMYBCADKAsyEC5PU01QQkYuUmVsYXRpb25SCX'
     'JlbGF0aW9ucxIxCgpjaGFuZ2VzZXRzGAUgAygLMhEuT1NNUEJGLkNoYW5nZVNldFIKY2hhbmdl'
@@ -102,7 +194,8 @@ const StringTable$json = {
 };
 
 /// Descriptor for `StringTable`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List stringTableDescriptor = $convert.base64Decode('CgtTdHJpbmdUYWJsZRIMCgFzGAEgAygMUgFz');
+final $typed_data.Uint8List stringTableDescriptor =
+    $convert.base64Decode('CgtTdHJpbmdUYWJsZRIMCgFzGAEgAygMUgFz');
 
 @$core.Deprecated('Use infoDescriptor instead')
 const Info$json = {
@@ -118,7 +211,8 @@ const Info$json = {
 };
 
 /// Descriptor for `Info`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List infoDescriptor = $convert.base64Decode('CgRJbmZvEhwKB3ZlcnNpb24YASABKAU6Ai0xUgd2ZXJzaW9uEhwKCXRpbWVzdGFtcBgCIAEoA1'
+final $typed_data.Uint8List infoDescriptor = $convert.base64Decode(
+    'CgRJbmZvEhwKB3ZlcnNpb24YASABKAU6Ai0xUgd2ZXJzaW9uEhwKCXRpbWVzdGFtcBgCIAEoA1'
     'IJdGltZXN0YW1wEhwKCWNoYW5nZXNldBgDIAEoA1IJY2hhbmdlc2V0EhAKA3VpZBgEIAEoBVID'
     'dWlkEhkKCHVzZXJfc2lkGAUgASgNUgd1c2VyU2lkEhgKB3Zpc2libGUYBiABKAhSB3Zpc2libG'
     'U=');
@@ -179,7 +273,8 @@ const DenseInfo$json = {
 };
 
 /// Descriptor for `DenseInfo`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List denseInfoDescriptor = $convert.base64Decode('CglEZW5zZUluZm8SHAoHdmVyc2lvbhgBIAMoBUICEAFSB3ZlcnNpb24SIAoJdGltZXN0YW1wGA'
+final $typed_data.Uint8List denseInfoDescriptor = $convert.base64Decode(
+    'CglEZW5zZUluZm8SHAoHdmVyc2lvbhgBIAMoBUICEAFSB3ZlcnNpb24SIAoJdGltZXN0YW1wGA'
     'IgAygSQgIQAVIJdGltZXN0YW1wEiAKCWNoYW5nZXNldBgDIAMoEkICEAFSCWNoYW5nZXNldBIU'
     'CgN1aWQYBCADKBFCAhABUgN1aWQSHQoIdXNlcl9zaWQYBSADKBFCAhABUgd1c2VyU2lkEhwKB3'
     'Zpc2libGUYBiADKAhCAhABUgd2aXNpYmxl');
@@ -193,7 +288,8 @@ const ChangeSet$json = {
 };
 
 /// Descriptor for `ChangeSet`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List changeSetDescriptor = $convert.base64Decode('CglDaGFuZ2VTZXQSDgoCaWQYASACKANSAmlk');
+final $typed_data.Uint8List changeSetDescriptor =
+    $convert.base64Decode('CglDaGFuZ2VTZXQSDgoCaWQYASACKANSAmlk');
 
 @$core.Deprecated('Use nodeDescriptor instead')
 const Node$json = {
@@ -223,7 +319,8 @@ const Node$json = {
 };
 
 /// Descriptor for `Node`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List nodeDescriptor = $convert.base64Decode('CgROb2RlEg4KAmlkGAEgAigSUgJpZBIWCgRrZXlzGAIgAygNQgIQAVIEa2V5cxIWCgR2YWxzGA'
+final $typed_data.Uint8List nodeDescriptor = $convert.base64Decode(
+    'CgROb2RlEg4KAmlkGAEgAigSUgJpZBIWCgRrZXlzGAIgAygNQgIQAVIEa2V5cxIWCgR2YWxzGA'
     'MgAygNQgIQAVIEdmFscxIgCgRpbmZvGAQgASgLMgwuT1NNUEJGLkluZm9SBGluZm8SEAoDbGF0'
     'GAggAigSUgNsYXQSEAoDbG9uGAkgAigSUgNsb24=');
 
@@ -239,7 +336,14 @@ const DenseNodes$json = {
       '8': {'2': true},
       '10': 'id',
     },
-    {'1': 'denseinfo', '3': 5, '4': 1, '5': 11, '6': '.OSMPBF.DenseInfo', '10': 'denseinfo'},
+    {
+      '1': 'denseinfo',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.OSMPBF.DenseInfo',
+      '10': 'denseinfo'
+    },
     {
       '1': 'lat',
       '3': 8,
@@ -268,7 +372,8 @@ const DenseNodes$json = {
 };
 
 /// Descriptor for `DenseNodes`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List denseNodesDescriptor = $convert.base64Decode('CgpEZW5zZU5vZGVzEhIKAmlkGAEgAygSQgIQAVICaWQSLwoJZGVuc2VpbmZvGAUgASgLMhEuT1'
+final $typed_data.Uint8List denseNodesDescriptor = $convert.base64Decode(
+    'CgpEZW5zZU5vZGVzEhIKAmlkGAEgAygSQgIQAVICaWQSLwoJZGVuc2VpbmZvGAUgASgLMhEuT1'
     'NNUEJGLkRlbnNlSW5mb1IJZGVuc2VpbmZvEhQKA2xhdBgIIAMoEkICEAFSA2xhdBIUCgNsb24Y'
     'CSADKBJCAhABUgNsb24SHwoJa2V5c192YWxzGAogAygFQgIQAVIIa2V5c1ZhbHM=');
 
@@ -322,7 +427,8 @@ const Way$json = {
 };
 
 /// Descriptor for `Way`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List wayDescriptor = $convert.base64Decode('CgNXYXkSDgoCaWQYASACKANSAmlkEhYKBGtleXMYAiADKA1CAhABUgRrZXlzEhYKBHZhbHMYAy'
+final $typed_data.Uint8List wayDescriptor = $convert.base64Decode(
+    'CgNXYXkSDgoCaWQYASACKANSAmlkEhYKBGtleXMYAiADKA1CAhABUgRrZXlzEhYKBHZhbHMYAy'
     'ADKA1CAhABUgR2YWxzEiAKBGluZm8YBCABKAsyDC5PU01QQkYuSW5mb1IEaW5mbxIWCgRyZWZz'
     'GAggAygSQgIQAVIEcmVmcxIUCgNsYXQYCSADKBJCAhABUgNsYXQSFAoDbG9uGAogAygSQgIQAV'
     'IDbG9u');
@@ -389,7 +495,8 @@ const Relation_MemberType$json = {
 };
 
 /// Descriptor for `Relation`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List relationDescriptor = $convert.base64Decode('CghSZWxhdGlvbhIOCgJpZBgBIAIoA1ICaWQSFgoEa2V5cxgCIAMoDUICEAFSBGtleXMSFgoEdm'
+final $typed_data.Uint8List relationDescriptor = $convert.base64Decode(
+    'CghSZWxhdGlvbhIOCgJpZBgBIAIoA1ICaWQSFgoEa2V5cxgCIAMoDUICEAFSBGtleXMSFgoEdm'
     'FscxgDIAMoDUICEAFSBHZhbHMSIAoEaW5mbxgEIAEoCzIMLk9TTVBCRi5JbmZvUgRpbmZvEh8K'
     'CXJvbGVzX3NpZBgIIAMoBUICEAFSCHJvbGVzU2lkEhoKBm1lbWlkcxgJIAMoEkICEAFSBm1lbW'
     'lkcxI1CgV0eXBlcxgKIAMoDjIbLk9TTVBCRi5SZWxhdGlvbi5NZW1iZXJUeXBlQgIQAVIFdHlw'

@@ -82,7 +82,7 @@ Note that the program creates temporary files in the current directory so it mus
 
 ## Compile and run
 
-Download and install flutter, depending on your Operating system
+Download and install flutter, depending on your operating system
 
     apt-get install flutter
 
@@ -120,7 +120,7 @@ Getting help (direct execution of the resulting binary):
 
 Converting monaco from [geofabrik](https://download.geofabrik.de/europe/monaco.html) to mapfile:
 
-    dart run mapfile_converter convert --rendertheme=../example/assets/render_themes/lightrender.xml --sourcefiles=monaco-latest.osm.pbf --destinationfile=monaco.map
+    dart run mapfile_converter convert --rendertheme=../complete_example/assets/render_theme/defaultrender.xml --sourcefiles=test/monaco-latest.pbf --destinationfile=monaco.map
 
 Converting coastal information from pbf to osm:
 
@@ -136,18 +136,20 @@ Converting 2 pbf files to mapfile:
 
 ## ProtoC support
 
-ProtoC is the protocoll used by PBF files. We need this library to read pbf files. The following documentation is only necessary to update the sources. 
+ProtoC is the file format used by PBF files. We use this library to read pbf files. The following documentation is only necessary to update the sources. 
 
-Download protoc-30.2-win64.zip from https://github.com/protocolbuffers/protobuf/releases/tag/v30.2
+Download ``protoc-33.2-win64.zip`` from https://github.com/protocolbuffers/protobuf/releases/tag/v33.2
 
-copy the files to c:\develop\proto
+copy the files to ``c:\develop\protoc``
 
-add C:\Users\micro\AppData\Local\Pub\Cache\bin to your path
+add ``C:\Users\micro\AppData\Local\Pub\Cache\bin`` to your path
 
 restart android studio
 
 ````bash
 flutter pub global activate protoc_plugin
 cd apps/mapsforge_converter
-\develop\protoc\bin\protoc.exe --dart_out=. lib\pbfreader\proto\fileformat.proto
+\develop\protoc\bin\protoc.exe --dart_out=. lib\pbfproto\fileformat.proto
+\develop\protoc\bin\protoc.exe --dart_out=. lib\pbfproto\osmformat.proto
+\develop\protoc\bin\protoc.exe --dart_out=. .\lib\waycacheproto\cache.proto
 ```

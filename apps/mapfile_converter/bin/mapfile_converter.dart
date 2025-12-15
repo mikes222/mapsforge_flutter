@@ -8,6 +8,7 @@ import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
+import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
 import 'package:mapfile_converter/pbf/pbf_writer.dart';
 import 'package:mapfile_converter/runner/pbf_statistics.dart';
@@ -144,7 +145,7 @@ class ConvertCommand extends Command {
 
     BoundingBox? finalBoundingBox = _parseBoundingBoxFromCli();
 
-    List<PointOfInterest> pois = [];
+    List<OsmNode> osmNodes = [];
     List<Wayholder> ways = [];
 
     List<String> sourcefiles = _split(argResults!.option("sourcefiles")!);
@@ -160,7 +161,7 @@ class ConvertCommand extends Command {
 
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!argResults!.flag("quiet")) pbfAnalyzer.statistics();
-        pois.addAll(pbfAnalyzer.pois);
+        osmNodes.addAll(pbfAnalyzer.nodes);
         ways.addAll(await pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
         pbfAnalyzer.clear();
@@ -176,7 +177,7 @@ class ConvertCommand extends Command {
         /// Now start exporting the data to a mapfile
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!argResults!.flag("quiet")) pbfAnalyzer.statistics();
-        pois.addAll(pbfAnalyzer.pois);
+        osmNodes.addAll(pbfAnalyzer.nodes);
         ways.addAll(await pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
         pbfAnalyzer.clear();
@@ -184,14 +185,14 @@ class ConvertCommand extends Command {
     }
 
     /// Simplify the data: Remove small areas, simplify ways
-    RenderthemeFilter renderthemeFilter = RenderthemeFilter();
+    RenderthemeFilter renderthemeFilter = RenderthemeFilter(converter: converter);
     Map<ZoomlevelRange, List<PointOfInterest>> poiZoomlevels = renderTheme != null
-        ? renderthemeFilter.filterNodes(pois, renderTheme)
-        : renderthemeFilter.convertNodes(pois);
+        ? renderthemeFilter.filterNodes(osmNodes, renderTheme)
+        : renderthemeFilter.convertNodes(osmNodes);
     Map<ZoomlevelRange, List<Wayholder>> wayZoomlevels = renderTheme != null
         ? renderthemeFilter.filterWays(ways, renderTheme)
         : renderthemeFilter.convertWays(ways);
-    pois.clear();
+    osmNodes.clear();
     ways.clear();
 
     _log.info("Writing ${argResults!.option("destinationfile")!}");
