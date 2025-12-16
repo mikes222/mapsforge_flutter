@@ -1,8 +1,8 @@
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
-import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapfile_converter/osm/osm_nodeholder.dart';
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class RenderthemeFilter {
@@ -12,7 +12,7 @@ class RenderthemeFilter {
 
   RenderthemeFilter({required this.converter});
 
-  Map<ZoomlevelRange, List<PointOfInterest>> convertNodes(List<OsmNode> osmNodes) {
+  Map<ZoomlevelRange, List<PointOfInterest>> convertNodes(List<OsmNodeholder> osmNodes) {
     ZoomlevelRange range = const ZoomlevelRange.standard();
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
@@ -21,19 +21,19 @@ class RenderthemeFilter {
       bag = [];
       nodes[range] = bag;
     }
-    for (OsmNode osmNode in osmNodes) {
-      PointOfInterest? pointOfInterest = converter.createNode(osmNode);
+    for (OsmNodeholder osmNode in osmNodes) {
+      PointOfInterest? pointOfInterest = converter.createPoi(osmNode);
       if (pointOfInterest != null) bag.add(pointOfInterest);
     }
     return nodes;
   }
 
-  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<OsmNode> osmNodes, Rendertheme renderTheme) {
+  Map<ZoomlevelRange, List<PointOfInterest>> filterNodes(List<OsmNodeholder> osmNodes, Rendertheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, List<PointOfInterest>> nodes = {};
     int noRangeNodes = 0;
-    for (OsmNode osmNode in osmNodes) {
-      PointOfInterest? pointOfInterest = converter.createNode(osmNode);
+    for (OsmNodeholder osmNode in osmNodes) {
+      PointOfInterest? pointOfInterest = converter.createPoi(osmNode);
       if (pointOfInterest == null) continue;
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(pointOfInterest.tags);
       if (range == null) {
@@ -51,37 +51,37 @@ class RenderthemeFilter {
     return nodes;
   }
 
-  Map<ZoomlevelRange, List<Wayholder>> convertWays(List<Wayholder> ways) {
+  Map<ZoomlevelRange, List<OsmWayholder>> convertWays(List<OsmWayholder> ways) {
     ZoomlevelRange range = const ZoomlevelRange.standard();
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, List<Wayholder>> result = {};
+    Map<ZoomlevelRange, List<OsmWayholder>> result = {};
+    List<OsmWayholder>? bag = result[range];
+    if (bag == null) {
+      bag = [];
+      result[range] = bag;
+    }
     for (var wayHolder in ways) {
-      assert(wayHolder.closedOutersRead.isNotEmpty || wayHolder.openOutersRead.isNotEmpty, "way must have at least one outer $wayHolder");
-      List<Wayholder>? bag = result[range];
-      if (bag == null) {
-        bag = [];
-        result[range] = bag;
-      }
+      assert(wayHolder.closedOutersIsNotEmpty() || wayHolder.openOutersIsNotEmpty(), "way must have at least one outer $wayHolder");
       bag.add(wayHolder);
     }
     return result;
   }
 
-  Map<ZoomlevelRange, List<Wayholder>> filterWays(List<Wayholder> ways, Rendertheme renderTheme) {
+  Map<ZoomlevelRange, List<OsmWayholder>> filterWays(List<OsmWayholder> ways, Rendertheme renderTheme) {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, List<Wayholder>> result = {};
+    Map<ZoomlevelRange, List<OsmWayholder>> result = {};
     int noRangeWays = 0;
     for (var wayHolder in ways) {
-      assert(wayHolder.closedOutersRead.isNotEmpty || wayHolder.openOutersRead.isNotEmpty, "way must have at least one outer $wayHolder");
+      assert(wayHolder.closedOutersIsNotEmpty() || wayHolder.openOutersIsNotEmpty(), "way must have at least one outer $wayHolder");
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(
-        wayHolder.closedOutersRead.isNotEmpty ? wayHolder.closedOutersRead.first : wayHolder.openOutersRead.first,
-        wayHolder.tags,
+        wayHolder.closedOutersIsNotEmpty() ? wayHolder.closedOutersRead.first : wayHolder.openOutersRead.first,
+        wayHolder.tagCollection,
       );
       if (range == null) {
         ++noRangeWays;
         continue;
       }
-      List<Wayholder>? bag = result[range];
+      List<OsmWayholder>? bag = result[range];
       if (bag == null) {
         bag = [];
         result[range] = bag;

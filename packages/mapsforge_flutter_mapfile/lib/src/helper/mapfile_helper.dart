@@ -287,14 +287,16 @@ class MapfileHelper {
       // get and check the number of way nodes (VBE-U)
       int numberOfWayNodes = readBuffer.readUnsignedInt();
       if (numberOfWayNodes < 2 || numberOfWayNodes > 32767) {
-        throw MapFileException("invalid number of way nodes: $numberOfWayNodes");
+        throw MapFileException(
+          "invalid number of way nodes: $numberOfWayNodes for coordinate block $coordinateBlock of $numberOfWayCoordinateBlocks, doubleEncoding: $doubleDeltaEncoding",
+        );
         // returning null here will actually leave the tile blank as the
         // position on the ReadBuffer will not be advanced correctly. However,
         // it will not crash the app.
       }
 
       // create the array which will store the current way segment
-      List<LatLong> waySegment = [];
+      List<LatLong> waySegment;
 
       if (doubleDeltaEncoding) {
         waySegment = _decodeWayNodesDoubleDelta(numberOfWayNodes, tileLatitude, tileLongitude, readBuffer);
@@ -475,7 +477,7 @@ class MapfileHelper {
     }
 
     LatLong position = LatLong(latitude, longitude);
-    return PointOfInterest(layer, tags, position);
+    return PointOfInterest(layer, TagCollection(tags: tags), position);
   }
 
   ///

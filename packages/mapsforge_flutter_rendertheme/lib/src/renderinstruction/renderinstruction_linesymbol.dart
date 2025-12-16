@@ -160,7 +160,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
             NodeProperties(
               PointOfInterest(
                 wayProperties.layer,
-                wayProperties.getTags().tags,
+                wayProperties.getTags(),
                 LatLong(projection.pixelYToLatitude(previous.y), projection.pixelXToLongitude(previous.x)),
               ),
               projection,

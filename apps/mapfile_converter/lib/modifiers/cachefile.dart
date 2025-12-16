@@ -1,18 +1,18 @@
 import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
-import 'package:mapfile_converter/waycacheproto/cache.pb.dart';
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
+import 'package:mapfile_converter/waycacheproto/osm_waycache.pb.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class CacheFile {
   int degreeToMicrodegree(double value) {
     return (value * 1e9).round();
   }
 
-  Uint8List toFile(Wayholder wayholder) {
+  Uint8List toFile(OsmWayholder wayholder) {
     CacheWayholder cacheWayholder = CacheWayholder();
-    cacheWayholder.tileBitmask = wayholder.tileBitmask;
+    //cacheWayholder.tileBitmask = wayholder.tileBitmask;
     cacheWayholder.layer = wayholder.layer;
     cacheWayholder.mergedWithOtherWay = wayholder.mergedWithOtherWay;
     if (wayholder.labelPosition != null) {
@@ -21,7 +21,7 @@ class CacheFile {
       cacheLabel.lon = $fixnum.Int64(degreeToMicrodegree(wayholder.labelPosition!.longitude));
       cacheWayholder.label = cacheLabel;
     }
-    for (var tag in wayholder.tags.tags) {
+    for (var tag in wayholder.tagCollection.tags) {
       cacheWayholder.tagkeys.add(tag.key!);
       cacheWayholder.tagvals.add(tag.value!);
     }
@@ -53,13 +53,14 @@ class CacheFile {
     return cacheWayholder.writeToBuffer();
   }
 
-  Wayholder fromFile(Uint8List file) {
+  OsmWayholder fromFile(Uint8List file) {
     CacheWayholder cacheWayholder = CacheWayholder.fromBuffer(file);
-    Wayholder wayholder = Wayholder(
-      tags: TagCollection(tags: cacheWayholder.tagkeys.map((tagkey) => Tag(tagkey, cacheWayholder.tagvals[cacheWayholder.tagkeys.indexOf(tagkey)])).toList()),
+    TagCollection tagCollection = TagCollection(
+      tags: cacheWayholder.tagkeys.map((tagkey) => Tag(tagkey, cacheWayholder.tagvals[cacheWayholder.tagkeys.indexOf(tagkey)])).toList(),
     );
-    wayholder.tileBitmask = cacheWayholder.tileBitmask;
-    wayholder.layer = cacheWayholder.layer;
+    int layer = cacheWayholder.layer;
+    OsmWayholder wayholder = OsmWayholder(tagCollection: tagCollection, layer: layer);
+    //wayholder.tileBitmask = cacheWayholder.tileBitmask;
     wayholder.mergedWithOtherWay = cacheWayholder.mergedWithOtherWay;
     if (cacheWayholder.hasLabel()) {
       wayholder.labelPosition = LatLong(cacheWayholder.label.lat.toDouble() / 1e9, cacheWayholder.label.lon.toDouble() / 1e9);
@@ -70,7 +71,7 @@ class CacheFile {
         for (int i = 0; i < action.lat.length; i++) {
           waypath.add(LatLong(action.lat[i].toDouble() / 1e9, action.lon[i].toDouble() / 1e9));
         }
-        wayholder.innerWrite.add(waypath);
+        wayholder.innerAdd(waypath);
       }
     }
     for (var action in cacheWayholder.closedways) {
@@ -79,7 +80,7 @@ class CacheFile {
         for (int i = 0; i < action.lat.length; i++) {
           waypath.add(LatLong(action.lat[i].toDouble() / 1e9, action.lon[i].toDouble() / 1e9));
         }
-        wayholder.closedOutersWrite.add(waypath);
+        wayholder.closedOutersAdd(waypath);
       }
     }
     for (var action in cacheWayholder.openways) {
@@ -88,7 +89,7 @@ class CacheFile {
         for (int i = 0; i < action.lat.length; i++) {
           waypath.add(LatLong(action.lat[i].toDouble() / 1e9, action.lon[i].toDouble() / 1e9));
         }
-        wayholder.openOutersWrite.add(waypath);
+        wayholder.openOutersAdd(waypath);
       }
     }
     return wayholder;

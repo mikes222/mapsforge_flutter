@@ -132,13 +132,13 @@ class PoiWayListPage extends StatelessWidget {
         else
           tags.add(tag);
       }
-      PointOfInterest newPoi = PointOfInterest(0, tags, const LatLong(0, 0));
-      _PoiCount? _poiCount = pois.firstWhereOrNull((_PoiCount poi) => poi.compare(newPoi));
-      if (_poiCount == null) {
-        _poiCount = _PoiCount(newPoi);
-        pois.add(_poiCount);
+      PointOfInterest newPoi = PointOfInterest(0, TagCollection(tags: tags), const LatLong(0, 0));
+      _PoiCount? poiCount = pois.firstWhereOrNull((_PoiCount poi) => poi.compare(newPoi));
+      if (poiCount == null) {
+        poiCount = _PoiCount(newPoi);
+        pois.add(poiCount);
       }
-      _poiCount.count++;
+      poiCount.count++;
     });
   }
 

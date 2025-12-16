@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:mapsforge_flutter_core/model.dart';
 
 /// Holds data returned from the [PbfReader] or [OsmReader].
@@ -42,12 +40,12 @@ sealed class _OsmPrimitive {
 class OsmNode extends _OsmPrimitive implements ILatLong {
   /// OsmNode default constructor
   OsmNode({required super.id, required super.tags, required double latitude, required double longitude})
-    : latLong = LatLong(_roundDouble(latitude, 6), _roundDouble(longitude, 6));
+    : latLong = LatLong(_roundDouble(latitude), _roundDouble(longitude));
 
   final ILatLong latLong;
 
-  static double _roundDouble(double value, int places) {
-    num mod = pow(10.0, places);
+  static double _roundDouble(double value) {
+    const num mod = 10000000;
     return ((value * mod).round().toDouble() / mod);
   }
 

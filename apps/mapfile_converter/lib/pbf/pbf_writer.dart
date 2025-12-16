@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart' as osmformat;
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart' as osmformat;
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 import '../osm/osm_data.dart';
 import '../pbfproto/osmformat.pb.dart';
@@ -271,11 +271,11 @@ class PbfWriter {
     return way;
   }
 
-  Future<void> writeWay(Wayholder wayholder) async {
+  Future<void> writeWay(OsmWayholder wayholder) async {
     if (wayholder.innerRead.isEmpty && wayholder.openOutersRead.length + wayholder.closedOutersRead.length == 1 && wayholder.labelPosition == null) {
       // we do not need a relation
       Waypath waypath = wayholder.openOutersRead.isNotEmpty ? wayholder.openOutersRead.first : wayholder.closedOutersRead.first;
-      _writeWayOnePath(wayholder.tags, waypath);
+      _writeWayOnePath(wayholder.tagCollection, waypath);
     } else {
       List<OsmRelationMember> members = [];
       for (Waypath waypath in wayholder.innerRead) {
@@ -294,8 +294,8 @@ class PbfWriter {
         _DenseNode node = _writeNode(wayholder.labelPosition!, const TagCollection.empty());
         members.add(OsmRelationMember(memberId: node.ids.first.toInt(), memberType: MemberType.node, role: "label"));
       }
-      assert(wayholder.tags.isNotEmpty);
-      _Relation relation = _Relation(tags: wayholder.tags, osmRelationMembers: members);
+      assert(wayholder.tagCollection.isNotEmpty);
+      _Relation relation = _Relation(tags: wayholder.tagCollection, osmRelationMembers: members);
       _relations.add(relation);
     }
   }

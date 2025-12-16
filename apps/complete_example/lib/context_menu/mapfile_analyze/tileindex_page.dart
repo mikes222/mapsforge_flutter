@@ -54,6 +54,7 @@ class TileindexPage extends StatelessWidget {
   Card _buildTileCard(int indexEntry, List<int> tileIndexes) {
     return Card(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Tile at 0x${(subFileParameter.startAddress + indexEntry).toRadixString(16)}, (startAddress 0x${subFileParameter.startAddress.toRadixString(16)} + indexEntry 0x${indexEntry.toRadixString(16)})",
@@ -117,10 +118,10 @@ class TileindexPage extends StatelessWidget {
       wayCounts[inner.zoomlevel] = inner.wayCount;
     });
     int offsetToFirstWay = readBuffer.readUnsignedInt();
-    res.add(Text("Offset to first way: 0x${offsetToFirstWay.toRadixString(16)}"));
+    res.add(Text("Offset to first way: 0x${offsetToFirstWay.toRadixString(16)}", style: infoStyle));
     int taglessPois = 0;
     poiCounts.forEach((zoomlevel, poicount) {
-      for (int i = 0; i < Math.min(maxItems, poicount); ++i) {
+      for (int i = 0; i < poicount; ++i) {
         PointOfInterest pointOfInterest = mapFile.getMapfileHelper().read1Poi(
           readBuffer,
           tileLatitude,
@@ -131,19 +132,21 @@ class TileindexPage extends StatelessWidget {
         if (pointOfInterest.tags.isEmpty) {
           ++taglessPois;
         } else {
-          res.add(
-            Wrap(
-              spacing: 10,
-              children: [
-                Text("Zoomlelel: $zoomlevel, POI: Layer: ${pointOfInterest.layer}, tags: ${pointOfInterest.tags.printTags()}"),
-                Text(
-                  "${pointOfInterest.position.latitude.toStringAsFixed(6)}/${pointOfInterest.position.longitude.toStringAsFixed(6)}",
-                  style: const TextStyle(fontSize: 10),
-                  maxLines: 5,
-                ),
-              ],
-            ),
-          );
+          if (i < maxItems) {
+            res.add(
+              Wrap(
+                spacing: 10,
+                children: [
+                  Text("Zoomlelel: $zoomlevel, POI: Layer: ${pointOfInterest.layer}, tags: ${pointOfInterest.tags.printTags()}"),
+                  Text(
+                    "${pointOfInterest.position.latitude.toStringAsFixed(6)}/${pointOfInterest.position.longitude.toStringAsFixed(6)}",
+                    style: const TextStyle(fontSize: 10),
+                    maxLines: 5,
+                  ),
+                ],
+              ),
+            );
+          }
         }
       }
       if (maxItems < poicount) res.add(Text("${poicount - maxItems} more items", style: infoStyle));
@@ -156,7 +159,7 @@ class TileindexPage extends StatelessWidget {
     // }
     int taglessWays = 0;
     wayCounts.forEach((zoomlevel, waycount) {
-      for (int i = 0; i < Math.min(maxItems, waycount); ++i) {
+      for (int i = 0; i < waycount; ++i) {
         int pos = readBuffer.getBufferPosition();
         try {
           List<Way> newWays = mapFile.getMapfileHelper().read1Way(
@@ -175,18 +178,20 @@ class TileindexPage extends StatelessWidget {
               ++taglessWays;
               return;
             } else {
-              res.add(
-                Wrap(
-                  spacing: 10,
-                  children: [
-                    Text(
-                      "$i, $index, 0x${(subFileParameter.startAddress + offset + pos).toRadixString(16)}: Zoomlelel: $zoomlevel, ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}Way: Layer: ${way.layer}, latLongs: ${way.latLongs.map((toElement) => toElement.length).toList()}, tags: ${way.tags.printTags()}",
-                      maxLines: 5,
-                    ),
-                    Text("${way.getBoundingBox()}", style: const TextStyle(fontSize: 10), maxLines: 5),
-                  ],
-                ),
-              );
+              if (i < maxItems) {
+                res.add(
+                  Wrap(
+                    spacing: 10,
+                    children: [
+                      Text(
+                        "$i, $index, 0x${(subFileParameter.startAddress + offset + pos).toRadixString(16)}: Zoomlelel: $zoomlevel, ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}Way: Layer: ${way.layer}, latLongs: ${way.latLongs.map((toElement) => toElement.length).toList()}, tags: ${way.tags.printTags()}",
+                        maxLines: 5,
+                      ),
+                      Text("${way.getBoundingBox()}", style: const TextStyle(fontSize: 10), maxLines: 5),
+                    ],
+                  ),
+                );
+              }
             }
           });
         } catch (error, stacktrace) {

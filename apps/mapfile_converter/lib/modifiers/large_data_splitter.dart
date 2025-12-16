@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
@@ -7,7 +8,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 class LargeDataSplitter {
   static final _log = Logger('LargeDataSplitter');
 
-  void split(List<Wayholder> wayHoldersMerged, Wayholder wayholder) {
+  void split(List<OsmWayholder> wayHoldersMerged, OsmWayholder wayholder) {
     if (wayholder.closedOutersRead.length > 1000) {
       // calculate the spanning boundingbox
       BoundingBox boundingBox = wayholder.closedOutersRead.first.boundingBox;
@@ -39,7 +40,7 @@ class LargeDataSplitter {
   }
 
   /// splits the open ways into several clusters and connects them cluster by cluster
-  void _connectClusterMulti(List<Wayholder> _wayHoldersMerged, Wayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
+  void _connectClusterMulti(List<OsmWayholder> _wayHoldersMerged, OsmWayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
     double latDiff = boundingBox.maxLatitude - boundingBox.minLatitude;
     double lonDiff = boundingBox.maxLongitude - boundingBox.minLongitude;
 
@@ -83,7 +84,7 @@ class _Cluster {
 
   final List<Waypath> waypaths = [];
 
-  void split(List<Wayholder> _wayHoldersMerged, Wayholder wayholder) {
+  void split(List<OsmWayholder> _wayHoldersMerged, OsmWayholder wayholder) {
     // too less items to connect, ignore it in this iteration
     while (waypaths.length >= maxClusterSize) {
       if (waypaths.length < maxClusterSize * 1.5) {
@@ -91,7 +92,7 @@ class _Cluster {
         for (var action in waypaths) {
           wayholder.closedOutersRemove(action);
         }
-        Wayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: waypaths);
+        OsmWayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: waypaths);
         _wayHoldersMerged.add(newWayholder);
         return;
       }
@@ -117,7 +118,7 @@ class _Cluster {
         ways.add(mapEntry.value);
       });
       assert(ways.length == maxClusterSize);
-      Wayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: ways);
+      OsmWayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: ways);
       _wayHoldersMerged.add(newWayholder);
     }
   }

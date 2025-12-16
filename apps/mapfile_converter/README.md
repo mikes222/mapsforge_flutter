@@ -114,6 +114,10 @@ Getting help (from development environment):
 
     dart run mapfile_converter convert --help
 
+Run with assert() enabled:
+
+    dart run --enable-asserts mapfile_converter convert --help
+
 Getting help (direct execution of the resulting binary):
 
     mapsforge_flutter/apps/mapsforge_converter/build/linux/x64/debug/bundle/mapfile_converter convert --help
@@ -148,8 +152,8 @@ restart android studio
 
 ````bash
 flutter pub global activate protoc_plugin
-cd apps/mapsforge_converter
+cd apps/mapfile_converter
 \develop\protoc\bin\protoc.exe --dart_out=. lib\pbfproto\fileformat.proto
 \develop\protoc\bin\protoc.exe --dart_out=. lib\pbfproto\osmformat.proto
-\develop\protoc\bin\protoc.exe --dart_out=. .\lib\waycacheproto\cache.proto
+\develop\protoc\bin\protoc.exe --dart_out=. .\lib\waycacheproto\osm_waycache.proto
 ```

@@ -158,11 +158,7 @@ class RenderinstructionPolylineText extends Renderinstruction
       layerContainer.addClash(
         RenderInfoNode(
           NodeProperties(
-            PointOfInterest(
-              wayProperties.layer,
-              wayProperties.getTags().tags,
-              LatLong(projection.pixelYToLatitude(start.y), projection.pixelXToLongitude(start.x)),
-            ),
+            PointOfInterest(wayProperties.layer, wayProperties.getTags(), LatLong(projection.pixelYToLatitude(start.y), projection.pixelXToLongitude(start.x))),
             projection,
           ),
           this,

@@ -93,7 +93,7 @@ class MapLocations {
     MapLocation(
       name: 'Monaco',
       description: 'Monaco city-state with detailed street mapping',
-      url: 'https://dailyflightbuddy.com/mapsforge_examples/monaco2.map',
+      url: 'https://dailyflightbuddy.com/mapsforge_examples/monaco3.map',
       centerLatitude: 43.7384,
       centerLongitude: 7.4246,
       defaultZoomLevel: 15,

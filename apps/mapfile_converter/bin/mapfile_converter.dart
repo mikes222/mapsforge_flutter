@@ -8,7 +8,8 @@ import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
-import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapfile_converter/osm/osm_nodeholder.dart';
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
 import 'package:mapfile_converter/pbf/pbf_writer.dart';
 import 'package:mapfile_converter/runner/pbf_statistics.dart';
@@ -145,8 +146,8 @@ class ConvertCommand extends Command {
 
     BoundingBox? finalBoundingBox = _parseBoundingBoxFromCli();
 
-    List<OsmNode> osmNodes = [];
-    List<Wayholder> ways = [];
+    List<OsmNodeholder> osmNodes = [];
+    List<OsmWayholder> ways = [];
 
     List<String> sourcefiles = _split(argResults!.option("sourcefiles")!);
     for (var sourcefile in sourcefiles) {
@@ -189,23 +190,23 @@ class ConvertCommand extends Command {
     Map<ZoomlevelRange, List<PointOfInterest>> poiZoomlevels = renderTheme != null
         ? renderthemeFilter.filterNodes(osmNodes, renderTheme)
         : renderthemeFilter.convertNodes(osmNodes);
-    Map<ZoomlevelRange, List<Wayholder>> wayZoomlevels = renderTheme != null
+    osmNodes.clear();
+    Map<ZoomlevelRange, List<OsmWayholder>> wayZoomlevels = renderTheme != null
         ? renderthemeFilter.filterWays(ways, renderTheme)
         : renderthemeFilter.convertWays(ways);
-    osmNodes.clear();
     ways.clear();
 
     _log.info("Writing ${argResults!.option("destinationfile")!}");
     if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".osm")) {
       OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
       for (var pois2 in poiZoomlevels.values) {
-        for (var poi in pois2) {
+        for (PointOfInterest poi in pois2) {
           osmWriter.writeNode(poi.position, poi.tags);
         }
       }
       poiZoomlevels.clear();
       for (var wayholders in wayZoomlevels.values) {
-        for (var wayholder in wayholders) {
+        for (OsmWayholder wayholder in wayholders) {
           osmWriter.writeWay(wayholder);
         }
       }
@@ -214,13 +215,13 @@ class ConvertCommand extends Command {
     } else if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".pbf")) {
       PbfWriter pbfWriter = PbfWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
       for (var pois2 in poiZoomlevels.values) {
-        for (var poi in pois2) {
+        for (PointOfInterest poi in pois2) {
           await pbfWriter.writeNode(poi.position, poi.tags);
         }
       }
       poiZoomlevels.clear();
       for (var wayholders in wayZoomlevels.values) {
-        for (var wayholder in wayholders) {
+        for (OsmWayholder wayholder in wayholders) {
           await pbfWriter.writeWay(wayholder);
         }
       }

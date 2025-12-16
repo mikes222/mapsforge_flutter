@@ -1,6 +1,8 @@
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapfile_converter/osm/osm_nodeholder.dart';
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -10,7 +12,7 @@ class PbfStatistics {
 
   final DefaultOsmPrimitiveConverter converter;
 
-  final Map<int, PointOfInterest> _nodeHolders = {};
+  final Map<int, OsmNodeholder> _nodeHolders = {};
 
   final Map<int, StatsWayholder> _wayHolders = {};
 
@@ -90,23 +92,21 @@ class PbfStatistics {
   Future<void> _analyze1Block(OsmData blockData) async {
     _log.info(blockData);
     for (var osmNode in blockData.nodes) {
-      PointOfInterest? pointOfInterest = converter.createNode(osmNode);
+      OsmNodeholder nodeholder = converter.createNodeholder(osmNode);
       //print("node: ${pointOfInterest}");
-      if (pointOfInterest != null) {
-        assert(!_nodeHolders.containsKey(osmNode.id), "node already exists ${osmNode.id} -> ${_nodeHolders[osmNode.id]}");
-        _nodeHolders[osmNode.id] = pointOfInterest;
-        for (var tag in pointOfInterest.tags.tags) {
-          _increment(_nodeTags, tag, 1);
-        }
+      assert(!_nodeHolders.containsKey(osmNode.id), "node already exists ${osmNode.id} -> ${_nodeHolders[osmNode.id]}");
+      _nodeHolders[osmNode.id] = nodeholder;
+      for (var tag in nodeholder.tagCollection.tags) {
+        _increment(_nodeTags, tag, 1);
       }
     }
     for (OsmWay osmWay in blockData.ways) {
       List<ILatLong> latLongs = [];
       int nodesNotFound = 0;
       for (var ref in osmWay.refs) {
-        PointOfInterest? pointOfInterest = _searchPoi(ref);
-        if (pointOfInterest != null) {
-          latLongs.add(pointOfInterest.position);
+        OsmNodeholder? nodeholder = _searchNodeholder(ref);
+        if (nodeholder != null) {
+          latLongs.add(nodeholder.latLong);
         } else {
           ++nodeNotFound;
           ++nodesNotFound;
@@ -124,9 +124,9 @@ class PbfStatistics {
     for (var osmRelation in blockData.relations) {
       assert(!_relations.containsKey(osmRelation.id));
       _relations[osmRelation.id] = StatsRelation(osmRelation);
-      Way? relationWay = converter.createMergedWay(osmRelation);
+      OsmWayholder? relationWay = converter.createMergedWayholder(osmRelation);
       if (relationWay != null) {
-        for (var tag in relationWay.tags.tags) {
+        for (var tag in relationWay.tagCollection.tags) {
           _increment(_relationTags, tag, 1);
         }
       } else {
@@ -174,10 +174,10 @@ class PbfStatistics {
     tagholders[key]!.items += items;
   }
 
-  PointOfInterest? _searchPoi(int id) {
-    PointOfInterest? poi = _nodeHolders[id];
-    if (poi != null) {
-      return poi;
+  OsmNodeholder? _searchNodeholder(int id) {
+    OsmNodeholder? nodeHolder = _nodeHolders[id];
+    if (nodeHolder != null) {
+      return nodeHolder;
     }
     return null;
   }
@@ -223,7 +223,9 @@ class PbfStatistics {
       _log.info("Searching for key $key and value $value");
     }
 
-    List<PointOfInterest> nodes = _nodeHolders.values.where((test) => value != null ? test.tags.hasTagValue(key, value) : test.tags.hasTag(key)).toList();
+    List<OsmNodeholder> nodes = _nodeHolders.values
+        .where((test) => value != null ? test.tagCollection.hasTagValue(key, value) : test.tagCollection.hasTag(key))
+        .toList();
     nodes.forEach((action) {
       _log.info("Found node ${action.toStringWithoutNames()}");
     });

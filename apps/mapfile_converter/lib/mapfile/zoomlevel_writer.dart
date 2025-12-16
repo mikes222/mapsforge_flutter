@@ -1,3 +1,4 @@
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
@@ -12,7 +13,7 @@ class ZoomlevelWriter {
     BoundingBox boundingBox,
     int minZoomlevel,
     int maxZoomlevel,
-    Map<ZoomlevelRange, List<Wayholder>> ways,
+    Map<ZoomlevelRange, List<OsmWayholder>> ways,
     Map<ZoomlevelRange, List<PointOfInterest>> pois,
   ) async {
     SubfileCreator subfileCreator = SubfileCreator(
@@ -29,7 +30,7 @@ class ZoomlevelWriter {
     int tilePixelSize,
     SubfileCreator subfileCreator,
     Map<ZoomlevelRange, List<PointOfInterest>> nodes,
-    Map<ZoomlevelRange, List<Wayholder>> wayHolders,
+    Map<ZoomlevelRange, List<OsmWayholder>> wayHolders,
   ) async {
     nodes.forEach((zoomlevelRange, nodelist) {
       if (subfileCreator.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
@@ -37,11 +38,16 @@ class ZoomlevelWriter {
       subfileCreator.addPoidata(zoomlevelRange, nodelist);
     });
     List<Future> wayholderFutures = [];
-    wayHolders.forEach((ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist) {
+    wayHolders.forEach((ZoomlevelRange zoomlevelRange, List<OsmWayholder> wayholderlist) {
       if (wayholderlist.isEmpty) return;
       if (subfileCreator.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
       if (subfileCreator.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholderlist, tilePixelSize));
+      List<Wayholder> wayholders = [];
+      for (var osmWayholder in wayholderlist) {
+        Wayholder wayholder = osmWayholder.convertToWayholder();
+        wayholders.add(wayholder);
+      }
+      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholders, tilePixelSize));
     });
     await Future.wait(wayholderFutures);
   }

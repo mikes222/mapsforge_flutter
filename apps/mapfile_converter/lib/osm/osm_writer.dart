@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class OsmWriter {
   late final IOSink _sink;
@@ -46,9 +46,9 @@ class OsmWriter {
     return _nextId++;
   }
 
-  void writeWay(Wayholder wayholder) {
-    assert(wayholder.tags.isNotEmpty);
-    _Way _way = _Way(wayholder.tags);
+  void writeWay(OsmWayholder wayholder) {
+    assert(wayholder.tagCollection.isNotEmpty);
+    _Way _way = _Way(wayholder.tagCollection);
     for (var waypath in wayholder.innerRead) {
       List<int> nodes = _writeNodesForWay(waypath);
       _way.addNodes(nodes);

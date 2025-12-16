@@ -12,11 +12,7 @@ class PointOfInterest {
   final TagCollection tags;
 
   /// Creates a new `PointOfInterest`.
-  PointOfInterest(this.layer, List<Tag> tags, this.position)
-    : assert(layer >= -5),
-      assert(layer <= 10),
-      assert(tags.isNotEmpty),
-      tags = TagCollection(tags: tags);
+  PointOfInterest(this.layer, this.tags, this.position) : assert(layer >= -5), assert(layer <= 10), assert(tags.isNotEmpty);
 
   PointOfInterest.simple(this.position) : layer = 0, tags = const TagCollection.empty();
 

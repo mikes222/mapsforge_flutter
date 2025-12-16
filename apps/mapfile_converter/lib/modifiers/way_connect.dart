@@ -1,13 +1,13 @@
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// Connects open ways together to form a longer way. Only master and openOuters will be taken into account.
 class WayConnect {
   static final _log = new Logger('WayConnect');
 
-  void connect(Wayholder wayholder) {
+  void connect(OsmWayholder wayholder) {
     if (wayholder.openOutersRead.length > 5000) {
       // calculate the spanning boundingbox
       BoundingBox boundingBox = wayholder.openOutersRead.first.boundingBox;
@@ -37,7 +37,7 @@ class WayConnect {
   }
 
   /// splits the open ways into several clusters and connects them cluster by cluster
-  void _connectClusterMulti(Wayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
+  void _connectClusterMulti(OsmWayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
     double latDiff = boundingBox.maxLatitude - boundingBox.minLatitude;
     double lonDiff = boundingBox.maxLongitude - boundingBox.minLongitude;
 
@@ -63,7 +63,7 @@ class WayConnect {
 //////////////////////////////////////////////////////////////////////////////
 
 class _ConnectCluster {
-  final Wayholder wayholder;
+  final OsmWayholder wayholder;
 
   final List<Waypath> waypaths;
 

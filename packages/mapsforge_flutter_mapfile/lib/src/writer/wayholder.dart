@@ -112,6 +112,7 @@ class Wayholder with TagholderMixin {
   }
 
   void innerAddAll(List<Waypath> waypaths) {
+    assert(!waypaths.any((waypath) => waypath.length < 2));
     _boundingBox = null;
     _inner.addAll(waypaths);
   }
@@ -149,11 +150,13 @@ class Wayholder with TagholderMixin {
 
   void openOutersAdd(Waypath waypath) {
     assert(!waypath.isClosedWay());
+    assert(waypath.length >= 2);
     _boundingBox = null;
     _openOuters.add(waypath);
   }
 
   void openOutersAddAll(List<Waypath> waypaths) {
+    assert(!waypaths.any((waypath) => waypath.length < 2));
     assert(!waypaths.any((waypath) => waypath.isClosedWay()));
     _boundingBox = null;
     _openOuters.addAll(waypaths);
@@ -273,17 +276,23 @@ class Wayholder with TagholderMixin {
   }
 
   Waypath _extractMaster() {
+    if (_master != null) return _master!;
     if (_closedOuters.isNotEmpty) {
       _master = _closedOuters.reduce((a, b) => a.length > b.length ? a : b);
+      assert(_master!.length >= 2);
       _closedOuters.remove(_master);
       return _master!;
     }
     _master = _openOuters.reduce((a, b) => a.length > b.length ? a : b);
+    assert(_master!.length >= 2);
     _openOuters.remove(_master);
     return _master!;
   }
 
   Writebuffer _writeWayPropertyAndWayData(double tileLatitude, double tileLongitude) {
+    assert(tagholders.length < 16);
+    assert(layer >= -5, "layer=$layer");
+    assert(layer <= 10);
     Writebuffer writebuffer = Writebuffer();
 
     /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2
