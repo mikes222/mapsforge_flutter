@@ -12,7 +12,6 @@ import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 import '../modifiers/way_repair.dart';
 import '../osm/osm_reader.dart';
@@ -244,7 +243,7 @@ class PbfAnalyzer {
     //    _wayHolders.removeWhere((id, Wayholder test) => test.mergedWithOtherWay);
     for (var entry in Map.from(_wayHolders).entries) {
       var id = entry.key;
-      var wayHolder = await entry.value.get();
+      OsmWayholder wayHolder = await entry.value.get();
       if (wayHolder.mergedWithOtherWay) {
         _wayHolders.remove(id);
       }
@@ -431,7 +430,7 @@ class PbfAnalyzer {
     count = count - _wayHoldersMerged.length;
     for (var entry in Map.from(_wayHolders).entries) {
       var id = entry.key;
-      Wayholder wayHolder = await entry.value.get();
+      OsmWayholder wayHolder = await entry.value.get();
       if (!boundingBox.intersects(wayHolder.boundingBoxCached) &&
           !boundingBox.containsBoundingBox(wayHolder.boundingBoxCached) &&
           !wayHolder.boundingBoxCached.containsBoundingBox(boundingBox)) {
