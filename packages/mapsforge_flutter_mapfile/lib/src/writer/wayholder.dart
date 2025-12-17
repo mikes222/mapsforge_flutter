@@ -7,8 +7,6 @@ import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 /// Holds one way and its tags
 class Wayholder with TagholderMixin {
-  int tileBitmask = 0xffff;
-
   // The master path. It will be extracted from _closedOuters or _openOuters shortly before writing the data to the file.
   Waypath? _master;
 
@@ -22,9 +20,6 @@ class Wayholder with TagholderMixin {
   /// store this outer ways as additional Way data blocks and split it into
   /// several ways - all with the same way properties - when reading the file.
   List<Waypath> _openOuters = [];
-
-  /// This way is already merged with another way and hence should not be written to the file.
-  bool mergedWithOtherWay = false;
 
   /// The position of the area label (may be null).
   ILatLong? labelPosition;
@@ -62,11 +57,9 @@ class Wayholder with TagholderMixin {
     result._closedOuters = closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList();
     result._openOuters = openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList();
     result._inner = inner ?? _inner.map((toElement) => toElement.clone()).toList();
-    result.tileBitmask = tileBitmask;
     result.labelPosition = labelPosition;
     result.tags = tags.clone();
     result.layer = layer;
-    result.mergedWithOtherWay = mergedWithOtherWay;
     result.featureElevation = featureElevation;
     result.featureHouseNumber = featureHouseNumber;
     result.featureName = featureName;
@@ -218,10 +211,10 @@ class Wayholder with TagholderMixin {
   /// @param enlargementInMeter amount of pixels that is used to enlarge the bounding box of the way and the tiles in the mapping
   ///                           process
   /// @return a 16 bit short value that represents the information which of the sub tiles needs to include the way
-  void _computeBitmask(Tile tile) {
+  int _computeBitmask(Tile tile) {
     List<Tile> subtiles = tile.getGrandchilds();
 
-    tileBitmask = 0;
+    int tileBitmask = 0;
     int tileCounter = 1 << 15;
     BoundingBox boundingBox = boundingBoxCached;
     for (Tile subtile in subtiles) {
@@ -236,6 +229,7 @@ class Wayholder with TagholderMixin {
     //   print("$tile 0x${tileBitmask.toRadixString(16)} for ${this.toStringWithoutNames()} $boundingBoxCached");
     //   _closedOuters.where((test) => test.length < 3).forEach((test) => print("  test in compute: $test ${test.path}"));
     // }
+    return tileBitmask;
   }
 
   void analyze(List<Tagholder> tagholders, String? languagesPreference) {
@@ -259,10 +253,10 @@ class Wayholder with TagholderMixin {
 
   /// can be done when the tags are sorted
   Writebuffer writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
-    _computeBitmask(tile);
+    int tileBitmask = _computeBitmask(tile);
     Writebuffer writebuffer3 = Writebuffer();
     _writeWaySignature(debugFile, writebuffer3);
-    Writebuffer writebuffer = _writeWayPropertyAndWayData(tileLatitude, tileLongitude);
+    Writebuffer writebuffer = _writeWayPropertyAndWayData(tileLatitude, tileLongitude, tileBitmask);
     // get the size of the way (VBE-U)
     writebuffer3.appendUnsignedInt(writebuffer.length);
     writebuffer3.appendWritebuffer(writebuffer);
@@ -289,7 +283,7 @@ class Wayholder with TagholderMixin {
     return _master!;
   }
 
-  Writebuffer _writeWayPropertyAndWayData(double tileLatitude, double tileLongitude) {
+  Writebuffer _writeWayPropertyAndWayData(double tileLatitude, double tileLongitude, int tileBitmask) {
     assert(tagholders.length < 16);
     assert(layer >= -5, "layer=$layer");
     assert(layer <= 10);
@@ -484,10 +478,10 @@ class Wayholder with TagholderMixin {
 
   @override
   String toString() {
-    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, mergedWithOtherWay: $mergedWithOtherWay, labelPosition: $labelPosition, tags: $tags}';
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, labelPosition: $labelPosition, tags: $tags}';
   }
 
   String toStringWithoutNames() {
-    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, mergedWithOtherWay: $mergedWithOtherWay, labelPosition: $labelPosition, tags: ${tags.printTagsWithoutNames()}';
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, labelPosition: $labelPosition, tags: ${tags.printTagsWithoutNames()}';
   }
 }

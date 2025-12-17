@@ -17,27 +17,12 @@ class DefaultOsmPrimitiveConverter {
     return OsmNodeholder(latLong: latLong, layer: layer, tagCollection: tagCollection);
   }
 
-  PointOfInterest? createPoi(OsmNodeholder osmNode) {
-    PointOfInterest pointOfInterest = PointOfInterest(osmNode.layer, osmNode.tagCollection, osmNode.latLong);
-    return pointOfInterest;
-  }
-
   OsmWayholder createWayholder(OsmWay osmWay) {
     TagCollection tagCollection = TagCollection.from(osmWay.tags);
     int layer = findLayer(tagCollection.tags);
     modifyWayTags(osmWay, tagCollection.tags);
     return OsmWayholder(layer: layer, tagCollection: tagCollection);
   }
-
-  // Way? createWay(OsmWay osmWay, List<List<ILatLong>> latLongs) {
-  //   List<Tag> tags = TagCollection.from(osmWay.tags).tags;
-  //   int layer = findLayer(tags);
-  //   modifyWayTags(osmWay, tags);
-  //   // even with no tags the way may belong to a relation, so keep it
-  //   ILatLong? labelPosition;
-  //   Way way = Way(layer, tags, latLongs, labelPosition);
-  //   return way;
-  // }
 
   OsmWayholder? createMergedWayholder(OsmRelation osmRelation) {
     TagCollection tagCollection = TagCollection.from(osmRelation.tags);

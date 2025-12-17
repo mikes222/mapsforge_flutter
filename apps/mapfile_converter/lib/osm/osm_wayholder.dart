@@ -217,10 +217,12 @@ class OsmWayholder {
     Wayholder wayholder = Wayholder(tags: tagCollection);
     wayholder.layer = layer;
     wayholder.labelPosition = labelPosition;
-    wayholder.mergedWithOtherWay = mergedWithOtherWay;
     wayholder.innerAddAll(innerRead);
     wayholder.closedOutersAddAll(closedOutersRead);
     wayholder.openOutersAddAll(openOutersRead);
+    // since we create copies via isolates later on we extract the master - which is expensive - now
+    // walking through the code I am not sure if this really is a good idea. The filter/reduce algorithm would not work with master.
+    //wayholder.extractMaster();
     _wayholder = wayholder;
     return wayholder;
   }

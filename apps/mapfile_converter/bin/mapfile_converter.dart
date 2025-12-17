@@ -186,8 +186,8 @@ class ConvertCommand extends Command {
     }
 
     /// Simplify the data: Remove small areas, simplify ways
-    RenderthemeFilter renderthemeFilter = RenderthemeFilter(converter: converter);
-    Map<ZoomlevelRange, List<PointOfInterest>> poiZoomlevels = renderTheme != null
+    RenderthemeFilter renderthemeFilter = RenderthemeFilter();
+    Map<ZoomlevelRange, List<OsmNodeholder>> poiZoomlevels = renderTheme != null
         ? renderthemeFilter.filterNodes(osmNodes, renderTheme)
         : renderthemeFilter.convertNodes(osmNodes);
     osmNodes.clear();
@@ -200,8 +200,8 @@ class ConvertCommand extends Command {
     if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".osm")) {
       OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
       for (var pois2 in poiZoomlevels.values) {
-        for (PointOfInterest poi in pois2) {
-          osmWriter.writeNode(poi.position, poi.tags);
+        for (OsmNodeholder poi in pois2) {
+          osmWriter.writeNode(poi.latLong, poi.tagCollection);
         }
       }
       poiZoomlevels.clear();
@@ -215,8 +215,8 @@ class ConvertCommand extends Command {
     } else if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".pbf")) {
       PbfWriter pbfWriter = PbfWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
       for (var pois2 in poiZoomlevels.values) {
-        for (PointOfInterest poi in pois2) {
-          await pbfWriter.writeNode(poi.position, poi.tags);
+        for (OsmNodeholder poi in pois2) {
+          await pbfWriter.writeNode(poi.latLong, poi.tagCollection);
         }
       }
       poiZoomlevels.clear();
