@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math' as Math;
 import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -10,8 +9,9 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tile_constructor.dart';
+import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_collection.dart';
+import 'package:mapsforge_flutter_mapfile/src/writer/tile_writer.dart';
+import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_collection.dart';
 
 /// Each subfile consists of:
 /// tile index header
@@ -39,9 +39,9 @@ class SubfileCreator {
 
   final MapHeaderInfo mapHeaderInfo;
 
-  final Map<int, Poiinfo> _poiinfos = {};
+  final Map<int, PoiholderCollection> _poiholderCollection = {};
 
-  final Map<int, Wayinfo> _wayinfos = {};
+  final Map<int, WayholderCollection> _wayholderCollection = {};
 
   late final int _minX;
 
@@ -67,30 +67,37 @@ class SubfileCreator {
     tileBuffer = TileBuffer(baseZoomLevel);
 
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      _poiinfos[zoomlevel] = Poiinfo();
-      _wayinfos[zoomlevel] = Wayinfo();
+      _poiholderCollection[zoomlevel] = PoiholderCollection();
+      _wayholderCollection[zoomlevel] = WayholderCollection();
     }
   }
 
   void dispose() {
     tileBuffer.dispose();
+    _poiholderCollection.clear();
+    _wayholderCollection.clear();
+    _writebufferTileIndex = null;
   }
 
-    /// Adds a list of POIs to the appropriate zoom level within this sub-file.
+  Iterable<PoiholderCollection> get poiholderCollection => _poiholderCollection.values;
+
+  Iterable<WayholderCollection> get wayholderCollection => _wayholderCollection.values;
+
+  /// Adds a list of POIs to the appropriate zoom level within this sub-file.
   void addPoidata(ZoomlevelRange zoomlevelRange, List<PointOfInterest> pois) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    Poiinfo poiinfo = _poiinfos[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    PoiholderCollection poiinfo = _poiholderCollection[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
     for (PointOfInterest pointOfInterest in pois) {
       poiinfo.setPoidata(pointOfInterest);
     }
   }
 
-    /// Adds a list of ways to the appropriate zoom level within this sub-file.
+  /// Adds a list of ways to the appropriate zoom level within this sub-file.
   void addWaydata(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    Wayinfo wayinfo = _wayinfos[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    WayholderCollection wayinfo = _wayholderCollection[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
     //print("Adding ${wayholders.length} ways to zoomlevelRange $zoomlevelRange for baseZoomLevel $baseZoomLevel");
     WayCropper wayCropper = WayCropper(maxDeviationPixel: 5);
     if (tileCount >= 100) {
@@ -102,16 +109,6 @@ class SubfileCreator {
     } else {
       wayinfo.addWayholders(wayholders);
     }
-  }
-
-    /// Analyzes the tags of all POIs and ways in this sub-file.
-  void analyze(List<Tagholder> poiTagholders, List<Tagholder> wayTagholders, String? languagesPreference) {
-    _poiinfos.forEach((zoomlevel, poiinfo) {
-      poiinfo.analyze(poiTagholders, languagesPreference);
-    });
-    _wayinfos.forEach((zoomlevel, wayinfo) {
-      wayinfo.analyze(wayTagholders, languagesPreference);
-    });
   }
 
   Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess]) async {
@@ -168,28 +165,35 @@ class SubfileCreator {
     }
   }
 
-    /// Prepares all tiles for this sub-file by processing the POIs and ways in
+  /// Prepares all tiles for this sub-file by processing the POIs and ways in
   /// parallel isolates.
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
-    List<IsolateTileConstructor> tileConstructor = [];
+    List<IsolateTileWriter> tileWriters = [];
     // each instance must process this number of consecutive tiles
     final int iterationCount = 20;
     for (int i = 0; i < instanceCount; ++i) {
-      tileConstructor.add(
-        await IsolateTileConstructor.create(debugFile, _poiinfos, _wayinfos, zoomlevelRange, maxDeviationPixel, Math.min(_maxX - _minX + 1, iterationCount)),
+      tileWriters.add(
+        await IsolateTileWriter.create(
+          debugFile,
+          _poiholderCollection,
+          _wayholderCollection,
+          zoomlevelRange,
+          maxDeviationPixel,
+          Math.min(_maxX - _minX + 1, iterationCount),
+        ),
       );
     }
     // the isolates now hove the infos, we can remove them from memory here
-    _poiinfos.clear();
-    _wayinfos.clear();
+    _poiholderCollection.clear();
+    _wayholderCollection.clear();
     List<Future> futures = [];
     int current = 0;
     int counter = 0;
     await _processAsync(
       "preparing tiles",
       (tile) async {
-        Future future = _future(tileConstructor[current], tile);
+        Future future = _future(tileWriters[current], tile);
         futures.add(future);
         ++counter;
         if (counter >= iterationCount) {
@@ -199,7 +203,7 @@ class SubfileCreator {
         }
       },
       (int processedTiles, int sumTiles) async {
-        if (futures.length > 1000 || processedTiles == sumTiles) {
+        if (futures.length > iterationCount * instanceCount * 5 || processedTiles == sumTiles) {
           await Future.wait(futures);
           futures.clear();
           tileBuffer.cacheToDisk(processedTiles, sumTiles);
@@ -208,18 +212,18 @@ class SubfileCreator {
     );
     await tileBuffer.writeComplete();
     for (int i = 0; i < instanceCount; ++i) {
-      tileConstructor[i].dispose();
+      tileWriters[i].dispose();
     }
-    tileConstructor.clear();
+    tileWriters.clear();
     session.complete();
   }
 
-  Future<void> _future(IsolateTileConstructor tileConstructor, Tile tile) async {
-    Uint8List writebufferTile = await tileConstructor.writeTile(tile);
+  Future<void> _future(IsolateTileWriter tileWriter, Tile tile) async {
+    Uint8List writebufferTile = await tileWriter.writeTile(tile);
     tileBuffer.set(tile, writebufferTile);
   }
 
-    /// Writes the tile index for this sub-file to a [Writebuffer].
+  /// Writes the tile index for this sub-file to a [Writebuffer].
   Writebuffer writeTileIndex(bool debugFile) {
     if (_writebufferTileIndex != null) return _writebufferTileIndex!;
     _writebufferTileIndex = Writebuffer();
@@ -251,7 +255,7 @@ class SubfileCreator {
     writebuffer.appendInt5(indexEntry);
   }
 
-    /// Calculates the total length of all tile data in this sub-file.
+  /// Calculates the total length of all tile data in this sub-file.
   Future<int> getTilesLength(bool debugFile) async {
     int result = 0;
     _processSync("getting tiles length", (tile) {
@@ -260,7 +264,7 @@ class SubfileCreator {
     return result;
   }
 
-    /// Writes all tile data for this sub-file to the given [ioSink].
+  /// Writes all tile data for this sub-file to the given [ioSink].
   Future<void> writeTiles(bool debugFile, SinkWithCounter ioSink) async {
     await _processAsync("writing tiles", (tile) async {
       Uint8List contentForTile = await tileBuffer.getAndRemove(tile);
@@ -270,131 +274,18 @@ class SubfileCreator {
 
   int get tileCount => (_maxX - _minX + 1) * (_maxY - _minY + 1);
 
-    /// Logs statistics about the contents of this sub-file.
+  /// Logs statistics about the contents of this sub-file.
   void statistics() {
-    int poiCount = _poiinfos.values.fold(0, (int combine, Poiinfo poiinfo) => combine + poiinfo.count);
-    int wayCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
-    int pathCount = _wayinfos.values.fold(
+    int poiCount = _poiholderCollection.values.fold(0, (int combine, PoiholderCollection poiinfo) => combine + poiinfo.count);
+    int wayCount = _wayholderCollection.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
+    int pathCount = _wayholderCollection.values.fold(
       0,
       (combine, wayinfo) => combine + wayinfo.wayholders.fold(0, (combine, wayholder) => combine + wayholder.pathCount()),
     );
-    int nodeCount = _wayinfos.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
+    int nodeCount = _wayholderCollection.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
     _log.info(
       "$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount with ${wayCount != 0 ? (pathCount / wayCount).toStringAsFixed(1) : "n/a"} paths and ${pathCount != 0 ? (nodeCount / pathCount).toStringAsFixed(1) : "n/a"} nodes per path",
     );
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-/// A helper class to hold all POIs for a specific zoom level during the
-/// sub-file creation process.
-class Poiinfo {
-  Set<Poiholder> poiholders = {};
-
-  Uint8List? content;
-
-  int count = 0;
-
-  Poiinfo();
-
-  void addPoiholder(Poiholder poiholder) {
-    assert(content == null);
-    poiholders.add(poiholder);
-    ++count;
-  }
-
-  void setPoidata(PointOfInterest poi) {
-    assert(content == null);
-    Poiholder poiholder = Poiholder(poi);
-    poiholders.add(poiholder);
-    ++count;
-  }
-
-  bool contains(PointOfInterest poi) {
-    assert(content == null);
-    return poiholders.firstWhereOrNull((test) => test.poi == poi) != null;
-  }
-
-  void analyze(List<Tagholder> tagholders, String? languagesPreference) {
-    assert(content == null);
-    for (Poiholder poiholder in poiholders) {
-      poiholder.analyze(tagholders, languagesPreference);
-    }
-  }
-
-  Uint8List writePoidata(bool debugFile, double tileLatitude, double tileLongitude) {
-    if (content != null) return content!;
-    Writebuffer writebuffer = Writebuffer();
-    for (Poiholder poiholder in poiholders) {
-      writebuffer.appendWritebuffer(poiholder.writePoidata(debugFile, tileLatitude, tileLongitude));
-    }
-    poiholders.clear();
-    content = writebuffer.getUint8List();
-    return content!;
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-/// A helper class to hold all ways for a specific zoom level during the
-/// sub-file creation process.
-class Wayinfo {
-  Set<Wayholder> wayholders = {};
-
-  Uint8List? content;
-
-  int wayCount = 0;
-
-  Wayinfo();
-
-  int get nodeCount {
-    int result = 0;
-    for (var wayholder in wayholders) {
-      result += wayholder.nodeCount();
-    }
-    return result;
-  }
-
-  void addWayholder(Wayholder wayholder) {
-    assert(content == null);
-    assert(wayholder.openOutersRead.isNotEmpty || wayholder.closedOutersRead.isNotEmpty);
-    wayholders.add(wayholder);
-    ++wayCount;
-    //count += wayholder.openOuters.length + wayholder.closedOuters.length;
-  }
-
-  void addWayholders(List<Wayholder> wayholders) {
-    for (var test in wayholders) {
-      assert(test.openOutersRead.isNotEmpty || test.closedOutersRead.isNotEmpty);
-    }
-    assert(content == null);
-    this.wayholders.addAll(wayholders);
-    wayCount += wayholders.length;
-    //count += wayholders.fold(0, (combine, test) => combine + test.openOuters.length + test.closedOuters.length);
-  }
-
-  // Wayholder? searchWayholder(Way way) {
-  //   assert(content == null);
-  //   return wayholders.firstWhereOrNull((test) => test.way == way);
-  // }
-
-  void analyze(List<Tagholder> tagholders, String? languagesPreference) {
-    assert(content == null);
-    for (Wayholder wayholder in wayholders) {
-      wayholder.analyze(tagholders, languagesPreference);
-    }
-  }
-
-  Uint8List writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
-    if (content != null) return content!;
-    Writebuffer writebuffer = Writebuffer();
-    for (Wayholder wayholder in wayholders) {
-      writebuffer.appendWritebuffer(wayholder.writeWaydata(debugFile, tile, tileLatitude, tileLongitude));
-    }
-    wayholders.clear();
-    content = writebuffer.getUint8List();
-    return content!;
   }
 }
 

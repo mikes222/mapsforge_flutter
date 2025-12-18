@@ -1,12 +1,10 @@
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 /// Holds one way and its tags
-class Wayholder with TagholderMixin {
+class Wayholder {
+  //with TagholderMixin {
   // The master path. It will be extracted from _closedOuters or _openOuters shortly before writing the data to the file.
   Waypath? _master;
 
@@ -33,6 +31,8 @@ class Wayholder with TagholderMixin {
   /// Cache for the bounding box of the way
   BoundingBox? _boundingBox;
 
+  TagholderMixin? _tagholder;
+
   Wayholder({this.tags = const TagCollection.empty()});
 
   /// Creates a new wayholder from a existing way. Note that the existing way may NOT contain any path (if created from a OsmRelation)
@@ -54,20 +54,25 @@ class Wayholder with TagholderMixin {
 
   Wayholder cloneWith({List<Waypath>? inner, List<Waypath>? closedOuters, List<Waypath>? openOuters}) {
     Wayholder result = Wayholder();
+    result._master = _master?.clone();
+    result._inner = inner ?? _inner.map((toElement) => toElement.clone()).toList();
     result._closedOuters = closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList();
     result._openOuters = openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList();
-    result._inner = inner ?? _inner.map((toElement) => toElement.clone()).toList();
     result.labelPosition = labelPosition;
     result.tags = tags.clone();
     result.layer = layer;
-    result.featureElevation = featureElevation;
-    result.featureHouseNumber = featureHouseNumber;
-    result.featureName = featureName;
-    result.featureRef = featureRef;
-    result.languagesPreference = languagesPreference;
-    result.tagholders = List.from(tagholders);
+    result._boundingBox = _boundingBox;
+    result._tagholder = _tagholder?.clone();
     return result;
   }
+
+  void createTagholder(List<Tagholder> tagsArray, List<String> languagesPreference) {
+    if (_tagholder != null) return;
+    _tagholder = TagholderMixin();
+    _tagholder!.analyzeTags(tags, tagsArray, languagesPreference);
+  }
+
+  TagholderMixin getTagholder() => _tagholder!;
 
   List<Waypath> get innerRead {
     List<Waypath> result = _inner;
@@ -136,6 +141,14 @@ class Wayholder with TagholderMixin {
     }
   }
 
+  bool closedOutersIsNotEmpty() {
+    return _closedOuters.isNotEmpty;
+  }
+
+  int closedOutersLength() {
+    return _closedOuters.length;
+  }
+
   List<Waypath> get openOutersWrite {
     _boundingBox = null;
     return _openOuters;
@@ -160,6 +173,14 @@ class Wayholder with TagholderMixin {
     if (ok) {
       _boundingBox = null;
     }
+  }
+
+  bool openOutersIsNotEmpty() {
+    return _openOuters.isNotEmpty;
+  }
+
+  int openOutersLength() {
+    return _openOuters.length;
   }
 
   bool mayMoveToClosed(Waypath waypath) {
@@ -201,42 +222,6 @@ class Wayholder with TagholderMixin {
     return tags.getTag(key);
   }
 
-  /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
-  /// it is analyzed if the given way needs to be included. The result is represented as a 16 bit short value. Each bit
-  /// represents one of the 16 sub tiles. A bit is set to 1 if the sub tile needs to include the way. Representation is
-  /// row-wise.
-  ///
-  /// @param geometry           the geometry which is analyzed
-  /// @param tile               the tile which is split into 16 sub tiles
-  /// @param enlargementInMeter amount of pixels that is used to enlarge the bounding box of the way and the tiles in the mapping
-  ///                           process
-  /// @return a 16 bit short value that represents the information which of the sub tiles needs to include the way
-  int _computeBitmask(Tile tile) {
-    List<Tile> subtiles = tile.getGrandchilds();
-
-    int tileBitmask = 0;
-    int tileCounter = 1 << 15;
-    BoundingBox boundingBox = boundingBoxCached;
-    for (Tile subtile in subtiles) {
-      if (subtile.getBoundingBox().intersects(boundingBox) ||
-          subtile.getBoundingBox().containsBoundingBox(boundingBox) ||
-          boundingBox.containsBoundingBox(subtile.getBoundingBox())) {
-        tileBitmask |= tileCounter;
-      }
-      tileCounter = tileCounter >> 1;
-    }
-    // if (tile.zoomLevel <= 4) {
-    //   print("$tile 0x${tileBitmask.toRadixString(16)} for ${this.toStringWithoutNames()} $boundingBoxCached");
-    //   _closedOuters.where((test) => test.length < 3).forEach((test) => print("  test in compute: $test ${test.path}"));
-    // }
-    return tileBitmask;
-  }
-
-  void analyze(List<Tagholder> tagholders, String? languagesPreference) {
-    if (languagesPreference != null) super.languagesPreference.addAll(languagesPreference.split(","));
-    analyzeTags(tags, tagholders);
-  }
-
   /// moves the inner ways to the outer ways if no outer ways exists anymore
   void moveInnerToOuter() {
     if (innerRead.isNotEmpty && openOutersRead.isEmpty && closedOutersRead.isEmpty) {
@@ -251,26 +236,11 @@ class Wayholder with TagholderMixin {
     }
   }
 
-  /// can be done when the tags are sorted
-  Writebuffer writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
-    int tileBitmask = _computeBitmask(tile);
-    Writebuffer writebuffer3 = Writebuffer();
-    _writeWaySignature(debugFile, writebuffer3);
-    Writebuffer writebuffer = _writeWayPropertyAndWayData(tileLatitude, tileLongitude, tileBitmask);
-    // get the size of the way (VBE-U)
-    writebuffer3.appendUnsignedInt(writebuffer.length);
-    writebuffer3.appendWritebuffer(writebuffer);
-    return writebuffer3;
-  }
-
-  void _writeWaySignature(bool debugFile, Writebuffer writebuffer) {
-    if (debugFile) {
-      writebuffer.appendStringWithoutLength("---WayStart$hashCode---".padRight(MapfileHelper.SIGNATURE_LENGTH_WAY, " "));
+  Waypath extractMaster() {
+    if (_master != null) {
+      print("Master already extracted");
+      return _master!;
     }
-  }
-
-  Waypath _extractMaster() {
-    if (_master != null) return _master!;
     if (_closedOuters.isNotEmpty) {
       _master = _closedOuters.reduce((a, b) => a.length > b.length ? a : b);
       assert(_master!.length >= 2);
@@ -281,187 +251,6 @@ class Wayholder with TagholderMixin {
     assert(_master!.length >= 2);
     _openOuters.remove(_master);
     return _master!;
-  }
-
-  Writebuffer _writeWayPropertyAndWayData(double tileLatitude, double tileLongitude, int tileBitmask) {
-    assert(tagholders.length < 16);
-    assert(layer >= -5, "layer=$layer");
-    assert(layer <= 10);
-    Writebuffer writebuffer = Writebuffer();
-
-    /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2
-    // for each sub tile (row-wise, left to right):
-    // 1 bit that represents a flag whether the way is relevant for the sub tile
-    // Special case: coastline ways must always have all 16 bits set.
-    writebuffer.appendUInt2(tileBitmask);
-
-    int specialByte = 0;
-    // bit 1-4 represent the layer
-    specialByte |= ((layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
-    // bit 5-8 represent the number of tag IDs
-    specialByte |= (tagholders.length & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
-    writebuffer.appendInt1(specialByte);
-    writeTags(writebuffer);
-
-    Waypath master = _extractMaster();
-
-    // get the feature bitmask (1 byte)
-    int featureByte = 0;
-    // bit 1-3 enable optional features
-    if (featureName != null) featureByte |= MapfileHelper.POI_FEATURE_NAME;
-    if (featureHouseNumber != null) featureByte |= MapfileHelper.POI_FEATURE_HOUSE_NUMBER;
-    if (featureRef != null) featureByte |= MapfileHelper.WAY_FEATURE_REF;
-    bool featureLabelPosition = labelPosition != null;
-    if (featureLabelPosition) featureByte |= MapfileHelper.WAY_FEATURE_LABEL_POSITION;
-    // number of way data blocks or false if we have only 1
-    bool featureWayDataBlocksByte = _openOuters.isNotEmpty | _closedOuters.isNotEmpty;
-    if (featureWayDataBlocksByte) featureByte |= MapfileHelper.WAY_FEATURE_DATA_BLOCKS_BYTE;
-
-    bool? expectDouble;
-    // less than 10 coordinates? Use singe encoding
-    int sum = nodeCount();
-    if (sum <= 30) {
-      expectDouble = false;
-    } else if (sum >= 100) {
-      expectDouble = true;
-    }
-    Writebuffer singleWritebuffer = Writebuffer();
-    if (expectDouble == null || !expectDouble) {
-      _writeSingleDeltaEncoding(singleWritebuffer, [master, ..._inner], tileLatitude, tileLongitude);
-      for (var action in _closedOuters) {
-        _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude);
-      }
-      for (var action in _openOuters) {
-        _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude);
-      }
-    }
-
-    Writebuffer doubleWritebuffer = Writebuffer();
-    if (expectDouble == null || expectDouble) {
-      _writeDoubleDeltaEncoding(doubleWritebuffer, [master, ..._inner], tileLatitude, tileLongitude);
-      for (var action in _closedOuters) {
-        _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude);
-      }
-      for (var action in _openOuters) {
-        _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude);
-      }
-    }
-
-    bool featureWayDoubleDeltaEncoding = singleWritebuffer.length == 0
-        ? true
-        : doubleWritebuffer.length == 0
-        ? false
-        : doubleWritebuffer.length < singleWritebuffer.length;
-    if (featureWayDoubleDeltaEncoding) featureByte |= MapfileHelper.WAY_FEATURE_DOUBLE_DELTA_ENCODING;
-
-    writebuffer.appendInt1(featureByte);
-
-    if (featureName != null) {
-      writebuffer.appendString(featureName!);
-    }
-    if (featureHouseNumber != null) {
-      writebuffer.appendString(featureHouseNumber!);
-    }
-    if (featureRef != null) {
-      writebuffer.appendString(featureRef!);
-    }
-
-    if (featureLabelPosition) {
-      ILatLong first = master.first;
-      writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(labelPosition!.latitude - first.latitude));
-      writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(labelPosition!.longitude - first.longitude));
-    }
-
-    if (featureWayDataBlocksByte) {
-      writebuffer.appendUnsignedInt(_closedOuters.length + _openOuters.length + 1);
-    }
-
-    if (featureWayDoubleDeltaEncoding) {
-      writebuffer.appendWritebuffer(doubleWritebuffer);
-    } else {
-      writebuffer.appendWritebuffer(singleWritebuffer);
-    }
-
-    return writebuffer;
-  }
-
-  /// Way data block
-  void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
-    // amount of following way coordinate blocks (see docu)
-    if (waypaths.isEmpty) return;
-    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${toStringWithoutNames()}");
-    writebuffer.appendUnsignedInt(waypaths.length);
-    for (Waypath waypath in waypaths) {
-      assert(waypath.length >= 2, "${waypath.length} too little for ${toStringWithoutNames()}");
-      assert(waypath.length <= 32767, "${waypath.length} too much for ${toStringWithoutNames()}");
-      // amount of way nodes of this way (see docu)
-      writebuffer.appendUnsignedInt(waypath.length);
-      bool first = true;
-      double previousLatitude = 0;
-      double previousLongitude = 0;
-      for (ILatLong coordinate in waypath.path) {
-        if (first) {
-          previousLatitude = coordinate.latitude - tileLatitude;
-          previousLongitude = coordinate.longitude - tileLongitude;
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(previousLatitude));
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(previousLongitude));
-          first = false;
-        } else {
-          double currentLatitude = coordinate.latitude - tileLatitude;
-          double currentLongitude = coordinate.longitude - tileLongitude;
-
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(currentLatitude - previousLatitude));
-          writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(currentLongitude - previousLongitude));
-
-          previousLatitude = currentLatitude;
-          previousLongitude = currentLongitude;
-        }
-      }
-    }
-  }
-
-  /// Way data block
-  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
-    // amount of following way coordinate blocks (see docu)
-    if (waypaths.isEmpty) return;
-    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${toStringWithoutNames()}");
-    writebuffer.appendUnsignedInt(waypaths.length);
-    for (Waypath waypath in waypaths) {
-      assert(waypath.length >= 2, "${waypath.length} too little for ${toStringWithoutNames()}");
-      assert(waypath.length <= 32767, "${waypath.length} too much for ${toStringWithoutNames()}");
-      // amount of way nodes of this way (see docu)
-      writebuffer.appendUnsignedInt(waypath.length);
-      bool first = true;
-      // I had to switch to int because I had rounding errors which summed up so that a closed waypoint was not recognized as closed anymore
-      int previousLatitude = 0;
-      int previousLongitude = 0;
-      int previousLatitudeDelta = 0;
-      int previousLongitudeDelta = 0;
-      for (ILatLong coordinate in waypath.path) {
-        if (first) {
-          previousLatitude = LatLongUtils.degreesToMicrodegrees(coordinate.latitude - tileLatitude);
-          previousLongitude = LatLongUtils.degreesToMicrodegrees(coordinate.longitude - tileLongitude);
-          writebuffer.appendSignedInt(previousLatitude);
-          writebuffer.appendSignedInt(previousLongitude);
-          first = false;
-        } else {
-          int currentLatitude = LatLongUtils.degreesToMicrodegrees(coordinate.latitude - tileLatitude);
-          int currentLongitude = LatLongUtils.degreesToMicrodegrees(coordinate.longitude - tileLongitude);
-
-          int deltaLatitude = currentLatitude - previousLatitude;
-          int deltaLongitude = currentLongitude - previousLongitude;
-
-          writebuffer.appendSignedInt(deltaLatitude - previousLatitudeDelta);
-          writebuffer.appendSignedInt(deltaLongitude - previousLongitudeDelta);
-
-          previousLatitude = currentLatitude;
-          previousLongitude = currentLongitude;
-
-          previousLatitudeDelta = deltaLatitude;
-          previousLongitudeDelta = deltaLongitude;
-        }
-      }
-    }
   }
 
   int nodeCount() {

@@ -52,6 +52,7 @@ class PbfWriter {
     Writebuffer writebuffer = Writebuffer();
     writebuffer.appendInt4(headerContent.length);
     writebuffer.writeToSink(sink);
+    writebuffer.clear();
     // blob header
     sink.add(headerContent);
     sink.add(headerBlobContent);

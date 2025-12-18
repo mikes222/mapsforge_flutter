@@ -1,7 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 
 /// A mixin that provides shared functionality for handling OpenStreetMap tags
@@ -9,7 +10,7 @@ import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 ///
 /// This includes logic for analyzing tags, extracting special features like names
 /// and house numbers, and serializing the tag data to a [Writebuffer].
-mixin TagholderMixin {
+class TagholderMixin {
   List<Tagholder> tagholders = [];
 
   String? featureName;
@@ -20,21 +21,30 @@ mixin TagholderMixin {
 
   String? featureRef;
 
-  /// The preferred language(s) separated with ',' for names as defined in ISO 639-1 or ISO 639-2 (may be null).
-  List<String> languagesPreference = [];
-
-  Writebuffer writebufferTagvalues = Writebuffer();
+  Uint8List? writebufferTagvalues;
 
   /// do not normalize these tags. admin_level for example has only a handful
   /// distinct values so it is a waste of time and space to normalize it
   static Set<String> DO_NOT_NORMALIZE = {"admin_level"};
 
+  TagholderMixin clone() {
+    TagholderMixin result = TagholderMixin();
+    result.tagholders = List.from(tagholders);
+    result.featureName = featureName;
+    result.featureHouseNumber = featureHouseNumber;
+    result.featureElevation = featureElevation;
+    result.featureRef = featureRef;
+    result.writebufferTagvalues = writebufferTagvalues;
+    return result;
+  }
+
   /// Analyzes a list of [tags], identifying special features and counting the
   /// occurrences of each tag.
-  void analyzeTags(TagCollection tags, List<Tagholder> tagsArray) {
+  void analyzeTags(TagCollection tags, List<Tagholder> tagsArray, List<String> languagesPreference) {
     Set<String> names = {};
     String? original;
     String? fallback;
+    Writebuffer writebuffer = Writebuffer();
     for (Tag tag in tags.tags) {
       if (tag.key == MapfileHelper.TAG_KEY_NAME) {
         if (tag.value != null && tag.value!.isNotEmpty) original = tag.value;
@@ -88,10 +98,10 @@ mixin TagholderMixin {
       // normalize tags
       if (tag.value != null && !DO_NOT_NORMALIZE.contains(tag.key)) {
         if (int.tryParse(tag.value!) != null) {
-          writebufferTagvalues.appendInt4(int.parse(tag.value!));
+          writebuffer.appendInt4(int.parse(tag.value!));
           tag = Tag(tag.key, "%i");
         } else if (double.tryParse(tag.value!) != null) {
-          writebufferTagvalues.appendFloat4(double.parse(tag.value!));
+          writebuffer.appendFloat4(double.parse(tag.value!));
           tag = Tag(tag.key, "%f");
         }
       }
@@ -104,6 +114,7 @@ mixin TagholderMixin {
       }
       tagholders.add(tagholder);
     }
+    writebufferTagvalues = writebuffer.getUint8List();
 
     // originalname should be at first position, fallbackname only used if originalname is null
     featureName = original ?? fallback;
@@ -127,6 +138,25 @@ mixin TagholderMixin {
     for (var tagholder in tagholders) {
       writebuffer.appendUnsignedInt(tagholder.index!);
     }
-    writebuffer.appendWritebuffer(writebufferTagvalues);
+    writebuffer.appendUint8(writebufferTagvalues!);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class Tagholder {
+  // how often is the tag used. We will use this for sorting tags
+  int count = 0;
+
+  // the index of the tag after sorting
+  int? index;
+
+  final Tag tag;
+
+  Tagholder(this.tag);
+
+  @override
+  String toString() {
+    return 'Tagholder{count: $count, index: $index, tag: $tag}';
   }
 }

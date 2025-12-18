@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/mapfile_header_writer.dart';
+import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 /// The main class for writing a Mapsforge binary map file (`.map`).
 ///
@@ -37,7 +38,7 @@ class MapfileWriter {
     : _sink = SinkWithCounter(File(filename).openWrite()),
       _zoomlevelRange = mapHeaderInfo.zoomlevelRange;
 
-    /// Closes the writer and finalizes the map file.
+  /// Closes the writer and finalizes the map file.
   ///
   /// This method closes the underlying file sink and then re-opens the file to
   /// write the final, correct file size into the header, as this value is not
@@ -54,7 +55,7 @@ class MapfileWriter {
     await raf.close();
   }
 
-    /// Writes the complete map file structure to the file sink.
+  /// Writes the complete map file structure to the file sink.
   ///
   /// [maxDeviationPixel] is the maximum allowed deviation in pixels when simplifying
   /// way geometries. This is used to prevent polygons from having more than 32767
@@ -66,10 +67,18 @@ class MapfileWriter {
     assert(subfileCreators.isNotEmpty);
     //    assert(poiTags.isNotEmpty || wayTags.isNotEmpty);
 
-    Writebuffer writebuffer = Writebuffer();
+    List<String> languagesPreferences = [];
+    if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
     for (SubfileCreator subfileCreator in subfileCreators) {
-      subfileCreator.analyze(poiTags, wayTags, mapHeaderInfo.languagesPreference);
+      for (var collection in subfileCreator.poiholderCollection) {
+        collection.createTagholders(poiTags, languagesPreferences);
+      }
+      for (var collection in subfileCreator.wayholderCollection) {
+        collection.createTagholders(wayTags, languagesPreferences);
+      }
     }
+
+    Writebuffer writebuffer = Writebuffer();
     _writeTags(writebuffer, poiTags);
     _writeTags(writebuffer, wayTags);
 
@@ -85,11 +94,14 @@ class MapfileWriter {
 
     writebufferHeader.appendWritebuffer(writebuffer);
     writebufferHeader.writeToSink(_sink);
+    writebuffer.clear();
+    writebufferHeader.clear();
 
     for (SubfileCreator subfileCreator in subfileCreators) {
       // for each subfile, write the tile index header and entries
       Writebuffer writebuffer = subfileCreator.writeTileIndex(mapHeaderInfo.debugFile);
       writebuffer.writeToSink(_sink);
+      writebuffer.clear();
       await subfileCreator.writeTiles(mapHeaderInfo.debugFile, _sink);
       subfileCreator.dispose();
     }
@@ -122,24 +134,5 @@ class MapfileWriter {
       String value = "${tagholder.tag.key}=${tagholder.tag.value}";
       writebuffer.appendString(value);
     }
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-class Tagholder {
-  // how often is the tag used. We will use this for sorting tags
-  int count = 0;
-
-  // the index of the tag after sorting
-  int? index;
-
-  final Tag tag;
-
-  Tagholder(this.tag);
-
-  @override
-  String toString() {
-    return 'Tagholder{count: $count, index: $index, tag: $tag}';
   }
 }

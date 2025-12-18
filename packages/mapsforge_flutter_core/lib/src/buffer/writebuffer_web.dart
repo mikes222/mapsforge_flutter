@@ -1,34 +1,36 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:mapsforge_flutter_core/src/utils/uint8_list_builder.dart';
+
 /// Web-compatible stub implementation of Writebuffer.
-/// 
+///
 /// This implementation provides the same API as the IO version but throws
 /// [UnsupportedError] for operations that require file system access,
 /// which is not available on the web platform.
-/// 
+///
 /// The web platform typically doesn't need mapfile writing capabilities,
 /// as this is usually done on the server side or in development environments.
 class Writebuffer {
-  static final int ENHANCE_BUFFER_BYTES = 10000;
-
   /// A chunk of data read from the underlying file
-  final List<int> _bufferData = [];
+  final Uint8ListBuilder _bufferData = Uint8ListBuilder();
 
   int _bufferPosition = 0;
 
-  int _bufferLength = ENHANCE_BUFFER_BYTES;
-
   void writeToSink(SinkWithCounter sink) {
-    sink.add(_bufferData);
+    sink.add(_bufferData.data);
   }
 
   void _ensureBuffer() {
-    if (_bufferLength > _bufferPosition) return;
-    _bufferLength = _bufferPosition + ENHANCE_BUFFER_BYTES;
-//    Uint8List temp = Uint8List(_bufferLength);
-//    temp.addAll(_bufferData);
-//    _bufferData = temp;
+    if (_bufferData.length > 100 * 1024 * 1024) {
+      print("Buffer more than 100MB: ${_bufferData.length}");
+      print(StackTrace.current);
+    }
+  }
+
+  void clear() {
+    _bufferData.clear();
+    _bufferPosition = 0;
   }
 
   void appendInt1(int value) {
@@ -209,30 +211,30 @@ class Writebuffer {
   void appendWritebuffer(Writebuffer other) {
     _bufferPosition += other._bufferPosition;
     _ensureBuffer();
-    _bufferData.addAll(other._bufferData);
+    _bufferData.addAll(other._bufferData.data);
   }
 
   /// File operations are not supported on the web platform.
-  /// 
+  ///
   /// Throws [UnsupportedError] as file system access is not available in web browsers.
   Future<void> writeIntoAt(int position, dynamic raf) async {
     throw UnsupportedError(
       'File operations are not supported on the web platform. '
-      'Mapfile writing is typically done on the server side or in development environments.'
+      'Mapfile writing is typically done on the server side or in development environments.',
     );
   }
 
   int get length => _bufferData.length;
 
   Uint8List getUint8List() {
-    return Uint8List.fromList(_bufferData);
+    return _bufferData.data;
   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// Web-compatible stub implementation of SinkWithCounter.
-/// 
+///
 /// This implementation provides the same API as the IO version but throws
 /// [UnsupportedError] for operations that require file system access.
 class SinkWithCounter {
@@ -244,32 +246,32 @@ class SinkWithCounter {
   SinkWithCounter(this.sink);
 
   /// File operations are not supported on the web platform.
-  /// 
+  ///
   /// Throws [UnsupportedError] as file system access is not available in web browsers.
   Future<void> close() async {
     throw UnsupportedError(
       'File operations are not supported on the web platform. '
-      'Mapfile writing is typically done on the server side or in development environments.'
+      'Mapfile writing is typically done on the server side or in development environments.',
     );
   }
 
   /// File operations are not supported on the web platform.
-  /// 
+  ///
   /// Throws [UnsupportedError] as file system access is not available in web browsers.
   void add(List<int> buffer) {
     throw UnsupportedError(
       'File operations are not supported on the web platform. '
-      'Mapfile writing is typically done on the server side or in development environments.'
+      'Mapfile writing is typically done on the server side or in development environments.',
     );
   }
 
   /// File operations are not supported on the web platform.
-  /// 
+  ///
   /// Throws [UnsupportedError] as file system access is not available in web browsers.
   Future<void> flush() async {
     throw UnsupportedError(
       'File operations are not supported on the web platform. '
-      'Mapfile writing is typically done on the server side or in development environments.'
+      'Mapfile writing is typically done on the server side or in development environments.',
     );
   }
 }
