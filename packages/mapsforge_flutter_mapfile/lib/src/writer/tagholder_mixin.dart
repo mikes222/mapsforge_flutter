@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 
 /// A mixin that provides shared functionality for handling OpenStreetMap tags
@@ -114,7 +114,7 @@ class TagholderMixin {
       }
       tagholders.add(tagholder);
     }
-    writebufferTagvalues = writebuffer.getUint8List();
+    writebufferTagvalues = writebuffer.getUint8ListAndClear();
 
     // originalname should be at first position, fallbackname only used if originalname is null
     featureName = original ?? fallback;

@@ -1,15 +1,13 @@
-import 'dart:io';
 import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_collection.dart';
+import 'package:mapsforge_flutter_mapfile/src/writer/tile_buffer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_collection.dart';
 
@@ -39,9 +37,7 @@ class SubfileCreator {
 
   final MapHeaderInfo mapHeaderInfo;
 
-  final Map<int, PoiholderCollection> _poiholderCollection = {};
-
-  final Map<int, WayholderCollection> _wayholderCollection = {};
+  final PoiWayCollections _poiWayCollections = PoiWayCollections();
 
   late final int _minX;
 
@@ -67,27 +63,26 @@ class SubfileCreator {
     tileBuffer = TileBuffer(baseZoomLevel);
 
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      _poiholderCollection[zoomlevel] = PoiholderCollection();
-      _wayholderCollection[zoomlevel] = WayholderCollection();
+      _poiWayCollections.poiholderCollections[zoomlevel] = PoiholderCollection();
+      _poiWayCollections.wayholderCollections[zoomlevel] = WayholderCollection();
     }
   }
 
   void dispose() {
     tileBuffer.dispose();
-    _poiholderCollection.clear();
-    _wayholderCollection.clear();
+    _poiWayCollections.clear();
     _writebufferTileIndex = null;
   }
 
-  Iterable<PoiholderCollection> get poiholderCollection => _poiholderCollection.values;
+  Iterable<PoiholderCollection> get poiholderCollection => _poiWayCollections.poiholderCollections.values;
 
-  Iterable<WayholderCollection> get wayholderCollection => _wayholderCollection.values;
+  Iterable<WayholderCollection> get wayholderCollection => _poiWayCollections.wayholderCollections.values;
 
   /// Adds a list of POIs to the appropriate zoom level within this sub-file.
   void addPoidata(ZoomlevelRange zoomlevelRange, List<PointOfInterest> pois) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    PoiholderCollection poiinfo = _poiholderCollection[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    PoiholderCollection poiinfo = _poiWayCollections.poiholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
     for (PointOfInterest pointOfInterest in pois) {
       poiinfo.setPoidata(pointOfInterest);
     }
@@ -97,18 +92,8 @@ class SubfileCreator {
   void addWaydata(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    WayholderCollection wayinfo = _wayholderCollection[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    //print("Adding ${wayholders.length} ways to zoomlevelRange $zoomlevelRange for baseZoomLevel $baseZoomLevel");
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: 5);
-    if (tileCount >= 100) {
-      // one tile may span over the boundary of the mapfile, so do not crop
-      for (Wayholder wayholder in wayholders) {
-        Wayholder? wayCropped = wayCropper.cropOutsideWay(wayholder, mapHeaderInfo.boundingBox);
-        if (wayCropped != null) wayinfo.addWayholder(wayCropped);
-      }
-    } else {
-      wayinfo.addWayholders(wayholders);
-    }
+    WayholderCollection wayinfo = _poiWayCollections.wayholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    wayinfo.addWayholders(wayholders);
   }
 
   Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess]) async {
@@ -139,9 +124,17 @@ class SubfileCreator {
     int started = DateTime.now().millisecondsSinceEpoch;
     int lastProcessedTiles = 0;
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
+      int count = 0;
       for (int tileX = _minX; tileX <= _maxX; ++tileX) {
         Tile tile = Tile(tileX, tileY, baseZoomLevel, 0);
         process(tile);
+        ++count;
+        if (count % 200 == 0) {
+          int processedTiles = (tileY - _minY + 1) * (_maxX - _minX + 1);
+          if (lineProcess != null) {
+            lineProcess(processedTiles, tileCount);
+          }
+        }
       }
       int processedTiles = (tileY - _minY + 1) * (_maxX - _minX + 1);
       if (lineProcess != null) {
@@ -169,24 +162,29 @@ class SubfileCreator {
   /// parallel isolates.
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
-    List<IsolateTileWriter> tileWriters = [];
+    _log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
+    List<ITileWriter> tileWriters = [];
     // each instance must process this number of consecutive tiles
     final int iterationCount = 20;
+    // makes no sense to create multiple isolates for so few tiles
+    if (tileCount < 50) instanceCount = 1;
+    // too many tiles (hence too many ways). Danger of OutOfMemory Exception
+    //if (tileCount > 50000 && instanceCount > 2) instanceCount = 2;
     for (int i = 0; i < instanceCount; ++i) {
       tileWriters.add(
-        await IsolateTileWriter.create(
-          debugFile,
-          _poiholderCollection,
-          _wayholderCollection,
-          zoomlevelRange,
-          maxDeviationPixel,
-          Math.min(_maxX - _minX + 1, iterationCount),
-        ),
+        await IsolateTileWriter.create(debugFile, _poiWayCollections, zoomlevelRange, maxDeviationPixel, Math.min(_maxX - _minX + 1, iterationCount)),
+        // TileWriter(
+        //   debugFile,
+        //   Map.from(_poiholderCollection),
+        //   Map.from(_wayholderCollection),
+        //   zoomlevelRange,
+        //   maxDeviationPixel,
+        //   Math.min(_maxX - _minX + 1, iterationCount),
+        // ),
       );
     }
     // the isolates now hove the infos, we can remove them from memory here
-    _poiholderCollection.clear();
-    _wayholderCollection.clear();
+    _poiWayCollections.clear();
     List<Future> futures = [];
     int current = 0;
     int counter = 0;
@@ -203,7 +201,8 @@ class SubfileCreator {
         }
       },
       (int processedTiles, int sumTiles) async {
-        if (futures.length > iterationCount * instanceCount * 5 || processedTiles == sumTiles) {
+        if (futures.length > iterationCount * instanceCount * 10 || processedTiles == sumTiles) {
+          _log.info("Waiting for ${futures.length} futures. Currently processed: $processedTiles / $sumTiles");
           await Future.wait(futures);
           futures.clear();
           tileBuffer.cacheToDisk(processedTiles, sumTiles);
@@ -211,14 +210,11 @@ class SubfileCreator {
       },
     );
     await tileBuffer.writeComplete();
-    for (int i = 0; i < instanceCount; ++i) {
-      tileWriters[i].dispose();
-    }
     tileWriters.clear();
     session.complete();
   }
 
-  Future<void> _future(IsolateTileWriter tileWriter, Tile tile) async {
+  Future<void> _future(ITileWriter tileWriter, Tile tile) async {
     Uint8List writebufferTile = await tileWriter.writeTile(tile);
     tileBuffer.set(tile, writebufferTile);
   }
@@ -276,13 +272,13 @@ class SubfileCreator {
 
   /// Logs statistics about the contents of this sub-file.
   void statistics() {
-    int poiCount = _poiholderCollection.values.fold(0, (int combine, PoiholderCollection poiinfo) => combine + poiinfo.count);
-    int wayCount = _wayholderCollection.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
-    int pathCount = _wayholderCollection.values.fold(
+    int poiCount = _poiWayCollections.poiholderCollections.values.fold(0, (int combine, poiinfo) => combine + poiinfo.count);
+    int wayCount = _poiWayCollections.wayholderCollections.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
+    int pathCount = _poiWayCollections.wayholderCollections.values.fold(
       0,
       (combine, wayinfo) => combine + wayinfo.wayholders.fold(0, (combine, wayholder) => combine + wayholder.pathCount()),
     );
-    int nodeCount = _wayholderCollection.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
+    int nodeCount = _poiWayCollections.wayholderCollections.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
     _log.info(
       "$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount with ${wayCount != 0 ? (pathCount / wayCount).toStringAsFixed(1) : "n/a"} paths and ${pathCount != 0 ? (nodeCount / pathCount).toStringAsFixed(1) : "n/a"} nodes per path",
     );
@@ -291,113 +287,17 @@ class SubfileCreator {
 
 //////////////////////////////////////////////////////////////////////////////
 
-class TileBuffer {
-  final Map<Tile, Uint8List> _writebufferForTiles = {};
+class PoiWayCollections {
+  /// minimum zoomlevel for all corresponding pois
+  final Map<int, PoiholderCollection> poiholderCollections = {};
 
-  final Map<Tile, _TempfileIndex> _indexes = {};
+  /// minimum zoomlevel for all corresponding ways
+  final Map<int, WayholderCollection> wayholderCollections = {};
 
-  final Map<Tile, int> _sizes = {};
+  PoiWayCollections();
 
-  SinkWithCounter? _ioSink;
-
-  ReadbufferSource? _readbufferFile;
-
-  late final String _filename;
-
-  int _length = 0;
-
-  TileBuffer(int baseZoomlevel) {
-    _filename = "tiles_${DateTime.now().millisecondsSinceEpoch}_$baseZoomlevel.tmp";
+  void clear() {
+    poiholderCollections.clear();
+    wayholderCollections.clear();
   }
-
-  void dispose() {
-    _ioSink?.close();
-    _readbufferFile?.dispose();
-    try {
-      File(_filename).deleteSync();
-    } catch (_) {
-      // do nothing
-    }
-    _writebufferForTiles.clear();
-    _indexes.clear();
-    _sizes.clear();
-    _length = 0;
-  }
-
-  void set(Tile tile, Uint8List content) {
-    _writebufferForTiles[tile] = content;
-    _sizes[tile] = content.length;
-    _length += content.length;
-  }
-
-  /// Returns the content of the tile. Assumes that the order of retrieval is exactly
-  /// the same as the order of storage.
-  Future<Uint8List> get(Tile tile) async {
-    Uint8List? result = _writebufferForTiles[tile];
-    if (result != null) return result;
-
-    await writeComplete();
-    if (_readbufferFile != null) {
-      _TempfileIndex tempfileIndex = _indexes[tile]!;
-      Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex.position, tempfileIndex.length);
-      return readbuffer.getBuffer(0, tempfileIndex.length);
-    }
-    return _writebufferForTiles[tile]!;
-  }
-
-  Future<Uint8List> getAndRemove(Tile tile) async {
-    Uint8List? result = _writebufferForTiles.remove(tile);
-    if (result != null) {
-      _sizes.remove(tile);
-      return result;
-    }
-    assert(_ioSink != null || _readbufferFile != null);
-    await writeComplete();
-    assert(_readbufferFile != null);
-    _TempfileIndex? tempfileIndex = _indexes[tile];
-    assert(tempfileIndex != null, "indexes for $tile not found");
-    Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex!.position, tempfileIndex.length);
-    result = readbuffer.getBuffer(0, tempfileIndex.length);
-    _sizes.remove(tile);
-    _indexes.remove(tile);
-    //if (_indexes.isEmpty) dispose();
-    return result;
-  }
-
-  int getLength(Tile tile) {
-    return _sizes[tile]!;
-  }
-
-  void cacheToDisk(int processedTiles, int sumTiles) {
-    if (_writebufferForTiles.isEmpty) return;
-    // less than 10MB? keep in memory
-    if (_length < 10000000) return;
-    _ioSink ??= SinkWithCounter(File(_filename).openWrite());
-    _writebufferForTiles.forEach((tile, content) {
-      _TempfileIndex tempfileIndex = _TempfileIndex(_ioSink!.written, content.length);
-      _indexes[tile] = tempfileIndex;
-      _ioSink!.add(content);
-    });
-    _writebufferForTiles.clear();
-    _length = 0;
-  }
-
-  Future<void> writeComplete() async {
-    if (_ioSink != null) {
-      // close the writing and start reading
-      await _ioSink?.close();
-      _ioSink = null;
-      _readbufferFile = createReadbufferSource(_filename);
-    }
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-class _TempfileIndex {
-  final int position;
-
-  final int length;
-
-  _TempfileIndex(this.position, this.length);
 }

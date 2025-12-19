@@ -14,13 +14,13 @@ import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 /// vertices that need to be processed and drawn, especially for large polygons
 /// or long ways that only partially intersect a tile.
 class WayCropper {
-  final _log = Logger('WayCropper');
+  static final _log = Logger('WayCropper');
 
   final double maxDeviationPixel;
 
-  WayCropper({required this.maxDeviationPixel});
+  const WayCropper({required this.maxDeviationPixel});
 
-    /// Crops the ways within a [wayholder] to the given [boundingBox].
+  /// Crops the ways within a [wayholder] to the given [boundingBox].
   ///
   /// This method processes the inner and outer ways of the wayholder, optimizing
   /// them to include only the segments that are visible within the bounding box.
@@ -53,7 +53,7 @@ class WayCropper {
     return wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
   }
 
-    /// An alternative cropping method that reduces the nodes of a way that are
+  /// An alternative cropping method that reduces the nodes of a way that are
   /// outside the given [boundingBox].
   ///
   /// This is a less aggressive optimization than [cropWay] and is used in
@@ -84,7 +84,7 @@ class WayCropper {
     return result;
   }
 
-    /// Optimizes a way by cropping it to the tile boundary and simplifying it.
+  /// Optimizes a way by cropping it to the tile boundary and simplifying it.
   ///
   /// This is the core method for processing a single way. It handles cases where
   /// the way is completely inside, completely outside, or intersecting the tile.
@@ -260,7 +260,7 @@ class WayCropper {
     return Waypath(path: optimizedWaypoints);
   }
 
-    /// Reduces the number of nodes in a way that are outside the given [tileBoundary].
+  /// Reduces the number of nodes in a way that are outside the given [tileBoundary].
   ///
   /// This method uses a queue-based approach to recursively subdivide the way
   /// and discard segments that do not intersect with the tile boundary. This can
@@ -365,7 +365,7 @@ class WayCropper {
     }
   }
 
-    /// Finds the intersection point of a line segment with the edges of the tile boundary.
+  /// Finds the intersection point of a line segment with the edges of the tile boundary.
   ///
   /// Assumes one point is inside and one is outside the boundary.
   /// Returns the intersection point and the direction of the edge that was hit
@@ -393,7 +393,7 @@ class WayCropper {
     return (null, -1);
   }
 
-    /// Finds the intersection point of a line segment with the tile boundary, assuming
+  /// Finds the intersection point of a line segment with the tile boundary, assuming
   /// both start and end points are outside the tile.
   ///
   /// This is used to detect cases where a way passes through a tile without having

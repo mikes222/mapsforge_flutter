@@ -26,9 +26,9 @@ class BlockPage extends StatelessWidget {
           return Center(child: Text(snapshot.error.toString()));
         }
         if (snapshot.data == null) return const Center(child: CircularProgressIndicator());
-        DatastoreBundle mapReadResult = snapshot.data;
-        int? items = mapReadResult.ways.length < 1000
-            ? mapReadResult.ways.fold<int>(
+        DatastoreBundle datastoreBundle = snapshot.data;
+        int? items = datastoreBundle.ways.length < 1000
+            ? datastoreBundle.ways.fold<int>(
                 0,
                 ((previousValue, element) => previousValue + element.latLongs.fold(0, ((previousValue, element) => previousValue + element.length))),
               )
@@ -39,24 +39,24 @@ class BlockPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text("IsWater ${mapReadResult.isWater}, "),
+                  Text("IsWater ${datastoreBundle.isWater}, "),
                   InkWell(
-                    child: Row(children: <Widget>[Text("Pois ${mapReadResult.pointOfInterests.length}, "), const Icon(Icons.more_horiz)]),
+                    child: Row(children: <Widget>[Text("Pois ${datastoreBundle.pointOfInterests.length}, "), const Icon(Icons.more_horiz)]),
                     onTap: () {
                       Navigator.of(
                         context,
-                      ).push(MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: mapReadResult.pointOfInterests)));
+                      ).push(MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: datastoreBundle.pointOfInterests)));
                     },
                   ),
                   InkWell(
                     child: Row(
                       children: <Widget>[
-                        Text("Ways ${mapReadResult.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
+                        Text("Ways ${datastoreBundle.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
                         const Icon(Icons.more_horiz),
                       ],
                     ),
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => WayPage(ways: mapReadResult.ways)));
+                      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => WayPage(ways: datastoreBundle.ways)));
                     },
                   ),
                 ],
@@ -87,7 +87,7 @@ class BlockPage extends StatelessWidget {
     } catch (e, stacktrace) {
       print("${e.toString()}");
       print("${stacktrace.toString()}");
-      throw e;
+      rethrow;
     }
   }
 }

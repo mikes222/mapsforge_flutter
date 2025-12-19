@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
@@ -56,7 +55,7 @@ class WayholderCollection {
       wayholderWriter.writeWaydata(writebuffer, wayholder, debugFile, tile, tileLatitude, tileLongitude);
     }
     wayholders.clear();
-    content = writebuffer.getUint8List();
+    content = writebuffer.getUint8ListAndClear();
     return content!;
   }
 

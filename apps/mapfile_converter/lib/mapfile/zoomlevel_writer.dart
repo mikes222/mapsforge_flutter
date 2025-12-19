@@ -10,19 +10,17 @@ class ZoomlevelWriter {
 
   Future<SubfileCreator> writeZoomlevel(
     MapfileWriter mapfileWriter,
-    MapHeaderInfo mapHeaderInfo,
-    BoundingBox boundingBox,
     int minZoomlevel,
     int maxZoomlevel,
     Map<ZoomlevelRange, List<OsmWayholder>> ways,
     Map<ZoomlevelRange, List<OsmNodeholder>> pois,
   ) async {
     SubfileCreator subfileCreator = SubfileCreator(
-      mapHeaderInfo: mapHeaderInfo,
+      mapHeaderInfo: mapfileWriter.mapHeaderInfo,
       baseZoomLevel: minZoomlevel,
       zoomlevelRange: ZoomlevelRange(minZoomlevel, maxZoomlevel),
     );
-    await _fillSubfile(mapfileWriter.mapHeaderInfo.tilePixelSize, subfileCreator, pois, ways);
+    await _fillSubfile(mapfileWriter.mapHeaderInfo.tilePixelSize, subfileCreator, pois, ways, mapfileWriter.mapHeaderInfo.boundingBox);
     mapfileWriter.subfileCreators.add(subfileCreator);
     return subfileCreator;
   }
@@ -32,6 +30,7 @@ class ZoomlevelWriter {
     SubfileCreator subfileCreator,
     Map<ZoomlevelRange, List<OsmNodeholder>> nodes,
     Map<ZoomlevelRange, List<OsmWayholder>> wayHolders,
+    BoundingBox boundingBox,
   ) async {
     nodes.forEach((zoomlevelRange, nodelist) {
       if (subfileCreator.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
@@ -52,18 +51,25 @@ class ZoomlevelWriter {
         Wayholder wayholder = osmWayholder.convertToWayholder();
         wayholders.add(wayholder);
       }
-      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholders, tilePixelSize));
+      wayholderFutures.add(_isolate(subfileCreator, zoomlevelRange, wayholders, tilePixelSize, boundingBox));
     });
     await Future.wait(wayholderFutures);
   }
 
-  Future<void> _isolate(SubfileCreator subfileCreator, ZoomlevelRange zoomlevelRange, List<Wayholder> wayholderlist, int tilePixelSize) async {
+  Future<void> _isolate(
+    SubfileCreator subfileCreator,
+    ZoomlevelRange zoomlevelRange,
+    List<Wayholder> wayholderlist,
+    int tilePixelSize,
+    BoundingBox boundingBox,
+  ) async {
     // we create deep clones of wayholders because of isolates. This prevents problems later when reducing waypoints for different zoomlevels.
     // Do NOT remove the isolate code without further examination!
     List<Wayholder> wayholders = await IsolateSubfileFiller().prepareWays(
       subfileCreator.zoomlevelRange,
       zoomlevelRange,
       wayholderlist,
+      boundingBox,
       tilePixelSize,
       maxDeviationSize,
     );

@@ -10,9 +10,11 @@
 /// - `SubfileFiller`: A helper for populating the sub-files with data.
 /// - `WayHolder`: A data holder for way information during the writing process.
 library;
+
 export 'src/mapfile.dart';
 export 'src/model/map_header_info.dart';
 export 'src/writer/mapfile_writer.dart';
 export 'src/writer/subfile_creator.dart';
 export 'src/writer/subfile_filler.dart';
 export 'src/writer/wayholder.dart';
+export 'src/writer/writebuffer.dart';

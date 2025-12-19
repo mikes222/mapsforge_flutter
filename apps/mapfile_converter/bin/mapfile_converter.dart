@@ -256,8 +256,6 @@ class ConvertCommand extends Command {
         if (previousZoomlevel != null) {
           SubfileCreator subfileCreator = await zoomlevelWriter.writeZoomlevel(
             mapfileWriter,
-            mapHeaderInfo,
-            finalBoundingBox,
             previousZoomlevel,
             zoomlevel == zoomlevels.last ? zoomlevel : zoomlevel - 1,
             wayZoomlevels,

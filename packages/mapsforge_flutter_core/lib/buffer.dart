@@ -12,4 +12,3 @@ export 'src/buffer/readbuffer.dart';
 export 'src/buffer/readbuffer_factory.dart';
 export 'src/buffer/readbuffer_memory.dart';
 export 'src/buffer/readbuffer_source.dart';
-export 'src/buffer/writebuffer_platform.dart';

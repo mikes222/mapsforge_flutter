@@ -179,6 +179,7 @@ class TileindexPage extends StatelessWidget {
               return;
             } else {
               if (i < maxItems) {
+                int latlongs = way.latLongs.map((toElement) => toElement.length).fold(0, (combine, toElement) => combine + toElement);
                 res.add(
                   Wrap(
                     spacing: 10,
@@ -186,6 +187,7 @@ class TileindexPage extends StatelessWidget {
                       Text(
                         "$i, $index, 0x${(subFileParameter.startAddress + offset + pos).toRadixString(16)}: Zoomlelel: $zoomlevel, ${LatLongUtils.isClosedWay(way.latLongs[0]) ? "Closed" : "Open"}Way: Layer: ${way.layer}, latLongs: ${way.latLongs.map((toElement) => toElement.length).toList()}, tags: ${way.tags.printTags()}",
                         maxLines: 5,
+                        style: TextStyle(color: latlongs > 100 ? Colors.orange : null),
                       ),
                       Text("${way.getBoundingBox()}", style: const TextStyle(fontSize: 10), maxLines: 5),
                     ],
@@ -213,6 +215,7 @@ class TileindexPage extends StatelessWidget {
 
     int countPoi = zoomtable.fold(0, (idx, combine) => idx + combine.poiCount);
     int countWay = zoomtable.fold(0, (idx, combine) => idx + combine.wayCount);
+    int position = readBuffer.getBufferPosition();
     res.add(
       Wrap(
         spacing: 10,
@@ -220,7 +223,9 @@ class TileindexPage extends StatelessWidget {
         children: [
           if (countPoi > 0) Text("Bytes per poi: ${(offsetToFirstWay / countPoi).toStringAsFixed(1)}", style: infoStyle),
           if (countWay > 0) Text("Bytes per way: ${((readBuffer.getBufferPosition() - offsetToFirstWay) / countWay).toStringAsFixed(1)}", style: infoStyle),
-          Text("read ${readBuffer.getBufferPosition()} bytes", style: infoStyle),
+          Text("read $position bytes", style: infoStyle),
+          if (position < readBuffer.getBufferSize())
+            Text("remaining ${readBuffer.getBufferSize() - position} bytes", style: const TextStyle(color: Colors.red)),
         ],
       ),
     );

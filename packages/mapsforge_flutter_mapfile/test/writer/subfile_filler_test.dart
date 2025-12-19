@@ -541,7 +541,7 @@ void main() async {
     assert(boundingBox == const BoundingBox(43.516536, 7.409028, 43.751917, 7.532992), "Bounding box is wrong: $boundingBox");
 
     // DisplayModel is needed for the tilesize
-    SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), 10);
+    SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), 10, boundingBox);
     Wayholder wayholder = Wayholder.fromWay(way);
     List<Wayholder> wayholders = subfileFiller.prepareWays(const ZoomlevelRange(0, 20), [wayholder]);
     wayholder = wayholders.first;

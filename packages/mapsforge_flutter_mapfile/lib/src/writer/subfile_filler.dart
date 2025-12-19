@@ -1,9 +1,8 @@
 import 'dart:isolate';
 
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/filter.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
-import 'package:mapsforge_flutter_mapfile/src/filter/way_size_filter.dart';
 
 /// An isolate-based wrapper for [SubfileFiller] to perform way preparation
 /// in the background.
@@ -13,11 +12,12 @@ class IsolateSubfileFiller {
     ZoomlevelRange subfileZoomlevelRange,
     ZoomlevelRange zoomlevelRange,
     List<Wayholder> wayholders,
+    BoundingBox boundingBox,
     int tilePixelSize, [
     double maxDeviation = 10,
   ]) async {
     return await Isolate.run(() {
-      SubfileFiller subfileFiller = SubfileFiller(subfileZoomlevelRange, maxDeviation);
+      SubfileFiller subfileFiller = SubfileFiller(subfileZoomlevelRange, maxDeviation, boundingBox);
       return subfileFiller.prepareWays(zoomlevelRange, wayholders);
     });
   }
@@ -37,16 +37,21 @@ class SubfileFiller {
 
   late WaySimplifyFilter simplifyFilter;
 
+  late WayCropper wayCropper;
+
   final ZoomlevelRange subfileZoomlevelRange;
+
+  final BoundingBox boundingBox;
 
   final double maxDeviation;
 
-  SubfileFiller(this.subfileZoomlevelRange, this.maxDeviation) {
+  SubfileFiller(this.subfileZoomlevelRange, this.maxDeviation, this.boundingBox) {
     sizeFilter = WaySizeFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation);
     simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation);
+    wayCropper = const WayCropper(maxDeviationPixel: 5);
   }
 
-    /// Prepares a list of ways by filtering and simplifying them.
+  /// Prepares a list of ways by filtering and simplifying them.
   List<Wayholder> prepareWays(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
     if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return [];
     if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return [];
@@ -57,12 +62,16 @@ class SubfileFiller {
     List<Wayholder> result = [];
     for (Wayholder wayholder in wayholders) {
       Wayholder? res = sizeFilter.filter(wayholder);
-      if (res != null) {
-        // size is big enough, now simplify the way
-        res = simplifyFilter.reduce(res);
-        // if the object was so tiny that we can simplify it away, do not store it
-        if (res.closedOutersRead.isNotEmpty || res.openOutersRead.isNotEmpty) result.add(res);
-      }
+      if (res == null) continue;
+      // size is big enough, now simplify the way
+      res = simplifyFilter.reduce(res);
+      // if the object was so tiny that we can simplify it away, do not store it
+      if (res.closedOutersRead.isEmpty && res.innerRead.isEmpty && res.openOutersRead.isEmpty) continue;
+      // crop everything outside of the mapfile's bounding box
+      res = wayCropper.cropOutsideWay(res, boundingBox);
+      if (res == null) continue;
+
+      result.add(res);
     }
     return result;
   }
