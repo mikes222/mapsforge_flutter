@@ -1,4 +1,3 @@
-import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:ecache/ecache.dart';
@@ -8,7 +7,6 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/filter/boundary_filter.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_collection.dart';
@@ -31,19 +29,12 @@ class IsolateTileWriter implements ITileWriter {
 
   IsolateTileWriter._();
 
-  static Future<IsolateTileWriter> create(
-    bool debugFile,
-    PoiWayCollections poiWayCollections,
-    ZoomlevelRange zoomlevelRange,
-    double maxDeviationPixel,
-    int tileCountX,
-  ) async {
+  static Future<IsolateTileWriter> create(bool debugFile, PoiWayCollections poiWayCollections, ZoomlevelRange zoomlevelRange, double maxDeviationPixel) async {
     _TileWriterInstanceRequest request = _TileWriterInstanceRequest(
       debugFile: debugFile,
       poiWayCollections: poiWayCollections,
       zoomlevelRange: zoomlevelRange,
       maxDeviationPixel: maxDeviationPixel,
-      tileCountX: tileCountX,
     );
     IsolateTileWriter instance = IsolateTileWriter._();
     await instance._isolateInstance.spawn(createInstance, request);
@@ -55,6 +46,7 @@ class IsolateTileWriter implements ITileWriter {
     _isolateInstance.dispose();
   }
 
+  @override
   Future<Uint8List> writeTile(Tile tile) async {
     return await _isolateInstance.compute(tile);
   }
@@ -66,7 +58,7 @@ class IsolateTileWriter implements ITileWriter {
   static Future<void> createInstance(IsolateInitInstanceParams object) async {
     await FlutterIsolateInstance.isolateInit(object, writeTileStatic);
     _TileWriterInstanceRequest request = object.initObject;
-    _tileWriter ??= TileWriter(request.debugFile, request.poiWayCollections, request.zoomlevelRange, request.maxDeviationPixel, request.tileCountX);
+    _tileWriter ??= TileWriter(request.debugFile, request.poiWayCollections, request.zoomlevelRange, request.maxDeviationPixel);
     // init displaymodel since it is used for PixelProjection in WaySimplifyFilter in WayCropper
     //DisplayModel();
   }
@@ -89,15 +81,7 @@ class _TileWriterInstanceRequest {
 
   final bool debugFile;
 
-  final int tileCountX;
-
-  _TileWriterInstanceRequest({
-    required this.tileCountX,
-    required this.debugFile,
-    required this.poiWayCollections,
-    required this.zoomlevelRange,
-    required this.maxDeviationPixel,
-  });
+  _TileWriterInstanceRequest({required this.debugFile, required this.poiWayCollections, required this.zoomlevelRange, required this.maxDeviationPixel});
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -133,51 +117,18 @@ class TileWriter implements ITileWriter {
 
   final SimpleCache<BoundingBox, PoiWayCollections> _cache = SimpleCache(capacity: 1);
 
-  BoundingBox _boundingBox = BoundingBox.fromLatLongs([const LatLong(0, 0)]);
-
   ZoomlevelRange zoomlevelRange;
-
-  final int tileCountX;
 
   Tile? first;
 
   int lastRemove = 0;
 
-  TileWriter(this.debugFile, this.poiWayCollections, this.zoomlevelRange, this.maxDeviationPixel, this.tileCountX);
+  TileWriter(this.debugFile, this.poiWayCollections, this.zoomlevelRange, this.maxDeviationPixel);
 
   @override
   void dispose() {
     _cache.clear();
     first = null;
-  }
-
-  PoiWayCollections _filterPrefiltered(PoiWayCollections poiWayCollection, Tile tile) {
-    PoiWayCollections poiWayInfos = PoiWayCollections();
-    poiWayCollection.poiholderCollections.forEach((zoomlevel, poiinfo) {
-      PoiholderCollection newPoiinfo = PoiholderCollection();
-      for (Poiholder poiholder in poiinfo.poiholders) {
-        if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
-          newPoiinfo.addPoiholder(poiholder);
-        }
-      }
-      poiWayInfos.poiholderCollections[zoomlevel] = newPoiinfo;
-    });
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: maxDeviationPixel);
-    BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
-    poiWayCollection.wayholderCollections.forEach((zoomlevel, wayinfo) {
-      WayholderCollection newWayinfo = WayholderCollection();
-      for (Wayholder wayholder in wayinfo.wayholders) {
-        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (tile.getBoundingBox().intersects(wayBoundingBox) ||
-            tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
-            wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
-          Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
-          if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
-        }
-      }
-      poiWayInfos.wayholderCollections[zoomlevel] = newWayinfo;
-    });
-    return poiWayInfos;
   }
 
   /// Removes ways and pois which are not needed anymore. We remember the first tile and since the tiles comes in order we can remove everything
@@ -217,19 +168,32 @@ class TileWriter implements ITileWriter {
   }
 
   Future<PoiWayCollections> _filterForTile(Tile tile) async {
-    BoundaryFilter boundaryFilter = BoundaryFilter();
-    // before we start prefiltering remove items which are not needed anymore. Do it in the save area of the cache to prevent concurrent execution.
-    _removeOld(tile);
-    if (_boundingBox.containsBoundingBox(tile.getBoundingBox())) {
-      PoiWayCollections poiWayInfos = await _cache.getOrProduce(_boundingBox, (v) async => boundaryFilter.filter(poiWayCollections, _boundingBox));
-      return _filterPrefiltered(poiWayInfos, tile);
-    } else {
-      Tile tile2 = Tile(Math.min(tile.tileX + tileCountX, Tile.getMaxTileNumber(tile.zoomLevel)), tile.tileY, tile.zoomLevel, tile.indoorLevel);
-      BoundingBox tileBoundingBox = tile.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
-      PoiWayCollections poiWayInfos = await _cache.getOrProduce(tileBoundingBox, (v) async => boundaryFilter.filter(poiWayCollections, tileBoundingBox));
-      _boundingBox = tileBoundingBox;
-      return _filterPrefiltered(poiWayInfos, tile);
-    }
+    PoiWayCollections poiWayInfos = PoiWayCollections();
+    poiWayCollections.poiholderCollections.forEach((zoomlevel, poiinfo) {
+      PoiholderCollection newPoiinfo = PoiholderCollection();
+      for (Poiholder poiholder in poiinfo.poiholders) {
+        if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
+          newPoiinfo.addPoiholder(poiholder);
+        }
+      }
+      poiWayInfos.poiholderCollections[zoomlevel] = newPoiinfo;
+    });
+    WayCropper wayCropper = WayCropper(maxDeviationPixel: maxDeviationPixel);
+    BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
+    poiWayCollections.wayholderCollections.forEach((zoomlevel, wayinfo) {
+      WayholderCollection newWayinfo = WayholderCollection();
+      for (Wayholder wayholder in wayinfo.wayholders) {
+        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
+        if (tile.getBoundingBox().intersects(wayBoundingBox) ||
+            tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
+            wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
+          Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
+          if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
+        }
+      }
+      poiWayInfos.wayholderCollections[zoomlevel] = newWayinfo;
+    });
+    return poiWayInfos;
   }
 
   /// Processes the block signature, if present.
@@ -259,6 +223,9 @@ class TileWriter implements ITileWriter {
   /// [Uint8List] representing the binary tile data.
   @override
   Future<Uint8List> writeTile(Tile tile) async {
+    assert(poiWayCollections.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
+    assert(poiWayCollections.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
+    //_removeOld(tile)
     first ??= tile;
     Writebuffer writebuffer = Writebuffer();
     PoiWayCollections poiWayInfos = await _filterForTile(tile);

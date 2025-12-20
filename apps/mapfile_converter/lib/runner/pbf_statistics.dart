@@ -53,13 +53,16 @@ class PbfStatistics {
   }
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
-    PbfReader pbfReader = PbfReader(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    readbufferSource.freeRessources();
+    IsolatePbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    List<Future> futures = [];
     while (true) {
       OsmData? blockData = await pbfReader.readBlobData();
       if (blockData == null) break;
-      await _analyze1Block(blockData);
+      futures.add(_analyze1Block(blockData));
     }
-    boundingBox = pbfReader.calculateBounds();
+    boundingBox = await pbfReader.calculateBounds();
+    await Future.wait(futures);
     analyze();
   }
 
@@ -160,6 +163,10 @@ class PbfStatistics {
     }
     if (tagkey.startsWith("official_name:")) {
       tagkey = "official_name:*";
+      tagvalue = "*";
+    }
+    if (tagkey.startsWith("addr:housenumber")) {
+      tagkey = "addr:housenumber";
       tagvalue = "*";
     }
     if (tagkey == "ref") {

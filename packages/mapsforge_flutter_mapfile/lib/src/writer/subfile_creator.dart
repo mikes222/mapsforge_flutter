@@ -6,6 +6,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
+import 'package:mapsforge_flutter_mapfile/src/filter/boundary_filter.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_collection.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tile_buffer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tile_writer.dart';
@@ -96,7 +97,11 @@ class SubfileCreator {
     wayinfo.addWayholders(wayholders);
   }
 
-  Future<void> _processAsync(String title, ProcessFunc process, [Future<void> Function(int processedTiles, int sumTiles)? lineProcess]) async {
+  Future<void> _processAsync(
+    String title,
+    ProcessFunc process, [
+    Future<void> Function(int currentTileY, int processedTiles, int sumTiles)? lineProcess,
+  ]) async {
     int started = DateTime.now().millisecondsSinceEpoch;
     int lastProcessedTiles = 0;
     for (int tileY = _minY; tileY <= _maxY; ++tileY) {
@@ -106,10 +111,10 @@ class SubfileCreator {
       }
       int processedTiles = (tileY - _minY + 1) * (_maxX - _minX + 1);
       if (lineProcess != null) {
-        await lineProcess(processedTiles, tileCount);
+        await lineProcess(tileY, processedTiles, tileCount);
       }
       int diff = DateTime.now().millisecondsSinceEpoch - started;
-      if (diff >= 1000 * 120) {
+      if (diff >= 1000 * 60) {
         // more than two minutes
         _log.info(
           "Processed ${(processedTiles / tileCount * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec)",
@@ -163,16 +168,67 @@ class SubfileCreator {
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
     _log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
-    List<ITileWriter> tileWriters = [];
+    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, maxDeviationPixel);
     // each instance must process this number of consecutive tiles
-    final int iterationCount = 20;
     // makes no sense to create multiple isolates for so few tiles
     if (tileCount < 50) instanceCount = 1;
     // too many tiles (hence too many ways). Danger of OutOfMemory Exception
     //if (tileCount > 50000 && instanceCount > 2) instanceCount = 2;
+
+    // the isolates now hove the infos, we can remove them from memory here
+    List<Future> futures = [];
+    int current = 0;
+    await _processAsync(
+      "preparing tiles",
+      (tile) async {
+        Future future = _future(tileWriters[current], tile);
+        futures.add(future);
+        ++current;
+        if (current >= instanceCount) {
+          current = 0;
+        }
+      },
+      (int currentTileY, int processedTiles, int sumTiles) async {
+        if (futures.length > instanceCount * 10 || processedTiles == sumTiles) {
+          //_log.info("Waiting for ${futures.length} futures. Currently processed: $processedTiles / $sumTiles");
+          await Future.wait(futures);
+          futures.clear();
+          tileBuffer.cacheToDisk(processedTiles, sumTiles);
+        }
+        if (tileCount > 100 && currentTileY < _maxY) {
+          tileWriters.clear();
+          tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, maxDeviationPixel);
+        }
+      },
+    );
+    _poiWayCollections.clear();
+    await tileBuffer.writeComplete();
+    tileWriters.clear();
+    session.complete();
+  }
+
+  Future<void> _future(ITileWriter tileWriter, Tile tile) async {
+    Uint8List writebufferTile = await tileWriter.writeTile(tile);
+    tileBuffer.set(tile, writebufferTile);
+  }
+
+  Future<List<ITileWriter>> createTileWriters(int currentTileY, int instanceCount, bool debugFile, double maxDeviationPixel) async {
+    List<ITileWriter> result = [];
+    PoiWayCollections prefiltered = _poiWayCollections;
+    if (tileCount > 100) {
+      Tile tile1 = Tile(_minX, currentTileY, baseZoomLevel, 0);
+      Tile tile2 = Tile(_maxX, currentTileY, baseZoomLevel, 0);
+      BoundingBox tileBoundingBox = tile1.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
+      BoundaryFilter filter = BoundaryFilter();
+      assert(_poiWayCollections.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
+      assert(_poiWayCollections.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
+      prefiltered = filter.filter(_poiWayCollections, tileBoundingBox);
+      assert(prefiltered.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
+      assert(prefiltered.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
+    }
     for (int i = 0; i < instanceCount; ++i) {
-      tileWriters.add(
-        await IsolateTileWriter.create(debugFile, _poiWayCollections, zoomlevelRange, maxDeviationPixel, Math.min(_maxX - _minX + 1, iterationCount)),
+      result.add(
+        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel),
         // TileWriter(
         //   debugFile,
         //   Map.from(_poiholderCollection),
@@ -183,40 +239,7 @@ class SubfileCreator {
         // ),
       );
     }
-    // the isolates now hove the infos, we can remove them from memory here
-    _poiWayCollections.clear();
-    List<Future> futures = [];
-    int current = 0;
-    int counter = 0;
-    await _processAsync(
-      "preparing tiles",
-      (tile) async {
-        Future future = _future(tileWriters[current], tile);
-        futures.add(future);
-        ++counter;
-        if (counter >= iterationCount) {
-          counter = 0;
-          ++current;
-          current = current % instanceCount;
-        }
-      },
-      (int processedTiles, int sumTiles) async {
-        if (futures.length > iterationCount * instanceCount * 10 || processedTiles == sumTiles) {
-          _log.info("Waiting for ${futures.length} futures. Currently processed: $processedTiles / $sumTiles");
-          await Future.wait(futures);
-          futures.clear();
-          tileBuffer.cacheToDisk(processedTiles, sumTiles);
-        }
-      },
-    );
-    await tileBuffer.writeComplete();
-    tileWriters.clear();
-    session.complete();
-  }
-
-  Future<void> _future(ITileWriter tileWriter, Tile tile) async {
-    Uint8List writebufferTile = await tileWriter.writeTile(tile);
-    tileBuffer.set(tile, writebufferTile);
+    return result;
   }
 
   /// Writes the tile index for this sub-file to a [Writebuffer].
