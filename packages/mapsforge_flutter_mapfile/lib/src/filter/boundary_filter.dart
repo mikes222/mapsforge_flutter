@@ -33,4 +33,28 @@ class BoundaryFilter {
     });
     return poiWayInfos;
   }
+
+  /// Removes ways and pois which are not needed anymore. We remember the first tile and since the tiles comes in order we can remove everything
+  /// which is contained in the boundary referenced by the first tile and the most current one. Do this just once in a while.
+  void remove(PoiWayCollections poiWayCollections, BoundingBox tileBoundingBox) {
+    int poicountBefore = poiWayCollections.poiholderCollections.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
+    poiWayCollections.poiholderCollections.forEach((zoomlevel, poiinfo) {
+      for (Poiholder poiholder in List.from(poiinfo.poiholders)) {
+        if (tileBoundingBox.containsLatLong(poiholder.poi.position)) {
+          poiinfo.poiholders.remove(poiholder);
+        }
+      }
+    });
+    int poicountAfter = poiWayCollections.poiholderCollections.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
+    int waycountBefore = poiWayCollections.wayholderCollections.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
+    poiWayCollections.wayholderCollections.forEach((zoomlevel, wayinfo) {
+      for (Wayholder wayholder in List.from(wayinfo.wayholders)) {
+        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
+        if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
+          wayinfo.wayholders.remove(wayholder);
+        }
+      }
+    });
+    int waycountAfter = poiWayCollections.wayholderCollections.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
+  }
 }

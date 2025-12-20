@@ -5,7 +5,6 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
@@ -129,42 +128,6 @@ class TileWriter implements ITileWriter {
   void dispose() {
     _cache.clear();
     first = null;
-  }
-
-  /// Removes ways and pois which are not needed anymore. We remember the first tile and since the tiles comes in order we can remove everything
-  /// which is contained in the boundary referenced by the first tile and the most current one. Do this just once in a while.
-  void _removeOld(Tile newTile) {
-    if (newTile == first) return;
-    if (lastRemove == 0) {
-      lastRemove = DateTime.now().millisecondsSinceEpoch;
-      return;
-    }
-    // cleanup every minute
-    if (DateTime.now().millisecondsSinceEpoch - lastRemove < 1000 * 60) return;
-    var session = PerformanceProfiler().startSession(category: "TileConstructor.removeOld");
-    BoundingBox boundingBox = newTile.getBoundingBox().extendBoundingBox(first!.getBoundingBox());
-    int poicountBefore = poiWayCollections.poiholderCollections.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
-    poiWayCollections.poiholderCollections.forEach((zoomlevel, poiinfo) {
-      for (Poiholder poiholder in List.from(poiinfo.poiholders)) {
-        if (boundingBox.containsLatLong(poiholder.poi.position)) {
-          poiinfo.poiholders.remove(poiholder);
-        }
-      }
-    });
-    int poicountAfter = poiWayCollections.poiholderCollections.values.fold(0, (idx, combine) => idx + combine.poiholders.length);
-    session.checkpoint("$poicountBefore -> $poicountAfter");
-    int waycountBefore = poiWayCollections.wayholderCollections.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
-    poiWayCollections.wayholderCollections.forEach((zoomlevel, wayinfo) {
-      for (Wayholder wayholder in List.from(wayinfo.wayholders)) {
-        BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (boundingBox.containsBoundingBox(wayBoundingBox)) {
-          wayinfo.wayholders.remove(wayholder);
-        }
-      }
-    });
-    int waycountAfter = poiWayCollections.wayholderCollections.values.fold(0, (idx, combine) => idx + combine.wayholders.length);
-    session.complete();
-    lastRemove = DateTime.now().millisecondsSinceEpoch;
   }
 
   Future<PoiWayCollections> _filterForTile(Tile tile) async {

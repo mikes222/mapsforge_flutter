@@ -48,9 +48,13 @@ class SubfileCreator {
 
   late final int _maxY;
 
+  late final int _tileCount;
+
   Writebuffer? _writebufferTileIndex;
 
   late final TileBuffer tileBuffer;
+
+  final BoundaryFilter filter = BoundaryFilter();
 
   SubfileCreator({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo}) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
@@ -58,6 +62,7 @@ class SubfileCreator {
     _maxX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.maxLongitude);
     _minY = projection.latitudeToTileY(mapHeaderInfo.boundingBox.maxLatitude);
     _maxY = projection.latitudeToTileY(mapHeaderInfo.boundingBox.minLatitude);
+    _tileCount = (_maxX - _minX + 1) * (_maxY - _minY + 1);
 
     assert(_minX >= 0, "minX $_minX < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
     assert(_minY >= 0, "minY $_minY < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
@@ -168,13 +173,13 @@ class SubfileCreator {
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
     _log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
-    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, maxDeviationPixel);
     // each instance must process this number of consecutive tiles
     // makes no sense to create multiple isolates for so few tiles
-    if (tileCount < 50) instanceCount = 1;
+    if (tileCount <= 100) instanceCount = 1;
     // too many tiles (hence too many ways). Danger of OutOfMemory Exception
     //if (tileCount > 50000 && instanceCount > 2) instanceCount = 2;
 
+    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, maxDeviationPixel);
     // the isolates now hove the infos, we can remove them from memory here
     List<Future> futures = [];
     int current = 0;
@@ -189,21 +194,31 @@ class SubfileCreator {
         }
       },
       (int currentTileY, int processedTiles, int sumTiles) async {
-        if (futures.length > instanceCount * 10 || processedTiles == sumTiles) {
-          //_log.info("Waiting for ${futures.length} futures. Currently processed: $processedTiles / $sumTiles");
-          await Future.wait(futures);
-          futures.clear();
-          tileBuffer.cacheToDisk(processedTiles, sumTiles);
-        }
-        if (tileCount > 100 && currentTileY < _maxY) {
+        // wait until all futures are completed and write the results to the tileBuffer
+        await Future.wait(futures);
+        futures.clear();
+        tileBuffer.cacheToDisk(processedTiles, sumTiles);
+        if (tileCount > 100) {
+          if (currentTileY > _minY && (currentTileY % 5 == 0)) {
+            // remove data from previous lines (y)
+            Tile tile1 = Tile(_minX, _minY, baseZoomLevel, 0);
+            Tile tile2 = Tile(_maxX, currentTileY - 1, baseZoomLevel, 0);
+            BoundingBox tileBoundingBox = tile1.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
+            filter.remove(_poiWayCollections, tileBoundingBox);
+          }
+          // destroy old writers and build writers with prefiltered data for the next line
+          for (var tileWriter in tileWriters) {
+            tileWriter.dispose();
+          }
           tileWriters.clear();
-          tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, maxDeviationPixel);
+          if (currentTileY < _maxY) {
+            tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, maxDeviationPixel);
+          }
         }
       },
     );
     _poiWayCollections.clear();
     await tileBuffer.writeComplete();
-    tileWriters.clear();
     session.complete();
   }
 
@@ -219,9 +234,6 @@ class SubfileCreator {
       Tile tile1 = Tile(_minX, currentTileY, baseZoomLevel, 0);
       Tile tile2 = Tile(_maxX, currentTileY, baseZoomLevel, 0);
       BoundingBox tileBoundingBox = tile1.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
-      BoundaryFilter filter = BoundaryFilter();
-      assert(_poiWayCollections.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
-      assert(_poiWayCollections.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
       prefiltered = filter.filter(_poiWayCollections, tileBoundingBox);
       assert(prefiltered.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
       assert(prefiltered.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
@@ -291,7 +303,7 @@ class SubfileCreator {
     });
   }
 
-  int get tileCount => (_maxX - _minX + 1) * (_maxY - _minY + 1);
+  int get tileCount => _tileCount;
 
   /// Logs statistics about the contents of this sub-file.
   void statistics() {
