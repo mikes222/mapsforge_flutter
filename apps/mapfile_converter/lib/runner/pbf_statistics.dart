@@ -1,18 +1,17 @@
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
-import 'package:mapfile_converter/osm/osm_nodeholder.dart';
-import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class PbfStatistics {
   final _log = Logger('PbfStatistics');
 
   final DefaultOsmPrimitiveConverter converter;
 
-  final Map<int, OsmNodeholder> _nodeHolders = {};
+  final Map<int, Poiholder> _nodeHolders = {};
 
   final Map<int, StatsWayholder> _wayHolders = {};
 
@@ -54,16 +53,22 @@ class PbfStatistics {
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
     readbufferSource.freeRessources();
-    IsolatePbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
+    List<int> positions = await pbfReader.getBlobPositions();
     List<Future> futures = [];
-    while (true) {
-      OsmData? blockData = await pbfReader.readBlobData();
+    for (int position in positions) {
+      OsmData? blockData = await pbfReader.readBlobData(position);
       if (blockData == null) break;
       futures.add(_analyze1Block(blockData));
+      if (futures.length > 10) {
+        await Future.wait(futures);
+        futures.clear();
+      }
     }
     boundingBox = await pbfReader.calculateBounds();
     await Future.wait(futures);
     analyze();
+    pbfReader.dispose();
   }
 
   void analyze() {
@@ -95,11 +100,11 @@ class PbfStatistics {
   Future<void> _analyze1Block(OsmData blockData) async {
     _log.info(blockData);
     for (var osmNode in blockData.nodes) {
-      OsmNodeholder nodeholder = converter.createNodeholder(osmNode);
+      Poiholder nodeholder = converter.createNodeholder(osmNode);
       //print("node: ${pointOfInterest}");
       assert(!_nodeHolders.containsKey(osmNode.id), "node already exists ${osmNode.id} -> ${_nodeHolders[osmNode.id]}");
       _nodeHolders[osmNode.id] = nodeholder;
-      for (var tag in nodeholder.tagCollection.tags) {
+      for (var tag in nodeholder.tagholderCollection.tagholders) {
         _increment(_nodeTags, tag, 1);
       }
     }
@@ -107,9 +112,9 @@ class PbfStatistics {
       List<ILatLong> latLongs = [];
       int nodesNotFound = 0;
       for (var ref in osmWay.refs) {
-        OsmNodeholder? nodeholder = _searchNodeholder(ref);
+        Poiholder? nodeholder = _searchNodeholder(ref);
         if (nodeholder != null) {
-          latLongs.add(nodeholder.latLong);
+          latLongs.add(nodeholder.position);
         } else {
           ++nodeNotFound;
           ++nodesNotFound;
@@ -118,7 +123,7 @@ class PbfStatistics {
       assert(!_wayHolders.containsKey(osmWay.id));
       _wayHolders[osmWay.id] = StatsWayholder(osmWay, osmWay.refs.length, nodesNotFound);
       for (var tag in osmWay.tags.entries) {
-        _increment(_wayTags, Tag(tag.key, tag.value), latLongs.length);
+        _increment(_wayTags, Tagholder(tag.key, tag.value), latLongs.length);
       }
       if (latLongs.length < 2) {
         ++wayTooLessNodes;
@@ -127,9 +132,9 @@ class PbfStatistics {
     for (var osmRelation in blockData.relations) {
       assert(!_relations.containsKey(osmRelation.id));
       _relations[osmRelation.id] = StatsRelation(osmRelation);
-      OsmWayholder? relationWay = converter.createMergedWayholder(osmRelation);
+      Wayholder? relationWay = converter.createMergedWayholder(osmRelation);
       if (relationWay != null) {
-        for (var tag in relationWay.tagCollection.tags) {
+        for (var tag in relationWay.tagholderCollection.tagholders) {
           _increment(_relationTags, tag, 1);
         }
       } else {
@@ -138,9 +143,9 @@ class PbfStatistics {
     }
   }
 
-  void _increment(Map<String, _Tagholder> tagholders, Tag tag, int items) {
-    String tagkey = tag.key!;
-    String tagvalue = tag.value!;
+  void _increment(Map<String, _Tagholder> tagholders, Tagholder tag, int items) {
+    String tagkey = tag.key;
+    String tagvalue = tag.value;
     if (tagkey == "name") {
       tagkey = "name";
       tagvalue = "*";
@@ -181,8 +186,8 @@ class PbfStatistics {
     tagholders[key]!.items += items;
   }
 
-  OsmNodeholder? _searchNodeholder(int id) {
-    OsmNodeholder? nodeHolder = _nodeHolders[id];
+  Poiholder? _searchNodeholder(int id) {
+    Poiholder? nodeHolder = _nodeHolders[id];
     if (nodeHolder != null) {
       return nodeHolder;
     }
@@ -230,22 +235,22 @@ class PbfStatistics {
       _log.info("Searching for key $key and value $value");
     }
 
-    List<OsmNodeholder> nodes = _nodeHolders.values
-        .where((test) => value != null ? test.tagCollection.hasTagValue(key, value) : test.tagCollection.hasTag(key))
+    List<Poiholder> nodes = _nodeHolders.values
+        .where((test) => value != null ? test.tagholderCollection.hasTagValue(key, value) : test.tagholderCollection.hasTag(key))
         .toList();
-    nodes.forEach((action) {
+    for (Poiholder action in nodes) {
       _log.info("Found node ${action.toStringWithoutNames()}");
-    });
+    }
     List<StatsWayholder> ways = _wayHolders.values.where((test) => value != null ? test.way.hasTagValue(key, value) : test.way.hasTag(key)).toList();
-    ways.forEach((action) {
+    for (var action in ways) {
       _log.info("Found way ${action.toStringWithoutNames()}");
-    });
+    }
     List<StatsRelation> relations = _relations.values
         .where((test) => value != null ? test.osmRelation.hasTagValue(key, value) : test.osmRelation.hasTag(key))
         .toList();
-    relations.forEach((action) {
+    for (var action in relations) {
       _log.info("Found relation ${action.toStringWithoutNames()}");
-    });
+    }
   }
 }
 

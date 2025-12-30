@@ -3,10 +3,10 @@ class Tag implements Comparable<Tag> {
   static final String KEY_VALUE_SEPARATOR = '=';
 
   /// The key of this tag.
-  final String? key;
+  final String key;
 
   /// The value of this tag.
-  final String? value;
+  final String value;
 
   /// Creates a new `Tag`.
   const Tag(this.key, this.value);
@@ -17,13 +17,13 @@ class Tag implements Comparable<Tag> {
   /// Compares this tag to another tag, first by key, then by value.
   @override
   int compareTo(Tag tag) {
-    int keyResult = key!.compareTo(tag.key!);
+    int keyResult = key.compareTo(tag.key);
 
     if (keyResult != 0) {
       return keyResult;
     }
 
-    return value!.compareTo(tag.value!);
+    return value.compareTo(tag.value);
   }
 
   @override
@@ -42,7 +42,7 @@ class Tag implements Comparable<Tag> {
   static String tagsWithoutNames(List<Tag> tags) {
     String result = '';
     for (var tag in tags) {
-      if (tag.key!.startsWith("name:") || tag.key!.startsWith("official_name") || tag.key!.startsWith("alt_name") || tag.key!.startsWith("int_name")) continue;
+      if (tag.key.startsWith("name:") || tag.key.startsWith("official_name") || tag.key.startsWith("alt_name") || tag.key.startsWith("int_name")) continue;
       if (result.isNotEmpty) result += ",";
       result += "${tag.key}=${tag.value}";
     }

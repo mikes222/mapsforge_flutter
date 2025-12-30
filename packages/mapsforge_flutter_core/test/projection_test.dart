@@ -58,6 +58,29 @@ void main() {
     expect(projection.meterPerPixel(const LatLong(-60, 0)), 4891.969810302735);
   });
 
+  test("PixelProjection.latitudeDiffPerPixel", () {
+    const double latitude = 45;
+    const double pixelDiffApprox = 10;
+    const double pixelDiffExact = 11;
+
+    PixelProjection p4 = PixelProjection(4);
+    double expected4Approx = (p4.pixelYToLatitude(p4.latitudeToPixelY(latitude) - pixelDiffApprox) - latitude).abs();
+    expect(p4.latitudeDiffPerPixel(latitude, pixelDiffApprox), closeTo(expected4Approx, 1e-2));
+
+    double expected4Exact = (p4.pixelYToLatitude(p4.latitudeToPixelY(latitude) - pixelDiffExact) - latitude).abs();
+    expect(p4.latitudeDiffPerPixel(latitude, pixelDiffExact), expected4Exact);
+
+    PixelProjection p10 = PixelProjection(10);
+    double expected10Approx = (p10.pixelYToLatitude(p10.latitudeToPixelY(latitude) - pixelDiffApprox) - latitude).abs();
+    expect(p10.latitudeDiffPerPixel(latitude, pixelDiffApprox), closeTo(expected10Approx, 1e-6));
+
+    double expected10Exact = (p10.pixelYToLatitude(p10.latitudeToPixelY(latitude) - pixelDiffExact) - latitude).abs();
+    expect(p10.latitudeDiffPerPixel(latitude, pixelDiffExact), expected10Exact);
+
+    // Different zoom levels should produce different degree-per-pixel values.
+    expect(p10.latitudeDiffPerPixel(latitude, pixelDiffApprox), isNot(p4.latitudeDiffPerPixel(latitude, pixelDiffApprox)));
+  });
+
   test("Bearingtest", () {
     expect(Projection.startBearing(const LatLong(35, 45), const LatLong(35, 135)), 60.16243352168624);
   });

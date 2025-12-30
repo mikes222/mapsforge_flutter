@@ -167,7 +167,7 @@ class Rendertheme {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if the argument is never accepted.
-  ZoomlevelRange? getZoomlevelRangeNode(TagCollection tags) {
+  ZoomlevelRange? getZoomlevelRangeNode(ITagCollection tags) {
     ZoomlevelRange? result;
     for (var rule in rulesList) {
       ZoomlevelRange? range = rule.getZoomlevelRangeNode(tags);
@@ -180,7 +180,7 @@ class Rendertheme {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, TagCollection tags) {
+  ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, ITagCollection tags) {
     bool isClosedWay = waypath.isClosedWay();
     ZoomlevelRange? result;
     for (var rule in rulesList) {

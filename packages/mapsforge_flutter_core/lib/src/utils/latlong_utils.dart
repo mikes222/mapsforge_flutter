@@ -103,11 +103,21 @@ class LatLongUtils {
     return isNear(latLongs.first, latLongs.last);
   }
 
-  /// Returns true if the other point is equal or near this point.
+  /// Returns true if the other point is equal or near this point. We use 0.00005 which is a distance of maximum 5.57m at the equator in each lat/lon direction
   static bool isNear(ILatLong me, ILatLong other) {
     if (me.latitude == other.latitude && me.longitude == other.longitude) return true;
-    if ((me.latitude - other.latitude).abs() <= 0.00005 && (me.longitude - other.longitude).abs() <= 0.00005) return true;
-    return false;
+    // now we have to rould the values so that we can compare them
+    double latitude1 = roundToMicrodegreees(me.latitude);
+    double latitude2 = roundToMicrodegreees(other.latitude);
+    if ((latitude1 - latitude2).abs() > 0.00005) return false;
+    double longitude1 = roundToMicrodegreees(me.longitude);
+    double longitude2 = roundToMicrodegreees(other.longitude);
+    if ((longitude1 - longitude2).abs() > 0.00005) return false;
+    return true;
+  }
+
+  static double roundToMicrodegreees(double value) {
+    return (value * CONVERSION_FACTOR).round() / CONVERSION_FACTOR;
   }
 
   /// Converts microdegrees to degrees.
@@ -349,7 +359,7 @@ class LatLongUtils {
   /// This method determines if a polygon would be visible within the given boundary
   /// by checking for various types of intersections:
   /// - Boundary completely inside polygon
-  /// - Polygon completely inside boundary  
+  /// - Polygon completely inside boundary
   /// - Partial intersection (polygon edges cross boundary edges)
   ///
   /// [boundary] The rectangular boundary to test against

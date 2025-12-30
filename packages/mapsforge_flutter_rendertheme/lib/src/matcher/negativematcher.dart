@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 
 import 'attributematcher.dart';
@@ -15,18 +14,16 @@ class NegativeMatcher implements AttributeMatcher {
   }
 
   @override
-  bool matchesTagList(TagCollection tags) {
+  bool matchesTagList(ITagCollection tags) {
     if (keyListDoesNotContainKeys(tags)) {
       return true;
     }
 
-    Tag? tag = tags.tags.firstWhereOrNull((element) => values.contains(element.value));
-    return tag != null;
+    return tags.valueMatchesTagList(values);
   }
 
-  bool keyListDoesNotContainKeys(TagCollection tags) {
-    Tag? tag = tags.tags.firstWhereOrNull((element) => keys.contains(element.key));
-    return tag == null;
+  bool keyListDoesNotContainKeys(ITagCollection tags) {
+    return !tags.matchesTagList(keys);
   }
 
   @override

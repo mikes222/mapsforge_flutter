@@ -3,7 +3,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/src/utils/list_helper.dart';
 
 /// A collection of `Tag` objects that provides a convenient way to access tags by key.
-class TagCollection {
+class TagCollection implements ITagCollection {
   final List<Tag> _tags;
 
   final int _hashCode;
@@ -57,12 +57,20 @@ class TagCollection {
   }
 
   /// Returns the value of the tag with the given [key], or null if it does not exist.
+  @override
   String? getTag(String key) {
     return _tags.firstWhereOrNull((test) => test.key == key)?.value;
   }
 
+  @override
   bool matchesTagList(List<String> keys) {
     Tag? tag = _tags.firstWhereOrNull((element) => keys.contains(element.key));
+    return tag != null;
+  }
+
+  @override
+  bool valueMatchesTagList(List<String> values) {
+    Tag? tag = _tags.firstWhereOrNull((element) => values.contains(element.value));
     return tag != null;
   }
 
@@ -88,7 +96,7 @@ class TagCollection {
   String printTagsWithoutNames() {
     String result = '';
     for (var tag in _tags) {
-      if (tag.key!.startsWith("name:") || tag.key!.startsWith("official_name") || tag.key!.startsWith("alt_name") || tag.key!.startsWith("int_name")) continue;
+      if (tag.key.startsWith("name:") || tag.key.startsWith("official_name") || tag.key.startsWith("alt_name") || tag.key.startsWith("int_name")) continue;
       if (result.isNotEmpty) result += ",";
       result += "${tag.key}=${tag.value}";
     }

@@ -214,7 +214,7 @@ class MapfileHelper {
     // check if the way has a name
     if (featureName) {
       try {
-        tags.add(Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
+        tags.add(Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())!));
       } catch (e) {
         _log.warning(e.toString());
         //tags.add(Tag(TAG_KEY_NAME, "unknown"));
@@ -463,7 +463,7 @@ class MapfileHelper {
 
     // check if the POI has a name
     if (featureName) {
-      tags.add(Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())));
+      tags.add(Tag(TAG_KEY_NAME, mapDataStore.extractLocalized(readBuffer.readUTF8EncodedString())!));
     }
 
     // check if the POI has a house number

@@ -20,7 +20,9 @@ message CacheWayholder {
 
   optional CacheLabel label = 11; // DELTA coded, optional
 
-  required  int32 layer = 13;
-  required  int32 tileBitmask = 14;
   required  bool mergedWithOtherWay = 15;
+
+  // Parallel arrays for tags
+  repeated string normalizedkeys = 16;
+  repeated string normalizedvals = 17;
 }

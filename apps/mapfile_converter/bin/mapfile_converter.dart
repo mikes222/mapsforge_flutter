@@ -1,20 +1,12 @@
-import 'dart:collection';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/mapfile/zoomlevel_writer.dart';
 import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
-import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
-import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
-import 'package:mapfile_converter/osm/osm_nodeholder.dart';
-import 'package:mapfile_converter/osm/osm_wayholder.dart';
-import 'package:mapfile_converter/osm/osm_writer.dart';
-import 'package:mapfile_converter/pbf/pbf_writer.dart';
+import 'package:mapfile_converter/runner/pbf_convert.dart';
 import 'package:mapfile_converter/runner/pbf_statistics.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 void main(List<String> arguments) async {
@@ -121,155 +113,35 @@ class ConvertCommand extends Command {
 
   @override
   Future<void> run() async {
-    /// Read and analyze render theme
     List<String> zoomlevelsString = _split(argResults!.option("zoomlevels")!);
     List<int> zoomlevels = zoomlevelsString.map((toElement) => int.parse(toElement)).toList();
 
-    DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
-    Rendertheme? renderTheme;
-
-    if (argResults!.option("rendertheme") != null) {
-      renderTheme = await RenderThemeBuilder.createFromFile(argResults!.option("rendertheme")!);
-      RuleAnalyzer ruleAnalyzer = RuleAnalyzer();
-      for (Rule rule in renderTheme.rulesList) {
-        ruleAnalyzer.apply(rule);
-      }
-
-      converter = CustomOsmPrimitiveConverter(
-        allowedNodeTags: ruleAnalyzer.nodeValueinfos(),
-        allowedWayTags: ruleAnalyzer.wayValueinfos(),
-        negativeNodeTags: ruleAnalyzer.nodeNegativeValueinfos(),
-        negativeWayTags: ruleAnalyzer.wayNegativeValueinfos(),
-        keys: ruleAnalyzer.keys,
-      );
-    }
-
     BoundingBox? finalBoundingBox = _parseBoundingBoxFromCli();
-
-    List<OsmNodeholder> osmNodes = [];
-    List<OsmWayholder> ways = [];
-
     List<String> sourcefiles = _split(argResults!.option("sourcefiles")!);
-    for (var sourcefile in sourcefiles) {
-      _log.info("Reading $sourcefile, please wait...");
-      if (sourcefile.toLowerCase().endsWith(".osm")) {
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readOsmFile(
-          sourcefile,
-          converter,
-          maxGapMeter: double.parse(argResults!.option("maxgap")!),
-          finalBoundingBox: finalBoundingBox,
-        );
+    double maxGapMeter = double.parse(argResults!.option("maxgap")!);
+    bool quiet = argResults!.flag("quiet");
+    bool debug = argResults!.flag("debug");
+    String destinationfile = argResults!.option("destinationfile")!;
+    String languagePreference = argResults!.option("languagesPreference")!;
+    double maxDeviation = double.parse(argResults!.option("maxdeviation")!);
+    int isolates = int.parse(argResults!.option("isolates")!);
 
-        finalBoundingBox ??= pbfAnalyzer.boundingBox!;
-        if (!argResults!.flag("quiet")) pbfAnalyzer.statistics();
-        osmNodes.addAll(pbfAnalyzer.nodes);
-        ways.addAll(await pbfAnalyzer.ways);
-        ways.addAll(pbfAnalyzer.waysMerged);
-        pbfAnalyzer.clear();
-      } else {
-        /// Read and analyze PBF file
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(
-          sourcefile,
-          converter,
-          maxGapMeter: double.parse(argResults!.option("maxgap")!),
-          finalBoundingBox: finalBoundingBox,
-        );
+    _log.info("Converting, please wait...");
 
-        /// Now start exporting the data to a mapfile
-        finalBoundingBox ??= pbfAnalyzer.boundingBox!;
-        if (!argResults!.flag("quiet")) pbfAnalyzer.statistics();
-        osmNodes.addAll(pbfAnalyzer.nodes);
-        ways.addAll(await pbfAnalyzer.ways);
-        ways.addAll(pbfAnalyzer.waysMerged);
-        pbfAnalyzer.clear();
-      }
-    }
-
-    /// Simplify the data: Remove small areas, simplify ways
-    RenderthemeFilter renderthemeFilter = RenderthemeFilter();
-    Map<ZoomlevelRange, List<OsmNodeholder>> poiZoomlevels = renderTheme != null
-        ? renderthemeFilter.filterNodes(osmNodes, renderTheme)
-        : renderthemeFilter.convertNodes(osmNodes);
-    osmNodes.clear();
-    Map<ZoomlevelRange, List<OsmWayholder>> wayZoomlevels = renderTheme != null
-        ? renderthemeFilter.filterWays(ways, renderTheme)
-        : renderthemeFilter.convertWays(ways);
-    ways.clear();
-
-    _log.info("Writing ${argResults!.option("destinationfile")!}");
-    if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".osm")) {
-      OsmWriter osmWriter = OsmWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
-      for (var pois2 in poiZoomlevels.values) {
-        for (OsmNodeholder poi in pois2) {
-          osmWriter.writeNode(poi.latLong, poi.tagCollection);
-        }
-      }
-      poiZoomlevels.clear();
-      for (var wayholders in wayZoomlevels.values) {
-        for (OsmWayholder wayholder in wayholders) {
-          osmWriter.writeWay(wayholder);
-        }
-      }
-      wayZoomlevels.clear();
-      await osmWriter.close();
-    } else if (argResults!.option("destinationfile")!.toLowerCase().endsWith(".pbf")) {
-      PbfWriter pbfWriter = PbfWriter(argResults!.option("destinationfile")!, finalBoundingBox!);
-      for (var pois2 in poiZoomlevels.values) {
-        for (OsmNodeholder poi in pois2) {
-          await pbfWriter.writeNode(poi.latLong, poi.tagCollection);
-        }
-      }
-      poiZoomlevels.clear();
-      for (var wayholders in wayZoomlevels.values) {
-        for (OsmWayholder wayholder in wayholders) {
-          await pbfWriter.writeWay(wayholder);
-        }
-      }
-      wayZoomlevels.clear();
-      await pbfWriter.close();
-    } else {
-      poiZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
-      wayZoomlevels.removeWhere((key, value) => key.zoomlevelMin > zoomlevels.last || key.zoomlevelMax < zoomlevels.first);
-      if (!argResults!.flag("quiet")) {
-        SplayTreeMap treeMap = SplayTreeMap.from(poiZoomlevels, (a, b) => a.zoomlevelMin.compareTo(b.zoomlevelMin));
-        treeMap.forEach((zoomlevelRange, nodelist) {
-          _log.info("Nodes: ZoomlevelRange: $zoomlevelRange, ${nodelist.length}");
-        });
-        treeMap = SplayTreeMap.from(wayZoomlevels, (a, b) => a.zoomlevelMin.compareTo(b.zoomlevelMin));
-        treeMap.forEach((zoomlevelRange, waylist) {
-          _log.info("Ways: ZoomlevelRange: $zoomlevelRange, ${waylist.length}");
-        });
-      }
-
-      MapHeaderInfo mapHeaderInfo = MapHeaderInfo(
-        boundingBox: finalBoundingBox!,
-        debugFile: argResults!.flag("debug"),
-        zoomlevelRange: ZoomlevelRange(zoomlevels.first, zoomlevels.last),
-        languagesPreference: argResults!.option("languagesPreference")! == "" ? null : argResults!.option("languagesPreference")!,
-      );
-      MapfileWriter mapfileWriter = MapfileWriter(filename: argResults!.option("destinationfile")!, mapHeaderInfo: mapHeaderInfo);
-
-      /// Create the zoomlevels in the mapfile
-      int? previousZoomlevel;
-      ZoomlevelWriter zoomlevelWriter = ZoomlevelWriter(double.parse(argResults!.option("maxdeviation")!));
-      for (int zoomlevel in zoomlevels) {
-        if (previousZoomlevel != null) {
-          SubfileCreator subfileCreator = await zoomlevelWriter.writeZoomlevel(
-            mapfileWriter,
-            previousZoomlevel,
-            zoomlevel == zoomlevels.last ? zoomlevel : zoomlevel - 1,
-            wayZoomlevels,
-            poiZoomlevels,
-          );
-          if (!argResults!.flag("quiet")) subfileCreator.statistics();
-        }
-        previousZoomlevel = zoomlevel;
-      }
-
-      /// Write everything to the file and close the file
-      await mapfileWriter.write(double.parse(argResults!.option("maxdeviation")!), int.parse(argResults!.option("isolates")!));
-      await mapfileWriter.close();
-    }
+    PbfConvert convert = PbfConvert();
+    await convert.convert(
+      zoomlevels: zoomlevels,
+      renderthemeFile: argResults!.option("rendertheme"),
+      finalBoundingBox: finalBoundingBox,
+      sourcefiles: sourcefiles,
+      maxgap: maxGapMeter,
+      quiet: quiet,
+      debug: debug,
+      destinationfile: destinationfile,
+      languagePreference: languagePreference,
+      maxDeviation: maxDeviation,
+      isolates: isolates,
+    );
     _log.info("Process completed");
     exit(0);
   }

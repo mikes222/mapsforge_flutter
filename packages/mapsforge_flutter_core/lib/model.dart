@@ -13,6 +13,7 @@ library;
 export 'src/model/boundingbox.dart';
 export 'src/model/datastore.dart';
 export 'src/model/datastore_bundle.dart';
+export 'src/model/i_tag_collection.dart';
 export 'src/model/ilatlong.dart';
 export 'src/model/latlong.dart';
 export 'src/model/mappoint.dart';

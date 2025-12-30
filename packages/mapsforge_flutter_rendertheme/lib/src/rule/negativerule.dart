@@ -70,7 +70,7 @@ class NegativeRule extends Rule {
   }
 
   @override
-  bool matchesTags(TagCollection tags) {
+  bool matchesTags(ITagCollection tags) {
     return attributeMatcher.matchesTagList(tags);
   }
 

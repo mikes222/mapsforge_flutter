@@ -1,55 +1,39 @@
-import 'package:collection/collection.dart';
-import 'package:mapfile_converter/osm/osm_nodeholder.dart';
-import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 import '../osm/osm_data.dart';
 
 class DefaultOsmPrimitiveConverter {
-  OsmNodeholder createNodeholder(OsmNode osmNode) {
-    TagCollection tagCollection = TagCollection.from(osmNode.tags);
-    int layer = findLayer(tagCollection.tags);
-    modifyNodeTags(osmNode, tagCollection.tags);
+  DefaultOsmPrimitiveConverter();
+
+  Poiholder createNodeholder(OsmNode osmNode) {
+    modifyNodeTags(osmNode.tags);
+    TagholderCollection tagholderCollection = TagholderCollection.fromPoi(osmNode.tags);
     // even with no tags the node may belong to a relation, so keep it
     // convert and round the latlongs to 6 digits after the decimal point. This
     // helps determining if ways are closed.
     LatLong latLong = LatLong(osmNode.latitude, osmNode.longitude);
-    return OsmNodeholder(latLong: latLong, layer: layer, tagCollection: tagCollection);
+    return Poiholder(position: latLong, tagholderCollection: tagholderCollection);
   }
 
-  OsmWayholder createWayholder(OsmWay osmWay) {
-    TagCollection tagCollection = TagCollection.from(osmWay.tags);
-    int layer = findLayer(tagCollection.tags);
-    modifyWayTags(osmWay, tagCollection.tags);
-    return OsmWayholder(layer: layer, tagCollection: tagCollection);
+  Wayholder createWayholder(OsmWay osmWay) {
+    modifyWayTags(osmWay.tags);
+    TagholderCollection tagholderCollection = TagholderCollection.fromWay(osmWay.tags);
+    return Wayholder(tagholderCollection: tagholderCollection);
   }
 
-  OsmWayholder? createMergedWayholder(OsmRelation osmRelation) {
-    TagCollection tagCollection = TagCollection.from(osmRelation.tags);
-    int layer = findLayer(tagCollection.tags);
-    modifyRelationTags(osmRelation, tagCollection.tags);
+  Wayholder? createMergedWayholder(OsmRelation osmRelation) {
+    modifyRelationTags(osmRelation.tags);
+    TagholderCollection tagholderCollection = TagholderCollection.fromWay(osmRelation.tags);
     // topmost structure, if we have no tags, we cannot render anything
-    if (tagCollection.isEmpty) return null;
-    OsmWayholder wayholder = OsmWayholder(layer: layer, tagCollection: tagCollection);
+    if (tagholderCollection.isEmpty) return null;
+    Wayholder wayholder = Wayholder(tagholderCollection: tagholderCollection);
     return wayholder;
   }
 
-  void modifyNodeTags(OsmNode node, List<Tag> tags) {}
+  void modifyNodeTags(Map<String, String> tags) {}
 
-  void modifyWayTags(OsmWay way, List<Tag> tags) {}
+  void modifyWayTags(Map<String, String> tags) {}
 
-  void modifyRelationTags(OsmRelation relation, List<Tag> tags) {}
-
-  int findLayer(List<Tag> tags) {
-    Tag? layerTag = tags.firstWhereOrNull((test) => test.key == "layer" && test.value != null);
-    int layer = 0;
-    if (layerTag != null) {
-      layer = int.tryParse(layerTag.value!) ?? 0;
-      tags.remove(layerTag);
-    }
-    // layers from -5 to 10 are allowed, will be stored as 0..15 in the file (4 bit)
-    if (layer < -5) layer = -5;
-    if (layer > 10) layer = 10;
-    return layer;
-  }
+  void modifyRelationTags(Map<String, String> tags) {}
 }

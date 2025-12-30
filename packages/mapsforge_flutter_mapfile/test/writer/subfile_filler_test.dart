@@ -542,8 +542,8 @@ void main() async {
 
     // DisplayModel is needed for the tilesize
     SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), 10, boundingBox);
-    Wayholder wayholder = Wayholder.fromWay(way);
-    List<Wayholder> wayholders = subfileFiller.prepareWays(const ZoomlevelRange(0, 20), [wayholder]);
+    Wayholder wayholder = Wayholder(tagholderCollection: TagholderCollection.empty());
+    List<Wayholder> wayholders = await subfileFiller.prepareWays(WayholderCollection()..addWayholder(wayholder));
     wayholder = wayholders.first;
     //LatLongUtils.printLatLongs(way);
     assert(wayholder.closedOutersRead[0].length == 28, "wrong size: It should reduce from 520 to 28, but have ${wayholder.closedOutersRead[0].length}");

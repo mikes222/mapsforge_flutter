@@ -73,7 +73,7 @@ class PositiveRule extends Rule {
   }
 
   @override
-  bool matchesTags(TagCollection tags) {
+  bool matchesTags(ITagCollection tags) {
     return keyMatcher.matchesTagList(tags) && valueMatcher.matchesTagList(tags);
   }
 

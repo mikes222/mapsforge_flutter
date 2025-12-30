@@ -1,15 +1,27 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:mapsforge_flutter_core/buffer.dart';
-import 'package:mapsforge_flutter_core/dart_isolate.dart';
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
+import 'package:mapsforge_flutter_core/dart_isolate.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+
+abstract class IPbfReader {
+  void dispose();
+
+  Future<OsmData?> readBlobData(int position);
+
+  Future<BoundingBox?> calculateBounds();
+
+  Future<List<int>> getBlobPositions();
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 @pragma("vm:entry-point")
-class IsolatePbfReader {
+class IsolatePbfReader implements IPbfReader {
   final FlutterIsolateInstance _isolateInstance = FlutterIsolateInstance();
 
   IsolatePbfReader._();
@@ -21,16 +33,24 @@ class IsolatePbfReader {
     return instance;
   }
 
+  @override
   void dispose() {
     _isolateInstance.dispose();
   }
 
-  Future<OsmData?> readBlobData() async {
-    return await _isolateInstance.compute(0);
+  @override
+  Future<OsmData?> readBlobData(int position) async {
+    return await _isolateInstance.compute(position);
   }
 
+  @override
   Future<BoundingBox?> calculateBounds() async {
-    return await _isolateInstance.compute(1);
+    return await _isolateInstance.compute(-2);
+  }
+
+  @override
+  Future<List<int>> getBlobPositions() async {
+    return await _isolateInstance.compute(-3);
   }
 
   /// This is the instance variable. Note that it is a different instance in each isolate.
@@ -44,10 +64,9 @@ class IsolatePbfReader {
 
   @pragma('vm:entry-point')
   static Future<Object?> readBlobDataStatic(int param) async {
-    if (param == 0) {
-      return _pbfReader!.readBlobData();
-    }
-    return _pbfReader!.calculateBounds();
+    if (param == -2) return _pbfReader!.calculateBounds();
+    if (param == -3) return _pbfReader!.getBlobPositions();
+    return _pbfReader!.readBlobData(param);
   }
 }
 
@@ -64,7 +83,7 @@ class PbfReaderInstanceRequest {
 //////////////////////////////////////////////////////////////////////////////
 
 /// Reads data from a PBF file.
-class PbfReader {
+class PbfReader implements IPbfReader {
   HeaderBlock? headerBlock;
 
   final ReadbufferSource readbufferSource;
@@ -72,6 +91,12 @@ class PbfReader {
   final int sourceLength;
 
   PbfReader({required this.readbufferSource, required this.sourceLength});
+
+  @override
+  void dispose() {
+    readbufferSource.dispose();
+    headerBlock = null;
+  }
 
   Future<BlobResult> _readBlob() async {
     // length of the blob header
@@ -92,9 +117,23 @@ class PbfReader {
     return BlobResult(blobHeader, blobOutput);
   }
 
-  Future<OsmData?> readBlobData() async {
+  @override
+  Future<List<int>> getBlobPositions() async {
+    List<int> result = [];
+    // open first to get the correct position of the first blob
     await _open();
-    if (readbufferSource.getPosition() >= sourceLength) return null;
+    while (readbufferSource.getPosition() < sourceLength) {
+      result.add(readbufferSource.getPosition());
+      await skipBlob();
+    }
+    await readbufferSource.setPosition(0);
+    return result;
+  }
+
+  @override
+  Future<OsmData> readBlobData(int position) async {
+    await _open();
+    await readbufferSource.setPosition(position);
     // length of the blob header
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
@@ -106,10 +145,12 @@ class PbfReader {
     // print("blobHeader.unknownFields: ${blobHeader.unknownFields}");
 
     final blobLength = blobHeader.datasize;
+    blobHeader.clear();
     readbuffer = await readbufferSource.readFromFile(blobLength);
     final blob = Blob.fromBuffer(readbuffer.getBuffer(0, blobLength));
     final blobOutput = ZLibDecoder().convert(blob.zlibData);
     assert(blobOutput.length == blob.rawSize);
+    blob.clear();
     return _readBlock(blobOutput);
   }
 
@@ -122,6 +163,7 @@ class PbfReader {
     final blobHeader = BlobHeader.fromBuffer(readbuffer.getBuffer(0, blobHeaderLength));
 
     final blobLength = blobHeader.datasize;
+    blobHeader.clear();
     await readbufferSource.setPosition(readbufferSource.getPosition() + blobLength);
   }
 
@@ -145,7 +187,8 @@ class PbfReader {
     //     "headerBlock.osmosisReplicationBaseUrl: ${headerBlock!.osmosisReplicationBaseUrl}");
   }
 
-  BoundingBox? calculateBounds() {
+  @override
+  Future<BoundingBox?> calculateBounds() async {
     if (headerBlock == null) return null;
     final bounds = (headerBlock!.bbox.bottom != 0 || headerBlock!.bbox.left != 0 || headerBlock!.bbox.top != 0 || headerBlock!.bbox.right != 0)
         ? BoundingBox(
@@ -165,6 +208,7 @@ class PbfReader {
     final lonOffset = block.lonOffset.toInt();
     final granularity = block.granularity;
     final primitiveGroups = block.primitivegroup;
+    block.clear();
     final nodes = <OsmNode>[];
     final ways = <OsmWay>[];
     final relations = <OsmRelation>[];
@@ -225,7 +269,7 @@ class PbfReader {
         var id = 0;
         var latDelta = 0;
         var lonDelta = 0;
-        for (var i = 0; i < dense.id.length; i++) {
+        for (var i = 0; i < dense.id.length; ++i) {
           id += dense.id[i].toInt();
           latDelta += dense.lat[i].toInt();
           lonDelta += dense.lon[i].toInt();
@@ -248,11 +292,12 @@ class PbfReader {
   Map<String, String> _parseParallelTags(List<int> keys, List<int> values, List<String> stringTable) {
     final tags = <String, String>{};
     assert(keys.length == values.length);
-    for (var i = 0; i < keys.length; i++) {
-      if (keys[i] == 0) {
+    for (var i = 0; i < keys.length; ++i) {
+      int key = keys[i];
+      if (key == 0) {
         continue;
       }
-      tags[stringTable[keys[i]]] = stringTable[values[i]];
+      tags[stringTable[key]] = stringTable[values[i]];
     }
     return tags;
   }

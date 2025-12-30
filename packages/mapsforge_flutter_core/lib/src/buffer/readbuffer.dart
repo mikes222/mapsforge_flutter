@@ -135,12 +135,12 @@ class Readbuffer {
     for (int tagId in tagIds) {
       Tag tag = tagsArray[tagId];
       // Decode variable values of tags
-      if (tag.value!.length == 2 && tag.value!.startsWith('%')) {
+      if (tag.value.length == 2 && tag.value.startsWith('%')) {
         String? value = tag.value;
         if (value == '%b') {
           value = readByte().toString();
         } else if (value == '%i') {
-          if (tag.key!.contains(":colour")) {
+          if (tag.key.contains(":colour")) {
             value = "#${readInt().toRadixString(16)}";
           } else {
             value = readInt().toString();

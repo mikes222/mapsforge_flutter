@@ -27,7 +27,7 @@ class Waypath {
   }
 
   /// Creates a new, empty `Waypath`.
-  Waypath.empty() : _path = [], _closed = false;
+  Waypath.empty() : _path = [], _closed = null;
 
   /// The number of points in the path.
   int get length => _path.length;

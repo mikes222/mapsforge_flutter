@@ -121,7 +121,12 @@ class PixelProjection extends MercatorProjection {
   }
 
   double latitudeDiffPerPixel(double latitude, double pixelDiff) {
-    String key = "${latitude.round()}_$pixelDiff";
+    if (pixelDiff <= 10) {
+      // fast algorithm for small pixel differences
+      const double pi180 = pi / 180;
+      return (pixelDiff * (360 / _mapSize) * cos(latitude * pi180)).abs();
+    }
+    String key = "${_mapSize}_${latitude.round()}_$pixelDiff";
     double? result = _pixelDiffCache[key];
     if (result == null) {
       double pixelY = latitudeToPixelY(latitude);

@@ -1,9 +1,7 @@
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 class WayholderWriter {
   /// A tile on zoom level <i>z</i> has exactly 16 sub tiles on zoom level <i>z+2</i>. For each of these 16 sub tiles
@@ -38,11 +36,19 @@ class WayholderWriter {
   }
 
   /// can be done when the tags are sorted
-  void writeWaydata(Writebuffer writebuffer, Wayholder wayholder, bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
+  void writeWaydata(
+    Writebuffer writebuffer,
+    Wayholder wayholder,
+    bool debugFile,
+    Tile tile,
+    double tileLatitude,
+    double tileLongitude,
+    List<String> languagesPreferences,
+  ) {
     int tileBitmask = _computeBitmask(wayholder, tile);
     _writeWaySignature(writebuffer, debugFile);
     Writebuffer writebuffer2 = Writebuffer();
-    _writeWayPropertyAndWayData(writebuffer2, wayholder, tileLatitude, tileLongitude, tileBitmask);
+    _writeWayPropertyAndWayData(writebuffer2, wayholder, tileLatitude, tileLongitude, tileBitmask, languagesPreferences);
     // get the size of the way (VBE-U)
     writebuffer.appendUnsignedInt(writebuffer2.length);
     writebuffer.appendWritebuffer(writebuffer2);
@@ -54,35 +60,48 @@ class WayholderWriter {
     }
   }
 
-  void _writeWayPropertyAndWayData(Writebuffer writebuffer, Wayholder wayholder, double tileLatitude, double tileLongitude, int tileBitmask) {
-    TagholderMixin tagholder = wayholder.getTagholder();
+  void _writeWayPropertyAndWayData(
+    Writebuffer writebuffer,
+    Wayholder wayholder,
+    double tileLatitude,
+    double tileLongitude,
+    int tileBitmask,
+    List<String> languagesPreferences,
+  ) {
+    String? featureHouseNumber = wayholder.tagholderCollection.extractHousenumber();
+    //int? featureElevation = wayholder.tagholderCollection.extractElevation();
+    String? featureRef = wayholder.tagholderCollection.extractRef();
+    String? featureName = wayholder.tagholderCollection.extractName(languagesPreferences);
+    int layer = wayholder.tagholderCollection.extractLayer();
 
-    assert(tagholder.tagholders.length < 16);
-    assert(wayholder.layer >= -5, "layer=${wayholder.layer}");
-    assert(wayholder.layer <= 10);
+    assert(layer >= -5, "layer=${layer}");
+    assert(layer <= 10);
 
     /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2
     // for each sub tile (row-wise, left to right):
     // 1 bit that represents a flag whether the way is relevant for the sub tile
     // Special case: coastline ways must always have all 16 bits set.
     writebuffer.appendUInt2(tileBitmask);
+    Writebuffer writebufferTags = Writebuffer();
+    int count = wayholder.tagholderCollection.writeWayTags(writebufferTags);
 
     int specialByte = 0;
     // bit 1-4 represent the layer
-    specialByte |= ((wayholder.layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
+    specialByte |= ((layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
     // bit 5-8 represent the number of tag IDs
-    specialByte |= (tagholder.tagholders.length & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
+    specialByte |= (count & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
     writebuffer.appendInt1(specialByte);
-    tagholder.writeTags(writebuffer);
+    writebuffer.appendWritebuffer(writebufferTags);
+    writebufferTags.clear();
 
     Waypath master = wayholder.extractMaster();
 
     // get the feature bitmask (1 byte)
     int featureByte = 0;
     // bit 1-3 enable optional features
-    if (tagholder.featureName != null) featureByte |= MapfileHelper.POI_FEATURE_NAME;
-    if (tagholder.featureHouseNumber != null) featureByte |= MapfileHelper.POI_FEATURE_HOUSE_NUMBER;
-    if (tagholder.featureRef != null) featureByte |= MapfileHelper.WAY_FEATURE_REF;
+    if (featureName != null) featureByte |= MapfileHelper.WAY_FEATURE_NAME;
+    if (featureHouseNumber != null) featureByte |= MapfileHelper.WAY_FEATURE_HOUSE_NUMBER;
+    if (featureRef != null) featureByte |= MapfileHelper.WAY_FEATURE_REF;
     bool featureLabelPosition = wayholder.labelPosition != null;
     if (featureLabelPosition) featureByte |= MapfileHelper.WAY_FEATURE_LABEL_POSITION;
     // number of way data blocks or false if we have only 1
@@ -99,23 +118,23 @@ class WayholderWriter {
     }
     Writebuffer singleWritebuffer = Writebuffer();
     if (expectDouble == null || !expectDouble) {
-      _writeSingleDeltaEncoding(wayholder, singleWritebuffer, [master, ...wayholder.innerRead], tileLatitude, tileLongitude);
+      _writeSingleDeltaEncoding(singleWritebuffer, [master, ...wayholder.innerRead], tileLatitude, tileLongitude);
       for (var action in wayholder.closedOutersRead) {
-        _writeSingleDeltaEncoding(wayholder, singleWritebuffer, [action], tileLatitude, tileLongitude);
+        _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude);
       }
       for (var action in wayholder.openOutersRead) {
-        _writeSingleDeltaEncoding(wayholder, singleWritebuffer, [action], tileLatitude, tileLongitude);
+        _writeSingleDeltaEncoding(singleWritebuffer, [action], tileLatitude, tileLongitude);
       }
     }
 
     Writebuffer doubleWritebuffer = Writebuffer();
     if (expectDouble == null || expectDouble) {
-      _writeDoubleDeltaEncoding(wayholder, doubleWritebuffer, [master, ...wayholder.innerRead], tileLatitude, tileLongitude);
+      _writeDoubleDeltaEncoding(doubleWritebuffer, [master, ...wayholder.innerRead], tileLatitude, tileLongitude);
       for (var action in wayholder.closedOutersRead) {
-        _writeDoubleDeltaEncoding(wayholder, doubleWritebuffer, [action], tileLatitude, tileLongitude);
+        _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude);
       }
       for (var action in wayholder.openOutersRead) {
-        _writeDoubleDeltaEncoding(wayholder, doubleWritebuffer, [action], tileLatitude, tileLongitude);
+        _writeDoubleDeltaEncoding(doubleWritebuffer, [action], tileLatitude, tileLongitude);
       }
     }
 
@@ -128,14 +147,14 @@ class WayholderWriter {
 
     writebuffer.appendInt1(featureByte);
 
-    if (tagholder.featureName != null) {
-      writebuffer.appendString(tagholder.featureName!);
+    if (featureName != null) {
+      writebuffer.appendString(featureName);
     }
-    if (tagholder.featureHouseNumber != null) {
-      writebuffer.appendString(tagholder.featureHouseNumber!);
+    if (featureHouseNumber != null) {
+      writebuffer.appendString(featureHouseNumber);
     }
-    if (tagholder.featureRef != null) {
-      writebuffer.appendString(tagholder.featureRef!);
+    if (featureRef != null) {
+      writebuffer.appendString(featureRef);
     }
 
     if (featureLabelPosition) {
@@ -156,14 +175,14 @@ class WayholderWriter {
   }
 
   /// Way data block
-  void _writeSingleDeltaEncoding(Wayholder wayholder, Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
+  void _writeSingleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
     if (waypaths.isEmpty) return;
-    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${wayholder.toStringWithoutNames()}");
+    assert(waypaths.length <= 32767, "${waypaths.length} too much");
     writebuffer.appendUnsignedInt(waypaths.length);
     for (Waypath waypath in waypaths) {
-      assert(waypath.length >= 2, "${waypath.length} too little for ${wayholder.toStringWithoutNames()}");
-      assert(waypath.length <= 32767, "${waypath.length} too much for ${wayholder.toStringWithoutNames()}");
+      assert(waypath.length >= 2, "${waypath.length} too little");
+      assert(waypath.length <= 32767, "${waypath.length} too much");
       // amount of way nodes of this way (see docu)
       writebuffer.appendUnsignedInt(waypath.length);
       bool first = true;
@@ -191,14 +210,14 @@ class WayholderWriter {
   }
 
   /// Way data block
-  void _writeDoubleDeltaEncoding(Wayholder wayholder, Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
+  void _writeDoubleDeltaEncoding(Writebuffer writebuffer, List<Waypath> waypaths, double tileLatitude, double tileLongitude) {
     // amount of following way coordinate blocks (see docu)
     if (waypaths.isEmpty) return;
-    assert(waypaths.length <= 32767, "${waypaths.length} too much for ${wayholder.toStringWithoutNames()}");
+    assert(waypaths.length <= 32767, "${waypaths.length} too much");
     writebuffer.appendUnsignedInt(waypaths.length);
     for (Waypath waypath in waypaths) {
-      assert(waypath.length >= 2, "${waypath.length} too little for ${wayholder.toStringWithoutNames()}");
-      assert(waypath.length <= 32767, "${waypath.length} too much for ${wayholder.toStringWithoutNames()}");
+      assert(waypath.length >= 2, "${waypath.length} too little");
+      assert(waypath.length <= 32767, "${waypath.length} too much");
       // amount of way nodes of this way (see docu)
       writebuffer.appendUnsignedInt(waypath.length);
       bool first = true;

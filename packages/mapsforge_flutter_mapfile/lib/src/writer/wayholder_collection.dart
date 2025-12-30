@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_writer.dart';
 
 /// A helper class to hold all ways for a specific zoom level during the
@@ -10,9 +7,7 @@ import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_writer.dart';
 class WayholderCollection {
   Set<Wayholder> wayholders = {};
 
-  Uint8List? content;
-
-  int wayCount = 0;
+  int count = 0;
 
   WayholderCollection();
 
@@ -24,44 +19,37 @@ class WayholderCollection {
     return result;
   }
 
+  bool get isEmpty => wayholders.isEmpty;
+
+  int get length => wayholders.length;
+
   void addWayholder(Wayholder wayholder) {
-    assert(content == null);
     assert(wayholder.openOutersRead.isNotEmpty || wayholder.closedOutersRead.isNotEmpty);
     wayholders.add(wayholder);
-    ++wayCount;
+    ++count;
     //count += wayholder.openOuters.length + wayholder.closedOuters.length;
   }
 
-  void addWayholders(List<Wayholder> wayholders) {
+  void addWayholders(Iterable<Wayholder> wayholders) {
     for (var test in wayholders) {
       assert(test.openOutersRead.isNotEmpty || test.closedOutersRead.isNotEmpty);
     }
-    assert(content == null);
     this.wayholders.addAll(wayholders);
-    wayCount += wayholders.length;
+    count += wayholders.length;
     //count += wayholders.fold(0, (combine, test) => combine + test.openOuters.length + test.closedOuters.length);
   }
 
-  // Wayholder? searchWayholder(Way way) {
-  //   assert(content == null);
-  //   return wayholders.firstWhereOrNull((test) => test.way == way);
-  // }
-
-  Uint8List writeWaydata(bool debugFile, Tile tile, double tileLatitude, double tileLongitude) {
-    if (content != null) return content!;
-    Writebuffer writebuffer = Writebuffer();
+  void writeWaydata(Writebuffer writebuffer, bool debugFile, Tile tile, double tileLatitude, double tileLongitude, List<String> languagesPreferences) {
     WayholderWriter wayholderWriter = WayholderWriter();
     for (Wayholder wayholder in wayholders) {
-      wayholderWriter.writeWaydata(writebuffer, wayholder, debugFile, tile, tileLatitude, tileLongitude);
+      wayholderWriter.writeWaydata(writebuffer, wayholder, debugFile, tile, tileLatitude, tileLongitude, languagesPreferences);
     }
-    wayholders.clear();
-    content = writebuffer.getUint8ListAndClear();
-    return content!;
   }
 
-  void createTagholders(List<Tagholder> tagsArray, List<String> languagesPreference) {
+  void countTags(TagholderModel model) {
     for (Wayholder wayholder in wayholders) {
-      wayholder.createTagholder(tagsArray, languagesPreference);
+      wayholder.tagholderCollection.reconnectWayTags(model);
+      wayholder.tagholderCollection.countTags();
     }
   }
 }

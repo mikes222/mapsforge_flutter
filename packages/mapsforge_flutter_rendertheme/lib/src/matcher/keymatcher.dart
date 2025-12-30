@@ -17,7 +17,7 @@ class KeyMatcher implements AttributeMatcher {
   }
 
   @override
-  bool matchesTagList(TagCollection tags) {
+  bool matchesTagList(ITagCollection tags) {
     return tags.matchesTagList(keys);
   }
 

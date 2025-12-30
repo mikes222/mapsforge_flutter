@@ -34,7 +34,7 @@ class AnyMatcher implements ElementMatcher, AttributeMatcher, ClosedMatcher {
   }
 
   @override
-  bool matchesTagList(TagCollection tags) {
+  bool matchesTagList(ITagCollection tags) {
     return true;
   }
 

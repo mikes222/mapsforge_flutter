@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
-import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart' as osmformat;
 import 'package:mapsforge_flutter_core/model.dart';
@@ -58,18 +57,18 @@ class PbfWriter {
     sink.add(headerBlobContent);
   }
 
-  Future<void> writeNode(ILatLong position, TagCollection tags) async {
+  Future<void> writeNode(ILatLong position, TagholderCollection tags) async {
     _writeNode(position, tags);
   }
 
-  _DenseNode _writeNode(ILatLong position, TagCollection tags) {
+  _DenseNode _writeNode(ILatLong position, TagholderCollection tags) {
     _DenseNode denseNode = _DenseNode(tags: tags, positions: [position], ids: [$fixnum.Int64(_nextId++)]);
     _nodes.add(denseNode);
     _tryWriteDenseNodes();
     return denseNode;
   }
 
-  (List<int>, List<int>) _convertTags(TagCollection tags, List<String> strings, StringTable stringTable) {
+  (List<int>, List<int>) _convertTags(TagholderCollection tags, List<String> strings, StringTable stringTable) {
     if (strings.isEmpty) {
       // make sure index 0 is not used for productive purposes since 0 is a marker to skip tags
       stringTable.s.add(utf8.encode(""));
@@ -77,20 +76,20 @@ class PbfWriter {
     }
     List<int> keys = [];
     List<int> values = [];
-    for (var tag in tags.tags) {
-      if (strings.contains(tag.key!)) {
-        keys.add(strings.indexOf(tag.key!));
+    for (var tag in tags.tagholders) {
+      if (strings.contains(tag.key)) {
+        keys.add(strings.indexOf(tag.key));
       } else {
         keys.add(strings.length);
-        strings.add(tag.key!);
-        stringTable.s.add(utf8.encode(tag.key!));
+        strings.add(tag.key);
+        stringTable.s.add(utf8.encode(tag.key));
       }
-      if (strings.contains(tag.value!)) {
-        values.add(strings.indexOf(tag.value!));
+      if (strings.contains(tag.value)) {
+        values.add(strings.indexOf(tag.value));
       } else {
         values.add(strings.length);
-        strings.add(tag.value!);
-        stringTable.s.add(utf8.encode(tag.value!));
+        strings.add(tag.value);
+        stringTable.s.add(utf8.encode(tag.value));
       }
     }
     assert(keys.length == tags.length);
@@ -240,7 +239,7 @@ class PbfWriter {
     _relations.clear();
   }
 
-  _Way _writeWayOnePath(TagCollection tags, Waypath waypath) {
+  _Way _writeWayOnePath(TagholderCollection tags, Waypath waypath) {
     const int maxWaysPerGroup = 100000;
     List<$fixnum.Int64> allrefs = [];
     List<ILatLong> path = List.from(waypath.path);
@@ -252,7 +251,7 @@ class PbfWriter {
       });
       allrefs.addAll(refs);
       // do not write tags for the nodes, we have them at the way-level
-      _DenseNode denseNode = _DenseNode(tags: const TagCollection.empty(), positions: path2, ids: refs);
+      _DenseNode denseNode = _DenseNode(tags: TagholderCollection.empty(), positions: path2, ids: refs);
       _nodes.add(denseNode);
       _tryWriteDenseNodes();
     }
@@ -262,7 +261,7 @@ class PbfWriter {
       });
       allrefs.addAll(refs);
       // do not write tags for the nodes, we have them at the way-level
-      _DenseNode denseNode = _DenseNode(tags: const TagCollection.empty(), positions: path, ids: refs);
+      _DenseNode denseNode = _DenseNode(tags: TagholderCollection.empty(), positions: path, ids: refs);
       _nodes.add(denseNode);
       _tryWriteDenseNodes();
     }
@@ -272,31 +271,31 @@ class PbfWriter {
     return way;
   }
 
-  Future<void> writeWay(OsmWayholder wayholder) async {
+  Future<void> writeWay(Wayholder wayholder) async {
     if (wayholder.innerRead.isEmpty && wayholder.openOutersRead.length + wayholder.closedOutersRead.length == 1 && wayholder.labelPosition == null) {
       // we do not need a relation
       Waypath waypath = wayholder.openOutersRead.isNotEmpty ? wayholder.openOutersRead.first : wayholder.closedOutersRead.first;
-      _writeWayOnePath(wayholder.tagCollection, waypath);
+      _writeWayOnePath(wayholder.tagholderCollection, waypath);
     } else {
       List<OsmRelationMember> members = [];
       for (Waypath waypath in wayholder.innerRead) {
-        _Way way = _writeWayOnePath(const TagCollection.empty(), waypath);
+        _Way way = _writeWayOnePath(TagholderCollection.empty(), waypath);
         members.add(OsmRelationMember(memberId: way.id.toInt(), memberType: MemberType.way, role: "inner"));
       }
       for (Waypath waypath in wayholder.closedOutersRead) {
-        _Way way = _writeWayOnePath(const TagCollection.empty(), waypath);
+        _Way way = _writeWayOnePath(TagholderCollection.empty(), waypath);
         members.add(OsmRelationMember(memberId: way.id.toInt(), memberType: MemberType.way, role: "outer"));
       }
       for (Waypath waypath in wayholder.openOutersRead) {
-        _Way way = _writeWayOnePath(const TagCollection.empty(), waypath);
+        _Way way = _writeWayOnePath(TagholderCollection.empty(), waypath);
         members.add(OsmRelationMember(memberId: way.id.toInt(), memberType: MemberType.way, role: "outer"));
       }
       if (wayholder.labelPosition != null) {
-        _DenseNode node = _writeNode(wayholder.labelPosition!, const TagCollection.empty());
+        _DenseNode node = _writeNode(wayholder.labelPosition!, TagholderCollection.empty());
         members.add(OsmRelationMember(memberId: node.ids.first.toInt(), memberType: MemberType.node, role: "label"));
       }
-      assert(wayholder.tagCollection.isNotEmpty);
-      _Relation relation = _Relation(tags: wayholder.tagCollection, osmRelationMembers: members);
+      assert(wayholder.tagholderCollection.isNotEmpty);
+      _Relation relation = _Relation(tags: wayholder.tagholderCollection, osmRelationMembers: members);
       _relations.add(relation);
     }
   }
@@ -313,7 +312,7 @@ class PbfWriter {
 //////////////////////////////////////////////////////////////////////////////
 
 class _DenseNode {
-  final TagCollection tags;
+  final TagholderCollection tags;
 
   final List<ILatLong> positions;
 
@@ -325,7 +324,7 @@ class _DenseNode {
 //////////////////////////////////////////////////////////////////////////////
 
 class _Way {
-  final TagCollection tags;
+  final TagholderCollection tags;
 
   final List<$fixnum.Int64> refs;
 
@@ -337,7 +336,7 @@ class _Way {
 //////////////////////////////////////////////////////////////////////////////
 
 class _Relation {
-  final TagCollection tags;
+  final TagholderCollection tags;
 
   final List<OsmRelationMember> osmRelationMembers;
 

@@ -1,23 +1,25 @@
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// A data holder for a single Point of Interest (POI) during the map file
 /// writing process.
 ///
 /// This class encapsulates a [PointOfInterest] and uses the [TagholderMixin]
 /// to manage the analysis and serialization of its tags.
-class Poiholder {
-  final PointOfInterest poi;
+class Poiholder implements ILatLong {
+  final ILatLong position;
 
-  TagholderMixin? _tagholder;
+  final TagholderCollection tagholderCollection;
 
-  Poiholder(this.poi);
+  Poiholder({required this.position, required this.tagholderCollection});
 
-  void createTagholder(List<Tagholder> tagsArray, List<String> languagesPreference) {
-    if (_tagholder != null) return;
-    _tagholder = TagholderMixin();
-    _tagholder!.analyzeTags(poi.tags, tagsArray, languagesPreference);
+  String toStringWithoutNames() {
+    return 'Poiholder{position: $position, tagholderCollection: ${tagholderCollection.printTagsWithoutNames()}';
   }
 
-  TagholderMixin getTagholder() => _tagholder!;
+  @override
+  double get latitude => position.latitude;
+
+  @override
+  double get longitude => position.longitude;
 }

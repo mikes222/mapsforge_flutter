@@ -86,8 +86,6 @@ const CacheWayholder$json = {
       '10': 'openways'
     },
     {'1': 'label', '3': 11, '4': 1, '5': 11, '6': '.CacheLabel', '10': 'label'},
-    {'1': 'layer', '3': 13, '4': 2, '5': 5, '10': 'layer'},
-    {'1': 'tileBitmask', '3': 14, '4': 2, '5': 5, '10': 'tileBitmask'},
     {
       '1': 'mergedWithOtherWay',
       '3': 15,
@@ -95,6 +93,8 @@ const CacheWayholder$json = {
       '5': 8,
       '10': 'mergedWithOtherWay'
     },
+    {'1': 'normalizedkeys', '3': 16, '4': 3, '5': 9, '10': 'normalizedkeys'},
+    {'1': 'normalizedvals', '3': 17, '4': 3, '5': 9, '10': 'normalizedvals'},
   ],
 };
 
@@ -104,5 +104,6 @@ final $typed_data.Uint8List cacheWayholderDescriptor = $convert.base64Decode(
     'ADKAlSB3RhZ3ZhbHMSJwoJaW5uZXJ3YXlzGAQgAygLMgkuQ2FjaGVXYXlSCWlubmVyd2F5cxIp'
     'CgpjbG9zZWR3YXlzGAUgAygLMgkuQ2FjaGVXYXlSCmNsb3NlZHdheXMSJQoIb3BlbndheXMYBi'
     'ADKAsyCS5DYWNoZVdheVIIb3BlbndheXMSIQoFbGFiZWwYCyABKAsyCy5DYWNoZUxhYmVsUgVs'
-    'YWJlbBIUCgVsYXllchgNIAIoBVIFbGF5ZXISIAoLdGlsZUJpdG1hc2sYDiACKAVSC3RpbGVCaX'
-    'RtYXNrEi4KEm1lcmdlZFdpdGhPdGhlcldheRgPIAIoCFISbWVyZ2VkV2l0aE90aGVyV2F5');
+    'YWJlbBIuChJtZXJnZWRXaXRoT3RoZXJXYXkYDyACKAhSEm1lcmdlZFdpdGhPdGhlcldheRImCg'
+    '5ub3JtYWxpemVka2V5cxgQIAMoCVIObm9ybWFsaXplZGtleXMSJgoObm9ybWFsaXplZHZhbHMY'
+    'ESADKAlSDm5vcm1hbGl6ZWR2YWxz');

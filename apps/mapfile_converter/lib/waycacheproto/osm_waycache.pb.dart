@@ -142,9 +142,9 @@ class CacheWayholder extends $pb.GeneratedMessage {
     $core.Iterable<CacheWay>? closedways,
     $core.Iterable<CacheWay>? openways,
     CacheLabel? label,
-    $core.int? layer,
-    $core.int? tileBitmask,
     $core.bool? mergedWithOtherWay,
+    $core.Iterable<$core.String>? normalizedkeys,
+    $core.Iterable<$core.String>? normalizedvals,
   }) {
     final result = create();
     if (tagkeys != null) result.tagkeys.addAll(tagkeys);
@@ -153,10 +153,10 @@ class CacheWayholder extends $pb.GeneratedMessage {
     if (closedways != null) result.closedways.addAll(closedways);
     if (openways != null) result.openways.addAll(openways);
     if (label != null) result.label = label;
-    if (layer != null) result.layer = layer;
-    if (tileBitmask != null) result.tileBitmask = tileBitmask;
     if (mergedWithOtherWay != null)
       result.mergedWithOtherWay = mergedWithOtherWay;
+    if (normalizedkeys != null) result.normalizedkeys.addAll(normalizedkeys);
+    if (normalizedvals != null) result.normalizedvals.addAll(normalizedvals);
     return result;
   }
 
@@ -182,12 +182,11 @@ class CacheWayholder extends $pb.GeneratedMessage {
         subBuilder: CacheWay.create)
     ..aOM<CacheLabel>(11, _omitFieldNames ? '' : 'label',
         subBuilder: CacheLabel.create)
-    ..aI(13, _omitFieldNames ? '' : 'layer', fieldType: $pb.PbFieldType.Q3)
-    ..aI(14, _omitFieldNames ? '' : 'tileBitmask',
-        protoName: 'tileBitmask', fieldType: $pb.PbFieldType.Q3)
     ..a<$core.bool>(
         15, _omitFieldNames ? '' : 'mergedWithOtherWay', $pb.PbFieldType.QB,
-        protoName: 'mergedWithOtherWay');
+        protoName: 'mergedWithOtherWay')
+    ..pPS(16, _omitFieldNames ? '' : 'normalizedkeys')
+    ..pPS(17, _omitFieldNames ? '' : 'normalizedvals');
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   CacheWayholder clone() => deepCopy();
@@ -235,32 +234,21 @@ class CacheWayholder extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   CacheLabel ensureLabel() => $_ensure(5);
 
-  @$pb.TagNumber(13)
-  $core.int get layer => $_getIZ(6);
-  @$pb.TagNumber(13)
-  set layer($core.int value) => $_setSignedInt32(6, value);
-  @$pb.TagNumber(13)
-  $core.bool hasLayer() => $_has(6);
-  @$pb.TagNumber(13)
-  void clearLayer() => $_clearField(13);
-
-  @$pb.TagNumber(14)
-  $core.int get tileBitmask => $_getIZ(7);
-  @$pb.TagNumber(14)
-  set tileBitmask($core.int value) => $_setSignedInt32(7, value);
-  @$pb.TagNumber(14)
-  $core.bool hasTileBitmask() => $_has(7);
-  @$pb.TagNumber(14)
-  void clearTileBitmask() => $_clearField(14);
-
   @$pb.TagNumber(15)
-  $core.bool get mergedWithOtherWay => $_getBF(8);
+  $core.bool get mergedWithOtherWay => $_getBF(6);
   @$pb.TagNumber(15)
-  set mergedWithOtherWay($core.bool value) => $_setBool(8, value);
+  set mergedWithOtherWay($core.bool value) => $_setBool(6, value);
   @$pb.TagNumber(15)
-  $core.bool hasMergedWithOtherWay() => $_has(8);
+  $core.bool hasMergedWithOtherWay() => $_has(6);
   @$pb.TagNumber(15)
   void clearMergedWithOtherWay() => $_clearField(15);
+
+  /// Parallel arrays for tags
+  @$pb.TagNumber(16)
+  $pb.PbList<$core.String> get normalizedkeys => $_getList(7);
+
+  @$pb.TagNumber(17)
+  $pb.PbList<$core.String> get normalizedvals => $_getList(8);
 }
 
 const $core.bool _omitFieldNames =

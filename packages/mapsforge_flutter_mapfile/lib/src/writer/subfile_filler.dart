@@ -1,26 +1,70 @@
-import 'dart:isolate';
-
+import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/filter.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
+abstract class ISubfileFiller {
+  /// Prepares a list of ways by filtering and simplifying them.
+  Future<List<Wayholder>> prepareWays(WayholderCollection wayholders);
+}
+
 /// An isolate-based wrapper for [SubfileFiller] to perform way preparation
 /// in the background.
 @pragma("vm:entry-point")
-class IsolateSubfileFiller {
-  Future<List<Wayholder>> prepareWays(
-    ZoomlevelRange subfileZoomlevelRange,
-    ZoomlevelRange zoomlevelRange,
-    List<Wayholder> wayholders,
-    BoundingBox boundingBox,
-    int tilePixelSize, [
-    double maxDeviation = 10,
-  ]) async {
-    return await Isolate.run(() {
-      SubfileFiller subfileFiller = SubfileFiller(subfileZoomlevelRange, maxDeviation, boundingBox);
-      return subfileFiller.prepareWays(zoomlevelRange, wayholders);
-    });
+class IsolateSubfileFiller implements ISubfileFiller {
+  final FlutterIsolateInstance _isolateInstance = FlutterIsolateInstance();
+
+  IsolateSubfileFiller._();
+
+  static Future<IsolateSubfileFiller> create({
+    required ZoomlevelRange subfileZoomlevelRange,
+    required BoundingBox boundingBox,
+    required double maxDeviation,
+  }) async {
+    SubfileFillerInstanceRequest request = SubfileFillerInstanceRequest(
+      subfileZoomlevelRange: subfileZoomlevelRange,
+      boundingBox: boundingBox,
+      maxDeviation: maxDeviation,
+    );
+    IsolateSubfileFiller instance = IsolateSubfileFiller._();
+    await instance._isolateInstance.spawn(createInstance, request);
+    return instance;
   }
+
+  /// This is the instance variable. Note that it is a different instance in each isolate.
+  static SubfileFiller? _pbfReader;
+
+  @pragma('vm:entry-point')
+  static Future<void> createInstance(IsolateInitInstanceParams<SubfileFillerInstanceRequest> object) async {
+    _pbfReader ??= SubfileFiller(object.initObject!.subfileZoomlevelRange, object.initObject!.maxDeviation, object.initObject!.boundingBox);
+    await FlutterIsolateInstance.isolateInit(object, readBlobDataStatic);
+  }
+
+  @pragma('vm:entry-point')
+  static Future<Object?> readBlobDataStatic(WayholderCollection param) async {
+    return _pbfReader!.prepareWays(param);
+  }
+
+  @override
+  Future<List<Wayholder>> prepareWays(WayholderCollection wayholders) async {
+    return await _isolateInstance.compute(wayholders);
+    // return await Isolate.run(() {
+    //   SubfileFiller subfileFiller = SubfileFiller(subfileZoomlevelRange, maxDeviation, boundingBox);
+    //   return subfileFiller.prepareWays(wayholders);
+    // });
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class SubfileFillerInstanceRequest {
+  final ZoomlevelRange subfileZoomlevelRange;
+
+  final BoundingBox boundingBox;
+
+  final double maxDeviation;
+
+  SubfileFillerInstanceRequest({required this.subfileZoomlevelRange, required this.boundingBox, required this.maxDeviation});
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,7 +76,7 @@ class IsolateSubfileFiller {
 ///    the target zoom level.
 /// 2. Simplification: Reducing the number of vertices in the remaining ways to
 ///    optimize storage and rendering performance.
-class SubfileFiller {
+class SubfileFiller implements ISubfileFiller {
   late WaySizeFilter sizeFilter;
 
   late WaySimplifyFilter simplifyFilter;
@@ -52,15 +96,14 @@ class SubfileFiller {
   }
 
   /// Prepares a list of ways by filtering and simplifying them.
-  List<Wayholder> prepareWays(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
-    if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return [];
-    if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return [];
+  @override
+  Future<List<Wayholder>> prepareWays(WayholderCollection wayholders) {
     if (maxDeviation <= 0) {
       // we do not want to filter anything, return the original
-      return wayholders;
+      return Future.value(wayholders.wayholders.toList());
     }
     List<Wayholder> result = [];
-    for (Wayholder wayholder in wayholders) {
+    for (Wayholder wayholder in wayholders.wayholders) {
       Wayholder? res = sizeFilter.filter(wayholder);
       if (res == null) continue;
       // size is big enough, now simplify the way
@@ -73,6 +116,6 @@ class SubfileFiller {
 
       result.add(res);
     }
-    return result;
+    return Future.value(result);
   }
 }

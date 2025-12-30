@@ -57,15 +57,15 @@ abstract class Rule implements SymbolSearcher {
   /// Returns true if this rule can be applied for the given zoomLevel.
   bool matchesForZoomLevel(int zoomLevel);
 
-  /// Returns true if the rule matches the given tags and inddor level
+  /// Returns true if the rule matches the given tags and indoor level
   bool matches(TagCollection tags, int indoorLevel);
 
   /// Checks the tags if the rule matches, does NOT take the indoorLevel into account.
-  bool matchesTags(TagCollection tags);
+  bool matchesTags(ITagCollection tags);
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeNode(TagCollection tags) {
+  ZoomlevelRange? getZoomlevelRangeNode(ITagCollection tags) {
     // tag not accepted by this rule.
     if (!matchesTags(tags)) return null;
     if (renderinstructionNodes.isNotEmpty) {
@@ -86,7 +86,7 @@ abstract class Rule implements SymbolSearcher {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeOpenWay(TagCollection tags) {
+  ZoomlevelRange? getZoomlevelRangeOpenWay(ITagCollection tags) {
     if (!matchesTags(tags)) return null;
 
     if (renderinstructionOpenWays.isNotEmpty) return zoomlevelRange;
@@ -103,7 +103,7 @@ abstract class Rule implements SymbolSearcher {
 
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if if the argument will never accepted.
-  ZoomlevelRange? getZoomlevelRangeClosedWay(TagCollection tags) {
+  ZoomlevelRange? getZoomlevelRangeClosedWay(ITagCollection tags) {
     if (!matchesTags(tags)) return null;
 
     if (renderinstructionClosedWays.isNotEmpty) return zoomlevelRange;

@@ -29,9 +29,24 @@ class WaySizeFilter {
       filterSizePixels,
     );
     int count = wayholder.innerRead.length + wayholder.openOutersRead.length + wayholder.closedOutersRead.length;
-    List<Waypath> inner = wayholder.innerRead.map((e) => _shouldFilter(e)).toList().where((test) => test != null).map((test) => test!).toList();
-    List<Waypath> closedOuters = wayholder.closedOutersRead.map((e) => _shouldFilter(e)).toList().where((test) => test != null).map((test) => test!).toList();
-    List<Waypath> openOuters = wayholder.openOutersRead.map((e) => _shouldFilter(e)).toList().where((test) => test != null).map((test) => test!).toList();
+    List<Waypath> inner = wayholder.innerRead
+        .map((e) => _shouldFilter(e))
+        .toList()
+        .where((test) => test != null)
+        .map((test) => test!.clone())
+        .toList();
+    List<Waypath> closedOuters = wayholder.closedOutersRead
+        .map((e) => _shouldFilter(e))
+        .toList()
+        .where((test) => test != null)
+        .map((test) => test!.clone())
+        .toList();
+    List<Waypath> openOuters = wayholder.openOutersRead
+        .map((e) => _shouldFilter(e))
+        .toList()
+        .where((test) => test != null)
+        .map((test) => test!.clone())
+        .toList();
 
     /// nothing removed, return the original
     if (count == inner.length + closedOuters.length + openOuters.length) return wayholder;

@@ -2,7 +2,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 
 /// An immutable container for all data associated with a single Point of Interest (POI).
 class PointOfInterest {
-  /// The layer of this POI + 5 (to avoid negative values).
+  /// The layer of this POI + 5 (to avoid negative values). Valid values are 0 to 15
   final int layer;
 
   /// The position of this POI.

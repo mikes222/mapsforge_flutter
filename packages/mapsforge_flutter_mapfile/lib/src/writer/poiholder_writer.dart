@@ -1,9 +1,6 @@
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 class PoiholderWriter {
   /// Serializes the POI data to a [Writebuffer].
@@ -12,40 +9,54 @@ class PoiholderWriter {
   /// [debugFile] determines whether to include a debug signature.
   /// [tileLatitude] and [tileLongitude] are the base coordinates from which the
   /// POI's delta-encoded position is calculated.
-  void writePoidata(Writebuffer writebuffer, Poiholder poiholder, bool debugFile, double tileLatitude, double tileLongitude) {
-    _writePoiSignature(poiholder.poi, debugFile, writebuffer);
-    writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(poiholder.poi.position.latitude - tileLatitude));
-    writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(poiholder.poi.position.longitude - tileLongitude));
+  void writePoidata(
+    Writebuffer writebuffer,
+    Poiholder poiholder,
+    bool debugFile,
+    double tileLatitude,
+    double tileLongitude,
+    List<String> languagesPreferences,
+  ) {
+    _writePoiSignature(poiholder, debugFile, writebuffer);
+    writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(poiholder.position.latitude - tileLatitude));
+    writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(poiholder.position.longitude - tileLongitude));
 
-    TagholderMixin tagholder = poiholder.getTagholder();
+    String? featureHouseNumber = poiholder.tagholderCollection.extractHousenumber();
+    int? featureElevation = poiholder.tagholderCollection.extractElevation();
+    //String? featureRef = poiholder.tagholderCollection.extractRef();
+    String? featureName = poiholder.tagholderCollection.extractName(languagesPreferences);
+    int layer = poiholder.tagholderCollection.extractLayer();
+    Writebuffer writebufferTags = Writebuffer();
+    int count = poiholder.tagholderCollection.writePoiTags(writebufferTags);
 
     int specialByte = 0;
     // bit 1-4 represent the layer
-    specialByte |= ((poiholder.poi.layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
+    specialByte |= ((layer + 5) & MapfileHelper.POI_LAYER_BITMASK) << MapfileHelper.POI_LAYER_SHIFT;
     // bit 5-8 represent the number of tag IDs
-    specialByte |= (tagholder.tagholders.length & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
+    specialByte |= (count & MapfileHelper.POI_NUMBER_OF_TAGS_BITMASK);
     writebuffer.appendInt1(specialByte);
-    tagholder.writeTags(writebuffer);
+    writebuffer.appendWritebuffer(writebufferTags);
+    writebufferTags.clear();
 
     // get the feature bitmask (1 byte)
     int featureByte = 0;
     // bit 1-3 enable optional features
-    if (tagholder.featureName != null) featureByte |= MapfileHelper.POI_FEATURE_NAME;
-    if (tagholder.featureHouseNumber != null) featureByte |= MapfileHelper.POI_FEATURE_HOUSE_NUMBER;
-    if (tagholder.featureElevation != null) featureByte |= MapfileHelper.POI_FEATURE_ELEVATION;
+    if (featureName != null) featureByte |= MapfileHelper.POI_FEATURE_NAME;
+    if (featureHouseNumber != null) featureByte |= MapfileHelper.POI_FEATURE_HOUSE_NUMBER;
+    if (featureElevation != null) featureByte |= MapfileHelper.POI_FEATURE_ELEVATION;
     writebuffer.appendInt1(featureByte);
-    if (tagholder.featureName != null) {
-      writebuffer.appendString(tagholder.featureName!);
+    if (featureName != null) {
+      writebuffer.appendString(featureName);
     }
-    if (tagholder.featureHouseNumber != null) {
-      writebuffer.appendString(tagholder.featureHouseNumber!);
+    if (featureHouseNumber != null) {
+      writebuffer.appendString(featureHouseNumber);
     }
-    if (tagholder.featureElevation != null) {
-      writebuffer.appendSignedInt(tagholder.featureElevation!);
+    if (featureElevation != null) {
+      writebuffer.appendSignedInt(featureElevation);
     }
   }
 
-  void _writePoiSignature(PointOfInterest poi, bool debugFile, Writebuffer writebuffer) {
+  void _writePoiSignature(Poiholder poi, bool debugFile, Writebuffer writebuffer) {
     if (debugFile) {
       writebuffer.appendStringWithoutLength("***POIStart${poi.hashCode}***".padRight(MapfileHelper.SIGNATURE_LENGTH_POI, " "));
     }

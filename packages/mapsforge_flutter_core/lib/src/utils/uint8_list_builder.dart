@@ -13,7 +13,7 @@ import 'dart:typed_data';
 /// - Optimized for sequential byte appending
 class Uint8ListBuilder {
   /// Initial buffer size (~100KB) for reasonable performance.
-  static const int _kInitialSize = 5000;
+  static const int _kInitialSize = 2000;
 
   /// Current number of bytes stored in the buffer.
   int _usedLength = 0;
@@ -70,10 +70,10 @@ class Uint8ListBuilder {
 
     int newLength = _buffer.length;
     while (totalSpaceNeeded > newLength) {
-      if (newLength < _kInitialSize * 256) {
+      if (newLength < _kInitialSize * 1024) {
         newLength *= 2;
       } else {
-        newLength += _kInitialSize * 256;
+        newLength += _kInitialSize * 1024;
       }
     }
 

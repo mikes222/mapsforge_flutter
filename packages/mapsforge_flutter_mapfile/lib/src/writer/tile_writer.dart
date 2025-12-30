@@ -1,21 +1,19 @@
 import 'dart:typed_data';
 
-import 'package:ecache/ecache.dart';
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/poiholder.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_collection.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_collection.dart';
 
 abstract class ITileWriter {
   Future<Uint8List> writeTile(Tile tile);
 
   void dispose();
 }
+
+//////////////////////////////////////////////////////////////////////////////
 
 /// An isolate-based wrapper for [TileWriter] to perform tile construction
 /// in the background.
@@ -28,12 +26,19 @@ class IsolateTileWriter implements ITileWriter {
 
   IsolateTileWriter._();
 
-  static Future<IsolateTileWriter> create(bool debugFile, PoiWayCollections poiWayCollections, ZoomlevelRange zoomlevelRange, double maxDeviationPixel) async {
+  static Future<IsolateTileWriter> create(
+    bool debugFile,
+    PoiWayCollections poiWayCollections,
+    ZoomlevelRange zoomlevelRange,
+    double maxDeviationPixel,
+    List<String> languagesPreferences,
+  ) async {
     _TileWriterInstanceRequest request = _TileWriterInstanceRequest(
       debugFile: debugFile,
       poiWayCollections: poiWayCollections,
       zoomlevelRange: zoomlevelRange,
       maxDeviationPixel: maxDeviationPixel,
+      languagesPreferences: languagesPreferences,
     );
     IsolateTileWriter instance = IsolateTileWriter._();
     await instance._isolateInstance.spawn(createInstance, request);
@@ -57,7 +62,7 @@ class IsolateTileWriter implements ITileWriter {
   static Future<void> createInstance(IsolateInitInstanceParams object) async {
     await FlutterIsolateInstance.isolateInit(object, writeTileStatic);
     _TileWriterInstanceRequest request = object.initObject;
-    _tileWriter ??= TileWriter(request.debugFile, request.poiWayCollections, request.zoomlevelRange, request.maxDeviationPixel);
+    _tileWriter ??= TileWriter(request.debugFile, request.poiWayCollections, request.zoomlevelRange, request.maxDeviationPixel, request.languagesPreferences);
     // init displaymodel since it is used for PixelProjection in WaySimplifyFilter in WayCropper
     //DisplayModel();
   }
@@ -80,7 +85,15 @@ class _TileWriterInstanceRequest {
 
   final bool debugFile;
 
-  _TileWriterInstanceRequest({required this.debugFile, required this.poiWayCollections, required this.zoomlevelRange, required this.maxDeviationPixel});
+  final List<String> languagesPreferences;
+
+  _TileWriterInstanceRequest({
+    required this.debugFile,
+    required this.poiWayCollections,
+    required this.zoomlevelRange,
+    required this.maxDeviationPixel,
+    required this.languagesPreferences,
+  });
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -114,28 +127,21 @@ class TileWriter implements ITileWriter {
 
   final PoiWayCollections poiWayCollections;
 
-  final SimpleCache<BoundingBox, PoiWayCollections> _cache = SimpleCache(capacity: 1);
-
   ZoomlevelRange zoomlevelRange;
 
-  Tile? first;
+  final List<String> languagesPreferences;
 
-  int lastRemove = 0;
-
-  TileWriter(this.debugFile, this.poiWayCollections, this.zoomlevelRange, this.maxDeviationPixel);
+  TileWriter(this.debugFile, this.poiWayCollections, this.zoomlevelRange, this.maxDeviationPixel, this.languagesPreferences);
 
   @override
-  void dispose() {
-    _cache.clear();
-    first = null;
-  }
+  void dispose() {}
 
   Future<PoiWayCollections> _filterForTile(Tile tile) async {
     PoiWayCollections poiWayInfos = PoiWayCollections();
     poiWayCollections.poiholderCollections.forEach((zoomlevel, poiinfo) {
       PoiholderCollection newPoiinfo = PoiholderCollection();
       for (Poiholder poiholder in poiinfo.poiholders) {
-        if (tile.getBoundingBox().containsLatLong(poiholder.poi.position)) {
+        if (tile.getBoundingBox().containsLatLong(poiholder.position)) {
           newPoiinfo.addPoiholder(poiholder);
         }
       }
@@ -173,7 +179,7 @@ class TileWriter implements ITileWriter {
       PoiholderCollection poiinfo = poisPerZoomlevel[queryZoomLevel]!;
       WayholderCollection wayinfo = waysPerZoomlevel[queryZoomLevel]!;
       int poiCount = poiinfo.count;
-      int wayCount = wayinfo.wayCount;
+      int wayCount = wayinfo.count;
       writebuffer.appendUnsignedInt(poiCount);
       writebuffer.appendUnsignedInt(wayCount);
     }
@@ -188,8 +194,6 @@ class TileWriter implements ITileWriter {
   Future<Uint8List> writeTile(Tile tile) async {
     assert(poiWayCollections.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
     assert(poiWayCollections.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
-    //_removeOld(tile)
-    first ??= tile;
     Writebuffer writebuffer = Writebuffer();
     PoiWayCollections poiWayInfos = await _filterForTile(tile);
     _writeTileHeaderSignature(tile, writebuffer);
@@ -200,24 +204,20 @@ class TileWriter implements ITileWriter {
     double tileLatitude = projection.tileYToLatitude(tile.tileY);
     double tileLongitude = projection.tileXToLongitude(tile.tileX);
 
+    Writebuffer poiWriteBuffer = Writebuffer();
+    for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
+      PoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
+      poiholderCollection.writePoidata(poiWriteBuffer, debugFile, tileLatitude, tileLongitude, languagesPreferences);
+    }
     // the offset to the first way in the block
-    int firstWayOffset = 0;
-    for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      PoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
-      poiholderCollection.writePoidata(debugFile, tileLatitude, tileLongitude);
-      firstWayOffset += poiholderCollection.content!.length;
-    }
-    writebuffer.appendUnsignedInt(firstWayOffset);
-    for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      PoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
-      writebuffer.appendUint8(poiholderCollection.content!);
-      poiholderCollection.content = null;
-    }
+    writebuffer.appendUnsignedInt(poiWriteBuffer.length);
+    writebuffer.appendWritebuffer(poiWriteBuffer);
+    // for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
+    //   PoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
+    // }
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
       WayholderCollection wayholderCollection = poiWayInfos.wayholderCollections[zoomlevel]!;
-      wayholderCollection.writeWaydata(debugFile, tile, tileLatitude, tileLongitude);
-      writebuffer.appendUint8(wayholderCollection.content!);
-      wayholderCollection.content = null;
+      wayholderCollection.writeWaydata(writebuffer, debugFile, tile, tileLatitude, tileLongitude, languagesPreferences);
     }
     return writebuffer.getUint8ListAndClear();
   }

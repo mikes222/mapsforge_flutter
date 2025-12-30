@@ -1,78 +1,46 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// Holds one way and its tags
 class Wayholder {
-  //with TagholderMixin {
-  // The master path. It will be extracted from _closedOuters or _openOuters shortly before writing the data to the file.
-  Waypath? _master;
+  final TagholderCollection tagholderCollection;
+
+  /// This way is already merged with another way and hence should not be written to the file.
+  bool mergedWithOtherWay = false;
 
   /// Innner ways of the master (normally they are all closed)
-  List<Waypath> _inner = [];
+  final List<Waypath> _inner = [];
 
   // outer ways which are closed
-  List<Waypath> _closedOuters = [];
+  final List<Waypath> _closedOuters = [];
 
   /// PBF supports relations with multiple outer ways. Mapfile requires to
   /// store this outer ways as additional Way data blocks and split it into
   /// several ways - all with the same way properties - when reading the file.
-  List<Waypath> _openOuters = [];
+  final List<Waypath> _openOuters = [];
 
-  /// The position of the area label (may be null).
+  /// The position of the area label (may be null). Only relations can have labelPositions.
   ILatLong? labelPosition;
-
-  /// The tags of this way.
-  TagCollection tags;
-
-  /// The layer of this way + 5 (to avoid negative values).
-  int layer = 0;
 
   /// Cache for the bounding box of the way
   BoundingBox? _boundingBox;
 
-  TagholderMixin? _tagholder;
+  // The master path. It will be extracted from _closedOuters or _openOuters shortly before writing the data to the file.
+  Waypath? _master;
 
-  Wayholder({this.tags = const TagCollection.empty()});
-
-  /// Creates a new wayholder from a existing way. Note that the existing way may NOT contain any path (if created from a OsmRelation)
-  Wayholder.fromWay(Way way) : tags = way.tags {
-    _inner = way.latLongs.skip(1).map((toElement) => Waypath(path: toElement)).toList();
-    _closedOuters = [];
-    _openOuters = [];
-    if (way.latLongs.isNotEmpty) {
-      if (LatLongUtils.isClosedWay(way.latLongs[0])) {
-        _closedOuters.add(Waypath(path: way.latLongs[0]));
-      } else {
-        _openOuters.add(Waypath(path: way.latLongs[0]));
-      }
-    }
-
-    layer = way.layer;
-    labelPosition = way.labelPosition;
-  }
+  Wayholder({required this.tagholderCollection});
 
   Wayholder cloneWith({List<Waypath>? inner, List<Waypath>? closedOuters, List<Waypath>? openOuters}) {
-    Wayholder result = Wayholder();
+    Wayholder result = Wayholder(tagholderCollection: tagholderCollection);
     result._master = _master?.clone();
-    result._inner = inner ?? _inner.map((toElement) => toElement.clone()).toList();
-    result._closedOuters = closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList();
-    result._openOuters = openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList();
+    result._inner.addAll(inner ?? _inner.map((toElement) => toElement.clone()).toList());
+    result._closedOuters.addAll(closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList());
+    result._openOuters.addAll(openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList());
     result.labelPosition = labelPosition;
-    result.tags = tags.clone();
-    result.layer = layer;
     result._boundingBox = _boundingBox;
-    result._tagholder = _tagholder?.clone();
     return result;
   }
-
-  void createTagholder(List<Tagholder> tagsArray, List<String> languagesPreference) {
-    if (_tagholder != null) return;
-    _tagholder = TagholderMixin();
-    _tagholder!.analyzeTags(tags, tagsArray, languagesPreference);
-  }
-
-  TagholderMixin getTagholder() => _tagholder!;
 
   List<Waypath> get innerRead {
     List<Waypath> result = _inner;
@@ -82,6 +50,31 @@ class Wayholder {
       return true;
     }());
     return result;
+  }
+
+  List<Waypath> get innerWrite {
+    _boundingBox = null;
+    return _inner;
+  }
+
+  void innerAdd(Waypath waypath) {
+    assert(waypath.length >= 2);
+    _boundingBox = null;
+    _inner.add(waypath);
+  }
+
+  void innerAddAll(List<Waypath> waypaths) {
+    assert(!waypaths.any((waypath) => waypath.length < 2));
+    _boundingBox = null;
+    _inner.addAll(waypaths);
+  }
+
+  bool innerIsNotEmpty() {
+    return _inner.isNotEmpty;
+  }
+
+  bool innerIsEmpty() {
+    return _inner.isEmpty;
   }
 
   List<Waypath> get closedOutersRead {
@@ -102,17 +95,6 @@ class Wayholder {
       return true;
     }());
     return result;
-  }
-
-  List<Waypath> get innerWrite {
-    _boundingBox = null;
-    return _inner;
-  }
-
-  void innerAddAll(List<Waypath> waypaths) {
-    assert(!waypaths.any((waypath) => waypath.length < 2));
-    _boundingBox = null;
-    _inner.addAll(waypaths);
   }
 
   List<Waypath> get closedOutersWrite {
@@ -145,6 +127,10 @@ class Wayholder {
     return _closedOuters.isNotEmpty;
   }
 
+  bool closedOutersIsEmpty() {
+    return _closedOuters.isEmpty;
+  }
+
   int closedOutersLength() {
     return _closedOuters.length;
   }
@@ -155,7 +141,10 @@ class Wayholder {
   }
 
   void openOutersAdd(Waypath waypath) {
-    assert(!waypath.isClosedWay());
+    assert(
+      !waypath.isClosedWay(),
+      "way must not be closed ${waypath.length} ${waypath.first} - ${waypath.last} ${waypath.first.latitude - waypath.last.latitude} / ${waypath.first.longitude - waypath.last.longitude}",
+    );
     assert(waypath.length >= 2);
     _boundingBox = null;
     _openOuters.add(waypath);
@@ -177,6 +166,10 @@ class Wayholder {
 
   bool openOutersIsNotEmpty() {
     return _openOuters.isNotEmpty;
+  }
+
+  bool openOutersIsEmpty() {
+    return _openOuters.isEmpty;
   }
 
   int openOutersLength() {
@@ -211,15 +204,15 @@ class Wayholder {
   }
 
   bool hasTag(String key) {
-    return tags.hasTag(key);
+    return tagholderCollection.hasTag(key);
   }
 
   bool hasTagValue(String key, String value) {
-    return tags.hasTagValue(key, value);
+    return tagholderCollection.hasTagValue(key, value);
   }
 
   String? getTag(String key) {
-    return tags.getTag(key);
+    return tagholderCollection.getTag(key);
   }
 
   /// moves the inner ways to the outer ways if no outer ways exists anymore
@@ -267,10 +260,10 @@ class Wayholder {
 
   @override
   String toString() {
-    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, labelPosition: $labelPosition, tags: $tags}';
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, labelPosition: $labelPosition, tagholderCollection: $tagholderCollection}';
   }
 
   String toStringWithoutNames() {
-    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, labelPosition: $labelPosition, tags: ${tags.printTagsWithoutNames()}';
+    return 'Wayholder{closedOuters: ${LatLongUtils.printWaypaths(_closedOuters)}, openOuters: ${LatLongUtils.printWaypaths(_openOuters)}, inner: ${LatLongUtils.printWaypaths(_inner)}, labelPosition: $labelPosition, tagholderCollection: ${tagholderCollection.printTagsWithoutNames()}';
   }
 }

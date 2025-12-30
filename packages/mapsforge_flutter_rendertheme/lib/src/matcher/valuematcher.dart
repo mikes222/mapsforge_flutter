@@ -18,9 +18,8 @@ class ValueMatcher implements AttributeMatcher {
   }
 
   @override
-  bool matchesTagList(TagCollection tags) {
-    Tag? tag = tags.tags.firstWhereOrNull((element) => values.contains(element.value));
-    return tag != null;
+  bool matchesTagList(ITagCollection tags) {
+    return tags.valueMatchesTagList(values);
   }
 
   @override

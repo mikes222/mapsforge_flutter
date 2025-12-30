@@ -1,7 +1,7 @@
-import 'package:mapfile_converter/osm/osm_wayholder.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// tries to fix open ways from relationships (PBF) by connecting missing ends.
 class WayRepair {
@@ -10,11 +10,11 @@ class WayRepair {
 
   WayRepair(this.maxGapMeter);
 
-  void repairOpen(OsmWayholder wayholder) {
+  void repairOpen(Wayholder wayholder) {
     _repair(wayholder);
   }
 
-  void repairClosed(OsmWayholder wayholder, BoundingBox? boundingBox) {
+  void repairClosed(Wayholder wayholder, BoundingBox? boundingBox) {
     _repair(wayholder);
     for (Waypath waypath in List.from(wayholder.openOutersRead)) {
       if (Projection.distance(waypath.first, waypath.last) <= maxGapMeter) {
@@ -38,7 +38,7 @@ class WayRepair {
     // }
   }
 
-  bool _repairAtBoundary(BoundingBox boundingBox, ILatLong first, ILatLong second, OsmWayholder wayholder, Waypath waypath) {
+  bool _repairAtBoundary(BoundingBox boundingBox, ILatLong first, ILatLong second, Wayholder wayholder, Waypath waypath) {
     ILatLong nearestPoint = LatLongUtils.nearestSegmentPoint(
       first.longitude,
       first.latitude,
@@ -63,7 +63,7 @@ class WayRepair {
     return true;
   }
 
-  double _repair(OsmWayholder wayholder) {
+  double _repair(Wayholder wayholder) {
     // calculate the bounding box over all possible affected ways
     // BoundingBox boundingBox = BoundingBox.fromLatLongs(wayholder.way.latLongs[0]);
     // for (Waypath wayFirst in wayholder.otherOuters) {
@@ -98,7 +98,7 @@ class WayRepair {
     return maxGap;
   }
 
-  Set<_Gap> _findGaps(OsmWayholder wayholder) {
+  Set<_Gap> _findGaps(Wayholder wayholder) {
     Set<_Gap> gaps = {};
     for (Waypath wayFirst in wayholder.openOutersWrite) {
       bool start = false;
@@ -114,7 +114,7 @@ class WayRepair {
     return gaps;
   }
 
-  void _combine(_Gap smallest, OsmWayholder wayholder, Set<_Gap> gaps) {
+  void _combine(_Gap smallest, Wayholder wayholder, Set<_Gap> gaps) {
     if (smallest.prependFirstWay != null) {
       smallest.firstWay.insert(0, smallest.prependFirstWay!);
     }

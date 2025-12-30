@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
@@ -14,8 +13,6 @@ import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 /// vertices that need to be processed and drawn, especially for large polygons
 /// or long ways that only partially intersect a tile.
 class WayCropper {
-  static final _log = Logger('WayCropper');
-
   final double maxDeviationPixel;
 
   const WayCropper({required this.maxDeviationPixel});
@@ -38,19 +35,10 @@ class WayCropper {
 
     if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
 
-    if (closedOuters.isEmpty && openOuters.isEmpty) {
-      // only inner is set, move the first inner to the respective outer
-      Waypath waypath = inner.first;
-      inner.remove(waypath);
-      if (waypath.isClosedWay()) {
-        closedOuters.add(waypath);
-      } else {
-        openOuters.add(waypath);
-      }
-    }
-
     // return a new wayholder instance
-    return wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
+    Wayholder result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
+    result.moveInnerToOuter();
+    return result;
   }
 
   /// An alternative cropping method that reduces the nodes of a way that are
@@ -104,7 +92,7 @@ class WayCropper {
         //_log.info("${waypath.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
         return result;
       }
-      return waypath;
+      return waypath.clone();
     }
 
     // no intersection, ignore these points

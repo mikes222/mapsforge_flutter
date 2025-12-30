@@ -136,7 +136,7 @@ void main() {
     group('Edge Cases', () {
       test('should handle null and empty values in tags', () {
         final tags1 = TagCollection(tags: [const Tag('highway', ''), const Tag('', 'value')]);
-        final tags2 = TagCollection(tags: [const Tag('highway', null), const Tag(null, 'value')]);
+        final tags2 = TagCollection(tags: [const Tag('highway', "test"), const Tag("test", 'value')]);
 
         final key1 = MatchingCacheKey(tags1, 0);
         final key2 = MatchingCacheKey(tags2, 0);

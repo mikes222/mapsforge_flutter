@@ -37,5 +37,5 @@ abstract class AttributeMatcher {
 
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher);
 
-  bool matchesTagList(TagCollection tags);
+  bool matchesTagList(ITagCollection tags);
 }

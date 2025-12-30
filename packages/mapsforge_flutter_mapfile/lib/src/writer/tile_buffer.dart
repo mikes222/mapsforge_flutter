@@ -84,8 +84,8 @@ class TileBuffer {
 
   void cacheToDisk(int processedTiles, int sumTiles) {
     if (_writebufferForTiles.isEmpty) return;
-    // less than 10MB? keep in memory
-    if (_length < 10000000) return;
+    // less than 1MB? keep in memory
+    if (_length < 1000000) return;
     _ioSink ??= SinkWithCounter(File(_filename).openWrite());
     _writebufferForTiles.forEach((tile, content) {
       _TempfileIndex tempfileIndex = _TempfileIndex(_ioSink!.written, content.length);

@@ -15,9 +15,6 @@ import 'ilatlong.dart';
 /// - String parsing with multiple separator support
 /// - Efficient equality comparison and hashing
 class LatLong implements ILatLong {
-  /// Conversion factor from degrees to microdegrees.
-  static final double CONVERSION_FACTOR = 1000000.0;
-
   /**
    * The RegEx pattern to read WKT points.
    */
@@ -31,17 +28,6 @@ class LatLong implements ILatLong {
   /// The internal longitude value.
   @override
   final double longitude;
-
-  /// Converts a coordinate from degrees to microdegrees (degrees × 10^6).
-  ///
-  /// Microdegrees provide integer representation of coordinates with sub-meter precision.
-  /// No validation is performed on the input coordinate.
-  ///
-  /// [coordinate] The coordinate value in decimal degrees
-  /// Returns the coordinate as an integer in microdegrees
-  static int degreesToMicrodegrees(double coordinate) {
-    return (coordinate * CONVERSION_FACTOR).floor();
-  }
 
   /// Creates a new LatLong with the specified coordinates in decimal degrees.
   ///
@@ -140,7 +126,7 @@ class LatLong implements ILatLong {
   ///
   /// Returns the latitude as an integer in microdegrees (degrees × 10^6)
   int getLatitudeE6() {
-    return degreesToMicrodegrees(latitude);
+    return LatLongUtils.degreesToMicrodegrees(latitude);
   }
 
   /// Gets the longitude value in decimal degrees.
@@ -154,7 +140,7 @@ class LatLong implements ILatLong {
   ///
   /// Returns the longitude as an integer in microdegrees (degrees × 10^6)
   int getLongitudeE6() {
-    return degreesToMicrodegrees(longitude);
+    return LatLongUtils.degreesToMicrodegrees(longitude);
   }
 
   /// Calculate the spherical distance from this LatLong to another.

@@ -1,13 +1,10 @@
 import 'dart:core';
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/mapfile_header_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/tagholder_mixin.dart';
 
 /// The main class for writing a Mapsforge binary map file (`.map`).
 ///
@@ -22,19 +19,17 @@ class MapfileWriter {
 
   final String filename;
 
-  final List<Tagholder> poiTags = [];
-
-  final List<Tagholder> wayTags = [];
-
   final SinkWithCounter _sink;
 
   final MapHeaderInfo mapHeaderInfo;
 
   final ZoomlevelRange _zoomlevelRange;
 
-  final List<SubfileCreator> subfileCreators = [];
+  final List<Subfile> subfiles;
 
-  MapfileWriter({required this.filename, required this.mapHeaderInfo})
+  final TagholderModel model;
+
+  MapfileWriter({required this.filename, required this.mapHeaderInfo, required this.subfiles, required this.model})
     : _sink = SinkWithCounter(File(filename).openWrite()),
       _zoomlevelRange = mapHeaderInfo.zoomlevelRange;
 
@@ -64,75 +59,91 @@ class MapfileWriter {
   Future<void> write(double maxDeviationPixel, int instanceCount) async {
     //createSubfiles();
 
-    assert(subfileCreators.isNotEmpty);
+    assert(subfiles.isNotEmpty);
     //    assert(poiTags.isNotEmpty || wayTags.isNotEmpty);
 
     List<String> languagesPreferences = [];
     if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
-    for (SubfileCreator subfileCreator in subfileCreators) {
-      for (var collection in subfileCreator.poiholderCollection) {
-        collection.createTagholders(poiTags, languagesPreferences);
-      }
-      for (var collection in subfileCreator.wayholderCollection) {
-        collection.createTagholders(wayTags, languagesPreferences);
-      }
+    // mapmodel should be aware of how many tags are needed and how often to being able to set the indexes accordingly.
+    for (Subfile subfile in subfiles) {
+      subfile.countTags(model);
     }
+
+    // after counting the tags we can set the indexes of each tag
+    model.setIndexes();
 
     Writebuffer writebuffer = Writebuffer();
-    _writeTags(writebuffer, poiTags);
-    _writeTags(writebuffer, wayTags);
+    _writePoiTags(writebuffer, model.poiTags);
+    _writeWayTags(writebuffer, model.wayTags);
 
     MapfileHeaderWriter mapfileHeaderWriter = MapfileHeaderWriter(mapHeaderInfo);
-    Writebuffer writebufferHeader = mapfileHeaderWriter.write(writebuffer.length + 1 + 19 * subfileCreators.length);
+    Writebuffer writebufferHeader = mapfileHeaderWriter.write(writebuffer.length + 1 + 19 * subfiles.length);
 
-    for (SubfileCreator subfileCreator in subfileCreators) {
-      await subfileCreator.prepareTiles(mapHeaderInfo.debugFile, maxDeviationPixel, instanceCount);
-    }
     // amount of zoom intervals
-    writebuffer.appendInt1(subfileCreators.length);
-    await _writeZoomIntervalConfiguration(writebuffer, writebufferHeader.length + writebuffer.length + 19 * subfileCreators.length);
+    writebuffer.appendInt1(subfiles.length);
+    await _writeZoomIntervalConfiguration(writebuffer, writebufferHeader.length + writebuffer.length + 19 * subfiles.length, maxDeviationPixel, instanceCount);
 
     writebufferHeader.appendWritebuffer(writebuffer);
     writebufferHeader.writeToSink(_sink);
     writebuffer.clear();
     writebufferHeader.clear();
 
-    for (SubfileCreator subfileCreator in subfileCreators) {
+    for (Subfile subfile in subfiles) {
       // for each subfile, write the tile index header and entries
-      Writebuffer writebuffer = subfileCreator.writeTileIndex(mapHeaderInfo.debugFile);
+      Writebuffer writebuffer = subfile.writeTileIndex(mapHeaderInfo.debugFile);
       writebuffer.writeToSink(_sink);
       writebuffer.clear();
-      await subfileCreator.writeTiles(mapHeaderInfo.debugFile, _sink);
-      subfileCreator.dispose();
+      await subfile.writeTiles(mapHeaderInfo.debugFile, _sink);
+      subfile.dispose();
     }
   }
 
-  Future<void> _writeZoomIntervalConfiguration(Writebuffer writebuffer, int headersize) async {
+  Future<void> _writeZoomIntervalConfiguration(Writebuffer writebuffer, int headersize, double maxDeviationPixel, int instanceCount) async {
     int startAddress = headersize;
-    for (SubfileCreator subfileCreator in subfileCreators) {
-      writebuffer.appendInt1(subfileCreator.baseZoomLevel);
-      writebuffer.appendInt1(subfileCreator.zoomlevelRange.zoomlevelMin);
-      writebuffer.appendInt1(subfileCreator.zoomlevelRange.zoomlevelMax);
+    for (Subfile subfile in subfiles) {
+      writebuffer.appendInt1(subfile.baseZoomLevel);
+      writebuffer.appendInt1(subfile.zoomlevelRange.zoomlevelMin);
+      writebuffer.appendInt1(subfile.zoomlevelRange.zoomlevelMax);
       // 8 byte start address
       writebuffer.appendInt8(startAddress);
-      Writebuffer writebufferIndex = subfileCreator.writeTileIndex(mapHeaderInfo.debugFile);
-      int length = await subfileCreator.getTilesLength(mapHeaderInfo.debugFile);
+
+      await subfile.prepareTiles(mapHeaderInfo.debugFile, maxDeviationPixel, instanceCount);
+
+      Writebuffer writebufferIndex = subfile.writeTileIndex(mapHeaderInfo.debugFile);
+      int length = await subfile.getTilesLength(mapHeaderInfo.debugFile);
       // size of the sub-file as 8-byte LONG
       writebuffer.appendInt8(writebufferIndex.length + length);
       startAddress += writebufferIndex.length + length;
     }
   }
 
-  void _writeTags(Writebuffer writebuffer, List<Tagholder> tagholders) {
-    tagholders.sort((a, b) => b.count - a.count);
-    tagholders.forEachIndexed((index, tagholder) {
-      tagholder.index = index;
-    });
-    //tagholders.forEach((action) => print("$action"));
-    writebuffer.appendInt2(tagholders.length);
+  void _writePoiTags(Writebuffer writebuffer, List<Tagholder> tagholders) {
+    List<String> items = [];
     for (Tagholder tagholder in tagholders) {
-      String value = "${tagholder.tag.key}=${tagholder.tag.value}";
-      writebuffer.appendString(value);
+      if (TagholderModel.isMapfilePoiTag(tagholder.key)) continue;
+      assert(tagholder.index != null, "tagholder.index must not be null $tagholder");
+      assert(tagholder.count > 0, "tagholder.count must be greater than 0 $tagholder");
+      String value = "${tagholder.key}=${tagholder.value}";
+      items.add(value);
+    }
+    writebuffer.appendInt2(items.length);
+    for (String item in items) {
+      writebuffer.appendString(item);
+    }
+  }
+
+  void _writeWayTags(Writebuffer writebuffer, List<Tagholder> tagholders) {
+    List<String> items = [];
+    for (Tagholder tagholder in tagholders) {
+      if (TagholderModel.isMapfileWayTag(tagholder.key)) continue;
+      assert(tagholder.index != null, "tagholder.index must not be null $tagholder");
+      assert(tagholder.count > 0, "tagholder.count must be greater than 0 $tagholder");
+      String value = "${tagholder.key}=${tagholder.value}";
+      items.add(value);
+    }
+    writebuffer.appendInt2(items.length);
+    for (String item in items) {
+      writebuffer.appendString(item);
     }
   }
 }

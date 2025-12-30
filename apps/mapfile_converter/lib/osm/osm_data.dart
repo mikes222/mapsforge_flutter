@@ -39,15 +39,15 @@ sealed class _OsmPrimitive {
 /// OSM node
 class OsmNode extends _OsmPrimitive implements ILatLong {
   /// OsmNode default constructor
-  OsmNode({required super.id, required super.tags, required double latitude, required double longitude})
-    : latLong = LatLong(_roundDouble(latitude), _roundDouble(longitude));
+  OsmNode({required super.id, required super.tags, required double latitude, required double longitude}) : latLong = LatLong(latitude, longitude);
 
   final ILatLong latLong;
 
-  static double _roundDouble(double value) {
-    const num mod = 10000000;
-    return ((value * mod).round().toDouble() / mod);
-  }
+  // static double _roundDouble(double value) {
+  //   return value;
+  //   // const num mod = 10000000.0;
+  //   // return ((value * mod).roundToDouble() / mod);
+  // }
 
   @override
   String toString() {

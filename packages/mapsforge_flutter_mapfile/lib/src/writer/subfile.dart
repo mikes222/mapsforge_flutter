@@ -7,10 +7,8 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/filter/boundary_filter.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_collection.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tile_buffer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/tile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_collection.dart';
 
 /// Each subfile consists of:
 /// tile index header
@@ -28,8 +26,8 @@ typedef ProcessFunc = Future<void> Function(Tile tile);
 ///
 /// This involves collecting all POIs and ways for a given zoom level range,
 /// processing them into tiles, and writing the tile index and tile data.
-class SubfileCreator {
-  final _log = Logger('SubfileCreator');
+class Subfile {
+  final _log = Logger('Subfile');
 
   /// Base zoom level of the sub-file, which equals to one block.
   final int baseZoomLevel;
@@ -52,11 +50,11 @@ class SubfileCreator {
 
   Writebuffer? _writebufferTileIndex;
 
-  late final TileBuffer tileBuffer;
+  late final TileBuffer _tileBuffer;
 
   final BoundaryFilter filter = BoundaryFilter();
 
-  SubfileCreator({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo}) {
+  Subfile({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo}) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
     _minX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.minLongitude);
     _maxX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.maxLongitude);
@@ -66,7 +64,7 @@ class SubfileCreator {
 
     assert(_minX >= 0, "minX $_minX < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
     assert(_minY >= 0, "minY $_minY < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
-    tileBuffer = TileBuffer(baseZoomLevel);
+    _tileBuffer = TileBuffer(baseZoomLevel);
 
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
       _poiWayCollections.poiholderCollections[zoomlevel] = PoiholderCollection();
@@ -75,31 +73,40 @@ class SubfileCreator {
   }
 
   void dispose() {
-    tileBuffer.dispose();
+    _tileBuffer.dispose();
     _poiWayCollections.clear();
     _writebufferTileIndex = null;
   }
 
-  Iterable<PoiholderCollection> get poiholderCollection => _poiWayCollections.poiholderCollections.values;
+  //Iterable<PoiholderCollection> get poiholderCollection => _poiWayCollections.poiholderCollections.values;
 
-  Iterable<WayholderCollection> get wayholderCollection => _poiWayCollections.wayholderCollections.values;
+  //Iterable<WayholderCollection> get wayholderCollection => _poiWayCollections.wayholderCollections.values;
 
   /// Adds a list of POIs to the appropriate zoom level within this sub-file.
-  void addPoidata(ZoomlevelRange zoomlevelRange, List<PointOfInterest> pois) {
+  void addPoidata(ZoomlevelRange zoomlevelRange, Iterable<Poiholder> pois) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    PoiholderCollection poiinfo = _poiWayCollections.poiholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    for (PointOfInterest pointOfInterest in pois) {
-      poiinfo.setPoidata(pointOfInterest);
+    PoiholderCollection poiholderCollection = _poiWayCollections.poiholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    for (Poiholder poiholder in pois) {
+      poiholderCollection.addPoiholder(poiholder);
     }
   }
 
   /// Adds a list of ways to the appropriate zoom level within this sub-file.
-  void addWaydata(ZoomlevelRange zoomlevelRange, List<Wayholder> wayholders) {
+  void addWaydata(ZoomlevelRange zoomlevelRange, Iterable<Wayholder> wayholders) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    WayholderCollection wayinfo = _poiWayCollections.wayholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    wayinfo.addWayholders(wayholders);
+    WayholderCollection wayholderCollection = _poiWayCollections.wayholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    wayholderCollection.addWayholders(wayholders);
+  }
+
+  void countTags(TagholderModel model) {
+    _poiWayCollections.poiholderCollections.forEach((int zoom, PoiholderCollection poiholderCollection) {
+      poiholderCollection.countTags(model);
+    });
+    _poiWayCollections.wayholderCollections.forEach((int zoom, WayholderCollection wayholderCollection) {
+      wayholderCollection.countTags(model);
+    });
   }
 
   Future<void> _processAsync(
@@ -173,13 +180,17 @@ class SubfileCreator {
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
     _log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
+
+    List<String> languagesPreferences = [];
+    if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
+
     // each instance must process this number of consecutive tiles
     // makes no sense to create multiple isolates for so few tiles
     if (tileCount <= 100) instanceCount = 1;
     // too many tiles (hence too many ways). Danger of OutOfMemory Exception
     //if (tileCount > 50000 && instanceCount > 2) instanceCount = 2;
 
-    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, maxDeviationPixel);
+    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, maxDeviationPixel, languagesPreferences);
     // the isolates now hove the infos, we can remove them from memory here
     List<Future> futures = [];
     int current = 0;
@@ -197,7 +208,7 @@ class SubfileCreator {
         // wait until all futures are completed and write the results to the tileBuffer
         await Future.wait(futures);
         futures.clear();
-        tileBuffer.cacheToDisk(processedTiles, sumTiles);
+        _tileBuffer.cacheToDisk(processedTiles, sumTiles);
         if (tileCount > 100) {
           if (currentTileY > _minY && (currentTileY % 5 == 0)) {
             // remove data from previous lines (y)
@@ -212,22 +223,28 @@ class SubfileCreator {
           }
           tileWriters.clear();
           if (currentTileY < _maxY) {
-            tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, maxDeviationPixel);
+            tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, maxDeviationPixel, languagesPreferences);
           }
         }
       },
     );
     _poiWayCollections.clear();
-    await tileBuffer.writeComplete();
+    await _tileBuffer.writeComplete();
     session.complete();
   }
 
   Future<void> _future(ITileWriter tileWriter, Tile tile) async {
     Uint8List writebufferTile = await tileWriter.writeTile(tile);
-    tileBuffer.set(tile, writebufferTile);
+    _tileBuffer.set(tile, writebufferTile);
   }
 
-  Future<List<ITileWriter>> createTileWriters(int currentTileY, int instanceCount, bool debugFile, double maxDeviationPixel) async {
+  Future<List<ITileWriter>> createTileWriters(
+    int currentTileY,
+    int instanceCount,
+    bool debugFile,
+    double maxDeviationPixel,
+    List<String> languagesPreferences,
+  ) async {
     List<ITileWriter> result = [];
     PoiWayCollections prefiltered = _poiWayCollections;
     if (tileCount > 100) {
@@ -240,7 +257,7 @@ class SubfileCreator {
     }
     for (int i = 0; i < instanceCount; ++i) {
       result.add(
-        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel),
+        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel, languagesPreferences),
         // TileWriter(
         //   debugFile,
         //   Map.from(_poiholderCollection),
@@ -265,8 +282,7 @@ class SubfileCreator {
     int firstOffset = offset;
     _processSync("writing tile index", (tile) {
       _writeTileIndexEntry(_writebufferTileIndex!, coveredByWater, offset);
-      offset += tileBuffer.getLength(tile);
-      return Future.value(null);
+      offset += _tileBuffer.getLength(tile);
     });
     assert(
       firstOffset == _writebufferTileIndex!.length,
@@ -290,7 +306,7 @@ class SubfileCreator {
   Future<int> getTilesLength(bool debugFile) async {
     int result = 0;
     _processSync("getting tiles length", (tile) {
-      result += tileBuffer.getLength(tile);
+      result += _tileBuffer.getLength(tile);
     });
     return result;
   }
@@ -298,7 +314,7 @@ class SubfileCreator {
   /// Writes all tile data for this sub-file to the given [ioSink].
   Future<void> writeTiles(bool debugFile, SinkWithCounter ioSink) async {
     await _processAsync("writing tiles", (tile) async {
-      Uint8List contentForTile = await tileBuffer.getAndRemove(tile);
+      Uint8List contentForTile = await _tileBuffer.getAndRemove(tile);
       ioSink.add(contentForTile);
     });
   }
@@ -308,7 +324,7 @@ class SubfileCreator {
   /// Logs statistics about the contents of this sub-file.
   void statistics() {
     int poiCount = _poiWayCollections.poiholderCollections.values.fold(0, (int combine, poiinfo) => combine + poiinfo.count);
-    int wayCount = _poiWayCollections.wayholderCollections.values.fold(0, (combine, wayinfo) => combine + wayinfo.wayCount);
+    int wayCount = _poiWayCollections.wayholderCollections.values.fold(0, (combine, wayinfo) => combine + wayinfo.count);
     int pathCount = _poiWayCollections.wayholderCollections.values.fold(
       0,
       (combine, wayinfo) => combine + wayinfo.wayholders.fold(0, (combine, wayholder) => combine + wayholder.pathCount()),
