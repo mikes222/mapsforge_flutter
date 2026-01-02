@@ -11,7 +11,7 @@ class BlockPage extends StatelessWidget {
 
   final SubFileParameter subFileParameter;
 
-  const BlockPage({Key? key, required this.mapFile, required this.subFileParameter}) : super(key: key);
+  const BlockPage({super.key, required this.mapFile, required this.subFileParameter});
 
   @override
   Widget build(BuildContext context) {
@@ -19,59 +19,34 @@ class BlockPage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    return FutureBuilder<DatastoreBundle?>(
-      future: _readBlock(),
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        if (snapshot.hasError || snapshot.error != null) {
-          return Center(child: Text(snapshot.error.toString()));
-        }
-        if (snapshot.data == null) return const Center(child: CircularProgressIndicator());
-        DatastoreBundle datastoreBundle = snapshot.data;
-        int? items = datastoreBundle.ways.length < 1000
-            ? datastoreBundle.ways.fold<int>(
-                0,
-                ((previousValue, element) => previousValue + element.latLongs.fold(0, ((previousValue, element) => previousValue + element.length))),
-              )
-            : null;
-        return ListView(
-          children: <Widget>[
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text("IsWater ${datastoreBundle.isWater}, "),
-                  InkWell(
-                    child: Row(children: <Widget>[Text("Pois ${datastoreBundle.pointOfInterests.length}, "), const Icon(Icons.more_horiz)]),
-                    onTap: () {
-                      Navigator.of(
-                        context,
-                      ).push(MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: datastoreBundle.pointOfInterests)));
-                    },
-                  ),
-                  InkWell(
-                    child: Row(
-                      children: <Widget>[
-                        Text("Ways ${datastoreBundle.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "),
-                        const Icon(Icons.more_horiz),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => WayPage(ways: datastoreBundle.ways)));
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
+    return ListView(
+      children: List.generate(subFileParameter.zoomLevelMax - subFileParameter.zoomLevelMin + 1, (idx) => idx + subFileParameter.zoomLevelMin).map((zoomlevel) {
+        return FutureBuilder<DatastoreBundle?>(
+          future: _readBlock(zoomlevel),
+          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+            if (snapshot.hasError || snapshot.error != null) {
+              return Center(child: Text(snapshot.error.toString()));
+            }
+            if (snapshot.data == null) return const Center(child: CircularProgressIndicator());
+            DatastoreBundle datastoreBundle = snapshot.data;
+            int? items = datastoreBundle.ways.length < 1000
+                ? datastoreBundle.ways.fold<int>(
+                    0,
+                    ((previousValue, element) => previousValue + element.latLongs.fold(0, ((previousValue, element) => previousValue + element.length))),
+                  )
+                : null;
+
+            return _CardWidget(datastoreBundle: datastoreBundle, items: items, zoomlevel: zoomlevel, minZoomlevel: subFileParameter.zoomLevelMin);
+          },
         );
-      },
+      }).toList(),
     );
   }
 
-  Future<DatastoreBundle?> _readBlock() async {
+  Future<DatastoreBundle?> _readBlock(int zoomlevel) async {
     try {
-      QueryParameters queryParameters = new QueryParameters();
-      queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
+      QueryParameters queryParameters = QueryParameters();
+      queryParameters.queryZoomLevel = zoomlevel;
       MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
       Tile upperLeft = Tile(subFileParameter.boundaryTileLeft, subFileParameter.boundaryTileTop, subFileParameter.baseZoomLevel, 0);
       Tile lowerRight = Tile(subFileParameter.boundaryTileRight, subFileParameter.boundaryTileBottom, subFileParameter.baseZoomLevel, 0);
@@ -89,5 +64,41 @@ class BlockPage extends StatelessWidget {
       print("${stacktrace.toString()}");
       rethrow;
     }
+  }
+}
+
+class _CardWidget extends StatelessWidget {
+  const _CardWidget({super.key, required this.datastoreBundle, required this.items, required this.zoomlevel, required this.minZoomlevel});
+
+  final DatastoreBundle datastoreBundle;
+  final int? items;
+  final int minZoomlevel;
+  final int zoomlevel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text("Zoomlevel ${minZoomlevel} - $zoomlevel", style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text("IsWater ${datastoreBundle.isWater}, "),
+          InkWell(
+            child: Row(children: <Widget>[Text("Pois ${datastoreBundle.pointOfInterests.length}, "), const Icon(Icons.more_horiz)]),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: datastoreBundle.pointOfInterests)));
+            },
+          ),
+          InkWell(
+            child: Row(
+              children: <Widget>[Text("Ways ${datastoreBundle.ways.length}, sum ${items ?? "(not calculated)"} LatLongs, "), const Icon(Icons.more_horiz)],
+            ),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => WayPage(ways: datastoreBundle.ways)));
+            },
+          ),
+        ],
+      ),
+    );
   }
 }

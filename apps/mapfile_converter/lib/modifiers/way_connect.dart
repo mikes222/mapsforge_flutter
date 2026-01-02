@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// Connects open ways together to form a longer way. Only master and openOuters will be taken into account.
 class WayConnect {
-  static final _log = new Logger('WayConnect');
+  static final _log =  Logger('WayConnect');
 
   void connect(Wayholder wayholder) {
     if (wayholder.openOutersRead.length > 5000) {

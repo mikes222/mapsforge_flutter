@@ -1,7 +1,7 @@
 import 'package:mapsforge_flutter_core/model.dart';
 
 class MatchingCacheKey {
-  final TagCollection _tags;
+  final ITagCollection _tags;
   final int _indoorLevel;
 
   const MatchingCacheKey(this._tags, this._indoorLevel);

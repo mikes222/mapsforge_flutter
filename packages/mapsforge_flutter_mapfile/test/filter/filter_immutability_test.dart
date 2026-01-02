@@ -16,11 +16,7 @@ class _WayholderSnapshot {
 _WayholderSnapshot _snapshotWayholder(Wayholder wayholder) {
   List<List<ILatLong>> snap(List<Waypath> paths) => paths.map((p) => List<ILatLong>.from(p.path)).toList();
 
-  return _WayholderSnapshot(
-    inner: snap(wayholder.innerRead),
-    closedOuters: snap(wayholder.closedOutersRead),
-    openOuters: snap(wayholder.openOutersRead),
-  );
+  return _WayholderSnapshot(inner: snap(wayholder.innerRead), closedOuters: snap(wayholder.closedOutersRead), openOuters: snap(wayholder.openOutersRead));
 }
 
 void _expectWayholderUnchanged(Wayholder original, _WayholderSnapshot snapshot) {
@@ -39,13 +35,7 @@ Wayholder _createWayholder({required List<Waypath> closedOuters, List<Waypath> o
 }
 
 Waypath _square(double minLat, double minLon, double maxLat, double maxLon) {
-  return Waypath(path: [
-    LatLong(maxLat, minLon),
-    LatLong(maxLat, maxLon),
-    LatLong(minLat, maxLon),
-    LatLong(minLat, minLon),
-    LatLong(maxLat, minLon),
-  ]);
+  return Waypath(path: [LatLong(maxLat, minLon), LatLong(maxLat, maxLon), LatLong(minLat, maxLon), LatLong(minLat, minLon), LatLong(maxLat, minLon)]);
 }
 
 Waypath _polyline(List<ILatLong> pts) => Waypath(path: pts);
@@ -143,19 +133,19 @@ void main() {
   });
 
   group('BoundaryFilter immutability (Wayholder paths)', () {
-    test('filter() does not mutate Wayholder paths', () {
+    test('filter() does not mutate Wayholder paths', () async {
       Waypath area = _square(0, 0, 10, 10);
       Wayholder originalWay = _createWayholder(closedOuters: [area]);
       final waySnap = _snapshotWayholder(originalWay);
 
       PoiWayCollections collections = PoiWayCollections();
-      WayholderCollection whc = WayholderCollection();
-      whc.addWayholder(originalWay);
+      IWayholderCollection whc = WayholderCollection();
+      whc.add(originalWay);
       collections.wayholderCollections[0] = whc;
 
       BoundaryFilter filter = BoundaryFilter();
       BoundingBox tile = const BoundingBox(5, 5, 6, 6);
-      PoiWayCollections res = filter.filter(collections, tile);
+      PoiWayCollections res = await filter.filter(collections, tile);
 
       expect(res.wayholderCollections[0]!.length, 1);
       _expectWayholderUnchanged(originalWay, waySnap);

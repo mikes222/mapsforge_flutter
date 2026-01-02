@@ -21,7 +21,7 @@ class TileBuffer {
   int _length = 0;
 
   TileBuffer(int baseZoomlevel) {
-    _filename = "tiles_${DateTime.now().millisecondsSinceEpoch}_$baseZoomlevel.tmp";
+    _filename = "tiles_${baseZoomlevel}_${DateTime.now().millisecondsSinceEpoch}.tmp";
   }
 
   void dispose() {
@@ -42,6 +42,7 @@ class TileBuffer {
     _writebufferForTiles[tile] = content;
     _sizes[tile] = content.length;
     _length += content.length;
+    _cacheToDisk();
   }
 
   /// Returns the content of the tile. Assumes that the order of retrieval is exactly
@@ -51,18 +52,17 @@ class TileBuffer {
     if (result != null) return result;
 
     await writeComplete();
-    if (_readbufferFile != null) {
-      _TempfileIndex tempfileIndex = _indexes[tile]!;
-      Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex.position, tempfileIndex.length);
-      return readbuffer.getBuffer(0, tempfileIndex.length);
-    }
-    return _writebufferForTiles[tile]!;
+    assert(_readbufferFile != null);
+    _TempfileIndex tempfileIndex = _indexes[tile]!;
+    Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex.position, tempfileIndex.length);
+    return readbuffer.getBuffer(0, tempfileIndex.length);
   }
 
   Future<Uint8List> getAndRemove(Tile tile) async {
     Uint8List? result = _writebufferForTiles.remove(tile);
     if (result != null) {
       _sizes.remove(tile);
+      _length -= result.length;
       return result;
     }
     assert(_ioSink != null || _readbufferFile != null);
@@ -82,8 +82,7 @@ class TileBuffer {
     return _sizes[tile]!;
   }
 
-  void cacheToDisk(int processedTiles, int sumTiles) {
-    if (_writebufferForTiles.isEmpty) return;
+  void _cacheToDisk() {
     // less than 1MB? keep in memory
     if (_length < 1000000) return;
     _ioSink ??= SinkWithCounter(File(_filename).openWrite());

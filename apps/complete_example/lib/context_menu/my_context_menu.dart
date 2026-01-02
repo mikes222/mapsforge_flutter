@@ -85,7 +85,7 @@ class MyContextMenu extends StatelessWidget {
                 String renderthemeString = await rootBundle.loadString(configuration.renderTheme!.fileName);
                 Rendertheme rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage(rendertheme, downloadFile!)));
+                await Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => MapHeaderPage(rendertheme, downloadFile!)));
                 //MarkerdemoDatabase.addToDatabase(widget.event);
                 // // The Datastore will listen to changes in the database and update the UI
                 // // hide the contextmenu
@@ -183,10 +183,14 @@ class MyContextMenu extends StatelessWidget {
         RenderthemeZoomlevel renderthemeLevel = renderTheme.prepareZoomlevel(tile.zoomLevel);
         if (LatLongUtils.isClosedWay(wayinfo.latLongs)) {
           List<Renderinstruction> shapes = renderthemeLevel.matchClosedWay(tile, wayinfo.way);
-          shapes.forEach((shape) => print(shape.toString()));
+          for (var shape in shapes) {
+            print(shape.toString());
+          }
         } else {
           List<Renderinstruction> shapes = renderthemeLevel.matchOpenWay(tile, wayinfo.way);
-          shapes.forEach((shape) => print(shape.toString()));
+          for (var shape in shapes) {
+            print(shape.toString());
+          }
         }
       },
     );

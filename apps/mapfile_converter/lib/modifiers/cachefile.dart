@@ -55,13 +55,13 @@ class CacheFile {
   Wayholder fromFile(Uint8List file) {
     CacheWayholder cacheWayholder = CacheWayholder.fromBuffer(file);
     Map<String, String> tags = {};
-    cacheWayholder.tagkeys.forEach((key) {
+    for (var key in cacheWayholder.tagkeys) {
       tags[key] = cacheWayholder.tagvals[cacheWayholder.tagkeys.indexOf(key)];
-    });
+    }
     Map<String, String> normalized = {};
-    cacheWayholder.normalizedkeys.forEach((key) {
+    for (var key in cacheWayholder.normalizedkeys) {
       normalized[key] = cacheWayholder.normalizedvals[cacheWayholder.normalizedkeys.indexOf(key)];
-    });
+    }
     TagholderCollection tagholderCollection = TagholderCollection.fromCache(tags, normalized);
     Wayholder wayholder = Wayholder(tagholderCollection: tagholderCollection);
     //wayholder.tileBitmask = cacheWayholder.tileBitmask;

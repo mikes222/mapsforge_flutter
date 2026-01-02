@@ -138,30 +138,34 @@ class TileWriter implements ITileWriter {
 
   Future<PoiWayCollections> _filterForTile(Tile tile) async {
     PoiWayCollections poiWayInfos = PoiWayCollections();
-    poiWayCollections.poiholderCollections.forEach((zoomlevel, poiinfo) {
-      PoiholderCollection newPoiinfo = PoiholderCollection();
-      for (Poiholder poiholder in poiinfo.poiholders) {
+    for (var entry in poiWayCollections.poiholderCollections.entries) {
+      int zoomlevel = entry.key;
+      IPoiholderCollection poiholderCollection = entry.value;
+      IPoiholderCollection newPoiholderCollection = PoiholderCollection();
+      await poiholderCollection.forEach((poiholder) {
         if (tile.getBoundingBox().containsLatLong(poiholder.position)) {
-          newPoiinfo.addPoiholder(poiholder);
+          newPoiholderCollection.add(poiholder);
         }
-      }
-      poiWayInfos.poiholderCollections[zoomlevel] = newPoiinfo;
-    });
+      });
+      poiWayInfos.poiholderCollections[zoomlevel] = newPoiholderCollection;
+    }
     WayCropper wayCropper = WayCropper(maxDeviationPixel: maxDeviationPixel);
     BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
-    poiWayCollections.wayholderCollections.forEach((zoomlevel, wayinfo) {
-      WayholderCollection newWayinfo = WayholderCollection();
-      for (Wayholder wayholder in wayinfo.wayholders) {
+    for (var entry in poiWayCollections.wayholderCollections.entries) {
+      int zoomlevel = entry.key;
+      IWayholderCollection wayholderCollection = entry.value;
+      IWayholderCollection newWayholderCollection = WayholderCollection();
+      await wayholderCollection.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tile.getBoundingBox().intersects(wayBoundingBox) ||
             tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
             wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
           Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
-          if (wayCropped != null) newWayinfo.addWayholder(wayCropped);
+          if (wayCropped != null) newWayholderCollection.add(wayCropped);
         }
-      }
-      poiWayInfos.wayholderCollections[zoomlevel] = newWayinfo;
-    });
+      });
+      poiWayInfos.wayholderCollections[zoomlevel] = newWayholderCollection;
+    }
     return poiWayInfos;
   }
 
@@ -174,12 +178,12 @@ class TileWriter implements ITileWriter {
     }
   }
 
-  void _writeZoomtable(Tile tile, Writebuffer writebuffer, Map<int, PoiholderCollection> poisPerZoomlevel, Map<int, WayholderCollection> waysPerZoomlevel) {
+  void _writeZoomtable(Tile tile, Writebuffer writebuffer, Map<int, IPoiholderCollection> poisPerZoomlevel, Map<int, IWayholderCollection> waysPerZoomlevel) {
     for (int queryZoomLevel = zoomlevelRange.zoomlevelMin; queryZoomLevel <= zoomlevelRange.zoomlevelMax; queryZoomLevel++) {
-      PoiholderCollection poiinfo = poisPerZoomlevel[queryZoomLevel]!;
-      WayholderCollection wayinfo = waysPerZoomlevel[queryZoomLevel]!;
-      int poiCount = poiinfo.count;
-      int wayCount = wayinfo.count;
+      IPoiholderCollection poiholderCollection = poisPerZoomlevel[queryZoomLevel]!;
+      IWayholderCollection wayinfo = waysPerZoomlevel[queryZoomLevel]!;
+      int poiCount = poiholderCollection.length;
+      int wayCount = wayinfo.length;
       writebuffer.appendUnsignedInt(poiCount);
       writebuffer.appendUnsignedInt(wayCount);
     }
@@ -206,7 +210,7 @@ class TileWriter implements ITileWriter {
 
     Writebuffer poiWriteBuffer = Writebuffer();
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      PoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
+      IPoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
       poiholderCollection.writePoidata(poiWriteBuffer, debugFile, tileLatitude, tileLongitude, languagesPreferences);
     }
     // the offset to the first way in the block
@@ -216,7 +220,7 @@ class TileWriter implements ITileWriter {
     //   PoiholderCollection poiholderCollection = poiWayInfos.poiholderCollections[zoomlevel]!;
     // }
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      WayholderCollection wayholderCollection = poiWayInfos.wayholderCollections[zoomlevel]!;
+      IWayholderCollection wayholderCollection = poiWayInfos.wayholderCollections[zoomlevel]!;
       wayholderCollection.writeWaydata(writebuffer, debugFile, tile, tileLatitude, tileLongitude, languagesPreferences);
     }
     return writebuffer.getUint8ListAndClear();

@@ -58,9 +58,6 @@ class _MockRenderInstruction extends Renderinstruction {
   MapRectangle getBoundary(RenderInfo renderInfo) => const MapRectangle.zero();
 
   @override
-  ShapePainter? getPainter() => null;
-
-  @override
   String getType() => 'mock';
 
   @override

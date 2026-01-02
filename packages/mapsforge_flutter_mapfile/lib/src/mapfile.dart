@@ -12,7 +12,6 @@ import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_debug.dart';
 import 'package:mapsforge_flutter_mapfile/src/cache/index_cache.dart';
 import 'package:mapsforge_flutter_mapfile/src/exceptions/mapfile_exception.dart';
-import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
 import 'package:mapsforge_flutter_mapfile/src/map_datastore.dart';
 import 'package:mapsforge_flutter_mapfile/src/model/mapfile_info.dart';
 import 'package:mapsforge_flutter_mapfile/src/reader/mapfile_info_builder.dart';

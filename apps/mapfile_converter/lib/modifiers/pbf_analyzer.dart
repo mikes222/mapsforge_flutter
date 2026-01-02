@@ -3,8 +3,9 @@ import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/large_data_splitter.dart';
+import 'package:mapfile_converter/modifiers/poiholder_file_collection.dart';
 import 'package:mapfile_converter/modifiers/way_connect.dart';
-import 'package:mapfile_converter/modifiers/wayholder_file_collection.dart';
+import 'package:mapfile_converter/modifiers/wayholder_id_file_collection.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
@@ -25,9 +26,9 @@ class PbfAnalyzer {
 
   final HashMap<int, ILatLong> _positions = HashMap();
 
-  final List<Poiholder> _nodeHolders = [];
+  late final PoiholderFileCollection _nodeHolders;
 
-  late final WayholderFileCollection _wayHolders;
+  late final WayholderIdFileCollection _wayHolders;
 
   final List<Wayholder> _wayHoldersMerged = [];
 
@@ -53,19 +54,19 @@ class PbfAnalyzer {
 
   BoundingBox? boundingBox;
 
+  BoundingBox? finalBoundingBox;
+
   final DefaultOsmPrimitiveConverter converter;
 
-  Iterable<Poiholder> get nodes => _nodeHolders;
+  PoiholderFileCollection get nodes => _nodeHolders;
 
-  Future<List<Wayholder>> ways() async {
-    List<Wayholder> result = await _wayHolders.getAll();
-    return result;
-  }
+  WayholderIdFileCollection ways() => _wayHolders;
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
-  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false}) {
-    _wayHolders = WayholderFileCollection(filename: "ways_analyzer_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
+  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false, this.finalBoundingBox}) {
+    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
+    _nodeHolders = PoiholderFileCollection(filename: "analyzer_nodes_${DateTime.timestamp().millisecondsSinceEpoch}.tmp", spillBatchSize: 10000);
   }
 
   static Future<PbfAnalyzer> readFile(
@@ -89,12 +90,13 @@ class PbfAnalyzer {
     bool quiet = false,
   }) async {
     int length = await readbufferSource.length();
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter, quiet: quiet);
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter, quiet: quiet, finalBoundingBox: finalBoundingBox);
     await pbfAnalyzer.readToMemory(readbufferSource, length);
     // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
     await pbfAnalyzer.analyze();
     if (finalBoundingBox != null) {
-      await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+      // we are filtering while importing, this is not necessary anymore
+      //await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
     }
     await pbfAnalyzer.removeSuperflous();
     //    print("rule: ${ruleAnalyzer.closedWayValueinfos()}");
@@ -109,19 +111,20 @@ class PbfAnalyzer {
     BoundingBox? finalBoundingBox,
     bool quiet = false,
   }) async {
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter, quiet: quiet);
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter, quiet: quiet, finalBoundingBox: finalBoundingBox);
     await pbfAnalyzer.readOsmToMemory(filename);
     // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
     await pbfAnalyzer.analyze();
     if (finalBoundingBox != null) {
-      await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+      // we are filtering while importing, this is not necessary anymore
+      //await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
     }
     await pbfAnalyzer.removeSuperflous();
     return pbfAnalyzer;
   }
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
-    readbufferSource.freeRessources();
+    await readbufferSource.freeRessources();
     IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
     List<int> positions = await pbfReader.getBlobPositions();
     List<Future> futures = [];
@@ -150,7 +153,7 @@ class PbfAnalyzer {
   Future<void> analyze() async {
     /// nodes are done, remove superflous nodes to free memory
     int count = _nodeHolders.length;
-    _nodeHolders.removeWhere((nodeholder) => nodeholder.tagholderCollection.isEmpty);
+    //_nodeHolders.removeWhere((nodeholder) => nodeholder.tagholderCollection.isEmpty);
     nodesWithoutTagsRemoved = count - _nodeHolders.length;
 
     await _mergeRelationsToWays();
@@ -264,6 +267,12 @@ class PbfAnalyzer {
       if (osmNode.tags.isEmpty) continue;
       Poiholder poiholder = converter.createNodeholder(osmNode);
       if (poiholder.tagholderCollection.isEmpty) continue;
+      if (finalBoundingBox != null) {
+        if (!finalBoundingBox!.containsLatLong(poiholder.position)) {
+          ++nodesFiltered;
+          continue;
+        }
+      }
       _nodeHolders.add(poiholder);
     }
     for (OsmWay osmWay in blockData.ways) {
@@ -274,18 +283,24 @@ class PbfAnalyzer {
           latLongs.add(position);
         }
       }
-      if (latLongs.length >= 2) {
-        Wayholder wayholder = converter.createWayholder(osmWay);
-        Waypath waypath = Waypath(path: latLongs);
-        if (waypath.isClosedWay()) {
-          wayholder.closedOutersAdd(waypath);
-        } else {
-          wayholder.openOutersAdd(waypath);
+      if (latLongs.length < 2) continue;
+
+      Wayholder wayholder = converter.createWayholder(osmWay);
+      Waypath waypath = Waypath(path: latLongs);
+      if (waypath.isClosedWay()) {
+        wayholder.closedOutersAdd(waypath);
+      } else {
+        wayholder.openOutersAdd(waypath);
+      }
+      if (finalBoundingBox != null) {
+        if (!finalBoundingBox!.containsBoundingBox(wayholder.boundingBoxCached) && !finalBoundingBox!.intersects(wayholder.boundingBoxCached)) {
+          ++waysFiltered;
+          continue;
         }
-        _wayHolders.add(osmWay.id, wayholder);
-        if (!quiet && _wayHolders.length % 1000000 == 0) {
-          _log.info("Ways read: ${_wayHolders.length}");
-        }
+      }
+      _wayHolders.add(osmWay.id, wayholder);
+      if (!quiet && _wayHolders.length % 1000000 == 0) {
+        _log.info("Ways read: ${_wayHolders.length}");
       }
     }
     for (OsmRelation osmRelation in blockData.relations) {
@@ -401,7 +416,7 @@ class PbfAnalyzer {
   }
 
   void clear() {
-    _nodeHolders.clear();
+    _nodeHolders.dispose();
     _wayHolders.dispose();
     _wayHoldersMerged.clear();
     _relations.clear();
@@ -410,7 +425,7 @@ class PbfAnalyzer {
 
   Future<void> filterByBoundingBox(BoundingBox boundingBox) async {
     int count = _nodeHolders.length;
-    _nodeHolders.removeWhere((nodeHolder) => !boundingBox.containsLatLong(nodeHolder.position));
+    await _nodeHolders.removeWhere((nodeHolder) => !boundingBox.containsLatLong(nodeHolder.position));
     nodesFiltered = count - _nodeHolders.length;
 
     count = _wayHoldersMerged.length;

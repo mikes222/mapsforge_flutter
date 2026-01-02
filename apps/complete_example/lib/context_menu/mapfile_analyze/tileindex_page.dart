@@ -112,11 +112,11 @@ class TileindexPage extends StatelessWidget {
     List<_Zoomtable> zoomtable = _readZoomtable(readBuffer);
     Map<int, int> poiCounts = {};
     Map<int, int> wayCounts = {};
-    zoomtable.forEach((inner) {
+    for (var inner in zoomtable) {
       res.add(Text("Zoomlevel: ${inner.zoomlevel}: Pois: ${inner.poiCount}, Ways: ${inner.wayCount}"));
       poiCounts[inner.zoomlevel] = inner.poiCount;
       wayCounts[inner.zoomlevel] = inner.wayCount;
-    });
+    }
     int offsetToFirstWay = readBuffer.readUnsignedInt();
     res.add(Text("Offset to first way: 0x${offsetToFirstWay.toRadixString(16)}", style: infoStyle));
     int taglessPois = 0;

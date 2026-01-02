@@ -5,7 +5,9 @@ import 'package:mapfile_converter/mapfile/subfile_creator.dart';
 import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/modifiers/poiholder_file_collection.dart';
 import 'package:mapfile_converter/modifiers/rendertheme_filter.dart';
+import 'package:mapfile_converter/modifiers/wayholder_file_collection.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
 import 'package:mapfile_converter/pbf/pbf_writer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
@@ -47,8 +49,11 @@ class PbfConvert {
       );
     }
 
-    List<Poiholder> osmNodes = [];
-    List<Wayholder> ways = [];
+    PoiholderFileCollection osmNodes = PoiholderFileCollection(
+      filename: "convert_nodes_${DateTime.timestamp().millisecondsSinceEpoch}.tmp",
+      spillBatchSize: 1000000,
+    );
+    WayholderFileCollection ways = WayholderFileCollection(filename: "convert_ways_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
 
     for (var sourcefile in sourcefiles) {
       _log.info("Reading $sourcefile, please wait...");
@@ -57,8 +62,8 @@ class PbfConvert {
 
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!quiet) pbfAnalyzer.statistics();
-        osmNodes.addAll(pbfAnalyzer.nodes);
-        ways.addAll(await pbfAnalyzer.ways());
+        await osmNodes.mergeFrom(pbfAnalyzer.nodes);
+        await ways.mergeFrom(pbfAnalyzer.ways());
         ways.addAll(pbfAnalyzer.waysMerged);
         pbfAnalyzer.clear();
       } else {
@@ -68,8 +73,8 @@ class PbfConvert {
         /// Now start exporting the data to a mapfile
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!quiet) pbfAnalyzer.statistics();
-        osmNodes.addAll(pbfAnalyzer.nodes);
-        ways.addAll(await pbfAnalyzer.ways());
+        await osmNodes.mergeFrom(pbfAnalyzer.nodes);
+        await ways.mergeFrom(pbfAnalyzer.ways());
         ways.addAll(pbfAnalyzer.waysMerged);
         pbfAnalyzer.clear();
       }
@@ -77,26 +82,26 @@ class PbfConvert {
 
     /// Simplify the data: Remove small areas, simplify ways
     RenderthemeFilter renderthemeFilter = RenderthemeFilter();
-    Map<ZoomlevelRange, PoiholderCollection> poiZoomlevels = renderTheme != null
-        ? renderthemeFilter.filterNodes(osmNodes, renderTheme)
-        : renderthemeFilter.convertNodes(osmNodes);
-    osmNodes.clear();
-    Map<ZoomlevelRange, WayholderCollection> wayZoomlevels = renderTheme != null
-        ? renderthemeFilter.filterWays(ways, renderTheme)
-        : renderthemeFilter.convertWays(ways);
-    ways.clear();
+    Map<ZoomlevelRange, IPoiholderCollection> poiZoomlevels = renderTheme != null
+        ? await renderthemeFilter.filterNodes(osmNodes, renderTheme)
+        : await renderthemeFilter.convertNodes(osmNodes);
+    await osmNodes.dispose();
+    Map<ZoomlevelRange, IWayholderCollection> wayZoomlevels = renderTheme != null
+        ? await renderthemeFilter.filterWays(ways, renderTheme)
+        : await renderthemeFilter.convertWays(ways);
+    await ways.dispose();
 
     _log.info("Writing $destinationfile");
     if (destinationfile.toLowerCase().endsWith(".osm")) {
       OsmWriter osmWriter = OsmWriter(destinationfile, finalBoundingBox!);
-      for (var pois2 in poiZoomlevels.values) {
-        for (Poiholder poi in pois2.poiholders) {
+      for (IPoiholderCollection pois2 in poiZoomlevels.values) {
+        for (Poiholder poi in await pois2.getAll()) {
           osmWriter.writeNode(poi.position, poi.tagholderCollection);
         }
       }
       poiZoomlevels.clear();
       for (var wayholders in wayZoomlevels.values) {
-        for (Wayholder wayholder in wayholders.wayholders) {
+        for (Wayholder wayholder in await wayholders.getAll()) {
           osmWriter.writeWay(wayholder);
         }
       }
@@ -104,14 +109,14 @@ class PbfConvert {
       await osmWriter.close();
     } else if (destinationfile.toLowerCase().endsWith(".pbf")) {
       PbfWriter pbfWriter = PbfWriter(destinationfile, finalBoundingBox!);
-      for (var pois2 in poiZoomlevels.values) {
-        for (Poiholder poi in pois2.poiholders) {
+      for (IPoiholderCollection pois2 in poiZoomlevels.values) {
+        for (Poiholder poi in await pois2.getAll()) {
           await pbfWriter.writeNode(poi.position, poi.tagholderCollection);
         }
       }
       poiZoomlevels.clear();
       for (var wayholders in wayZoomlevels.values) {
-        for (Wayholder wayholder in wayholders.wayholders) {
+        for (Wayholder wayholder in await wayholders.getAll()) {
           await pbfWriter.writeWay(wayholder);
         }
       }
@@ -152,16 +157,26 @@ class PbfConvert {
             poiZoomlevels,
           );
           subfiles.add(subfile);
-          if (!quiet) subfile.statistics();
+          if (!quiet) await subfile.statistics();
         }
         previousZoomlevel = zoomlevel;
       }
+
       TagholderModel model = TagholderModel();
       MapfileWriter mapfileWriter = MapfileWriter(filename: destinationfile, mapHeaderInfo: mapHeaderInfo, subfiles: subfiles, model: model);
 
       /// Write everything to the file and close the file
       await mapfileWriter.write(maxDeviation, isolates);
       await mapfileWriter.close();
+
+      for (var poiholderCollection in poiZoomlevels.values) {
+        poiholderCollection.dispose();
+      }
+      poiZoomlevels.clear();
+      for (var wayholderCollection in wayZoomlevels.values) {
+        await wayholderCollection.dispose();
+      }
+      wayZoomlevels.clear();
     }
   }
 }

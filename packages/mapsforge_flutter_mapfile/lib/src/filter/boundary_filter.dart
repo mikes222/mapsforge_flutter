@@ -3,52 +3,54 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class BoundaryFilter {
   // Returns a new collection with all poiWayCollections which are contained in the given tileBoundingBox.
-  PoiWayCollections filter(PoiWayCollections poiWayCollections, BoundingBox tileBoundingBox) {
+  Future<PoiWayCollections> filter(PoiWayCollections poiWayCollections, BoundingBox tileBoundingBox) async {
     PoiWayCollections poiWayInfos = PoiWayCollections();
-    poiWayCollections.poiholderCollections.forEach((zoomlevel, poiholderCollection) {
-      PoiholderCollection newPoiinfo = PoiholderCollection();
-      for (Poiholder poiholder in poiholderCollection.poiholders) {
+    for (var entry in poiWayCollections.poiholderCollections.entries) {
+      int zoomlevel = entry.key;
+      IPoiholderCollection poiholderCollection = entry.value;
+      IPoiholderCollection newPoiholderCollection = PoiholderCollection();
+      await poiholderCollection.forEach((poiholder) {
         if (tileBoundingBox.containsLatLong(poiholder.position)) {
-          newPoiinfo.addPoiholder(poiholder);
+          newPoiholderCollection.add(poiholder);
         }
-      }
-      poiWayInfos.poiholderCollections[zoomlevel] = newPoiinfo;
-    });
+      });
+      poiWayInfos.poiholderCollections[zoomlevel] = newPoiholderCollection;
+    }
 
-    poiWayCollections.wayholderCollections.forEach((zoomlevel, wayholderCollection) {
-      WayholderCollection newWayinfo = WayholderCollection();
-      for (Wayholder wayholder in wayholderCollection.wayholders) {
+    for (var entry in poiWayCollections.wayholderCollections.entries) {
+      int zoomlevel = entry.key;
+      IWayholderCollection wayholderCollection = entry.value;
+      IWayholderCollection newWayholderCollection = WayholderCollection();
+      await wayholderCollection.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
-          newWayinfo.addWayholder(wayholder);
+          newWayholderCollection.add(wayholder);
         } else if (wayBoundingBox.containsBoundingBox(tileBoundingBox)) {
-          newWayinfo.addWayholder(wayholder);
+          newWayholderCollection.add(wayholder);
         } else if (tileBoundingBox.intersects(wayBoundingBox)) {
-          newWayinfo.addWayholder(wayholder);
+          newWayholderCollection.add(wayholder);
         }
-      }
-      poiWayInfos.wayholderCollections[zoomlevel] = newWayinfo;
-    });
+      });
+      poiWayInfos.wayholderCollections[zoomlevel] = newWayholderCollection;
+    }
     return poiWayInfos;
   }
 
   /// Removes ways and pois which are not needed anymore. We remember the first tile and since the tiles comes in order we can remove everything
   /// which is contained in the boundary referenced by the first tile and the most current one. Do this just once in a while.
-  void remove(PoiWayCollections poiWayCollections, BoundingBox tileBoundingBox) {
-    poiWayCollections.poiholderCollections.forEach((zoomlevel, poiholderCollection) {
-      for (Poiholder poiholder in List.from(poiholderCollection.poiholders)) {
-        if (tileBoundingBox.containsLatLong(poiholder.position)) {
-          poiholderCollection.poiholders.remove(poiholder);
-        }
-      }
-    });
-    poiWayCollections.wayholderCollections.forEach((zoomlevel, wayinfo) {
-      for (Wayholder wayholder in List.from(wayinfo.wayholders)) {
+  Future<void> remove(PoiWayCollections poiWayCollections, BoundingBox tileBoundingBox) async {
+    for (IPoiholderCollection poiholderCollection in poiWayCollections.poiholderCollections.values) {
+      await poiholderCollection.removeWhere((poiholder) {
+        if (tileBoundingBox.containsLatLong(poiholder.position)) return true;
+        return false;
+      });
+    }
+    for (IWayholderCollection wayholderCollection in poiWayCollections.wayholderCollections.values) {
+      await wayholderCollection.removeWhere((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
-          wayinfo.wayholders.remove(wayholder);
-        }
-      }
-    });
+        if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) return true;
+        return false;
+      });
+    }
   }
 }

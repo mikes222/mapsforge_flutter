@@ -13,7 +13,7 @@ class SubfileParamsPage extends StatelessWidget {
 
   final Rendertheme rendertheme;
 
-  const SubfileParamsPage({Key? key, required this.mapFile, required this.subFileParameters, required this.rendertheme}) : super(key: key);
+  const SubfileParamsPage({super.key, required this.mapFile, required this.subFileParameters, required this.rendertheme});
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +22,12 @@ class SubfileParamsPage extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     List<SubFileParameter> newList = [];
-    subFileParameters.forEach((element) {
+    for (var element in subFileParameters) {
       if (newList.contains(element)) {
       } else {
         newList.add(element);
       }
-    });
+    }
     print("analyzing ${subFileParameters.length} subfileParameter items, ${newList.length} different items");
     return ListView(
       children: newList

@@ -1,9 +1,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:globe_dem_converter/src/globe_converter.dart';
 import 'package:logging/logging.dart';
-
-import '../lib/src/globe_converter.dart';
 
 class ConvertCommand extends Command {
   final _log = Logger('ConvertCommand');

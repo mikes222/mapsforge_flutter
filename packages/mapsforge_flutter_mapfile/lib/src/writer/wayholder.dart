@@ -35,7 +35,7 @@ class Wayholder {
     Wayholder result = Wayholder(tagholderCollection: tagholderCollection);
     result._master = _master?.clone();
     result._inner.addAll(inner ?? _inner.map((toElement) => toElement.clone()).toList());
-    result._closedOuters.addAll(closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList());
+    result.closedOutersAddAll(closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList());
     result._openOuters.addAll(openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList());
     result.labelPosition = labelPosition;
     result._boundingBox = _boundingBox;
@@ -103,8 +103,15 @@ class Wayholder {
   }
 
   void closedOutersAdd(Waypath waypath) {
-    assert(waypath.isClosedWay());
     assert(waypath.length > 2);
+    assert(
+      waypath.isClosedWay(),
+      "way must be closed ${waypath.length} ${waypath.first} - ${waypath.last} ${waypath.first.latitude - waypath.last.latitude} / ${waypath.first.longitude - waypath.last.longitude}",
+    );
+    if (!LatLongUtils.isEqual(waypath.first, waypath.last)) {
+      waypath.removeAt(waypath.length - 1);
+      waypath.add(LatLong(waypath.first.latitude, waypath.first.longitude));
+    }
     _boundingBox = null;
     _closedOuters.add(waypath);
   }
@@ -113,6 +120,12 @@ class Wayholder {
     assert(!waypaths.any((waypath) => !waypath.isClosedWay()));
     assert(!waypaths.any((waypath) => waypath.length <= 2));
     _boundingBox = null;
+    for (var waypath in waypaths) {
+      if (!LatLongUtils.isEqual(waypath.first, waypath.last)) {
+        waypath.removeAt(waypath.length - 1);
+        waypath.add(LatLong(waypath.first.latitude, waypath.first.longitude));
+      }
+    }
     _closedOuters.addAll(waypaths);
   }
 
@@ -179,8 +192,8 @@ class Wayholder {
   bool mayMoveToClosed(Waypath waypath) {
     assert(_openOuters.contains(waypath));
     if (waypath.isClosedWay()) {
-      _openOuters.remove(waypath);
-      _closedOuters.add(waypath);
+      openOutersRemove(waypath);
+      closedOutersAdd(waypath);
       return true;
     }
     return false;
@@ -220,9 +233,9 @@ class Wayholder {
     if (innerRead.isNotEmpty && openOutersRead.isEmpty && closedOutersRead.isEmpty) {
       for (var inner in innerRead) {
         if (inner.isClosedWay()) {
-          closedOutersWrite.add(inner);
+          closedOutersAdd(inner);
         } else {
-          openOutersWrite.add(inner);
+          openOutersAdd(inner);
         }
       }
       innerWrite.clear();

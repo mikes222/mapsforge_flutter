@@ -34,7 +34,7 @@ void main() {
       Datastore mapFile = await Mapfile.createFromFile(filename: 'test/rendering/monaco.map', preferredLanguage: null);
 
       Tile tile = Tile(x, y, zoomlevel, l);
-      JobRequest mapGeneratorJob = new JobRequest(tile);
+      JobRequest mapGeneratorJob =  JobRequest(tile);
       DatastoreRenderer dataStoreRenderer = DatastoreRenderer(mapFile, renderTheme, useSeparateLabelLayer: false);
 
       JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));

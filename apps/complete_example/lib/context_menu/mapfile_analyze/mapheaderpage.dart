@@ -26,7 +26,7 @@ class MapHeaderPage extends StatelessWidget {
     return FutureBuilder(
       future: _loadMapFile(filename),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        if (snapshot.data == null) return const Center(child: const CircularProgressIndicator());
+        if (snapshot.data == null) return const Center(child:  CircularProgressIndicator());
         Mapfile mapFile = snapshot.data;
         return ListView(children: <Widget>[_buildGeneralCard(mapFile), _buildFileinfoCard(mapFile, context), _buildFileheaderCard(context, mapFile)]);
       },
@@ -73,7 +73,7 @@ class MapHeaderPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Text("Mapfile General Properties", style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Text("Mapfile General Properties", style:  TextStyle(fontWeight: FontWeight.bold)),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -92,7 +92,7 @@ class MapHeaderPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Text("Map fileheader Properties", style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Text("Map fileheader Properties", style:  TextStyle(fontWeight: FontWeight.bold)),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -157,7 +157,7 @@ class MapHeaderPage extends StatelessWidget {
   String formatMsToDatetimeMs(int? ms) {
     if (ms == null) return "";
     if (ms == 0) return "";
-    DateTime date = new DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+    DateTime date =  DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
     var format = DateFormat("yyyy-MM-dd HH:mm:ss-SSS");
     return format.format(date);
   }

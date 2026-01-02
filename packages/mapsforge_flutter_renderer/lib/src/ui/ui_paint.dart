@@ -53,7 +53,7 @@ class UiPaint {
 
   /// Returns the color of this paint as a 32-bit integer.
   int getColorAsNumber() {
-    return _paint.color.value;
+    return _paint.color.toARGB32();
   }
 
   /// Returns the color of this paint as a `ui.Color`.

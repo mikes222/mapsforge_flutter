@@ -52,7 +52,7 @@ class PbfStatistics {
   }
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
-    readbufferSource.freeRessources();
+    await readbufferSource.freeRessources();
     IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
     List<int> positions = await pbfReader.getBlobPositions();
     List<Future> futures = [];

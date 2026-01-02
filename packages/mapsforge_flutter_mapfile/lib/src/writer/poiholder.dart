@@ -22,4 +22,9 @@ class Poiholder implements ILatLong {
 
   @override
   double get longitude => position.longitude;
+
+  @override
+  String toString() {
+    return 'Poiholder{position: $position, tagholderCollection: ${tagholderCollection.printTagsWithoutNames()}}';
+  }
 }

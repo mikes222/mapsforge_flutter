@@ -36,7 +36,7 @@ class Subfile {
 
   final MapHeaderInfo mapHeaderInfo;
 
-  final PoiWayCollections _poiWayCollections = PoiWayCollections();
+  late final PoiWayCollections _poiWayCollections;
 
   late final int _minX;
 
@@ -54,7 +54,7 @@ class Subfile {
 
   final BoundaryFilter filter = BoundaryFilter();
 
-  Subfile({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo}) {
+  Subfile({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo, PoiWayCollections? poiWayCollections}) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
     _minX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.minLongitude);
     _maxX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.maxLongitude);
@@ -66,9 +66,14 @@ class Subfile {
     assert(_minY >= 0, "minY $_minY < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
     _tileBuffer = TileBuffer(baseZoomLevel);
 
-    for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-      _poiWayCollections.poiholderCollections[zoomlevel] = PoiholderCollection();
-      _poiWayCollections.wayholderCollections[zoomlevel] = WayholderCollection();
+    if (poiWayCollections != null) {
+      _poiWayCollections = poiWayCollections;
+    } else {
+      _poiWayCollections = PoiWayCollections();
+      for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
+        _poiWayCollections.poiholderCollections[zoomlevel] = PoiholderCollection();
+        _poiWayCollections.wayholderCollections[zoomlevel] = WayholderCollection();
+      }
     }
   }
 
@@ -78,35 +83,33 @@ class Subfile {
     _writebufferTileIndex = null;
   }
 
-  //Iterable<PoiholderCollection> get poiholderCollection => _poiWayCollections.poiholderCollections.values;
-
-  //Iterable<WayholderCollection> get wayholderCollection => _poiWayCollections.wayholderCollections.values;
-
   /// Adds a list of POIs to the appropriate zoom level within this sub-file.
   void addPoidata(ZoomlevelRange zoomlevelRange, Iterable<Poiholder> pois) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    PoiholderCollection poiholderCollection = _poiWayCollections.poiholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    for (Poiholder poiholder in pois) {
-      poiholderCollection.addPoiholder(poiholder);
-    }
+    IPoiholderCollection poiholderCollection =
+        _poiWayCollections.poiholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    poiholderCollection.addAll(pois);
   }
 
   /// Adds a list of ways to the appropriate zoom level within this sub-file.
   void addWaydata(ZoomlevelRange zoomlevelRange, Iterable<Wayholder> wayholders) {
     if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
     if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    WayholderCollection wayholderCollection = _poiWayCollections.wayholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    wayholderCollection.addWayholders(wayholders);
+    IWayholderCollection wayholderCollection =
+        _poiWayCollections.wayholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
+    wayholderCollection.addAll(wayholders);
   }
 
-  void countTags(TagholderModel model) {
-    _poiWayCollections.poiholderCollections.forEach((int zoom, PoiholderCollection poiholderCollection) {
-      poiholderCollection.countTags(model);
-    });
-    _poiWayCollections.wayholderCollections.forEach((int zoom, WayholderCollection wayholderCollection) {
-      wayholderCollection.countTags(model);
-    });
+  Future<void> countTags(TagholderModel model) async {
+    for (var entry in _poiWayCollections.poiholderCollections.entries) {
+      IPoiholderCollection poiholderCollection = entry.value;
+      await poiholderCollection.countTags(model);
+    }
+    for (var entry in _poiWayCollections.wayholderCollections.entries) {
+      IWayholderCollection wayholderCollection = entry.value;
+      await wayholderCollection.countTags(model);
+    }
   }
 
   Future<void> _processAsync(
@@ -179,7 +182,7 @@ class Subfile {
   /// parallel isolates.
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
-    _log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
+    //_log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
 
     List<String> languagesPreferences = [];
     if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
@@ -208,14 +211,13 @@ class Subfile {
         // wait until all futures are completed and write the results to the tileBuffer
         await Future.wait(futures);
         futures.clear();
-        _tileBuffer.cacheToDisk(processedTiles, sumTiles);
         if (tileCount > 100) {
           if (currentTileY > _minY && (currentTileY % 5 == 0)) {
             // remove data from previous lines (y)
             Tile tile1 = Tile(_minX, _minY, baseZoomLevel, 0);
             Tile tile2 = Tile(_maxX, currentTileY - 1, baseZoomLevel, 0);
             BoundingBox tileBoundingBox = tile1.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
-            filter.remove(_poiWayCollections, tileBoundingBox);
+            await filter.remove(_poiWayCollections, tileBoundingBox);
           }
           // destroy old writers and build writers with prefiltered data for the next line
           for (var tileWriter in tileWriters) {
@@ -251,10 +253,17 @@ class Subfile {
       Tile tile1 = Tile(_minX, currentTileY, baseZoomLevel, 0);
       Tile tile2 = Tile(_maxX, currentTileY, baseZoomLevel, 0);
       BoundingBox tileBoundingBox = tile1.getBoundingBox().extendBoundingBox(tile2.getBoundingBox());
-      prefiltered = filter.filter(_poiWayCollections, tileBoundingBox);
+      prefiltered = await filter.filter(_poiWayCollections, tileBoundingBox);
       assert(prefiltered.poiholderCollections.isNotEmpty, "poiWayCollections.poiholderCollections.isEmpty");
       assert(prefiltered.wayholderCollections.isNotEmpty, "poiWayCollections.wayholderCollections.isEmpty");
     }
+    // print("for $currentTileY");
+    // for (var entry in prefiltered.poiholderCollections.entries) {
+    //   if (entry.key < 15)
+    //     for (var poiholder in await entry.value.getAll()) {
+    //       print("filter ${entry.key}: ${poiholder}");
+    //     }
+    // }
     for (int i = 0; i < instanceCount; ++i) {
       result.add(
         await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel, languagesPreferences),
@@ -322,14 +331,21 @@ class Subfile {
   int get tileCount => _tileCount;
 
   /// Logs statistics about the contents of this sub-file.
-  void statistics() {
-    int poiCount = _poiWayCollections.poiholderCollections.values.fold(0, (int combine, poiinfo) => combine + poiinfo.count);
-    int wayCount = _poiWayCollections.wayholderCollections.values.fold(0, (combine, wayinfo) => combine + wayinfo.count);
-    int pathCount = _poiWayCollections.wayholderCollections.values.fold(
-      0,
-      (combine, wayinfo) => combine + wayinfo.wayholders.fold(0, (combine, wayholder) => combine + wayholder.pathCount()),
-    );
-    int nodeCount = _poiWayCollections.wayholderCollections.values.fold(0, (combine, wayinfo) => combine + wayinfo.nodeCount);
+  Future<void> statistics() async {
+    int poiCount = 0;
+    for (final poiholderCollection in _poiWayCollections.poiholderCollections.values) {
+      poiCount += poiholderCollection.length;
+    }
+
+    int wayCount = 0;
+    int pathCount = 0;
+    int nodeCount = 0;
+    for (final wayholderCollection in _poiWayCollections.wayholderCollections.values) {
+      wayCount += wayholderCollection.length;
+      pathCount += await wayholderCollection.pathCount();
+      nodeCount += await wayholderCollection.nodeCount();
+    }
+
     _log.info(
       "$zoomlevelRange, baseZoomLevel: $baseZoomLevel, tiles: $tileCount, poi: $poiCount, way: $wayCount with ${wayCount != 0 ? (pathCount / wayCount).toStringAsFixed(1) : "n/a"} paths and ${pathCount != 0 ? (nodeCount / pathCount).toStringAsFixed(1) : "n/a"} nodes per path",
     );
@@ -340,14 +356,20 @@ class Subfile {
 
 class PoiWayCollections {
   /// minimum zoomlevel for all corresponding pois
-  final Map<int, PoiholderCollection> poiholderCollections = {};
+  final Map<int, IPoiholderCollection> poiholderCollections = {};
 
   /// minimum zoomlevel for all corresponding ways
-  final Map<int, WayholderCollection> wayholderCollections = {};
+  final Map<int, IWayholderCollection> wayholderCollections = {};
 
   PoiWayCollections();
 
   void clear() {
+    for (var poiholderCollection in poiholderCollections.values) {
+      poiholderCollection.dispose();
+    }
+    for (var wayholderCollection in wayholderCollections.values) {
+      wayholderCollection.dispose();
+    }
     poiholderCollections.clear();
     wayholderCollections.clear();
   }

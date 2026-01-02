@@ -94,9 +94,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _navigateToMapView() {
     if (_currentConfiguration.rendererType.isOffline) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => FileDownloadScreen(configuration: _currentConfiguration!)));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => FileDownloadScreen(configuration: _currentConfiguration)));
     } else {
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => MapViewScreen(configuration: _currentConfiguration!)));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => MapViewScreen(configuration: _currentConfiguration)));
     }
   }
 }

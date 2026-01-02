@@ -5,7 +5,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 abstract class ISubfileFiller {
   /// Prepares a list of ways by filtering and simplifying them.
-  Future<List<Wayholder>> prepareWays(WayholderCollection wayholders);
+  Future<List<Wayholder>> prepareWays(IWayholderCollection wayholderCollection);
 }
 
 /// An isolate-based wrapper for [SubfileFiller] to perform way preparation
@@ -41,13 +41,18 @@ class IsolateSubfileFiller implements ISubfileFiller {
   }
 
   @pragma('vm:entry-point')
-  static Future<Object?> readBlobDataStatic(WayholderCollection param) async {
-    return _pbfReader!.prepareWays(param);
+  static Future<Object?> readBlobDataStatic(IWayholderCollection wayholderCollection) async {
+    var result = _pbfReader!.prepareWays(wayholderCollection);
+    // free the filehandler in the isolate to being able to delete the file later on.
+    await wayholderCollection.freeRessources();
+    return result;
   }
 
   @override
-  Future<List<Wayholder>> prepareWays(WayholderCollection wayholders) async {
-    return await _isolateInstance.compute(wayholders);
+  Future<List<Wayholder>> prepareWays(IWayholderCollection wayholderCollection) async {
+    await wayholderCollection.freeRessources();
+    List<Wayholder> result = await _isolateInstance.compute(wayholderCollection);
+    return result;
     // return await Isolate.run(() {
     //   SubfileFiller subfileFiller = SubfileFiller(subfileZoomlevelRange, maxDeviation, boundingBox);
     //   return subfileFiller.prepareWays(wayholders);
@@ -97,13 +102,13 @@ class SubfileFiller implements ISubfileFiller {
 
   /// Prepares a list of ways by filtering and simplifying them.
   @override
-  Future<List<Wayholder>> prepareWays(WayholderCollection wayholders) {
+  Future<List<Wayholder>> prepareWays(IWayholderCollection wayholderCollection) async {
     if (maxDeviation <= 0) {
       // we do not want to filter anything, return the original
-      return Future.value(wayholders.wayholders.toList());
+      return (await wayholderCollection.getAll()).toList();
     }
     List<Wayholder> result = [];
-    for (Wayholder wayholder in wayholders.wayholders) {
+    for (Wayholder wayholder in await wayholderCollection.getAll()) {
       Wayholder? res = sizeFilter.filter(wayholder);
       if (res == null) continue;
       // size is big enough, now simplify the way
@@ -116,6 +121,6 @@ class SubfileFiller implements ISubfileFiller {
 
       result.add(res);
     }
-    return Future.value(result);
+    return result;
   }
 }

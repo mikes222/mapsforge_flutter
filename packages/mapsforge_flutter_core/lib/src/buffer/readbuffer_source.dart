@@ -14,7 +14,7 @@ abstract class ReadbufferSource {
   /// Frees resources that cannot be transferred to an isolate.
   ///
   /// This is typically called before sending the `ReadbufferSource` to another isolate.
-  void freeRessources();
+  Future<void> freeRessources();
 
   /// Reads a block of data of the given [length] from the current position.
   ///

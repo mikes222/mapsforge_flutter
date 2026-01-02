@@ -5,7 +5,7 @@ class WayPage extends StatelessWidget {
   /// The read POIs.
   final List<Way>? ways;
 
-  const WayPage({Key? key, this.ways}) : super(key: key);
+  const WayPage({super.key, this.ways});
 
   @override
   Widget build(BuildContext context) {

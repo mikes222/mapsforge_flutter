@@ -66,7 +66,7 @@ class MapfileWriter {
     if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
     // mapmodel should be aware of how many tags are needed and how often to being able to set the indexes accordingly.
     for (Subfile subfile in subfiles) {
-      subfile.countTags(model);
+      await subfile.countTags(model);
     }
 
     // after counting the tags we can set the indexes of each tag

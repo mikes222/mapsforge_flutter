@@ -220,7 +220,7 @@ void main() async {
 
     Tile tile = Tile(68236, 47798, 17, 0);
 
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: 10);
+    WayCropper wayCropper = const WayCropper(maxDeviationPixel: 10);
     Wayholder? wayholder = wayCropper.cropWay(Wayholder(tagholderCollection: TagholderCollection.empty()), tile.getBoundingBox(), 19);
 
     // wayCropper.steps.forEach((step) {
@@ -304,21 +304,21 @@ void main() async {
     // wayCropper.steps.forEach((step) {
     //   print(step);
     // });
-    way.latLongs.forEach((latlongs) {
+    for (var latlongs in way.latLongs) {
       List<String> results = [];
       String result = "";
-      latlongs.forEach((latlong) {
+      for (var latlong in latlongs) {
         result += "const LatLong(${(latlong.latitude).toStringAsFixed(6)},${(latlong.longitude).toStringAsFixed(6)}),";
         if (result.length > 250) {
           results.add(result);
           result = "";
         }
-      });
+      }
       if (result.isNotEmpty) results.add(result);
-      results.forEach((action) {
+      for (var action in results) {
         print("  $action");
-      });
-    });
+      }
+    }
 
     datastore.addWay(way);
 

@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter_core/src/utils/performance_profiler.dart';
 /// Web-compatible implementation for reading chunks of files.
 /// Supports both local files (via File API) and remote files (via HTTP Range requests).
 class ReadbufferFileWebJs implements ReadbufferSource {
-    // static final _log = Logger('ReadbufferFileWeb'); // Commented out as it is unused
+  // static final _log = Logger('ReadbufferFileWeb'); // Commented out as it is unused
 
   final dynamic _source; // html.File or String (URL)
   int? _length;
@@ -27,7 +27,7 @@ class ReadbufferFileWebJs implements ReadbufferSource {
   }
 
   @override
-  void freeRessources() {
+  Future<void> freeRessources() async {
     // No resources to free in web
   }
 

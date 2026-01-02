@@ -1,6 +1,8 @@
+import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/src/model/matching_cache_key.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rendertheme_zoomlevel.dart';
 import 'package:mapsforge_flutter_rendertheme/src/rule/rule.dart';
 
@@ -60,7 +62,20 @@ class Rendertheme {
   /// Hash string used for theme identification and caching.
   late final String forHash;
 
-  Rendertheme({required this.maxLevels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside, this.styleMenu});
+  /// LRU cache for node (POI) rendering instruction matches.
+  late final Cache<MatchingCacheKey, ZoomlevelRange?> nodeMatchingCache;
+
+  /// LRU cache for open way (linear) rendering instruction matches.
+  late final Cache<MatchingCacheKey, ZoomlevelRange?> openWayMatchingCache;
+
+  /// LRU cache for closed way (area) rendering instruction matches.
+  late final Cache<MatchingCacheKey, ZoomlevelRange?> closedWayMatchingCache;
+
+  Rendertheme({required this.maxLevels, this.mapBackground, this.mapBackgroundOutside, required this.rulesList, this.hasBackgroundOutside, this.styleMenu}) {
+    nodeMatchingCache = LfuCache(capacity: 1000, name: "Node-MatchingCache");
+    openWayMatchingCache = LfuCache(capacity: 5000, name: "OpenWay-MatchingCache");
+    closedWayMatchingCache = LfuCache(capacity: 2000, name: "ClosedWay-MatchingCache");
+  }
 
   /// Returns the number of distinct drawing levels required by this theme.
   ///
@@ -139,6 +154,9 @@ class Rendertheme {
       element.dispose();
     }
     _renderthemeZoomlevels.clear();
+    nodeMatchingCache.dispose();
+    openWayMatchingCache.dispose();
+    closedWayMatchingCache.dispose();
   }
 
   /// Completes theme initialization by finalizing all rules.
@@ -168,13 +186,17 @@ class Rendertheme {
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if the argument is never accepted.
   ZoomlevelRange? getZoomlevelRangeNode(ITagCollection tags) {
-    ZoomlevelRange? result;
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(tags, 0);
+    ZoomlevelRange? result = nodeMatchingCache[matchingCacheKey];
+    if (result != null) return result;
+
     for (var rule in rulesList) {
       ZoomlevelRange? range = rule.getZoomlevelRangeNode(tags);
       if (range != null) {
         result = result?.widenTo(range) ?? range;
       }
     }
+    nodeMatchingCache[matchingCacheKey] = result;
     return result;
   }
 
@@ -182,12 +204,19 @@ class Rendertheme {
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, ITagCollection tags) {
     bool isClosedWay = waypath.isClosedWay();
-    ZoomlevelRange? result;
+    MatchingCacheKey matchingCacheKey = MatchingCacheKey(tags, 0);
+    ZoomlevelRange? result = isClosedWay ? closedWayMatchingCache[matchingCacheKey] : openWayMatchingCache[matchingCacheKey];
+    if (result != null) return result;
     for (var rule in rulesList) {
       ZoomlevelRange? range = isClosedWay ? rule.getZoomlevelRangeClosedWay(tags) : rule.getZoomlevelRangeOpenWay(tags);
       if (range != null) {
         result = result?.widenTo(range) ?? range;
       }
+    }
+    if (isClosedWay) {
+      closedWayMatchingCache[matchingCacheKey] = result;
+    } else {
+      openWayMatchingCache[matchingCacheKey] = result;
     }
     return result;
   }

@@ -13,6 +13,8 @@ library;
 
 export 'src/mapfile.dart';
 export 'src/model/map_header_info.dart';
+export 'src/writer/i_poiholder_collection.dart';
+export 'src/writer/i_wayholder_collection.dart';
 export 'src/writer/mapfile_writer.dart';
 export 'src/writer/poiholder.dart';
 export 'src/writer/poiholder_collection.dart';

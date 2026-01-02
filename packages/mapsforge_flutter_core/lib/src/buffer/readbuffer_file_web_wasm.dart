@@ -25,7 +25,7 @@ class ReadbufferFileWebWasm implements ReadbufferSource {
   }
 
   @override
-  void freeRessources() {
+  Future<void> freeRessources() async {
     // No-op
   }
 

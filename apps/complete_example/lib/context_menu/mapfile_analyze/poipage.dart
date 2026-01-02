@@ -5,7 +5,7 @@ class PoiPage extends StatelessWidget {
   /// The read POIs.
   final List<PointOfInterest>? pointOfInterests;
 
-  const PoiPage({Key? key, this.pointOfInterests}) : super(key: key);
+  const PoiPage({super.key, this.pointOfInterests});
 
   @override
   Widget build(BuildContext context) {

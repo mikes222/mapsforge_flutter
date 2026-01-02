@@ -62,5 +62,5 @@ class ReadbufferMemory extends ReadbufferSource {
 
   /// This implementation has no resources to free.
   @override
-  void freeRessources() {}
+  Future<void> freeRessources() async {}
 }

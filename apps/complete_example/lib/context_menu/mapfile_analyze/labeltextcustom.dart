@@ -23,9 +23,9 @@ class LabeltextCustom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-      Text(label + (label.length > 0 ? ": " : ""),
+      Text(label + (label.isNotEmpty ? ": " : ""),
           style: TextStyle(
-              fontSize: this.fontSize ??
+              fontSize: fontSize ??
                   Theme.of(context).textTheme.bodyMedium?.fontSize,
               fontStyle: FontStyle.italic,
               color: Colors.blueGrey)),
@@ -67,7 +67,7 @@ class LabeltextCustom extends StatelessWidget {
     return GestureDetector(
       child: child,
       onLongPress: () {
-        Clipboard.setData(new ClipboardData(text: value ?? ""));
+        Clipboard.setData( ClipboardData(text: value ?? ""));
 //        if (scaffoldKey != null)
 //          new UiDefault().showMessage(scaffoldKey, "Copied to Clipboard");
       },

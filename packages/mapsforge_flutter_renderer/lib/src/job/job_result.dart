@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_rendertheme/src/model/render_info_collection.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
+import 'package:mapsforge_flutter_rendertheme/model.dart';
 
 /// Result object containing the output of a tile rendering job.
 ///

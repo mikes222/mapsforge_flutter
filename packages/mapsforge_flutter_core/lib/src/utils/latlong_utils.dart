@@ -103,6 +103,11 @@ class LatLongUtils {
     return isNear(latLongs.first, latLongs.last);
   }
 
+  static bool isEqual(ILatLong me, ILatLong other) {
+    if (me.latitude == other.latitude && me.longitude == other.longitude) return true;
+    return false;
+  }
+
   /// Returns true if the other point is equal or near this point. We use 0.00005 which is a distance of maximum 5.57m at the equator in each lat/lon direction
   static bool isNear(ILatLong me, ILatLong other) {
     if (me.latitude == other.latitude && me.longitude == other.longitude) return true;

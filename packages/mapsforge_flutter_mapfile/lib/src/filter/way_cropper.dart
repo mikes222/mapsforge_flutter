@@ -28,8 +28,16 @@ class WayCropper {
   Wayholder? cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
     List<Waypath> inner = wayholder.innerRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
       ..removeWhere((Waypath test) => test.isEmpty);
-    List<Waypath> closedOuters = wayholder.closedOutersRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
-      ..removeWhere((Waypath test) => test.isEmpty);
+
+    List<Waypath> closedOuters = [];
+    for (var test in wayholder.closedOutersRead) {
+      Waypath result = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
+      if (result.isNotEmpty) {
+        assert(result.isClosedWay());
+        closedOuters.add(result);
+      }
+    }
+
     List<Waypath> openOuters = wayholder.openOutersRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
       ..removeWhere((Waypath test) => test.isEmpty);
 
@@ -47,28 +55,39 @@ class WayCropper {
   /// This is a less aggressive optimization than [cropWay] and is used in
   /// specific scenarios.
   Wayholder? cropOutsideWay(Wayholder wayholder, BoundingBox boundingBox) {
-    List<Waypath> inner = wayholder.innerRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
-      ..removeWhere((Waypath test) => test.isEmpty);
-    List<Waypath> closedOuters = wayholder.closedOutersRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
-      ..removeWhere((Waypath test) => test.isEmpty);
-    List<Waypath> openOuters = wayholder.openOutersRead.map((test) => Waypath(path: _reduceOutside(test, boundingBox))).toList()
-      ..removeWhere((Waypath test) => test.isEmpty);
-
-    if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
-
-    if (closedOuters.isEmpty && openOuters.isEmpty) {
-      // only inner is set, move the first inner to the respective outer
-      Waypath waypath = inner.first;
-      inner.remove(waypath);
-      if (waypath.isClosedWay()) {
-        closedOuters.add(waypath);
-      } else {
-        openOuters.add(waypath);
+    List<Waypath> inner = [];
+    for (var test in wayholder.innerRead) {
+      Waypath result = Waypath(path: _reduceOutside(test, boundingBox));
+      if (result.isNotEmpty) {
+        inner.add(result);
       }
     }
 
+    List<Waypath> closedOuters = [];
+    for (var test in wayholder.closedOutersRead) {
+      assert(test.isClosedWay(), "test is not a closed way $test ${test.path}");
+      Waypath result = Waypath(path: _reduceOutside(test, boundingBox));
+      if (result.isNotEmpty) {
+        assert(result.isClosedWay(), "result is not a closed way $result ${result.path}");
+        closedOuters.add(result);
+      }
+    }
+
+    List<Waypath> openOuters = [];
+    for (var test in wayholder.openOutersRead) {
+      assert(!test.isClosedWay(), "test is not an open way $test ${test.path}");
+      Waypath result = Waypath(path: _reduceOutside(test, boundingBox));
+      if (result.isNotEmpty) {
+        assert(!result.isClosedWay(), "result is not an open way $result ${result.path}");
+        openOuters.add(result);
+      }
+    }
+
+    if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
+
     // return a new wayholder instance
     Wayholder? result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
+    result.moveInnerToOuter();
     return result;
   }
 

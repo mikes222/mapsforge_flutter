@@ -17,7 +17,7 @@ class PoiWayListPage extends StatelessWidget {
 
   final Rendertheme rendertheme;
 
-  const PoiWayListPage({Key? key, required this.mapFile, required this.subFileParameter, required this.rendertheme}) : super(key: key);
+  const PoiWayListPage({super.key, required this.mapFile, required this.subFileParameter, required this.rendertheme});
 
   @override
   Widget build(BuildContext context) {
@@ -62,13 +62,13 @@ class PoiWayListPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         LabeltextCustom(label: "Count", value: "${_poiCount.count}"),
-                        renderers.length > 0 ? LabeltextCustom(label: "Renderers", value: "${renderers.length}") : const Icon(Icons.warning_amber_outlined),
+                        renderers.isNotEmpty ? LabeltextCustom(label: "Renderers", value: "${renderers.length}") : const Icon(Icons.warning_amber_outlined),
                       ],
                     ),
                     const SizedBox(width: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _poiCount.poi.tags.tags.map((e) => LabeltextCustom(label: e.key ?? "unknown", value: e.value)).toList(),
+                      children: _poiCount.poi.tags.tags.map((e) => LabeltextCustom(label: e.key, value: e.value)).toList(),
                     ),
                   ],
                 ),
@@ -108,7 +108,7 @@ class PoiWayListPage extends StatelessWidget {
                     const SizedBox(width: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _wayCount.way.tags.tags.map((e) => LabeltextCustom(label: e.key ?? "unknown", value: e.value)).toList(),
+                      children: _wayCount.way.tags.tags.map((e) => LabeltextCustom(label: e.key, value: e.value)).toList(),
                     ),
                     const Spacer(),
                     _wayCount.isClosedWay ? const Icon(Icons.circle_outlined) : const SizedBox(),
@@ -120,17 +120,18 @@ class PoiWayListPage extends StatelessWidget {
   }
 
   void _reducePois(DatastoreBundle mapReadResult, List<_PoiCount> pois) {
-    mapReadResult.pointOfInterests.forEach((mapPoi) {
+    for (var mapPoi in mapReadResult.pointOfInterests) {
       List<Tag> tags = [];
       for (var tag in mapPoi.tags.tags) {
         if (tag.key == "name") {
           tags.add(const Tag("name", "xxx"));
-        } else if (tag.key == "ele")
+        } else if (tag.key == "ele") {
           tags.add(const Tag("ele", "xxx"));
-        else if (tag.key == "addr:housenumber")
+        } else if (tag.key == "addr:housenumber") {
           tags.add(const Tag("addr:housenumber", "xxx"));
-        else
+        } else {
           tags.add(tag);
+        }
       }
       PointOfInterest newPoi = PointOfInterest(0, TagCollection(tags: tags), const LatLong(0, 0));
       _PoiCount? poiCount = pois.firstWhereOrNull((_PoiCount poi) => poi.compare(newPoi));
@@ -139,14 +140,14 @@ class PoiWayListPage extends StatelessWidget {
         pois.add(poiCount);
       }
       poiCount.count++;
-    });
+    }
   }
 
   void _reduceWays(DatastoreBundle mapReadResult, List<_WayCount> ways) {
     for (var mapWay in mapReadResult.ways) {
       List<Tag> newTags = [];
       List<Tag> wayTags = mapWay.tags.tags;
-      wayTags.forEach((tag) {
+      for (var tag in wayTags) {
         if (tag.key == "name") {
           newTags.add(const Tag("name", "xxx"));
         } else if (tag.key == "height") {
@@ -174,7 +175,7 @@ class PoiWayListPage extends StatelessWidget {
         } else {
           newTags.add(tag);
         }
-      });
+      }
       bool isClosedWay = LatLongUtils.isClosedWay(mapWay.latLongs[0]);
       Way newWay = Way(mapWay.layer, newTags, [], null);
       _WayCount? wayCount = ways.firstWhereOrNull((_WayCount poi) => poi.compare(newWay, isClosedWay));
@@ -187,7 +188,7 @@ class PoiWayListPage extends StatelessWidget {
   }
 
   Future<_PoiWayCount> _readBlock() async {
-    QueryParameters queryParameters = new QueryParameters();
+    QueryParameters queryParameters =  QueryParameters();
     queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
     MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
     _PoiWayCount _poiWayCount = _PoiWayCount();

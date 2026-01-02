@@ -32,11 +32,11 @@ class ReadbufferFile implements ReadbufferSource {
   }
 
   @override
-  void freeRessources() {
-    _resource?.close();
+  Future<void> freeRessources() async {
+    await _resource?.close();
     _resource = null;
     for (var resource in _resourceAts) {
-      resource.close();
+      await resource.close();
     }
     _resourceAts.clear();
   }
@@ -120,8 +120,8 @@ class _ReadbufferFileResource {
 
   _ReadbufferFileResource(String filename) : _raf = File(filename).openSync();
 
-  void close() {
-    _raf.close();
+  Future<void> close() async {
+    await _raf.close();
   }
 
   Future<void> setPosition(int position) async {

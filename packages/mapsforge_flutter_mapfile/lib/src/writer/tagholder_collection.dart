@@ -141,7 +141,7 @@ class TagholderCollection implements ITagCollection {
   int extractLayer() {
     for (Tagholder tagholder in _tagholders) {
       if (tagholder.key == "layer") {
-        int layer = int.tryParse(tagholder.value ?? "0") ?? 0;
+        int layer = int.tryParse(tagholder.value) ?? 0;
         // layers from -5 to 10 are allowed, will be stored as 0..15 in the file (4 bit)
         if (layer < -5) layer = -5;
         if (layer > 10) layer = 10;
@@ -340,5 +340,10 @@ class TagholderCollection implements ITagCollection {
     }
     _tagholders.clear();
     _tagholders.addAll(result);
+  }
+
+  @override
+  String toString() {
+    return 'TagholderCollection{_tagholders: $_tagholders}';
   }
 }

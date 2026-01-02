@@ -1,4 +1,6 @@
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/modifiers/poiholder_file_collection.dart';
+import 'package:mapfile_converter/modifiers/wayholder_file_collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
@@ -8,74 +10,78 @@ class RenderthemeFilter {
 
   RenderthemeFilter();
 
-  Map<ZoomlevelRange, PoiholderCollection> convertNodes(List<Poiholder> osmNodes) {
+  Future<Map<ZoomlevelRange, IPoiholderCollection>> convertNodes(IPoiholderCollection poiholderCollection) async {
     ZoomlevelRange range = const ZoomlevelRange.standard();
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, PoiholderCollection> nodes = {};
-    PoiholderCollection? bag = PoiholderCollection();
+    Map<ZoomlevelRange, IPoiholderCollection> nodes = {};
+    IPoiholderCollection? bag = PoiholderFileCollection(
+      filename: "filter_nodes_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp",
+    );
     nodes[range] = bag;
-    bag.addAllPoiholder(osmNodes);
+    bag.addAll(await poiholderCollection.getAll());
     return nodes;
   }
 
-  Map<ZoomlevelRange, PoiholderCollection> filterNodes(List<Poiholder> osmNodes, Rendertheme renderTheme) {
+  Future<Map<ZoomlevelRange, IPoiholderCollection>> filterNodes(IPoiholderCollection poiholderCollection, Rendertheme renderTheme) async {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, PoiholderCollection> nodes = {};
+    Map<ZoomlevelRange, IPoiholderCollection> nodes = {};
     int noRangeNodes = 0;
-    for (Poiholder poiholder in osmNodes) {
+    await poiholderCollection.forEach((poiholder) {
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(poiholder.tagholderCollection);
       if (range == null) {
         ++noRangeNodes;
-        continue;
+        return;
       }
-      PoiholderCollection? bag = nodes[range];
+      IPoiholderCollection? bag = nodes[range];
       if (bag == null) {
-        bag = PoiholderCollection();
+        // PoiholderCollection();
+        bag = PoiholderFileCollection(filename: "filter_nodes_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
         nodes[range] = bag;
       }
-      bag.addPoiholder(poiholder);
-    }
+      bag.add(poiholder);
+    });
     _log.info("Removed $noRangeNodes nodes because we would never draw them according to the render theme");
     return nodes;
   }
 
-  Map<ZoomlevelRange, WayholderCollection> convertWays(List<Wayholder> ways) {
+  Future<Map<ZoomlevelRange, IWayholderCollection>> convertWays(IWayholderCollection wayholderCollection) async {
     ZoomlevelRange range = const ZoomlevelRange.standard();
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, WayholderCollection> result = {};
-    WayholderCollection? bag = result[range];
+    Map<ZoomlevelRange, IWayholderCollection> result = {};
+    IWayholderCollection? bag = result[range];
     if (bag == null) {
-      bag = WayholderCollection();
+      bag = WayholderFileCollection(filename: "filter_ways_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
       result[range] = bag;
     }
-    for (var wayHolder in ways) {
-      assert(wayHolder.closedOutersIsNotEmpty() || wayHolder.openOutersIsNotEmpty(), "way must have at least one outer $wayHolder");
-      bag.addWayholder(wayHolder);
-    }
+    await wayholderCollection.forEach((wayholder) {
+      assert(wayholder.closedOutersIsNotEmpty() || wayholder.openOutersIsNotEmpty(), "way must have at least one outer $wayholder");
+      bag!.add(wayholder);
+    });
     return result;
   }
 
-  Map<ZoomlevelRange, WayholderCollection> filterWays(List<Wayholder> ways, Rendertheme renderTheme) {
+  Future<Map<ZoomlevelRange, IWayholderCollection>> filterWays(IWayholderCollection wayholderCollection, Rendertheme renderTheme) async {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
-    Map<ZoomlevelRange, WayholderCollection> result = {};
+    Map<ZoomlevelRange, IWayholderCollection> result = {};
     int noRangeWays = 0;
-    for (var wayHolder in ways) {
-      assert(wayHolder.closedOutersIsNotEmpty() || wayHolder.openOutersIsNotEmpty(), "way must have at least one outer $wayHolder");
+    await wayholderCollection.forEach((wayholder) {
+      assert(wayholder.closedOutersIsNotEmpty() || wayholder.openOutersIsNotEmpty(), "way must have at least one outer $wayholder");
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(
-        wayHolder.closedOutersIsNotEmpty() ? wayHolder.closedOutersRead.first : wayHolder.openOutersRead.first,
-        wayHolder.tagholderCollection,
+        wayholder.closedOutersIsNotEmpty() ? wayholder.closedOutersRead.first : wayholder.openOutersRead.first,
+        wayholder.tagholderCollection,
       );
       if (range == null) {
         ++noRangeWays;
-        continue;
+        return;
       }
-      WayholderCollection? bag = result[range];
+      IWayholderCollection? bag = result[range];
       if (bag == null) {
-        bag = WayholderCollection();
+        bag = WayholderFileCollection(filename: "filter_ways_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
+        //bag = WayholderCollection();
         result[range] = bag;
       }
-      bag.addWayholder(wayHolder);
-    }
+      bag.add(wayholder);
+    });
     _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
 
     return result;
