@@ -13,6 +13,7 @@ message CacheWayholder {
   // Parallel arrays for tags
   repeated string tagkeys = 2;
   repeated string tagvals = 3;
+  repeated  sint32 tagindexes = 18;
 
   repeated CacheWay innerways = 4;
   repeated CacheWay closedways = 5;
@@ -21,8 +22,4 @@ message CacheWayholder {
   optional CacheLabel label = 11; // DELTA coded, optional
 
   required  bool mergedWithOtherWay = 15;
-
-  // Parallel arrays for tags
-  repeated string normalizedkeys = 16;
-  repeated string normalizedvals = 17;
 }

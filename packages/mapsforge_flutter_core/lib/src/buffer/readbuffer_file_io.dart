@@ -81,6 +81,20 @@ class ReadbufferFile implements ReadbufferSource {
   }
 
   @override
+  Future<Readbuffer> readFromFileAtMax(int position, int maxLength) async {
+    assert(maxLength > 0);
+    assert(position >= 0);
+
+    var session = PerformanceProfiler().startSession(category: "ReadbufferFile.readAt");
+    _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
+    Uint8List bufferData = await resourceAt.readAtMax(position, maxLength);
+    _resourceAts.addLast(resourceAt);
+    Readbuffer result = Readbuffer(bufferData, position);
+    session.complete();
+    return result;
+  }
+
+  @override
   Future<int> length() async {
     if (_length != null) return _length!;
     _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
@@ -135,9 +149,14 @@ class _ReadbufferFileResource {
   }
 
   Future<Uint8List> readAt(int position, int length) async {
-    RandomAccessFile raf = await _raf.setPosition(position);
-    Uint8List result = await raf.read(length);
+    Uint8List result = await readAtMax(position, length);
     assert(result.length == length, "read ${result.length} != requested $length for reading file at position ${position.toRadixString(16)}");
+    return result;
+  }
+
+  Future<Uint8List> readAtMax(int position, int maxLength) async {
+    RandomAccessFile raf = await _raf.setPosition(position);
+    Uint8List result = await raf.read(maxLength);
     return result;
   }
 

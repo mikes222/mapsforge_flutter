@@ -8,7 +8,7 @@ class BoundaryFilter {
     for (var entry in poiWayCollections.poiholderCollections.entries) {
       int zoomlevel = entry.key;
       IPoiholderCollection poiholderCollection = entry.value;
-      IPoiholderCollection newPoiholderCollection = PoiholderCollection();
+      IPoiholderCollection newPoiholderCollection = HolderCollectionFactory().createPoiholderCollection("boundary_$zoomlevel");
       await poiholderCollection.forEach((poiholder) {
         if (tileBoundingBox.containsLatLong(poiholder.position)) {
           newPoiholderCollection.add(poiholder);
@@ -20,7 +20,7 @@ class BoundaryFilter {
     for (var entry in poiWayCollections.wayholderCollections.entries) {
       int zoomlevel = entry.key;
       IWayholderCollection wayholderCollection = entry.value;
-      IWayholderCollection newWayholderCollection = WayholderCollection();
+      IWayholderCollection newWayholderCollection = HolderCollectionFactory().createWayholderCollection("boundary_$zoomlevel");
       await wayholderCollection.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
         if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {

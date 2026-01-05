@@ -26,6 +26,11 @@ abstract class ReadbufferSource {
   /// Returns a `Readbuffer` containing the read data.
   Future<Readbuffer> readFromFileAt(int position, int length);
 
+  /// Reads a block of data of the given [length] from a specific [position].
+  ///
+  /// Returns a `Readbuffer` containing the read data.
+  Future<Readbuffer> readFromFileAtMax(int position, int maxLength);
+
   /// Returns the current read position in the data source.
   int getPosition();
 

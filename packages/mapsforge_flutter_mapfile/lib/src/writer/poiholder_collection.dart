@@ -1,69 +1,62 @@
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_writer.dart';
 
 /// A helper class to hold all POIs for a specific zoom level during the
 /// sub-file creation process.
 class PoiholderCollection implements IPoiholderCollection {
-  final Set<Poiholder> _poiholders = {};
+  final Set<Poiholder> _entries = {};
 
   PoiholderCollection();
 
   @override
-  int get length => _poiholders.length;
+  int get length => _entries.length;
 
-  bool get isEmpty => _poiholders.isEmpty;
+  bool get isEmpty => _entries.isEmpty;
 
   @override
   void add(Poiholder poiholder) {
-    _poiholders.add(poiholder);
+    _entries.add(poiholder);
   }
 
   @override
   void addAll(Iterable<Poiholder> poiholders) {
-    _poiholders.addAll(poiholders);
+    _entries.addAll(poiholders);
   }
 
   void addPoidata(ILatLong latlong, TagholderCollection tagholderCollection) {
     Poiholder poiholder = Poiholder(position: latlong, tagholderCollection: tagholderCollection);
-    _poiholders.add(poiholder);
+    _entries.add(poiholder);
   }
 
   @override
   Future<void> forEach(void Function(Poiholder poiholder) action) async {
-    for (var poiholder in _poiholders) {
+    for (var poiholder in _entries) {
       action(poiholder);
     }
   }
 
   @override
   Future<void> removeWhere(bool Function(Poiholder poiholder) test) async {
-    _poiholders.removeWhere(test);
+    _entries.removeWhere(test);
   }
 
   @override
   Future<Iterable<Poiholder>> getAll() {
-    return Future.value(_poiholders);
+    return Future.value(_entries);
   }
 
   @override
-  void writePoidata(Writebuffer writebuffer, bool debugFile, double tileLatitude, double tileLongitude, List<String> languagesPreferences) {
-    PoiholderWriter poiholderWriter = PoiholderWriter();
-    for (Poiholder poiholder in _poiholders) {
-      poiholderWriter.writePoidata(writebuffer, poiholder, debugFile, tileLatitude, tileLongitude, languagesPreferences);
-    }
+  Future<void> dispose() async {
+    _entries.clear();
   }
 
   @override
-  Future<void> countTags(TagholderModel model) async {
-    for (Poiholder poiholder in _poiholders) {
-      poiholder.tagholderCollection.reconnectPoiTags(model);
-      poiholder.tagholderCollection.countTags();
-    }
+  Future<void> mergeFrom(IPoiholderCollection other) async {
+    await other.forEach((action) {
+      add(action);
+    });
   }
 
   @override
-  void dispose() {
-    _poiholders.clear();
-  }
+  Future<void> freeRessources() async {}
 }

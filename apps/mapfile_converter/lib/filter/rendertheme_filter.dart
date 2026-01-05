@@ -1,6 +1,4 @@
 import 'package:logging/logging.dart';
-import 'package:mapfile_converter/modifiers/poiholder_file_collection.dart';
-import 'package:mapfile_converter/modifiers/wayholder_file_collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
@@ -14,11 +12,11 @@ class RenderthemeFilter {
     ZoomlevelRange range = const ZoomlevelRange.standard();
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, IPoiholderCollection> nodes = {};
-    IPoiholderCollection? bag = PoiholderFileCollection(
-      filename: "filter_nodes_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp",
-    );
+    IPoiholderCollection? bag = HolderCollectionFactory().createPoiholderCollection("renderthemefilter");
     nodes[range] = bag;
-    bag.addAll(await poiholderCollection.getAll());
+    await poiholderCollection.forEach((poiholder) {
+      bag.add(poiholder);
+    });
     return nodes;
   }
 
@@ -35,7 +33,7 @@ class RenderthemeFilter {
       IPoiholderCollection? bag = nodes[range];
       if (bag == null) {
         // PoiholderCollection();
-        bag = PoiholderFileCollection(filename: "filter_nodes_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
+        bag = HolderCollectionFactory().createPoiholderCollection("renderthemefilter_${range.zoomlevelMin}_${range.zoomlevelMax}");
         nodes[range] = bag;
       }
       bag.add(poiholder);
@@ -50,7 +48,7 @@ class RenderthemeFilter {
     Map<ZoomlevelRange, IWayholderCollection> result = {};
     IWayholderCollection? bag = result[range];
     if (bag == null) {
-      bag = WayholderFileCollection(filename: "filter_ways_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
+      bag = HolderCollectionFactory().createWayholderCollection("renderthemefilter");
       result[range] = bag;
     }
     await wayholderCollection.forEach((wayholder) {
@@ -64,6 +62,9 @@ class RenderthemeFilter {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, IWayholderCollection> result = {};
     int noRangeWays = 0;
+    // int time = DateTime.now().millisecondsSinceEpoch;
+    // await wayholderCollection.forEach((poiholder) {});
+    // _log.info("forEach needs ${DateTime.now().millisecondsSinceEpoch - time} milliseconds for ${wayholderCollection.length} ways");
     await wayholderCollection.forEach((wayholder) {
       assert(wayholder.closedOutersIsNotEmpty() || wayholder.openOutersIsNotEmpty(), "way must have at least one outer $wayholder");
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeWay(
@@ -76,7 +77,7 @@ class RenderthemeFilter {
       }
       IWayholderCollection? bag = result[range];
       if (bag == null) {
-        bag = WayholderFileCollection(filename: "filter_ways_${range.zoomlevelMin}_${range.zoomlevelMax}_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
+        bag = HolderCollectionFactory().createWayholderCollection("renderthemefilter_${range.zoomlevelMin}_${range.zoomlevelMax}");
         //bag = WayholderCollection();
         result[range] = bag;
       }

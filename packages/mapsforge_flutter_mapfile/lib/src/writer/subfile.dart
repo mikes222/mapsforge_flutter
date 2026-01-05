@@ -1,4 +1,3 @@
-import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
@@ -54,7 +53,15 @@ class Subfile {
 
   final BoundaryFilter filter = BoundaryFilter();
 
-  Subfile({required this.baseZoomLevel, required this.zoomlevelRange, required this.mapHeaderInfo, PoiWayCollections? poiWayCollections}) {
+  final TagholderModel model;
+
+  Subfile({
+    required this.baseZoomLevel,
+    required this.zoomlevelRange,
+    required this.mapHeaderInfo,
+    required PoiWayCollections poiWayCollections,
+    required this.model,
+  }) {
     MercatorProjection projection = MercatorProjection.fromZoomlevel(baseZoomLevel);
     _minX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.minLongitude);
     _maxX = projection.longitudeToTileX(mapHeaderInfo.boundingBox.maxLongitude);
@@ -66,50 +73,13 @@ class Subfile {
     assert(_minY >= 0, "minY $_minY < 0 for ${mapHeaderInfo.boundingBox} and $baseZoomLevel");
     _tileBuffer = TileBuffer(baseZoomLevel);
 
-    if (poiWayCollections != null) {
-      _poiWayCollections = poiWayCollections;
-    } else {
-      _poiWayCollections = PoiWayCollections();
-      for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
-        _poiWayCollections.poiholderCollections[zoomlevel] = PoiholderCollection();
-        _poiWayCollections.wayholderCollections[zoomlevel] = WayholderCollection();
-      }
-    }
+    _poiWayCollections = poiWayCollections;
   }
 
   void dispose() {
     _tileBuffer.dispose();
     _poiWayCollections.clear();
     _writebufferTileIndex = null;
-  }
-
-  /// Adds a list of POIs to the appropriate zoom level within this sub-file.
-  void addPoidata(ZoomlevelRange zoomlevelRange, Iterable<Poiholder> pois) {
-    if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
-    if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    IPoiholderCollection poiholderCollection =
-        _poiWayCollections.poiholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    poiholderCollection.addAll(pois);
-  }
-
-  /// Adds a list of ways to the appropriate zoom level within this sub-file.
-  void addWaydata(ZoomlevelRange zoomlevelRange, Iterable<Wayholder> wayholders) {
-    if (this.zoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) return;
-    if (this.zoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) return;
-    IWayholderCollection wayholderCollection =
-        _poiWayCollections.wayholderCollections[Math.max(this.zoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-    wayholderCollection.addAll(wayholders);
-  }
-
-  Future<void> countTags(TagholderModel model) async {
-    for (var entry in _poiWayCollections.poiholderCollections.entries) {
-      IPoiholderCollection poiholderCollection = entry.value;
-      await poiholderCollection.countTags(model);
-    }
-    for (var entry in _poiWayCollections.wayholderCollections.entries) {
-      IWayholderCollection wayholderCollection = entry.value;
-      await wayholderCollection.countTags(model);
-    }
   }
 
   Future<void> _processAsync(
@@ -230,7 +200,7 @@ class Subfile {
         }
       },
     );
-    _poiWayCollections.clear();
+    await _poiWayCollections.clear();
     await _tileBuffer.writeComplete();
     session.complete();
   }
@@ -266,7 +236,7 @@ class Subfile {
     // }
     for (int i = 0; i < instanceCount; ++i) {
       result.add(
-        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel, languagesPreferences),
+        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel, languagesPreferences, model),
         // TileWriter(
         //   debugFile,
         //   Map.from(_poiholderCollection),
@@ -363,14 +333,23 @@ class PoiWayCollections {
 
   PoiWayCollections();
 
-  void clear() {
+  Future<void> clear() async {
     for (var poiholderCollection in poiholderCollections.values) {
-      poiholderCollection.dispose();
+      await poiholderCollection.dispose();
     }
     for (var wayholderCollection in wayholderCollections.values) {
-      wayholderCollection.dispose();
+      await wayholderCollection.dispose();
     }
     poiholderCollections.clear();
     wayholderCollections.clear();
+  }
+
+  Future<void> freeRessources() async {
+    for (var poiholderCollection in poiholderCollections.values) {
+      await poiholderCollection.freeRessources();
+    }
+    for (var wayholderCollection in wayholderCollections.values) {
+      await wayholderCollection.freeRessources();
+    }
   }
 }

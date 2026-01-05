@@ -11,6 +11,8 @@ class ZoomlevelRange {
   /// Creates a new `ZoomlevelRange` with the default standard zoom levels (0-22).
   const ZoomlevelRange.standard() : zoomlevelMin = 0, zoomlevelMax = MapsforgeSettingsMgr.defaultMaxZoomlevel;
 
+  const ZoomlevelRange.none() : zoomlevelMin = -1, zoomlevelMax = -1;
+
   /// Creates a new `ZoomlevelRange`.
   const ZoomlevelRange([this.zoomlevelMin = 0, this.zoomlevelMax = 25])
     : assert(zoomlevelMin <= zoomlevelMax, "zoomlevelMin ($zoomlevelMin) should less or equal zoomlevelMax ($zoomlevelMax)");

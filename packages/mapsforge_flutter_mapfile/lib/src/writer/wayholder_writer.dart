@@ -44,11 +44,12 @@ class WayholderWriter {
     double tileLatitude,
     double tileLongitude,
     List<String> languagesPreferences,
+    TagholderModel model,
   ) {
     int tileBitmask = _computeBitmask(wayholder, tile);
     _writeWaySignature(writebuffer, debugFile);
     Writebuffer writebuffer2 = Writebuffer();
-    _writeWayPropertyAndWayData(writebuffer2, wayholder, tileLatitude, tileLongitude, tileBitmask, languagesPreferences);
+    _writeWayPropertyAndWayData(writebuffer2, wayholder, tileLatitude, tileLongitude, tileBitmask, languagesPreferences, model);
     // get the size of the way (VBE-U)
     writebuffer.appendUnsignedInt(writebuffer2.length);
     writebuffer.appendWritebuffer(writebuffer2);
@@ -67,6 +68,7 @@ class WayholderWriter {
     double tileLongitude,
     int tileBitmask,
     List<String> languagesPreferences,
+    TagholderModel model,
   ) {
     String? featureHouseNumber = wayholder.tagholderCollection.extractHousenumber();
     //int? featureElevation = wayholder.tagholderCollection.extractElevation();
@@ -83,7 +85,7 @@ class WayholderWriter {
     // Special case: coastline ways must always have all 16 bits set.
     writebuffer.appendUInt2(tileBitmask);
     Writebuffer writebufferTags = Writebuffer();
-    int count = wayholder.tagholderCollection.writeWayTags(writebufferTags);
+    int count = wayholder.tagholderCollection.writeWayTags(writebufferTags, model);
 
     int specialByte = 0;
     // bit 1-4 represent the layer

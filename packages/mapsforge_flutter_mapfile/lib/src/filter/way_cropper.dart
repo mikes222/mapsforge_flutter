@@ -57,7 +57,7 @@ class WayCropper {
   Wayholder? cropOutsideWay(Wayholder wayholder, BoundingBox boundingBox) {
     List<Waypath> inner = [];
     for (var test in wayholder.innerRead) {
-      Waypath result = Waypath(path: _reduceOutside(test, boundingBox));
+      Waypath result = _reduceOutside(test, boundingBox);
       if (result.isNotEmpty) {
         inner.add(result);
       }
@@ -66,9 +66,9 @@ class WayCropper {
     List<Waypath> closedOuters = [];
     for (var test in wayholder.closedOutersRead) {
       assert(test.isClosedWay(), "test is not a closed way $test ${test.path}");
-      Waypath result = Waypath(path: _reduceOutside(test, boundingBox));
+      Waypath result = _reduceOutside(test, boundingBox);
       if (result.isNotEmpty) {
-        assert(result.isClosedWay(), "result is not a closed way $result ${result.path}");
+        assert(result.isClosedWay(), "result is not a closed way $result ${test.path} ${result.path}");
         closedOuters.add(result);
       }
     }
@@ -76,9 +76,9 @@ class WayCropper {
     List<Waypath> openOuters = [];
     for (var test in wayholder.openOutersRead) {
       assert(!test.isClosedWay(), "test is not an open way $test ${test.path}");
-      Waypath result = Waypath(path: _reduceOutside(test, boundingBox));
+      Waypath result = _reduceOutside(test, boundingBox);
       if (result.isNotEmpty) {
-        assert(!result.isClosedWay(), "result is not an open way $result ${result.path}");
+        assert(!result.isClosedWay(), "result is not an open way $result ${test.path} ${result.path}");
         openOuters.add(result);
       }
     }
@@ -127,7 +127,7 @@ class WayCropper {
 
     List<ILatLong> path = waypath.path;
     if (path.length > 20) {
-      path = _reduceOutside(waypath, tileBoundary);
+      path = _reduceOutside(waypath, tileBoundary).path;
     }
     if (path.isEmpty) {
       // no points inside the tile boundary
@@ -273,8 +273,8 @@ class WayCropper {
   /// and discard segments that do not intersect with the tile boundary. This can
   /// significantly reduce the number of points for long ways that are mostly
   /// outside the tile.
-  List<ILatLong> _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
-    if (tileBoundary.containsBoundingBox(waypath.boundingBox)) return waypath.path;
+  Waypath _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
+    if (tileBoundary.containsBoundingBox(waypath.boundingBox)) return waypath;
     List<ILatLong> result = [];
     Queue<_QueueEntry> queue = Queue();
     List<ILatLong> points = waypath.path;
@@ -302,7 +302,8 @@ class WayCropper {
         }
       }
     }
-    return result;
+    if (waypath.isClosedWay() && result.length < 3) return Waypath.empty();
+    return Waypath(path: result);
   }
 
   void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary, List<ILatLong> waypoints) {

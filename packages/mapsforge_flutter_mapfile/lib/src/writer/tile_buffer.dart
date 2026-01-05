@@ -42,6 +42,9 @@ class TileBuffer {
     _writebufferForTiles[tile] = content;
     _sizes[tile] = content.length;
     _length += content.length;
+    if (content.length > 1000000) {
+      print("Tile $tile has a content with ${content.length} bytes");
+    }
     _cacheToDisk();
   }
 

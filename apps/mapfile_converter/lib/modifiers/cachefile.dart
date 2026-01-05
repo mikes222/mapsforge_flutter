@@ -16,13 +16,10 @@ class CacheFile {
       cacheLabel.lon = $fixnum.Int64(LatLongUtils.degreesToMicrodegrees(wayholder.labelPosition!.longitude));
       cacheWayholder.label = cacheLabel;
     }
-    for (var tag in wayholder.tagholderCollection.tagholders) {
-      cacheWayholder.tagkeys.add(tag.key);
-      cacheWayholder.tagvals.add(tag.value);
-    }
-    for (var entry in wayholder.tagholderCollection.normalized.entries) {
-      cacheWayholder.normalizedkeys.add(entry.key);
-      cacheWayholder.normalizedvals.add(entry.value);
+    for (var tagholder in wayholder.tagholderCollection.tagholders) {
+      cacheWayholder.tagkeys.add(tagholder.key);
+      cacheWayholder.tagvals.add(tagholder.value);
+      cacheWayholder.tagindexes.add(tagholder.index ?? -1);
     }
 
     for (var innerway in wayholder.innerRead) {
@@ -54,15 +51,16 @@ class CacheFile {
 
   Wayholder fromFile(Uint8List file) {
     CacheWayholder cacheWayholder = CacheWayholder.fromBuffer(file);
-    Map<String, String> tags = {};
+    List<Tagholder> tagholders = [];
+    int idx = 0;
     for (var key in cacheWayholder.tagkeys) {
-      tags[key] = cacheWayholder.tagvals[cacheWayholder.tagkeys.indexOf(key)];
+      Tagholder tagholder = Tagholder(key, cacheWayholder.tagvals[idx]);
+      int i = cacheWayholder.tagindexes[idx];
+      tagholder.index = i == -1 ? null : i;
+      tagholders.add(tagholder);
+      ++idx;
     }
-    Map<String, String> normalized = {};
-    for (var key in cacheWayholder.normalizedkeys) {
-      normalized[key] = cacheWayholder.normalizedvals[cacheWayholder.normalizedkeys.indexOf(key)];
-    }
-    TagholderCollection tagholderCollection = TagholderCollection.fromCache(tags, normalized);
+    TagholderCollection tagholderCollection = TagholderCollection.fromCache(tagholders);
     Wayholder wayholder = Wayholder(tagholderCollection: tagholderCollection);
     //wayholder.tileBitmask = cacheWayholder.tileBitmask;
     wayholder.mergedWithOtherWay = cacheWayholder.mergedWithOtherWay;

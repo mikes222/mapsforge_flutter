@@ -414,15 +414,19 @@ class MapfileHelper {
     List<Tag> poiTags = _mapFileHeader.getMapHeaderInfo().poiTags;
 
     for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
-      PointOfInterest pointOfInterest = read1Poi(readBuffer, tileLatitude, tileLongitude, mapDataStore, poiTags);
+      try {
+        PointOfInterest pointOfInterest = read1Poi(readBuffer, tileLatitude, tileLongitude, mapDataStore, poiTags);
 
-      // depending on the zoom level configuration the poi can lie outside
-      // the tile requested, we filter them out here
-      if (!filterRequired || boundingBox.containsLatLong(pointOfInterest.position)) {
-        pois.add(pointOfInterest);
+        // depending on the zoom level configuration the poi can lie outside
+        // the tile requested, we filter them out here
+        if (!filterRequired || boundingBox.containsLatLong(pointOfInterest.position)) {
+          pois.add(pointOfInterest);
+        }
+      } catch (error, stacktrace) {
+        print(error);
+        print(stacktrace);
       }
     }
-
     return pois;
   }
 

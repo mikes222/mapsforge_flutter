@@ -2,7 +2,6 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/mapfile_header_writer.dart';
 
@@ -23,15 +22,12 @@ class MapfileWriter {
 
   final MapHeaderInfo mapHeaderInfo;
 
-  final ZoomlevelRange _zoomlevelRange;
-
   final List<Subfile> subfiles;
 
   final TagholderModel model;
 
   MapfileWriter({required this.filename, required this.mapHeaderInfo, required this.subfiles, required this.model})
-    : _sink = SinkWithCounter(File(filename).openWrite()),
-      _zoomlevelRange = mapHeaderInfo.zoomlevelRange;
+    : _sink = SinkWithCounter(File(filename).openWrite());
 
   /// Closes the writer and finalizes the map file.
   ///
@@ -64,22 +60,16 @@ class MapfileWriter {
 
     List<String> languagesPreferences = [];
     if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
-    // mapmodel should be aware of how many tags are needed and how often to being able to set the indexes accordingly.
-    for (Subfile subfile in subfiles) {
-      await subfile.countTags(model);
-    }
-
-    // after counting the tags we can set the indexes of each tag
-    model.setIndexes();
 
     Writebuffer writebuffer = Writebuffer();
-    _writePoiTags(writebuffer, model.poiTags);
-    _writeWayTags(writebuffer, model.wayTags);
+    _writePoiTags(writebuffer);
+    _writeWayTags(writebuffer);
 
     MapfileHeaderWriter mapfileHeaderWriter = MapfileHeaderWriter(mapHeaderInfo);
     Writebuffer writebufferHeader = mapfileHeaderWriter.write(writebuffer.length + 1 + 19 * subfiles.length);
 
     // amount of zoom intervals
+    _log.info("write4 subfiles");
     writebuffer.appendInt1(subfiles.length);
     await _writeZoomIntervalConfiguration(writebuffer, writebufferHeader.length + writebuffer.length + 19 * subfiles.length, maxDeviationPixel, instanceCount);
 
@@ -89,6 +79,7 @@ class MapfileWriter {
     writebufferHeader.clear();
 
     for (Subfile subfile in subfiles) {
+      _log.info("write5 subfiles ${subfile.zoomlevelRange}");
       // for each subfile, write the tile index header and entries
       Writebuffer writebuffer = subfile.writeTileIndex(mapHeaderInfo.debugFile);
       writebuffer.writeToSink(_sink);
@@ -117,12 +108,11 @@ class MapfileWriter {
     }
   }
 
-  void _writePoiTags(Writebuffer writebuffer, List<Tagholder> tagholders) {
+  void _writePoiTags(Writebuffer writebuffer) {
     List<String> items = [];
-    for (Tagholder tagholder in tagholders) {
+    for (Tagholder tagholder in model.sortPoiTagholders()) {
       if (TagholderModel.isMapfilePoiTag(tagholder.key)) continue;
       assert(tagholder.index != null, "tagholder.index must not be null $tagholder");
-      assert(tagholder.count > 0, "tagholder.count must be greater than 0 $tagholder");
       String value = "${tagholder.key}=${tagholder.value}";
       items.add(value);
     }
@@ -132,12 +122,11 @@ class MapfileWriter {
     }
   }
 
-  void _writeWayTags(Writebuffer writebuffer, List<Tagholder> tagholders) {
+  void _writeWayTags(Writebuffer writebuffer) {
     List<String> items = [];
-    for (Tagholder tagholder in tagholders) {
+    for (Tagholder tagholder in model.sortWayTagholders()) {
       if (TagholderModel.isMapfileWayTag(tagholder.key)) continue;
       assert(tagholder.index != null, "tagholder.index must not be null $tagholder");
-      assert(tagholder.count > 0, "tagholder.count must be greater than 0 $tagholder");
       String value = "${tagholder.key}=${tagholder.value}";
       items.add(value);
     }

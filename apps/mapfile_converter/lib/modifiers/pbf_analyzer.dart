@@ -1,10 +1,9 @@
 import 'dart:collection';
 
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/filter/large_data_splitter.dart';
+import 'package:mapfile_converter/filter/way_connect.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
-import 'package:mapfile_converter/modifiers/large_data_splitter.dart';
-import 'package:mapfile_converter/modifiers/poiholder_file_collection.dart';
-import 'package:mapfile_converter/modifiers/way_connect.dart';
 import 'package:mapfile_converter/modifiers/wayholder_id_file_collection.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
@@ -12,7 +11,7 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
-import '../modifiers/way_repair.dart';
+import '../filter/way_repair.dart';
 import '../osm/osm_reader.dart';
 
 /// Reads data from a pbf file and converts it to PointOfInterest and Way objects
@@ -26,7 +25,7 @@ class PbfAnalyzer {
 
   final HashMap<int, ILatLong> _positions = HashMap();
 
-  late final PoiholderFileCollection _nodeHolders;
+  late final IPoiholderCollection _nodeHolders;
 
   late final WayholderIdFileCollection _wayHolders;
 
@@ -58,16 +57,13 @@ class PbfAnalyzer {
 
   final DefaultOsmPrimitiveConverter converter;
 
-  PoiholderFileCollection get nodes => _nodeHolders;
+  IPoiholderCollection get nodes => _nodeHolders;
 
   WayholderIdFileCollection ways() => _wayHolders;
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
-  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false, this.finalBoundingBox}) {
-    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${DateTime.timestamp().millisecondsSinceEpoch}.tmp");
-    _nodeHolders = PoiholderFileCollection(filename: "analyzer_nodes_${DateTime.timestamp().millisecondsSinceEpoch}.tmp", spillBatchSize: 10000);
-  }
+  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false, this.finalBoundingBox});
 
   static Future<PbfAnalyzer> readFile(
     String filename,
@@ -125,6 +121,8 @@ class PbfAnalyzer {
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
     await readbufferSource.freeRessources();
+    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${HolderCollectionFactory.randomId}.tmp");
+    _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
     IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
     List<int> positions = await pbfReader.getBlobPositions();
     List<Future> futures = [];
@@ -143,6 +141,8 @@ class PbfAnalyzer {
   }
 
   Future<void> readOsmToMemory(String filename) async {
+    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${HolderCollectionFactory.randomId}.tmp");
+    _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
     OsmReader osmReader = OsmReader(filename);
     await osmReader.readOsmFile((OsmData pbfData) async {
       await _analyze1Block(pbfData);

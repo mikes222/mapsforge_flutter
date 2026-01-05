@@ -7,9 +7,9 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class PoiholderFileCollection implements IPoiholderCollection {
-  final List<Object> _entries = [];
+  final List<Poiholder> _entries = [];
 
-  final List<int> _pendingSpillIndexes = [];
+  final List<_Temp> _fileEntries = [];
 
   final int spillBatchSize;
 
@@ -19,105 +19,115 @@ class PoiholderFileCollection implements IPoiholderCollection {
 
   ReadbufferSource? _readbufferFile;
 
+  Readbuffer? readbuffer;
+
+  final int bufferLength = 1000000;
+
   final _PoiCacheFile _cacheFile = _PoiCacheFile();
 
   PoiholderFileCollection({required this.filename, this.spillBatchSize = 100000});
 
   @override
-  int get length => _entries.length;
+  int get length => _entries.length + _fileEntries.length;
 
-  bool get isEmpty => _entries.isEmpty;
-
-  Stream<Poiholder> get iterator async* {
-    for (int i = 0; i < _entries.length; i++) {
-      yield await get(i);
-    }
-  }
+  bool get isEmpty => _entries.isEmpty && _fileEntries.isEmpty;
 
   @override
   Future<List<Poiholder>> getAll() async {
+    // Ensure all spilled data is actually present on disk.
+    await _sinkWithCounter?.flush();
     final result = <Poiholder>[];
-    for (int i = 0; i < _entries.length; i++) {
-      result.add(await get(i));
+    result.addAll(_entries);
+    for (var temp in _fileEntries) {
+      result.add(await _fromFile(temp));
     }
     return result;
   }
 
-  Future<void> mergeFrom(PoiholderFileCollection other) async {
-    if (identical(this, other)) return;
-    if (other._entries.isEmpty) return;
+  @override
+  Future<void> mergeFrom(IPoiholderCollection other) async {
+    if (other is PoiholderFileCollection) {
+      if (identical(this, other)) return;
 
-    if (other._sinkWithCounter != null) {
-      await other._sinkWithCounter!.flush();
-    }
-    int expected = _entries.length + other._entries.length;
+      int expected = length + other.length;
 
-    ReadbufferSource? otherReadbufferFile = other._readbufferFile;
-
-    for (final entry in other._entries) {
-      if (entry is Poiholder) {
+      //      print("Merging from ${_entries.length}/${other._entries.length} ${_fileEntries.length}/${other._fileEntries.length}");
+      for (final entry in other._entries) {
         add(entry);
-        continue;
       }
 
-      final temp = entry as _Temp;
+      // do not add the file if we do not have entries
+      if (length == expected) return;
+
+      await other._sinkWithCounter?.flush();
+      ReadbufferSource? otherReadbufferFile = other._readbufferFile;
 
       otherReadbufferFile ??= createReadbufferSource(other.filename);
+      _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
+      Readbuffer? readbuffer;
+      List<_Temp> temps = other._fileEntries;
+      temps.sort((a, b) => a.pos.compareTo(b.pos));
+      for (final temp in temps) {
+        if (readbuffer == null || readbuffer.offset > temp.pos || readbuffer.offset + readbuffer.getBufferSize() < temp.pos + temp.length) {
+          readbuffer = await otherReadbufferFile.readFromFileAtMax(temp.pos, bufferLength);
+          //print("POI readFromFileAtMax ${temp.pos} ${temp.length}");
+        }
+        Uint8List uint8list = readbuffer.getBuffer(temp.pos - readbuffer.offset, temp.length);
+        assert(uint8list.length == temp.length);
 
-      _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.append));
-      final destPos = _sinkWithCounter!.written;
+        final destPos = _sinkWithCounter!.written;
+        _sinkWithCounter!.add(uint8list);
+        _fileEntries.add(_Temp(pos: destPos, length: temp.length));
+      }
 
-      final readbuffer = await otherReadbufferFile.readFromFileAt(temp.pos, temp.length);
-      final bytes = readbuffer.getBuffer(0, temp.length);
-      assert(bytes.length == temp.length);
-
-      _sinkWithCounter!.add(bytes);
-      _entries.add(_Temp(pos: destPos, length: temp.length));
+      other._readbufferFile = otherReadbufferFile;
+      assert(
+        length == expected,
+        "expected ${length} == $expected ${_entries.length}/${other._entries.length} ${_fileEntries.length}/${other._fileEntries.length}",
+      );
+    } else {
+      addAll(await other.getAll());
     }
-
-    other._readbufferFile = otherReadbufferFile;
-    assert(_entries.length == expected);
   }
 
   @override
   Future<void> removeWhere(bool Function(Poiholder poiholder) test) async {
     if (_entries.isEmpty) return;
 
-    final List<Object> retained = [];
+    // Ensure all spilled data is actually present on disk.
+    await _sinkWithCounter?.flush();
+
+    // Pass 1: process in-memory entries (cheap, no I/O).
     for (int i = 0; i < _entries.length; i++) {
       final entry = _entries[i];
-      final Poiholder poiholder;
-      if (entry is Poiholder) {
-        poiholder = entry;
-      } else {
-        poiholder = await _fromFile(entry as _Temp);
-      }
-
-      if (!test(poiholder)) {
-        retained.add(entry);
+      bool toRemove = test(entry);
+      if (toRemove) {
+        _entries.removeAt(i);
+        i--;
       }
     }
 
-    _entries
-      ..clear()
-      ..addAll(retained);
-
-    _pendingSpillIndexes.clear();
-    for (int i = 0; i < _entries.length; i++) {
-      if (_entries[i] is Poiholder) {
-        _pendingSpillIndexes.add(i);
+    for (int i = 0; i < _fileEntries.length; i++) {
+      final entry = _fileEntries[i];
+      bool toRemove = test(await _fromFile(entry));
+      if (toRemove) {
+        _fileEntries.removeAt(i);
+        i--;
       }
     }
-    _flushPendingToDiskIfNeeded();
   }
 
-  Future<void> _closeFiles() async {
+  @override
+  Future<void> freeRessources() async {
     await _readbufferFile?.freeRessources();
     _readbufferFile = null;
 
     await _sinkWithCounter?.close();
     _sinkWithCounter = null;
-    _pendingSpillIndexes.clear();
+  }
+
+  Future<void> _closeFiles() async {
+    await freeRessources();
 
     try {
       File(filename).deleteSync();
@@ -132,17 +142,16 @@ class PoiholderFileCollection implements IPoiholderCollection {
   Future<void> dispose() async {
     await _closeFiles();
     _entries.clear();
+    _fileEntries.clear();
   }
 
   /// Adds a [poiholder] to the end of the collection.
   ///
   /// Returns the index at which it was inserted.
   @override
-  int add(Poiholder poiholder) {
+  void add(Poiholder poiholder) {
     _entries.add(poiholder);
-    _pendingSpillIndexes.add(_entries.length - 1);
     _flushPendingToDiskIfNeeded();
-    return _entries.length - 1;
   }
 
   /// Adds all [poiholders] to the collection.
@@ -159,94 +168,60 @@ class PoiholderFileCollection implements IPoiholderCollection {
   }
 
   void _flushPendingToDiskIfNeeded() {
-    if (_pendingSpillIndexes.length < spillBatchSize) return;
-    _flushPendingToDisk();
-  }
+    if (_entries.length < spillBatchSize) return;
 
-  void _flushPendingToDisk() {
-    if (_pendingSpillIndexes.isEmpty) return;
-
-    _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.append));
+    _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
 
     final batchBytes = BytesBuilder(copy: false);
     final batchLengths = <int>[];
-    final batchIndexes = <int>[];
 
-    for (int i = 0; i < spillBatchSize && _pendingSpillIndexes.isNotEmpty; i++) {
-      final idx = _pendingSpillIndexes.removeAt(0);
-      final entry = _entries[idx];
-      if (entry is! Poiholder) {
-        continue;
-      }
+    for (int i = 0; i < spillBatchSize; i++) {
+      final entry = _entries.removeAt(0);
       final bytes = _cacheFile.toFile(entry);
       batchBytes.add(bytes);
       batchLengths.add(bytes.length);
-      batchIndexes.add(idx);
     }
-
-    if (batchIndexes.isEmpty) return;
 
     final batchStartPos = _sinkWithCounter!.written;
     _sinkWithCounter!.add(batchBytes.toBytes());
 
     int offset = 0;
-    for (int i = 0; i < batchIndexes.length; i++) {
+    for (int i = 0; i < batchLengths.length; i++) {
       final len = batchLengths[i];
-      _entries[batchIndexes[i]] = _Temp(pos: batchStartPos + offset, length: len);
+      _fileEntries.add(_Temp(pos: batchStartPos + offset, length: len));
       offset += len;
     }
   }
 
-  Future<Poiholder> get(int index) async {
-    Object entry = _entries[index];
-    if (entry is Poiholder) return entry;
-
-    _Temp temp = entry as _Temp;
-    return _fromFile(temp);
-  }
-
-  Future<void> _loadIntoMemory() async {
-    for (int index = 0; index < _entries.length; index++) {
-      final entry = _entries[index];
-      if (entry is Poiholder) continue;
-      Poiholder poiholder = await _fromFile(entry as _Temp);
-      _entries[index] = poiholder;
-    }
-    await _closeFiles();
-  }
-
   @override
   Future<void> forEach(void Function(Poiholder poiholder) action) async {
-    for (int i = 0; i < _entries.length; i++) {
-      action(await get(i));
+    // Pass 1: process in-memory entries first (cheap, no I/O).
+    for (var entry in _entries) {
+      action(entry);
+    }
+
+    // Ensure all spilled data is actually present on disk.
+    await _sinkWithCounter?.flush();
+
+    // Pass 2: process spilled entries from disk in large sequential batches.
+    List<_Temp> temps = _fileEntries.toList();
+    temps.sort((a, b) => a.pos.compareTo(b.pos));
+    for (var temp in temps) {
+      final entry = await _fromFile(temp);
+      action(entry);
     }
   }
 
   Future<Poiholder> _fromFile(_Temp temp) async {
     _readbufferFile ??= createReadbufferSource(filename);
-    if (_sinkWithCounter != null) {
-      await _sinkWithCounter!.flush();
-    }
 
-    Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(temp.pos, temp.length);
-    Uint8List uint8list = readbuffer.getBuffer(0, temp.length);
+    if (readbuffer == null || readbuffer!.offset > temp.pos || readbuffer!.offset + readbuffer!.getBufferSize() < temp.pos + temp.length) {
+      readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, bufferLength);
+    }
+    Uint8List uint8list = readbuffer!.getBuffer(temp.pos - readbuffer!.offset, temp.length);
     assert(uint8list.length == temp.length);
 
     return _cacheFile.fromFile(uint8list);
-  }
-
-  @override
-  Future<void> countTags(TagholderModel model) async {
-    for (int index = 0; index < _entries.length; index++) {
-      Poiholder poiholder = await get(index);
-      poiholder.tagholderCollection.reconnectPoiTags(model);
-      poiholder.tagholderCollection.countTags();
-    }
-  }
-
-  @override
-  void writePoidata(Writebuffer writebuffer, bool debugFile, double tileLatitude, double tileLongitude, List<String> languagesPreferences) {
-    throw UnimplementedError();
   }
 }
 
@@ -274,8 +249,8 @@ class _PoiCacheFile {
     for (final tag in tags) {
       wb.appendString(tag.key);
       wb.appendString(tag.value);
+      wb.appendInt4(tag.index ?? -1);
     }
-
     return wb.getUint8List();
   }
 
@@ -286,14 +261,17 @@ class _PoiCacheFile {
     double lon = LatLongUtils.microdegreesToDegrees(rb.readSignedInt());
 
     int tagCount = rb.readUnsignedInt();
-    Map<String, String> tags = {};
+    List<Tagholder> tagholders = [];
     for (int i = 0; i < tagCount; i++) {
       final key = _readStringAllowEmpty(rb);
       final value = _readStringAllowEmpty(rb);
-      tags[key] = value;
+      final index = rb.readInt();
+      Tagholder tagholder = Tagholder(key, value);
+      if (index != -1) tagholder.index = index;
+      tagholders.add(tagholder);
     }
 
-    TagholderCollection tagholderCollection = TagholderCollection.fromPoi(tags);
+    TagholderCollection tagholderCollection = TagholderCollection.fromCache(tagholders);
     return Poiholder(position: LatLong(lat, lon), tagholderCollection: tagholderCollection);
   }
 

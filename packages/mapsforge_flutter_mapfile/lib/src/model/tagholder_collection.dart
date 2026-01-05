@@ -12,55 +12,35 @@ class TagholderCollection implements ITagCollection {
 
   final List<Tagholder> _tagholders;
 
-  final Map<String, String> _normalizedMap;
-
-  TagholderCollection._({required List<Tagholder> tagholders, required Map<String, String> normalizedMap})
-    : _tagholders = tagholders,
-      _normalizedMap = normalizedMap;
+  TagholderCollection._({required List<Tagholder> tagholders}) : _tagholders = tagholders;
 
   factory TagholderCollection.empty() {
-    return TagholderCollection._(tagholders: [], normalizedMap: {});
+    return TagholderCollection._(tagholders: []);
   }
 
   static TagholderCollection fromPoi(Map<String, String> tags) {
     List<Tagholder> tagholders = [];
-    Map<String, String> normalizedMap = {};
     for (var entry in tags.entries) {
-      String value = entry.value; //_extractValue(normalizedMap, entry.key, entry.value);
-      Tagholder tagholder = Tagholder(entry.key, value);
-      //model.getPoiTag(entry.key, value);
+      Tagholder tagholder = Tagholder(entry.key, entry.value);
       tagholders.add(tagholder);
     }
-    return TagholderCollection._(tagholders: tagholders, normalizedMap: normalizedMap);
+    return TagholderCollection._(tagholders: tagholders);
   }
 
   static TagholderCollection fromWay(Map<String, String> tags) {
     List<Tagholder> tagholders = [];
-    Map<String, String> normalizedMap = {};
     for (var entry in tags.entries) {
-      String value = entry.value; //_extractValue(normalizedMap, entry.key, entry.value);
-      Tagholder tagholder = Tagholder(entry.key, value);
-      //model.getPoiTag(entry.key, value);
+      Tagholder tagholder = Tagholder(entry.key, entry.value);
       tagholders.add(tagholder);
     }
-    return TagholderCollection._(tagholders: tagholders, normalizedMap: normalizedMap);
+    return TagholderCollection._(tagholders: tagholders);
   }
 
-  static TagholderCollection fromCache(Map<String, String> tags, Map<String, String> normalizedMap) {
-    List<Tagholder> tagholders = [];
-    for (var entry in tags.entries) {
-      String value = entry.value; //_extractValue(normalizedMap, entry.key, entry.value);
-      Tagholder tagholder = Tagholder(entry.key, value);
-      //model.getPoiTag(entry.key, value);
-      tagholders.add(tagholder);
-    }
-    return TagholderCollection._(tagholders: tagholders, normalizedMap: normalizedMap);
+  static TagholderCollection fromCache(List<Tagholder> tagholders) {
+    return TagholderCollection._(tagholders: tagholders);
   }
 
   List<Tagholder> get tagholders => _tagholders;
-
-  // for CacheFile to store the properties to file
-  Map<String, String> get normalized => _normalizedMap;
 
   bool get isEmpty {
     return _tagholders.isEmpty;
@@ -90,13 +70,6 @@ class TagholderCollection implements ITagCollection {
 
   void _remove(Tagholder tagholder) {
     _tagholders.remove(tagholder);
-  }
-
-  void _removeByKey(String key) {
-    Tagholder? tagholder = get(key);
-    if (tagholder != null) {
-      _remove(tagholder);
-    }
   }
 
   String? extractName(List<String> languagesPreferences) {
@@ -217,30 +190,25 @@ class TagholderCollection implements ITagCollection {
     return tag != null;
   }
 
-  // TagCollection convertToTags() {
-  //   List<Tag> result = [];
-  //   for (Tagholder tagholder in _tagholders) {
-  //     result.add(Tag(tagholder.key, tagholder.value));
-  //   }
-  //   return TagCollection(tags: result);
-  // }
-
-  int writePoiTags(Writebuffer writebuffer) {
+  int writePoiTags(Writebuffer writebuffer, TagholderModel model) {
     Writebuffer writebuffer2 = Writebuffer();
     int count = 0;
     for (Tagholder tagholder in _tagholders) {
       if (TagholderModel.isMapfilePoiTag(tagholder.key)) continue;
       assert(tagholder.index != null, "tagholder.index must not be null $tagholder");
-      assert(tagholder.count > 0, "tagholder.count must be greater than 0 $tagholder");
       ++count;
-      if (tagholder.value == "%i") {
-        writebuffer2.appendInt4(int.parse(_normalizedMap[tagholder.key]!));
-      } else if (tagholder.value == "%f") {
-        writebuffer2.appendFloat4(double.parse(_normalizedMap[tagholder.key]!));
-      } else if (tagholder.value == "%s") {
-        writebuffer2.appendString(_normalizedMap[tagholder.key]!);
+      Tagholder sorted = model.getPoiTagSorted(tagholder.index!);
+      assert(sorted.key == tagholder.key);
+      if (sorted.value == "%b") {
+        writebuffer2.appendInt1(int.parse(tagholder.value));
+      } else if (sorted.value == "%i") {
+        writebuffer2.appendInt4(int.parse(tagholder.value));
+      } else if (sorted.value == "%f") {
+        writebuffer2.appendFloat4(double.parse(tagholder.value));
+      } else if (sorted.value == "%s") {
+        writebuffer2.appendString(tagholder.value);
       }
-      writebuffer.appendUnsignedInt(tagholder.index!);
+      writebuffer.appendUnsignedInt(sorted.index!);
     }
     writebuffer.appendUint8(writebuffer2.getUint8ListAndClear());
 
@@ -253,22 +221,25 @@ class TagholderCollection implements ITagCollection {
     return count;
   }
 
-  int writeWayTags(Writebuffer writebuffer) {
+  int writeWayTags(Writebuffer writebuffer, TagholderModel model) {
     Writebuffer writebuffer2 = Writebuffer();
     int count = 0;
     for (Tagholder tagholder in _tagholders) {
       if (TagholderModel.isMapfileWayTag(tagholder.key)) continue;
-      assert(tagholder.index != null, "tagholder.index must not be null $tagholder");
-      assert(tagholder.count > 0, "tagholder.count must be greater than 0 $tagholder");
+      assert(tagholder.index != null, "tagholder.index must not be null $tagholder $count");
       ++count;
-      if (tagholder.value == "%i") {
-        writebuffer2.appendInt4(int.parse(_normalizedMap[tagholder.key]!));
-      } else if (tagholder.value == "%f") {
-        writebuffer2.appendFloat4(double.parse(_normalizedMap[tagholder.key]!));
-      } else if (tagholder.value == "%s") {
-        writebuffer2.appendString(_normalizedMap[tagholder.key]!);
+      Tagholder sorted = model.getWayTagSorted(tagholder.index!);
+      assert(sorted.key == tagholder.key);
+      if (sorted.value == "%b") {
+        writebuffer2.appendInt1(int.parse(tagholder.value));
+      } else if (sorted.value == "%i") {
+        writebuffer2.appendInt4(int.parse(tagholder.value));
+      } else if (sorted.value == "%f") {
+        writebuffer2.appendFloat4(double.parse(tagholder.value));
+      } else if (sorted.value == "%s") {
+        writebuffer2.appendString(tagholder.value);
       }
-      writebuffer.appendUnsignedInt(tagholder.index!);
+      writebuffer.appendUnsignedInt(sorted.index!);
     }
     writebuffer.appendUint8(writebuffer2.getUint8ListAndClear());
 
@@ -279,67 +250,60 @@ class TagholderCollection implements ITagCollection {
       throw Exception("more than 15 tags are not supported");
     }
     return count;
-  }
-
-  /// Counts the usage of each tag. Make sure the tags are reconnected to the model before calling this method.
-  void countTags() {
-    for (Tagholder tagholder in _tagholders) {
-      tagholder.incrementCount();
-    }
   }
 
   String _extractPoiValue(String key, String value) {
     if (DO_POI_NORMALIZE.contains(key)) {
       if (int.tryParse(value) != null) {
-        _normalizedMap[key] = value;
-        value = "%i";
+        int v = int.parse(value);
+        if (v >= 0 && v < 256) {
+          value = "%b";
+        } else {
+          value = "%i";
+        }
       } else if (double.tryParse(value) != null) {
-        _normalizedMap[key] = value;
         value = "%f";
       } else {
-        _normalizedMap[key] = value;
         value = "%s";
       }
     }
     return value;
-  }
-
-  void reconnectPoiTags(TagholderModel model) {
-    List<Tagholder> result = [];
-    for (Tagholder tagholder in _tagholders) {
-      String value = _extractPoiValue(tagholder.key, tagholder.value);
-      Tagholder reconnected = model.getPoiTag(tagholder.key, value);
-      result.add(reconnected);
-    }
-    _tagholders.clear();
-    _tagholders.addAll(result);
   }
 
   String _extractWayValue(String key, String value) {
     if (DO_WAY_NORMALIZE.contains(key)) {
       if (int.tryParse(value) != null) {
-        _normalizedMap[key] = value;
-        value = "%i";
+        int v = int.parse(value);
+        if (v >= 0 && v < 256) {
+          value = "%b";
+        } else {
+          value = "%i";
+        }
       } else if (double.tryParse(value) != null) {
-        _normalizedMap[key] = value;
         value = "%f";
       } else {
-        _normalizedMap[key] = value;
         value = "%s";
       }
     }
     return value;
   }
 
-  void reconnectWayTags(TagholderModel model) {
-    List<Tagholder> result = [];
+  void connectPoiToModel(TagholderModel model) {
     for (Tagholder tagholder in _tagholders) {
-      String value = _extractWayValue(tagholder.key, tagholder.value);
-      Tagholder reconnected = model.getWayTag(tagholder.key, value);
-      result.add(reconnected);
+      if (tagholder.index != null) continue;
+      if (TagholderModel.isMapfilePoiTag(tagholder.key)) continue;
+      String value = _extractPoiValue(tagholder.key, tagholder.value);
+      tagholder.index = model.getPoiTagIndex(tagholder.key, value);
     }
-    _tagholders.clear();
-    _tagholders.addAll(result);
+  }
+
+  void connectWayToModel(TagholderModel model) {
+    for (Tagholder tagholder in _tagholders) {
+      if (tagholder.index != null) continue;
+      if (TagholderModel.isMapfileWayTag(tagholder.key)) continue;
+      String value = _extractWayValue(tagholder.key, tagholder.value);
+      tagholder.index = model.getWayTagIndex(tagholder.key, value);
+    }
   }
 
   @override

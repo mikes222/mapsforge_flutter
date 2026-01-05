@@ -18,7 +18,7 @@ class Way {
   final TagCollection tags;
 
   /// Creates a new `Way`.
-  Way(this.layer, List<Tag> tags, this.latLongs, this.labelPosition) : tags = TagCollection(tags: tags);
+  Way(this.layer, List<Tag> tags, this.latLongs, this.labelPosition) : assert(layer >= 0), assert(layer <= 15), tags = TagCollection(tags: tags);
 
   Way.simple(List<ILatLong> latLongs) : layer = 0, tags = const TagCollection.empty(), latLongs = [latLongs], labelPosition = null;
 

@@ -143,8 +143,7 @@ class CacheWayholder extends $pb.GeneratedMessage {
     $core.Iterable<CacheWay>? openways,
     CacheLabel? label,
     $core.bool? mergedWithOtherWay,
-    $core.Iterable<$core.String>? normalizedkeys,
-    $core.Iterable<$core.String>? normalizedvals,
+    $core.Iterable<$core.int>? tagindexes,
   }) {
     final result = create();
     if (tagkeys != null) result.tagkeys.addAll(tagkeys);
@@ -155,8 +154,7 @@ class CacheWayholder extends $pb.GeneratedMessage {
     if (label != null) result.label = label;
     if (mergedWithOtherWay != null)
       result.mergedWithOtherWay = mergedWithOtherWay;
-    if (normalizedkeys != null) result.normalizedkeys.addAll(normalizedkeys);
-    if (normalizedvals != null) result.normalizedvals.addAll(normalizedvals);
+    if (tagindexes != null) result.tagindexes.addAll(tagindexes);
     return result;
   }
 
@@ -185,8 +183,8 @@ class CacheWayholder extends $pb.GeneratedMessage {
     ..a<$core.bool>(
         15, _omitFieldNames ? '' : 'mergedWithOtherWay', $pb.PbFieldType.QB,
         protoName: 'mergedWithOtherWay')
-    ..pPS(16, _omitFieldNames ? '' : 'normalizedkeys')
-    ..pPS(17, _omitFieldNames ? '' : 'normalizedvals');
+    ..p<$core.int>(
+        18, _omitFieldNames ? '' : 'tagindexes', $pb.PbFieldType.PS3);
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   CacheWayholder clone() => deepCopy();
@@ -243,12 +241,8 @@ class CacheWayholder extends $pb.GeneratedMessage {
   @$pb.TagNumber(15)
   void clearMergedWithOtherWay() => $_clearField(15);
 
-  /// Parallel arrays for tags
-  @$pb.TagNumber(16)
-  $pb.PbList<$core.String> get normalizedkeys => $_getList(7);
-
-  @$pb.TagNumber(17)
-  $pb.PbList<$core.String> get normalizedvals => $_getList(8);
+  @$pb.TagNumber(18)
+  $pb.PbList<$core.int> get tagindexes => $_getList(7);
 }
 
 const $core.bool _omitFieldNames =

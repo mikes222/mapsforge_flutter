@@ -82,10 +82,6 @@ class TagCollection implements ITagCollection {
 
   List<Tag> get tags => _tags;
 
-  // void add(Tag tag) {
-  //   _tags.add(tag);
-  // }
-
   /// Returns a string representation of the tags.
   String printTags() {
     return _tags.map((toElement) => "${toElement.key}=${toElement.value}").join(",");

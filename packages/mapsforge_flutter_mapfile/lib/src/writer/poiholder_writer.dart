@@ -16,6 +16,7 @@ class PoiholderWriter {
     double tileLatitude,
     double tileLongitude,
     List<String> languagesPreferences,
+    TagholderModel model,
   ) {
     _writePoiSignature(poiholder, debugFile, writebuffer);
     writebuffer.appendSignedInt(LatLongUtils.degreesToMicrodegrees(poiholder.position.latitude - tileLatitude));
@@ -27,7 +28,7 @@ class PoiholderWriter {
     String? featureName = poiholder.tagholderCollection.extractName(languagesPreferences);
     int layer = poiholder.tagholderCollection.extractLayer();
     Writebuffer writebufferTags = Writebuffer();
-    int count = poiholder.tagholderCollection.writePoiTags(writebufferTags);
+    int count = poiholder.tagholderCollection.writePoiTags(writebufferTags, model);
 
     int specialByte = 0;
     // bit 1-4 represent the layer

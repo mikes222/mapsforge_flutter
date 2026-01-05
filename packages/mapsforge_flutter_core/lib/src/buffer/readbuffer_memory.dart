@@ -31,6 +31,12 @@ class ReadbufferMemory extends ReadbufferSource {
     return Future.value(Readbuffer(c, indexBlockPosition));
   }
 
+  @override
+  Future<Readbuffer> readFromFileAtMax(int indexBlockPosition, int indexBlockSize) {
+    Uint8List c = content.sublist(indexBlockPosition, indexBlockPosition + indexBlockSize);
+    return Future.value(Readbuffer(c, indexBlockPosition));
+  }
+
   /// Reads a block of data of the given [length] from the current position.
   @override
   Future<Readbuffer> readFromFile(int length) {

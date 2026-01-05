@@ -13,9 +13,9 @@ abstract class IPoiholderCollection {
 
   Future<void> removeWhere(bool Function(Poiholder poiholder) test);
 
-  void writePoidata(Writebuffer writebuffer, bool debugFile, double tileLatitude, double tileLongitude, List<String> languagesPreferences);
+  Future<void> mergeFrom(IPoiholderCollection other);
 
-  Future<void> countTags(TagholderModel model);
+  Future<void> freeRessources();
 
-  void dispose();
+  Future<void> dispose();
 }

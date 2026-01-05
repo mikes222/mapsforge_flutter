@@ -62,6 +62,18 @@ class ReadbufferFileWebJs implements ReadbufferSource {
   }
 
   @override
+  Future<Readbuffer> readFromFileAtMax(int position, int length) async {
+    assert(length > 0);
+    assert(position >= 0);
+
+    var session = PerformanceProfiler().startSession(category: "ReadbufferFile.readAt");
+    final data = await _readBytes(position, length);
+    final result = Readbuffer(data, position);
+    session.complete();
+    return result;
+  }
+
+  @override
   Future<int> length() async {
     if (_length != null) return _length!;
 

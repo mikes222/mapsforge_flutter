@@ -1,18 +1,20 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/cachefile.dart';
 import 'package:mapfile_converter/modifiers/wayholder_id_file_collection.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class WayholderFileCollection implements IWayholderCollection {
-  static const int _spillBatchSize = 100000;
+  final _log = Logger('WayholderFileCollection');
 
-  final List<Object> _entries = [];
+  final int spillBatchSize;
 
-  final List<int> _pendingSpillIndexes = [];
+  final List<Wayholder> _entries = [];
+
+  final List<_Temp> _fileEntries = [];
 
   final CacheFile cacheFile = CacheFile();
 
@@ -22,40 +24,47 @@ class WayholderFileCollection implements IWayholderCollection {
 
   ReadbufferSource? _readbufferFile;
 
-  WayholderFileCollection({required this.filename});
+  Readbuffer? readbuffer;
+
+  final int bufferLength = 1000000;
+
+  WayholderFileCollection({required this.filename, this.spillBatchSize = 100000});
 
   Future<void> mergeFrom(WayholderIdFileCollection other) async {
-    int expected = _entries.length + other.length;
+    int expected = length + other.length;
 
-    final batch = <Wayholder>[];
+    addAll(await other.getAllOnline());
 
-    await other.forEach((_, wayholder) {
-      batch.add(wayholder);
-      if (batch.length >= _spillBatchSize) {
-        addAll(batch);
-        batch.clear();
-      }
+    // do not add the file if we do not have entries
+    if (length == expected) return;
+    _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
+    await other.forEachOffline((uint8list) {
+      final batchStartPos = _sinkWithCounter!.written;
+      _sinkWithCounter!.add(uint8list);
+      _fileEntries.add(_Temp(pos: batchStartPos, length: uint8list.length));
     });
-
-    if (batch.isNotEmpty) {
-      addAll(batch);
-    }
-    assert(_entries.length == expected);
+    assert(length == expected, "expected ${length} == $expected");
   }
 
   @override
-  int get length => _entries.length;
+  int get length => _entries.length + _fileEntries.length;
 
   @override
-  bool get isEmpty => _entries.isEmpty;
+  bool get isEmpty => _entries.isEmpty && _fileEntries.isEmpty;
 
-  Future<void> _closeFiles() async {
+  /// Frees resources that cannot be transferred to an isolate.
+  ///
+  /// This is typically called before sending the `ReadbufferSource` to another isolate.
+  @override
+  Future<void> freeRessources() async {
     await _readbufferFile?.freeRessources();
     _readbufferFile = null;
-
     await _sinkWithCounter?.close();
     _sinkWithCounter = null;
-    _pendingSpillIndexes.clear();
+  }
+
+  Future<void> _closeFiles() async {
+    await freeRessources();
     try {
       // delete even if _sink was already closed
       File(filename).deleteSync();
@@ -70,133 +79,109 @@ class WayholderFileCollection implements IWayholderCollection {
   Future<void> dispose() async {
     await _closeFiles();
     _entries.clear();
-    _pendingSpillIndexes.clear();
+    _fileEntries.clear();
   }
 
   @override
-  int add(Wayholder wayholder) {
+  void add(Wayholder wayholder) {
     _entries.add(wayholder);
-    final idx = _entries.length - 1;
-
-    // if (wayholder.nodeCount() <= 5) {
-    //   return idx;
-    // }
-
-    _pendingSpillIndexes.add(idx);
     _flushPendingToDiskIfNeeded();
-    return idx;
   }
 
   @override
   void addAll(Iterable<Wayholder> wayholders) {
-    if (wayholders.isEmpty) return;
-
-    for (final w in wayholders) {
-      add(w);
+    for (final wayholder in wayholders) {
+      _entries.add(wayholder);
     }
-  }
-
-  Future<Wayholder> get(int index) async {
-    final entry = _entries[index];
-    if (entry is Wayholder) return entry;
-    return _fromFile(entry as _Temp);
-  }
-
-  @override
-  Future<List<Wayholder>> getAll() async {
-    final result = <Wayholder>[];
-    for (int i = 0; i < _entries.length; i++) {
-      result.add(await get(i));
+    int count = _entries.length;
+    while (true) {
+      _flushPendingToDiskIfNeeded();
+      if (_entries.length >= count) break;
+      count = _entries.length;
     }
-    return result;
-  }
-
-  Future<void> _loadIntoMemory() async {
-    for (int index = 0; index < _entries.length; index++) {
-      final entry = _entries[index];
-      if (entry is Wayholder) continue;
-      Wayholder wayholder = await _fromFile(entry as _Temp);
-      _entries[index] = wayholder;
-    }
-    await _closeFiles();
   }
 
   @override
   Future<void> forEach(void Function(Wayholder wayholder) action) async {
-    for (int i = 0; i < _entries.length; i++) {
-      action(await get(i));
+    // Pass 1: process in-memory entries first (cheap, no I/O).
+    for (var entry in _entries) {
+      action(entry);
+    }
+    // Pass 2: process spilled entries from disk in large sequential batches.
+    // Ensure all spilled data is actually present on disk.
+    await _sinkWithCounter?.flush();
+    List<_Temp> temps = _fileEntries.toList();
+    temps.sort((a, b) => a.pos.compareTo(b.pos));
+    for (var temp in temps) {
+      action(await _fromFile(temp));
     }
   }
 
   @override
   Future<void> removeWhere(bool Function(Wayholder wayholder) test) async {
-    for (int i = 0; i < _entries.length; i++) {
-      Wayholder entry = await get(i);
-      if (test(entry)) {
-        _entries.removeAt(i);
+    if (_entries.isEmpty) return;
+
+    // Pass 1: process in-memory entries (cheap, no I/O).
+    for (int index = 0; index < _entries.length; index++) {
+      final entry = _entries[index];
+      bool toRemove = test(entry);
+      if (toRemove) {
+        _entries.removeAt(index);
+        index--;
+      }
+    }
+
+    // Ensure all spilled data is actually present on disk.
+    await _sinkWithCounter?.flush();
+
+    for (int i = 0; i < _fileEntries.length; i++) {
+      final entry = await _fromFile(_fileEntries[i]);
+      bool toRemove = test(entry);
+      if (toRemove) {
+        _fileEntries.removeAt(i);
         i--;
       }
     }
   }
 
   void _flushPendingToDiskIfNeeded() {
-    if (_pendingSpillIndexes.length < _spillBatchSize) return;
-    _flushPendingToDisk();
-  }
-
-  void _flushPendingToDisk() {
-    if (_pendingSpillIndexes.isEmpty) return;
+    if (_entries.length < spillBatchSize) return;
 
     _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
 
     final batchBytes = BytesBuilder(copy: false);
     final batchLengths = <int>[];
-    final batchIndexes = <int>[];
 
-    for (int i = 0; i < _spillBatchSize && _pendingSpillIndexes.isNotEmpty; i++) {
-      final idx = _pendingSpillIndexes.removeAt(0);
-      final entry = _entries[idx];
-      if (entry is! Wayholder) {
-        continue;
-      }
+    for (int i = 0; i < spillBatchSize; ++i) {
+      final entry = _entries.removeAt(0);
 
       final bytes = cacheFile.toFile(entry);
       batchBytes.add(bytes);
       batchLengths.add(bytes.length);
-      batchIndexes.add(idx);
     }
-
-    if (batchIndexes.isEmpty) return;
 
     final batchStartPos = _sinkWithCounter!.written;
     _sinkWithCounter!.add(batchBytes.toBytes());
 
     int offset = 0;
-    for (int i = 0; i < batchIndexes.length; i++) {
+    for (int i = 0; i < batchLengths.length; ++i) {
       final len = batchLengths[i];
-      _entries[batchIndexes[i]] = _Temp(pos: batchStartPos + offset, length: len);
+      _fileEntries.add(_Temp(pos: batchStartPos + offset, length: len));
       offset += len;
     }
   }
 
   Future<Wayholder> _fromFile(_Temp temp) async {
-    _readbufferFile ??= createReadbufferSource(filename);
     await _sinkWithCounter?.flush();
+    _readbufferFile ??= createReadbufferSource(filename);
 
-    final readbuffer = await _readbufferFile!.readFromFileAt(temp.pos, temp.length);
-    final uint8list = readbuffer.getBuffer(0, temp.length);
+    if (readbuffer == null || readbuffer!.offset > temp.pos || readbuffer!.offset + readbuffer!.getBufferSize() < temp.pos + temp.length) {
+      readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, bufferLength);
+    }
+    Uint8List uint8list = readbuffer!.getBuffer(temp.pos - readbuffer!.offset, temp.length);
     assert(uint8list.length == temp.length);
 
     return cacheFile.fromFile(uint8list);
-  }
-
-  @override
-  Future<void> countTags(TagholderModel model) async {
-    for (int index = 0; index < _entries.length; index++) {
-      Wayholder wayholder = await get(index);
-      wayholder.tagholderCollection.reconnectWayTags(model);
-      wayholder.tagholderCollection.countTags();
-    }
   }
 
   @override
@@ -215,22 +200,6 @@ class WayholderFileCollection implements IWayholderCollection {
       result += action.pathCount();
     });
     return result;
-  }
-
-  @override
-  void writeWaydata(Writebuffer writebuffer, bool debugFile, Tile tile, double tileLatitude, double tileLongitude, List<String> languagesPreferences) {
-    throw UnimplementedError();
-  }
-
-  /// Frees resources that cannot be transferred to an isolate.
-  ///
-  /// This is typically called before sending the `ReadbufferSource` to another isolate.
-  @override
-  Future<void> freeRessources() async {
-    await _readbufferFile?.freeRessources();
-    _readbufferFile = null;
-    await _sinkWithCounter?.close();
-    _sinkWithCounter = null;
   }
 }
 

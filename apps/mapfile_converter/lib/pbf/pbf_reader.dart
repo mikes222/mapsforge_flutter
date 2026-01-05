@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';
@@ -219,49 +220,45 @@ class PbfReader implements IPbfReader {
       if (primitiveGroup.nodes.isNotEmpty) {
         throw Exception('Nodes not supported');
       }
-      if (primitiveGroup.ways.isNotEmpty) {
-        for (final way in primitiveGroup.ways) {
-          final id = way.id.toInt();
-          var refDelta = 0;
-          final refs = way.refs.map((ref) {
-            refDelta += ref.toInt();
-            return refDelta;
-          }).toList();
-          final tags = _parseParallelTags(way.keys, way.vals, stringTable);
-          ways.add(OsmWay(id: id, refs: refs, tags: tags));
-        }
+      for (final way in primitiveGroup.ways) {
+        final id = way.id.toInt();
+        var refDelta = 0;
+        final refs = way.refs.map((ref) {
+          refDelta += ref.toInt();
+          return refDelta;
+        }).toList();
+        final tags = _parseParallelTags(way.keys, way.vals, stringTable);
+        ways.add(OsmWay(id: id, refs: refs, tags: tags));
       }
-      if (primitiveGroup.relations.isNotEmpty) {
-        for (final relation in primitiveGroup.relations) {
-          final id = relation.id.toInt();
-          final tags = _parseParallelTags(relation.keys, relation.vals, stringTable);
-          var refDelta = 0;
-          final memberIds = relation.memids.map((ref) {
-            refDelta += ref.toInt();
-            return refDelta;
-          }).toList();
-          final types = relation.types.map((type) {
-            return switch (type) {
-              Relation_MemberType.NODE => MemberType.node,
-              Relation_MemberType.WAY => MemberType.way,
-              Relation_MemberType.RELATION => MemberType.relation,
-              _ => throw Exception('Unknown member type: $type'),
-            };
-          }).toList();
-          final roles = relation.rolesSid.map((role) {
-            return stringTable[role];
-          }).toList();
+      for (final relation in primitiveGroup.relations) {
+        final id = relation.id.toInt();
+        final tags = _parseParallelTags(relation.keys, relation.vals, stringTable);
+        var refDelta = 0;
+        final memberIds = relation.memids.map((ref) {
+          refDelta += ref.toInt();
+          return refDelta;
+        }).toList();
+        final types = relation.types.map((type) {
+          return switch (type) {
+            Relation_MemberType.NODE => MemberType.node,
+            Relation_MemberType.WAY => MemberType.way,
+            Relation_MemberType.RELATION => MemberType.relation,
+            _ => throw Exception('Unknown member type: $type'),
+          };
+        }).toList();
+        final roles = relation.rolesSid.map((role) {
+          return stringTable[role];
+        }).toList();
 
-          List<OsmRelationMember> members = [];
-          for (int idx = 0; idx < memberIds.length; idx++) {
-            int memberId = memberIds[idx];
-            MemberType memberType = types[idx];
-            String role = roles[idx];
-            OsmRelationMember member = OsmRelationMember(memberId: memberId, memberType: memberType, role: role);
-            members.add(member);
-          }
-          relations.add(OsmRelation(id: id, tags: tags, members: members));
+        List<OsmRelationMember> members = [];
+        for (int idx = 0; idx < memberIds.length; idx++) {
+          int memberId = memberIds[idx];
+          MemberType memberType = types[idx];
+          String role = roles[idx];
+          OsmRelationMember member = OsmRelationMember(memberId: memberId, memberType: memberType, role: role);
+          members.add(member);
         }
+        relations.add(OsmRelation(id: id, tags: tags, members: members));
       }
       var j = 0;
       if (primitiveGroup.dense.id.isNotEmpty) {
@@ -292,13 +289,12 @@ class PbfReader implements IPbfReader {
   Map<String, String> _parseParallelTags(List<int> keys, List<int> values, List<String> stringTable) {
     final tags = <String, String>{};
     assert(keys.length == values.length);
-    for (var i = 0; i < keys.length; ++i) {
-      int key = keys[i];
+    keys.forEachIndexed((int index, int key) {
       if (key == 0) {
-        continue;
+        return;
       }
-      tags[stringTable[key]] = stringTable[values[i]];
-    }
+      tags[stringTable[key]] = stringTable[values[index]];
+    });
     return tags;
   }
 }

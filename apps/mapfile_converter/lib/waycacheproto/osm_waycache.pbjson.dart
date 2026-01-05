@@ -61,6 +61,7 @@ const CacheWayholder$json = {
   '2': [
     {'1': 'tagkeys', '3': 2, '4': 3, '5': 9, '10': 'tagkeys'},
     {'1': 'tagvals', '3': 3, '4': 3, '5': 9, '10': 'tagvals'},
+    {'1': 'tagindexes', '3': 18, '4': 3, '5': 17, '10': 'tagindexes'},
     {
       '1': 'innerways',
       '3': 4,
@@ -93,17 +94,14 @@ const CacheWayholder$json = {
       '5': 8,
       '10': 'mergedWithOtherWay'
     },
-    {'1': 'normalizedkeys', '3': 16, '4': 3, '5': 9, '10': 'normalizedkeys'},
-    {'1': 'normalizedvals', '3': 17, '4': 3, '5': 9, '10': 'normalizedvals'},
   ],
 };
 
 /// Descriptor for `CacheWayholder`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List cacheWayholderDescriptor = $convert.base64Decode(
     'Cg5DYWNoZVdheWhvbGRlchIYCgd0YWdrZXlzGAIgAygJUgd0YWdrZXlzEhgKB3RhZ3ZhbHMYAy'
-    'ADKAlSB3RhZ3ZhbHMSJwoJaW5uZXJ3YXlzGAQgAygLMgkuQ2FjaGVXYXlSCWlubmVyd2F5cxIp'
-    'CgpjbG9zZWR3YXlzGAUgAygLMgkuQ2FjaGVXYXlSCmNsb3NlZHdheXMSJQoIb3BlbndheXMYBi'
-    'ADKAsyCS5DYWNoZVdheVIIb3BlbndheXMSIQoFbGFiZWwYCyABKAsyCy5DYWNoZUxhYmVsUgVs'
-    'YWJlbBIuChJtZXJnZWRXaXRoT3RoZXJXYXkYDyACKAhSEm1lcmdlZFdpdGhPdGhlcldheRImCg'
-    '5ub3JtYWxpemVka2V5cxgQIAMoCVIObm9ybWFsaXplZGtleXMSJgoObm9ybWFsaXplZHZhbHMY'
-    'ESADKAlSDm5vcm1hbGl6ZWR2YWxz');
+    'ADKAlSB3RhZ3ZhbHMSHgoKdGFnaW5kZXhlcxgSIAMoEVIKdGFnaW5kZXhlcxInCglpbm5lcndh'
+    'eXMYBCADKAsyCS5DYWNoZVdheVIJaW5uZXJ3YXlzEikKCmNsb3NlZHdheXMYBSADKAsyCS5DYW'
+    'NoZVdheVIKY2xvc2Vkd2F5cxIlCghvcGVud2F5cxgGIAMoCzIJLkNhY2hlV2F5UghvcGVud2F5'
+    'cxIhCgVsYWJlbBgLIAEoCzILLkNhY2hlTGFiZWxSBWxhYmVsEi4KEm1lcmdlZFdpdGhPdGhlcl'
+    'dheRgPIAIoCFISbWVyZ2VkV2l0aE90aGVyV2F5');

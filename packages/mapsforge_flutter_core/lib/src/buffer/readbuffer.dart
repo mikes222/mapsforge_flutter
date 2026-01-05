@@ -27,7 +27,7 @@ class Readbuffer {
   final Uint8List _bufferData;
 
   /// The current offset in the underlying file which denotes the start of the [_bufferData] or [null] if unknown
-  final int? _offset;
+  final int _offset;
 
   /// The current position of the read pointer in the [_bufferData]. The position cannot exceed the amount of bytes in [_bufferData]
   int _bufferPosition;
@@ -47,13 +47,16 @@ class Readbuffer {
   /// Creates a new Readbuffer by copying the given buffer and setting the new buffer position to 0.
   Readbuffer.from(Readbuffer other) : _bufferData = other._bufferData, _offset = other._offset, _bufferPosition = 0;
 
+  /// The current offset in the underlying file which denotes the start of the [_bufferData] or [null] if unknown
+  int get offset => _offset;
+
   /// Extracts a portion of the buffer as a new Uint8List.
   ///
   /// [position] Starting position in the buffer
   /// [length] Number of bytes to extract
   /// Returns a sublist view of the buffer data
   Uint8List getBuffer(int position, int length) {
-    assert(position >= 0);
+    assert(position >= 0, "position $position < 0");
     assert(position + length <= _bufferData.length);
     return _bufferData.sublist(position, position + length);
   }
