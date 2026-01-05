@@ -85,8 +85,10 @@ class _CardWidget extends StatelessWidget {
           Text("IsWater ${datastoreBundle.isWater}, "),
           InkWell(
             child: Row(children: <Widget>[Text("Pois ${datastoreBundle.pointOfInterests.length}, "), const Icon(Icons.more_horiz)]),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: datastoreBundle.pointOfInterests)));
+            onTap: () async {
+              await Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (BuildContext context) => PoiPage(pointOfInterests: datastoreBundle.pointOfInterests)));
             },
           ),
           InkWell(

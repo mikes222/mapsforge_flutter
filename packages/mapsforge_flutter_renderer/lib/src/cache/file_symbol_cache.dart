@@ -66,12 +66,12 @@ class FileSymbolCache extends SymbolCache {
     }
     String key = "$src-$width-$height";
     SymbolImage symbolImage = await _cache.getOrProduce(key, (_) async {
-      return await _createSymbol(src, width, height);
+      return _createSymbol(src, width, height);
     });
     return symbolImage.clone();
   }
 
-  Future<Uint8List?> _loadResource(String src) async {
+  Future<Uint8List?> _loadResource(String src) {
     return _resourceCache.getOrProduce(src, (_) async {
       var entry = imageLoaders.entries.firstWhereOrNull((entry) => src.startsWith(entry.key));
       if (entry == null) return null;

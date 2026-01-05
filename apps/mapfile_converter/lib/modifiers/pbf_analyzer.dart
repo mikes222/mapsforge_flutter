@@ -63,6 +63,8 @@ class PbfAnalyzer {
 
   List<Wayholder> get waysMerged => _wayHoldersMerged;
 
+  int nextTimestamp = 0;
+
   PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false, this.finalBoundingBox});
 
   static Future<PbfAnalyzer> readFile(
@@ -92,11 +94,9 @@ class PbfAnalyzer {
     await pbfAnalyzer.analyze();
     if (finalBoundingBox != null) {
       // we are filtering while importing, this is not necessary anymore
-      //await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+      await pbfAnalyzer._filterByBoundingBox(finalBoundingBox);
     }
     await pbfAnalyzer.removeSuperflous();
-    //    print("rule: ${ruleAnalyzer.closedWayValueinfos()}");
-    //    print("rule neg: ${ruleAnalyzer.closedWayNegativeValueinfos()}");
     return pbfAnalyzer;
   }
 
@@ -113,7 +113,7 @@ class PbfAnalyzer {
     await pbfAnalyzer.analyze();
     if (finalBoundingBox != null) {
       // we are filtering while importing, this is not necessary anymore
-      //await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+      await pbfAnalyzer._filterByBoundingBox(finalBoundingBox);
     }
     await pbfAnalyzer.removeSuperflous();
     return pbfAnalyzer;
@@ -125,6 +125,8 @@ class PbfAnalyzer {
     _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
     IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
     List<int> positions = await pbfReader.getBlobPositions();
+    nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
+
     List<Future> futures = [];
     for (int position in positions) {
       OsmData? pbfData = await pbfReader.readBlobData(position);
@@ -144,6 +146,7 @@ class PbfAnalyzer {
     _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${HolderCollectionFactory.randomId}.tmp");
     _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
     OsmReader osmReader = OsmReader(filename);
+    nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
     await osmReader.readOsmFile((OsmData pbfData) async {
       await _analyze1Block(pbfData);
     });
@@ -258,11 +261,12 @@ class PbfAnalyzer {
   }
 
   Future<void> _analyze1Block(OsmData blockData) async {
+    if (!quiet && nextTimestamp < DateTime.now().millisecondsSinceEpoch) {
+      _log.info("Read pois: ${_positions.length}, ways: ${_wayHolders.length}, relations: ${_relations.length}");
+      nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
+    }
     for (var osmNode in blockData.nodes) {
       _positions[osmNode.id] = osmNode.latLong;
-      if (!quiet && _positions.length % 10000000 == 0) {
-        _log.info("Pois read: ${_positions.length}");
-      }
       // do not store a node without tags, we cannot render anything
       if (osmNode.tags.isEmpty) continue;
       Poiholder poiholder = converter.createNodeholder(osmNode);
@@ -274,6 +278,10 @@ class PbfAnalyzer {
         }
       }
       _nodeHolders.add(poiholder);
+    }
+    if (!quiet && nextTimestamp < DateTime.now().millisecondsSinceEpoch) {
+      _log.info("Read pois: ${_positions.length}, ways: ${_wayHolders.length}, relations: ${_relations.length}");
+      nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
     }
     for (OsmWay osmWay in blockData.ways) {
       List<ILatLong> latLongs = [];
@@ -292,22 +300,21 @@ class PbfAnalyzer {
       } else {
         wayholder.openOutersAdd(waypath);
       }
-      if (finalBoundingBox != null) {
-        if (!finalBoundingBox!.containsBoundingBox(wayholder.boundingBoxCached) && !finalBoundingBox!.intersects(wayholder.boundingBoxCached)) {
-          ++waysFiltered;
-          continue;
-        }
-      }
+      // We need to merge the ways to see if they are closed. Do not remove them now.
+      // if (finalBoundingBox != null) {
+      //   if (!finalBoundingBox!.containsBoundingBox(wayholder.boundingBoxCached) && !finalBoundingBox!.intersects(wayholder.boundingBoxCached)) {
+      //     ++waysFiltered;
+      //     continue;
+      //   }
+      // }
       _wayHolders.add(osmWay.id, wayholder);
-      if (!quiet && _wayHolders.length % 1000000 == 0) {
-        _log.info("Ways read: ${_wayHolders.length}");
-      }
+    }
+    if (!quiet && nextTimestamp < DateTime.now().millisecondsSinceEpoch) {
+      _log.info("Read pois: ${_positions.length}, ways: ${_wayHolders.length}, relations: ${_relations.length}");
+      nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
     }
     for (OsmRelation osmRelation in blockData.relations) {
       _relations.add(osmRelation);
-      if (!quiet && _relations.length % 1000000 == 0) {
-        _log.info("Relations read: ${_relations.length}");
-      }
     }
   }
 
@@ -415,15 +422,15 @@ class PbfAnalyzer {
     return null;
   }
 
-  void clear() {
-    _nodeHolders.dispose();
-    _wayHolders.dispose();
+  Future<void> clear() async {
+    await _nodeHolders.dispose();
+    await _wayHolders.dispose();
     _wayHoldersMerged.clear();
     _relations.clear();
     nodeNotFound.clear();
   }
 
-  Future<void> filterByBoundingBox(BoundingBox boundingBox) async {
+  Future<void> _filterByBoundingBox(BoundingBox boundingBox) async {
     int count = _nodeHolders.length;
     await _nodeHolders.removeWhere((nodeHolder) => !boundingBox.containsLatLong(nodeHolder.position));
     nodesFiltered = count - _nodeHolders.length;

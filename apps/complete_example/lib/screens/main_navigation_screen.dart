@@ -53,7 +53,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => _navigateToConfiguration(),
                   icon: const Icon(Icons.settings),
-                  label: Text('Change Configuration'),
+                  label: const Text('Change Configuration'),
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                 ),
               ),

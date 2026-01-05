@@ -12,25 +12,20 @@ class LabeltextCustom extends StatelessWidget {
 
   final Color? fontColor;
 
-  LabeltextCustom({
-    required this.label,
-    this.value,
-    this.maxLines = 1,
-    this.fontSize,
-    this.fontColor,
-  });
+  LabeltextCustom({required this.label, this.value, this.maxLines = 1, this.fontSize, this.fontColor});
 
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-      Text(label + (label.isNotEmpty ? ": " : ""),
-          style: TextStyle(
-              fontSize: fontSize ??
-                  Theme.of(context).textTheme.bodyMedium?.fontSize,
-              fontStyle: FontStyle.italic,
-              color: Colors.blueGrey)),
-      buildText(context),
-    ]);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(
+          label + (label.isNotEmpty ? ": " : ""),
+          style: TextStyle(fontSize: fontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize, fontStyle: FontStyle.italic, color: Colors.blueGrey),
+        ),
+        buildText(context),
+      ],
+    );
   }
 
   Widget buildText(BuildContext context) {
@@ -42,10 +37,8 @@ class LabeltextCustom extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 maxLines: maxLines,
                 style: TextStyle(
-                  fontSize: fontSize ??
-                      Theme.of(context).textTheme.bodyMedium?.fontSize,
-                  color:
-                      fontColor ?? Theme.of(context).textTheme.bodyMedium?.color,
+                  fontSize: fontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize,
+                  color: fontColor ?? Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ),
@@ -54,10 +47,8 @@ class LabeltextCustom extends StatelessWidget {
             Text(
               value ?? "",
               style: TextStyle(
-                fontSize:
-                    fontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize,
-                color:
-                    fontColor ?? Theme.of(context).textTheme.bodyMedium?.color,
+                fontSize: fontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize,
+                color: fontColor ?? Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
           );
@@ -66,10 +57,10 @@ class LabeltextCustom extends StatelessWidget {
   Widget buildGesture(Widget child) {
     return GestureDetector(
       child: child,
-      onLongPress: () {
-        Clipboard.setData( ClipboardData(text: value ?? ""));
-//        if (scaffoldKey != null)
-//          new UiDefault().showMessage(scaffoldKey, "Copied to Clipboard");
+      onLongPress: () async {
+        await Clipboard.setData(ClipboardData(text: value ?? ""));
+        //        if (scaffoldKey != null)
+        //          new UiDefault().showMessage(scaffoldKey, "Copied to Clipboard");
       },
     );
   }

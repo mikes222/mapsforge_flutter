@@ -241,7 +241,7 @@ class SinkWithCounter {
     written += buffer.length;
   }
 
-  Future<void> flush() async {
+  Future<void> flush() {
     return sink.flush();
   }
 }

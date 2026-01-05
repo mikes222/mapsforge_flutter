@@ -36,7 +36,7 @@ class ShapePainterIcon extends UiShapePainter<RenderinstructionIcon> {
   ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  static Future<ShapePainterIcon> create(RenderinstructionIcon renderinstruction) async {
+  static Future<ShapePainterIcon> create(RenderinstructionIcon renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterIcon? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterIcon?;
       if (shapePainter != null) return shapePainter;

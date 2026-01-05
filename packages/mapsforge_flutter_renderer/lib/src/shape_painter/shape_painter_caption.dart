@@ -41,7 +41,7 @@ class ShapePainterCaption extends UiShapePainter<RenderinstructionCaption> {
   ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  static Future<ShapePainterCaption> create(RenderinstructionCaption renderinstruction) async {
+  static Future<ShapePainterCaption> create(RenderinstructionCaption renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterCaption? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterCaption?;
       if (shapePainter != null) return shapePainter;

@@ -41,17 +41,17 @@ class IsolatePbfReader implements IPbfReader {
 
   @override
   Future<OsmData?> readBlobData(int position) async {
-    return await _isolateInstance.compute(position);
+    return _isolateInstance.compute(position);
   }
 
   @override
   Future<BoundingBox?> calculateBounds() async {
-    return await _isolateInstance.compute(-2);
+    return _isolateInstance.compute(-2);
   }
 
   @override
   Future<List<int>> getBlobPositions() async {
-    return await _isolateInstance.compute(-3);
+    return _isolateInstance.compute(-3);
   }
 
   /// This is the instance variable. Note that it is a different instance in each isolate.

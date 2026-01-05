@@ -42,14 +42,14 @@ class MapModel extends ChangeNotifier {
   MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     super.dispose();
-    _positionSubject.close();
-    _manualMoveSubject.close();
-    _tapSubject.close();
-    _longTapSubject.close();
-    _doubleTapSubject.close();
-    _dragNdropSubject.close();
+    await _positionSubject.close();
+    await _manualMoveSubject.close();
+    await _tapSubject.close();
+    await _longTapSubject.close();
+    await _doubleTapSubject.close();
+    await _dragNdropSubject.close();
     renderer.dispose();
     rotationNotifier.dispose();
     for (var datastore in List.of(_markerDatastores)) {

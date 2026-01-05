@@ -57,7 +57,7 @@ class IsolateTileWriter implements ITileWriter {
 
   @override
   Future<Uint8List> writeTile(Tile tile) async {
-    return await _isolateInstance.compute(tile);
+    return _isolateInstance.compute(tile);
   }
 
   /// This is the instance variable. Note that it is a different instance in each isolate.

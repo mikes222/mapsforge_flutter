@@ -63,7 +63,7 @@ class ShapePainterArea extends UiShapePainter<RenderinstructionArea> {
   ///
   /// [renderinstruction] Area rendering instruction to create painter for
   /// Returns initialized area shape painter
-  static Future<ShapePainterArea> create(RenderinstructionArea renderinstruction) async {
+  static Future<ShapePainterArea> create(RenderinstructionArea renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterArea? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterArea?;
       if (shapePainter != null) return shapePainter;

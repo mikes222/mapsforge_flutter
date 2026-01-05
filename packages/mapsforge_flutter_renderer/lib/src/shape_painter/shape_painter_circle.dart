@@ -44,7 +44,7 @@ class ShapePainterCircle extends UiShapePainter<RenderinstructionCircle> {
   ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  static Future<ShapePainterCircle> create(RenderinstructionCircle renderinstruction) async {
+  static Future<ShapePainterCircle> create(RenderinstructionCircle renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterCircle? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterCircle?;
       if (shapePainter != null) return shapePainter;

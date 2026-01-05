@@ -54,7 +54,7 @@ class ShapePainterPolylineText extends UiShapePainter<RenderinstructionPolylineT
   ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  static Future<ShapePainterPolylineText> create(RenderinstructionPolylineText renderinstruction) async {
+  static Future<ShapePainterPolylineText> create(RenderinstructionPolylineText renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterPolylineText? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterPolylineText?;
       if (shapePainter != null) return shapePainter;

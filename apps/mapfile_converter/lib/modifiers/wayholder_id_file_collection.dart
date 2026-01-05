@@ -65,10 +65,10 @@ class WayholderIdFileCollection {
     }
   }
 
-  void dispose() {
+  Future<void> dispose() async {
     _readbufferFile?.dispose();
     _readbufferFile = null;
-    _sinkWithCounter?.close().then((a) {
+    await _sinkWithCounter?.close().then((a) {
       try {
         File(filename).deleteSync();
       } catch (_) {

@@ -66,7 +66,7 @@ class PbfConvert {
         await osmNodes.mergeFrom(pbfAnalyzer.nodes);
         await ways.mergeFrom(pbfAnalyzer.ways());
         ways.addAll(pbfAnalyzer.waysMerged);
-        pbfAnalyzer.clear();
+        await pbfAnalyzer.clear();
       } else {
         /// Read and analyze PBF file
         PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(sourcefile, converter, maxGapMeter: maxgap, finalBoundingBox: finalBoundingBox, quiet: quiet);
@@ -77,7 +77,7 @@ class PbfConvert {
         await osmNodes.mergeFrom(pbfAnalyzer.nodes);
         await ways.mergeFrom(pbfAnalyzer.ways());
         ways.addAll(pbfAnalyzer.waysMerged);
-        pbfAnalyzer.clear();
+        await pbfAnalyzer.clear();
       }
     }
 
@@ -117,8 +117,8 @@ class PbfConvert {
       await osmWriter.close();
     } else if (destinationfile.toLowerCase().endsWith(".pbf")) {
       PbfWriter pbfWriter = PbfWriter(destinationfile, finalBoundingBox!);
-      for (IPoiholderCollection pois2 in poiZoomlevels.values) {
-        await pois2.forEach((Poiholder poiholder) async {
+      for (IPoiholderCollection poiholderCollection in poiZoomlevels.values) {
+        await poiholderCollection.forEach((Poiholder poiholder) async {
           await pbfWriter.writeNode(poiholder.position, poiholder.tagholderCollection);
         });
       }
@@ -192,7 +192,7 @@ class PbfConvert {
       await mapfileWriter.close();
 
       for (var poiholderCollection in poiZoomlevels.values) {
-        poiholderCollection.dispose();
+        await poiholderCollection.dispose();
       }
       poiZoomlevels.clear();
       for (var wayholderCollection in wayZoomlevels.values) {
@@ -200,6 +200,7 @@ class PbfConvert {
       }
       wayZoomlevels.clear();
     }
+    _log.info("Completed");
   }
 
   Future<PoiWayCollections> _fillSubfile(

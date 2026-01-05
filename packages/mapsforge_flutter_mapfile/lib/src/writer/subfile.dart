@@ -152,6 +152,8 @@ class Subfile {
   /// parallel isolates.
   Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
+    int nextTimestamp = DateTime.now().millisecondsSinceEpoch;
+
     //_log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
 
     List<String> languagesPreferences = [];
@@ -175,6 +177,10 @@ class Subfile {
         ++current;
         if (current >= instanceCount) {
           current = 0;
+        }
+        if (nextTimestamp < DateTime.now().millisecondsSinceEpoch) {
+          _log.info("Processing tile $tile");
+          nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
         }
       },
       (int currentTileY, int processedTiles, int sumTiles) async {

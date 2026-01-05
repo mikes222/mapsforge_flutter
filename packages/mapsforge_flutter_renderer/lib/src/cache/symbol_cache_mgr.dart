@@ -60,7 +60,7 @@ class SymbolCacheMgr {
   /// [width] Target width for scaling, 0 to maintain original
   /// [height] Target height for scaling, 0 to maintain original
   /// Returns SymbolImage or null if loading fails
-  Future<SymbolImage?> getOrCreateSymbol(String src, int width, int height) async {
+  Future<SymbolImage?> getOrCreateSymbol(String src, int width, int height) {
     return symbolCache.getOrCreateSymbol(src, width, height);
   }
 }

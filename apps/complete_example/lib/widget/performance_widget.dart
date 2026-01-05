@@ -73,8 +73,8 @@ class _PerformanceWidgetState extends State<PerformanceWidget> {
               ),
               const SizedBox(height: 8),
               InkWell(
-                onLongPress: () {
-                  Clipboard.setData(ClipboardData(text: _performanceInfo));
+                onLongPress: () async {
+                  await Clipboard.setData(ClipboardData(text: _performanceInfo));
                 },
                 child: Text(
                   _performanceInfo,

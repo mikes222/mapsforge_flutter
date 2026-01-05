@@ -45,7 +45,7 @@ class _DownloadLocationSelectorState extends State<DownloadLocationSelector> {
       if (Platform.isAndroid) {
         // Try external storage first
         directory = await getTemporaryDirectory(); //Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
+        if (!directory.existsSync()) {
           directory = await getExternalStorageDirectory();
         }
       } else if (Platform.isIOS) {

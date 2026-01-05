@@ -89,8 +89,8 @@ class SubfileParamsPage extends StatelessWidget {
                   ),
                   InkWell(
                     child: const Row(children: <Widget>[Text("Blocks"), Icon(Icons.more_horiz)]),
-                    onTap: () {
-                      Navigator.of(context).push(
+                    onTap: () async {
+                      await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (BuildContext context) => BlockPage(mapFile: mapFile, subFileParameter: subfileParameter),
                         ),

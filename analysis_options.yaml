@@ -26,6 +26,11 @@ linter:
     - overridden_fields
     - prefer_conditional_assignment
     - use_build_context_synchronously
+    - unnecessary_async
+    - unnecessary_unawaited
+    - unnecessary_await_in_return
+    - avoid_slow_async_io
+    - discarded_futures
 
 #formatter:
 #  page_width: 160

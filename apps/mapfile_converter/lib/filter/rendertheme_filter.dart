@@ -38,7 +38,7 @@ class RenderthemeFilter {
       }
       bag.add(poiholder);
     });
-    _log.info("Removed $noRangeNodes nodes because we would never draw them according to the render theme");
+    if (noRangeNodes > 0) _log.info("Removed $noRangeNodes nodes because we would never draw them according to the render theme");
     return nodes;
   }
 
@@ -83,7 +83,7 @@ class RenderthemeFilter {
       }
       bag.add(wayholder);
     });
-    _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
+    if (noRangeWays > 0) _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
 
     return result;
   }

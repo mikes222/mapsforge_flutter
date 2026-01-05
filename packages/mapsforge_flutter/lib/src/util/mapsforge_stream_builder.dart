@@ -67,7 +67,6 @@ class _MapsforgeStreamBuilderState<T> extends State<MapsforgeStreamBuilder<T>> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.stream != widget.stream) {
       throw Exception("Stream changed, recreate all overlays if you want to use a different mapModel.");
-      print(StackTrace.current);
     }
   }
 

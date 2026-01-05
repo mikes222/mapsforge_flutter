@@ -61,7 +61,7 @@ class PainterFactory {
       return shapePainter;
     }
 
-    return await createShapePainter(renderInfo);
+    return createShapePainter(renderInfo);
   }
 
   /// Creates a shape painter for the given render information.

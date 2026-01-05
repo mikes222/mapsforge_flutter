@@ -17,7 +17,7 @@ class UnzipService {
   }) async {
     // Ensure destination directory exists
     final destDir = Directory(destinationDirectory);
-    if (!await destDir.exists()) {
+    if (!destDir.existsSync()) {
       await destDir.create(recursive: true);
     }
 

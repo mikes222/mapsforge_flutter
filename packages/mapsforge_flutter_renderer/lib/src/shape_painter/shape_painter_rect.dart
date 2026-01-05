@@ -18,6 +18,7 @@ import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 /// solid fill colors and bitmap pattern fills, along with optional stroke outlines.
 class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
   static final _log = Logger('ShapePainterRect');
+
   /// The paint used for the rectangle fill. Null if the fill is transparent.
   UiPaint? fill;
 
@@ -48,7 +49,7 @@ class ShapePainterRect extends UiShapePainter<RenderinstructionRect> {
   ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  static Future<ShapePainterRect> create(RenderinstructionRect renderinstruction) async {
+  static Future<ShapePainterRect> create(RenderinstructionRect renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterRect? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterRect?;
       if (shapePainter != null) return shapePainter;

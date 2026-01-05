@@ -126,7 +126,7 @@ class ConvertCommand extends Command {
     double maxDeviation = double.parse(argResults!.option("maxdeviation")!);
     int isolates = int.parse(argResults!.option("isolates")!);
 
-    _log.info("Converting, please wait...");
+    //_log.info("Converting, please wait...");
 
     PbfConvert convert = PbfConvert();
     await convert.convert(
@@ -142,7 +142,7 @@ class ConvertCommand extends Command {
       maxDeviation: maxDeviation,
       isolates: isolates,
     );
-    _log.info("Process completed");
+    //_log.info("Process completed");
     exit(0);
   }
 

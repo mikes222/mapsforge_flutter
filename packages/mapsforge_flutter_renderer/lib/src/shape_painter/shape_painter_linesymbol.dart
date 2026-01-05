@@ -51,7 +51,7 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
   ///
   /// Uses a task queue to ensure thread-safe creation and caches the result
   /// in the rendering instruction to avoid duplicate creation.
-  static Future<ShapePainterLinesymbol> create(RenderinstructionLinesymbol renderinstruction) async {
+  static Future<ShapePainterLinesymbol> create(RenderinstructionLinesymbol renderinstruction) {
     return _taskQueue.add(() async {
       ShapePainterLinesymbol? shapePainter = PainterFactory().getPainterForSerial(renderinstruction.serial) as ShapePainterLinesymbol?;
       if (shapePainter != null) return shapePainter;

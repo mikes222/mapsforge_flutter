@@ -353,7 +353,7 @@ class MultimapDatastore extends Datastore {
     for (Datastore mdb in List.from(datastores)) {
       futures.add(() async {
         if (_datastoreIntersectsTile(mdb, tile)) {
-          return await mdb.supportsTile(tile);
+          return mdb.supportsTile(tile);
         }
         return false;
       }());

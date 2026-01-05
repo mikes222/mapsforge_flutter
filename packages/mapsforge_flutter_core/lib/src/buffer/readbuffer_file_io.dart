@@ -161,6 +161,6 @@ class _ReadbufferFileResource {
   }
 
   Future<int> length() async {
-    return await _raf.length();
+    return _raf.length();
   }
 }

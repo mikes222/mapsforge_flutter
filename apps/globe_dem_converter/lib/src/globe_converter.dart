@@ -25,7 +25,7 @@ class GlobeDemConverter {
     required int resampleFactor,
     required bool dryRun,
   }) async {
-    if (!await inputDir.exists()) {
+    if (!inputDir.existsSync()) {
       throw ArgumentError('Input directory does not exist: ${inputDir.path}');
     }
 
@@ -64,7 +64,7 @@ class GlobeDemConverter {
       return;
     }
 
-    if (!await outputDir.exists()) {
+    if (!outputDir.existsSync()) {
       await outputDir.create(recursive: true);
     }
 
