@@ -29,6 +29,7 @@ class PbfConvert {
     required String languagePreference,
     required double maxDeviation,
     required int isolates,
+    required int spillover,
   }) async {
     DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
     Rendertheme? renderTheme;
@@ -49,7 +50,7 @@ class PbfConvert {
       );
     }
 
-    HolderCollectionFactory().setImplementation(HolderCollectionFileImplementation(10000));
+    if (spillover >= 10) HolderCollectionFactory().setImplementation(HolderCollectionFileImplementation(spillover));
 
     IPoiholderCollection osmNodes = HolderCollectionFactory().createPoiholderCollection("convert");
     WayholderFileCollection ways = WayholderFileCollection(
@@ -223,10 +224,11 @@ class PbfConvert {
       IPoiholderCollection poiholderCollection = entry.value;
       if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) continue;
       if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) continue;
+      _log.info("before poiZoomlevels.entries $zoomlevelRange");
       IPoiholderCollection resultPoiholderCollection =
           poiWayCollections.poiholderCollections[max(subfileZoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
       await poiholderCollection.forEach((poiholder) {
-        // print(poiholder.toStringWithoutNames());
+        // _log.info(poiholder.toStringWithoutNames());
         // model.debug();
         poiholder.tagholderCollection.connectPoiToModel(model);
         resultPoiholderCollection.add(poiholder);
@@ -246,16 +248,19 @@ class PbfConvert {
       if (wayholderCollection.isEmpty) continue;
       if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) continue;
       if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) continue;
+      _log.info("before wayZoomlevels.entries $zoomlevelRange");
       IWayholderCollection resultWayholderCollection =
           poiWayCollections.wayholderCollections[max(subfileZoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
-      //    print("create $zoomlevelRange with ${wayholderlist.count} ways for ${subfile.zoomlevelRange}");
+      //    _log.info("create $zoomlevelRange with ${wayholderlist.count} ways for ${subfile.zoomlevelRange}");
       wayholderFutures.add(_isolate(resultWayholderCollection, zoomlevelRange, wayholderCollection, subfileFiller, model));
       if (wayholderFutures.length >= 20) {
         await Future.wait(wayholderFutures);
         wayholderFutures.clear();
       }
     }
+    _log.info("before wayholderFutures");
     await Future.wait(wayholderFutures);
+    _log.info("after wayholderFutures");
     return poiWayCollections;
   }
 
@@ -268,10 +273,14 @@ class PbfConvert {
   ) async {
     // we create deep clones of wayholders because of isolates. This prevents problems later when reducing waypoints for different zoomlevels.
     // Do NOT remove the isolate code without further examination!
+    _log.info("before isolate $zoomlevelRange");
     List<Wayholder> wayholders = await subfileFiller.prepareWays(wayholderlist);
+    _log.info("after isolate $zoomlevelRange");
     for (var wayholder in wayholders) {
       wayholder.tagholderCollection.connectWayToModel(model);
     }
+    _log.info("after isolate2 $zoomlevelRange");
     resultWayholderCollection.addAll(wayholders);
+    _log.info("after isolate3 $zoomlevelRange");
   }
 }

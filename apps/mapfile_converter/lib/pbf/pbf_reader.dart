@@ -270,8 +270,8 @@ class PbfReader implements IPbfReader {
           id += dense.id[i].toInt();
           latDelta += dense.lat[i].toInt();
           lonDelta += dense.lon[i].toInt();
-          final lat = 1e-9 * (latOffset + granularity * latDelta);
-          final lon = (1e-9 * (lonOffset + granularity * lonDelta));
+          final lat = (latOffset + granularity * latDelta);
+          final lon = (lonOffset + granularity * lonDelta);
           final tags = <String, String>{};
           final keyVals = dense.keysVals;
           while (dense.keysVals[j] != 0) {
@@ -279,7 +279,7 @@ class PbfReader implements IPbfReader {
             j += 2;
           }
           j++;
-          nodes.add(OsmNode(id: id, latitude: lat, longitude: lon, tags: tags));
+          nodes.add(OsmNode(id: id, latLong: NanoLatLong.fromNano(lat, lon), tags: tags));
         }
       }
     }

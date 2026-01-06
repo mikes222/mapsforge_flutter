@@ -1,10 +1,12 @@
+import 'dart:collection';
+
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// A helper class to hold all POIs for a specific zoom level during the
 /// sub-file creation process.
 class PoiholderCollection implements IPoiholderCollection {
-  final Set<Poiholder> _entries = {};
+  final Queue<Poiholder> _entries = Queue();
 
   PoiholderCollection();
 

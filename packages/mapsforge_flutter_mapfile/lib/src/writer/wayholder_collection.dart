@@ -1,9 +1,11 @@
+import 'dart:collection';
+
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 /// A helper class to hold all ways for a specific zoom level during the
 /// sub-file creation process.
 class WayholderCollection implements IWayholderCollection {
-  final Set<Wayholder> _wayholders = {};
+  final Queue<Wayholder> _wayholders = Queue();
 
   WayholderCollection();
 

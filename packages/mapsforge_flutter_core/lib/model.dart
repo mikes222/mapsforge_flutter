@@ -20,6 +20,8 @@ export 'src/model/mappoint.dart';
 export 'src/model/mappoint_relative.dart';
 export 'src/model/maprectangle.dart';
 export 'src/model/mapsize.dart';
+export 'src/model/micro_lat_long.dart';
+export 'src/model/nano_lat_long.dart';
 export 'src/model/pointofinterest.dart';
 export 'src/model/tag.dart';
 export 'src/model/tag_collection.dart';

@@ -179,15 +179,9 @@ class WayholderIdFileCollection {
     return result;
   }
 
-  Future<Map<int, Wayholder>> getAllMergedWithOtherWay() async {
-    HashMap<int, Wayholder> result = HashMap();
-    _collection.forEach((key, value) {
-      if (value.mergedWithOtherWay) result[key] = value;
-    });
-    for (var entry in _fileCollection.entries) {
-      if (entry.value.mergedWithOtherWay) result[entry.key] = await get(entry.key);
-    }
-    return result;
+  Future<void> removeAllMergedWithOtherWay() async {
+    _collection.removeWhere((key, test) => test.mergedWithOtherWay);
+    _fileCollection.removeWhere((key, value) => value.mergedWithOtherWay);
   }
 
   void _flushPendingToDiskIfNeeded() {

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -7,9 +8,9 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class PoiholderFileCollection implements IPoiholderCollection {
-  final List<Poiholder> _entries = [];
+  final Queue<Poiholder> _entries = Queue();
 
-  final List<_Temp> _fileEntries = [];
+  final Queue<_Temp> _fileEntries = Queue();
 
   final int spillBatchSize;
 
@@ -65,7 +66,7 @@ class PoiholderFileCollection implements IPoiholderCollection {
       otherReadbufferFile ??= createReadbufferSource(other.filename);
       _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
       Readbuffer? readbuffer;
-      List<_Temp> temps = other._fileEntries;
+      List<_Temp> temps = other._fileEntries.toList();
       temps.sort((a, b) => a.pos.compareTo(b.pos));
       for (final temp in temps) {
         if (readbuffer == null || readbuffer.offset > temp.pos || readbuffer.offset + readbuffer.getBufferSize() < temp.pos + temp.length) {
@@ -98,23 +99,22 @@ class PoiholderFileCollection implements IPoiholderCollection {
     await _sinkWithCounter?.flush();
 
     // Pass 1: process in-memory entries (cheap, no I/O).
-    for (int i = 0; i < _entries.length; i++) {
-      final entry = _entries[i];
-      bool toRemove = test(entry);
-      if (toRemove) {
-        _entries.removeAt(i);
-        i--;
-      }
-    }
+    _entries.removeWhere(test);
 
-    for (int i = 0; i < _fileEntries.length; i++) {
-      final entry = _fileEntries[i];
-      bool toRemove = test(await _fromFile(entry));
-      if (toRemove) {
-        _fileEntries.removeAt(i);
-        i--;
+    // Ensure all spilled data is actually present on disk.
+    await _sinkWithCounter?.flush();
+
+    // Pass 2: process spilled entries from disk.
+    Queue<_Temp> newFileEntries = Queue();
+    for (var temp in _fileEntries) {
+      final entry = await _fromFile(temp);
+      bool toRemove = test(entry);
+      if (!toRemove) {
+        newFileEntries.add(temp);
       }
     }
+    _fileEntries.clear();
+    _fileEntries.addAll(newFileEntries);
   }
 
   @override
@@ -176,7 +176,7 @@ class PoiholderFileCollection implements IPoiholderCollection {
     final batchLengths = <int>[];
 
     for (int i = 0; i < spillBatchSize; i++) {
-      final entry = _entries.removeAt(0);
+      final entry = _entries.removeFirst();
       final bytes = _cacheFile.toFile(entry);
       batchBytes.add(bytes);
       batchLengths.add(bytes.length);

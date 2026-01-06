@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -12,9 +13,9 @@ class WayholderFileCollection implements IWayholderCollection {
 
   final int spillBatchSize;
 
-  final List<Wayholder> _entries = [];
+  final Queue<Wayholder> _entries = Queue();
 
-  final List<_Temp> _fileEntries = [];
+  final Queue<_Temp> _fileEntries = Queue();
 
   final CacheFile cacheFile = CacheFile();
 
@@ -122,26 +123,22 @@ class WayholderFileCollection implements IWayholderCollection {
     if (_entries.isEmpty) return;
 
     // Pass 1: process in-memory entries (cheap, no I/O).
-    for (int index = 0; index < _entries.length; index++) {
-      final entry = _entries[index];
-      bool toRemove = test(entry);
-      if (toRemove) {
-        _entries.removeAt(index);
-        index--;
-      }
-    }
+    _entries.removeWhere(test);
 
     // Ensure all spilled data is actually present on disk.
     await _sinkWithCounter?.flush();
 
-    for (int i = 0; i < _fileEntries.length; i++) {
-      final entry = await _fromFile(_fileEntries[i]);
+    // Pass 2: process spilled entries from disk.
+    Queue<_Temp> newFileEntries = Queue();
+    for (var temp in _fileEntries) {
+      final entry = await _fromFile(temp);
       bool toRemove = test(entry);
-      if (toRemove) {
-        _fileEntries.removeAt(i);
-        i--;
+      if (!toRemove) {
+        newFileEntries.add(temp);
       }
     }
+    _fileEntries.clear();
+    _fileEntries.addAll(newFileEntries);
   }
 
   void _flushPendingToDiskIfNeeded() {
@@ -153,7 +150,7 @@ class WayholderFileCollection implements IWayholderCollection {
     final batchLengths = <int>[];
 
     for (int i = 0; i < spillBatchSize; ++i) {
-      final entry = _entries.removeAt(0);
+      final entry = _entries.removeFirst();
 
       final bytes = cacheFile.toFile(entry);
       batchBytes.add(bytes);

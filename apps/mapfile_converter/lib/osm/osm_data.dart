@@ -37,33 +37,21 @@ sealed class _OsmPrimitive {
 //////////////////////////////////////////////////////////////////////////////
 
 /// OSM node
-class OsmNode extends _OsmPrimitive implements ILatLong {
+class OsmNode extends _OsmPrimitive {
   /// OsmNode default constructor
-  OsmNode({required super.id, required super.tags, required double latitude, required double longitude}) : latLong = LatLong(latitude, longitude);
+  OsmNode({required super.id, required super.tags, required this.latLong});
 
   final ILatLong latLong;
 
-  // static double _roundDouble(double value) {
-  //   return value;
-  //   // const num mod = 10000000.0;
-  //   // return ((value * mod).roundToDouble() / mod);
-  // }
-
   @override
   String toString() {
-    return 'OsmNode{id: $id, tags: $tags, lat: $latitude, lon: $longitude}';
+    return 'OsmNode{id: $id, tags: $tags, lat: ${latLong.latitude}, lon: ${latLong.longitude}}';
   }
 
   String toStringWithoutNames() {
     List<Tag> ts = tags.entries.map((entry) => Tag(entry.key, entry.value)).toList();
-    return 'OsmNode{id: $id, tags: ${Tag.tagsWithoutNames(ts)}, lat: $latitude, lon: $longitude}';
+    return 'OsmNode{id: $id, tags: ${Tag.tagsWithoutNames(ts)}, lat: ${latLong.latitude}, lon: ${latLong.longitude}}';
   }
-
-  @override
-  double get latitude => latLong.latitude;
-
-  @override
-  double get longitude => latLong.longitude;
 }
 
 //////////////////////////////////////////////////////////////////////////////

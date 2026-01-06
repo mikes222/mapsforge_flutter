@@ -109,6 +109,7 @@ class ConvertCommand extends Command {
     argParser.addFlag("quiet", abbr: "q", defaultsTo: false, help: "Quiet mode, less output");
     argParser.addOption("isolates", abbr: "i", defaultsTo: "6", help: "Number of isolates to use, less isolates reduces performance but also memory usage");
     argParser.addOption("languagesPreference", abbr: "l", defaultsTo: "", help: "List of languages to use, separated by #");
+    argParser.addOption("spillover", abbr: "p", defaultsTo: "10000", help: "Number of items in memory before spillover to filesystem starts");
   }
 
   @override
@@ -125,6 +126,7 @@ class ConvertCommand extends Command {
     String languagePreference = argResults!.option("languagesPreference")!;
     double maxDeviation = double.parse(argResults!.option("maxdeviation")!);
     int isolates = int.parse(argResults!.option("isolates")!);
+    int spillover = int.parse(argResults!.option("spillover")!);
 
     //_log.info("Converting, please wait...");
 
@@ -141,6 +143,7 @@ class ConvertCommand extends Command {
       languagePreference: languagePreference,
       maxDeviation: maxDeviation,
       isolates: isolates,
+      spillover: spillover,
     );
     //_log.info("Process completed");
     exit(0);

@@ -237,20 +237,11 @@ class PbfAnalyzer {
     closedWaysWithLessNodesRemoved = count - _wayHolders.length - _wayHoldersMerged.length;
 
     count = _wayHolders.length + _wayHoldersMerged.length;
-    for (Wayholder wayholder in List.from(_wayHoldersMerged)) {
-      if (wayholder.innerIsEmpty() && wayholder.openOutersIsEmpty() && wayholder.closedOutersIsEmpty()) {
-        _wayHoldersMerged.remove(wayholder);
-      } else {
-        assert(wayholder.closedOutersIsNotEmpty() || wayholder.openOutersIsNotEmpty(), "way must have at least one outer $wayholder");
-      }
-    }
+    _wayHoldersMerged.removeWhere((wayholder) => wayholder.innerIsEmpty() && wayholder.openOutersIsEmpty() && wayholder.closedOutersIsEmpty());
     waysWithoutNodesRemoved = count - _wayHolders.length - _wayHoldersMerged.length;
 
     count = _wayHolders.length;
-    Map map = await _wayHolders.getAllMergedWithOtherWay();
-    map.forEach((key, wayholder) {
-      _wayHolders.remove(key);
-    });
+    await _wayHolders.removeAllMergedWithOtherWay();
     // // for security reasons remove all wayholder which doe not have any ways
     // if (wayholder.innerIsEmpty() && wayholder.openOutersIsEmpty() && wayholder.closedOutersIsEmpty()) {
     //   toRemove.add(key);
@@ -314,6 +305,8 @@ class PbfAnalyzer {
       nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
     }
     for (OsmRelation osmRelation in blockData.relations) {
+      // we dont need all roles, remove what we do not need to save memory
+      osmRelation.members.removeWhere((test) => test.role != "label" && test.role != "outer" && test.role != "inner");
       _relations.add(osmRelation);
     }
   }
@@ -328,7 +321,9 @@ class PbfAnalyzer {
 
     if (nodesFiltered + waysFiltered > 0) _log.info("Removed $nodesFiltered pois and $waysFiltered ways because they are out of boundary");
 
-    _log.info("${nodeNotFound.length} ($_nodeNotFoundCount) nodes not found, ${_wayHolders.wayNotFound.length} ways not found");
+    if (_nodeNotFoundCount + _wayHolders.wayNotFound.length > 0) {
+      _log.info("${nodeNotFound.length} ($_nodeNotFoundCount) nodes not found, ${_wayHolders.wayNotFound.length} ways not found");
+    }
     _log.info("Total poi count: ${_nodeHolders.length}, total way count: ${_wayHolders.length}, total relation-way count: ${waysMerged.length}");
   }
 
@@ -356,8 +351,6 @@ class PbfAnalyzer {
           if (wayHolder != null) {
             inners[member.memberId] = wayHolder;
           }
-        } else {
-          //_log.warning("OsmRelation has an unknown member $member");
         }
       }
       if (outers.isNotEmpty || inners.isNotEmpty) {
@@ -423,6 +416,7 @@ class PbfAnalyzer {
   }
 
   Future<void> clear() async {
+    _positions.clear();
     await _nodeHolders.dispose();
     await _wayHolders.dispose();
     _wayHoldersMerged.clear();

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:mapsforge_flutter_core/model.dart';
 import 'package:logging/logging.dart';
+import 'package:mapsforge_flutter_core/model.dart';
 import 'package:xml/xml_events.dart';
 
 import 'osm_data.dart';
@@ -42,8 +42,10 @@ class OsmReader {
             _currentNode = OsmNode(
               id: int.parse(event.attributes.firstWhere((attr) => attr.name == 'id').value),
               tags: {},
-              latitude: double.parse(event.attributes.firstWhere((attr) => attr.name == 'lat').value),
-              longitude: double.parse(event.attributes.firstWhere((attr) => attr.name == 'lon').value),
+              latLong: LatLong(
+                double.parse(event.attributes.firstWhere((attr) => attr.name == 'lat').value),
+                double.parse(event.attributes.firstWhere((attr) => attr.name == 'lon').value),
+              ),
             );
             _nodes[_currentNode!.id] = _currentNode!;
             if (event.isSelfClosing) {
