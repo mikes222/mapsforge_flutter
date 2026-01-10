@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
@@ -15,7 +16,10 @@ class WayholderFileCollection implements IWayholderCollection {
 
   final Queue<Wayholder> _entries = Queue();
 
-  final Queue<_Temp> _fileEntries = Queue();
+  final Queue<_WayTemp> _fileEntries = Queue();
+
+  /// A cache for the file entries in sorted order by fileposition.
+  List<_WayTemp>? _fileSorted;
 
   final CacheFile cacheFile = CacheFile();
 
@@ -42,8 +46,9 @@ class WayholderFileCollection implements IWayholderCollection {
     await other.forEachOffline((uint8list) {
       final batchStartPos = _sinkWithCounter!.written;
       _sinkWithCounter!.add(uint8list);
-      _fileEntries.add(_Temp(pos: batchStartPos, length: uint8list.length));
+      _fileEntries.add(_WayTemp(pos: batchStartPos, length: uint8list.length));
     });
+    _fileSorted = null;
     assert(length == expected, "expected ${length} == $expected");
   }
 
@@ -81,6 +86,7 @@ class WayholderFileCollection implements IWayholderCollection {
     await _closeFiles();
     _entries.clear();
     _fileEntries.clear();
+    _fileSorted = null;
   }
 
   @override
@@ -109,11 +115,12 @@ class WayholderFileCollection implements IWayholderCollection {
       action(entry);
     }
     // Pass 2: process spilled entries from disk in large sequential batches.
-    // Ensure all spilled data is actually present on disk.
     await _sinkWithCounter?.flush();
-    List<_Temp> temps = _fileEntries.toList();
-    temps.sort((a, b) => a.pos.compareTo(b.pos));
-    for (var temp in temps) {
+    if (_fileSorted == null) {
+      _fileSorted = _fileEntries.toList();
+      _fileSorted!.sort((a, b) => a.pos.compareTo(b.pos));
+    }
+    for (var temp in _fileSorted!) {
       action(await _fromFile(temp));
     }
   }
@@ -123,26 +130,43 @@ class WayholderFileCollection implements IWayholderCollection {
     if (_entries.isEmpty) return;
 
     // Pass 1: process in-memory entries (cheap, no I/O).
-    _entries.removeWhere(test);
-
-    // Ensure all spilled data is actually present on disk.
-    await _sinkWithCounter?.flush();
+    // removeWhere of Queue() needs 338 seconds for 1 mio entries
+    {
+      //_entries.removeWhere(test);
+      Queue<Wayholder> newEntries = Queue();
+      for (var wayholder in _entries) {
+        bool toRemove = test(wayholder);
+        if (!toRemove) {
+          newEntries.add(wayholder);
+        }
+      }
+      _entries.clear();
+      _entries.addAll(newEntries);
+    }
 
     // Pass 2: process spilled entries from disk.
-    Queue<_Temp> newFileEntries = Queue();
-    for (var temp in _fileEntries) {
-      final entry = await _fromFile(temp);
-      bool toRemove = test(entry);
-      if (!toRemove) {
-        newFileEntries.add(temp);
+    {
+      await _sinkWithCounter?.flush();
+      if (_fileSorted == null) {
+        _fileSorted = _fileEntries.toList();
+        _fileSorted!.sort((a, b) => a.pos.compareTo(b.pos));
       }
+      Queue<_WayTemp> newEntries = Queue();
+      for (var temp in _fileSorted!) {
+        final entry = await _fromFile(temp);
+        bool toRemove = test(entry);
+        if (!toRemove) {
+          newEntries.add(temp);
+        }
+      }
+      _fileEntries.clear();
+      _fileEntries.addAll(newEntries);
+      _fileSorted = null;
     }
-    _fileEntries.clear();
-    _fileEntries.addAll(newFileEntries);
   }
 
   void _flushPendingToDiskIfNeeded() {
-    if (_entries.length < spillBatchSize) return;
+    if (_entries.length < spillBatchSize * 2) return;
 
     _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
 
@@ -163,17 +187,17 @@ class WayholderFileCollection implements IWayholderCollection {
     int offset = 0;
     for (int i = 0; i < batchLengths.length; ++i) {
       final len = batchLengths[i];
-      _fileEntries.add(_Temp(pos: batchStartPos + offset, length: len));
+      _fileEntries.add(_WayTemp(pos: batchStartPos + offset, length: len));
       offset += len;
     }
+    _fileSorted = null;
   }
 
-  Future<Wayholder> _fromFile(_Temp temp) async {
-    await _sinkWithCounter?.flush();
+  Future<Wayholder> _fromFile(_WayTemp temp) async {
     _readbufferFile ??= createReadbufferSource(filename);
 
     if (readbuffer == null || readbuffer!.offset > temp.pos || readbuffer!.offset + readbuffer!.getBufferSize() < temp.pos + temp.length) {
-      readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, bufferLength);
+      readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, max(bufferLength, temp.length));
     }
     Uint8List uint8list = readbuffer!.getBuffer(temp.pos - readbuffer!.offset, temp.length);
     assert(uint8list.length == temp.length);
@@ -202,9 +226,9 @@ class WayholderFileCollection implements IWayholderCollection {
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _Temp {
+class _WayTemp {
   final int pos;
   final int length;
 
-  _Temp({required this.pos, required this.length});
+  _WayTemp({required this.pos, required this.length}) : assert(pos >= 0, "pos $pos"), assert(length > 0, "length $length");
 }

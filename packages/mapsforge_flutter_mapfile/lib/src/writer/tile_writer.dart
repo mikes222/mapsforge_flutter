@@ -4,8 +4,8 @@ import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_mapfile/filter.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/filter/way_cropper.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/poiholder_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/writer/wayholder_writer.dart';
 
@@ -32,7 +32,6 @@ class IsolateTileWriter implements ITileWriter {
     bool debugFile,
     PoiWayCollections poiWayCollections,
     ZoomlevelRange zoomlevelRange,
-    double maxDeviationPixel,
     List<String> languagesPreferences,
     TagholderModel model,
   ) async {
@@ -41,7 +40,6 @@ class IsolateTileWriter implements ITileWriter {
       debugFile: debugFile,
       poiWayCollections: poiWayCollections,
       zoomlevelRange: zoomlevelRange,
-      maxDeviationPixel: maxDeviationPixel,
       languagesPreferences: languagesPreferences,
       model: model,
     );
@@ -67,14 +65,7 @@ class IsolateTileWriter implements ITileWriter {
   static Future<void> createInstance(IsolateInitInstanceParams object) async {
     await FlutterIsolateInstance.isolateInit(object, writeTileStatic);
     _TileWriterInstanceRequest request = object.initObject;
-    _tileWriter ??= TileWriter(
-      request.debugFile,
-      request.poiWayCollections,
-      request.zoomlevelRange,
-      request.maxDeviationPixel,
-      request.languagesPreferences,
-      request.model,
-    );
+    _tileWriter ??= TileWriter(request.debugFile, request.poiWayCollections, request.zoomlevelRange, request.languagesPreferences, request.model);
     // init displaymodel since it is used for PixelProjection in WaySimplifyFilter in WayCropper
     //DisplayModel();
   }
@@ -95,8 +86,6 @@ class _TileWriterInstanceRequest {
 
   final ZoomlevelRange zoomlevelRange;
 
-  final double maxDeviationPixel;
-
   final bool debugFile;
 
   final List<String> languagesPreferences;
@@ -107,7 +96,6 @@ class _TileWriterInstanceRequest {
     required this.debugFile,
     required this.poiWayCollections,
     required this.zoomlevelRange,
-    required this.maxDeviationPixel,
     required this.languagesPreferences,
     required this.model,
   });
@@ -138,8 +126,6 @@ class TileWriter implements ITileWriter {
   /// in the margin.
   final double margin = 1.15;
 
-  final double maxDeviationPixel;
-
   final bool debugFile;
 
   final PoiWayCollections poiWayCollections;
@@ -150,7 +136,11 @@ class TileWriter implements ITileWriter {
 
   final TagholderModel model;
 
-  TileWriter(this.debugFile, this.poiWayCollections, this.zoomlevelRange, this.maxDeviationPixel, this.languagesPreferences, this.model);
+  late final WaySimplifyFilter waySimplifyFilter;
+
+  TileWriter(this.debugFile, this.poiWayCollections, this.zoomlevelRange, this.languagesPreferences, this.model) {
+    waySimplifyFilter = WaySimplifyFilter(zoomlevelRange.zoomlevelMax, 10);
+  }
 
   @override
   void dispose() {}
@@ -168,7 +158,7 @@ class TileWriter implements ITileWriter {
       });
       poiWayInfos.poiholderCollections[zoomlevel] = newPoiholderCollection;
     }
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: maxDeviationPixel);
+    WayCropper wayCropper = const WayCropper();
     BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
     for (var entry in poiWayCollections.wayholderCollections.entries) {
       int zoomlevel = entry.key;
@@ -242,6 +232,7 @@ class TileWriter implements ITileWriter {
     for (int zoomlevel = zoomlevelRange.zoomlevelMin; zoomlevel <= zoomlevelRange.zoomlevelMax; ++zoomlevel) {
       IWayholderCollection wayholderCollection = poiWayInfos.wayholderCollections[zoomlevel]!;
       await wayholderCollection.forEach((wayholder) {
+        wayholder = waySimplifyFilter.ensureMax(wayholder);
         wayholderWriter.writeWaydata(writebuffer, wayholder, debugFile, tile, tileLatitude, tileLongitude, languagesPreferences, model);
       });
     }

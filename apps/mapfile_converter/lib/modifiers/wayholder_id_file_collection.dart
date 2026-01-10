@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:mapfile_converter/modifiers/cachefile.dart';
@@ -9,9 +11,9 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 class WayholderIdFileCollection {
   final Map<int, Wayholder> _collection = HashMap();
 
-  final Map<int, _Temp> _fileCollection = HashMap();
+  final Map<int, _WayIdTemp> _fileCollection = HashMap();
 
-  static const int _spillBatchSize = 100000;
+  final int spillBatchSize;
 
   String filename;
 
@@ -23,7 +25,28 @@ class WayholderIdFileCollection {
 
   final Set<int> wayNotFound = {};
 
-  WayholderIdFileCollection({required this.filename});
+  Readbuffer? readbuffer;
+
+  final int bufferLength = 1000000;
+
+  WayholderIdFileCollection({required this.filename, this.spillBatchSize = 100000});
+
+  Future<void> dispose() async {
+    _readbufferFile?.dispose();
+    _readbufferFile = null;
+    await _sinkWithCounter?.close().then((a) {
+      try {
+        File(filename).deleteSync();
+      } catch (_) {
+        // do nothing
+      } finally {}
+    });
+    _sinkWithCounter = null;
+    _collection.clear();
+    _fileCollection.clear();
+  }
+
+  int get length => _collection.length + _fileCollection.length;
 
   Future<void> mergeFrom(WayholderIdFileCollection other) async {
     if (identical(this, other)) return;
@@ -45,51 +68,51 @@ class WayholderIdFileCollection {
 
       _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
 
-      for (final entry in other._fileCollection.entries) {
-        final id = entry.key;
-        final temp = entry.value;
+      Readbuffer? readbuffer;
+      List<_WayIdTemp> temps = other._fileCollection.values.toList();
+      temps.sort((a, b) => a.pos.compareTo(b.pos));
+      for (final temp in temps) {
+        remove(temp.id);
 
-        remove(id);
-
-        final readbuffer = await otherReadbufferFile.readFromFileAt(temp.pos, temp.length);
-        final bytes = readbuffer.getBuffer(0, temp.length);
-        assert(bytes.length == temp.length);
+        if (readbuffer == null || readbuffer.offset > temp.pos || readbuffer.offset + readbuffer.getBufferSize() < temp.pos + temp.length) {
+          //print("Way readFromFileAtMax ${temp.pos} ${temp.length}");
+          readbuffer = await otherReadbufferFile.readFromFileAtMax(temp.pos, max(bufferLength, temp.length));
+        }
+        Uint8List uint8list = readbuffer.getBuffer(temp.pos - readbuffer.offset, temp.length);
+        assert(uint8list.length == temp.length);
 
         final destPos = _sinkWithCounter!.written;
-        _sinkWithCounter!.add(bytes);
+        _sinkWithCounter!.add(uint8list);
 
-        _fileCollection[id] = _Temp(pos: destPos, length: temp.length, coastLine: temp.coastLine, mergedWithOtherWay: temp.mergedWithOtherWay);
+        _fileCollection[temp.id] = _WayIdTemp(
+          id: temp.id,
+          pos: destPos,
+          length: temp.length,
+          coastLine: temp.coastLine,
+          mergedWithOtherWay: temp.mergedWithOtherWay,
+        );
       }
 
       other._readbufferFile = otherReadbufferFile;
     }
   }
 
-  Future<void> dispose() async {
-    _readbufferFile?.dispose();
-    _readbufferFile = null;
-    await _sinkWithCounter?.close().then((a) {
-      try {
-        File(filename).deleteSync();
-      } catch (_) {
-        // do nothing
-      } finally {}
-    });
-    _sinkWithCounter = null;
-    _collection.clear();
-    _fileCollection.clear();
-  }
-
-  int get length => _collection.length + _fileCollection.length;
-
   Future<void> forEach(void Function(int key, Wayholder value) action) async {
     _collection.forEach((key, wayholder) {
       action(key, wayholder);
     });
-    await _sinkWithCounter?.flush();
-    for (int key in _fileCollection.keys) {
-      Wayholder wayholder = await _fromFile(key);
-      action(key, wayholder);
+
+    // await forEachOffline((uint8list) {
+    //   Wayholder wayholder = cacheFile.fromFile(uint8list);
+    //   action(key, wayholder);
+    // });
+
+    /// the keys are not sorted and therefore it may be slow
+    List<_WayIdTemp> temps = _fileCollection.values.toList();
+    temps.sort((a, b) => a.pos.compareTo(b.pos));
+    for (var temp in temps) {
+      Wayholder wayholder = await _fromFile(temp.id);
+      action(temp.id, wayholder);
     }
   }
 
@@ -99,16 +122,13 @@ class WayholderIdFileCollection {
 
   Future<void> forEachOffline(void Function(Uint8List content) action) async {
     if (_fileCollection.isEmpty) return;
-    await _sinkWithCounter?.flush();
     _readbufferFile ??= createReadbufferSource(filename);
     Readbuffer? readbuffer;
-    final int bufferLength = 1000000;
-    List<_Temp> temps = _fileCollection.values.toList();
+    List<_WayIdTemp> temps = _fileCollection.values.toList();
     temps.sort((a, b) => a.pos.compareTo(b.pos));
     for (var temp in temps) {
       if (readbuffer == null || readbuffer.offset > temp.pos || readbuffer.offset + readbuffer.getBufferSize() < temp.pos + temp.length) {
-        //print("Way readFromFileAtMax ${temp.pos} ${temp.length}");
-        readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, bufferLength);
+        readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, max(bufferLength, temp.length));
       }
       Uint8List uint8list = readbuffer.getBuffer(temp.pos - readbuffer.offset, temp.length);
       assert(uint8list.length == temp.length);
@@ -132,38 +152,50 @@ class WayholderIdFileCollection {
   }
 
   void remove(int id) {
-    if (_collection.remove(id) != null) {}
+    if (_collection.remove(id) != null) {
+      return;
+    }
 
-    if (_fileCollection.remove(id) != null) {}
+    if (_fileCollection.remove(id) != null) {
+      return;
+    }
   }
 
-  Future<Wayholder?> tryGet(int id) {
+  Future<Wayholder?> tryGet(int id) async {
     Wayholder? wayholder = _collection[id];
-    if (wayholder != null) return Future.value(wayholder);
+    if (wayholder != null) return wayholder;
 
-    _Temp? temp = _fileCollection[id];
+    _WayIdTemp? temp = _fileCollection[id];
     if (temp == null) {
       if (wayNotFound.contains(id)) {
-        return Future.value(null);
+        return null;
       }
       wayNotFound.add(id);
-      return Future.value(null);
+      return null;
     }
+    await _sinkWithCounter?.flush();
     return _fromFile(id);
   }
 
-  Future<Wayholder> get(int id) {
-    Wayholder? wayholder = _collection[id];
-    if (wayholder != null) return Future.value(wayholder);
-
-    return _fromFile(id);
-  }
+  // Future<Wayholder> get(int id) async {
+  //   Wayholder? wayholder = _collection[id];
+  //   if (wayholder != null) return wayholder;
+  //
+  //   await _sinkWithCounter?.flush();
+  //   return _fromFile(id);
+  // }
 
   Future<List<Wayholder>> getAll() async {
     List<Wayholder> result = [];
     result.addAll(_collection.values);
-    for (int key in _fileCollection.keys) {
-      result.add(await get(key));
+
+    await _sinkWithCounter?.flush();
+
+    List<_WayIdTemp> temps = _fileCollection.values.toList();
+    temps.sort((a, b) => a.pos.compareTo(b.pos));
+    for (var temp in temps) {
+      Wayholder wayholder = await _fromFile(temp.id);
+      result.add(wayholder);
     }
     return result;
   }
@@ -173,8 +205,20 @@ class WayholderIdFileCollection {
     _collection.forEach((key, value) {
       if (value.hasTagValue("natural", "coastline")) result[key] = value;
     });
-    for (var entry in _fileCollection.entries) {
-      if (entry.value.coastLine) result[entry.key] = await get(entry.key);
+
+    await _sinkWithCounter?.flush();
+
+    Readbuffer? readbuffer;
+    List<_WayIdTemp> temps = _fileCollection.values.where((test) => test.coastLine).toList();
+    temps.sort((a, b) => a.pos.compareTo(b.pos));
+    for (var temp in temps) {
+      if (readbuffer == null || readbuffer.offset > temp.pos || readbuffer.offset + readbuffer.getBufferSize() < temp.pos + temp.length) {
+        readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, max(bufferLength, temp.length));
+      }
+      Uint8List uint8list = readbuffer.getBuffer(temp.pos - readbuffer.offset, temp.length);
+      assert(uint8list.length == temp.length);
+      Wayholder wayholder = cacheFile.fromFile(uint8list);
+      result[temp.id] = wayholder;
     }
     return result;
   }
@@ -185,7 +229,7 @@ class WayholderIdFileCollection {
   }
 
   void _flushPendingToDiskIfNeeded() {
-    if (_collection.length < _spillBatchSize) return;
+    if (_collection.length < spillBatchSize) return;
 
     _sinkWithCounter ??= SinkWithCounter(File(filename).openWrite(mode: FileMode.writeOnly));
 
@@ -195,10 +239,9 @@ class WayholderIdFileCollection {
     final batchCoastline = <bool>[];
     final batchMerged = <bool>[];
 
-    for (int i = 0; i < _spillBatchSize; i++) {
-      int id = _collection.keys.first;
-      final wayholder = _collection.remove(id);
-      if (wayholder == null) continue;
+    for (var entry in _collection.entries) {
+      int id = entry.key;
+      final wayholder = entry.value;
 
       final bytes = cacheFile.toFile(wayholder);
       batchBytes.add(bytes);
@@ -207,36 +250,42 @@ class WayholderIdFileCollection {
       batchCoastline.add(wayholder.hasTagValue("natural", "coastline"));
       batchMerged.add(wayholder.mergedWithOtherWay);
     }
+    _collection.clear();
+    //_collection.removeWhere((key, test) => batchIds.contains(key));
 
     final batchStartPos = _sinkWithCounter!.written;
     _sinkWithCounter!.add(batchBytes.toBytes());
+    //_sinkWithCounter!.flush();
 
     int offset = 0;
     for (int i = 0; i < batchIds.length; i++) {
       final len = batchLengths[i];
-      _fileCollection[batchIds[i]] = _Temp(pos: batchStartPos + offset, length: len, coastLine: batchCoastline[i], mergedWithOtherWay: batchMerged[i]);
+      final id = batchIds[i];
+      _fileCollection[id] = _WayIdTemp(id: id, pos: batchStartPos + offset, length: len, coastLine: batchCoastline[i], mergedWithOtherWay: batchMerged[i]);
       offset += len;
     }
   }
 
   Future<Wayholder> _fromFile(int id) async {
-    _Temp temp = _fileCollection[id]!;
+    _WayIdTemp temp = _fileCollection[id]!;
     _readbufferFile ??= createReadbufferSource(filename);
-    if (_sinkWithCounter != null) {
-      await _sinkWithCounter!.flush();
+
+    if (readbuffer == null || readbuffer!.offset > temp.pos || readbuffer!.offset + readbuffer!.getBufferSize() < temp.pos + temp.length) {
+      readbuffer = await _readbufferFile!.readFromFileAtMax(temp.pos, max(bufferLength, temp.length));
     }
-    Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(temp.pos, temp.length);
-    Uint8List uint8list = readbuffer.getBuffer(0, temp.length);
+    Uint8List uint8list = readbuffer!.getBuffer(temp.pos - readbuffer!.offset, temp.length);
     assert(uint8list.length == temp.length);
-    Wayholder wayholder = cacheFile.fromFile(uint8list);
-    return wayholder;
+
+    return cacheFile.fromFile(uint8list);
   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// Reference to a way in the tempfile
-class _Temp {
+class _WayIdTemp {
+  final int id;
+
   final int pos;
 
   final int length;
@@ -247,5 +296,5 @@ class _Temp {
 
   //BoundingBox? wayBoundingBox;
 
-  _Temp({required this.pos, required this.length, required this.coastLine, required this.mergedWithOtherWay});
+  _WayIdTemp({required this.id, required this.pos, required this.length, required this.coastLine, required this.mergedWithOtherWay});
 }

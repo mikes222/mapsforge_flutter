@@ -109,7 +109,7 @@ class ConvertCommand extends Command {
     argParser.addFlag("quiet", abbr: "q", defaultsTo: false, help: "Quiet mode, less output");
     argParser.addOption("isolates", abbr: "i", defaultsTo: "6", help: "Number of isolates to use, less isolates reduces performance but also memory usage");
     argParser.addOption("languagesPreference", abbr: "l", defaultsTo: "", help: "List of languages to use, separated by #");
-    argParser.addOption("spillover", abbr: "p", defaultsTo: "10000", help: "Number of items in memory before spillover to filesystem starts");
+    argParser.addOption("spillover", abbr: "p", defaultsTo: "1000000", help: "Number of items in memory before spillover to filesystem starts");
   }
 
   @override

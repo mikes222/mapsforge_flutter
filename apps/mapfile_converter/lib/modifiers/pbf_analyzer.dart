@@ -65,7 +65,10 @@ class PbfAnalyzer {
 
   int nextTimestamp = 0;
 
-  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false, this.finalBoundingBox});
+  PbfAnalyzer._({this.maxGapMeter = 200, required this.converter, this.quiet = false, this.finalBoundingBox, int spillBatchSize = 10000}) {
+    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${HolderCollectionFactory.randomId}.tmp", spillBatchSize: spillBatchSize);
+    _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
+  }
 
   static Future<PbfAnalyzer> readFile(
     String filename,
@@ -73,9 +76,17 @@ class PbfAnalyzer {
     double maxGapMeter = 200,
     BoundingBox? finalBoundingBox,
     bool quiet = false,
+    int spillBatchSize = 10000,
   }) async {
     ReadbufferSource readbufferSource = createReadbufferSource(filename);
-    PbfAnalyzer result = await readSource(readbufferSource, converter, maxGapMeter: maxGapMeter, finalBoundingBox: finalBoundingBox, quiet: quiet);
+    PbfAnalyzer result = await readSource(
+      readbufferSource,
+      converter,
+      maxGapMeter: maxGapMeter,
+      finalBoundingBox: finalBoundingBox,
+      quiet: quiet,
+      spillBatchSize: spillBatchSize,
+    );
     readbufferSource.dispose();
     return result;
   }
@@ -86,9 +97,16 @@ class PbfAnalyzer {
     double maxGapMeter = 200,
     BoundingBox? finalBoundingBox,
     bool quiet = false,
+    int spillBatchSize = 10000,
   }) async {
     int length = await readbufferSource.length();
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter, quiet: quiet, finalBoundingBox: finalBoundingBox);
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(
+      maxGapMeter: maxGapMeter,
+      converter: converter,
+      quiet: quiet,
+      finalBoundingBox: finalBoundingBox,
+      spillBatchSize: spillBatchSize,
+    );
     await pbfAnalyzer.readToMemory(readbufferSource, length);
     // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
     await pbfAnalyzer.analyze();
@@ -106,8 +124,15 @@ class PbfAnalyzer {
     double maxGapMeter = 200,
     BoundingBox? finalBoundingBox,
     bool quiet = false,
+    int spillBatchSize = 10000,
   }) async {
-    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(maxGapMeter: maxGapMeter, converter: converter, quiet: quiet, finalBoundingBox: finalBoundingBox);
+    PbfAnalyzer pbfAnalyzer = PbfAnalyzer._(
+      maxGapMeter: maxGapMeter,
+      converter: converter,
+      quiet: quiet,
+      finalBoundingBox: finalBoundingBox,
+      spillBatchSize: spillBatchSize,
+    );
     await pbfAnalyzer.readOsmToMemory(filename);
     // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
     await pbfAnalyzer.analyze();
@@ -121,15 +146,12 @@ class PbfAnalyzer {
 
   Future<void> readToMemory(ReadbufferSource readbufferSource, int sourceLength) async {
     await readbufferSource.freeRessources();
-    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${HolderCollectionFactory.randomId}.tmp");
-    _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
     IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
-    List<int> positions = await pbfReader.getBlobPositions();
     nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
 
     List<Future> futures = [];
-    for (int position in positions) {
-      OsmData? pbfData = await pbfReader.readBlobData(position);
+    while (true) {
+      OsmData? pbfData = await pbfReader.readNextBlobData();
       if (pbfData == null) break;
       futures.add(_analyze1Block(pbfData));
       if (futures.length > 20) {
@@ -143,8 +165,6 @@ class PbfAnalyzer {
   }
 
   Future<void> readOsmToMemory(String filename) async {
-    _wayHolders = WayholderIdFileCollection(filename: "analyzer_ways_${HolderCollectionFactory.randomId}.tmp");
-    _nodeHolders = HolderCollectionFactory().createPoiholderCollection("analyzer");
     OsmReader osmReader = OsmReader(filename);
     nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
     await osmReader.readOsmFile((OsmData pbfData) async {

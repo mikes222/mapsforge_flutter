@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
-import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 
 /// A utility class for cropping and simplifying way geometries to fit within a
 /// given bounding box (typically a map tile).
@@ -13,9 +12,7 @@ import 'package:mapsforge_flutter_mapfile/src/filter/way_simplify_filter.dart';
 /// vertices that need to be processed and drawn, especially for large polygons
 /// or long ways that only partially intersect a tile.
 class WayCropper {
-  final double maxDeviationPixel;
-
-  const WayCropper({required this.maxDeviationPixel});
+  const WayCropper();
 
   /// Crops the ways within a [wayholder] to the given [boundingBox].
   ///
@@ -26,20 +23,33 @@ class WayCropper {
   /// Returns a new [Wayholder] with the cropped ways, or `null` if no part of
   /// the way is within the bounding box.
   Wayholder? cropWay(Wayholder wayholder, BoundingBox boundingBox, int maxZoomlevel) {
-    List<Waypath> inner = wayholder.innerRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
-      ..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> inner = [];
+    for (var test in wayholder.innerRead) {
+      Waypath? result = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
+      if (result != null) {
+        inner.add(result);
+      }
+    }
 
     List<Waypath> closedOuters = [];
     for (var test in wayholder.closedOutersRead) {
-      Waypath result = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
-      if (result.isNotEmpty) {
-        assert(result.isClosedWay());
+      assert(test.isClosedWay(), "test is not a closed way $test ${test.path}");
+      Waypath? result = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
+      if (result != null) {
+        assert(result.isClosedWay(), "result is not a closed way $result ${test.path} ${result.path} for boundary $boundingBox, maxZoomlevel $maxZoomlevel");
         closedOuters.add(result);
       }
     }
 
-    List<Waypath> openOuters = wayholder.openOutersRead.map((test) => _optimizeWaypoints(test, boundingBox, maxZoomlevel)).toList()
-      ..removeWhere((Waypath test) => test.isEmpty);
+    List<Waypath> openOuters = [];
+    for (var test in wayholder.openOutersRead) {
+      assert(!test.isClosedWay(), "test is not an open way $test ${test.path}");
+      Waypath? result = _optimizeWaypoints(test, boundingBox, maxZoomlevel);
+      if (result != null) {
+        assert(!result.isClosedWay(), "result is not an open way $result ${test.path} ${result.path} for boundary $boundingBox, maxZoomlevel $maxZoomlevel");
+        openOuters.add(result);
+      }
+    }
 
     if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
 
@@ -57,8 +67,8 @@ class WayCropper {
   Wayholder? cropOutsideWay(Wayholder wayholder, BoundingBox boundingBox) {
     List<Waypath> inner = [];
     for (var test in wayholder.innerRead) {
-      Waypath result = _reduceOutside(test, boundingBox);
-      if (result.isNotEmpty) {
+      Waypath? result = _reduceOutside(test, boundingBox);
+      if (result != null) {
         inner.add(result);
       }
     }
@@ -66,8 +76,8 @@ class WayCropper {
     List<Waypath> closedOuters = [];
     for (var test in wayholder.closedOutersRead) {
       assert(test.isClosedWay(), "test is not a closed way $test ${test.path}");
-      Waypath result = _reduceOutside(test, boundingBox);
-      if (result.isNotEmpty) {
+      Waypath? result = _reduceOutside(test, boundingBox);
+      if (result != null) {
         assert(result.isClosedWay(), "result is not a closed way $result ${test.path} ${result.path}");
         closedOuters.add(result);
       }
@@ -76,8 +86,8 @@ class WayCropper {
     List<Waypath> openOuters = [];
     for (var test in wayholder.openOutersRead) {
       assert(!test.isClosedWay(), "test is not an open way $test ${test.path}");
-      Waypath result = _reduceOutside(test, boundingBox);
-      if (result.isNotEmpty) {
+      Waypath? result = _reduceOutside(test, boundingBox);
+      if (result != null) {
         assert(!result.isClosedWay(), "result is not an open way $result ${test.path} ${result.path}");
         openOuters.add(result);
       }
@@ -87,7 +97,6 @@ class WayCropper {
 
     // return a new wayholder instance
     Wayholder? result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
-    result.moveInnerToOuter();
     return result;
   }
 
@@ -98,24 +107,24 @@ class WayCropper {
   /// For intersecting ways, it calculates the intersection points and adds the
   /// necessary corner points of the tile boundary to create a closed polygon
   /// that can be filled.
-  Waypath _optimizeWaypoints(Waypath waypath, BoundingBox tileBoundary, int maxZoomlevel) {
-    if (waypath.isEmpty) return Waypath.empty();
+  Waypath? _optimizeWaypoints(Waypath waypath, BoundingBox tileBoundary, int maxZoomlevel) {
+    if (waypath.isEmpty) return waypath;
 
     BoundingBox wayBoundingBox = waypath.boundingBox;
     // all points inside the tile boundary
     if (tileBoundary.containsBoundingBox(wayBoundingBox)) {
-      if (waypath.length > 32767) {
-        // many waypoints? simplify them.
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
-        Waypath result = simplifyFilter.reduceWayEnsureMax(waypath);
-        //_log.info("${waypath.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
-        return result;
-      }
-      return waypath.clone();
+      // if (waypath.length > 32767) {
+      //   // many waypoints? simplify them.
+      //   WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
+      //   Waypath result = simplifyFilter.reduceWayEnsureMax(waypath);
+      //   //_log.info("${waypath.length} are too many points for zoomlevel $maxZoomlevel for tile $tileBoundary, reduced to ${result.length}");
+      //   return result;
+      // }
+      return waypath;
     }
 
     // no intersection, ignore these points
-    if (!tileBoundary.intersects(wayBoundingBox)) return Waypath.empty();
+    if (!tileBoundary.intersects(wayBoundingBox)) return null;
 
     List<ILatLong> optimizedWaypoints = [];
     ILatLong? previousWaypoint;
@@ -127,13 +136,16 @@ class WayCropper {
 
     List<ILatLong> path = waypath.path;
     if (path.length > 20) {
-      path = _reduceOutside(waypath, tileBoundary).path;
+      Waypath? p = _reduceOutside(waypath, tileBoundary);
+      if (p != null) {
+        path = p.path;
+      }
     }
     if (path.isEmpty) {
       // no points inside the tile boundary
       if (!waypath.isClosedWay()) {
         // original path is NOT a closed way so we can return an empty path
-        return Waypath.empty();
+        return null;
       }
       // original is a closed way but never intersected with the tile, that means
       // it is surrounding the tile. This is different to the original since we create areas for each tile. This is also the reason why
@@ -143,7 +155,7 @@ class WayCropper {
       bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
       if (!isInside) {
         // no intersection, ignore these points
-        return Waypath.empty();
+        return null;
       }
       optimizedWaypoints.add(tileBoundary.getLeftUpper());
       optimizedWaypoints.add(tileBoundary.getRightUpper());
@@ -202,13 +214,24 @@ class WayCropper {
 
     if (!waypath.isClosedWay()) {
       // never touched the tile boundary
-      if (optimizedWaypoints.isEmpty) return Waypath.empty();
+      if (optimizedWaypoints.isEmpty) return null;
       // original waypath was NOT closed, so we are done.
-      if (optimizedWaypoints.length > 32767) {
-        // many waypoints? simplify them.
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
-        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(path: optimizedWaypoints));
-        return result;
+      // if (optimizedWaypoints.length > 32767) {
+      //   // many waypoints? simplify them.
+      //   WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
+      //   Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(path: optimizedWaypoints));
+      //   return result;
+      // }
+      if (LatLongUtils.isClosedWay(optimizedWaypoints)) {
+        // way enters boundary, walks around and exits near the entry. We do not want to treat this as closed way
+        ILatLong first = optimizedWaypoints.first;
+        ILatLong last = optimizedWaypoints.removeLast();
+        optimizedWaypoints.add(
+          LatLong(
+            last.latitude + (first.latitude < last.latitude ? LatLongUtils.nearDistance : -LatLongUtils.nearDistance),
+            last.longitude + (first.longitude < last.longitude ? LatLongUtils.nearDistance : -LatLongUtils.nearDistance),
+          ),
+        );
       }
       return Waypath(path: optimizedWaypoints);
     }
@@ -216,7 +239,7 @@ class WayCropper {
     bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
     if (optimizedWaypoints.isEmpty && !isInside) {
       // no intersection, ignore these points
-      return Waypath.empty();
+      return null;
     }
     if (optimizedWaypoints.isEmpty) {
       // original is a closed way but never intersected with the tile, that means
@@ -238,11 +261,11 @@ class WayCropper {
       // everything ok
       assert(optimizedWaypoints.length >= 3);
 
-      if (optimizedWaypoints.length > 32767) {
-        WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
-        Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(path: optimizedWaypoints));
-        return result;
-      }
+      // if (optimizedWaypoints.length > 32767) {
+      //   WaySimplifyFilter simplifyFilter = WaySimplifyFilter(maxZoomlevel, maxDeviationPixel);
+      //   Waypath result = simplifyFilter.reduceWayEnsureMax(Waypath(path: optimizedWaypoints));
+      //   return result;
+      // }
       return Waypath(path: optimizedWaypoints);
     }
     // if start and end would be inside the tile we would have a closed way. So both must be outside
@@ -273,9 +296,9 @@ class WayCropper {
   /// and discard segments that do not intersect with the tile boundary. This can
   /// significantly reduce the number of points for long ways that are mostly
   /// outside the tile.
-  Waypath _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
+  Waypath? _reduceOutside(Waypath waypath, BoundingBox tileBoundary) {
     if (tileBoundary.containsBoundingBox(waypath.boundingBox)) return waypath;
-    List<ILatLong> result = [];
+    List<ILatLong> legs = [];
     Queue<_QueueEntry> queue = Queue();
     List<ILatLong> points = waypath.path;
     queue.add(_QueueEntry(0, points.length - 1));
@@ -287,8 +310,8 @@ class WayCropper {
         // this section consists of only 2 points (1 line). Both endpoints may be necessary even if the line does not intersect. This is for example if
         // one of these endpoints is the first endpoint outside of the tile.
         //        BoundingBox boundingBox = BoundingBox.from2(points[current.start], points[current.end]);
-        result.add(points[current.start]);
-        result.add(points[current.end]);
+        legs.add(points[current.start]);
+        legs.add(points[current.end]);
       } else {
         BoundingBox boundingBox = BoundingBox.fromLatLongs(points.slice(current.start, current.end + 1));
         if (tileBoundary.intersects(boundingBox)) {
@@ -297,13 +320,17 @@ class WayCropper {
           queue.addFirst(_QueueEntry(current.start, middle));
         } else {
           // this is the magic. A portion of the way is outside the tile. We could remove 100s of nodes at once.
-          result.add(points[current.start]);
-          result.add(points[current.end]);
+          legs.add(points[current.start]);
+          legs.add(points[current.end]);
         }
       }
     }
-    if (waypath.isClosedWay() && result.length < 3) return Waypath.empty();
-    return Waypath(path: result);
+    if (waypath.isClosedWay() && legs.length < 3) return null;
+    Waypath result = Waypath(path: legs);
+    if (waypath.isClosedWay()) {
+      assert(result.isClosedWay());
+    }
+    return result;
   }
 
   void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary, List<ILatLong> waypoints) {

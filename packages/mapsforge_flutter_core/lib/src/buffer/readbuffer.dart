@@ -57,7 +57,7 @@ class Readbuffer {
   /// Returns a sublist view of the buffer data
   Uint8List getBuffer(int position, int length) {
     assert(position >= 0, "position $position < 0");
-    assert(position + length <= _bufferData.length);
+    assert(position + length <= _bufferData.length, "position $position + length $length > ${_bufferData.length}");
     return _bufferData.sublist(position, position + length);
   }
 

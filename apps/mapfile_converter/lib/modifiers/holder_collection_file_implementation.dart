@@ -9,7 +9,7 @@ class HolderCollectionFileImplementation implements HolderCollectionImplementati
 
   @override
   IPoiholderCollection createPoiholderCollection(String prefix) {
-    return PoiholderFileCollection(filename: "${prefix}_pois_${HolderCollectionFactory.randomId}.tmp", spillBatchSize: size * 5);
+    return PoiholderFileCollection(filename: "${prefix}_pois_${HolderCollectionFactory.randomId}.tmp", spillBatchSize: size * 3);
   }
 
   @override

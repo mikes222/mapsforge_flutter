@@ -33,6 +33,9 @@ class LatLongUtils {
   /// Standard delimiter for coordinate string parsing.
   static final String DELIMITER = ",";
 
+  /// maximum distance in lat or long direction to treat two points as equal. This is used to find closed way where the first and last point are near but not equal.
+  static final double nearDistance = 0.00005;
+
   /// Private constructor to prevent instantiation.
   LatLongUtils._();
 
@@ -114,10 +117,10 @@ class LatLongUtils {
     // now we have to rould the values so that we can compare them
     double latitude1 = roundToMicrodegreees(me.latitude);
     double latitude2 = roundToMicrodegreees(other.latitude);
-    if ((latitude1 - latitude2).abs() > 0.00005) return false;
+    if ((latitude1 - latitude2).abs() > nearDistance) return false;
     double longitude1 = roundToMicrodegreees(me.longitude);
     double longitude2 = roundToMicrodegreees(other.longitude);
-    if ((longitude1 - longitude2).abs() > 0.00005) return false;
+    if ((longitude1 - longitude2).abs() > nearDistance) return false;
     return true;
   }
 

@@ -102,7 +102,7 @@ class Subfile {
       if (diff >= 1000 * 60) {
         // more than two minutes
         _log.info(
-          "Processed ${(processedTiles / tileCount * 100).round()}% of tiles for $title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec)",
+          "Processed ${(processedTiles / tileCount * 100).round()}% ($processedTiles) of tiles for $title at baseZoomLevel $baseZoomLevel (${((processedTiles - lastProcessedTiles) / diff * 1000).toStringAsFixed(1)} tiles/sec)",
         );
         started = DateTime.now().millisecondsSinceEpoch;
         lastProcessedTiles = processedTiles;
@@ -150,11 +150,8 @@ class Subfile {
 
   /// Prepares all tiles for this sub-file by processing the POIs and ways in
   /// parallel isolates.
-  Future<void> prepareTiles(bool debugFile, double maxDeviationPixel, int instanceCount) async {
+  Future<void> prepareTiles(bool debugFile, int instanceCount) async {
     var session = PerformanceProfiler().startSession(category: "SubfileCreator.prepareTiles");
-    int nextTimestamp = DateTime.now().millisecondsSinceEpoch;
-
-    //_log.info("prepare tiles $zoomlevelRange with $tileCount tiles");
 
     List<String> languagesPreferences = [];
     if (mapHeaderInfo.languagesPreference != null) languagesPreferences.addAll(mapHeaderInfo.languagesPreference!.split(","));
@@ -165,7 +162,7 @@ class Subfile {
     // too many tiles (hence too many ways). Danger of OutOfMemory Exception
     //if (tileCount > 50000 && instanceCount > 2) instanceCount = 2;
 
-    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, maxDeviationPixel, languagesPreferences);
+    List<ITileWriter> tileWriters = await createTileWriters(_minY, instanceCount, debugFile, languagesPreferences);
     // the isolates now hove the infos, we can remove them from memory here
     List<Future> futures = [];
     int current = 0;
@@ -178,9 +175,9 @@ class Subfile {
         if (current >= instanceCount) {
           current = 0;
         }
-        if (nextTimestamp < DateTime.now().millisecondsSinceEpoch) {
-          _log.info("Processing tile $tile");
-          nextTimestamp = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 2;
+        if (futures.length > 20) {
+          await Future.wait(futures);
+          futures.clear();
         }
       },
       (int currentTileY, int processedTiles, int sumTiles) async {
@@ -201,7 +198,7 @@ class Subfile {
           }
           tileWriters.clear();
           if (currentTileY < _maxY) {
-            tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, maxDeviationPixel, languagesPreferences);
+            tileWriters = await createTileWriters(currentTileY + 1, instanceCount, debugFile, languagesPreferences);
           }
         }
       },
@@ -216,13 +213,7 @@ class Subfile {
     _tileBuffer.set(tile, writebufferTile);
   }
 
-  Future<List<ITileWriter>> createTileWriters(
-    int currentTileY,
-    int instanceCount,
-    bool debugFile,
-    double maxDeviationPixel,
-    List<String> languagesPreferences,
-  ) async {
+  Future<List<ITileWriter>> createTileWriters(int currentTileY, int instanceCount, bool debugFile, List<String> languagesPreferences) async {
     List<ITileWriter> result = [];
     PoiWayCollections prefiltered = _poiWayCollections;
     if (tileCount > 100) {
@@ -242,7 +233,7 @@ class Subfile {
     // }
     for (int i = 0; i < instanceCount; ++i) {
       result.add(
-        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, maxDeviationPixel, languagesPreferences, model),
+        await IsolateTileWriter.create(debugFile, prefiltered, zoomlevelRange, languagesPreferences, model),
         // TileWriter(
         //   debugFile,
         //   Map.from(_poiholderCollection),

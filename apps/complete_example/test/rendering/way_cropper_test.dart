@@ -100,7 +100,7 @@ void main() async {
 
     Tile tile = Tile(68235, 47798, 17, 0);
 
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: 10);
+    WayCropper wayCropper = const WayCropper();
     Wayholder? wayholder = wayCropper.cropWay(Wayholder(tagholderCollection: TagholderCollection.empty()), tile.getBoundingBox(), 19);
 
     // wayCropper.steps.forEach((step) {
@@ -220,7 +220,7 @@ void main() async {
 
     Tile tile = Tile(68236, 47798, 17, 0);
 
-    WayCropper wayCropper = const WayCropper(maxDeviationPixel: 10);
+    WayCropper wayCropper = const WayCropper();
     Wayholder? wayholder = wayCropper.cropWay(Wayholder(tagholderCollection: TagholderCollection.empty()), tile.getBoundingBox(), 19);
 
     // wayCropper.steps.forEach((step) {
@@ -298,7 +298,7 @@ void main() async {
 
     Tile tile = Tile(4265, 2989, 13, 0);
 
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: 10);
+    WayCropper wayCropper = WayCropper();
     Wayholder? wayholder = wayCropper.cropWay(Wayholder(tagholderCollection: TagholderCollection.empty()), tile.getBoundingBox(), 19);
 
     // wayCropper.steps.forEach((step) {
@@ -391,7 +391,7 @@ void main() async {
 
     Tile tile = Tile(4265, 2988, 13, 0);
 
-    WayCropper wayCropper = WayCropper(maxDeviationPixel: 10);
+    WayCropper wayCropper = WayCropper();
     Wayholder? wayholder = wayCropper.cropWay(Wayholder(tagholderCollection: TagholderCollection.empty()), tile.getBoundingBox(), 19);
 
     datastore.addWay(way);

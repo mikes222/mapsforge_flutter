@@ -3,12 +3,12 @@ import 'dart:typed_data';
 
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_mapfile/src/writer/writebuffer.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class TileBuffer {
   final Map<Tile, Uint8List> _writebufferForTiles = {};
 
-  final Map<Tile, _TempfileIndex> _indexes = {};
+  final Map<Tile, _TempTileBuffer> _indexes = {};
 
   final Map<Tile, int> _sizes = {};
 
@@ -21,7 +21,7 @@ class TileBuffer {
   int _length = 0;
 
   TileBuffer(int baseZoomlevel) {
-    _filename = "tiles_${baseZoomlevel}_${DateTime.now().millisecondsSinceEpoch}.tmp";
+    _filename = "tiles_${baseZoomlevel}_${HolderCollectionFactory.randomId}.tmp";
   }
 
   void dispose() {
@@ -42,9 +42,9 @@ class TileBuffer {
     _writebufferForTiles[tile] = content;
     _sizes[tile] = content.length;
     _length += content.length;
-    if (content.length > 1000000) {
-      print("Tile $tile has a content with ${content.length} bytes");
-    }
+    // if (content.length > 1000000) {
+    //   print("Tile $tile has a content with ${content.length} bytes");
+    // }
     _cacheToDisk();
   }
 
@@ -56,7 +56,7 @@ class TileBuffer {
 
     await writeComplete();
     assert(_readbufferFile != null);
-    _TempfileIndex tempfileIndex = _indexes[tile]!;
+    _TempTileBuffer tempfileIndex = _indexes[tile]!;
     Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex.position, tempfileIndex.length);
     return readbuffer.getBuffer(0, tempfileIndex.length);
   }
@@ -71,7 +71,7 @@ class TileBuffer {
     assert(_ioSink != null || _readbufferFile != null);
     await writeComplete();
     assert(_readbufferFile != null);
-    _TempfileIndex? tempfileIndex = _indexes[tile];
+    _TempTileBuffer? tempfileIndex = _indexes[tile];
     assert(tempfileIndex != null, "indexes for $tile not found");
     Readbuffer readbuffer = await _readbufferFile!.readFromFileAt(tempfileIndex!.position, tempfileIndex.length);
     result = readbuffer.getBuffer(0, tempfileIndex.length);
@@ -90,7 +90,7 @@ class TileBuffer {
     if (_length < 1000000) return;
     _ioSink ??= SinkWithCounter(File(_filename).openWrite());
     _writebufferForTiles.forEach((tile, content) {
-      _TempfileIndex tempfileIndex = _TempfileIndex(_ioSink!.written, content.length);
+      _TempTileBuffer tempfileIndex = _TempTileBuffer(_ioSink!.written, content.length);
       _indexes[tile] = tempfileIndex;
       _ioSink!.add(content);
     });
@@ -110,10 +110,10 @@ class TileBuffer {
 
 //////////////////////////////////////////////////////////////////////////////
 
-class _TempfileIndex {
+class _TempTileBuffer {
   final int position;
 
   final int length;
 
-  _TempfileIndex(this.position, this.length);
+  _TempTileBuffer(this.position, this.length);
 }

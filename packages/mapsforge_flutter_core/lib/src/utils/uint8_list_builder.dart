@@ -67,8 +67,8 @@ class Uint8ListBuilder {
   /// [byteCount] Number of additional bytes that need to be stored
   void _ensureCanAdd(int byteCount) {
     final int totalSpaceNeeded = _usedLength + byteCount;
-    if (totalSpaceNeeded > 1000000) {
-      print("Buffer more than 1MB: $totalSpaceNeeded");
+    if (totalSpaceNeeded > 10000000) {
+      print("Buffer more than 10MB: $totalSpaceNeeded");
       print(StackTrace.current);
     }
 

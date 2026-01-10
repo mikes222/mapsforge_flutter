@@ -51,51 +51,42 @@ class CacheFile {
 
   Wayholder fromFile(Uint8List file) {
     CacheWayholder cacheWayholder = CacheWayholder.fromBuffer(file);
-    List<Tagholder> tagholders = [];
-    int idx = 0;
-    for (var key in cacheWayholder.tagkeys) {
-      Tagholder tagholder = Tagholder(key, cacheWayholder.tagvals[idx]);
-      int i = cacheWayholder.tagindexes[idx];
+    final tagkeys = cacheWayholder.tagkeys;
+    final tagvals = cacheWayholder.tagvals;
+    final tagindexes = cacheWayholder.tagindexes;
+    final tagholders = List<Tagholder>.generate(tagkeys.length, (idx) {
+      final tagholder = Tagholder(tagkeys[idx], tagvals[idx]);
+      final i = tagindexes[idx];
       tagholder.index = i == -1 ? null : i;
-      tagholders.add(tagholder);
-      ++idx;
-    }
+      return tagholder;
+    }, growable: false);
     TagholderCollection tagholderCollection = TagholderCollection.fromCache(tagholders);
     Wayholder wayholder = Wayholder(tagholderCollection: tagholderCollection);
     //wayholder.tileBitmask = cacheWayholder.tileBitmask;
     wayholder.mergedWithOtherWay = cacheWayholder.mergedWithOtherWay;
     if (cacheWayholder.hasLabel()) {
-      wayholder.labelPosition = LatLong(
-        LatLongUtils.microdegreesToDegrees(cacheWayholder.label.lat.toInt()),
-        LatLongUtils.microdegreesToDegrees(cacheWayholder.label.lon.toInt()),
-      );
+      wayholder.labelPosition = MicroLatLong(cacheWayholder.label.lat.toInt(), cacheWayholder.label.lon.toInt());
     }
     for (var action in cacheWayholder.innerways) {
-      if (action.lat.isNotEmpty) {
-        Waypath waypath = Waypath.empty();
-        for (int i = 0; i < action.lat.length; i++) {
-          waypath.add(LatLong(LatLongUtils.microdegreesToDegrees(action.lat[i].toInt()), LatLongUtils.microdegreesToDegrees(action.lon[i].toInt())));
-        }
-        wayholder.innerAdd(waypath);
-      }
+      final lat = action.lat;
+      final lon = action.lon;
+      final coords = List<ILatLong>.generate(lat.length, (i) => MicroLatLong(lat[i].toInt(), lon[i].toInt()), growable: false);
+      Waypath waypath = Waypath(path: coords);
+      wayholder.innerAdd(waypath);
     }
     for (var action in cacheWayholder.closedways) {
-      if (action.lat.isNotEmpty) {
-        Waypath waypath = Waypath.empty();
-        for (int i = 0; i < action.lat.length; i++) {
-          waypath.add(LatLong(LatLongUtils.microdegreesToDegrees(action.lat[i].toInt()), LatLongUtils.microdegreesToDegrees(action.lon[i].toInt())));
-        }
-        wayholder.closedOutersAdd(waypath);
-      }
+      final lat = action.lat;
+      final lon = action.lon;
+      final coords = List<ILatLong>.generate(lat.length, (i) => MicroLatLong(lat[i].toInt(), lon[i].toInt()), growable: false);
+      Waypath waypath = Waypath(path: coords);
+      wayholder.closedOutersAdd(waypath);
     }
     for (var action in cacheWayholder.openways) {
-      if (action.lat.isNotEmpty) {
-        Waypath waypath = Waypath.empty();
-        for (int i = 0; i < action.lat.length; i++) {
-          waypath.add(LatLong(LatLongUtils.microdegreesToDegrees(action.lat[i].toInt()), LatLongUtils.microdegreesToDegrees(action.lon[i].toInt())));
-        }
-        wayholder.openOutersAdd(waypath);
-      }
+      final lat = action.lat;
+      final lon = action.lon;
+      final coords = List<ILatLong>.generate(lat.length, (i) => MicroLatLong(lat[i].toInt(), lon[i].toInt()), growable: false);
+      Waypath waypath = Waypath(path: coords);
+      wayholder.openOutersAdd(waypath);
     }
     return wayholder;
   }

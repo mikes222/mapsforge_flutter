@@ -48,11 +48,8 @@ class MapfileWriter {
 
   /// Writes the complete map file structure to the file sink.
   ///
-  /// [maxDeviationPixel] is the maximum allowed deviation in pixels when simplifying
-  /// way geometries. This is used to prevent polygons from having more than 32767
-  /// points, which is a limitation of the format.
   /// [instanceCount] is the number of parallel instances to use for tile processing.
-  Future<void> write(double maxDeviationPixel, int instanceCount) async {
+  Future<void> write(int instanceCount) async {
     //createSubfiles();
 
     assert(subfiles.isNotEmpty);
@@ -69,9 +66,9 @@ class MapfileWriter {
     Writebuffer writebufferHeader = mapfileHeaderWriter.write(writebuffer.length + 1 + 19 * subfiles.length);
 
     // amount of zoom intervals
-    _log.info("write4 subfiles");
     writebuffer.appendInt1(subfiles.length);
-    await _writeZoomIntervalConfiguration(writebuffer, writebufferHeader.length + writebuffer.length + 19 * subfiles.length, maxDeviationPixel, instanceCount);
+    // this takes a looong time
+    await _writeZoomIntervalConfiguration(writebuffer, writebufferHeader.length + writebuffer.length + 19 * subfiles.length, instanceCount);
 
     writebufferHeader.appendWritebuffer(writebuffer);
     writebufferHeader.writeToSink(_sink);
@@ -79,7 +76,6 @@ class MapfileWriter {
     writebufferHeader.clear();
 
     for (Subfile subfile in subfiles) {
-      _log.info("write5 subfiles ${subfile.zoomlevelRange}");
       // for each subfile, write the tile index header and entries
       Writebuffer writebuffer = subfile.writeTileIndex(mapHeaderInfo.debugFile);
       writebuffer.writeToSink(_sink);
@@ -89,7 +85,7 @@ class MapfileWriter {
     }
   }
 
-  Future<void> _writeZoomIntervalConfiguration(Writebuffer writebuffer, int headersize, double maxDeviationPixel, int instanceCount) async {
+  Future<void> _writeZoomIntervalConfiguration(Writebuffer writebuffer, int headersize, int instanceCount) async {
     int startAddress = headersize;
     for (Subfile subfile in subfiles) {
       writebuffer.appendInt1(subfile.baseZoomLevel);
@@ -98,7 +94,7 @@ class MapfileWriter {
       // 8 byte start address
       writebuffer.appendInt8(startAddress);
 
-      await subfile.prepareTiles(mapHeaderInfo.debugFile, maxDeviationPixel, instanceCount);
+      await subfile.prepareTiles(mapHeaderInfo.debugFile, instanceCount);
 
       Writebuffer writebufferIndex = subfile.writeTileIndex(mapHeaderInfo.debugFile);
       int length = await subfile.getTilesLength(mapHeaderInfo.debugFile);

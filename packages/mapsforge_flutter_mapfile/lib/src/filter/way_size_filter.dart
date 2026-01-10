@@ -17,7 +17,7 @@ class WaySizeFilter {
 
   WaySizeFilter(int zoomlevel, this.filterSizePixels) : projection = PixelProjection(zoomlevel);
 
-    /// Filters the ways within a [wayholder], removing any that are smaller than
+  /// Filters the ways within a [wayholder], removing any that are smaller than
   /// the configured pixel size.
   ///
   /// Returns a new [Wayholder] containing only the ways that passed the filter.
@@ -29,32 +29,30 @@ class WaySizeFilter {
       filterSizePixels,
     );
     int count = wayholder.innerRead.length + wayholder.openOutersRead.length + wayholder.closedOutersRead.length;
-    List<Waypath> inner = wayholder.innerRead
-        .map((e) => _shouldFilter(e))
-        .toList()
-        .where((test) => test != null)
-        .map((test) => test!.clone())
-        .toList();
-    List<Waypath> closedOuters = wayholder.closedOutersRead
-        .map((e) => _shouldFilter(e))
-        .toList()
-        .where((test) => test != null)
-        .map((test) => test!.clone())
-        .toList();
-    List<Waypath> openOuters = wayholder.openOutersRead
-        .map((e) => _shouldFilter(e))
-        .toList()
-        .where((test) => test != null)
-        .map((test) => test!.clone())
-        .toList();
+    List<Waypath> inner = [];
+    for (var e in wayholder.innerRead) {
+      Waypath? waypath = _shouldFilter(e);
+      if (waypath != null) inner.add(waypath);
+    }
+    List<Waypath> closedOuters = [];
+    for (var e in wayholder.closedOutersRead) {
+      Waypath? waypath = _shouldFilter(e);
+      if (waypath != null) closedOuters.add(waypath);
+    }
+    List<Waypath> openOuters = [];
+    for (var e in wayholder.openOutersRead) {
+      Waypath? waypath = _shouldFilter(e);
+      if (waypath != null) openOuters.add(waypath);
+    }
 
     /// nothing removed, return the original
     if (count == inner.length + closedOuters.length + openOuters.length) return wayholder;
 
     /// everything removed.
-    if (closedOuters.isEmpty && openOuters.isEmpty) return null;
+    if (inner.isEmpty && closedOuters.isEmpty && openOuters.isEmpty) return null;
 
-    return wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
+    Wayholder result = wayholder.cloneWith(inner: inner, closedOuters: closedOuters, openOuters: openOuters);
+    return result;
   }
 
   Waypath? _shouldFilter(Waypath waypath) {

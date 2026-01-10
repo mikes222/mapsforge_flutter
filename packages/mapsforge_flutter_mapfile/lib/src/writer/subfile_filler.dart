@@ -42,7 +42,12 @@ class IsolateSubfileFiller implements ISubfileFiller {
 
   @pragma('vm:entry-point')
   static Future<Object?> readBlobDataStatic(IWayholderCollection wayholderCollection) async {
-    var result = _pbfReader!.prepareWays(wayholderCollection);
+    List<Wayholder> result = await _pbfReader!.prepareWays(wayholderCollection);
+    if (result.length > 10000) {
+      for (var wayholder in result) {
+        wayholder.clearCaches();
+      }
+    }
     // free the filehandler in the isolate to being able to delete the file later on.
     await wayholderCollection.freeRessources();
     return result;
@@ -97,30 +102,35 @@ class SubfileFiller implements ISubfileFiller {
   SubfileFiller(this.subfileZoomlevelRange, this.maxDeviation, this.boundingBox) {
     sizeFilter = WaySizeFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation);
     simplifyFilter = WaySimplifyFilter(subfileZoomlevelRange.zoomlevelMax, maxDeviation);
-    wayCropper = const WayCropper(maxDeviationPixel: 5);
+    wayCropper = const WayCropper();
   }
 
   /// Prepares a list of ways by filtering and simplifying them.
   @override
   Future<List<Wayholder>> prepareWays(IWayholderCollection wayholderCollection) async {
-    // if (maxDeviation <= 0) {
-    //   // we do not want to filter anything, return the original
-    //   return (await wayholderCollection.getAll()).toList();
-    // }
     List<Wayholder> result = [];
     await wayholderCollection.forEach((wayholder) {
       Wayholder? res = sizeFilter.filter(wayholder);
       if (res == null) return;
-      // size is big enough, now simplify the way
-      res = simplifyFilter.reduce(res);
-      // if the object was so tiny that we can simplify it away, do not store it
-      if (res.closedOutersRead.isEmpty && res.innerRead.isEmpty && res.openOutersRead.isEmpty) return;
+
+      res.moveInnerToOuter();
+
       // crop everything outside of the mapfile's bounding box
       res = wayCropper.cropOutsideWay(res, boundingBox);
       if (res == null) return;
 
+      res.moveInnerToOuter();
+
+      // size is big enough, now simplify the way
+      res = simplifyFilter.reduce(res);
+      // if the object was so tiny that we can simplify it away, do not store it
+      if (res == null) return;
+
+      res.moveInnerToOuter();
+
       result.add(res);
     });
+    //print("SubfileFiller $subfileZoomlevelRange after prepareWays ${wayholderCollection.length} ${result.length}");
     return result;
   }
 }

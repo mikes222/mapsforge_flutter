@@ -87,12 +87,12 @@ void main() {
       final snap = _snapshotWayholder(original);
 
       WaySimplifyFilter filter = WaySimplifyFilter(10, 2);
-      Wayholder result = filter.reduce(original);
+      Wayholder? result = filter.reduce(original);
 
       expect(identical(result, original), isFalse);
       _expectWayholderUnchanged(original, snap);
 
-      for (final wp in result.openOutersRead) {
+      for (final wp in result!.openOutersRead) {
         expect(original.openOutersRead.any((o) => identical(o, wp)), isFalse);
       }
     });
@@ -106,7 +106,7 @@ void main() {
 
       // Crop to a smaller box in the middle.
       BoundingBox tile = const BoundingBox(2, 2, 8, 8);
-      WayCropper cropper = const WayCropper(maxDeviationPixel: 2);
+      WayCropper cropper = const WayCropper();
       Wayholder? result = cropper.cropWay(original, tile, 10);
 
       expect(result, isNotNull);
@@ -124,7 +124,7 @@ void main() {
       final snap = _snapshotWayholder(original);
 
       BoundingBox tile = const BoundingBox(10, 10, 11, 11);
-      WayCropper cropper = const WayCropper(maxDeviationPixel: 2);
+      WayCropper cropper = const WayCropper();
       Wayholder? result = cropper.cropWay(original, tile, 10);
 
       expect(result, isNull);

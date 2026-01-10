@@ -102,6 +102,10 @@ class Waypath {
   /// Removes all points from the path.
   void clear() {
     _path.clear();
+    clearCaches();
+  }
+
+  void clearCaches() {
     _closed = null;
     _boundingBox = null;
   }

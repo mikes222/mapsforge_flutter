@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:collection/collection.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';
@@ -13,6 +11,11 @@ abstract class IPbfReader {
   void dispose();
 
   Future<OsmData?> readBlobData(int position);
+
+  /// Reads the next blob sequentially from the current position.
+  ///
+  /// Returns `null` once the end of the file is reached.
+  Future<OsmData?> readNextBlobData();
 
   Future<BoundingBox?> calculateBounds();
 
@@ -45,6 +48,11 @@ class IsolatePbfReader implements IPbfReader {
   }
 
   @override
+  Future<OsmData?> readNextBlobData() async {
+    return _isolateInstance.compute(-4);
+  }
+
+  @override
   Future<BoundingBox?> calculateBounds() async {
     return _isolateInstance.compute(-2);
   }
@@ -67,6 +75,7 @@ class IsolatePbfReader implements IPbfReader {
   static Future<Object?> readBlobDataStatic(int param) async {
     if (param == -2) return _pbfReader!.calculateBounds();
     if (param == -3) return _pbfReader!.getBlobPositions();
+    if (param == -4) return _pbfReader!.readNextBlobData();
     return _pbfReader!.readBlobData(param);
   }
 }
@@ -86,6 +95,8 @@ class PbfReaderInstanceRequest {
 /// Reads data from a PBF file.
 class PbfReader implements IPbfReader {
   HeaderBlock? headerBlock;
+
+  final ZLibDecoder _zLibDecoder = ZLibDecoder();
 
   final ReadbufferSource readbufferSource;
 
@@ -113,7 +124,7 @@ class PbfReader implements IPbfReader {
     final blobLength = blobHeader.datasize;
     readbuffer = await readbufferSource.readFromFile(blobLength);
     final blob = Blob.fromBuffer(readbuffer.getBuffer(0, blobLength));
-    final blobOutput = ZLibDecoder().convert(blob.zlibData);
+    final blobOutput = _zLibDecoder.convert(blob.zlibData);
     assert(blobOutput.length == blob.rawSize);
     return BlobResult(blobHeader, blobOutput);
   }
@@ -135,21 +146,29 @@ class PbfReader implements IPbfReader {
   Future<OsmData> readBlobData(int position) async {
     await _open();
     await readbufferSource.setPosition(position);
+    return _readBlobDataAtCurrentPosition();
+  }
+
+  @override
+  Future<OsmData?> readNextBlobData() async {
+    await _open();
+    if (readbufferSource.getPosition() >= sourceLength) return null;
+    return _readBlobDataAtCurrentPosition();
+  }
+
+  Future<OsmData> _readBlobDataAtCurrentPosition() async {
     // length of the blob header
     Readbuffer readbuffer = await readbufferSource.readFromFile(4);
     final blobHeaderLength = readbuffer.readInt();
     readbuffer = await readbufferSource.readFromFile(blobHeaderLength);
     final blobHeader = BlobHeader.fromBuffer(readbuffer.getBuffer(0, blobHeaderLength));
-    // print("blobHeader: ${blobHeader.type}");
-    // print("blobHeader.datasize: ${blobHeader.datasize}");
-    // print("blobHeader.indexdata: ${blobHeader.indexdata}");
-    // print("blobHeader.unknownFields: ${blobHeader.unknownFields}");
 
     final blobLength = blobHeader.datasize;
     blobHeader.clear();
+
     readbuffer = await readbufferSource.readFromFile(blobLength);
     final blob = Blob.fromBuffer(readbuffer.getBuffer(0, blobLength));
-    final blobOutput = ZLibDecoder().convert(blob.zlibData);
+    final blobOutput = _zLibDecoder.convert(blob.zlibData);
     assert(blobOutput.length == blob.rawSize);
     blob.clear();
     return _readBlock(blobOutput);
@@ -204,7 +223,8 @@ class PbfReader implements IPbfReader {
 
   OsmData _readBlock(List<int> blobOutput) {
     final block = PrimitiveBlock.fromBuffer(blobOutput);
-    List<String> stringTable = block.stringtable.s.map((s) => utf8.decode(s)).toList();
+    final rawStringTable = block.stringtable.s;
+    final stringTable = List<String>.generate(rawStringTable.length, (i) => utf8.decode(rawStringTable[i]), growable: false);
     final latOffset = block.latOffset.toInt();
     final lonOffset = block.lonOffset.toInt();
     final granularity = block.granularity;
@@ -223,41 +243,39 @@ class PbfReader implements IPbfReader {
       for (final way in primitiveGroup.ways) {
         final id = way.id.toInt();
         var refDelta = 0;
-        final refs = way.refs.map((ref) {
-          refDelta += ref.toInt();
-          return refDelta;
-        }).toList();
+        final wayRefs = way.refs;
+        final refs = List<int>.filled(wayRefs.length, 0, growable: false);
+        for (int i = 0; i < wayRefs.length; i++) {
+          refDelta += wayRefs[i].toInt();
+          refs[i] = refDelta;
+        }
         final tags = _parseParallelTags(way.keys, way.vals, stringTable);
         ways.add(OsmWay(id: id, refs: refs, tags: tags));
       }
       for (final relation in primitiveGroup.relations) {
         final id = relation.id.toInt();
         final tags = _parseParallelTags(relation.keys, relation.vals, stringTable);
+
+        final relMemIds = relation.memids;
+        final relTypes = relation.types;
+        final relRoles = relation.rolesSid;
         var refDelta = 0;
-        final memberIds = relation.memids.map((ref) {
-          refDelta += ref.toInt();
-          return refDelta;
-        }).toList();
-        final types = relation.types.map((type) {
-          return switch (type) {
+        final members = List<OsmRelationMember>.generate(relMemIds.length, (idx) {
+          refDelta += relMemIds[idx].toInt();
+
+          final MemberType memberType = switch (relTypes[idx]) {
             Relation_MemberType.NODE => MemberType.node,
             Relation_MemberType.WAY => MemberType.way,
             Relation_MemberType.RELATION => MemberType.relation,
-            _ => throw Exception('Unknown member type: $type'),
+            _ => throw Exception('Unknown member type: ${relTypes[idx]}'),
           };
-        }).toList();
-        final roles = relation.rolesSid.map((role) {
-          return stringTable[role];
-        }).toList();
 
-        List<OsmRelationMember> members = [];
-        for (int idx = 0; idx < memberIds.length; idx++) {
-          int memberId = memberIds[idx];
-          MemberType memberType = types[idx];
-          String role = roles[idx];
-          OsmRelationMember member = OsmRelationMember(memberId: memberId, memberType: memberType, role: role);
-          members.add(member);
-        }
+          return OsmRelationMember(
+            memberId: refDelta,
+            memberType: memberType,
+            role: stringTable[relRoles[idx]],
+          );
+        }, growable: true);
         relations.add(OsmRelation(id: id, tags: tags, members: members));
       }
       var j = 0;
@@ -266,6 +284,7 @@ class PbfReader implements IPbfReader {
         var id = 0;
         var latDelta = 0;
         var lonDelta = 0;
+        final keyVals = dense.keysVals;
         for (var i = 0; i < dense.id.length; ++i) {
           id += dense.id[i].toInt();
           latDelta += dense.lat[i].toInt();
@@ -273,8 +292,7 @@ class PbfReader implements IPbfReader {
           final lat = (latOffset + granularity * latDelta);
           final lon = (lonOffset + granularity * lonDelta);
           final tags = <String, String>{};
-          final keyVals = dense.keysVals;
-          while (dense.keysVals[j] != 0) {
+          while (keyVals[j] != 0) {
             tags[stringTable[keyVals[j]]] = stringTable[keyVals[j + 1]];
             j += 2;
           }
@@ -289,12 +307,11 @@ class PbfReader implements IPbfReader {
   Map<String, String> _parseParallelTags(List<int> keys, List<int> values, List<String> stringTable) {
     final tags = <String, String>{};
     assert(keys.length == values.length);
-    keys.forEachIndexed((int index, int key) {
-      if (key == 0) {
-        return;
-      }
-      tags[stringTable[key]] = stringTable[values[index]];
-    });
+    for (int i = 0; i < keys.length; i++) {
+      final key = keys[i];
+      if (key == 0) continue;
+      tags[stringTable[key]] = stringTable[values[i]];
+    }
     return tags;
   }
 }

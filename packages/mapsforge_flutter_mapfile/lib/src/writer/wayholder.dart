@@ -38,7 +38,7 @@ class Wayholder {
     result.closedOutersAddAll(closedOuters ?? _closedOuters.map((toElement) => toElement.clone()).toList());
     result._openOuters.addAll(openOuters ?? _openOuters.map((toElement) => toElement.clone()).toList());
     result.labelPosition = labelPosition;
-    result._boundingBox = _boundingBox;
+    result._boundingBox = inner != null || closedOuters != null || openOuters != null ? null : _boundingBox;
     return result;
   }
 
@@ -269,6 +269,19 @@ class Wayholder {
 
   int pathCount() {
     return _closedOuters.length + _openOuters.length + _inner.length + (_master != null ? 1 : 0);
+  }
+
+  void clearCaches() {
+    _master?.clearCaches();
+    for (var waypath in _inner) {
+      waypath.clearCaches();
+    }
+    for (var waypath in _closedOuters) {
+      waypath.clearCaches();
+    }
+    for (var waypath in _openOuters) {
+      waypath.clearCaches();
+    }
   }
 
   @override

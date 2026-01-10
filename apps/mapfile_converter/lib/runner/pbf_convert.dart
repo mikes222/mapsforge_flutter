@@ -60,7 +60,14 @@ class PbfConvert {
     for (var sourcefile in sourcefiles) {
       _log.info("Reading $sourcefile, please wait...");
       if (sourcefile.toLowerCase().endsWith(".osm")) {
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readOsmFile(sourcefile, converter, maxGapMeter: maxgap, finalBoundingBox: finalBoundingBox, quiet: quiet);
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readOsmFile(
+          sourcefile,
+          converter,
+          maxGapMeter: maxgap,
+          finalBoundingBox: finalBoundingBox,
+          quiet: quiet,
+          spillBatchSize: spillover,
+        );
 
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!quiet) pbfAnalyzer.statistics();
@@ -70,7 +77,14 @@ class PbfConvert {
         await pbfAnalyzer.clear();
       } else {
         /// Read and analyze PBF file
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(sourcefile, converter, maxGapMeter: maxgap, finalBoundingBox: finalBoundingBox, quiet: quiet);
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(
+          sourcefile,
+          converter,
+          maxGapMeter: maxgap,
+          finalBoundingBox: finalBoundingBox,
+          quiet: quiet,
+          spillBatchSize: spillover,
+        );
 
         /// Now start exporting the data to a mapfile
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
@@ -189,7 +203,7 @@ class PbfConvert {
       MapfileWriter mapfileWriter = MapfileWriter(filename: destinationfile, mapHeaderInfo: mapHeaderInfo, subfiles: subfiles, model: model);
 
       /// Write everything to the file and close the file
-      await mapfileWriter.write(maxDeviation, isolates);
+      await mapfileWriter.write(isolates);
       await mapfileWriter.close();
 
       for (var poiholderCollection in poiZoomlevels.values) {
@@ -224,7 +238,6 @@ class PbfConvert {
       IPoiholderCollection poiholderCollection = entry.value;
       if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) continue;
       if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) continue;
-      _log.info("before poiZoomlevels.entries $zoomlevelRange");
       IPoiholderCollection resultPoiholderCollection =
           poiWayCollections.poiholderCollections[max(subfileZoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
       await poiholderCollection.forEach((poiholder) {
@@ -235,12 +248,12 @@ class PbfConvert {
       });
       //await poiWayCollections.poiholderCollections[max(subfileZoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!.mergeFrom(poiholderCollection);
     }
-    ISubfileFiller subfileFiller = await IsolateSubfileFiller.create(
-      subfileZoomlevelRange: subfileZoomlevelRange,
-      boundingBox: boundingBox,
-      maxDeviation: maxDeviationSize,
-    );
-    //    ISubfileFiller subfileFiller = SubfileFiller(subfile.zoomlevelRange, maxDeviationSize, boundingBox);
+    // ISubfileFiller subfileFiller = await IsolateSubfileFiller.create(
+    //   subfileZoomlevelRange: subfileZoomlevelRange,
+    //   boundingBox: boundingBox,
+    //   maxDeviation: maxDeviationSize,
+    // );
+    ISubfileFiller subfileFiller = SubfileFiller(subfileZoomlevelRange, maxDeviationSize, boundingBox);
     List<Future> wayholderFutures = [];
     for (var entry in wayZoomlevels.entries) {
       ZoomlevelRange zoomlevelRange = entry.key;
@@ -248,39 +261,32 @@ class PbfConvert {
       if (wayholderCollection.isEmpty) continue;
       if (subfileZoomlevelRange.zoomlevelMin > zoomlevelRange.zoomlevelMax) continue;
       if (subfileZoomlevelRange.zoomlevelMax < zoomlevelRange.zoomlevelMin) continue;
-      _log.info("before wayZoomlevels.entries $zoomlevelRange");
       IWayholderCollection resultWayholderCollection =
           poiWayCollections.wayholderCollections[max(subfileZoomlevelRange.zoomlevelMin, zoomlevelRange.zoomlevelMin)]!;
       //    _log.info("create $zoomlevelRange with ${wayholderlist.count} ways for ${subfile.zoomlevelRange}");
       wayholderFutures.add(_isolate(resultWayholderCollection, zoomlevelRange, wayholderCollection, subfileFiller, model));
-      if (wayholderFutures.length >= 20) {
+      if (wayholderFutures.length >= 5) {
         await Future.wait(wayholderFutures);
         wayholderFutures.clear();
       }
     }
-    _log.info("before wayholderFutures");
     await Future.wait(wayholderFutures);
-    _log.info("after wayholderFutures");
     return poiWayCollections;
   }
 
   Future<void> _isolate(
     IWayholderCollection resultWayholderCollection,
     ZoomlevelRange zoomlevelRange,
-    IWayholderCollection wayholderlist,
+    IWayholderCollection wayholderCollection,
     ISubfileFiller subfileFiller,
     TagholderModel model,
   ) async {
     // we create deep clones of wayholders because of isolates. This prevents problems later when reducing waypoints for different zoomlevels.
     // Do NOT remove the isolate code without further examination!
-    _log.info("before isolate $zoomlevelRange");
-    List<Wayholder> wayholders = await subfileFiller.prepareWays(wayholderlist);
-    _log.info("after isolate $zoomlevelRange");
+    List<Wayholder> wayholders = await subfileFiller.prepareWays(wayholderCollection);
     for (var wayholder in wayholders) {
       wayholder.tagholderCollection.connectWayToModel(model);
     }
-    _log.info("after isolate2 $zoomlevelRange");
     resultWayholderCollection.addAll(wayholders);
-    _log.info("after isolate3 $zoomlevelRange");
   }
 }
