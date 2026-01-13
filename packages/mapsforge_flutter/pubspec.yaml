@@ -41,7 +41,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  ecache: ^2.1.2
+  ecache: ^2.2.0
 
   logging: ^1.3.0
 

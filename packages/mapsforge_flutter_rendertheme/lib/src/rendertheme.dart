@@ -185,20 +185,20 @@ class Rendertheme {
   /// Returns the widest possible zoomrange which may accept the given argument.
   /// Returns null if the argument is never accepted.
   ZoomlevelRange? getZoomlevelRangeNode(ITagCollection tags) {
-    // ZoomlevelRange? result = nodeMatchingCache[tags];
-    // if (result != null) {
-    //   if (result == const ZoomlevelRange.none()) return null;
-    //   return result;
-    // }
+    ZoomlevelRange? result = nodeMatchingCache[tags];
+    if (result != null) {
+      if (result == const ZoomlevelRange.none()) return null;
+      return result;
+    }
 
-    ZoomlevelRange? result;
+    //    ZoomlevelRange? result;
     for (var rule in rulesList) {
       ZoomlevelRange? range = rule.getZoomlevelRangeNode(tags);
       if (range != null) {
         result = result?.widenTo(range) ?? range;
       }
     }
-    // nodeMatchingCache[tags] = result ?? const ZoomlevelRange.none();
+    nodeMatchingCache[tags] = result ?? const ZoomlevelRange.none();
     return result;
   }
 
@@ -206,23 +206,23 @@ class Rendertheme {
   /// Returns null if if the argument will never accepted.
   ZoomlevelRange? getZoomlevelRangeWay(Waypath waypath, ITagCollection tags) {
     bool isClosedWay = waypath.isClosedWay();
-    // ZoomlevelRange? result = isClosedWay ? closedWayMatchingCache[tags] : openWayMatchingCache[tags];
-    // if (result != null) {
-    //   if (result == const ZoomlevelRange.none()) return null;
-    //   return result;
-    // }
-    ZoomlevelRange? result;
+    ZoomlevelRange? result = isClosedWay ? closedWayMatchingCache[tags] : openWayMatchingCache[tags];
+    if (result != null) {
+      if (result == const ZoomlevelRange.none()) return null;
+      return result;
+    }
+    //    ZoomlevelRange? result;
     for (var rule in rulesList) {
       ZoomlevelRange? range = isClosedWay ? rule.getZoomlevelRangeClosedWay(tags) : rule.getZoomlevelRangeOpenWay(tags);
       if (range != null) {
         result = result?.widenTo(range) ?? range;
       }
     }
-    // if (isClosedWay) {
-    //   closedWayMatchingCache[tags] = result ?? const ZoomlevelRange.none();
-    // } else {
-    //   openWayMatchingCache[tags] = result ?? const ZoomlevelRange.none();
-    // }
+    if (isClosedWay) {
+      closedWayMatchingCache[tags] = result ?? const ZoomlevelRange.none();
+    } else {
+      openWayMatchingCache[tags] = result ?? const ZoomlevelRange.none();
+    }
     return result;
   }
 }

@@ -21,9 +21,8 @@ class WayholderWriter {
     int tileCounter = 1 << 15;
     BoundingBox boundingBox = wayholder.boundingBoxCached;
     for (Tile subtile in subtiles) {
-      if (subtile.getBoundingBox().intersects(boundingBox) ||
-          subtile.getBoundingBox().containsBoundingBox(boundingBox) ||
-          boundingBox.containsBoundingBox(subtile.getBoundingBox())) {
+      final subtileBoundingBox = subtile.getBoundingBox();
+      if (subtileBoundingBox.intersects(boundingBox)) {
         tileBitmask |= tileCounter;
       }
       tileCounter = tileCounter >> 1;

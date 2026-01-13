@@ -23,11 +23,7 @@ class BoundaryFilter {
       IWayholderCollection newWayholderCollection = HolderCollectionFactory().createWayholderCollection("boundary_$zoomlevel");
       await wayholderCollection.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (tileBoundingBox.containsBoundingBox(wayBoundingBox)) {
-          newWayholderCollection.add(wayholder);
-        } else if (wayBoundingBox.containsBoundingBox(tileBoundingBox)) {
-          newWayholderCollection.add(wayholder);
-        } else if (tileBoundingBox.intersects(wayBoundingBox)) {
+        if (tileBoundingBox.intersects(wayBoundingBox)) {
           newWayholderCollection.add(wayholder);
         }
       });

@@ -94,6 +94,7 @@ class MapfileWriter {
       // 8 byte start address
       writebuffer.appendInt8(startAddress);
 
+      // this takes a looong time
       await subfile.prepareTiles(mapHeaderInfo.debugFile, instanceCount);
 
       Writebuffer writebufferIndex = subfile.writeTileIndex(mapHeaderInfo.debugFile);

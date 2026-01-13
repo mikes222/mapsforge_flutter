@@ -452,28 +452,20 @@ class PbfAnalyzer {
     count = _wayHoldersMerged.length;
     _wayHoldersMerged.removeWhere(
       (test) =>
-          !boundingBox.intersects(test.boundingBoxCached) &&
-          !boundingBox.containsBoundingBox(test.boundingBoxCached) &&
-          !test.boundingBoxCached.containsBoundingBox(boundingBox),
+          !boundingBox.intersects(test.boundingBoxCached),
     );
     for (Wayholder wayHolder in _wayHoldersMerged) {
       wayHolder.innerWrite.removeWhere(
         (test) =>
-            !boundingBox.intersects(test.boundingBox) &&
-            !boundingBox.containsBoundingBox(test.boundingBox) &&
-            !test.boundingBox.containsBoundingBox(boundingBox),
+            !boundingBox.intersects(test.boundingBox),
       );
       wayHolder.closedOutersWrite.removeWhere(
         (test) =>
-            !boundingBox.intersects(test.boundingBox) &&
-            !boundingBox.containsBoundingBox(test.boundingBox) &&
-            !test.boundingBox.containsBoundingBox(boundingBox),
+            !boundingBox.intersects(test.boundingBox),
       );
       wayHolder.openOutersWrite.removeWhere(
         (test) =>
-            !boundingBox.intersects(test.boundingBox) &&
-            !boundingBox.containsBoundingBox(test.boundingBox) &&
-            !test.boundingBox.containsBoundingBox(boundingBox),
+            !boundingBox.intersects(test.boundingBox),
       );
       wayHolder.moveInnerToOuter();
     }
@@ -481,9 +473,7 @@ class PbfAnalyzer {
     List<int> toRemove = [];
     Map<int, Wayholder> toChange = {};
     await _wayHolders.forEach((key, wayholder) {
-      if (!boundingBox.intersects(wayholder.boundingBoxCached) &&
-          !boundingBox.containsBoundingBox(wayholder.boundingBoxCached) &&
-          !wayholder.boundingBoxCached.containsBoundingBox(boundingBox)) {
+      if (!boundingBox.intersects(wayholder.boundingBoxCached)) {
         toRemove.add(key);
         ++count;
         return;
@@ -491,21 +481,15 @@ class PbfAnalyzer {
       int c = wayholder.pathCount();
       wayholder.innerWrite.removeWhere(
         (test) =>
-            !boundingBox.intersects(test.boundingBox) &&
-            !boundingBox.containsBoundingBox(test.boundingBox) &&
-            !test.boundingBox.containsBoundingBox(boundingBox),
+            !boundingBox.intersects(test.boundingBox),
       );
       wayholder.closedOutersWrite.removeWhere(
         (test) =>
-            !boundingBox.intersects(test.boundingBox) &&
-            !boundingBox.containsBoundingBox(test.boundingBox) &&
-            !test.boundingBox.containsBoundingBox(boundingBox),
+            !boundingBox.intersects(test.boundingBox),
       );
       wayholder.openOutersWrite.removeWhere(
         (test) =>
-            !boundingBox.intersects(test.boundingBox) &&
-            !boundingBox.containsBoundingBox(test.boundingBox) &&
-            !test.boundingBox.containsBoundingBox(boundingBox),
+            !boundingBox.intersects(test.boundingBox),
       );
       wayholder.moveInnerToOuter();
       if (c != wayholder.pathCount()) toChange[key] = wayholder;

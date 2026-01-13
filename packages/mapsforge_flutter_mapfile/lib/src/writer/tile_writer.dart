@@ -147,28 +147,27 @@ class TileWriter implements ITileWriter {
 
   Future<PoiWayCollections> _filterForTile(Tile tile) async {
     PoiWayCollections poiWayInfos = PoiWayCollections();
+    final tileBoundingBox = tile.getBoundingBox();
     for (var entry in poiWayCollections.poiholderCollections.entries) {
       int zoomlevel = entry.key;
       IPoiholderCollection poiholderCollection = entry.value;
       IPoiholderCollection newPoiholderCollection = HolderCollectionFactory().createPoiholderCollection("tile_$zoomlevel");
       await poiholderCollection.forEach((poiholder) {
-        if (tile.getBoundingBox().containsLatLong(poiholder.position)) {
+        if (tileBoundingBox.containsLatLong(poiholder.position)) {
           newPoiholderCollection.add(poiholder);
         }
       });
       poiWayInfos.poiholderCollections[zoomlevel] = newPoiholderCollection;
     }
     WayCropper wayCropper = const WayCropper();
-    BoundingBox boundingBox = tile.getBoundingBox().extendMargin(margin);
+    BoundingBox boundingBox = tileBoundingBox.extendMargin(margin);
     for (var entry in poiWayCollections.wayholderCollections.entries) {
       int zoomlevel = entry.key;
       IWayholderCollection wayholderCollection = entry.value;
       IWayholderCollection newWayholderCollection = HolderCollectionFactory().createWayholderCollection("tile_$zoomlevel");
       await wayholderCollection.forEach((wayholder) {
         BoundingBox wayBoundingBox = wayholder.boundingBoxCached;
-        if (tile.getBoundingBox().intersects(wayBoundingBox) ||
-            tile.getBoundingBox().containsBoundingBox(wayBoundingBox) ||
-            wayBoundingBox.containsBoundingBox(tile.getBoundingBox())) {
+        if (tileBoundingBox.intersects(wayBoundingBox)) {
           Wayholder? wayCropped = wayCropper.cropWay(wayholder, boundingBox, zoomlevelRange.zoomlevelMax);
           if (wayCropped != null) newWayholderCollection.add(wayCropped);
         }
