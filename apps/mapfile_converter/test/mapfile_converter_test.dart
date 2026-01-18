@@ -81,7 +81,7 @@ void main() {
         // Verify the output file was created and has content
         expect(await outputFile.exists(), isTrue, reason: 'Output file should exist');
         expect(await outputFile.length(), greaterThan(555000), reason: 'Output file should not be empty');
-        expect(await outputFile.length(), lessThan(556000), reason: 'Output file should not be empty');
+        expect(await outputFile.length(), lessThan(580000), reason: 'Output file should not be empty');
 
         // Verify the output file exists and has content
         // The actual content check is removed since the output format might be binary

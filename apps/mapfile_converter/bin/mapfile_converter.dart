@@ -4,9 +4,11 @@ import 'package:args/command_runner.dart';
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/custom_osm_primitive_modifier.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
+import 'package:mapfile_converter/modifiers/holder_collection_file_implementation.dart';
 import 'package:mapfile_converter/runner/pbf_convert.dart';
 import 'package:mapfile_converter/runner/pbf_statistics.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 void main(List<String> arguments) async {
@@ -49,11 +51,14 @@ class StatisticsCommand extends Command {
     argParser.addOption("rendertheme", abbr: "r", help: "Render theme filename for filtering tags", mandatory: false);
     argParser.addOption("sourcefile", abbr: "s", help: "Source filename (PBF file)", mandatory: true);
     argParser.addOption("find", abbr: "f", help: "Find items with the given tag", mandatory: false);
+    argParser.addOption("spillover", abbr: "p", defaultsTo: "1000000", help: "Number of items in memory before spillover to filesystem starts");
   }
 
   @override
   Future<void> run() async {
     _log.info("Calculating, please wait...");
+    int spillover = int.parse(argResults!.option("spillover")!);
+
     DefaultOsmPrimitiveConverter converter = DefaultOsmPrimitiveConverter();
 
     if (argResults!.option("rendertheme") != null) {
@@ -71,9 +76,12 @@ class StatisticsCommand extends Command {
         keys: ruleAnalyzer.keys,
       );
     }
-    PbfStatistics pbfStatistics = await PbfStatistics.readFile(argResults!.option("sourcefile")!, converter);
+    if (spillover >= 10) HolderCollectionFactory().setImplementation(HolderCollectionFileImplementation(spillover));
+    PbfStatistics pbfStatistics = PbfStatistics(converter, spillover);
+    await pbfStatistics.readFile(argResults!.option("sourcefile")!);
+    await pbfStatistics.analyze();
     pbfStatistics.statistics();
-    pbfStatistics.find(argResults!.option("find"));
+    await pbfStatistics.find(argResults!.option("find"));
   }
 }
 

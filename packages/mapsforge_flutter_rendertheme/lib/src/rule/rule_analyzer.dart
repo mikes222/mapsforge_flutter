@@ -228,15 +228,12 @@ class ElementInfo {
 class ValueInfo {
   Set<String> values = {};
 
-  bool _any = false;
-
   void addValues(AttributeMatcher valueMatcher) {
     if (valueMatcher is ValueMatcher) {
       values.addAll(valueMatcher.values);
     } else if (valueMatcher is NegativeMatcher) {
       values.addAll(valueMatcher.values);
     } else if (valueMatcher is AnyMatcher) {
-      _any = true;
       values.add("*");
     } else {
       print("Unknown matcher ${valueMatcher.runtimeType}");
@@ -245,6 +242,6 @@ class ValueInfo {
 
   @override
   String toString() {
-    return 'ValueInfo{values: $values, _any: $_any}';
+    return 'ValueInfo{values: $values}';
   }
 }

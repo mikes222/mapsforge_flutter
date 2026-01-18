@@ -8,8 +8,11 @@ import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart
 import 'package:mapfile_converter/modifiers/holder_collection_file_implementation.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/wayholder_file_collection.dart';
+import 'package:mapfile_converter/osm/osm_reader.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
+import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapfile_converter/pbf/pbf_writer.dart';
+import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
@@ -60,37 +63,57 @@ class PbfConvert {
     for (var sourcefile in sourcefiles) {
       _log.info("Reading $sourcefile, please wait...");
       if (sourcefile.toLowerCase().endsWith(".osm")) {
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readOsmFile(
-          sourcefile,
+        ReadbufferSource readbufferSource = createReadbufferSource(sourcefile);
+        int sourceLength = await readbufferSource.length();
+        IPbfReader pbfReader = OsmReader(sourcefile);
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readSource(
           converter,
-          maxGapMeter: maxgap,
           finalBoundingBox: finalBoundingBox,
           quiet: quiet,
           spillBatchSize: spillover,
+          pbfReader: pbfReader,
+          length: sourceLength,
         );
+        // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
+        await pbfAnalyzer.analyze(maxgap);
+        if (finalBoundingBox != null) {
+          // we are filtering while importing, this is not necessary anymore
+          await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+        }
+        await pbfAnalyzer.removeSuperflous();
 
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!quiet) pbfAnalyzer.statistics();
         await osmNodes.mergeFrom(pbfAnalyzer.nodes);
-        await ways.mergeFrom(pbfAnalyzer.ways());
+        await ways.mergeFrom(pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
         await pbfAnalyzer.clear();
       } else {
         /// Read and analyze PBF file
-        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readFile(
-          sourcefile,
+        ReadbufferSource readbufferSource = createReadbufferSource(sourcefile);
+        int sourceLength = await readbufferSource.length();
+        IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readSource(
           converter,
-          maxGapMeter: maxgap,
           finalBoundingBox: finalBoundingBox,
           quiet: quiet,
           spillBatchSize: spillover,
+          pbfReader: pbfReader,
+          length: sourceLength,
         );
+        // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
+        await pbfAnalyzer.analyze(maxgap);
+        if (finalBoundingBox != null) {
+          // we are filtering while importing, this is not necessary anymore
+          await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+        }
+        await pbfAnalyzer.removeSuperflous();
 
         /// Now start exporting the data to a mapfile
         finalBoundingBox ??= pbfAnalyzer.boundingBox!;
         if (!quiet) pbfAnalyzer.statistics();
         await osmNodes.mergeFrom(pbfAnalyzer.nodes);
-        await ways.mergeFrom(pbfAnalyzer.ways());
+        await ways.mergeFrom(pbfAnalyzer.ways);
         ways.addAll(pbfAnalyzer.waysMerged);
         await pbfAnalyzer.clear();
       }

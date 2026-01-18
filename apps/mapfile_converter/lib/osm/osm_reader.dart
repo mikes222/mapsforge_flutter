@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
+import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:xml/xml_events.dart';
 
 import 'osm_data.dart';
 
-class OsmReader {
+class OsmReader implements IPbfReader {
   final _log = Logger('OsmReader');
 
   final Map<int, OsmNode> _nodes = {};
@@ -20,20 +21,28 @@ class OsmReader {
   OsmWay? _currentWay;
   OsmRelation? _currentRelation;
 
-  late final Stream _events;
+  late final Stream _stream;
 
   OsmReader(String filePath) {
     final file = File(filePath);
     final inputStream = file.openRead();
-    _events = inputStream.transform(utf8.decoder).toXmlEvents().normalizeEvents().flatten();
+    _stream = inputStream.transform(utf8.decoder).toXmlEvents().normalizeEvents().flatten();
   }
 
-  Future<void> readOsmFile(Function(OsmData) callback) async {
-    await _readStream(callback);
+  @override
+  void dispose() {
+    _nodes.clear();
+    _ways.clear();
+    _relations.clear();
   }
 
-  Future<void> _readStream(Function(OsmData) callback) async {
-    await for (final event in _events) {
+  @override
+  Future<OsmData?> readBlobData(int position) async {
+    return _readStream();
+  }
+
+  Future<OsmData> _readStream() async {
+    await for (final event in _stream) {
       //print("event: ${event}");
       if (event is XmlStartElementEvent) {
         //print("  start element: ${element}");
@@ -50,7 +59,8 @@ class OsmReader {
             _nodes[_currentNode!.id] = _currentNode!;
             if (event.isSelfClosing) {
               _currentNode = null;
-              _sendData(callback, false);
+              OsmData? osmData = _sendData(false);
+              if (osmData != null) return osmData;
             }
             break;
           case 'way':
@@ -58,7 +68,8 @@ class OsmReader {
             _ways[_currentWay!.id] = _currentWay!;
             if (event.isSelfClosing) {
               _currentWay = null;
-              _sendData(callback, false);
+              OsmData? osmData = _sendData(false);
+              if (osmData != null) return osmData;
             }
             break;
           case 'relation':
@@ -66,7 +77,8 @@ class OsmReader {
             _relations[_currentRelation!.id] = _currentRelation!;
             if (event.isSelfClosing) {
               _currentRelation = null;
-              _sendData(callback, false);
+              OsmData? osmData = _sendData(false);
+              if (osmData != null) return osmData;
             }
             break;
           case 'tag':
@@ -110,15 +122,18 @@ class OsmReader {
         switch (event.name) {
           case 'node':
             _currentNode = null;
-            _sendData(callback, false);
+            OsmData? osmData = _sendData(false);
+            if (osmData != null) return osmData;
             break;
           case 'way':
             _currentWay = null;
-            _sendData(callback, false);
+            OsmData? osmData = _sendData(false);
+            if (osmData != null) return osmData;
             break;
           case 'relation':
             _currentRelation = null;
-            _sendData(callback, false);
+            OsmData? osmData = _sendData(false);
+            if (osmData != null) return osmData;
             break;
           case 'tag':
             break;
@@ -129,17 +144,34 @@ class OsmReader {
         _log.info("unsupported element: ${event} ${event.runtimeType}");
       }
     }
-    _sendData(callback, true);
+    OsmData osmData = _sendData(true)!;
+    return osmData;
   }
 
-  void _sendData(Function(OsmData) callback, bool force) {
+  OsmData? _sendData(bool force) {
     if (force || _nodes.length >= 1000000 || _ways.length >= 100000 || _relations.length >= 1000) {
       //print("callback: ${nodes.length} ${ways.length} ${relations.length}");
-      final pbfData = OsmData(nodes: _nodes.values.toList(), ways: _ways.values.toList(), relations: _relations.values.toList());
+      final osmData = OsmData(nodes: _nodes.values.toList(), ways: _ways.values.toList(), relations: _relations.values.toList());
       _nodes.clear();
       _ways.clear();
       _relations.clear();
-      callback(pbfData);
+      return osmData;
     }
+    return null;
+  }
+
+  @override
+  Future<BoundingBox?> calculateBounds() async {
+    return boundingBox;
+  }
+
+  @override
+  Future<List<int>> getBlobPositions() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<OsmData?> readNextBlobData() {
+    throw UnimplementedError();
   }
 }

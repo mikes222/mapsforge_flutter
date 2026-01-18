@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/pbfproto/fileformat.pb.dart';
 import 'package:mapfile_converter/pbfproto/osmformat.pb.dart';
@@ -31,6 +32,7 @@ class IsolatePbfReader implements IPbfReader {
   IsolatePbfReader._();
 
   static Future<IsolatePbfReader> create({required ReadbufferSource readbufferSource, required int sourceLength}) async {
+    await readbufferSource.freeRessources();
     PbfReaderInstanceRequest request = PbfReaderInstanceRequest(readbufferSource: readbufferSource, sourceLength: sourceLength);
     IsolatePbfReader instance = IsolatePbfReader._();
     await instance._isolateInstance.spawn(createInstance, request);
@@ -270,11 +272,7 @@ class PbfReader implements IPbfReader {
             _ => throw Exception('Unknown member type: ${relTypes[idx]}'),
           };
 
-          return OsmRelationMember(
-            memberId: refDelta,
-            memberType: memberType,
-            role: stringTable[relRoles[idx]],
-          );
+          return OsmRelationMember(memberId: refDelta, memberType: memberType, role: stringTable[relRoles[idx]]);
         }, growable: true);
         relations.add(OsmRelation(id: id, tags: tags, members: members));
       }

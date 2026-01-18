@@ -1,5 +1,4 @@
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
-import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 /// Removes tags from node/ways according to the rules. If no tags remains the correspondig node/way will be discarded
@@ -20,14 +19,25 @@ class CustomOsmPrimitiveConverter extends DefaultOsmPrimitiveConverter {
     required this.negativeNodeTags,
     required this.negativeWayTags,
     required this.keys,
-  });
+  }) {
+    keys.add("layer");
+    if (keys.contains("name")) {
+      keys.add("int_name");
+      keys.add("official_name");
+      keys.add("loc_name");
+    }
+    // allowedWayTags.forEach((key, value) {
+    //   print("allowedWays: ${key} $value");
+    // });
+  }
 
   @override
   void modifyNodeTags(Map<String, String> tags) {
     tags.removeWhere((key, value) {
-      if (TagholderModel.isMapfilePoiTag(key)) return false;
       // keep what we need for the rendertheme
       if (keys.contains(key)) return false;
+      if (keys.contains("name") && key.startsWith("name:")) return false;
+      if (keys.contains("name") && key.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedNodeTags[key];
       if (valueInfo != null) {
         if (valueInfo.values.contains("*")) return false;
@@ -46,9 +56,11 @@ class CustomOsmPrimitiveConverter extends DefaultOsmPrimitiveConverter {
   @override
   void modifyWayTags(Map<String, String> tags) {
     tags.removeWhere((key, value) {
-      if (TagholderModel.isMapfileWayTag(key)) return false;
+      //if (TagholderModel.isMapfileWayTag(key)) return false;
       // keep what we need for the rendertheme
       if (keys.contains(key)) return false;
+      if (keys.contains("name") && key.startsWith("name:")) return false;
+      if (keys.contains("name") && key.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedWayTags[key];
       if (valueInfo != null) {
         if (valueInfo.values.contains("*")) return false;
@@ -67,9 +79,11 @@ class CustomOsmPrimitiveConverter extends DefaultOsmPrimitiveConverter {
   @override
   void modifyRelationTags(Map<String, String> tags) {
     tags.removeWhere((key, value) {
-      if (TagholderModel.isMapfileWayTag(key)) return false;
+      //if (TagholderModel.isMapfileWayTag(key)) return false;
       // keep what we need for the rendertheme
       if (keys.contains(key)) return false;
+      if (keys.contains("name") && key.startsWith("name:")) return false;
+      if (keys.contains("name") && key.startsWith("official_name:")) return false;
       ValueInfo? valueInfo = allowedWayTags[key];
       if (valueInfo != null) {
         if (valueInfo.values.contains("*")) return false;

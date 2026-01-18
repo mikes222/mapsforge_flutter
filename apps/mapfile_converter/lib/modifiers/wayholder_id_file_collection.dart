@@ -44,6 +44,7 @@ class WayholderIdFileCollection {
     _sinkWithCounter = null;
     _collection.clear();
     _fileCollection.clear();
+    wayNotFound.clear();
   }
 
   int get length => _collection.length + _fileCollection.length;
@@ -293,8 +294,6 @@ class _WayIdTemp {
   bool coastLine;
 
   bool mergedWithOtherWay;
-
-  //BoundingBox? wayBoundingBox;
 
   _WayIdTemp({required this.id, required this.pos, required this.length, required this.coastLine, required this.mergedWithOtherWay});
 }

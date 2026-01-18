@@ -12,6 +12,10 @@ class MicroLatLong implements ILatLong {
 
   MicroLatLong(this._latitude, this._longitude);
 
+  int get latitudeMicrodegrees => _latitude;
+
+  int get longitudeMicrodegrees => _longitude;
+
   @override
   double get latitude => LatLongUtils.microdegreesToDegrees(_latitude);
 

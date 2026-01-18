@@ -12,6 +12,10 @@ class NanoLatLong implements ILatLong {
     : _latitude = LatLongUtils.degreesToNanodegrees(latitude),
       _longitude = LatLongUtils.degreesToNanodegrees(longitude);
 
+  int get latitudeNanodegrees => _latitude;
+
+  int get longitudeNanodegrees => _longitude;
+
   @override
   double get latitude => LatLongUtils.nanodegreesToDegrees(_latitude);
 
