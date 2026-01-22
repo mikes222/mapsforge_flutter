@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 /// Shows a ruler in the left-bottom corner of the map to indicate distances of the map. The
 /// color of the ruler and text is derived from ThemeData.textTheme.bodyText2
@@ -35,7 +36,6 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
   double _pixel = 1;
 
   String _toDisplay = "unknown";
-
 
   @override
   void initState() {
@@ -126,7 +126,7 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
     // get the meters per pixel, always calculate with meters!
     double meterPerPixel = position.projection.meterPerPixel(LatLong(position.latitude, position.longitude));
     // default is 100 pixels in ui
-    _pixel = 100;
+    _pixel = 100 * MapsforgeSettingsMgr().getDeviceScaleFactor();
     // how many meters are that?
     double meter = meterPerPixel * _pixel;
     // now round to human-readable measures
@@ -147,7 +147,7 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
       roundedMeter = (meter / 100000).roundToDouble() * 100000;
     }
     // adapt the concrete number of pixel to display the correct size
-    _pixel = _pixel * roundedMeter / meter;
+    _pixel = _pixel * roundedMeter / meter / MapsforgeSettingsMgr().getDeviceScaleFactor();
 
     // how to display the meters to the user
     _toDisplay = "${roundedMeter.toStringAsFixed(0)} m";

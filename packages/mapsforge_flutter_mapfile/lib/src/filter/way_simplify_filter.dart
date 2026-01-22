@@ -62,11 +62,7 @@ class WaySimplifyFilter {
       maxDeviationPixel,
     );
     final innerRead = wayholder.innerRead;
-    final inner = List<Waypath>.generate(
-      innerRead.length,
-      (i) => _reduceWayEnsureMax(innerRead[i], maxDeviationLatLong, maxDeviationLatLong),
-      growable: false,
-    );
+    final inner = List<Waypath>.generate(innerRead.length, (i) => _reduceWayEnsureMax(innerRead[i], maxDeviationLatLong, maxDeviationLatLong), growable: false);
 
     final closedOutersRead = wayholder.closedOutersRead;
     final closedOuters = List<Waypath>.generate(
@@ -93,7 +89,9 @@ class WaySimplifyFilter {
     List<ILatLong> res1 = dpl.simplify(waypath.path, maxDeviationLatLong);
     assert(res1.length >= 2);
     if (res1.length > 32767) {
-      _log.info("${res1.length} too much at zoomlevel ${projection.scalefactor.zoomlevel} and $maxDeviationPixel ($maxDeviationLatLong)");
+      _log.info(
+        "too many nodes (${res1.length}) at zoomlevel ${projection.scalefactor.zoomlevel} and max deviation $maxDeviationPixel (max dev. lat/lon $maxDeviationLatLong)",
+      );
     }
     if (waypath.isClosedWay()) {
       if (res1.length < 3) return null;

@@ -105,7 +105,7 @@ class MoveHandler extends DefaultHandler {
       _nextManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
       mapModel.manualMove(Object());
     }
-    mapModel.setCenter(startPosition!.getCenter().x - diffX, startPosition!.getCenter().y - diffY);
+    mapModel.setCenter(max(startPosition!.getCenter().x - diffX, 0), max(startPosition!.getCenter().y - diffY, 0));
   }
 
   void _swipeTimerProcess() {
@@ -115,7 +115,7 @@ class MoveHandler extends DefaultHandler {
         _nextManualMoveEvent = DateTime.now().millisecondsSinceEpoch + 1000;
         mapModel.manualMove(Object());
       }
-      mapModel.setCenter(center.x - _swipeOffset!.dx, center.y - _swipeOffset!.dy);
+      mapModel.setCenter(max(center.x - _swipeOffset!.dx, 0), max(center.y - _swipeOffset!.dy, 0));
     }
     // slow down after each iteration
     _swipeOffset = _swipeOffset! * swipeAbsorption;
