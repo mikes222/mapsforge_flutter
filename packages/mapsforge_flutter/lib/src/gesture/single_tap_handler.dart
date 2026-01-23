@@ -20,7 +20,9 @@ class SingleTapHandler extends DefaultHandler {
 
   @override
   void onTimeout() {
-    if (_tapUpCount == 1 && _tapDownCount == 1) mapModel.tap(createEvent(startOffset!));
+    if (_tapUpCount == 1 && _tapDownCount == 1) {
+      mapModel.tap(createEvent(startOffset!));
+    }
     super.onTimeout();
   }
 

@@ -220,6 +220,12 @@ class MapModel extends ChangeNotifier {
     setPosition(newPosition);
   }
 
+  /// Moves the center of the map in relative pixel coordinates.
+  void moveCenter(double dx, double dy) {
+    MapPosition newPosition = _lastPosition!.moveCenter(dx, dy);
+    setPosition(newPosition);
+  }
+
   void registerMarkerDatastore(MarkerDatastore datastore) {
     _markerDatastores.add(datastore);
   }

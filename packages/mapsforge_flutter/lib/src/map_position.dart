@@ -292,6 +292,24 @@ class MapPosition {
     );
   }
 
+  /// Moves the center of the map in relative pixel coordinates.
+  MapPosition moveCenter(double dx, double dy) {
+    double x = max(getCenter().x + dx, 0);
+    double y = max(getCenter().y + dy, 0);
+    return MapPosition._(
+      latitude: _projection.pixelYToLatitude(y),
+      longitude: _projection.pixelXToLongitude(x),
+      zoomlevel: zoomlevel,
+      indoorLevel: indoorLevel,
+      rotation: _rotation,
+      rotationRadian: _rotationRadian,
+      scale: scale,
+      focalPoint: null,
+      projection: _projection,
+      center: Mappoint(x, y),
+    );
+  }
+
   PixelProjection get projection => _projection;
 
   /// The latitude of the center of the widget

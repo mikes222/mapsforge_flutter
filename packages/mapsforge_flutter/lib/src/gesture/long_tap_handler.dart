@@ -24,6 +24,11 @@ class LongTapHandler extends DefaultHandler {
   @override
   void onPointerUp(int pointerId, Offset offset, Map<int, Offset> pointers) {
     if (!activeTimer()) return;
+    if (pointers.isEmpty) {
+      // cancel if the only point went up
+      cancelTimer();
+      return;
+    }
     super.onPointerUp(pointerId, offset, pointers);
   }
 

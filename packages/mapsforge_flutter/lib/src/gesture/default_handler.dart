@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/util/rotate_helper.dart';
 
 class DefaultHandler {
+  static final _log = Logger('DefaultHandler');
+
   final int longPressDuration;
 
   Timer? _timer;
@@ -64,6 +67,7 @@ class DefaultHandler {
     PositionInfo positionInfo = RotateHelper.normalize(startPosition!, size, offset.dx, offset.dy);
     // interpolate the new center between the old center and where we
     // pressed now. The new center is half-way between our double-pressed point and the old-center
+    //_log.info("createEvent $offset $startPosition $size $positionInfo");
     TapEvent tapEvent = TapEvent(
       latitude: positionInfo.latitude,
       longitude: positionInfo.longitude,
