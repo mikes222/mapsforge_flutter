@@ -50,7 +50,7 @@ class OsmReader implements IPbfReader {
     return _readStream();
   }
 
-  Future<OsmData> _readStream() async {
+  Future<OsmData?> _readStream() async {
     while (await _iterator.moveNext()) {
       final event = _iterator.current;
       //print("event: ${event}");
@@ -154,11 +154,14 @@ class OsmReader implements IPbfReader {
         _log.info("unsupported element: ${event} ${event.runtimeType}");
       }
     }
-    OsmData osmData = _sendData(true)!;
+    OsmData? osmData = _sendData(true);
     return osmData;
   }
 
   OsmData? _sendData(bool force) {
+    if (force && _nodes.isEmpty && _ways.isEmpty && _relations.isEmpty) {
+      return null;
+    }
     if (force || _nodes.length >= 1000000 || _ways.length >= 100000 || _relations.length >= 1000) {
       //print("callback: ${nodes.length} ${ways.length} ${relations.length}");
       final osmData = OsmData(nodes: _nodes.values.toList(), ways: _ways.values.toList(), relations: _relations.values.toList());
