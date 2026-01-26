@@ -41,6 +41,11 @@ class OsmReader implements IPbfReader {
     return _readStream();
   }
 
+  @override
+  Future<OsmData?> readNextBlobData() {
+    return _readStream();
+  }
+
   Future<OsmData> _readStream() async {
     await for (final event in _stream) {
       //print("event: ${event}");
@@ -167,11 +172,6 @@ class OsmReader implements IPbfReader {
 
   @override
   Future<List<int>> getBlobPositions() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<OsmData?> readNextBlobData() {
     throw UnimplementedError();
   }
 }
