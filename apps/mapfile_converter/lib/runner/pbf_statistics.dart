@@ -2,6 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
+import 'package:mapfile_converter/osm/osm_reader.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
 import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
@@ -26,16 +27,29 @@ class PbfStatistics {
   Future<PbfAnalyzer> readFile(String sourcefile) async {
     ReadbufferSource readbufferSource = createReadbufferSource(sourcefile);
     int sourceLength = await readbufferSource.length();
-    IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
-    pbfAnalyzer = await PbfAnalyzer.readSource(
-      converter,
-      //finalBoundingBox: finalBoundingBox,
-      quiet: false,
-      spillBatchSize: spillBatchSize,
-      pbfReader: pbfReader,
-      length: sourceLength,
-    );
-    return pbfAnalyzer;
+    if (sourcefile.toLowerCase().endsWith(".osm")) {
+      IPbfReader pbfReader = OsmReader(sourcefile);
+      pbfAnalyzer = await PbfAnalyzer.readSource(
+        converter,
+        //finalBoundingBox: finalBoundingBox,
+        quiet: false,
+        spillBatchSize: spillBatchSize,
+        pbfReader: pbfReader,
+        length: sourceLength,
+      );
+      return pbfAnalyzer;
+    } else {
+      IPbfReader pbfReader = await IsolatePbfReader.create(readbufferSource: readbufferSource, sourceLength: sourceLength);
+      pbfAnalyzer = await PbfAnalyzer.readSource(
+        converter,
+        //finalBoundingBox: finalBoundingBox,
+        quiet: false,
+        spillBatchSize: spillBatchSize,
+        pbfReader: pbfReader,
+        length: sourceLength,
+      );
+      return pbfAnalyzer;
+    }
   }
 
   Future<void> analyze() async {

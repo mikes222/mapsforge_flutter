@@ -21,12 +21,15 @@ class OsmReader implements IPbfReader {
   OsmWay? _currentWay;
   OsmRelation? _currentRelation;
 
-  late final Stream _stream;
+  late final Stream<XmlEvent> _stream;
+
+  late final StreamIterator<XmlEvent> _iterator;
 
   OsmReader(String filePath) {
     final file = File(filePath);
     final inputStream = file.openRead();
     _stream = inputStream.transform(utf8.decoder).toXmlEvents().normalizeEvents().flatten();
+    _iterator = StreamIterator<XmlEvent>(_stream);
   }
 
   @override
@@ -34,6 +37,7 @@ class OsmReader implements IPbfReader {
     _nodes.clear();
     _ways.clear();
     _relations.clear();
+    _iterator.cancel();
   }
 
   @override
@@ -47,7 +51,8 @@ class OsmReader implements IPbfReader {
   }
 
   Future<OsmData> _readStream() async {
-    await for (final event in _stream) {
+    while (await _iterator.moveNext()) {
+      final event = _iterator.current;
       //print("event: ${event}");
       if (event is XmlStartElementEvent) {
         //print("  start element: ${element}");

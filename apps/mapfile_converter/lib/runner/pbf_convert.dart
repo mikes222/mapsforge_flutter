@@ -61,7 +61,7 @@ class PbfConvert {
     ); //HolderCollectionFactory().createWayholderCollection("convert");
 
     for (var sourcefile in sourcefiles) {
-      _log.info("Reading $sourcefile, please wait...");
+      _log.info("Reading $sourcefile");
       if (sourcefile.toLowerCase().endsWith(".osm")) {
         ReadbufferSource readbufferSource = createReadbufferSource(sourcefile);
         int sourceLength = await readbufferSource.length();
