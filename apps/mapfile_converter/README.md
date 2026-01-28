@@ -10,7 +10,7 @@ See [mapsforge_flutter](https://pub.dev/packages/mapsforge_flutter) for more det
 
 ----
 
-Converts a pbf or osm file to a mapfile or osm file. It uses a rendertheme file to determine which points/ways should be kept and which can be omitted in the destination file. This makes sure that only necessary informations are included in the destination file.
+Converts a pbf, o5m or osm file to a mapfile or osm file. It uses a rendertheme file to determine which points/ways should be kept and which can be omitted in the destination file. This makes sure that only necessary informations are included in the destination file.
 
 Currently the base zoomlevel must be equal to the min zoomlevel.
 
@@ -20,7 +20,7 @@ Currently the base zoomlevel must be equal to the min zoomlevel.
 
 -r, --rendertheme                    Render theme filename
 
--s, --sourcefiles (mandatory)        Source filenames (PBF or osm files), separated by #
+-s, --sourcefiles (mandatory)        Source filenames (PBF, O5m or osm files), separated by #
 
 -d, --destinationfile (mandatory)    Destination filename (mapfile PBF or osm)
 
@@ -43,6 +43,8 @@ Currently the base zoomlevel must be equal to the min zoomlevel.
 **sourcefiles**:
 
 "#"-separated list of sourcefiles. If you omit the ``boundary`` parameter the boundary of the first sourcefile is used. PBF and osm is currently supported.
+
+"#"-separated list of sourcefiles. If you omit the ``boundary`` parameter the boundary of the first sourcefile is used. PBF, O5m and osm is currently supported.
 
 **destinationfile**:
 

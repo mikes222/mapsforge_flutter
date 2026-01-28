@@ -1,6 +1,7 @@
 import 'package:logging/logging.dart';
 import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
+import 'package:mapfile_converter/o5m/o5m_reader.dart';
 import 'package:mapfile_converter/osm/osm_data.dart';
 import 'package:mapfile_converter/osm/osm_reader.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
@@ -29,6 +30,17 @@ class PbfStatistics {
     int sourceLength = await readbufferSource.length();
     if (sourcefile.toLowerCase().endsWith(".osm")) {
       IPbfReader pbfReader = OsmReader(sourcefile);
+      pbfAnalyzer = await PbfAnalyzer.readSource(
+        converter,
+        //finalBoundingBox: finalBoundingBox,
+        quiet: false,
+        spillBatchSize: spillBatchSize,
+        pbfReader: pbfReader,
+        length: sourceLength,
+      );
+      return pbfAnalyzer;
+    } else if (sourcefile.toLowerCase().endsWith(".o5m")) {
+      IPbfReader pbfReader = await O5mReader.open(sourcefile);
       pbfAnalyzer = await PbfAnalyzer.readSource(
         converter,
         //finalBoundingBox: finalBoundingBox,

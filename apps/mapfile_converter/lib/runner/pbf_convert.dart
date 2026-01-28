@@ -8,6 +8,7 @@ import 'package:mapfile_converter/modifiers/default_osm_primitive_converter.dart
 import 'package:mapfile_converter/modifiers/holder_collection_file_implementation.dart';
 import 'package:mapfile_converter/modifiers/pbf_analyzer.dart';
 import 'package:mapfile_converter/modifiers/wayholder_file_collection.dart';
+import 'package:mapfile_converter/o5m/o5m_reader.dart';
 import 'package:mapfile_converter/osm/osm_reader.dart';
 import 'package:mapfile_converter/osm/osm_writer.dart';
 import 'package:mapfile_converter/pbf/pbf_reader.dart';
@@ -66,6 +67,32 @@ class PbfConvert {
         ReadbufferSource readbufferSource = createReadbufferSource(sourcefile);
         int sourceLength = await readbufferSource.length();
         IPbfReader pbfReader = OsmReader(sourcefile);
+        PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readSource(
+          converter,
+          finalBoundingBox: finalBoundingBox,
+          quiet: quiet,
+          spillBatchSize: spillover,
+          pbfReader: pbfReader,
+          length: sourceLength,
+        );
+        // analyze the whole area before filtering the bounding box, we want closed ways wherever possible
+        await pbfAnalyzer.analyze(maxgap);
+        if (finalBoundingBox != null) {
+          // we are filtering while importing, this is not necessary anymore
+          await pbfAnalyzer.filterByBoundingBox(finalBoundingBox);
+        }
+        await pbfAnalyzer.removeSuperflous();
+
+        finalBoundingBox ??= pbfAnalyzer.boundingBox!;
+        if (!quiet) pbfAnalyzer.statistics();
+        await osmNodes.mergeFrom(pbfAnalyzer.nodes);
+        await ways.mergeFrom(pbfAnalyzer.ways);
+        ways.addAll(pbfAnalyzer.waysMerged);
+        await pbfAnalyzer.clear();
+      } else if (sourcefile.toLowerCase().endsWith(".o5m")) {
+        ReadbufferSource readbufferSource = createReadbufferSource(sourcefile);
+        int sourceLength = await readbufferSource.length();
+        IPbfReader pbfReader = await O5mReader.open(sourcefile);
         PbfAnalyzer pbfAnalyzer = await PbfAnalyzer.readSource(
           converter,
           finalBoundingBox: finalBoundingBox,
