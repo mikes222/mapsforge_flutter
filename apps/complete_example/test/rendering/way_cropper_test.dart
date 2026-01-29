@@ -9,8 +9,6 @@ import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 void main() async {
-  final _log = Logger('CopyPbfToMapfileTest');
-
   testWidgets("Test monaco casino south part cropping for a tile", (WidgetTester tester) async {
     _initLogging();
 

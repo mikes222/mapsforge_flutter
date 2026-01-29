@@ -39,7 +39,7 @@ void _initLogging() {
 //////////////////////////////////////////////////////////////////////////////
 
 class StatisticsCommand extends Command {
-  final _log = Logger('StatisticsCommand');
+  static final _log = Logger('StatisticsCommand');
 
   @override
   String get description => "Prints statistical information about the given pbf file";
@@ -88,7 +88,7 @@ class StatisticsCommand extends Command {
 //////////////////////////////////////////////////////////////////////////////
 
 class ConvertCommand extends Command {
-  final _log = Logger('ConvertCommand');
+  static final _log = Logger('ConvertCommand');
 
   @override
   String get description => "Converts a pbf file to mapfile";

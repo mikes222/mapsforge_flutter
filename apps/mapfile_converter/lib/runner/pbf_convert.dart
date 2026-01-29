@@ -19,7 +19,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class PbfConvert {
-  final _log = Logger('PbfConvert');
+  static final _log = Logger('PbfConvert');
 
   Future<void> convert({
     required List<int> zoomlevels,

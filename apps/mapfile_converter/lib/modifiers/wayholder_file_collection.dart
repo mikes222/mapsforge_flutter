@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class WayholderFileCollection implements IWayholderCollection {
-  final _log = Logger('WayholderFileCollection');
+  static final _log = Logger('WayholderFileCollection');
 
   final int spillBatchSize;
 

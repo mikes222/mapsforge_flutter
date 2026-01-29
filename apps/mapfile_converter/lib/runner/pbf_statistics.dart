@@ -9,7 +9,7 @@ import 'package:mapsforge_flutter_core/buffer.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 
 class PbfStatistics {
-  final _log = Logger('PbfStatistics');
+  static final _log = Logger('PbfStatistics');
 
   final DefaultOsmPrimitiveConverter converter;
 

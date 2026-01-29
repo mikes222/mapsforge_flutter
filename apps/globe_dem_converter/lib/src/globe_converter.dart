@@ -2,13 +2,16 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:globe_dem_converter/src/noaa_file_definition.dart';
 import 'package:logging/logging.dart';
 
 class GlobeDemConverter {
-  final _log = Logger('GlobeDemConverter');
+  static final _log = Logger('GlobeDemConverter');
 
   GlobeDemConverter();
 
+  // original files have 120 elevation information per degree lat/lon
+  static const int dimensionPerDegree = 120;
   static const double _cellSizeDeg = 1.0 / 120.0;
   static const int _colsPerSourceTile = 10800;
   static const int _noDataValue = -500;
@@ -16,14 +19,15 @@ class GlobeDemConverter {
   Future<void> convert({
     required Directory inputDir,
     required Directory outputDir,
-    required double tileWidthDeg,
-    required double tileHeightDeg,
-    required double startLat,
-    required double startLon,
-    required double endLat,
-    required double endLon,
+    required int tileWidthDeg,
+    required int tileHeightDeg,
+    required int startLat,
+    required int startLon,
+    required int endLat,
+    required int endLon,
     required int resampleFactor,
     required bool dryRun,
+    required String fileformat,
   }) async {
     if (!inputDir.existsSync()) {
       throw ArgumentError('Input directory does not exist: ${inputDir.path}');
@@ -72,7 +76,7 @@ class GlobeDemConverter {
 
     try {
       for (final tile in planned) {
-        final outName = _outputFilename(tile, resampleFactor: resampleFactor);
+        final outName = _outputFilename(tile, fileformat, resampleFactor: resampleFactor);
         final outFile = File('${outputDir.path}${Platform.pathSeparator}$outName');
 
         _log.info('Writing ${outFile.path} (${tile.rows}x${tile.cols})');
@@ -101,18 +105,18 @@ class GlobeDemConverter {
       final rowBuffer = Uint8List(tile.cols * 2);
       for (int r = 0; r < tile.rows; r++) {
         final latCenter = tile.latMax - (r + 0.5) * outCellSizeDeg;
-        final latBand = _latBandFor(latCenter);
+        final latBand = NoaaFileDefinition.latBandFor(latCenter);
 
         int colWritten = 0;
         for (final seg in tile.lonSegments) {
           final lonCenter = (seg.lonMin + seg.lonMax) / 2.0;
-          final lonBand = _lonBandFor(lonCenter);
+          final lonBand = NoaaFileDefinition.lonBandFor(lonCenter);
 
-          final source = _sourceTileForBands(latBand, lonBand);
+          final source = NoaaFileDefinition.sourceTileForBands(latBand, lonBand);
           final sourceTile = await sourceCache.open(source);
 
-          final rowInSource = ((source.latMax - latCenter) * 120).floor();
-          final colStartInSource = ((seg.lonMin - source.lonMin) * 120).floor();
+          final rowInSource = ((source.latMax - latCenter) * dimensionPerDegree).floor();
+          final colStartInSource = ((seg.lonMin - source.lonMin) * dimensionPerDegree).floor();
           final colsToRead = seg.cols;
 
           final offsetBytes = (rowInSource * _colsPerSourceTile + colStartInSource) * 2;
@@ -140,21 +144,21 @@ class GlobeDemConverter {
       final latBottom = latTop - outCellSizeDeg;
       final latCenter = (latTop + latBottom) / 2.0;
 
-      final latBand = _latBandFor(latCenter);
+      final latBand = NoaaFileDefinition.latBandFor(latCenter);
 
       int outColWritten = 0;
       for (final seg in tile.lonSegments) {
         final lonCenter = (seg.lonMin + seg.lonMax) / 2.0;
-        final lonBand = _lonBandFor(lonCenter);
-        final source = _sourceTileForBands(latBand, lonBand);
+        final lonBand = NoaaFileDefinition.lonBandFor(lonCenter);
+        final source = NoaaFileDefinition.sourceTileForBands(latBand, lonBand);
         final sourceTile = await sourceCache.open(source);
 
         // Start row in source (top of output pixel block)
-        final rowStartInSource = ((source.latMax - latTop) * 120).round();
+        final rowStartInSource = ((source.latMax - latTop) * dimensionPerDegree).round();
 
         // For this segment, we need seg.cols output columns. Each output column covers resampleFactor source columns.
         final srcColsToRead = seg.cols * resampleFactor;
-        final colStartInSource = ((seg.lonMin - source.lonMin) * 120).round();
+        final colStartInSource = ((seg.lonMin - source.lonMin) * dimensionPerDegree).round();
 
         // Read resampleFactor rows into memory for this segment.
         final srcRowBytes = Uint8List(srcColsToRead * 2);
@@ -202,21 +206,21 @@ class GlobeDemConverter {
   }
 
   List<_OutTile> _planTiles({
-    required double tileWidthDeg,
-    required double tileHeightDeg,
-    required double startLat,
-    required double startLon,
-    required double endLat,
-    required double endLon,
+    required int tileWidthDeg,
+    required int tileHeightDeg,
+    required int startLat,
+    required int startLon,
+    required int endLat,
+    required int endLon,
     required double outCellSizeDeg,
   }) {
     final tiles = <_OutTile>[];
 
-    for (double latMin = startLat; latMin < endLat; latMin += tileHeightDeg) {
+    for (int latMin = startLat; latMin < endLat; latMin += tileHeightDeg) {
       final latMax = min(latMin + tileHeightDeg, endLat);
       final rows = _degToSamples(latMax - latMin, outCellSizeDeg: outCellSizeDeg);
 
-      for (double lonMin = startLon; lonMin < endLon; lonMin += tileWidthDeg) {
+      for (int lonMin = startLon; lonMin < endLon; lonMin += tileWidthDeg) {
         final lonMax = min(lonMin + tileWidthDeg, endLon);
         final cols = _degToSamples(lonMax - lonMin, outCellSizeDeg: outCellSizeDeg);
 
@@ -228,15 +232,15 @@ class GlobeDemConverter {
     return tiles;
   }
 
-  List<_LonSegment> _splitLonSegments(double lonMin, double lonMax, {required double outCellSizeDeg}) {
+  List<_LonSegment> _splitLonSegments(int lonMin, int lonMax, {required double outCellSizeDeg}) {
     // Split output tile into segments so that each segment belongs to exactly one source lon band.
-    const boundaries = [-180.0, -90.0, 0.0, 90.0, 180.0];
+    const boundaries = [-180, -90, 0, 90, 180];
 
     final segments = <_LonSegment>[];
-    double cursor = lonMin;
+    int cursor = lonMin;
 
     while (cursor < lonMax) {
-      double next = lonMax;
+      int next = lonMax;
       for (final b in boundaries) {
         if (b > cursor && b < next) next = b;
       }
@@ -256,7 +260,7 @@ class GlobeDemConverter {
     return segments;
   }
 
-  static void _ensureAligned(double value, String name, {required double outCellSizeDeg}) {
+  static void _ensureAligned(int value, String name, {required double outCellSizeDeg}) {
     final steps = value / outCellSizeDeg;
     final rounded = steps.roundToDouble();
     if ((steps - rounded).abs() > 1e-9) {
@@ -264,110 +268,46 @@ class GlobeDemConverter {
     }
   }
 
-  static int _degToSamples(double deg, {required double outCellSizeDeg}) {
+  static int _degToSamples(int deg, {required double outCellSizeDeg}) {
     final steps = deg / outCellSizeDeg;
     return steps.round();
   }
 
-  static _LatBand _latBandFor(double lat) {
-    if (lat >= 50) return _LatBand.n50_90;
-    if (lat >= 0) return _LatBand.n0_50;
-    if (lat >= -50) return _LatBand.s50_0;
-    return _LatBand.s90_50;
+  static String _outputFilename(_OutTile t, String fileformat, {required int resampleFactor}) {
+    String filename = fileformat;
+
+    final latPrefix = t.latMin >= 0 ? 'N' : 'S';
+    final lonPrefix = t.lonMin >= 0 ? 'E' : 'W';
+    final latAbs = t.latMin.abs().toString().padLeft(2, '0');
+    final lonAbs = t.lonMin.abs().toString().padLeft(3, '0');
+    final int width = (t.lonMax - t.lonMin);
+    final int height = (t.lonMax - t.lonMin);
+
+    filename = filename.replaceAll('{latMin}', _fmtCoord(t.latMin));
+    filename = filename.replaceAll('{lonMin}', _fmtCoord(t.lonMin));
+    filename = filename.replaceAll('{latMax}', _fmtCoord(t.latMax));
+    filename = filename.replaceAll('{lonMax}', _fmtCoord(t.lonMax));
+    filename = filename.replaceAll('{resampleFactor}', "$resampleFactor");
+    filename = filename.replaceAll('{latAbs}', "$latPrefix$latAbs");
+    filename = filename.replaceAll('{lonAbs}', "$lonPrefix$lonAbs");
+    filename = filename.replaceAll('{width}', "$width");
+    filename = filename.replaceAll('{height}', "$height");
+
+    return filename;
   }
 
-  static _LonBand _lonBandFor(double lon) {
-    if (lon < -90) return _LonBand.w180_90;
-    if (lon < 0) return _LonBand.w90_0;
-    if (lon < 90) return _LonBand.e0_90;
-    return _LonBand.e90_180;
-  }
-
-  static _SourceTileDef _sourceTileForBands(_LatBand latBand, _LonBand lonBand) {
-    switch (latBand) {
-      case _LatBand.n50_90:
-        return switch (lonBand) {
-          _LonBand.w180_90 => _SourceTileDef.a10g,
-          _LonBand.w90_0 => _SourceTileDef.b10g,
-          _LonBand.e0_90 => _SourceTileDef.c10g,
-          _LonBand.e90_180 => _SourceTileDef.d10g,
-        };
-      case _LatBand.n0_50:
-        return switch (lonBand) {
-          _LonBand.w180_90 => _SourceTileDef.e10g,
-          _LonBand.w90_0 => _SourceTileDef.f10g,
-          _LonBand.e0_90 => _SourceTileDef.g10g,
-          _LonBand.e90_180 => _SourceTileDef.h10g,
-        };
-      case _LatBand.s50_0:
-        return switch (lonBand) {
-          _LonBand.w180_90 => _SourceTileDef.i10g,
-          _LonBand.w90_0 => _SourceTileDef.j10g,
-          _LonBand.e0_90 => _SourceTileDef.k10g,
-          _LonBand.e90_180 => _SourceTileDef.l10g,
-        };
-      case _LatBand.s90_50:
-        return switch (lonBand) {
-          _LonBand.w180_90 => _SourceTileDef.m10g,
-          _LonBand.w90_0 => _SourceTileDef.n10g,
-          _LonBand.e0_90 => _SourceTileDef.o10g,
-          _LonBand.e90_180 => _SourceTileDef.p10g,
-        };
-    }
-  }
-
-  static String _outputFilename(_OutTile t, {required int resampleFactor}) {
-    final latMin = _fmtCoord(t.latMin);
-    final lonMin = _fmtCoord(t.lonMin);
-    final latMax = _fmtCoord(t.latMax);
-    final lonMax = _fmtCoord(t.lonMax);
-    return 'tile_${latMin}_${lonMin}_${latMax}_${lonMax}_r$resampleFactor.dem';
-  }
-
-  static String _fmtCoord(double v) {
+  static String _fmtCoord(int v) {
     // fixed decimals to keep deterministic filenames.
     // also avoid "+" in filenames.
-    final s = v.toStringAsFixed(1);
+    final s = v.toStringAsFixed(0);
     return s.replaceAll('+', '');
   }
-}
-
-enum _LatBand { n50_90, n0_50, s50_0, s90_50 }
-
-enum _LonBand { w180_90, w90_0, e0_90, e90_180 }
-
-enum _SourceTileDef {
-  a10g(fileName: 'A10G', latMin: 50, latMax: 90, lonMin: -180, lonMax: -90, rows: 4800),
-  b10g(fileName: 'B10G', latMin: 50, latMax: 90, lonMin: -90, lonMax: 0, rows: 4800),
-  c10g(fileName: 'C10G', latMin: 50, latMax: 90, lonMin: 0, lonMax: 90, rows: 4800),
-  d10g(fileName: 'D10G', latMin: 50, latMax: 90, lonMin: 90, lonMax: 180, rows: 4800),
-  e10g(fileName: 'E10G', latMin: 0, latMax: 50, lonMin: -180, lonMax: -90, rows: 6000),
-  f10g(fileName: 'F10G', latMin: 0, latMax: 50, lonMin: -90, lonMax: 0, rows: 6000),
-  g10g(fileName: 'G10G', latMin: 0, latMax: 50, lonMin: 0, lonMax: 90, rows: 6000),
-  h10g(fileName: 'H10G', latMin: 0, latMax: 50, lonMin: 90, lonMax: 180, rows: 6000),
-  i10g(fileName: 'I10G', latMin: -50, latMax: 0, lonMin: -180, lonMax: -90, rows: 6000),
-  j10g(fileName: 'J10G', latMin: -50, latMax: 0, lonMin: -90, lonMax: 0, rows: 6000),
-  k10g(fileName: 'K10G', latMin: -50, latMax: 0, lonMin: 0, lonMax: 90, rows: 6000),
-  l10g(fileName: 'L10G', latMin: -50, latMax: 0, lonMin: 90, lonMax: 180, rows: 6000),
-  m10g(fileName: 'M10G', latMin: -90, latMax: -50, lonMin: -180, lonMax: -90, rows: 4800),
-  n10g(fileName: 'N10G', latMin: -90, latMax: -50, lonMin: -90, lonMax: 0, rows: 4800),
-  o10g(fileName: 'O10G', latMin: -90, latMax: -50, lonMin: 0, lonMax: 90, rows: 4800),
-  p10g(fileName: 'P10G', latMin: -90, latMax: -50, lonMin: 90, lonMax: 180, rows: 4800);
-
-  final String fileName;
-  final double latMin;
-  final double latMax;
-  final double lonMin;
-  final double lonMax;
-  final int rows;
-
-  const _SourceTileDef({required this.fileName, required this.latMin, required this.latMax, required this.lonMin, required this.lonMax, required this.rows});
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 class _SourceTileHandle {
-  final _SourceTileDef def;
+  final NoaaFileDefinition def;
   final RandomAccessFile raf;
 
   _SourceTileHandle(this.def, this.raf);
@@ -376,14 +316,14 @@ class _SourceTileHandle {
 //////////////////////////////////////////////////////////////////////////////
 
 class _SourceTileCache {
-  final _log = Logger('_SourceTileCache');
+  static final _log = Logger('_SourceTileCache');
   final Directory inputDir;
 
-  final Map<_SourceTileDef, _SourceTileHandle> _open = {};
+  final Map<NoaaFileDefinition, _SourceTileHandle> _open = {};
 
   _SourceTileCache({required this.inputDir});
 
-  Future<_SourceTileHandle> open(_SourceTileDef def) async {
+  Future<_SourceTileHandle> open(NoaaFileDefinition def) async {
     final existing = _open[def];
     if (existing != null) return existing;
 
@@ -426,8 +366,8 @@ class _SourceTileCache {
 //////////////////////////////////////////////////////////////////////////////
 
 class _LonSegment {
-  final double lonMin;
-  final double lonMax;
+  final int lonMin;
+  final int lonMax;
   final int cols;
 
   _LonSegment({required this.lonMin, required this.lonMax, required this.cols});
@@ -436,10 +376,10 @@ class _LonSegment {
 //////////////////////////////////////////////////////////////////////////////
 
 class _OutTile {
-  final double latMin;
-  final double latMax;
-  final double lonMin;
-  final double lonMax;
+  final int latMin;
+  final int latMax;
+  final int lonMin;
+  final int lonMax;
 
   final int rows;
   final int cols;

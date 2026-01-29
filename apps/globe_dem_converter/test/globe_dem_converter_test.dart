@@ -4,7 +4,7 @@ import 'package:globe_dem_converter/src/globe_converter.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('convert a small extent from C10G into 0.5x0.5 degree tiles', () async {
+  test('convert a small extent from C10G into 1x1 degree tiles', () async {
     final inputDir = Directory('test');
     expect(inputDir.existsSync(), isTrue);
 
@@ -23,14 +23,14 @@ void main() {
 
     // C10G bounds: lat 50..90, lon 0..90.
     // Choose an extent fully inside.
-    const startLat = 60.0;
-    const endLat = 61.0;
-    const startLon = 10.0;
-    const endLon = 11.0;
+    const startLat = 60;
+    const endLat = 61;
+    const startLon = 10;
+    const endLon = 11;
 
     // 0.5 degrees corresponds to 60 samples at 1/120°.
-    const tileWidthDeg = 0.5;
-    const tileHeightDeg = 0.5;
+    const tileWidthDeg = 1;
+    const tileHeightDeg = 1;
 
     await converter.convert(
       inputDir: inputDir,
@@ -43,6 +43,7 @@ void main() {
       endLon: endLon,
       resampleFactor: 1,
       dryRun: false,
+      fileformat: '{latAbs}{lonAbs}.dem',
     );
 
     final outFiles = outDir.listSync().whereType<File>().where((f) => f.path.toLowerCase().endsWith('.dem')).toList();
@@ -73,13 +74,13 @@ void main() {
 
     final converter = GlobeDemConverter();
 
-    const startLat = 60.0;
-    const endLat = 61.0;
-    const startLon = 10.0;
-    const endLon = 11.0;
+    const startLat = 60;
+    const endLat = 61;
+    const startLon = 10;
+    const endLon = 11;
 
-    const tileWidthDeg = 0.5;
-    const tileHeightDeg = 0.5;
+    const tileWidthDeg = 1;
+    const tileHeightDeg = 1;
 
     await converter.convert(
       inputDir: inputDir,
@@ -92,6 +93,7 @@ void main() {
       endLon: endLon,
       resampleFactor: 2,
       dryRun: false,
+      fileformat: '{latAbs}{lonAbs}_r{resampleFactor}.dem',
     );
 
     final outFiles = outDir.listSync().whereType<File>().where((f) => f.path.toLowerCase().endsWith('_r2.dem')).toList();

@@ -10,7 +10,7 @@ import 'package:xml/xml_events.dart';
 import 'osm_data.dart';
 
 class OsmReader implements IPbfReader {
-  final _log = Logger('OsmReader');
+  static final _log = Logger('OsmReader');
 
   final Map<int, OsmNode> _nodes = {};
   final Map<int, OsmWay> _ways = {};

@@ -11,7 +11,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 /// determined by a maximum allowed deviation in pixels, which is converted to a
 /// geographical distance based on the current zoom level and latitude.
 class WaySimplifyFilter {
-  final _log = Logger('WaySimplifyFilter');
+  static final _log = Logger('WaySimplifyFilter');
 
   final DouglasPeuckerLatLong dpl = DouglasPeuckerLatLong();
 

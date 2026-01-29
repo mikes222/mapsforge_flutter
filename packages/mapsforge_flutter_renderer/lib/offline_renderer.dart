@@ -15,6 +15,9 @@ library;
 
 export 'src/datastore_renderer.dart';
 export 'src/dummy_renderer.dart';
+export 'src/hgt/hgt_provider.dart';
+export 'src/hgt/hgt_renderer.dart';
+export 'src/hgt/noaa_file_provider.dart';
 export 'src/job/job_request.dart';
 export 'src/job/job_result.dart';
 export 'src/memory_datastore.dart';

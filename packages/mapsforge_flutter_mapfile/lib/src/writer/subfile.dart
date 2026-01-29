@@ -26,7 +26,7 @@ typedef ProcessFunc = Future<void> Function(Tile tile);
 /// This involves collecting all POIs and ways for a given zoom level range,
 /// processing them into tiles, and writing the tile index and tile data.
 class Subfile {
-  final _log = Logger('Subfile');
+  static final _log = Logger('Subfile');
 
   /// Base zoom level of the sub-file, which equals to one block.
   final int baseZoomLevel;

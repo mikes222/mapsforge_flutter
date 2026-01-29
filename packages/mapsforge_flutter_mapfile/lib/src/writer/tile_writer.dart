@@ -118,7 +118,7 @@ class _TileConstructorRequest {
 /// tile, cropping way geometries to the tile boundaries, and serializing the
 /// final data into the binary tile format.
 class TileWriter implements ITileWriter {
-  final _log = Logger('TileWriter');
+  static final _log = Logger('TileWriter');
 
   /// depending on the thickest line we draw we have to extend the margin so that
   /// a surrounding area is not visible in the tile.

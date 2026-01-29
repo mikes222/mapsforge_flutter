@@ -4,7 +4,7 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class RenderthemeFilter {
-  final _log = Logger('RenderthemeFilter');
+  static final _log = Logger('RenderthemeFilter');
 
   RenderthemeFilter();
 

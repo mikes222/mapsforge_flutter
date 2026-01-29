@@ -18,7 +18,7 @@ import '../filter/way_repair.dart';
 /// [PbfAnalyzerConverter] you can control the behavior of the conversion from
 /// OSM data to PointOfInterest and Way objects.
 class PbfAnalyzer {
-  final _log = Logger('PbfAnalyzer');
+  static final _log = Logger('PbfAnalyzer');
 
   final HashMap<int, int> _positions = HashMap();
 
