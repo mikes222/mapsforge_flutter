@@ -13,7 +13,7 @@ class NoaaFileProvider implements IHgtFileProvider {
   NoaaFileProvider({required this.directoryPath}) : assert(!directoryPath.endsWith("/"));
 
   @override
-  Future<HgtFile?> getForLatLon(double latitude, double longitude) async {
+  HgtFile getForLatLon(double latitude, double longitude) {
     final NoaaFileDefinition noaaFileDefinition = NoaaFileDefinition.sourceTileFor(latitude, longitude);
 
     final cached = _cache[noaaFileDefinition.fileName];
@@ -23,7 +23,7 @@ class NoaaFileProvider implements IHgtFileProvider {
 
     final file = File('$directoryPath${Platform.pathSeparator}${noaaFileDefinition.fileName}');
 
-    final hgt = await HgtFile.readFromFile(
+    final hgt = HgtFile.readFromFile(
       file,
       baseLat: noaaFileDefinition.latMin.round(),
       baseLon: noaaFileDefinition.lonMin.round(),

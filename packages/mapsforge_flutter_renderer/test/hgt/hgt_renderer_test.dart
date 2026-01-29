@@ -7,6 +7,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
+import 'package:mapsforge_flutter_renderer/src/hgt/tile_color_grey_renderer.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,7 @@ void main() {
     MapsforgeSettingsMgr().tileSize = 16;
 
     final renderer = HgtRenderer(
-      mode: HgtRenderMode.elevation,
+      tileColorRenderer: TileColorGreyRenderer(),
       hgtFileProvider: HgtFileProvider(directoryPath: tmp.path),
     );
     addTearDown(renderer.dispose);

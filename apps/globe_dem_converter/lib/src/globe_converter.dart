@@ -11,7 +11,7 @@ class GlobeDemConverter {
   GlobeDemConverter();
 
   // original files have 120 elevation information per degree lat/lon
-  static const int dimensionPerDegree = 120;
+  static const int columnsPerDegree = 120;
   static const double _cellSizeDeg = 1.0 / 120.0;
   static const int _colsPerSourceTile = 10800;
   static const int _noDataValue = -500;
@@ -115,8 +115,8 @@ class GlobeDemConverter {
           final source = NoaaFileDefinition.sourceTileForBands(latBand, lonBand);
           final sourceTile = await sourceCache.open(source);
 
-          final rowInSource = ((source.latMax - latCenter) * dimensionPerDegree).floor();
-          final colStartInSource = ((seg.lonMin - source.lonMin) * dimensionPerDegree).floor();
+          final rowInSource = ((source.latMax - latCenter) * columnsPerDegree).floor();
+          final colStartInSource = ((seg.lonMin - source.lonMin) * columnsPerDegree).floor();
           final colsToRead = seg.cols;
 
           final offsetBytes = (rowInSource * _colsPerSourceTile + colStartInSource) * 2;
@@ -154,11 +154,11 @@ class GlobeDemConverter {
         final sourceTile = await sourceCache.open(source);
 
         // Start row in source (top of output pixel block)
-        final rowStartInSource = ((source.latMax - latTop) * dimensionPerDegree).round();
+        final rowStartInSource = ((source.latMax - latTop) * columnsPerDegree).round();
 
         // For this segment, we need seg.cols output columns. Each output column covers resampleFactor source columns.
         final srcColsToRead = seg.cols * resampleFactor;
-        final colStartInSource = ((seg.lonMin - source.lonMin) * dimensionPerDegree).round();
+        final colStartInSource = ((seg.lonMin - source.lonMin) * columnsPerDegree).round();
 
         // Read resampleFactor rows into memory for this segment.
         final srcRowBytes = Uint8List(srcColsToRead * 2);

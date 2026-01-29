@@ -40,6 +40,9 @@ class Tile {
   /// The (cached) center of this tile in pixels
   Mappoint? _center;
 
+  /// The (cached) right lower point of this tile in pixels
+  Mappoint? _rightLower;
+
   /// The (cached) boundary of this tile in pixels
   MapRectangle? _mapBoundary;
 
@@ -303,6 +306,12 @@ class Tile {
     double tileSize = MapsforgeSettingsMgr().tileSize;
     _center = Mappoint((tileX * tileSize + tileSize / 2).toDouble(), (tileY * tileSize + tileSize / 2).toDouble());
     return _center!;
+  }
+
+  Mappoint getRightLower() {
+    if (_rightLower != null) return _rightLower!;
+    _rightLower = Mappoint(((tileX + 1) * MapsforgeSettingsMgr().tileSize) - 1, ((tileY + 1) * MapsforgeSettingsMgr().tileSize) - 1);
+    return _rightLower!;
   }
 
   MapRectangle getMapBoundary() {
