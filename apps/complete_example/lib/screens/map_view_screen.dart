@@ -15,6 +15,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile.dart';
 import 'package:mapsforge_flutter_renderer/cache.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/online_renderer.dart';
 import 'package:mapsforge_flutter_renderer/shape_painter.dart';
 import 'package:mapsforge_flutter_renderer/ui.dart';
@@ -113,9 +114,9 @@ class _MapViewScreenState extends State<MapViewScreen> {
             // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop, rotation and scaling. You can plugin your own set of handlers.
             GenericGestureDetector(mapModel: mapModel),
             // Shows tiles according to the current position
-            TileView(mapModel: mapModel),
+            ...mapModel.renderers.map((renderer) => TileView(mapModel: mapModel, renderer: renderer)),
             // Shows labels (and rotate them) according to the current position (if the renderer supports it)
-            if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
+            ...mapModel.labelRenderers.map((renderer) => LabelView(mapModel: mapModel, renderer: renderer)),
             //SingleMarkerOverlay(mapModel: mapModel, marker: marker),
             MarkerDatastoreOverlay(mapModel: mapModel, datastore: markerDatastore, zoomlevelRange: const ZoomlevelRange.standard()),
             MarkerDatastoreOverlay(mapModel: mapModel, datastore: debugDatastore, zoomlevelRange: const ZoomlevelRange.standard()),
@@ -176,6 +177,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     SymbolCacheMgr().addLoader("file:ele_res/", ImageFileLoader(pathPrefix: "${directory.path}/sicilia_oam/"));
 
     Renderer renderer;
+    Renderer? renderer2;
     if (widget.configuration.rendererType.isOffline) {
       /// Read the map from the assets folder. Since monaco is small, we can keep it in memory
       datastore = await IsolateMapfile.createFromFile(filename: widget.downloadPath!.replaceAll(".zip", ".map"));
@@ -185,7 +187,13 @@ class _MapViewScreenState extends State<MapViewScreen> {
       _rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer = DatastoreRenderer(datastore!, _rendertheme!, useIsolateReader: !StorageMgr().isEnabled());
+      renderer2 = DatastoreRenderer(datastore!, _rendertheme!, useIsolateReader: !StorageMgr().isEnabled());
+      //renderer = HgtRenderer(hgtFileProvider: HgtFileProvider(directoryPath: (await getTemporaryDirectory()).path));
+      final hgtProvider = NoaaFileProvider(directoryPath: (await getTemporaryDirectory()).path);
+      renderer = HgtRenderer(
+        //tileColorRenderer: HgtTileHillshadingRenderer(hgtFileProvider: hgtProvider),
+        hgtFileProvider: hgtProvider,
+      );
       //renderer = DummyRenderer(delayMilliseconds: 500);
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
@@ -197,6 +205,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     // Now instantiate our mapModel with the desired parameters. Our map does not support zoomlevel beyond 21 so restrict the zoomlevel range.
     // MapModel must be disposed after use.
     _mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
+    if (renderer2 != null) _mapModel!.addRenderer(renderer2);
 
     // For demo purposes we set a position and zoomlevel here. Note that this information would come from e.g. a gps provider in the real world.
     // Note that the map is unable to show something unless there is a position set. Consider using the default position of the mapFile.

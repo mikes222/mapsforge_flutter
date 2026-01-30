@@ -36,9 +36,9 @@ class MapsforgeView extends StatelessWidget {
         // recognizes single-tap, double-tap and long-taps, moves the map, handles drag'n'drop, rotation and scaling. You can plugin your own set of handlers.
         GenericGestureDetector(mapModel: mapModel),
         // Shows tiles according to the current position
-        TileView(mapModel: mapModel),
+        ...mapModel.renderers.map((renderer) => TileView(mapModel: mapModel, renderer: renderer)),
         // Shows labels (and rotate them) according to the current position (if the renderer supports it)
-        if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
+        ...mapModel.labelRenderers.map((renderer) => LabelView(mapModel: mapModel, renderer: renderer)),
         // listens to double-click events (configurable) and zooms in
         ZoomInOverlay(mapModel: mapModel),
         // shows additional overlays or custom overlays

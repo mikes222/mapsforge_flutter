@@ -16,10 +16,10 @@ class HgtRenderer extends Renderer {
 
   final IHgtFileProvider hgtFileProvider;
 
-  late final TileColorRenderer _tileColorRenderer;
+  late final HgtTileRenderer _tileColorRenderer;
 
-  HgtRenderer({TileColorRenderer? tileColorRenderer, int maxCachedFiles = 8, required this.hgtFileProvider})
-    : _tileColorRenderer = tileColorRenderer ?? TileColorColorRenderer();
+  HgtRenderer({HgtTileRenderer? tileColorRenderer, int maxCachedFiles = 8, required this.hgtFileProvider})
+    : _tileColorRenderer = tileColorRenderer ?? HgtTileColorRenderer();
 
   @override
   Future<JobResult> executeJob(JobRequest jobRequest) async {
@@ -43,6 +43,13 @@ class HgtRenderer extends Renderer {
         if (result == null) {
           _setPixel(pixels, tileSize, px, py, 50, 0, 0, 10);
           ++px;
+          continue;
+        }
+        if (result.isOcean) {
+          _setPixel(pixels, tileSize, px, py, 50, 0, 0, 10);
+          int nextPxCandidate = result.maxTileX + 1;
+          if (nextPxCandidate <= px) nextPxCandidate = px + 1;
+          px = nextPxCandidate;
           continue;
         }
         // result gives us 4 locations of the tile with 4 elevations at each corner. Interpolate the elevations for this rectangle.

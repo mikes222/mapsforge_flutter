@@ -4,12 +4,15 @@ import 'package:mapsforge_flutter/src/tile/tile_job_queue.dart';
 import 'package:mapsforge_flutter/src/tile/tile_painter.dart';
 import 'package:mapsforge_flutter/src/transform_widget.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 
 /// A view to display the tiles. The view updates itself whenever the [MapPosition] changes and new tiles are available.
 class TileView extends StatefulWidget {
   final MapModel mapModel;
 
-  const TileView({super.key, required this.mapModel});
+  final Renderer renderer;
+
+  const TileView({super.key, required this.mapModel, required this.renderer});
 
   @override
   State<TileView> createState() => _TileViewState();
@@ -23,7 +26,7 @@ class _TileViewState extends State<TileView> {
   @override
   void initState() {
     super.initState();
-    jobQueue = TileJobQueue(mapModel: widget.mapModel);
+    jobQueue = TileJobQueue(mapModel: widget.mapModel, renderer: widget.renderer);
   }
 
   @override
@@ -54,6 +57,7 @@ class _TileViewState extends State<TileView> {
           listenable: widget.mapModel,
           builder: (BuildContext context, Widget? child) {
             MapPosition? position = widget.mapModel.lastPosition;
+            //print("Position change $position for renderer ${widget.renderer.getRenderKey()}");
             if (position == null) {
               return const SizedBox();
             }

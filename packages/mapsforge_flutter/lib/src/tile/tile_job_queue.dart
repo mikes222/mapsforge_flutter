@@ -20,6 +20,8 @@ class TileJobQueue extends ChangeNotifier {
 
   MapSize? _size;
 
+  final Renderer renderer;
+
   final _cache = LruCache<Tile, TilePicture?>(
     onEvict: (tile, picture) {
       picture?.dispose();
@@ -28,7 +30,7 @@ class TileJobQueue extends ChangeNotifier {
     name: "TileJobQueue",
   );
 
-  static _CurrentJob? _currentJob;
+  _CurrentJob? _currentJob;
 
   /// subscribe to renderChanged events which are triggered when the underlying renderdata has
   /// been changed, e.g. if a map has been added to a multimap. This should force a revalidation of the cache and
@@ -41,7 +43,7 @@ class TileJobQueue extends ChangeNotifier {
   /// Maximum number of concurrent tile loading operations
   static const int _maxConcurrentTiles = 4;
 
-  TileJobQueue({required this.mapModel}) {
+  TileJobQueue({required this.mapModel, required this.renderer}) {
     _taskQueue = ParallelTaskQueue(_maxConcurrentTiles);
 
     _renderChangedSubscription = mapModel.renderChangedStream.listen((RenderChangedEvent event) {
@@ -60,6 +62,7 @@ class TileJobQueue extends ChangeNotifier {
   }
 
   void setPosition(MapPosition position) {
+    //print("Position change $position for renderer ${renderer.getRenderKey()} ${_currentJob?.tileSet.mapPosition == position}");
     if (_currentJob?.tileSet.mapPosition == position) {
       return;
     }
@@ -168,7 +171,7 @@ class TileJobQueue extends ChangeNotifier {
     if (myJob._abort) return;
     TilePicture? picture = await _cache.getOrProduce(tile, (Tile tile) async {
       try {
-        JobResult result = await mapModel.renderer.executeJob(JobRequest(tile));
+        JobResult result = await renderer.executeJob(JobRequest(tile));
         if (result.picture == null) {
           return null;
           // print("No picture for tile $tile");
@@ -187,6 +190,7 @@ class TileJobQueue extends ChangeNotifier {
     if (myJob._abort) return;
     if (picture != null) {
       tileSet.images[tile] = picture;
+      //print("Added picture for tile $tile for renderer ${renderer.getRenderKey()}");
     } else {
       tileSet.images[tile] = await ImageHelper().createNoDataBitmap();
     }

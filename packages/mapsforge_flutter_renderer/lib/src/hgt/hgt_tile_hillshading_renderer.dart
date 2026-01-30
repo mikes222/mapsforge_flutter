@@ -4,9 +4,8 @@ import 'dart:typed_data';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/tile_color_renderer.dart';
 
-class TileColorHillshadingRenderer implements TileColorRenderer {
+class HgtTileHillshadingRenderer implements HgtTileRenderer {
   /// Azimuth in degrees used for hillshade.
   final double hillshadeAzimuthDeg;
 
@@ -15,7 +14,7 @@ class TileColorHillshadingRenderer implements TileColorRenderer {
 
   final IHgtFileProvider hgtFileProvider;
 
-  TileColorHillshadingRenderer({this.hillshadeAzimuthDeg = 315, this.hillshadeAltitudeDeg = 45, required this.hgtFileProvider});
+  HgtTileHillshadingRenderer({this.hillshadeAzimuthDeg = 315, this.hillshadeAltitudeDeg = 45, required this.hgtFileProvider});
 
   @override
   void render(Uint8List pixels, int tileSize, int px, int py, PixelProjection projection, double latitude, double longitude, int centerElev) {
@@ -78,5 +77,10 @@ class TileColorHillshadingRenderer implements TileColorRenderer {
   int? _elevationAt(double latitude, double longitude) {
     final file = hgtFileProvider.getForLatLon(latitude, longitude);
     return file.elevationAt(latitude, longitude);
+  }
+
+  @override
+  String getRenderKey() {
+    return 'hillshade';
   }
 }

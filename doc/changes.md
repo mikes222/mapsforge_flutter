@@ -2,6 +2,30 @@
 
 - Rotation works now with 3 fingers (configurable) to distinguish from zooming which works with 2 fingers
 - Support for dy parameter in renderthemes
+- Hillshading
+
+## Support for multiple renderers
+
+When using MapsforgeView nothing needs to be done. However if you have your own view the following changes are required:
+
+Instead of
+
+```dart
+            // Shows tiles according to the current position
+TileView(mapModel: mapModel),
+// Shows labels (and rotate them) according to the current position (if the renderer supports it)
+if (mapModel.renderer.supportLabels()) LabelView(mapModel: mapModel),
+```
+
+use now
+
+```dart
+        // Shows tiles according to the current position
+...mapModel.renderers.map((renderer) => TileView(mapModel: mapModel, renderer: renderer)),
+// Shows labels (and rotate them) according to the current position (if the renderer supports it)
+...mapModel.labelRenderers.map((renderer) => LabelView(mapModel: mapModel, renderer: renderer)),
+```
+
 
 # To Version 4.0.0
 

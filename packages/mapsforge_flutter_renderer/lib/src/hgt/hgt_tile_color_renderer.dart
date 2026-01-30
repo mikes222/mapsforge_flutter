@@ -3,15 +3,15 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/tile_color_renderer.dart';
+import 'package:mapsforge_flutter_renderer/src/hgt/hgt_tile_renderer.dart';
 
-class TileColorColorRenderer implements TileColorRenderer {
+class HgtTileColorRenderer implements HgtTileRenderer {
   final double maxElevation;
 
   final List<Color> colors;
 
   /// Taken from http://soliton.vm.bytemark.co.uk/pub/cpt-city/grass/tn/elevation.png.index.html
-  TileColorColorRenderer({
+  HgtTileColorRenderer({
     this.maxElevation = 2000,
     this.colors = const [
       Color.fromRGBO(0, 191, 191, 1),
@@ -40,9 +40,9 @@ class TileColorColorRenderer implements TileColorRenderer {
   }
 
   ui.Color chooseColor(double terrainAltitude, double referenceAltitude) {
-    if (referenceAltitude == 0) return Colors.transparent;
-    final normalized = terrainAltitude / referenceAltitude;
-    if (normalized < 0) return Colors.transparent;
+    // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
+    if (referenceAltitude == -500) return Colors.transparent;
+    final normalized = (terrainAltitude + 500) / referenceAltitude;
 
     final scaled = normalized * (colors.length - 1);
     final lower = scaled.floor().clamp(0, colors.length - 1);
@@ -51,5 +51,10 @@ class TileColorColorRenderer implements TileColorRenderer {
 
     if (lower == upper) return colors[lower];
     return Color.lerp(colors[lower], colors[upper], t) ?? colors[lower];
+  }
+
+  @override
+  String getRenderKey() {
+    return 'color_${colors.hashCode}_$maxElevation';
   }
 }

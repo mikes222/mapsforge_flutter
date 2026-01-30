@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/tile_color_renderer.dart';
+import 'package:mapsforge_flutter_renderer/src/hgt/hgt_tile_renderer.dart';
 
-class TileColorGreyRenderer implements TileColorRenderer {
-  TileColorGreyRenderer();
+class HgtTileGreyRenderer implements HgtTileRenderer {
+  HgtTileGreyRenderer();
 
   @override
   void render(Uint8List pixels, int tileSize, int px, int py, PixelProjection projection, double latitude, double longitude, int elev) {
@@ -25,5 +25,10 @@ class TileColorGreyRenderer implements TileColorRenderer {
     rgba[i + 1] = g;
     rgba[i + 2] = b;
     rgba[i + 3] = a;
+  }
+
+  @override
+  String getRenderKey() {
+    return 'grey';
   }
 }

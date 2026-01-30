@@ -245,7 +245,20 @@ class ElevationArea {
 
   final int maxTileY;
 
+  late bool isOcean;
+
+  late bool hasOcean;
+
   ElevationArea(this.leftTop, this.rightTop, this.leftBottom, this.rightBottom, this.minTileX, this.maxTileX, this.minTileY, this.maxTileY)
     : assert(minTileX <= maxTileX),
-      assert(minTileY <= maxTileY);
+      assert(minTileY <= maxTileY) {
+    int count = 0;
+    // -500 represents ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
+    if (leftTop == -500) ++count;
+    if (rightTop == -500) ++count;
+    if (leftBottom == -500) ++count;
+    if (rightBottom == -500) ++count;
+    isOcean = count >= 2;
+    hasOcean = count == 1;
+  }
 }

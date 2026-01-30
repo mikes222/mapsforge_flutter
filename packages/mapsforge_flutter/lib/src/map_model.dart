@@ -10,7 +10,7 @@ import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:rxdart/rxdart.dart';
 
 class MapModel extends ChangeNotifier {
-  final Renderer renderer;
+  final List<Renderer> _renderers = [];
 
   MapPosition? _lastPosition;
 
@@ -39,7 +39,9 @@ class MapModel extends ChangeNotifier {
 
   double get rotationDeg => _lastPosition?.rotation ?? 0.0;
 
-  MapModel({required this.renderer, this.zoomlevelRange = const ZoomlevelRange.standard()});
+  MapModel({required Renderer renderer, this.zoomlevelRange = const ZoomlevelRange.standard()}) {
+    _renderers.add(renderer);
+  }
 
   @override
   Future<void> dispose() async {
@@ -50,13 +52,24 @@ class MapModel extends ChangeNotifier {
     await _longTapSubject.close();
     await _doubleTapSubject.close();
     await _dragNdropSubject.close();
-    renderer.dispose();
+    for (var renderer in _renderers) {
+      renderer.dispose();
+    }
+    _renderers.clear();
     rotationNotifier.dispose();
     for (var datastore in List.of(_markerDatastores)) {
       datastore.dispose();
     }
     _markerDatastores.clear();
   }
+
+  void addRenderer(Renderer renderer) {
+    _renderers.add(renderer);
+  }
+
+  List<Renderer> get renderers => _renderers;
+
+  Iterable<Renderer> get labelRenderers => _renderers.where((test) => test.supportLabels());
 
   List<Marker> getTappedMarkers(TapEvent event) {
     List<Marker> tappedMarkers = [];

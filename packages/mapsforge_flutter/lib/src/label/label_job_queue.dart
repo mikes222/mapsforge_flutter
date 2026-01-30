@@ -33,7 +33,9 @@ class LabelJobQueue extends ChangeNotifier {
   /// Maximum number of concurrent tile loading operations
   static const int _maxConcurrentTiles = 4;
 
-  LabelJobQueue({required this.mapModel}) {
+  final Renderer renderer;
+
+  LabelJobQueue({required this.mapModel, required this.renderer}) {
     _taskQueue = ParallelTaskQueue(_maxConcurrentTiles);
 
     _renderChangedSubscription = mapModel.renderChangedStream.listen((RenderChangedEvent event) {
@@ -148,8 +150,8 @@ class LabelJobQueue extends ChangeNotifier {
     Tile leftUpper = Tile(left, top, position.zoomlevel, position.indoorLevel);
     Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomlevel, position.indoorLevel);
     RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
-      JobResult result = await mapModel.renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
-      if (result.renderInfo == null) throw Exception("No renderInfo for $tile");
+      JobResult result = await renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
+      if (result.renderInfo == null) throw Exception("No renderInfo for $tile from renderer ${renderer.getRenderKey()}");
       return result.renderInfo!;
     });
     if (myJob._abort) return;
