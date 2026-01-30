@@ -12,12 +12,16 @@ import 'package:mapsforge_flutter_core/utils.dart';
 class TilePicture {
   final ui.Picture? _picture;
 
-  final ui.Image? _image;
+  late final bool _pictureCloned;
 
-  TilePicture._(this._picture, this._image);
+  ui.Image? _image;
+
+  TilePicture._(this._picture, this._image) {
+    _pictureCloned = _picture != null;
+  }
 
   /// Creates a [TilePicture] from a `ui.Picture`.
-  TilePicture.fromPicture(this._picture) : _image = null;
+  TilePicture.fromPicture(this._picture) : _image = null, _pictureCloned = false;
 
   /// Creates a [TilePicture] from a `ui.Image`.
   ///
@@ -25,7 +29,8 @@ class TilePicture {
   TilePicture.fromBitmap(this._image)
     : assert(_image != null, "Image must not be null"),
       assert(!_image!.debugDisposed, "Image is already disposed"),
-      _picture = null;
+      _picture = null,
+      _pictureCloned = false;
 
   /// Creates a clone of this [TilePicture].
   ///
@@ -41,21 +46,22 @@ class TilePicture {
 
   /// Returns the underlying `ui.Image`, if it exists.
   ui.Image? getImage() {
-    if (_image != null) assert(!_image.debugDisposed, "Image is already disposed");
-    return _image;
+    if (_image != null) assert(!_image!.debugDisposed, "Image is already disposed");
+    return _image?.clone();
   }
 
   /// Converts the underlying `ui.Picture` to a `ui.Image`.
   ///
   /// If this [TilePicture] already contains an image, that image is returned directly.
-  Future<ui.Image> convertPictureToImage() async {
-    if (_image != null) return _image;
-    return await _picture!.toImage(MapsforgeSettingsMgr().tileSize.round(), MapsforgeSettingsMgr().tileSize.round());
+  ui.Image convertPictureToImage() {
+    if (_image != null) return _image!;
+    _image = _picture!.toImageSync(MapsforgeSettingsMgr().tileSize.round(), MapsforgeSettingsMgr().tileSize.round());
+    return _image!.clone();
   }
 
   /// Disposes the underlying `ui.Picture` and/or `ui.Image` to release their resources.
   void dispose() {
-    _picture?.dispose();
+    if (!_pictureCloned) _picture?.dispose();
     _image?.dispose();
   }
 }

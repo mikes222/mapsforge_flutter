@@ -1,15 +1,33 @@
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/src/hgt/hgt_tile_renderer.dart';
 
 class HgtTileGreyRenderer implements HgtTileRenderer {
-  HgtTileGreyRenderer();
+  final Color oceanColor;
+
+  HgtTileGreyRenderer({this.oceanColor = Colors.transparent});
 
   @override
   void render(Uint8List pixels, int tileSize, int px, int py, PixelProjection projection, double latitude, double longitude, int elev) {
+    // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
+    if (elev == -500) {
+      _setPixel(
+        pixels,
+        tileSize,
+        px,
+        py,
+        (oceanColor.r * 255).round(),
+        (oceanColor.g * 255).round(),
+        (oceanColor.b * 255).round(),
+        (oceanColor.a * 255).round(),
+      );
+      return;
+    }
+
     // Clamp to typical SRTM range and map to [0..255].
-    const minM = -500;
+    const minM = 0;
     const maxM = 5000;
     final clamped = elev.clamp(minM, maxM);
     final t = (clamped - minM) / (maxM - minM);

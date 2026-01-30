@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
@@ -46,13 +45,13 @@ void main() {
     final tile = Tile(tileX, tileY, zoom, 0);
 
     final result = (await tester.runAsync<JobResult>(() async {
-      return await renderer.executeJob(JobRequest(tile)).timeout(const Duration(seconds: 5));
+      return renderer.executeJob(JobRequest(tile)).timeout(const Duration(seconds: 5));
     }))!;
     expect(result.result, JOBRESULT.NORMAL);
     expect(result.picture, isNotNull);
 
     final img = (await tester.runAsync(() async {
-      return await result.picture!.convertPictureToImage().timeout(const Duration(seconds: 5));
+      return result.picture!.convertPictureToImage();
     }))!;
     addTearDown(result.picture!.dispose);
 

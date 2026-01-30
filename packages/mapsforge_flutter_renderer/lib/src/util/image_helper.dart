@@ -65,7 +65,7 @@ class ImageHelper {
     var pic = pictureRecorder.endRecording();
     //    ui.Image img = await pic.toImage(tileSize.toInt(), tileSize.toInt());
     _noData = TilePicture.fromPicture(pic);
-    return _noData!;
+    return _noData!.clone();
   }
 
   /// Creates a tile bitmap to display an error message.

@@ -46,10 +46,18 @@ class HgtRenderer extends Renderer {
           continue;
         }
         if (result.isOcean) {
-          _setPixel(pixels, tileSize, px, py, 50, 0, 0, 10);
+          for (int tileX = max(result.minTileX, 0); tileX <= min(result.maxTileX, tileSize - 1); ++tileX) {
+            for (int tileY = max(result.minTileY, 0); tileY <= min(result.maxTileY, tileSize - 1); ++tileY) {
+              _tileColorRenderer.render(pixels, tileSize, tileX, tileY, projection, leftUpperLL.latitude, leftUpperLL.longitude, -500);
+            }
+          }
           int nextPxCandidate = result.maxTileX + 1;
           if (nextPxCandidate <= px) nextPxCandidate = px + 1;
           px = nextPxCandidate;
+
+          int nextPyCandidate = result.maxTileY + 1;
+          if (nextPyCandidate <= py) nextPyCandidate = py + 1;
+          if (nextPy > nextPyCandidate) nextPy = nextPyCandidate;
           continue;
         }
         // result gives us 4 locations of the tile with 4 elevations at each corner. Interpolate the elevations for this rectangle.
@@ -95,11 +103,8 @@ class HgtRenderer extends Renderer {
   void _setPixel(Uint8List rgba, int width, int x, int y, int r, int g, int b, int a) {
     assert(r >= 0 && r <= 255);
     assert(a >= 0 && a <= 255);
-    final i = (y * width + x) * 4;
-    rgba[i + 0] = r;
-    rgba[i + 1] = g;
-    rgba[i + 2] = b;
-    rgba[i + 3] = a;
+    final idx = y * width + x;
+    rgba.buffer.asUint32List()[idx] = (a << 24) | (b << 16) | (g << 8) | r;
   }
 
   Future<ui.Image> _imageFromRgba(Uint8List rgba, int width, int height) {
@@ -117,7 +122,7 @@ class HgtRenderer extends Renderer {
 
   @override
   String getRenderKey() {
-    return 'hgt';
+    return 'hgt_${_tileColorRenderer.getRenderKey()}';
   }
 
   @override
@@ -132,9 +137,90 @@ class HgtRenderer extends Renderer {
     final tx = dx == 0 ? 0.0 : (tileX - area.minTileX) / dx;
     final ty = dy == 0 ? 0.0 : (tileY - area.minTileY) / dy;
 
-    final top = area.leftTop + (area.rightTop - area.leftTop) * tx;
-    final bottom = area.leftBottom + (area.rightBottom - area.leftBottom) * tx;
-    final value = top + (bottom - top) * ty;
+    final nx = tx.clamp(0.0, 1.0);
+    final ny = ty.clamp(0.0, 1.0);
+
+    if (area.hasOcean) {
+      const ocean = -500;
+
+      final oceanLT = area.leftTop == ocean;
+      final oceanRT = area.rightTop == ocean;
+      final oceanLB = area.leftBottom == ocean;
+      final oceanRB = area.rightBottom == ocean;
+
+      if (oceanLT) {
+        if (nx + ny <= 1.0) return ocean;
+        final value = _interpolateTriangle(
+          nx,
+          ny,
+          1.0,
+          0.0,
+          area.rightTop.toDouble(),
+          0.0,
+          1.0,
+          area.leftBottom.toDouble(),
+          1.0,
+          1.0,
+          area.rightBottom.toDouble(),
+        );
+        return value.round();
+      }
+
+      if (oceanRB) {
+        if (nx + ny >= 1.0) return ocean;
+        final value = _interpolateTriangle(nx, ny, 0.0, 0.0, area.leftTop.toDouble(), 1.0, 0.0, area.rightTop.toDouble(), 0.0, 1.0, area.leftBottom.toDouble());
+        return value.round();
+      }
+
+      if (oceanRT) {
+        if (nx >= ny) return ocean;
+        final value = _interpolateTriangle(
+          nx,
+          ny,
+          0.0,
+          0.0,
+          area.leftTop.toDouble(),
+          0.0,
+          1.0,
+          area.leftBottom.toDouble(),
+          1.0,
+          1.0,
+          area.rightBottom.toDouble(),
+        );
+        return value.round();
+      }
+
+      if (oceanLB) {
+        if (nx <= ny) return ocean;
+        final value = _interpolateTriangle(
+          nx,
+          ny,
+          0.0,
+          0.0,
+          area.leftTop.toDouble(),
+          1.0,
+          0.0,
+          area.rightTop.toDouble(),
+          1.0,
+          1.0,
+          area.rightBottom.toDouble(),
+        );
+        return value.round();
+      }
+    }
+
+    final top = area.leftTop + (area.rightTop - area.leftTop) * nx;
+    final bottom = area.leftBottom + (area.rightBottom - area.leftBottom) * nx;
+    final value = top + (bottom - top) * ny;
     return value.round();
+  }
+
+  double _interpolateTriangle(double x, double y, double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3) {
+    final denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+    if (denom == 0) return z1;
+    final w1 = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denom;
+    final w2 = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denom;
+    final w3 = 1.0 - w1 - w2;
+    return z1 * w1 + z2 * w2 + z3 * w3;
   }
 }

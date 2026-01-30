@@ -173,12 +173,12 @@ class TileJobQueue extends ChangeNotifier {
       try {
         JobResult result = await renderer.executeJob(JobRequest(tile));
         if (result.picture == null) {
-          return null;
+          //return null;
           // print("No picture for tile $tile");
-          // return ImageHelper().createNoDataBitmap();
+          return ImageHelper().createNoDataBitmap();
         }
-        // make sure the picture is converted to an image
-        await result.picture!.convertPictureToImage();
+        // make sure the picture is converted to an image because rendering (vector) pictures is usually slower than drawing images
+        result.picture!.convertPictureToImage();
         return result.picture!;
       } catch (error, stacktrace) {
         // error in ecache abort() method. The completer should be checked for isComplete() before injecting an exception
