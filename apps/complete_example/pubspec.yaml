@@ -110,6 +110,7 @@ flutter:
     - assets/render_theme/sicilia_oam.xml
     - assets/render_theme/biker.xml
     - assets/render_theme/Tiramisu.xml
+    - assets/render_theme/hillshading_render.xml
     # Copy all lines with "- packages/mapsforge_flutter_rendertheme..." to your own pubspec.yaml
     - packages/mapsforge_flutter_rendertheme/assets/patterns/dark_farmland.svg
     - packages/mapsforge_flutter_rendertheme/assets/patterns/dark_military.png

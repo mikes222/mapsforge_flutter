@@ -187,14 +187,17 @@ class _MapViewScreenState extends State<MapViewScreen> {
       _rendertheme = RenderThemeBuilder.createFromString(renderthemeString.toString());
 
       // The renderer converts the compressed data from mapfile to images. The rendertheme defines how the data should be rendered (size, colors, etc).
-      renderer2 = DatastoreRenderer(datastore!, _rendertheme!, useIsolateReader: !StorageMgr().isEnabled());
-      //renderer = HgtRenderer(hgtFileProvider: HgtFileProvider(directoryPath: (await getTemporaryDirectory()).path));
-      final hgtProvider = NoaaFileProvider(directoryPath: (await getTemporaryDirectory()).path);
-      renderer = HgtRenderer(
-        //tileColorRenderer: HgtTileHillshadingRenderer(hgtFileProvider: hgtProvider),
-        hgtFileProvider: hgtProvider,
-      );
+      renderer = DatastoreRenderer(datastore!, _rendertheme!, useIsolateReader: !StorageMgr().isEnabled());
       //renderer = DummyRenderer(delayMilliseconds: 500);
+      if (widget.configuration.renderTheme == RenderTheme.hillshadingTheme) {
+        renderer2 = renderer;
+        //renderer = HgtRenderer(hgtFileProvider: HgtFileProvider(directoryPath: (await getTemporaryDirectory()).path));
+        final hgtProvider = NoaaFileProvider(directoryPath: (await getTemporaryDirectory()).path);
+        renderer = HgtRenderer(
+          //tileColorRenderer: HgtTileHillshadingRenderer(hgtFileProvider: hgtProvider),
+          hgtFileProvider: hgtProvider,
+        );
+      }
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
       renderer = OsmOnlineRenderer();
     } else if (widget.configuration.rendererType == RendererType.arcGisMaps) {

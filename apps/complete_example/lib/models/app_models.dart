@@ -20,7 +20,8 @@ enum RenderTheme {
   mapsforgeTheme('Maspforge Default Theme', 'assets/render_theme/mapsforge_default.xml'),
   siziliaTheme('Sicilia Hillshading Theme', 'assets/render_theme/sicilia_oam.xml'),
   bikerTheme('Biker Theme', 'assets/render_theme/biker.xml'),
-  tiramisuTheme('Tiramisu Theme', 'assets/render_theme/Tiramisu.xml');
+  tiramisuTheme('Tiramisu Theme', 'assets/render_theme/Tiramisu.xml'),
+  hillshadingTheme("Hillshading", 'assets/render_theme/hillshading_render.xml');
 
   const RenderTheme(this.displayName, this.fileName);
   final String displayName;

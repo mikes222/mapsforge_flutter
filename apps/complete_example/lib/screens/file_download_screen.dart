@@ -84,6 +84,11 @@ class _FileDownloadScreenState extends State<FileDownloadScreen> {
                   if (percent == 100 && _errorMessage == null) _buildNavigateToMapButton(),
                   // Retry button
                   if (_errorMessage != null) _buildRetryButton(),
+                  if (widget.configuration.renderTheme == RenderTheme.hillshadingTheme)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text("Store the hgt-files into /data/user/0/com.example.complete_example/cache"),
+                    ),
                   // Container(
                   //   width: double.infinity,
                   //   margin: const EdgeInsets.only(top: 16),
