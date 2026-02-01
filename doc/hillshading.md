@@ -114,37 +114,6 @@ Projection info:
 
 Reference: https://www.ngdc.noaa.gov/mgg/topo/report/s11/s11H.html
 
-### Grid math
-
-Key constants:
-
-- `cellSizeDeg = 30" = 30/3600 = 1/120 = 0.008333333333333333°`
-- `samplesPerDegree = 120`
-
-For a tile with geographic extent:
-
-- `latMax` (north edge), `latMin` (south edge)
-- `lonMin` (west edge), `lonMax` (east edge)
-
-Assuming row-major order where **row 0 is the northernmost row** (typical for rasters), mapping would be:
-
-- `lat(row) = latMax - (row + 0.5) * cellSizeDeg`
-- `lon(col) = lonMin + (col + 0.5) * cellSizeDeg`
-
-Random access mapping for a given lat/lon:
-
-- `col = floor((lon - lonMin) * samplesPerDegree)`
-- `row = floor((latMax - lat) * samplesPerDegree)`
-
-Byte offset in a raw tile:
-
-- `offsetBytes = (row * cols + col) * 2`
-
-Notes:
-
-- This assumes cell centers. For cell-boundary interpretation, keep consistent with rendering/hillshading sampling.
-- Longitude wrap handling: input `lon` may be normalized to [-180, 180).
-
 ## Licensing / redistribution notes
 
 Most of the dataset is **not copyright** and unrestricted, except:
@@ -160,95 +129,96 @@ If repackaging/redistributing:
 
 Reference: https://www.ngdc.noaa.gov/mgg/topo/report/s3/s3B.html
 
-## Goal 1: Converter (combine/split into other chunk sizes)
+## Hillshading as a dedicated tile layer (below the normal tile layer)
 
-### Converter responsibilities
+From a UI composition standpoint, hillshading works best as its own tile layer:
 
-- Input:
-  - existing GLOBE tiles `A10G..P10G` (and optionally source/lineage tiles if present)
-  - compressed `.gz` and/or uncompressed raw
-- Output:
-  - a chunked layout optimized for your rendering pipeline
-  - with an index to support fast lookup by lat/lon (or by map tile)
+- **Bottom layer**: hillshading tiles (grayscale shading)
+- **Top layer**: normal vector tile rendering (roads, labels, POIs)
 
-### Suggested chunking strategies
+This is important because hillshading is a full-tile raster effect. If it is painted on top, it will reduce readability of labels and roads.
 
-1) **One chunk per 1°x1°** (recommended)
-   - Contains `120 x 120` samples
-   - Natural unit because GLOBE is 120 samples per degree
-   - Small enough to load quickly, big enough for good I/O amortization
+## Theme tuning: make the top layer transparent enough
 
-For hillshading you also often need a 1-sample border to compute gradients.
-So for 1°x1° chunks, consider storing `122 x 122` (1-sample padding all sides), or handle borders by reading neighboring chunks.
+To actually see hillshading below the normal map rendering, the top tile layer must not be fully opaque everywhere.
 
-### Converter plan
+Practical recommendations:
 
-1. **Inventory / validation of input files**
-   - detect which tiles are present (A..P)
-   - verify file sizes match expected `(cols * rows * 2)`
-     - 10800*4800*2 = 103,680,000 bytes
-     - 10800*6000*2 = 129,600,000 bytes
-2. **Define target chunk spec**
-   - chunk size in degrees (e.g. 1°)
-   - storage format (raw int16 LE, or compressed per chunk)
-   - optional padding strategy
-3. **Implement deterministic mapping**
-   - for each output chunk, compute its source tile(s) and source window(s)
-   - copy/transform data (including padding)
-4. **Write an index**
-   - mapping from chunk key (latDeg, lonDeg) -> file offset/path
-   - keep it simple and fast (e.g. fixed naming scheme so index can be implicit)
-5. **Verification**
-   - spot-check coordinate->value correctness using known land/ocean values
-   - verify seams between chunks are consistent
+- Large polygon fills (forests, landuse, water overlays) should be:
+  - disabled in the selected style, or
+  - rendered with reduced opacity so the hillshading can shine through.
+- Avoid painting large, fully opaque rectangles/polygons that would hide all relief.
 
-## Goal 2: Fast reader (random access for hillshading)
+This is usually controlled in the render theme:
 
-### Reader responsibilities
+- Use separate styles / categories for “heavy” fills and allow disabling them via `<stylemenu>`.
+- Use lower opacity colors for fills.
 
-- Provide fast access to elevation samples needed to shade a map tile:
-  - typically a grid window around a tile extent
-  - plus a border for derivative computations
-- Support either:
-  - memory-mapped / in-memory caching of recently used chunks, or
-  - direct random access reads from disk
+## Performance and accuracy caveats
 
-### Recommended reader architecture
+Hillshading is computationally expensive:
 
-1) **Two-level addressing**
-   - Level A: determine which chunk(s) intersect the requested map tile
-   - Level B: within each chunk, compute sample indices and read the window
+- It requires sampling multiple elevation values per output pixel (neighbors for gradient/slope).
+- It can be very I/O heavy if elevation data is read from disk without an effective cache.
 
-2) **Chunk cache**
-   - LRU cache keyed by chunk id
-   - store decoded int16 array (or bytes) plus metadata
+Accuracy limitations:
 
-3) **NoData-aware sampling**
-   - treat -500 as NoData
-   - ensure gradient computation is robust near NoData regions
+- The underlying dataset (GLOBE) is relatively low resolution (30 arc-seconds).
+- Coastlines (sea/land border) are a common source of artifacts because the dataset uses `-500` as NoData/ocean mask.
+- When NoData is present in the neighborhood window used for gradients, the resulting slope can be wrong or produce visible seams.
 
-### Reader plan
+For best visual results you typically need:
 
-1. **Choose access unit**
-   - If using converted 1° chunks: read small chunk files, cache decoded samples
-   - If using original GLOBE tiles: random access inside the 10800x(4800|6000) tile (works but large file seeks)
-2. **Implement coordinate transforms**
-   - WGS84 lat/lon -> chunk id + sample indices
-   - map tile boundary -> required sample window (+ border)
-3. **Implement window read API**
-   - read a rectangular region of samples efficiently
-   - for disk-based access, prefer reading contiguous row segments
-4. **Integrate with hillshading pipeline**
-   - provide samples to hillshade renderer (slope/gradient algorithm)
-   - define how to handle missing chunks / NoData
-5. **Performance validation**
-   - measure I/O time per rendered tile
-   - tune cache size and chunk format
+- NoData-aware sampling (treat `-500` as missing data)
+- Edge handling near chunk/tile borders
+- Caching of recently used DEM chunks
 
-## Open questions / things to verify against the downloaded files
+## Converter tooling: globe_dem_converter
 
-- Are your elevation tiles `?10G` (G.O.O.D.) or `?10B` (contains restricted data)?
-- Are the files already uncompressed, or still `.gz` / inside `.zip`?
-- Do you also have the **source/lineage** tiles (useful for ocean masking and attribution)?
-- Confirm whether row 0 is northmost in the raw binary for the downloaded tiles (very likely, but we should validate by sampling known regions).
+This repository contains an app to convert the large original GLOBE tiles into smaller chunk files better suited for runtime hillshading:
 
+- `apps/globe_dem_converter`
+
+It converts input tiles `A10G..P10G` into output `.dem` chunks:
+
+- Raw `int16` little-endian
+- Row-major
+- No header
+
+Usage (from repo root):
+
+```bash
+dart run apps/globe_dem_converter/bin/globe_dem_converter.dart --help
+dart run apps/globe_dem_converter/bin/globe_dem_converter.dart help convert
+
+dart run apps/globe_dem_converter/bin/globe_dem_converter.dart convert \
+  -i "D:\\globe\\tiles" \
+  -o "D:\\globe\\chunks" \
+  -w 1.0 \
+  --tileHeight 1.0 \
+  --startLat 47.0 --startLon 10.0 \
+  --endLat 49.0 --endLon 12.0 \
+  --resample 1
+```
+
+What `--resample` means:
+
+- `resample=1` keeps original GLOBE grid (30 arc-seconds).
+- `resample=N` averages over `N x N` blocks (NoData-aware for `-500`) to reduce resolution and speed up runtime.
+
+Integration idea:
+
+- Use the converter output directory as the DEM source for your hillshading tile layer.
+- Ensure the runtime reader knows:
+  - the chunk naming scheme
+  - the chunk extent (`latMin/lonMin/latMax/lonMax`)
+  - the effective sample spacing (`resample * 1/120°`)
+
+## References
+
+- Mapsforge RenderTheme documentation:
+  - https://github.com/mapsforge/mapsforge/blob/master/docs/Rendertheme.md
+- GLOBE documentation:
+  - https://www.ngdc.noaa.gov/mgg/topo/report/
+- globe_dem_converter (this repo):
+  - `apps/globe_dem_converter/README.md`

@@ -14,7 +14,6 @@ class GlobeDemConverter {
   static const int columnsPerDegree = 120;
   static const double _cellSizeDeg = 1.0 / 120.0;
   static const int _colsPerSourceTile = 10800;
-  static const int _noDataValue = -500;
 
   Future<void> convert({
     required Directory inputDir,
@@ -100,6 +99,7 @@ class GlobeDemConverter {
     required int resampleFactor,
     required double outCellSizeDeg,
   }) async {
+    const int ocean = -500;
     // resampleFactor == 1 => direct copy (old behavior)
     if (resampleFactor == 1) {
       final rowBuffer = Uint8List(tile.cols * 2);
@@ -167,7 +167,7 @@ class GlobeDemConverter {
         for (int outC = 0; outC < seg.cols; outC++) {
           int sum = 0;
           int count = 0;
-          int max = _noDataValue;
+          int max = ocean;
 
           // For each row in the block
           for (int rr = 0; rr < resampleFactor; rr++) {
@@ -180,17 +180,17 @@ class GlobeDemConverter {
             final srcColBase = outC * resampleFactor;
             for (int cc = 0; cc < resampleFactor; cc++) {
               final v = srcRowView.getInt16((srcColBase + cc) * 2, Endian.little);
-              if (v == _noDataValue) continue;
+              if (v == ocean) continue;
               sum += v;
               count++;
-              if (max == _noDataValue || max < v) {
+              if (max == ocean || max < v) {
                 max = v;
               }
             }
           }
 
           // use maximum height instead of average.
-          final outValue = count == 0 ? _noDataValue : max; //(sum / count).round();
+          final outValue = count == 0 ? ocean : max; //(sum / count).round();
           outRow.setInt16((outColWritten + outC) * 2, outValue, Endian.little);
         }
 

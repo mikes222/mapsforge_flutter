@@ -30,6 +30,13 @@ class StyleMenu {
 
   const StyleMenu({required this.id, this.defaultValue, this.defaultLang, required this.layers});
 
+  List<StyleMenuLayer> get visibleLayers {
+    final visibleLayers = layers.where((l) => l.visible == true).toList(growable: false);
+    if (visibleLayers.isNotEmpty) return visibleLayers;
+    // if no layers are defined as visible treat all layers as visible
+    return layers;
+  }
+
   /// Returns the layer with the given [id], or null if it does not exist.
   StyleMenuLayer? layerById(String id) {
     for (final layer in layers) {

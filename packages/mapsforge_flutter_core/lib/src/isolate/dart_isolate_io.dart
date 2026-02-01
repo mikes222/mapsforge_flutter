@@ -83,7 +83,7 @@ class FlutterIsolateInstance {
 
   /// Starts a single computation in an isolate. This method runs in the main isolate.
   Future<V> compute<U, V>(U request) {
-    assert(_sendPort != null, "wait until start() is done");
+    assert(_sendPort != null, "wait until start() is done or isolate is already disposed");
     _FlutterProcess<V> flutterProcess = _FlutterProcess();
     _flutterProcesses[flutterProcess._id] = flutterProcess;
     _IsolateRequestInstanceParams params = _IsolateRequestInstanceParams<U>(flutterProcess._id, request);

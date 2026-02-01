@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_font_family.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/map_font_style.dart';
+import 'package:mapsforge_flutter_rendertheme/src/model/text_transform.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/font_width_helper.dart';
 
 mixin TextSrcMixin {
@@ -22,12 +23,15 @@ mixin TextSrcMixin {
   /// The maximum width of a text
   double _maxTextWidth = MapsforgeSettingsMgr().maxTextWidth;
 
+  TextTransform _textTransform = TextTransform.none;
+
   void textSrcMixinClone(TextSrcMixin base) {
     _textMinZoomLevel = base._textMinZoomLevel;
     _fontSize = base._fontSize;
     _fontFamily = base._fontFamily;
     _fontStyle = base._fontStyle;
     _maxTextWidth = base._maxTextWidth;
+    _textTransform = base._textTransform;
   }
 
   void textSrcMixinScale(TextSrcMixin base, int zoomlevel) {
@@ -74,5 +78,11 @@ mixin TextSrcMixin {
 
   void setTextMinZoomLevel(int textMinZoomLevel) {
     _textMinZoomLevel = textMinZoomLevel;
+  }
+
+  TextTransform get textTransform => _textTransform;
+
+  void setTextTransform(TextTransform textTransform) {
+    _textTransform = textTransform;
   }
 }

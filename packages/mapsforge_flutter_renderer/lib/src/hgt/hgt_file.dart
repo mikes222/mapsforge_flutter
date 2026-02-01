@@ -127,9 +127,12 @@ class HgtFile {
 
     /// the indices into the elevation data around the given coordinate
     final columnIdxFloor = columnIdx.floor();
-    final columnIdxCeil = columnIdx.ceil();
+    int columnIdxCeil = columnIdx.ceil();
     final rowIdxFloor = rowIdx.floor();
-    final rowIdxCeil = rowIdx.ceil();
+    int rowIdxCeil = rowIdx.ceil();
+    // may happen at the right border with larger zoom
+    if (columnIdxCeil >= columns) columnIdxCeil = columns - 1;
+    if (rowIdxCeil >= rows) rowIdxCeil = rows - 1;
 
     assert(columnIdxFloor <= columnIdxCeil, "columnIdxFloor: $columnIdxFloor, columnIdxCeil: $columnIdxCeil");
     assert(rowIdxFloor <= rowIdxCeil, "rowIdxFloor: $rowIdxFloor, rowIdxCeil: $rowIdxCeil");
@@ -226,9 +229,16 @@ class HgtFile {
   int _sample(int row, int col) {
     return _elevations[row * columns + col];
   }
+
+  @override
+  String toString() {
+    return 'HgtFile{baseLat: $baseLat, baseLon: $baseLon, lonWidth: $lonWidth, latHeight: $latHeight, rows: $rows, columns: $columns}';
+  }
 }
 
 class ElevationArea {
+  static const int ocean = -500;
+
   final int leftTop;
 
   final int rightTop;
@@ -254,10 +264,10 @@ class ElevationArea {
       assert(minTileY <= maxTileY) {
     int count = 0;
     // -500 represents ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
-    if (leftTop == -500) ++count;
-    if (rightTop == -500) ++count;
-    if (leftBottom == -500) ++count;
-    if (rightBottom == -500) ++count;
+    if (leftTop == ocean) ++count;
+    if (rightTop == ocean) ++count;
+    if (leftBottom == ocean) ++count;
+    if (rightBottom == ocean) ++count;
     isOcean = count >= 2;
     hasOcean = count == 1;
   }

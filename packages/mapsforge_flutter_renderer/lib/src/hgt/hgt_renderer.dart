@@ -26,11 +26,11 @@ class HgtRenderer extends Renderer {
     final Tile tile = jobRequest.tile;
     final tileSize = MapsforgeSettingsMgr().tileSize.round();
     final projection = PixelProjection(tile.zoomLevel);
-    final Mappoint leftUpper = tile.getLeftUpper();
-    final leftUpperLL = projection.pixelToLatLong(leftUpper.x, leftUpper.y);
+    Mappoint leftUpper = tile.getLeftUpper();
+    ILatLong leftUpperLL = projection.pixelToLatLong(leftUpper.x, leftUpper.y);
     final Mappoint rightLower = tile.getRightLower();
     final rightLowerLL = projection.pixelToLatLong(rightLower.x, rightLower.y);
-    final file = hgtFileProvider.getForLatLon(leftUpperLL.latitude, leftUpperLL.longitude);
+    HgtFile file = hgtFileProvider.getForLatLon(leftUpperLL.latitude, leftUpperLL.longitude);
 
     final pixels = Uint8List(tileSize * tileSize * 4);
 
@@ -39,16 +39,25 @@ class HgtRenderer extends Renderer {
       for (int px = 0; px < tileSize;) {
         // examine each pixel of the tile
         //final elev = file.elevationAtTileXY(leftUpperLL, rightLowerLL, px, py, tileSize);
-        final result = file.elevationAround(leftUpperLL, rightLowerLL, leftUpper, px, py, tileSize);
+        ElevationArea? result = file.elevationAround(leftUpperLL, rightLowerLL, leftUpper, px, py, tileSize);
         if (result == null) {
-          _setPixel(pixels, tileSize, px, py, 50, 0, 0, 10);
-          ++px;
+          // The file is missing
+          //_setPixel(pixels, tileSize, px, py, 255, 0, 0, 255);
+          // seems we are out of boundary of the file we are currently using
+          // leftUpper = Mappoint(tile.getLeftUpper().x + px, tile.getLeftUpper().y + py);
+          // leftUpperLL = projection.pixelToLatLong(leftUpper.x, leftUpper.y);
+          // //print("result is null for $px, $py $result $file");
+          // file = hgtFileProvider.getForLatLon(leftUpperLL.latitude, leftUpperLL.longitude);
+          // result = file.elevationAround(leftUpperLL, rightLowerLL, leftUpper, px, py, tileSize);
+          // skip a few pixels to speed up
+          px += 4;
+          nextPy = py + 4;
           continue;
         }
         if (result.isOcean) {
           for (int tileX = max(result.minTileX, 0); tileX <= min(result.maxTileX, tileSize - 1); ++tileX) {
             for (int tileY = max(result.minTileY, 0); tileY <= min(result.maxTileY, tileSize - 1); ++tileY) {
-              _tileColorRenderer.render(pixels, tileSize, tileX, tileY, projection, leftUpperLL.latitude, leftUpperLL.longitude, -500);
+              _tileColorRenderer.render(pixels, tileSize, tileX, tileY, projection, leftUpperLL.latitude, leftUpperLL.longitude, ElevationArea.ocean);
             }
           }
           int nextPxCandidate = result.maxTileX + 1;
@@ -141,15 +150,13 @@ class HgtRenderer extends Renderer {
     final ny = ty.clamp(0.0, 1.0);
 
     if (area.hasOcean) {
-      const ocean = -500;
-
-      final oceanLT = area.leftTop == ocean;
-      final oceanRT = area.rightTop == ocean;
-      final oceanLB = area.leftBottom == ocean;
-      final oceanRB = area.rightBottom == ocean;
+      final oceanLT = area.leftTop == ElevationArea.ocean;
+      final oceanRT = area.rightTop == ElevationArea.ocean;
+      final oceanLB = area.leftBottom == ElevationArea.ocean;
+      final oceanRB = area.rightBottom == ElevationArea.ocean;
 
       if (oceanLT) {
-        if (nx + ny <= 1.0) return ocean;
+        if (nx + ny <= 1.0) return ElevationArea.ocean;
         final value = _interpolateTriangle(
           nx,
           ny,
@@ -167,13 +174,13 @@ class HgtRenderer extends Renderer {
       }
 
       if (oceanRB) {
-        if (nx + ny >= 1.0) return ocean;
+        if (nx + ny >= 1.0) return ElevationArea.ocean;
         final value = _interpolateTriangle(nx, ny, 0.0, 0.0, area.leftTop.toDouble(), 1.0, 0.0, area.rightTop.toDouble(), 0.0, 1.0, area.leftBottom.toDouble());
         return value.round();
       }
 
       if (oceanRT) {
-        if (nx >= ny) return ocean;
+        if (nx >= ny) return ElevationArea.ocean;
         final value = _interpolateTriangle(
           nx,
           ny,
@@ -191,7 +198,7 @@ class HgtRenderer extends Renderer {
       }
 
       if (oceanLB) {
-        if (nx <= ny) return ocean;
+        if (nx <= ny) return ElevationArea.ocean;
         final value = _interpolateTriangle(
           nx,
           ny,

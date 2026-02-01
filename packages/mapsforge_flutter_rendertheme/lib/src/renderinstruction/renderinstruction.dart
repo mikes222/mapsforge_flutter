@@ -126,6 +126,9 @@ abstract class Renderinstruction {
   /// max text width before wrapping occurs. Introduced for Tiramisu theme.
   static final String TEXT_WRAP_WIDTH = "text-wrap-width";
 
+  /// Text transform for text.
+  static final String TEXT_TRANSFORM = "text-transform";
+
   /// Display mode controlling when this instruction should be rendered.
   MapDisplay display = MapDisplay.IFSPACE;
 

@@ -4,6 +4,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/src/model/text_transform.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/renderinstruction_way.dart';
@@ -93,6 +94,8 @@ class RenderinstructionPolylineText extends Renderinstruction
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.TEXT_ORIENTATION == name) {
         // left, not yet implemented
+      } else if (Renderinstruction.TEXT_TRANSFORM == name) {
+        setTextTransform(TextTransform.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.CAT == name) {
         cat = value;
       } else {
@@ -131,6 +134,15 @@ class RenderinstructionPolylineText extends Renderinstruction
     if (caption == null || caption.trim().isEmpty) {
       return;
     }
+
+    switch (textTransform) {
+      case TextTransform.uppercase:
+        caption = caption.toUpperCase();
+        break;
+      default:
+        break;
+    }
+
     caption = caption.trim();
     LineSegmentPath? lineSegmentPath = wayProperties.calculateStringPath(dy);
     if (lineSegmentPath == null || lineSegmentPath.segments.isEmpty) {

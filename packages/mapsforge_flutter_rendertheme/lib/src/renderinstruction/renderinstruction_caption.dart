@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_rendertheme/src/model/text_transform.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/fill_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/stroke_src_mixin.dart';
@@ -122,6 +123,8 @@ class RenderinstructionCaption extends Renderinstruction
         setStrokeWidth(XmlUtils.parseNonNegativeFloat(name, value));
       } else if (Renderinstruction.SYMBOL_ID == name) {
         symbolId = value;
+      } else if (Renderinstruction.TEXT_TRANSFORM == name) {
+        setTextTransform(TextTransform.values.firstWhere((e) => e.toString().toLowerCase().contains(value)));
       } else if (Renderinstruction.CAT == name) {
         cat = value;
       } else if (Renderinstruction.TEXT_WRAP_WIDTH == name) {
@@ -221,6 +224,14 @@ class RenderinstructionCaption extends Renderinstruction
       return;
     }
 
+    switch (textTransform) {
+      case TextTransform.uppercase:
+        caption = caption.toUpperCase();
+        break;
+      default:
+        break;
+    }
+
     layerContainer.addLabel(RenderInfoNode(nodeProperties, this, caption: caption.trim()));
   }
 
@@ -229,6 +240,14 @@ class RenderinstructionCaption extends Renderinstruction
     String? caption = textKey!.getValue(wayProperties.getTags());
     if (caption == null || caption.trim().isEmpty) {
       return;
+    }
+
+    switch (textTransform) {
+      case TextTransform.uppercase:
+        caption = caption.toUpperCase();
+        break;
+      default:
+        break;
     }
 
     layerContainer.addLabel(RenderInfoWay(wayProperties, this, caption: caption.trim()));

@@ -21,7 +21,8 @@ enum RenderTheme {
   siziliaTheme('Sicilia Hillshading Theme', 'assets/render_theme/sicilia_oam.xml'),
   bikerTheme('Biker Theme', 'assets/render_theme/biker.xml'),
   tiramisuTheme('Tiramisu Theme', 'assets/render_theme/Tiramisu.xml'),
-  hillshadingTheme("Hillshading", 'assets/render_theme/hillshading_render.xml');
+  hillshadingTheme("Hillshading", 'assets/render_theme/hillshading_render.xml'),
+  elevateTheme("Elevate", 'assets/render_theme/elevate.xml');
 
   const RenderTheme(this.displayName, this.fileName);
   final String displayName;

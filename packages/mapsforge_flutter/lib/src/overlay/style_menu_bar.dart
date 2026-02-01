@@ -62,7 +62,7 @@ class StyleMenuBarState extends State<StyleMenuBar> {
   void initState() {
     super.initState();
 
-    final layers = _selectableLayers(widget.styleMenu);
+    final layers = widget.styleMenu.visibleLayers;
     final fallback = layers.isNotEmpty ? layers.first.id : '';
 
     _layerId = widget.initialLayerId ?? widget.styleMenu.defaultValue ?? fallback;
@@ -73,7 +73,7 @@ class StyleMenuBarState extends State<StyleMenuBar> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.styleMenu != widget.styleMenu) {
-      final layers = _selectableLayers(widget.styleMenu);
+      final layers = widget.styleMenu.visibleLayers;
       final fallback = layers.isNotEmpty ? layers.first.id : '';
       final newDefault = widget.initialLayerId ?? widget.styleMenu.defaultValue ?? fallback;
 
@@ -102,8 +102,8 @@ class StyleMenuBarState extends State<StyleMenuBar> {
       clipBehavior: Clip.antiAlias,
       color: widget.fillColor,
       child: LayoutBuilder(
-        builder: (context, constraints) {
-          final layers = _selectableLayers(widget.styleMenu);
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final layers = widget.styleMenu.visibleLayers;
           final totalLayers = layers.length;
 
           double maxHeight = min(constraints.maxHeight, widget.maxVisibleItems * widget.itemHeight);
@@ -210,12 +210,6 @@ class StyleMenuBarState extends State<StyleMenuBar> {
         },
       ),
     );
-  }
-
-  List<StyleMenuLayer> _selectableLayers(StyleMenu menu) {
-    final visibleLayers = menu.layers.where((l) => l.visible == true).toList(growable: false);
-    if (visibleLayers.isNotEmpty) return visibleLayers;
-    return menu.layers;
   }
 
   String _layerLabel(StyleMenuLayer layer) {

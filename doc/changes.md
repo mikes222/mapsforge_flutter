@@ -1,8 +1,13 @@
-# Version 4.0.1
+# Version 4.1.0
 
 - Rotation works now with 3 fingers (configurable) to distinguish from zooming which works with 2 fingers
 - Support for dy parameter in renderthemes
 - Hillshading
+
+## Support for Menu-Overlays
+
+see [doc/menu_overlay](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/menu_overlay.md)
+
 
 ## Support for multiple renderers
 

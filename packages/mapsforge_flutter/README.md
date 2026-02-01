@@ -12,6 +12,7 @@ This package provides the main UI components for the Mapsforge Flutter ecosystem
 ![Indoor navigation](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-31-25-355.jpeg)
 ![Contour](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-34-11-891.jpeg)
 ![City](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_2021-11-30-13-36-05-612.jpeg)
+![Hillshading](https://raw.githubusercontent.com/mikes222/mapsforge_flutter/master/doc/Screenshot_20260201_104534.png)
 
 # Why mapsforge_flutter?
 
@@ -367,6 +368,8 @@ Upgrading to a newer version: [doc/changes](https://github.com/mikes222/mapsforg
 Known issues: [doc/known_issues](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/known_issues.md)
 
 Working with markers: [doc/marker](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/marker.md)
+
+Menu Overlays:  [doc/menu_overlay](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/menu_overlay.md)
 
 Performance considerations during development: [doc/performance](https://github.com/mikes222/mapsforge_flutter/blob/master/doc/performance.md)
 

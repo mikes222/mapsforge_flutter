@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
 import 'package:mapsforge_flutter_renderer/src/hgt/hgt_tile_renderer.dart';
 
 class HgtTileColorRenderer implements HgtTileRenderer {
@@ -59,7 +60,7 @@ class HgtTileColorRenderer implements HgtTileRenderer {
   int _packedColorForElevation(int terrainAltitude) {
     if (maxElevation == 0) return 0;
     // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
-    if (terrainAltitude == -500) return _packedOceanColor;
+    if (terrainAltitude == ElevationArea.ocean) return _packedOceanColor;
 
     final clamped = terrainAltitude.clamp(minElevation, maxElevation);
     final offset = clamped - minElevation;
@@ -90,7 +91,7 @@ class HgtTileColorRenderer implements HgtTileRenderer {
   ui.Color chooseColor(int terrainAltitude) {
     if (maxElevation == 0) return Colors.transparent;
     // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
-    if (terrainAltitude == -500) return oceanColor;
+    if (terrainAltitude == ElevationArea.ocean) return oceanColor;
     final normalized = (terrainAltitude - minElevation) / maxElevation;
 
     final scaled = normalized * (colors.length - 1);
