@@ -540,9 +540,9 @@ void main() async {
     BoundingBox boundingBox = BoundingBox.fromLatLongs(points);
     assert(boundingBox == const BoundingBox(43.516536, 7.409028, 43.751917, 7.532992), "Bounding box is wrong: $boundingBox");
 
-    // DisplayModel is needed for the tilesize
     SubfileFiller subfileFiller = SubfileFiller(const ZoomlevelRange(12, 15), 10, boundingBox);
     Wayholder wayholder = Wayholder(tagholderCollection: TagholderCollection.empty());
+    wayholder.closedOutersAdd(Waypath(path: points));
     List<Wayholder> wayholders = await subfileFiller.prepareWays(WayholderCollection()..add(wayholder));
     wayholder = wayholders.first;
     //LatLongUtils.printLatLongs(way);

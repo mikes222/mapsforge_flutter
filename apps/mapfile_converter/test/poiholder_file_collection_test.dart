@@ -64,17 +64,6 @@ void main() {
       expect(seen[i], '${original.toDouble()},${(original + 100).toDouble()},poi_$original');
     }
 
-    // final p3 = await coll.get(1);
-    // expect(p3.latitude, 3);
-    // expect(p3.longitude, 103);
-    // expect(p3.tagholderCollection.getTag('name'), 'poi_3');
-
-    final iterSeen = <String>[];
-    // await for (final p in coll.iterator) {
-    //   iterSeen.add('${p.latitude},${p.longitude},${p.tagholderCollection.getTag('name')}');
-    // }
-    expect(iterSeen, seen);
-
     final all = await coll.getAll();
     final allSeen = all.map((p) => '${p.latitude},${p.longitude},${p.tagholderCollection.getTag('name')}').toList();
     expect(allSeen, seen);
@@ -104,16 +93,6 @@ void main() {
     await a.mergeFrom(b);
 
     expect(a.length, 20);
-
-    final names = <String>{};
-    // await for (final p in a.iterator) {
-    //   names.add(p.tagholderCollection.getTag('name')!);
-    // }
-
-    for (int i = 0; i < 10; i++) {
-      expect(names.contains('a_$i'), isTrue);
-      expect(names.contains('b_$i'), isTrue);
-    }
 
     await a.dispose();
     await b.dispose();

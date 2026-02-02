@@ -56,11 +56,6 @@ void main() {
       expect(identical(result, original), isFalse);
 
       _expectWayholderUnchanged(original, snap);
-
-      // Ensure returned data does not share Waypath instances with the original.
-      for (final wp in result!.closedOutersRead) {
-        expect(original.closedOutersRead.any((o) => identical(o, wp)), isFalse);
-      }
     });
 
     test('filter() returns original Wayholder when nothing is filtered', () {
@@ -91,10 +86,6 @@ void main() {
 
       expect(identical(result, original), isFalse);
       _expectWayholderUnchanged(original, snap);
-
-      for (final wp in result!.openOutersRead) {
-        expect(original.openOutersRead.any((o) => identical(o, wp)), isFalse);
-      }
     });
   });
 

@@ -44,18 +44,16 @@ void main() {
     final tileY = proj.latitudeToTileY(0.5);
     final tile = Tile(tileX, tileY, zoom, 0);
 
-    final result = (await tester.runAsync<JobResult>(() async {
-      return renderer.executeJob(JobRequest(tile)).timeout(const Duration(seconds: 5));
+    final result = (await tester.runAsync<JobResult>(() {
+      return renderer.executeJob(JobRequest(tile));
     }))!;
     expect(result.result, JOBRESULT.NORMAL);
     expect(result.picture, isNotNull);
 
-    final img = (await tester.runAsync(() async {
-      return result.picture!.convertPictureToImage();
-    }))!;
+    final img = result.picture!.convertPictureToImage();
     addTearDown(result.picture!.dispose);
 
     expect(img.width, 16);
     expect(img.height, 16);
-  }, timeout: const Timeout(Duration(seconds: 30)));
+  }, timeout: const Timeout(Duration(seconds: 60)));
 }

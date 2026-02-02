@@ -8,6 +8,8 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 /// This is an important optimization to avoid processing and rendering ways that
 /// would only cover a few pixels on the screen. The size threshold is defined in
 /// pixels and converted to a geographical distance.
+///
+/// If there are no changes the original entries will be returned.
 class WaySizeFilter {
   final PixelProjection projection;
 

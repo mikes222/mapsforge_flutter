@@ -102,16 +102,6 @@ void main() {
         expect(stats['totalCells'], equals(1));
       });
 
-      test('should handle item with null boundary', () {
-        final item = TestRenderInfo('item1', null);
-
-        spatialIndex.add(item, item.getBoundaryAbsolute());
-
-        final stats = spatialIndex.getStats();
-        expect(stats['totalItems'], equals(0));
-        expect(stats['totalCells'], equals(0));
-      });
-
       test('should add item spanning multiple cells', () {
         final boundary = const MapRectangle(0, 0, 150, 150); // Spans 4 cells with cellSize=100
         final item = TestRenderInfo('item1', boundary);

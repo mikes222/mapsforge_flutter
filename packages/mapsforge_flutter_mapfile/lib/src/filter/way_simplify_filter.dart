@@ -10,6 +10,8 @@ import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 /// in a way while preserving its general shape. The level of simplification is
 /// determined by a maximum allowed deviation in pixels, which is converted to a
 /// geographical distance based on the current zoom level and latitude.
+///
+/// If there are no changes the original entries will be returned.
 class WaySimplifyFilter {
   static final _log = Logger('WaySimplifyFilter');
 
