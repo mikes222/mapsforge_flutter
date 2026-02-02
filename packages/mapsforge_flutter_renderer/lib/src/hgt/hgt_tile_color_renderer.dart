@@ -3,8 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/hgt_tile_renderer.dart';
+import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 
 class HgtTileColorRenderer implements HgtTileRenderer {
   final int minElevation;

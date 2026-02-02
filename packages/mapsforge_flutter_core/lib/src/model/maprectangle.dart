@@ -8,7 +8,9 @@ class MapRectangle {
   final double top;
 
   /// Creates a new `MapRectangle`.
-  const MapRectangle(this.left, this.top, this.right, this.bottom) : assert(left <= right, "left ($left) > right ($right)"), assert(bottom >= top);
+  const MapRectangle(this.left, this.top, this.right, this.bottom)
+    : assert(left <= right, "left ($left) > right ($right)"),
+      assert(bottom >= top, "bottom ($bottom) < top ($top)");
 
   /// Creates a new `MapRectangle` at the origin with zero width and height.
   const MapRectangle.zero() : this(0, 0, 0, 0);
@@ -32,6 +34,11 @@ class MapRectangle {
   /// Returns true if this rectangle contains the given [point].
   bool contains(Mappoint point) {
     return left <= point.x && right >= point.x && top <= point.y && bottom >= point.y;
+  }
+
+  /// Returns true if this rectangle contains the given [point].
+  bool containsCoordinates(double x, double y) {
+    return left <= x && right >= x && top <= y && bottom >= y;
   }
 
   /// Creates a new `MapRectangle` by enlarging this rectangle by the given amounts.

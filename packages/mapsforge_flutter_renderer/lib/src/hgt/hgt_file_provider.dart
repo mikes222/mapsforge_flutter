@@ -6,37 +6,47 @@ import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
 import 'package:mapsforge_flutter_renderer/src/hgt/hgt_info.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/noaa_file_definition.dart';
 
-class NoaaFileProvider implements IHgtFileProvider {
+class HgtFileProvider implements IHgtFileProvider {
   final String directoryPath;
+
+  final int maxEntries;
+
+  // elevation data columns per degree longitude
+  final int columnsPerDegree;
+
+  // degree per file in horizontal/vertical direction
+  final int step;
 
   final LinkedHashMap<String, HgtFile> _cache = LinkedHashMap<String, HgtFile>();
 
-  NoaaFileProvider({required this.directoryPath}) : assert(!directoryPath.endsWith("/"));
+  HgtFileProvider({required this.directoryPath, this.maxEntries = 256, this.columnsPerDegree = 120, this.step = 2}) : assert(!directoryPath.endsWith("/"));
+
+  String buildFilename({required int baseLat, required int baseLon}) {
+    final latPrefix = baseLat >= 0 ? 'N' : 'S';
+    final lonPrefix = baseLon >= 0 ? 'E' : 'W';
+    final latAbs = baseLat.abs().toString().padLeft(2, '0');
+    final lonAbs = baseLon.abs().toString().padLeft(3, '0');
+    return '$latPrefix$latAbs$lonPrefix$lonAbs.hgt';
+  }
 
   @override
   HgtInfo getForLatLon(double latitude, double longitude, PixelProjection projection) {
-    final NoaaFileDefinition noaaFileDefinition = NoaaFileDefinition.sourceTileFor(latitude, longitude);
+    final baseLat = (latitude / step).floor() * step;
+    final baseLon = (longitude / step).floor() * step;
+    final filename = buildFilename(baseLat: baseLat, baseLon: baseLon);
 
-    final cached = _cache[noaaFileDefinition.fileName];
+    final cached = _cache[filename];
     if (cached != null) {
       return HgtInfo(hgtFile: cached, projection: projection);
     }
 
-    final file = File('$directoryPath${Platform.pathSeparator}${noaaFileDefinition.fileName}');
+    final file = File('$directoryPath${Platform.pathSeparator}$filename');
 
-    final hgt = HgtFile.readFromFile(
-      file,
-      baseLat: noaaFileDefinition.latMin.round(),
-      baseLon: noaaFileDefinition.lonMin.round(),
-      tileWidth: noaaFileDefinition.width.round(),
-      tileHeight: noaaFileDefinition.height.round(),
-      rows: noaaFileDefinition.rows,
-    );
-    _cache[noaaFileDefinition.fileName] = hgt;
+    final hgt = HgtFile.readFromFile(file, baseLat: baseLat, baseLon: baseLon, tileWidth: step, tileHeight: step, rows: columnsPerDegree * step);
+    _cache[filename] = hgt;
 
-    while (_cache.length > 4) {
+    while (_cache.length > maxEntries) {
       _cache.remove(_cache.keys.first);
     }
 

@@ -8,7 +8,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
+import 'package:mapsforge_flutter_renderer/src/hgt/hgt_info.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 
 class HgtRenderer extends Renderer {
@@ -24,13 +24,11 @@ class HgtRenderer extends Renderer {
   @override
   Future<JobResult> executeJob(JobRequest jobRequest) async {
     final Tile tile = jobRequest.tile;
-    final tileSize = MapsforgeSettingsMgr().tileSize.round();
+    final tileSize = MapsforgeSettingsMgr().tileSize.ceil();
     final projection = PixelProjection(tile.zoomLevel);
     Mappoint leftUpper = tile.getLeftUpper();
     ILatLong leftUpperLL = projection.pixelToLatLong(leftUpper.x, leftUpper.y);
-    final Mappoint rightLower = tile.getRightLower();
-    final rightLowerLL = projection.pixelToLatLong(rightLower.x, rightLower.y);
-    HgtFile file = hgtFileProvider.getForLatLon(leftUpperLL.latitude, leftUpperLL.longitude);
+    HgtInfo hgtInfo = hgtFileProvider.getForLatLon(leftUpperLL.latitude, leftUpperLL.longitude, projection);
 
     final pixels = Uint8List(tileSize * tileSize * 4);
 
@@ -38,23 +36,16 @@ class HgtRenderer extends Renderer {
       int nextPy = tileSize;
       for (int px = 0; px < tileSize;) {
         // examine each pixel of the tile
-        //final elev = file.elevationAtTileXY(leftUpperLL, rightLowerLL, px, py, tileSize);
-        ElevationArea? result = file.elevationAround(leftUpperLL, rightLowerLL, leftUpper, px, py, tileSize);
+        ElevationArea? result = hgtFileProvider.elevationAround(hgtInfo, leftUpper, px, py);
         if (result == null) {
           // The file is missing
-          //_setPixel(pixels, tileSize, px, py, 255, 0, 0, 255);
-          // seems we are out of boundary of the file we are currently using
-          // leftUpper = Mappoint(tile.getLeftUpper().x + px, tile.getLeftUpper().y + py);
-          // leftUpperLL = projection.pixelToLatLong(leftUpper.x, leftUpper.y);
-          // //print("result is null for $px, $py $result $file");
-          // file = hgtFileProvider.getForLatLon(leftUpperLL.latitude, leftUpperLL.longitude);
-          // result = file.elevationAround(leftUpperLL, rightLowerLL, leftUpper, px, py, tileSize);
           // skip a few pixels to speed up
           px += 4;
           nextPy = py + 4;
           continue;
         }
         if (result.isOcean) {
+          // The whole rectangle should be rendered as ocean
           for (int tileX = max(result.minTileX, 0); tileX <= min(result.maxTileX, tileSize - 1); ++tileX) {
             for (int tileY = max(result.minTileY, 0); tileY <= min(result.maxTileY, tileSize - 1); ++tileY) {
               _tileColorRenderer.render(pixels, tileSize, tileX, tileY, projection, leftUpperLL.latitude, leftUpperLL.longitude, ElevationArea.ocean);
@@ -69,10 +60,11 @@ class HgtRenderer extends Renderer {
           if (nextPy > nextPyCandidate) nextPy = nextPyCandidate;
           continue;
         }
+        //print("result: $result");
         // result gives us 4 locations of the tile with 4 elevations at each corner. Interpolate the elevations for this rectangle.
         //assert(result.minTileX >= px, "result.minTileX: ${result.minTileX}, px: $px");
-        // assert(result.maxTileX < tileSize, "result.maxTileX: ${result.maxTileX}, tileSize: $tileSize");
-        // assert(result.maxTileY < tileSize, "result.maxTileY: ${result.maxTileY}, tileSize: $tileSize");
+        //assert(result.maxTileX < tileSize, "result.maxTileX: ${result.maxTileX}, tileSize: $tileSize");
+        //assert(result.maxTileY < tileSize, "result.maxTileY: ${result.maxTileY}, tileSize: $tileSize");
         for (int tileX = max(result.minTileX, 0); tileX <= min(result.maxTileX, tileSize - 1); ++tileX) {
           for (int tileY = max(result.minTileY, 0); tileY <= min(result.maxTileY, tileSize - 1); ++tileY) {
             _tileColorRenderer.render(
@@ -103,17 +95,6 @@ class HgtRenderer extends Renderer {
     final image = await _imageFromRgba(pixels, tileSize, tileSize);
     //_log.info("execute end job: ${jobRequest.tile} $minElevation - $maxElevation");
     return JobResult.normal(TilePicture.fromBitmap(image));
-  }
-
-  // int? _elevationAt(double latitude, double longitude) {
-  //   //return file.elevationAt(latitude, longitude);
-  // }
-
-  void _setPixel(Uint8List rgba, int width, int x, int y, int r, int g, int b, int a) {
-    assert(r >= 0 && r <= 255);
-    assert(a >= 0 && a <= 255);
-    final idx = y * width + x;
-    rgba.buffer.asUint32List()[idx] = (a << 24) | (b << 16) | (g << 8) | r;
   }
 
   Future<ui.Image> _imageFromRgba(Uint8List rgba, int width, int height) {

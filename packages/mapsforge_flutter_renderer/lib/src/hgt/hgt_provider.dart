@@ -1,55 +1,51 @@
-import 'dart:collection';
-import 'dart:io';
-
-import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_renderer/src/hgt/hgt_info.dart';
 
 abstract class IHgtFileProvider {
-  HgtFile getForLatLon(double latitude, double longitude);
+  HgtInfo getForLatLon(double latitude, double longitude, PixelProjection projection);
+
+  ElevationArea? elevationAround(HgtInfo hgtInfo, Mappoint leftUpper, int x, int y);
 }
 
-class HgtFileProvider implements IHgtFileProvider {
-  final String directoryPath;
+class ElevationArea {
+  static const int ocean = -500;
 
-  final int maxEntries;
+  final int leftTop;
 
-  // elevation data columns per degree longitude
-  final int columnsPerDegree;
+  final int rightTop;
 
-  // degree per file in horizontal/vertical direction
-  final int step;
+  final int leftBottom;
 
-  final LinkedHashMap<String, HgtFile> _cache = LinkedHashMap<String, HgtFile>();
+  final int rightBottom;
 
-  HgtFileProvider({required this.directoryPath, this.maxEntries = 8, this.columnsPerDegree = 120, this.step = 2}) : assert(!directoryPath.endsWith("/"));
+  final int minTileX;
 
-  String buildFilename({required int baseLat, required int baseLon}) {
-    final latPrefix = baseLat >= 0 ? 'N' : 'S';
-    final lonPrefix = baseLon >= 0 ? 'E' : 'W';
-    final latAbs = baseLat.abs().toString().padLeft(2, '0');
-    final lonAbs = baseLon.abs().toString().padLeft(3, '0');
-    return '$latPrefix$latAbs$lonPrefix$lonAbs.hgt';
+  final int maxTileX;
+
+  final int minTileY;
+
+  final int maxTileY;
+
+  late bool isOcean;
+
+  late bool hasOcean;
+
+  ElevationArea(this.leftTop, this.rightTop, this.leftBottom, this.rightBottom, this.minTileX, this.maxTileX, this.minTileY, this.maxTileY)
+    : assert(minTileX <= maxTileX),
+      assert(minTileY <= maxTileY) {
+    int count = 0;
+    // -500 represents ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
+    if (leftTop == ocean) ++count;
+    if (rightTop == ocean) ++count;
+    if (leftBottom == ocean) ++count;
+    if (rightBottom == ocean) ++count;
+    isOcean = count >= 2;
+    hasOcean = count == 1;
   }
 
   @override
-  HgtFile getForLatLon(double latitude, double longitude) {
-    final baseLat = (latitude / step).floor() * step;
-    final baseLon = (longitude / step).floor() * step;
-    final filename = buildFilename(baseLat: baseLat, baseLon: baseLon);
-
-    final cached = _cache[filename];
-    if (cached != null) {
-      return cached;
-    }
-
-    final file = File('$directoryPath${Platform.pathSeparator}$filename');
-
-    final hgt = HgtFile.readFromFile(file, baseLat: baseLat, baseLon: baseLon, tileWidth: step, tileHeight: step, rows: columnsPerDegree * step);
-    _cache[filename] = hgt;
-
-    while (_cache.length > maxEntries) {
-      _cache.remove(_cache.keys.first);
-    }
-
-    return hgt;
+  String toString() {
+    return 'ElevationArea{leftTop: $leftTop, rightTop: $rightTop, leftBottom: $leftBottom, rightBottom: $rightBottom, minTileX: $minTileX, maxTileX: $maxTileX, minTileY: $minTileY, maxTileY: $maxTileY, isOcean: $isOcean, hasOcean: $hasOcean}';
   }
 }

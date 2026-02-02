@@ -27,10 +27,10 @@ class HgtTileHillshadingRenderer implements HgtTileRenderer {
     final dLon = _metersToLongitudeDegrees(latitude, dMeters);
     final dLat = _metersToLatitudeDegrees(dMeters);
 
-    final eW = _elevationAt(latitude, longitude - dLon) ?? centerElev;
-    final eE = _elevationAt(latitude, longitude + dLon) ?? centerElev;
-    final eN = _elevationAt(latitude + dLat, longitude) ?? centerElev;
-    final eS = _elevationAt(latitude - dLat, longitude) ?? centerElev;
+    final eW = _elevationAt(latitude, longitude - dLon, projection) ?? centerElev;
+    final eE = _elevationAt(latitude, longitude + dLon, projection) ?? centerElev;
+    final eN = _elevationAt(latitude + dLat, longitude, projection) ?? centerElev;
+    final eS = _elevationAt(latitude - dLat, longitude, projection) ?? centerElev;
 
     final dzdx = (eE - eW) / (2 * dMeters);
     final dzdy = (eN - eS) / (2 * dMeters);
@@ -74,8 +74,8 @@ class HgtTileHillshadingRenderer implements HgtTileRenderer {
     rgba[i + 3] = a;
   }
 
-  int? _elevationAt(double latitude, double longitude) {
-    final file = hgtFileProvider.getForLatLon(latitude, longitude);
+  int? _elevationAt(double latitude, double longitude, PixelProjection projection) {
+    final file = hgtFileProvider.getForLatLon(latitude, longitude, projection);
     return file.elevationAt(latitude, longitude);
   }
 
