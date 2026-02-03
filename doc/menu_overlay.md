@@ -67,7 +67,17 @@ Parsing:
 
 - Attributes are parsed as optional `bool?` values in `_parseStyleMenuLayer()`.
 
+## Default style
+
+When style menus are configured they will be applied in the following order:
+
+- If the property ``defaultValue`` is set the style denoted by this property is applied
+- otherwise if any layer is configured with ``enabled = true`` the categories denoted by these layers are applied
+- otherwise no category is applied meaning all rules are used and no filtering by category takes place
+
+
 ## Using the overlay in your app
+
 ### 1) Obtain a `StyleMenu`
 Load and parse a render theme that contains `<stylemenu>`. After parsing you should have access to a `StyleMenu` instance.
 

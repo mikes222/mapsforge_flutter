@@ -138,6 +138,102 @@ From a UI composition standpoint, hillshading works best as its own tile layer:
 
 This is important because hillshading is a full-tile raster effect. If it is painted on top, it will reduce readability of labels and roads.
 
+```dart
+        final hgtProvider = NoaaFileProvider(directoryPath: (await getTemporaryDirectory()).path);
+        renderer = HgtRenderer(
+          tileColorRenderer: HgtTileColorRenderer(maxElevation: 2000),
+          hgtFileProvider: hgtProvider,
+        );
+
+        renderer2 = DatastoreRenderer(datastore, _rendertheme);
+
+        _mapModel = MapModel(renderer: renderer, zoomlevelRange: const ZoomlevelRange(0, 21));
+        _mapModel!.addRenderer(renderer2);
+
+```
+
+## Components used for hillshading / elevation tiles
+
+This repository provides a small set of building blocks to render elevation-based tiles (e.g. colored elevation or hillshading) from NOAA/GLOBE or other DEM sources.
+
+### `HgtTileColorRenderer`
+
+Location:
+
+- `packages/mapsforge_flutter_renderer/lib/src/hgt/hgt_tile_color_renderer.dart`
+
+Purpose:
+
+- Converts an elevation value (meters) into a color.
+- Uses a precomputed lookup table (LUT) to avoid expensive per-pixel color interpolation.
+- Writes pixels into the RGBA tile buffer (`Uint8List`) using packed 32-bit stores.
+
+Constructor parameters:
+
+- `minElevation` (int, default `0`)
+  - Minimum elevation (meters) used for clamping / normalization.
+- `maxElevation` (int, default `2000`)
+  - Maximum elevation (meters) used for clamping / normalization.
+- `metersPerColorStep` (int, default `5`)
+  - Color compression factor.
+  - Example: `5` means “one color for each 5m elevation band”. Higher values are faster and use less memory, but reduce detail.
+- `colors` (List<Color>)
+  - Gradient key colors.
+  - Elevations are mapped across this gradient.
+- `oceanColor` (Color)
+  - Used when elevation is the ocean/NoData value (`-500`).
+
+Notes:
+
+- Ocean / NoData is encoded as `ElevationArea.ocean` (`-500`).
+
+### `NoaaFileProvider`
+
+Location:
+
+- `packages/mapsforge_flutter_renderer/lib/src/hgt/noaa_file_provider.dart`
+
+Purpose:
+
+- Implements `IHgtFileProvider` for the NOAA/NCEI GLOBE tile layout.
+- Given a lat/lon, it selects the correct source tile (e.g. `A10G..P10G`) and loads it as an `HgtFile`.
+- Provides `elevationAround(...)` which returns an `ElevationArea` (4 corner elevations + the covered pixel rectangle) used by `HgtRenderer` for interpolation.
+
+Constructor parameters:
+
+- `directoryPath` (String)
+  - Directory containing the uncompressed GLOBE tiles (`A10G..P10G` or lowercase variants).
+
+Runtime behavior:
+
+- Maintains an internal LRU-like cache of recently used `HgtFile` instances (currently capped at 4).
+
+### `IHgtFileProvider` / `HgtFileProvider`
+
+Interface location:
+
+- `packages/mapsforge_flutter_renderer/lib/src/hgt/hgt_provider.dart`
+
+Purpose:
+
+- Abstraction used by `HgtRenderer` (and hillshading renderers) to obtain elevation data.
+- Allows swapping different DEM backends without changing the renderer.
+
+Key methods:
+
+- `getForLatLon(double latitude, double longitude, PixelProjection projection)`
+  - Returns an `HgtInfo` describing the current loaded elevation tile and its pixel-space extent.
+- `elevationAround(HgtInfo hgtInfo, Mappoint leftUpper, int x, int y)`
+  - Returns an `ElevationArea` for the pixel position `(x,y)` relative to the tile’s top-left.
+  - `ElevationArea` contains:
+    - `leftTop/rightTop/leftBottom/rightBottom` elevations
+    - `minTileX/maxTileX/minTileY/maxTileY` rectangle the four corners cover
+    - `isOcean` / `hasOcean` derived flags based on the `-500` ocean mask
+
+`HgtFileProvider`:
+
+- If your project also contains an `HgtFileProvider` (for classic `.hgt` 1°x1° SRTM tiles), it should implement the same `IHgtFileProvider` interface and can be used as a drop-in replacement.
+
 ## Theme tuning: make the top layer transparent enough
 
 To actually see hillshading below the normal map rendering, the top tile layer must not be fully opaque everywhere.

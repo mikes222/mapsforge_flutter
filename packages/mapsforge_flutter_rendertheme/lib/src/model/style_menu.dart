@@ -37,6 +37,10 @@ class StyleMenu {
     return layers;
   }
 
+  List<StyleMenuLayer> get enabledLayers {
+    return layers.where((l) => l.enabled == true).toList(growable: false);
+  }
+
   /// Returns the layer with the given [id], or null if it does not exist.
   StyleMenuLayer? layerById(String id) {
     for (final layer in layers) {
@@ -73,5 +77,14 @@ class StyleMenu {
       if (overlayId.isEmpty) continue;
       _collectCategories(overlayId, result, visited);
     }
+  }
+
+  /// Returns all categories which are enabled by their respective layers. This is used if no layer is specified by default
+  Set<String> categoriesForDefault() {
+    final result = <String>{};
+    for (final layer in enabledLayers) {
+      result.addAll(layer.categories);
+    }
+    return result;
   }
 }

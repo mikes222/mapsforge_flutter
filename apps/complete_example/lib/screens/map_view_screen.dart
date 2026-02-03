@@ -135,6 +135,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                 onChange: (StyleMenuLayer layer) {
                   Set<String> categories = _rendertheme!.styleMenu!.categoriesForLayer(layer);
                   _rendertheme!.setCategories(categories);
+                  // trigger rerendering all tiles
                   mapModel.renderChanged(RenderChangedEvent(BoundingBox.max()));
                 },
               ),
@@ -170,6 +171,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
     // map crispier.
     double ratio = MediaQuery.devicePixelRatioOf(context);
     MapsforgeSettingsMgr().setDeviceScaleFactor(ratio);
+    MapsforgeSettingsMgr().setFontScaleFactor(ratio);
 
     // Hillshading needs resources from filesystem
     Directory directory = await getTemporaryDirectory();
@@ -191,9 +193,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
       //renderer = DummyRenderer(delayMilliseconds: 500);
       if (widget.configuration.renderTheme == RenderTheme.hillshadingTheme) {
         renderer2 = renderer;
-        //renderer = HgtRenderer(hgtFileProvider: HgtFileProvider(directoryPath: (await getTemporaryDirectory()).path));
         final hgtProvider = NoaaFileProvider(directoryPath: (await getTemporaryDirectory()).path);
+        //final hgtProvider = HgtFileProvider(directoryPath: (await getTemporaryDirectory()).path);
         renderer = HgtRenderer(
+          tileColorRenderer: HgtTileColorRenderer(maxElevation: 2000),
           //tileColorRenderer: HgtTileHillshadingRenderer(hgtFileProvider: hgtProvider),
           hgtFileProvider: hgtProvider,
         );

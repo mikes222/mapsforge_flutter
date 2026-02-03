@@ -143,6 +143,9 @@ class RenderThemeBuilder {
     if (_styleMenu != null && _styleMenu!.defaultValue != null) {
       Set<String> categories = _styleMenu!.categoriesForLayerId(_styleMenu!.defaultValue!);
       renderTheme.setCategories(categories);
+    } else if (_styleMenu != null) {
+      Set<String> categories = _styleMenu!.categoriesForDefault();
+      if (categories.isNotEmpty) renderTheme.setCategories(categories);
     }
     for (Rule rule in rules) {
       rule.secondPass();
