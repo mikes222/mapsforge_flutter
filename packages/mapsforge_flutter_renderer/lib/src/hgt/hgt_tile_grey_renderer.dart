@@ -12,7 +12,7 @@ class HgtTileGreyRenderer implements HgtTileRenderer {
   @override
   void render(Uint8List pixels, int tileSize, int px, int py, PixelProjection projection, double latitude, double longitude, int elev) {
     // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
-    if (elev == ElevationArea.ocean) {
+    if (elev == HgtFile.ocean) {
       _setPixel(
         pixels,
         tileSize,

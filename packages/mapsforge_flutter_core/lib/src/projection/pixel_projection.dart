@@ -67,7 +67,7 @@ class PixelProjection extends MercatorProjection {
   /// Uses Mercator projection formulas to calculate the pixel position.
   ///
   /// [latitude] The latitude coordinate in degrees
-  /// Returns the pixel Y coordinate (0 to mapSize)
+  /// Returns the pixel Y coordinate (0 to mapSize whereas 0 is +90° and mapSize is -90°)
   double latitudeToPixelY(double latitude) {
     const double pi180 = pi / 180;
     const double pi4 = 4 * pi;

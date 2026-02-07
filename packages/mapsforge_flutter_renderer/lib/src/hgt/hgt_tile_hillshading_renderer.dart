@@ -12,7 +12,7 @@ class HgtTileHillshadingRenderer implements HgtTileRenderer {
   /// Altitude in degrees used for hillshade.
   final double hillshadeAltitudeDeg;
 
-  final IHgtFileProvider hgtFileProvider;
+  final HgtProvider hgtFileProvider;
 
   HgtTileHillshadingRenderer({this.hillshadeAzimuthDeg = 315, this.hillshadeAltitudeDeg = 45, required this.hgtFileProvider});
 
@@ -75,7 +75,7 @@ class HgtTileHillshadingRenderer implements HgtTileRenderer {
   }
 
   int? _elevationAt(double latitude, double longitude, PixelProjection projection) {
-    final file = hgtFileProvider.getForLatLon(latitude, longitude, projection);
+    final file = hgtFileProvider.getForLatLon(latitude, longitude);
     return file.elevationAt(latitude, longitude);
   }
 

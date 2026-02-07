@@ -33,7 +33,7 @@ void main() {
 
     final renderer = HgtRenderer(
       tileColorRenderer: HgtTileGreyRenderer(),
-      hgtFileProvider: HgtFileProvider(directoryPath: tmp.path, columnsPerDegree: 3, step: 1),
+      hgtProvider: HgtFileProvider(directoryPath: tmp.path, columnsPerDegree: 3, step: 1),
     );
     addTearDown(renderer.dispose);
 

@@ -15,7 +15,9 @@ library;
 
 export 'src/datastore_renderer.dart';
 export 'src/dummy_renderer.dart';
+export 'src/hgt/hgt_file.dart';
 export 'src/hgt/hgt_file_provider.dart';
+export 'src/hgt/hgt_info.dart';
 export 'src/hgt/hgt_provider.dart';
 export 'src/hgt/hgt_renderer.dart';
 export 'src/hgt/hgt_tile_color_renderer.dart';

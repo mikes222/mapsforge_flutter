@@ -49,17 +49,11 @@ class HgtTileColorRenderer implements HgtTileRenderer {
     pixels.buffer.asUint32List()[idx] = _packedColorForElevation(elev);
   }
 
-  void _setPixel(Uint8List rgba, int width, int x, int y, int r, int g, int b, int a) {
-    assert(r >= 0 && r <= 255);
-    assert(a >= 0 && a <= 255);
-    final idx = y * width + x;
-    rgba.buffer.asUint32List()[idx] = (a << 24) | (b << 16) | (g << 8) | r;
-  }
-
   int _packedColorForElevation(int terrainAltitude) {
     if (maxElevation == 0) return 0;
+    if (terrainAltitude == HgtFile.invalid) return 0;
     // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
-    if (terrainAltitude == ElevationArea.ocean) return _packedOceanColor;
+    if (terrainAltitude == HgtFile.ocean) return _packedOceanColor;
 
     final clamped = terrainAltitude.clamp(minElevation, maxElevation);
     final offset = clamped - minElevation;
@@ -90,7 +84,7 @@ class HgtTileColorRenderer implements HgtTileRenderer {
   ui.Color chooseColor(int terrainAltitude) {
     if (maxElevation == 0) return Colors.transparent;
     // -500 is ocean, see https://www.ngdc.noaa.gov/mgg/topo/report/s4/s4.html
-    if (terrainAltitude == ElevationArea.ocean) return oceanColor;
+    if (terrainAltitude == HgtFile.ocean) return oceanColor;
     final normalized = (terrainAltitude - minElevation) / maxElevation;
 
     final scaled = normalized * (colors.length - 1);

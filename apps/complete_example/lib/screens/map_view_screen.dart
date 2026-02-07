@@ -120,6 +120,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             //SingleMarkerOverlay(mapModel: mapModel, marker: marker),
             MarkerDatastoreOverlay(mapModel: mapModel, datastore: markerDatastore, zoomlevelRange: const ZoomlevelRange.standard()),
             MarkerDatastoreOverlay(mapModel: mapModel, datastore: debugDatastore, zoomlevelRange: const ZoomlevelRange.standard()),
+            //MarkerDatastoreOverlay(mapModel: mapModel, datastore: HgtDebugDatastore(), zoomlevelRange: const ZoomlevelRange(11, 25)),
             // Shows a ruler with distance information in the left-bottom corner of the map
             DistanceOverlay(mapModel: mapModel),
             // Shows zoom-in and zoom-out buttons
@@ -198,7 +199,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
         renderer = HgtRenderer(
           tileColorRenderer: HgtTileColorRenderer(maxElevation: 2000),
           //tileColorRenderer: HgtTileHillshadingRenderer(hgtFileProvider: hgtProvider),
-          hgtFileProvider: hgtProvider,
+          hgtProvider: hgtProvider,
         );
       }
     } else if (widget.configuration.rendererType == RendererType.openStreetMap) {
