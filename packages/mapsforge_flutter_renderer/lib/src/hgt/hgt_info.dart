@@ -48,10 +48,10 @@ class HgtInfo {
     int bottomRowIdx = hgtRastering.yPositions.indexWhere((test) => test >= leftUpper.y + tileSize, topRowIdx);
 
     if (rightColumnIdx == -1) {
-      rightColumnIdx = hgtRastering.xPositions.length;
+      rightColumnIdx = hgtRastering.xPositions.length - 1;
     }
     if (bottomRowIdx == -1) {
-      bottomRowIdx = hgtRastering.yPositions.length;
+      bottomRowIdx = hgtRastering.yPositions.length - 1;
     }
 
     _ElevationGrid elevationGrid = _createGrid(
@@ -62,18 +62,19 @@ class HgtInfo {
       bottomRowIdx: bottomRowIdx,
       hgtRastering: hgtRastering,
     );
-    if (bottomRowIdx == hgtRastering.yPositions.length) {
+    if (bottomRowIdx == hgtRastering.yPositions.length - 1) {
       _ElevationGrid? elevationGrid2 = _extendGrid(leftUpper: leftUpper, tileSize: tileSize, xCheck: 0, yCheck: tileSize);
       if (elevationGrid2 != null) {
         elevationGrid = elevationGrid.appendBottom(elevationGrid2);
       }
     }
-    if (rightColumnIdx == hgtRastering.xPositions.length) {
+    if (rightColumnIdx == hgtRastering.xPositions.length - 1) {
       _ElevationGrid? elevationGrid2 = _extendGrid(leftUpper: leftUpper, tileSize: tileSize, xCheck: tileSize, yCheck: 0);
       if (elevationGrid2 != null) {
         elevationGrid = elevationGrid.appendRight(elevationGrid2);
       }
     }
+    if (elevationGrid.columns <= 1 || elevationGrid.rows <= 1) return null;
     // todo we may miss data at the right-bottom side of the tile
     return elevationGrid.finalize(tileSize);
   }
@@ -99,10 +100,10 @@ class HgtInfo {
     int bottomRowIdx = hgtRastering.yPositions.indexWhere((test) => test >= leftUpper.y + tileSize, topRowIdx);
 
     if (rightColumnIdx == -1) {
-      rightColumnIdx = hgtRastering.xPositions.length;
+      rightColumnIdx = hgtRastering.xPositions.length - 1;
     }
     if (bottomRowIdx == -1) {
-      bottomRowIdx = hgtRastering.yPositions.length;
+      bottomRowIdx = hgtRastering.yPositions.length - 1;
     }
 
     return _createGrid(
@@ -123,8 +124,8 @@ class HgtInfo {
     required int bottomRowIdx,
     required HgtRastering hgtRastering,
   }) {
-    assert(leftColumnIdx < rightColumnIdx, "leftColumnIdx: $leftColumnIdx, rightColumnIdx: $rightColumnIdx");
-    assert(topRowIdx < bottomRowIdx, "topRowIdx: $topRowIdx, bottomRowIdx: $bottomRowIdx");
+    assert(leftColumnIdx <= rightColumnIdx, "leftColumnIdx: $leftColumnIdx, rightColumnIdx: $rightColumnIdx");
+    assert(topRowIdx <= bottomRowIdx, "topRowIdx: $topRowIdx, bottomRowIdx: $bottomRowIdx");
 
     _ElevationGrid elevationGrid = _ElevationGrid(rightColumnIdx - leftColumnIdx + 1, bottomRowIdx - topRowIdx + 1);
     for (int row = 0; row < elevationGrid.rows; ++row) {
@@ -272,25 +273,25 @@ class HgtInfo {
     final ny = ty.clamp(0.0, 1.0);
 
     if (oceanLT || invalidLT) {
-      if (nx + ny <= 1.0) return HgtFile.ocean;
+      if (nx + ny <= 1.0) return oceanLT ? HgtFile.ocean : HgtFile.invalid;
       final value = _interpolateTriangle(nx, ny, 1.0, 0.0, area.rightTop.elevDbl(), 0.0, 1.0, area.leftBottom.elevDbl(), 1.0, 1.0, area.rightBottom.elevDbl());
       return value.round();
     }
 
     if (oceanRB || invalidRB) {
-      if (nx + ny >= 1.0) return HgtFile.ocean;
+      if (nx + ny >= 1.0) return oceanRB ? HgtFile.ocean : HgtFile.invalid;
       final value = _interpolateTriangle(nx, ny, 0.0, 0.0, area.leftTop.elevDbl(), 1.0, 0.0, area.rightTop.elevDbl(), 0.0, 1.0, area.leftBottom.elevDbl());
       return value.round();
     }
 
     if (oceanRT || invalidRT) {
-      if (nx >= ny) return HgtFile.ocean;
+      if (nx >= ny) return oceanRT ? HgtFile.ocean : HgtFile.invalid;
       final value = _interpolateTriangle(nx, ny, 0.0, 0.0, area.leftTop.elevDbl(), 0.0, 1.0, area.leftBottom.elevDbl(), 1.0, 1.0, area.rightBottom.elevDbl());
       return value.round();
     }
 
     if (oceanLB || invalidLB) {
-      if (nx <= ny) return HgtFile.ocean;
+      if (nx <= ny) return oceanLB ? HgtFile.ocean : HgtFile.invalid;
       final value = _interpolateTriangle(nx, ny, 0.0, 0.0, area.leftTop.elevDbl(), 1.0, 0.0, area.rightTop.elevDbl(), 1.0, 1.0, area.rightBottom.elevDbl());
       return value.round();
     }
@@ -349,8 +350,8 @@ class _ElevationGrid {
   int rows;
 
   _ElevationGrid(this.columns, this.rows)
-    : assert(columns > 1),
-      assert(rows > 1),
+    : assert(columns >= 1, "columns: $columns"),
+      assert(rows >= 1, "rows: $rows"),
       _points = List.filled(columns * rows, const _ElevationPoint.invalid(), growable: true);
 
   void set(int column, int row, _ElevationPoint elevationPoint) {
@@ -380,7 +381,8 @@ class _ElevationGrid {
   }
 
   void _verify() {
-    int lastRowY = -10000;
+    int lastRowY = -1;
+    int invalidRow = -1;
     for (int row = 0; row < rows; ++row) {
       int rowY = -1;
       for (int column = 0; column < columns; ++column) {
@@ -388,10 +390,13 @@ class _ElevationGrid {
         if (rowY == -1 && cellY != -1) rowY = cellY;
         assert(rowY == -1 || cellY == -1 || cellY == rowY, "column: $column, row: $row, rowY: $rowY, cellY: $cellY, columns: $columns, rows: $rows");
       }
-      assert(lastRowY == -10000 || rowY == -1 || rowY > lastRowY, "row: $row, lastRowY: $lastRowY, rowY: $rowY");
+      assert(lastRowY == -1 || rowY == -1 || rowY > lastRowY, "row: $row, lastRowY: $lastRowY, rowY: $rowY");
       if (rowY != -1) lastRowY = rowY;
+      assert(invalidRow == -1 || rowY == -1, "row: $row, invalidRow: $invalidRow, rowY: $rowY, columns: $columns, rows: $rows");
+      if (lastRowY != -1 && rowY == -1) invalidRow = row;
     }
-    int lastColumnX = -10000;
+    int lastColumnX = -1;
+    int invalidColumn = -1;
     for (int column = 0; column < columns; ++column) {
       int columnX = -1;
       for (int row = 0; row < rows; ++row) {
@@ -402,15 +407,17 @@ class _ElevationGrid {
           "column: $column, row: $row, columnX: $columnX, cellX: $cellX, columns: $columns, rows: $rows",
         );
       }
-      assert(lastColumnX == -10000 || columnX == -1 || columnX > lastColumnX, "column: $column, lastColumnX: $lastColumnX, columnX: $columnX");
+      assert(lastColumnX == -1 || columnX == -1 || columnX > lastColumnX, "column: $column, lastColumnX: $lastColumnX, columnX: $columnX");
       if (columnX != -1) lastColumnX = columnX;
+      assert(invalidColumn == -1 || columnX == -1, "column: $column, invalidColumn: $invalidColumn, columnX: $columnX, columns: $columns, rows: $rows");
+      if (lastColumnX != -1 && columnX == -1) invalidColumn = column;
     }
   }
 
   _ElevationGrid appendBottom(_ElevationGrid other) {
     assert(columns >= other.columns, "columns: $columns, other.columns: ${other.columns}");
     _ElevationGrid result = _ElevationGrid(columns, rows + other.rows);
-    int lastRowY = -10000;
+    int lastRowY = -1;
     for (int row = 0; row < rows; ++row) {
       int rowY = -1;
       for (int column = 0; column < columns; ++column) {
@@ -437,7 +444,7 @@ class _ElevationGrid {
         continue;
       }
       for (int column = 0; column < other.columns; ++column) {
-        result.set(column, row + rows - decrementedRows, other.get(column, row));
+        result.set(column, rows + row - decrementedRows, other.get(column, row));
       }
     }
     assert(() {
@@ -450,7 +457,7 @@ class _ElevationGrid {
   _ElevationGrid appendRight(_ElevationGrid other) {
     assert(rows >= other.rows);
     _ElevationGrid result = _ElevationGrid(columns + other.columns, rows);
-    int lastColumnX = -10000;
+    int lastColumnX = -1;
     for (int column = 0; column < columns; ++column) {
       int columnX = -1;
       for (int row = 0; row < rows; ++row) {
