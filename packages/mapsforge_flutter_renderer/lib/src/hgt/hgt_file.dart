@@ -81,6 +81,7 @@ class HgtFile {
     }
     HgtRastering? hgtRastering = _zoomRasterings[projection.scalefactor.zoomlevel];
     if (hgtRastering != null) {
+      if (hgtRastering.xPositions.length < 2 || hgtRastering.yPositions.length < 2) return null;
       return hgtRastering;
     }
 
@@ -94,19 +95,25 @@ class HgtFile {
     double latStep = latHeight / (rows - 1);
     double lonStep = rectangle.getWidth() / (columns - 1);
 
-    double factor = max(4 / lonStep * MapsforgeSettingsMgr().getDeviceScaleFactor(), 1);
+    double factorX = max(4 / lonStep * MapsforgeSettingsMgr().getDeviceScaleFactor(), 1);
+    double factorY = max(4 / rectangle.getHeight() * (columns - 1) * MapsforgeSettingsMgr().getDeviceScaleFactor(), 1);
     //print("Factor for $projection: $factor, $baseLat, $baseLon, $lonWidth, $latHeight, $rows, $columns");
-    if (factor > 1) {
-      latStep *= factor;
-      lonStep *= factor;
+    if (factorX > 1) {
+      lonStep *= factorX;
+    }
+    if (factorY > 1) {
+      latStep *= factorY;
     }
 
     List<double> xPositions = [];
     for (double x = rectangle.left; x <= rectangle.right; x += lonStep) {
       xPositions.add(x);
     }
-    // possible precision error may prevent the last column
-    if ((xPositions.length * factor + factor).floor() < columns) xPositions.add(rectangle.right);
+    // possible precision error may prevent the last column. We need the last column for visual perfect borders to the next file
+    if (xPositions.last != rectangle.right) {
+      if (xPositions.last > rectangle.right - lonStep / 2) xPositions.removeLast();
+      xPositions.add(rectangle.right);
+    }
     // assert(
     //   (xPositions.length * factor).floor() <= columns,
     //   "xPositions.length: ${xPositions.length}, factor: $factor, _hgtFile.columns: ${columns}, right: ${rectangle.right}, lastPos: ${xPositions.last}, lonStep: $lonStep",
@@ -117,10 +124,29 @@ class HgtFile {
       double yPosition = projection.latitudeToPixelY(lat);
       yPositions.add(yPosition);
     }
+    if (yPositions.last != rectangle.bottom) {
+      if (yPositions.last >= rectangle.bottom - latStep / 2) yPositions.removeLast();
+      yPositions.add(rectangle.bottom);
+    }
     //    assert((yPositions.length * factor).floor() <= rows, "yPositions.length: ${yPositions.length}, factor: $factor, hgtFile.rows: $rows");
 
-    hgtRastering = HgtRastering(xPositions, yPositions, _elevations, columns, factor);
+    Int16List elevations = _elevations;
+    if (factorX > 1 || factorY > 1) {
+      elevations = Int16List(xPositions.length * yPositions.length);
+      for (int y = 0; y < yPositions.length; ++y) {
+        for (int x = 0; x < xPositions.length; ++x) {
+          int realX = (x * factorX).floor();
+          if (x == xPositions.length - 1) realX = columns - 1;
+          int realY = (y * factorY).floor();
+          if (y == yPositions.length - 1) realY = rows - 1;
+          elevations[y * xPositions.length + x] = elevation(realX, realY);
+        }
+      }
+    }
+
+    hgtRastering = HgtRastering(xPositions, yPositions, elevations);
     _zoomRasterings[projection.scalefactor.zoomlevel] = hgtRastering;
+    if (hgtRastering.xPositions.length < 2 || hgtRastering.yPositions.length < 2) return null;
     return hgtRastering;
   }
 
@@ -173,15 +199,13 @@ class HgtRastering {
 
   final Int16List elevations;
 
-  final int columns;
-
-  final double factor;
-
-  HgtRastering(this.xPositions, this.yPositions, this.elevations, this.columns, this.factor);
+  HgtRastering(this.xPositions, this.yPositions, this.elevations)
+    : assert(
+        elevations.length == xPositions.length * yPositions.length,
+        "elevations.length: ${elevations.length}, xPositions.length: ${xPositions.length}, yPositions.length: ${yPositions.length}",
+      );
 
   int elevation(int col, int row) {
-    int realRow = (row * factor).floor();
-    int realColumn = min(col * factor, columns - 1).floor();
-    return elevations[realRow * columns + realColumn];
+    return elevations[row * xPositions.length + col];
   }
 }

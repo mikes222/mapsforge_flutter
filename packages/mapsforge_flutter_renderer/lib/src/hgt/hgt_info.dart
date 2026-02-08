@@ -41,7 +41,7 @@ class HgtInfo {
     int leftColumnIdx = hgtRastering.xPositions.lastIndexWhere((test) => test <= leftUpper.x);
     int topRowIdx = hgtRastering.yPositions.lastIndexWhere((test) => test <= leftUpper.y);
     // since we searched for the file at the left-top corner we should always have elevation points at the left and upper side
-    assert(leftColumnIdx >= 0);
+    assert(leftColumnIdx >= 0, "leftColumnIdx: $leftColumnIdx of ${hgtRastering.xPositions.length}");
     assert(topRowIdx >= 0);
 
     int rightColumnIdx = hgtRastering.xPositions.indexWhere((test) => test >= leftUpper.x + tileSize, leftColumnIdx);
@@ -76,7 +76,7 @@ class HgtInfo {
     }
     if (elevationGrid.columns <= 1 || elevationGrid.rows <= 1) return null;
     // todo we may miss data at the right-bottom side of the tile
-    return elevationGrid.finalize(tileSize);
+    return elevationGrid;
   }
 
   _ElevationGrid? _extendGrid({required Mappoint leftUpper, required int tileSize, required int xCheck, required int yCheck}) {
@@ -143,7 +143,10 @@ class HgtInfo {
         elevationGrid.set(column, row, elevationPoint);
       }
     }
-    // todo we may miss data at the right side of the tile
+    assert(() {
+      elevationGrid._verify();
+      return true;
+    }());
     return elevationGrid;
   }
 
@@ -390,7 +393,10 @@ class _ElevationGrid {
         if (rowY == -1 && cellY != -1) rowY = cellY;
         assert(rowY == -1 || cellY == -1 || cellY == rowY, "column: $column, row: $row, rowY: $rowY, cellY: $cellY, columns: $columns, rows: $rows");
       }
-      assert(lastRowY == -1 || rowY == -1 || rowY > lastRowY, "row: $row, lastRowY: $lastRowY, rowY: $rowY");
+      assert(
+        lastRowY == -1 || rowY == -1 || rowY > lastRowY,
+        "rowY should always be larger than the last rowY. row: $row of $rows, lastRowY: $lastRowY, rowY: $rowY",
+      );
       if (rowY != -1) lastRowY = rowY;
       assert(invalidRow == -1 || rowY == -1, "row: $row, invalidRow: $invalidRow, rowY: $rowY, columns: $columns, rows: $rows");
       if (lastRowY != -1 && rowY == -1) invalidRow = row;
@@ -407,7 +413,7 @@ class _ElevationGrid {
           "column: $column, row: $row, columnX: $columnX, cellX: $cellX, columns: $columns, rows: $rows",
         );
       }
-      assert(lastColumnX == -1 || columnX == -1 || columnX > lastColumnX, "column: $column, lastColumnX: $lastColumnX, columnX: $columnX");
+      assert(lastColumnX == -1 || columnX == -1 || columnX > lastColumnX, "column: $column of $columns, lastColumnX: $lastColumnX, columnX: $columnX");
       if (columnX != -1) lastColumnX = columnX;
       assert(invalidColumn == -1 || columnX == -1, "column: $column, invalidColumn: $invalidColumn, columnX: $columnX, columns: $columns, rows: $rows");
       if (lastColumnX != -1 && columnX == -1) invalidColumn = column;
@@ -484,7 +490,7 @@ class _ElevationGrid {
         continue;
       }
       for (int row = 0; row < other.rows; ++row) {
-        result.set(column + columns - decrementedColumns, row, other.get(column, row));
+        result.set(columns + column - decrementedColumns, row, other.get(column, row));
       }
     }
     assert(() {
@@ -492,14 +498,6 @@ class _ElevationGrid {
       return true;
     }());
     return result;
-  }
-
-  _ElevationGrid finalize(int tileSize) {
-    assert(() {
-      _verify();
-      return true;
-    }());
-    return this;
   }
 
   @override
