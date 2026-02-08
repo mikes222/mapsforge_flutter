@@ -161,6 +161,11 @@ class PbfConvert {
     //     if (wayholder.hasTag("railway")) print("checking ${wayholder.toStringWithoutNames()}");
     //   });
     // }
+    if (!quiet && (renderthemeFilter.noRangeWays + renderthemeFilter.noRangeNodes) > 0) {
+      _log.info(
+        "Removed ${renderthemeFilter.noRangeWays} ways and ${renderthemeFilter.noRangeNodes} nodes because they will never be drawn according to the render theme",
+      );
+    }
     await ways.dispose();
     renderTheme?.dispose();
 

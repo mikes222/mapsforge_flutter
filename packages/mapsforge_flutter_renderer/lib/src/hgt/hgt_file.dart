@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 
 class HgtFile {
   static final _log = Logger('HgtFile');
@@ -78,7 +80,9 @@ class HgtFile {
       return null;
     }
     HgtRastering? hgtRastering = _zoomRasterings[projection.scalefactor.zoomlevel];
-    if (hgtRastering != null) return hgtRastering;
+    if (hgtRastering != null) {
+      return hgtRastering;
+    }
 
     MapRectangle rectangle = MapRectangle(
       projection.longitudeToPixelX(baseLon.toDouble()),
@@ -86,36 +90,36 @@ class HgtFile {
       projection.longitudeToPixelX((baseLon + lonWidth).toDouble()),
       projection.latitudeToPixelY(baseLat.toDouble()),
     );
-    List<double> yPositions = [];
-    List<double> xPositions = [];
-    int factor = 1;
-    if (projection.scalefactor.zoomlevel <= 8) {
-      factor = 2;
-    }
-    if (projection.scalefactor.zoomlevel <= 6) {
-      factor = 4;
-    }
-    if (projection.scalefactor.zoomlevel <= 4) {
-      factor = 8;
-    }
-    double latStep = latHeight / (rows - 1) * factor;
-    for (double lat = (baseLat + latHeight).toDouble(); lat >= (baseLat).toDouble(); lat -= latStep) {
-      double yPosition = projection.latitudeToPixelY(lat);
-      yPositions.add(yPosition);
-    }
-    assert(yPositions.length * factor == rows, "yPositions.length: ${yPositions.length}, hgtFile.rows: $rows");
 
-    double lonStep = rectangle.getWidth() / (columns - 1) * factor;
+    double latStep = latHeight / (rows - 1);
+    double lonStep = rectangle.getWidth() / (columns - 1);
+
+    double factor = max(4 / lonStep * MapsforgeSettingsMgr().getDeviceScaleFactor(), 1);
+    //print("Factor for $projection: $factor, $baseLat, $baseLon, $lonWidth, $latHeight, $rows, $columns");
+    if (factor > 1) {
+      latStep *= factor;
+      lonStep *= factor;
+    }
+
+    List<double> xPositions = [];
     for (double x = rectangle.left; x <= rectangle.right; x += lonStep) {
       xPositions.add(x);
     }
     // possible precision error may prevent the last column
-    if (xPositions.length * factor < columns) xPositions.add(rectangle.right);
-    assert(
-      xPositions.length * factor == columns,
-      "xPositions.length: ${xPositions.length}, _hgtFile.columns: ${columns} ${rectangle.right} ${xPositions.last} $lonStep",
-    );
-    hgtRastering = HgtRastering(yPositions, xPositions, _elevations, columns, factor);
+    if ((xPositions.length * factor + factor).floor() < columns) xPositions.add(rectangle.right);
+    // assert(
+    //   (xPositions.length * factor).floor() <= columns,
+    //   "xPositions.length: ${xPositions.length}, factor: $factor, _hgtFile.columns: ${columns}, right: ${rectangle.right}, lastPos: ${xPositions.last}, lonStep: $lonStep",
+    // );
+
+    List<double> yPositions = [];
+    for (double lat = (baseLat + latHeight).toDouble(); lat >= (baseLat).toDouble(); lat -= latStep) {
+      double yPosition = projection.latitudeToPixelY(lat);
+      yPositions.add(yPosition);
+    }
+    //    assert((yPositions.length * factor).floor() <= rows, "yPositions.length: ${yPositions.length}, factor: $factor, hgtFile.rows: $rows");
+
+    hgtRastering = HgtRastering(xPositions, yPositions, _elevations, columns, factor);
     _zoomRasterings[projection.scalefactor.zoomlevel] = hgtRastering;
     return hgtRastering;
   }
@@ -163,19 +167,21 @@ class HgtFile {
 //////////////////////////////////////////////////////////////////////////////
 
 class HgtRastering {
-  final List<double> yPositions;
-
   final List<double> xPositions;
+
+  final List<double> yPositions;
 
   final Int16List elevations;
 
   final int columns;
 
-  final int factor;
+  final double factor;
 
-  HgtRastering(this.yPositions, this.xPositions, this.elevations, this.columns, this.factor);
+  HgtRastering(this.xPositions, this.yPositions, this.elevations, this.columns, this.factor);
 
   int elevation(int col, int row) {
-    return elevations[row * columns * factor + col * factor];
+    int realRow = (row * factor).floor();
+    int realColumn = min(col * factor, columns - 1).floor();
+    return elevations[realRow * columns + realColumn];
   }
 }

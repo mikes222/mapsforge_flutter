@@ -1,10 +1,11 @@
-import 'package:logging/logging.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
 
 class RenderthemeFilter {
-  static final _log = Logger('RenderthemeFilter');
+  int noRangeWays = 0;
+
+  int noRangeNodes = 0;
 
   RenderthemeFilter();
 
@@ -23,7 +24,6 @@ class RenderthemeFilter {
   Future<Map<ZoomlevelRange, IPoiholderCollection>> filterNodes(IPoiholderCollection poiholderCollection, Rendertheme renderTheme) async {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, IPoiholderCollection> nodes = {};
-    int noRangeNodes = 0;
     await poiholderCollection.forEach((poiholder) {
       ZoomlevelRange? range = renderTheme.getZoomlevelRangeNode(poiholder.tagholderCollection);
       if (range == null) {
@@ -38,7 +38,6 @@ class RenderthemeFilter {
       }
       bag.add(poiholder);
     });
-    if (noRangeNodes > 0) _log.info("Removed $noRangeNodes nodes because we would never draw them according to the render theme");
     return nodes;
   }
 
@@ -61,7 +60,6 @@ class RenderthemeFilter {
   Future<Map<ZoomlevelRange, IWayholderCollection>> filterWays(IWayholderCollection wayholderCollection, Rendertheme renderTheme) async {
     // apply each node/way to the rendertheme and find their min/max zoomlevel
     Map<ZoomlevelRange, IWayholderCollection> result = {};
-    int noRangeWays = 0;
     // int time = DateTime.now().millisecondsSinceEpoch;
     // await wayholderCollection.forEach((poiholder) {});
     // _log.info("forEach needs ${DateTime.now().millisecondsSinceEpoch - time} milliseconds for ${wayholderCollection.length} ways");
@@ -83,7 +81,6 @@ class RenderthemeFilter {
       }
       bag.add(wayholder);
     });
-    if (noRangeWays > 0) _log.info("Removed $noRangeWays ways because we would never draw them according to the render theme");
 
     return result;
   }

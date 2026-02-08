@@ -99,10 +99,10 @@ class HgtInfo {
     int bottomRowIdx = hgtRastering.yPositions.indexWhere((test) => test >= leftUpper.y + tileSize, topRowIdx);
 
     if (rightColumnIdx == -1) {
-      rightColumnIdx = hgtFile.columns;
+      rightColumnIdx = hgtRastering.xPositions.length;
     }
     if (bottomRowIdx == -1) {
-      bottomRowIdx = hgtFile.rows;
+      bottomRowIdx = hgtRastering.yPositions.length;
     }
 
     return _createGrid(
@@ -225,9 +225,14 @@ class HgtInfo {
     final oceans = (oceanLT == true ? 1 : 0) + (oceanRT == true ? 1 : 0) + (oceanLB == true ? 1 : 0) + (oceanRB == true ? 1 : 0);
     // 2 oceans, 2 normal elevations <- ocean
     // 2 oceans, 1 invalid, 1 normal <- invalid
+    // 2 oceans, 2 invalids <- invalid
     // 3 oceans, 1 invalid <- render
     // 3 oceans, 1 normal <- ocean
     // 4 oceans <- ocean
+    if (oceans == 2 && invalids == 2) {
+      area.specificElevation = HgtFile.invalid;
+      return HgtFile.invalid;
+    }
     if (oceans == 2 && invalids == 1) {
       area.specificElevation = HgtFile.invalid;
       return HgtFile.invalid;
@@ -339,11 +344,14 @@ class _ElevationPoint {
 class _ElevationGrid {
   late final List<_ElevationPoint> _points;
 
-  final int columns;
+  int columns;
 
-  final int rows;
+  int rows;
 
-  _ElevationGrid(this.columns, this.rows) : assert(columns > 1), assert(rows > 1), _points = List.filled(columns * rows, const _ElevationPoint.invalid());
+  _ElevationGrid(this.columns, this.rows)
+    : assert(columns > 1),
+      assert(rows > 1),
+      _points = List.filled(columns * rows, const _ElevationPoint.invalid(), growable: true);
 
   void set(int column, int row, _ElevationPoint elevationPoint) {
     _points[row * columns + column] = elevationPoint;
@@ -355,99 +363,136 @@ class _ElevationGrid {
     return _points[row * columns + column];
   }
 
-  void _verify() {
-    int lastY = -10000;
+  void decrementRow() {
+    --rows;
+    // we could remove the items of the last row from the list
+  }
+
+  void decrementColumn() {
     for (int row = 0; row < rows; ++row) {
-      int y = get(0, row).y;
+      _points.removeAt(row * (columns - 1) + columns - 1);
+    }
+    --columns;
+    assert(() {
+      _verify();
+      return true;
+    }());
+  }
+
+  void _verify() {
+    int lastRowY = -10000;
+    for (int row = 0; row < rows; ++row) {
+      int rowY = -1;
       for (int column = 0; column < columns; ++column) {
         int cellY = get(column, row).y;
-        if (y == -1 && cellY != -1) y = cellY;
-        assert(y == -1 || cellY == -1 || cellY == y, "column: $column, row: $row, y: $y, cell-y: $cellY, columns: $columns, rows: $rows");
+        if (rowY == -1 && cellY != -1) rowY = cellY;
+        assert(rowY == -1 || cellY == -1 || cellY == rowY, "column: $column, row: $row, rowY: $rowY, cellY: $cellY, columns: $columns, rows: $rows");
       }
-      assert(lastY == -10000 || y > lastY, "row: $row, lastY: $lastY, y: $y");
-      if (y != -1) lastY = y;
+      assert(lastRowY == -10000 || rowY == -1 || rowY > lastRowY, "row: $row, lastRowY: $lastRowY, rowY: $rowY");
+      if (rowY != -1) lastRowY = rowY;
     }
-    int lastX = -10000;
+    int lastColumnX = -10000;
     for (int column = 0; column < columns; ++column) {
-      int x = get(column, 0).x;
+      int columnX = -1;
       for (int row = 0; row < rows; ++row) {
         int cellX = get(column, row).x;
-        if (x == -1 && cellX != -1) x = cellX;
-        assert(x == -1 || cellX == -1 || cellX == x, "column: $column, row: $row, x: $x, cell-x: $cellX, columns: $columns, rows: $rows");
+        if (columnX == -1 && cellX != -1) columnX = cellX;
+        assert(
+          columnX == -1 || cellX == -1 || cellX == columnX,
+          "column: $column, row: $row, columnX: $columnX, cellX: $cellX, columns: $columns, rows: $rows",
+        );
       }
-      assert(lastX == -10000 || x == -1 || x > lastX, "column: $column, lastX: $lastX, x: $x");
-      if (x != -1) lastX = x;
+      assert(lastColumnX == -10000 || columnX == -1 || columnX > lastColumnX, "column: $column, lastColumnX: $lastColumnX, columnX: $columnX");
+      if (columnX != -1) lastColumnX = columnX;
     }
   }
 
   _ElevationGrid appendBottom(_ElevationGrid other) {
     assert(columns >= other.columns, "columns: $columns, other.columns: ${other.columns}");
     _ElevationGrid result = _ElevationGrid(columns, rows + other.rows);
+    int lastRowY = -10000;
     for (int row = 0; row < rows; ++row) {
+      int rowY = -1;
       for (int column = 0; column < columns; ++column) {
+        int cellY = get(column, row).y;
+        if (rowY == -1 && cellY != -1) rowY = cellY;
         result.set(column, row, get(column, row));
       }
+      if (rowY != -1) lastRowY = rowY;
     }
+    int decrementedRows = 0;
     for (int row = 0; row < other.rows; ++row) {
+      int rowY = -1;
       for (int column = 0; column < other.columns; ++column) {
-        result.set(column, row + rows, other.get(column, row));
+        int cellY = other.get(column, row).y;
+        if (rowY == -1 && cellY != -1) {
+          rowY = cellY;
+          break;
+        }
+      }
+      if (rowY <= lastRowY) {
+        // ignore this line
+        result.decrementRow();
+        ++decrementedRows;
+        continue;
+      }
+      for (int column = 0; column < other.columns; ++column) {
+        result.set(column, row + rows - decrementedRows, other.get(column, row));
       }
     }
+    assert(() {
+      result._verify();
+      return true;
+    }());
     return result;
   }
 
   _ElevationGrid appendRight(_ElevationGrid other) {
     assert(rows >= other.rows);
     _ElevationGrid result = _ElevationGrid(columns + other.columns, rows);
-    for (int row = 0; row < rows; ++row) {
-      for (int column = 0; column < columns; ++column) {
+    int lastColumnX = -10000;
+    for (int column = 0; column < columns; ++column) {
+      int columnX = -1;
+      for (int row = 0; row < rows; ++row) {
+        int cellX = get(column, row).x;
+        if (columnX == -1 && cellX != -1) columnX = cellX;
         result.set(column, row, get(column, row));
       }
+      if (columnX != -1) lastColumnX = columnX;
     }
-    for (int row = 0; row < other.rows; ++row) {
-      for (int column = 0; column < other.columns; ++column) {
-        result.set(column + columns, row, other.get(column, row));
+    int decrementedColumns = 0;
+    for (int column = 0; column < other.columns; ++column) {
+      int columnX = -1;
+      for (int row = 0; row < other.rows; ++row) {
+        int cellX = other.get(column, row).x;
+        if (columnX == -1 && cellX != -1) {
+          columnX = cellX;
+          break;
+        }
+      }
+      if (columnX <= lastColumnX) {
+        // ignore this line
+        result.decrementColumn();
+        ++decrementedColumns;
+        continue;
+      }
+      for (int row = 0; row < other.rows; ++row) {
+        result.set(column + columns - decrementedColumns, row, other.get(column, row));
       }
     }
+    assert(() {
+      result._verify();
+      return true;
+    }());
     return result;
   }
 
   _ElevationGrid finalize(int tileSize) {
-    _ElevationGrid result = this;
-
-    if (columns > tileSize / 4) {
-      result = _ElevationGrid((columns / 4).ceil(), rows);
-      for (int row = 0; row < rows; ++row) {
-        for (int column = 0; column < columns; column += 4) {
-          _ElevationPoint point = get(column, row);
-          result.set(column ~/ 4, row, point);
-        }
-        if (columns % 4 != 1) {
-          // make sure we have the last column for seamless border to the next file
-          _ElevationPoint point = get(columns - 1, row);
-          result.set(result.columns - 1, row, point);
-        }
-      }
-      return result.finalize(tileSize);
-    }
-    if (rows > tileSize / 4) {
-      result = _ElevationGrid(columns, (rows / 4).ceil());
-      for (int row = 0; row < rows; row += 4) {
-        for (int column = 0; column < columns; ++column) {
-          _ElevationPoint point = get(column, row);
-          result.set(column, row ~/ 4, point);
-        }
-      }
-      if (rows % 4 != 1) {
-        for (int column = 0; column < columns; ++column) {
-          _ElevationPoint point = get(column, rows - 1);
-          result.set(column, result.rows - 1, point);
-        }
-      }
-      return result.finalize(tileSize);
-    }
-    //result._verify();
-    return result;
+    assert(() {
+      _verify();
+      return true;
+    }());
+    return this;
   }
 
   @override
@@ -475,14 +520,4 @@ class _ElevationArea {
       specificElevation = leftTop.elevation;
     }
   }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-class _MissingElevation {
-  final int columnIdx;
-
-  final int rowIdx;
-
-  _MissingElevation(this.columnIdx, this.rowIdx);
 }

@@ -86,6 +86,7 @@ class MapsforgeSettingsMgr {
   }
 
   void setDeviceScaleFactor(double deviceScaleFactor) {
+    assert(deviceScaleFactor > 0);
     _deviceScaleFactor = deviceScaleFactor;
   }
 
