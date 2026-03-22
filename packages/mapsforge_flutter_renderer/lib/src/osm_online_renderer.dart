@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/tile_picture.dart';
 
@@ -15,10 +16,24 @@ class OsmOnlineRenderer extends Renderer {
 
   @override
   Future<JobResult> executeJob(JobRequest job) async {
-    Uri uri = Uri.parse("$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png");
-    final response = await Dio().get(
+    // Global options
+    final options = CacheOptions(
+      // A default store is required for interceptor.
+      store: MemCacheStore(),
+    );
+
+    // Add cache interceptor with global/default options
+    final dio = Dio()..interceptors.add(DioCacheInterceptor(options: options));
+
+    //Uri uri = Uri.parse("$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png");
+    final response = await dio.get(
       "$uriPrefix/${job.tile.zoomLevel}/${job.tile.tileX}/${job.tile.tileY}.png",
-      options: Options(responseType: ResponseType.bytes, followRedirects: false, validateStatus: (status) => status != null && status < 500),
+      options: Options(
+        responseType: ResponseType.bytes,
+        followRedirects: false,
+        validateStatus: (status) => status != null && status < 500,
+        headers: {"User-Agent": "MapsforgeFlutter (https://pub.dev/packages/mapsforge_flutter)"},
+      ),
     );
 
     var codec = await ui.instantiateImageCodec(response.data);

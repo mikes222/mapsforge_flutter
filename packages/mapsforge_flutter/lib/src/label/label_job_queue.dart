@@ -88,6 +88,9 @@ class LabelJobQueue extends ChangeNotifier {
     super.dispose();
     _currentJob?.abort();
     _renderChangedSubscription.cancel();
+    // remove all jobs without throwing exceptions
+    _taskQueue.clear();
+    _taskQueue.cancel();
     _cache.dispose();
   }
 
@@ -149,14 +152,18 @@ class LabelJobQueue extends ChangeNotifier {
     if (myJob._abort) return;
     Tile leftUpper = Tile(left, top, position.zoomlevel, position.indoorLevel);
     Tile rightLower = Tile(min(left + _range - 1, maxTileNbr), min(top + _range - 1, maxTileNbr), position.zoomlevel, position.indoorLevel);
-    RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
-      JobResult result = await renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
-      if (result.renderInfo == null) throw Exception("No renderInfo for $tile from renderer ${renderer.getRenderKey()}");
-      return result.renderInfo!;
-    });
-    if (myJob._abort) return;
-    labelSet.renderInfos.add(collection);
-    _emitLabelSetBatched(labelSet);
+    try {
+      RenderInfoCollection collection = await _cache.getOrProduce(leftUpper, rightLower, (Tile tile) async {
+        JobResult result = await renderer.retrieveLabels(JobRequest(leftUpper, rightLower));
+        if (result.renderInfo == null) throw Exception("No renderInfo for $tile from renderer ${renderer.getRenderKey()}");
+        return result.renderInfo!;
+      });
+      if (myJob._abort) return;
+      labelSet.renderInfos.add(collection);
+      _emitLabelSetBatched(labelSet);
+    } on TimeoutException catch (e) {
+      // job cancelled, ignore this error
+    }
   }
 
   /// Emit tile set with batching to reduce stream emissions

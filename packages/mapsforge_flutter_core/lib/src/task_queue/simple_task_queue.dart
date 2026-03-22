@@ -48,7 +48,7 @@ class SimpleTaskQueue implements TaskQueue {
     while (_queue.isNotEmpty) {
       final item = _queue.removeFirst();
       if (!item.completer.isCompleted) {
-        item.completer.completeError(QueueCancelledException());
+        item.completer.completeError(QueueCancelledException(), StackTrace.current);
       }
     }
   }
@@ -59,7 +59,7 @@ class SimpleTaskQueue implements TaskQueue {
     while (_queue.isNotEmpty) {
       final item = _queue.removeFirst();
       if (!item.completer.isCompleted) {
-        item.completer.completeError(QueueCancelledException());
+        item.completer.completeError(QueueCancelledException(), StackTrace.current);
       }
     }
   }

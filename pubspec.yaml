@@ -1,3 +1,5 @@
+# Install melos (see doc/melos.md)
+# execute "melos bootstrap" to update the yaml files
 name: mapsforge_flutter_monorepo
 description: Offline maps with pure flutter code. Provides rotation, markers, hillshading and much more.
 homepage: https://github.com/mikes222/mapsforge_flutter
@@ -13,7 +15,7 @@ dependency_overrides:
   #  path: ../ecache
 
 dev_dependencies:
-  melos: ^7.3.0
+  melos: ^7.4.1
 workspace:
   - packages/mapsforge_flutter_core
   - packages/mapsforge_flutter_mapfile
@@ -30,13 +32,20 @@ melos:
   command:
     bootstrap:
       dependencies:
+
+        dio: ^5.9.2
+
         ecache: ^2.2.0
+
+        xml: ^6.6.1
+      dev_dependencies:
+
+        lints: ^6.1.0
 
         # flutter_test is not compatible with newer versions currently (08/2025)
         test: ^1.26.2
 
-        xml: ^6.6.1
-      hooks:
+    hooks:
         post: flutter pub upgrade
 
   scripts:

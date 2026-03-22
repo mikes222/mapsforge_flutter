@@ -34,7 +34,7 @@ class ParallelTaskQueue implements TaskQueue {
   @override
   void cancel() {
     for (final item in _nextCycle) {
-      item.completer.completeError(QueueCancelledException());
+      item.completer.completeError(QueueCancelledException(), StackTrace.current);
     }
     _nextCycle.clear();
     _isCancelled = true;

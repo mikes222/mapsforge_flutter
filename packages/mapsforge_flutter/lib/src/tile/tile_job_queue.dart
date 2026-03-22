@@ -101,6 +101,8 @@ class TileJobQueue extends ChangeNotifier {
     super.dispose();
     _currentJob?.abort();
     _renderChangedSubscription.cancel();
+    // remove all jobs without throwing exceptions
+    _taskQueue.clear();
     _taskQueue.cancel();
     _cache.dispose();
   }
@@ -169,32 +171,36 @@ class TileJobQueue extends ChangeNotifier {
 
   Future<void> _producePicture(_CurrentJob myJob, TileSet tileSet, Tile tile) async {
     if (myJob._abort) return;
-    TilePicture? picture = await _cache.getOrProduce(tile, (Tile tile) async {
-      try {
-        JobResult result = await renderer.executeJob(JobRequest(tile));
-        if (result.picture == null) {
-          //return null;
-          // print("No picture for tile $tile");
-          return ImageHelper().createNoDataBitmap();
+    try {
+      TilePicture? picture = await _cache.getOrProduce(tile, (Tile tile) async {
+        try {
+          JobResult result = await renderer.executeJob(JobRequest(tile));
+          if (result.picture == null) {
+            //return null;
+            // print("No picture for tile $tile");
+            return ImageHelper().createNoDataBitmap();
+          }
+          // make sure the picture is converted to an image because rendering (vector) pictures is usually slower than drawing images
+          result.picture!.convertPictureToImage();
+          return result.picture!;
+        } catch (error, stacktrace) {
+          // error in ecache abort() method. The completer should be checked for isComplete() before injecting an exception
+          print(error);
+          print(stacktrace);
+          rethrow;
         }
-        // make sure the picture is converted to an image because rendering (vector) pictures is usually slower than drawing images
-        result.picture!.convertPictureToImage();
-        return result.picture!;
-      } catch (error, stacktrace) {
-        // error in ecache abort() method. The completer should be checked for isComplete() before injecting an exception
-        print(error);
-        print(stacktrace);
-        rethrow;
+      });
+      if (myJob._abort) return;
+      if (picture != null) {
+        tileSet.images[tile] = picture;
+        //print("Added picture for tile $tile for renderer ${renderer.getRenderKey()}");
+      } else {
+        tileSet.images[tile] = await ImageHelper().createNoDataBitmap();
       }
-    });
-    if (myJob._abort) return;
-    if (picture != null) {
-      tileSet.images[tile] = picture;
-      //print("Added picture for tile $tile for renderer ${renderer.getRenderKey()}");
-    } else {
-      tileSet.images[tile] = await ImageHelper().createNoDataBitmap();
+      _emitTileSetBatched(tileSet);
+    } on TimeoutException catch (error, stackTrace) {
+      // we aborted the job, ignore this error
     }
-    _emitTileSetBatched(tileSet);
   }
 
   /// Emit tile set with batching to reduce stream emissions
