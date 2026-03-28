@@ -44,7 +44,7 @@ class TilePicture {
     return _picture;
   }
 
-  /// Returns the underlying `ui.Image`, if it exists.
+  /// Returns the underlying `ui.Image`, if it exists. Do not forget to dispose() the handle.
   ui.Image? getImage() {
     if (_image != null) assert(!_image!.debugDisposed, "Image is already disposed");
     return _image?.clone();

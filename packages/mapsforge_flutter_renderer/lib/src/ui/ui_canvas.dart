@@ -128,6 +128,7 @@ class UiCanvas {
     } else {
       ui.Image image = picture.getImage()!; //await picture.convertPictureToImage()!;
       _uiCanvas.drawImage(image, ui.Offset(left, top), ui.Paint());
+      image.dispose();
     }
     ++_bitmapCount;
   }
