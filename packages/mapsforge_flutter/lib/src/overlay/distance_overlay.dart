@@ -59,9 +59,10 @@ class _DistanceOverlayState extends State<DistanceOverlay> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final viewPadding = MediaQuery.viewPaddingOf(context);
     return Positioned(
-      bottom: toolbarSpacing,
-      left: toolbarSpacing,
+      bottom: toolbarSpacing + viewPadding.bottom,
+      left: toolbarSpacing + viewPadding.left,
       //right: toolbarSpacing,
       // this widget has an unbound width
       // left: toolbarSpacing,

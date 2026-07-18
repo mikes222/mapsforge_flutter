@@ -118,7 +118,7 @@ class SimpleTaskQueue implements TaskQueue {
       } else {
         _isProcessing = false;
       }
-    });
+    }, );
   }
 }
 

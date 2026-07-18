@@ -55,16 +55,17 @@ class _ZoomOverlayState extends State<ZoomOverlay> with SingleTickerProviderStat
 
     final brightness = MediaQuery.platformBrightnessOf(context);
     final fillColor = Theme.of(context).buttonTheme.colorScheme?.surface ?? (brightness == Brightness.light ? Colors.white : Colors.black);
+    final viewPadding = MediaQuery.viewPaddingOf(context);
 
     return Positioned(
       top: widget.top != null ? max(widget.top!, toolbarSpacing) : null,
       right: (widget.right == null && widget.left == null)
-          ? toolbarSpacing
+          ? toolbarSpacing + viewPadding.right
           : widget.right != null
           ? max(widget.right!, toolbarSpacing)
           : null,
       bottom: (widget.top == null && widget.bottom == null)
-          ? toolbarSpacing
+          ? toolbarSpacing + viewPadding.bottom
           : widget.bottom != null
           ? max(widget.bottom!, toolbarSpacing)
           : null,
