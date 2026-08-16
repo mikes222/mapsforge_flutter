@@ -9,9 +9,9 @@ class SimpleContextMenu extends StatelessWidget {
 
   final Widget? child;
 
-  final MapModel? mapModel;
+  final TapEventListener? tapEventListener;
 
-  const SimpleContextMenu({super.key, required this.info, this.child, this.mapModel});
+  const SimpleContextMenu({super.key, required this.info, this.child, this.tapEventListener});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class SimpleContextMenu extends StatelessWidget {
         info.diffX > 3 * info.halfScreenWidth ||
         info.diffY < -info.halfScreenHeight ||
         info.diffY > 3 * info.halfScreenHeight) {
-      info.mapModel.tap(null);
+      tapEventListener!.tap(info.mapModel);
       return const SizedBox();
     }
     return SimpleContextMenuWidget(
@@ -30,10 +30,10 @@ class SimpleContextMenu extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              info.mapModel.tap(null);
+              tapEventListener!.tap(info.mapModel);
             },
-            onLongPress: () {
-              Clipboard.setData(ClipboardData(text: "${info.latitude.toStringAsFixed(6)}, ${info.longitude.toStringAsFixed(6)}"));
+            onLongPress: () async {
+              await Clipboard.setData(ClipboardData(text: "${info.latitude.toStringAsFixed(6)}, ${info.longitude.toStringAsFixed(6)}"));
             },
             // use a column to make the ink area a bit bigger
             child: Column(
@@ -42,11 +42,11 @@ class SimpleContextMenu extends StatelessWidget {
                   children: [
                     Text("${info.latitude.toStringAsFixed(6)} / ${info.longitude.toStringAsFixed(6)}"),
                     const SizedBox(width: 12),
-                    if (mapModel != null)
+                    if (tapEventListener != null)
                       IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () {
-                          mapModel!.tap(null);
+                          tapEventListener!.tap(info.mapModel);
                         },
                       ),
                   ],

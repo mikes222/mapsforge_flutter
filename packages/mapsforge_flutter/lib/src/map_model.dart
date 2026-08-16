@@ -321,6 +321,17 @@ enum TapEventListener {
         return mapModel.longTapStream;
     }
   }
+
+  void tap(MapModel mapModel) {
+    switch (this) {
+      case TapEventListener.singleTap:
+        return mapModel._tapSubject.add(null);
+      case TapEventListener.doubleTap:
+        return mapModel._doubleTapSubject.add(null);
+      case TapEventListener.longTap:
+        return mapModel._longTapSubject.add(null);
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////

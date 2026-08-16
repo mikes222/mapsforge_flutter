@@ -31,7 +31,7 @@ dependencies:
   # MIT License
   # for reading the rendertheme xml file
   # compatibility problems with flutter_svg
-  xml: ^6.6.1
+  xml: ^7.0.1
 
 
 dev_dependencies:
