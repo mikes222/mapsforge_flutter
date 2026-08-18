@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:ecache/ecache.dart';
 import 'package:flutter/cupertino.dart';
@@ -222,36 +223,50 @@ class TileJobQueue extends ChangeNotifier {
   /// the user (tile in the middle should be created first
   ///
   List<Tile> _createTiles({required MapPosition mapPosition, required TileDimension tileDimension}) {
-    int zoomLevel = mapPosition.zoomlevel;
-    int indoorLevel = mapPosition.indoorLevel;
-    Mappoint center = mapPosition.getCenter();
+    final int zoomLevel = mapPosition.zoomlevel;
+    final int indoorLevel = mapPosition.indoorLevel;
+    final Mappoint center = mapPosition.getCenter();
+    final double tileSize = MapsforgeSettingsMgr().tileSize;
+    final double halfTileSize = tileSize / 2;
     // shift the center to the left-upper corner of a tile since we will calculate the distance to the left-upper corners of each tile
-    MappointRelative relative = center.offset(Mappoint(MapsforgeSettingsMgr().tileSize / 2, MapsforgeSettingsMgr().tileSize / 2));
-    Map<Tile, double> tileMap = <Tile, double>{};
-    for (int tileY = tileDimension.minTop; tileY <= tileDimension.minBottom; ++tileY) {
-      for (int tileX = tileDimension.minLeft; tileX <= tileDimension.minRight; ++tileX) {
-        Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
-        Mappoint leftUpper = tile.getLeftUpper();
-        // Replace pow() with multiplication for better performance
-        double dx = leftUpper.x - relative.dx;
-        double dy = leftUpper.y - relative.dy;
-        tileMap[tile] = dx * dx + dy * dy;
-      }
-    }
-    //_log.info("$tileTop, $tileBottom, sort ${tileMap.length} items");
+    final MappointRelative relative = MappointRelative(center.x - halfTileSize, center.y - halfTileSize);
 
-    List<Tile> sortedKeys = tileMap.keys.toList(growable: false)..sort((k1, k2) => tileMap[k1]!.compareTo(tileMap[k2]!));
+    final int startX = min(tileDimension.minLeft, tileDimension.left);
+    final int endX = max(tileDimension.minRight, tileDimension.right);
+    final int startY = min(tileDimension.minTop, tileDimension.top);
+    final int endY = max(tileDimension.minBottom, tileDimension.bottom);
 
-    for (int tileY = tileDimension.top; tileY <= tileDimension.bottom; ++tileY) {
-      for (int tileX = tileDimension.left; tileX <= tileDimension.right; ++tileX) {
-        if (tileX >= tileDimension.minLeft && tileX <= tileDimension.minRight && tileY >= tileDimension.minTop && tileY <= tileDimension.minBottom) continue;
-        Tile tile = Tile(tileX, tileY, zoomLevel, indoorLevel);
-        sortedKeys.add(tile);
-      }
+    final int totalTiles = (endX - startX + 1) * (endY - startY + 1);
+    if (totalTiles <= 0) {
+      return const [];
     }
 
-    return sortedKeys;
+    // Pre-size the working list and the final result to avoid repeated resizing.
+    final List<_TileDistance> entries = List<_TileDistance>.filled(totalTiles, _TileDistance(Tile(0, 0, 0, 0), 0.0));
+    int index = 0;
+    for (int tileY = startY; tileY <= endY; ++tileY) {
+      final double leftUpperY = tileY * tileSize;
+      for (int tileX = startX; tileX <= endX; ++tileX) {
+        final double leftUpperX = tileX * tileSize;
+        final double dx = leftUpperX - relative.dx;
+        final double dy = leftUpperY - relative.dy;
+        entries[index++] = _TileDistance(Tile(tileX, tileY, zoomLevel, indoorLevel), dx * dx + dy * dy);
+      }
+    }
+
+    entries.sort((a, b) => a.distance.compareTo(b.distance));
+
+    return List<Tile>.generate(totalTiles, (i) => entries[i].tile, growable: false);
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _TileDistance {
+  final Tile tile;
+  final double distance;
+
+  _TileDistance(this.tile, this.distance);
 }
 
 //////////////////////////////////////////////////////////////////////////////

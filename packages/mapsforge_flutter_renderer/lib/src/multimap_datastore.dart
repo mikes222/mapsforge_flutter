@@ -60,10 +60,20 @@ class MultimapDatastore extends Datastore {
   Future<void> removeDatastore(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) async {
     BoundingBox toRemove = BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
     _boundingBox = null;
-    for (Datastore datastore in List.from(datastores)) {
-      BoundingBox? datastoreBoundary = _datastoreBoundaries[datastore];
-      datastoreBoundary ??= await datastore.getBoundingBox();
+    final List<Datastore> datastoresList = datastores.toList();
 
+    // Fetch all boundaries in parallel, using the cache when available.
+    final List<Future<BoundingBox>> futures = [];
+    for (Datastore datastore in datastoresList) {
+      BoundingBox? datastoreBoundary = _datastoreBoundaries[datastore];
+      futures.add(datastoreBoundary != null ? Future.value(datastoreBoundary) : datastore.getBoundingBox());
+    }
+    final List<BoundingBox> boundaries = await Future.wait(futures);
+
+    for (int i = 0; i < datastoresList.length; ++i) {
+      Datastore datastore = datastoresList[i];
+      BoundingBox datastoreBoundary = boundaries[i];
+      _datastoreBoundaries[datastore] = datastoreBoundary;
       if (toRemove.intersects(datastoreBoundary)) {
         datastores.remove(datastore);
         _datastoreBoundaries.remove(datastore);
@@ -103,26 +113,27 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<DatastoreBundle?> readLabelsSingle(Tile tile) async {
+    final List<Datastore> datastoresList = datastores.toList();
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
-        for (Datastore mdb in List.from(datastores)) {
+        for (Datastore mdb in datastoresList) {
           if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             return mdb.readLabelsSingle(tile);
           }
         }
         return null;
       case DataPolicy.RETURN_ALL:
-        return _readLabelsDedup(tile, false);
+        return _readLabelsDedup(tile, false, datastoresList);
       case DataPolicy.DEDUPLICATE:
-        return _readLabelsDedup(tile, true);
+        return _readLabelsDedup(tile, true, datastoresList);
     }
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreBundle> _readLabelsDedup(Tile tile, bool deduplicate) async {
+  Future<DatastoreBundle> _readLabelsDedup(Tile tile, bool deduplicate, List<Datastore> datastoresList) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
     List<Future<DatastoreBundle?>> futures = [];
-    for (Datastore mdb in List.from(datastores)) {
+    for (Datastore mdb in datastoresList) {
       futures.add(() async {
         if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
           //_log.info("Tile ${tile.toString()} is supported by ${mdb.toString()}");
@@ -146,26 +157,27 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<DatastoreBundle?> readLabels(Tile upperLeft, Tile lowerRight) async {
+    final List<Datastore> datastoresList = datastores.toList();
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
-        for (Datastore mdb in List.from(datastores)) {
+        for (Datastore mdb in datastoresList) {
           if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
             return mdb.readLabels(upperLeft, lowerRight);
           }
         }
         return null;
       case DataPolicy.RETURN_ALL:
-        return _readLabels(upperLeft, lowerRight, false);
+        return _readLabels(upperLeft, lowerRight, false, datastoresList);
       case DataPolicy.DEDUPLICATE:
-        return _readLabels(upperLeft, lowerRight, true);
+        return _readLabels(upperLeft, lowerRight, true, datastoresList);
     }
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreBundle> _readLabels(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+  Future<DatastoreBundle> _readLabels(Tile upperLeft, Tile lowerRight, bool deduplicate, List<Datastore> datastoresList) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
     List<Future<DatastoreBundle?>> futures = [];
-    for (Datastore mdb in List.of(datastores)) {
+    for (Datastore mdb in datastoresList) {
       futures.add(() async {
         if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
           DatastoreBundle? result = await mdb.readLabels(upperLeft, lowerRight);
@@ -188,26 +200,27 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<DatastoreBundle?> readMapDataSingle(Tile tile) async {
+    final List<Datastore> datastoresList = datastores.toList();
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
-        for (Datastore mdb in List.from(datastores)) {
+        for (Datastore mdb in datastoresList) {
           if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             return mdb.readMapDataSingle(tile);
           }
         }
         return null;
       case DataPolicy.RETURN_ALL:
-        return _readMapData(tile, false);
+        return _readMapData(tile, false, datastoresList);
       case DataPolicy.DEDUPLICATE:
-        return _readMapData(tile, true);
+        return _readMapData(tile, true, datastoresList);
     }
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreBundle?> _readMapData(Tile tile, bool deduplicate) async {
+  Future<DatastoreBundle?> _readMapData(Tile tile, bool deduplicate, List<Datastore> datastoresList) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
     List<Future<DatastoreBundle?>> futures = [];
-    for (Datastore mdb in List.of(datastores)) {
+    for (Datastore mdb in datastoresList) {
       try {
         futures.add(() async {
           if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
@@ -238,34 +251,46 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<DatastoreBundle> readMapData(Tile upperLeft, Tile lowerRight) async {
+    final List<Datastore> datastoresList = datastores.toList();
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
-        for (Datastore mdb in List.from(datastores)) {
+        for (Datastore mdb in datastoresList) {
           if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
             return mdb.readMapData(upperLeft, lowerRight);
           }
         }
         return DatastoreBundle(pointOfInterests: [], ways: []);
       case DataPolicy.RETURN_ALL:
-        return _readMapDataDedup(upperLeft, lowerRight, false);
+        return _readMapDataDedup(upperLeft, lowerRight, false, datastoresList);
       case DataPolicy.DEDUPLICATE:
-        return _readMapDataDedup(upperLeft, lowerRight, true);
+        return _readMapDataDedup(upperLeft, lowerRight, true, datastoresList);
     }
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreBundle> _readMapDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+  Future<DatastoreBundle> _readMapDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate, List<Datastore> datastoresList) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
+    List<Future<DatastoreBundle?>> futures = [];
+    for (Datastore mdb in datastoresList) {
+      futures.add(() async {
+        if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
+          //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
+          DatastoreBundle result = await mdb.readMapData(upperLeft, lowerRight);
+          return result;
+        }
+        return null;
+      }());
+    }
+    List<DatastoreBundle?> results = await Future.wait(futures);
     bool found = false;
-    for (Datastore mdb in List.from(datastores)) {
-      if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
-        //_log.info("Tile3 ${upperLeft.toString()} is supported by ${mdb.toString()}");
-        DatastoreBundle result = await mdb.readMapData(upperLeft, lowerRight);
-        found = true;
-        bool isWater = mapReadResult.isWater & result.isWater;
-        mapReadResult.isWater = isWater;
-        mapReadResult.addDeduplicate(result, deduplicate);
+    for (DatastoreBundle? result in results) {
+      if (result == null) {
+        continue;
       }
+      found = true;
+      bool isWater = mapReadResult.isWater & result.isWater;
+      mapReadResult.isWater = isWater;
+      mapReadResult.addDeduplicate(result, deduplicate);
     }
     if (!found) return DatastoreBundle(pointOfInterests: [], ways: []);
     return mapReadResult;
@@ -273,68 +298,86 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<DatastoreBundle?> readPoiDataSingle(Tile tile) async {
+    final List<Datastore> datastoresList = datastores.toList();
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
-        for (Datastore mdb in datastores) {
+        for (Datastore mdb in datastoresList) {
           if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
             return mdb.readPoiDataSingle(tile);
           }
         }
         return null;
       case DataPolicy.RETURN_ALL:
-        return _readPoiData(tile, false);
+        return _readPoiData(tile, false, datastoresList);
       case DataPolicy.DEDUPLICATE:
-        return _readPoiData(tile, true);
+        return _readPoiData(tile, true, datastoresList);
     }
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreBundle> _readPoiData(Tile tile, bool deduplicate) async {
+  Future<DatastoreBundle> _readPoiData(Tile tile, bool deduplicate, List<Datastore> datastoresList) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
-    for (Datastore mdb in datastores) {
-      if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
-        DatastoreBundle? result = await mdb.readPoiDataSingle(tile);
-        if (result == null) {
-          continue;
+    List<Future<DatastoreBundle?>> futures = [];
+    for (Datastore mdb in datastoresList) {
+      futures.add(() async {
+        if (_datastoreIntersectsTile(mdb, tile) && (await mdb.supportsTile(tile))) {
+          DatastoreBundle? result = await mdb.readPoiDataSingle(tile);
+          return result;
         }
-        bool isWater = mapReadResult.isWater & result.isWater;
-        mapReadResult.isWater = isWater;
-        mapReadResult.addDeduplicate(result, deduplicate);
+        return null;
+      }());
+    }
+    List<DatastoreBundle?> results = await Future.wait(futures);
+    for (DatastoreBundle? result in results) {
+      if (result == null) {
+        continue;
       }
+      bool isWater = mapReadResult.isWater & result.isWater;
+      mapReadResult.isWater = isWater;
+      mapReadResult.addDeduplicate(result, deduplicate);
     }
     return mapReadResult;
   }
 
   @override
   Future<DatastoreBundle?> readPoiData(Tile upperLeft, Tile lowerRight) async {
+    final List<Datastore> datastoresList = datastores.toList();
     switch (dataPolicy) {
       case DataPolicy.RETURN_FIRST:
-        for (Datastore mdb in datastores) {
+        for (Datastore mdb in datastoresList) {
           if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
             return mdb.readPoiData(upperLeft, lowerRight);
           }
         }
         return null;
       case DataPolicy.RETURN_ALL:
-        return _readPoiDataDedup(upperLeft, lowerRight, false);
+        return _readPoiDataDedup(upperLeft, lowerRight, false, datastoresList);
       case DataPolicy.DEDUPLICATE:
-        return _readPoiDataDedup(upperLeft, lowerRight, true);
+        return _readPoiDataDedup(upperLeft, lowerRight, true, datastoresList);
     }
     //throw new Exception("Invalid data policy for multi map database");
   }
 
-  Future<DatastoreBundle> _readPoiDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate) async {
+  Future<DatastoreBundle> _readPoiDataDedup(Tile upperLeft, Tile lowerRight, bool deduplicate, List<Datastore> datastoresList) async {
     DatastoreBundle mapReadResult = DatastoreBundle(pointOfInterests: [], ways: []);
-    for (Datastore mdb in datastores) {
-      if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
-        DatastoreBundle? result = await mdb.readPoiData(upperLeft, lowerRight);
-        if (result == null) {
-          continue;
+    List<Future<DatastoreBundle?>> futures = [];
+    for (Datastore mdb in datastoresList) {
+      futures.add(() async {
+        if (_datastoreIntersectsTile(mdb, upperLeft) && (await mdb.supportsTile(upperLeft))) {
+          DatastoreBundle? result = await mdb.readPoiData(upperLeft, lowerRight);
+          return result;
         }
-        bool isWater = mapReadResult.isWater & result.isWater;
-        mapReadResult.isWater = isWater;
-        mapReadResult.addDeduplicate(result, deduplicate);
+        return null;
+      }());
+    }
+    List<DatastoreBundle?> results = await Future.wait(futures);
+    for (DatastoreBundle? result in results) {
+      if (result == null) {
+        continue;
       }
+      bool isWater = mapReadResult.isWater & result.isWater;
+      mapReadResult.isWater = isWater;
+      mapReadResult.addDeduplicate(result, deduplicate);
     }
     return mapReadResult;
   }
@@ -349,13 +392,14 @@ class MultimapDatastore extends Datastore {
 
   @override
   Future<bool> supportsTile(Tile tile) async {
+    final List<Datastore> datastoresList = datastores.toList();
     List<Future<bool>> futures = [];
-    for (Datastore mdb in List.from(datastores)) {
-      futures.add(() async {
+    for (Datastore mdb in datastoresList) {
+      futures.add(() {
         if (_datastoreIntersectsTile(mdb, tile)) {
           return mdb.supportsTile(tile);
         }
-        return false;
+        return Future.value(false);
       }());
     }
     List<bool> results = await Future.wait(futures);
@@ -370,9 +414,19 @@ class MultimapDatastore extends Datastore {
   @override
   Future<BoundingBox> getBoundingBox() async {
     if (_boundingBox != null) return _boundingBox!;
-    for (Datastore datastore in List.from(datastores)) {
+    final List<Datastore> datastoresList = datastores.toList();
+
+    // Fetch all boundaries in parallel, using the cache when available.
+    final List<Future<BoundingBox>> futures = [];
+    for (Datastore datastore in datastoresList) {
       BoundingBox? boundingBox = _datastoreBoundaries[datastore];
-      boundingBox ??= await datastore.getBoundingBox();
+      futures.add(boundingBox != null ? Future.value(boundingBox) : datastore.getBoundingBox());
+    }
+    final List<BoundingBox> boundaries = await Future.wait(futures);
+
+    for (int i = 0; i < datastoresList.length; ++i) {
+      Datastore datastore = datastoresList[i];
+      BoundingBox boundingBox = boundaries[i];
       _datastoreBoundaries[datastore] = boundingBox;
 
       if (null == _boundingBox) {

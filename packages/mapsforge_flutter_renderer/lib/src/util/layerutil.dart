@@ -1,5 +1,5 @@
-import 'package:mapsforge_flutter_renderer/src/util/spatial_boundary_index.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
+import 'package:mapsforge_flutter_rendertheme/spatial_boundary_index.dart';
 
 /// A utility class for handling layer-related operations, such as collision
 /// detection and removal.
@@ -38,7 +38,7 @@ class LayerUtil {
 
   /// Optimized collision removal using spatial indexing
   static List<RenderInfo> _removeCollisionsWithSpatialIndex(List<RenderInfo> addElements, List<RenderInfo> keepElements) {
-    final spatialIndex = SpatialBoundaryIndex(cellSize: 128.0);
+    final spatialIndex = SpatialBoundaryIndex<RenderInfo>(cellSize: 128.0);
 
     // Add all keep elements to spatial index
     for (final element in keepElements) {

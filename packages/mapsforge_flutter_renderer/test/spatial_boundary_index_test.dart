@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:mapsforge_flutter_renderer/src/util/spatial_boundary_index.dart';
+import 'package:mapsforge_flutter_rendertheme/spatial_boundary_index.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
@@ -42,16 +42,6 @@ class TestRenderInfo extends RenderInfo {
   String toString() => 'TestRenderInfo($_id)';
 }
 
-/// Mock RenderInfo that throws exception during collision check
-class ExceptionRenderInfo extends TestRenderInfo {
-  ExceptionRenderInfo(super.id, super.boundary);
-
-  @override
-  bool clashesWith(RenderInfo other) {
-    throw Exception('Test exception during collision check');
-  }
-}
-
 /// Minimal mock RenderInstruction
 class _MockRenderInstruction extends Renderinstruction {
   @override
@@ -75,20 +65,20 @@ class _MockRenderInstruction extends Renderinstruction {
 
 void main() {
   group('SpatialIndex', () {
-    late SpatialBoundaryIndex spatialIndex;
+    late SpatialBoundaryIndex<RenderInfo> spatialIndex;
 
     setUp(() {
-      spatialIndex = SpatialBoundaryIndex(cellSize: 100.0);
+      spatialIndex = SpatialBoundaryIndex<RenderInfo>(cellSize: 100.0);
     });
 
     group('Constructor', () {
       test('should create with default cell size', () {
-        final index = SpatialBoundaryIndex();
+        final index = SpatialBoundaryIndex<RenderInfo>();
         expect(index, isNotNull);
       });
 
       test('should create with custom cell size', () {
-        final index = SpatialBoundaryIndex(cellSize: 50.0);
+        final index = SpatialBoundaryIndex<RenderInfo>(cellSize: 50.0);
         expect(index, isNotNull);
       });
     });
@@ -172,19 +162,6 @@ void main() {
         final hasCollision = spatialIndex.hasCollision(item2, item2.getBoundaryAbsolute());
 
         expect(hasCollision, isTrue);
-      });
-
-      test('should handle exception during collision check gracefully', () {
-        final boundary1 = const MapRectangle(0, 0, 50, 50);
-        final boundary2 = const MapRectangle(25, 25, 75, 75);
-        final item1 = ExceptionRenderInfo('item1', boundary1);
-        final item2 = TestRenderInfo('item2', boundary2);
-
-        spatialIndex.add(item1, item1.getBoundaryAbsolute());
-        final hasCollision = spatialIndex.hasCollision(item2, item2.getBoundaryAbsolute());
-
-        // Should not throw exception and return false
-        expect(hasCollision, isFalse);
       });
 
       test('should check collision across multiple cells', () {

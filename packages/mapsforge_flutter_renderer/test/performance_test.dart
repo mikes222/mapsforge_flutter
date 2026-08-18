@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/src/utils/object_pool.dart';
 import 'package:mapsforge_flutter_renderer/src/util/layerutil.dart';
-import 'package:mapsforge_flutter_renderer/src/util/spatial_boundary_index.dart';
+import 'package:mapsforge_flutter_rendertheme/spatial_boundary_index.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 
@@ -59,7 +59,7 @@ class MockRenderInfo extends RenderInfo {
 void main() {
   group('Performance Optimization Tests', () {
     test('Spatial Index Performance', () {
-      final spatialIndex = SpatialBoundaryIndex(cellSize: 100.0);
+      final spatialIndex = SpatialBoundaryIndex<RenderInfo>(cellSize: 100.0);
       final stopwatch = Stopwatch()..start();
 
       // Add 1000 items to spatial index
@@ -178,7 +178,7 @@ void main() {
       final overallStopwatch = Stopwatch()..start();
 
       // Simulate a complex rendering scenario
-      final spatialIndex = SpatialBoundaryIndex();
+      final spatialIndex = SpatialBoundaryIndex<RenderInfo>();
       final renderItems = <MockRenderInfo>[];
 
       // Create 500 render items

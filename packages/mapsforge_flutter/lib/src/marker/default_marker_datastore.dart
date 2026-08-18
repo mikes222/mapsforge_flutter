@@ -23,22 +23,34 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     _currentMarkers?.setStop();
     _CurrentMarkers<T> currentMarkers = _CurrentMarkers(zoomlevel: zoomlevel, boundingBox: boundingBox, projection: projection);
     _currentMarkers = currentMarkers;
-    unawaited(_reinitMarkers(currentMarkers, List.of(_markers)));
+    unawaited(_reinitMarkers(currentMarkers, _markers));
   }
 
   /// reinit all markers after zoomlevel changed
-  Future<void> _reinitMarkers(_CurrentMarkers<T> currentMarkers, List<Marker<T>> markers) async {
+  Future<void> _reinitMarkers(_CurrentMarkers<T> currentMarkers, Iterable<Marker<T>> markers) async {
+    // Snapshot and filter the markers that should be painted in one pass.
+    // This avoids concurrent modification of [_markers] while async
+    // re-initialization is in progress.
+    List<Marker<T>> toReinit = markers.where((marker) => marker.shouldPaint(currentMarkers.boundingBox, currentMarkers.zoomlevel)).toList();
+    if (toReinit.isEmpty) return;
+
     int count = 0;
-    for (var marker in markers) {
-      if (marker.shouldPaint(currentMarkers.boundingBox, currentMarkers.zoomlevel)) {
-        await reinitOneMarker(currentMarkers, marker);
-        if (currentMarkers.stop) return;
-        ++count;
-        if ((count % 100) == 0) {
-          // every 100 markers trigger a repaint
-          // setRepaint would not work without setting the currentMarkers to the class variable
-          requestRepaint();
-        }
+    const int batchSize = 50;
+    for (int i = 0; i < toReinit.length; i += batchSize) {
+      if (currentMarkers.stop) return;
+
+      final int end = (i + batchSize < toReinit.length) ? i + batchSize : toReinit.length;
+      final List<Future<void>> futures = [];
+      for (int j = i; j < end; ++j) {
+        futures.add(reinitOneMarker(currentMarkers, toReinit[j]));
+      }
+      await Future.wait(futures);
+
+      count += end - i;
+      if ((count % 100) == 0) {
+        // every 100 markers trigger a repaint
+        // setRepaint would not work without setting the currentMarkers to the class variable
+        requestRepaint();
       }
     }
     if ((count % 100) != 0 && !currentMarkers.stop) {

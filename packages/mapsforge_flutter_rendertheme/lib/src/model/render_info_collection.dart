@@ -1,3 +1,5 @@
+import 'package:mapsforge_flutter_core/model.dart';
+import 'package:mapsforge_flutter_rendertheme/spatial_boundary_index.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/render_info.dart';
 
 class RenderInfoCollection {
@@ -25,24 +27,19 @@ class RenderInfoCollection {
     renderInfos.sort((a, b) => b.renderInstruction.priority.compareTo(a.renderInstruction.priority));
     // in order of priority, see if an item can be drawn, i.e. none of the items
     // in the currentItemsToDraw list clashes with it.
-    List<RenderInfo> output = [];
+    // Use a spatial index to avoid an O(n²) collision scan.
+    final SpatialBoundaryIndex<RenderInfo> spatialIndex = SpatialBoundaryIndex(cellSize: 128.0);
+    final List<RenderInfo> output = [];
     for (RenderInfo item in renderInfos) {
-      if (haveSpace(item, output)) {
+      MapRectangle boundary = item.getBoundaryAbsolute();
+      if (!spatialIndex.hasCollision(item, boundary)) {
         output.add(item);
+        spatialIndex.add(item, boundary);
       } else {
         //item.dispose();
       }
     }
     renderInfos.clear();
     renderInfos.addAll(output);
-  }
-
-  bool haveSpace(RenderInfo item, List<RenderInfo> list) {
-    for (RenderInfo outputElement in list) {
-      if (outputElement.clashesWith(item)) {
-        return false;
-      }
-    }
-    return true;
   }
 }
