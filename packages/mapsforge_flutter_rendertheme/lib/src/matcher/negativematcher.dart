@@ -3,10 +3,12 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'attributematcher.dart';
 
 class NegativeMatcher implements AttributeMatcher {
-  final List<String> keys;
-  final List<String> values;
+  final Set<String> keys;
+  final Set<String> values;
 
-  const NegativeMatcher(this.keys, this.values);
+  NegativeMatcher(List<String> keys, List<String> values)
+      : keys = Set.unmodifiable(keys),
+        values = Set.unmodifiable(values);
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {
@@ -28,6 +30,6 @@ class NegativeMatcher implements AttributeMatcher {
 
   @override
   String toString() {
-    return 'NegativeMatcher{keyList: $keys, valueList: $values}';
+    return 'NegativeMatcher{keyList: ${keys.toList()}, valueList: ${values.toList()}}';
   }
 }

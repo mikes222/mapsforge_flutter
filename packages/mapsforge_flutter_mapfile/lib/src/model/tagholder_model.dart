@@ -6,9 +6,13 @@ class TagholderModel {
 
   final Map<int, int> _poiCounts = {};
 
+  final Map<String, int> _poiTagIndex = {};
+
   final List<Tagholder> _wayTags = [];
 
   final Map<int, int> _wayCounts = {};
+
+  final Map<String, int> _wayTagIndex = {};
 
   static final List<String> _mapfilePoiTags = [
     MapfileHelper.TAG_KEY_NAME,
@@ -48,32 +52,34 @@ class TagholderModel {
     return _mapfileWayTags.contains(key);
   }
 
+  static String _cacheKey(String key, String value) => '$key\u0000$value';
+
   int getPoiTagIndex(String key, String value) {
-    int index = 0;
-    for (var tagholder in _poiTags) {
-      if (tagholder.key == key && tagholder.value == value) {
-        _poiCounts[index] = (_poiCounts[index] ?? 0) + 1;
-        return index;
-      }
-      ++index;
+    final cacheKey = _cacheKey(key, value);
+    final existingIndex = _poiTagIndex[cacheKey];
+    if (existingIndex != null) {
+      _poiCounts[existingIndex] = (_poiCounts[existingIndex] ?? 0) + 1;
+      return existingIndex;
     }
-    var result = Tagholder(key, value);
+    final index = _poiTags.length;
+    final result = Tagholder(key, value);
     _poiTags.add(result);
+    _poiTagIndex[cacheKey] = index;
     _poiCounts[index] = (_poiCounts[index] ?? 0) + 1;
     return index;
   }
 
   int getWayTagIndex(String key, String value) {
-    int index = 0;
-    for (var tagholder in _wayTags) {
-      if (tagholder.key == key && tagholder.value == value) {
-        _wayCounts[index] = (_wayCounts[index] ?? 0) + 1;
-        return index;
-      }
-      ++index;
+    final cacheKey = _cacheKey(key, value);
+    final existingIndex = _wayTagIndex[cacheKey];
+    if (existingIndex != null) {
+      _wayCounts[existingIndex] = (_wayCounts[existingIndex] ?? 0) + 1;
+      return existingIndex;
     }
-    var result = Tagholder(key, value);
+    final index = _wayTags.length;
+    final result = Tagholder(key, value);
     _wayTags.add(result);
+    _wayTagIndex[cacheKey] = index;
     _wayCounts[index] = (_wayCounts[index] ?? 0) + 1;
     return index;
   }

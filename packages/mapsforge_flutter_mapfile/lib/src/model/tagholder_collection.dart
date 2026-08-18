@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_mapfile/mapfile_writer.dart';
 import 'package:mapsforge_flutter_mapfile/src/helper/mapfile_helper.dart';
@@ -11,8 +10,17 @@ class TagholderCollection implements ITagCollection {
   static const Set<String> DO_WAY_NORMALIZE = {"ele"};
 
   final List<Tagholder> _tagholders;
+  final Set<String> _keySet;
+  final Set<String> _valueSet;
+  final Map<String, Tagholder> _tagholderByKey;
 
-  TagholderCollection._({required List<Tagholder> tagholders}) : _tagholders = tagholders;
+  TagholderCollection._({required List<Tagholder> tagholders})
+      : _tagholders = tagholders,
+        _keySet = {},
+        _valueSet = {},
+        _tagholderByKey = {} {
+    _buildCaches();
+  }
 
   factory TagholderCollection.empty() {
     return TagholderCollection._(tagholders: []);
@@ -50,18 +58,29 @@ class TagholderCollection implements ITagCollection {
     return _tagholders.length;
   }
 
+  void _buildCaches() {
+    _keySet.clear();
+    _valueSet.clear();
+    _tagholderByKey.clear();
+    for (final tagholder in _tagholders) {
+      _keySet.add(tagholder.key);
+      _valueSet.add(tagholder.value);
+      _tagholderByKey.putIfAbsent(tagholder.key, () => tagholder);
+    }
+  }
+
   /// Returns true if this POI has a tag with the given [key].
   bool hasTag(String key) {
-    return _tagholders.firstWhereOrNull((test) => test.key == key) != null;
+    return _tagholderByKey.containsKey(key);
   }
 
   /// Returns true if this POI has a tag with the given [key] and [value].
   bool hasTagValue(String key, String value) {
-    return _tagholders.firstWhereOrNull((test) => test.key == key && test.value == value) != null;
+    return _tagholderByKey[key]?.value == value;
   }
 
   Tagholder? get(String key) {
-    return _tagholders.firstWhereOrNull((test) => test.key == key);
+    return _tagholderByKey[key];
   }
 
   bool get isNotEmpty {
@@ -70,6 +89,7 @@ class TagholderCollection implements ITagCollection {
 
   void _remove(Tagholder tagholder) {
     _tagholders.remove(tagholder);
+    _buildCaches();
   }
 
   String? extractName(List<String> languagesPreferences) {
@@ -175,19 +195,17 @@ class TagholderCollection implements ITagCollection {
 
   @override
   String? getTag(String key) {
-    return _tagholders.firstWhereOrNull((test) => test.key == key)?.value;
+    return _tagholderByKey[key]?.value;
   }
 
   @override
-  bool matchesTagList(List<String> keys) {
-    Tagholder? tag = _tagholders.firstWhereOrNull((element) => keys.contains(element.key));
-    return tag != null;
+  bool matchesTagList(Iterable<String> keys) {
+    return keys.any(_keySet.contains);
   }
 
   @override
-  bool valueMatchesTagList(List<String> values) {
-    Tagholder? tag = _tagholders.firstWhereOrNull((element) => values.contains(element.value));
-    return tag != null;
+  bool valueMatchesTagList(Iterable<String> values) {
+    return values.any(_valueSet.contains);
   }
 
   int writePoiTags(Writebuffer writebuffer, TagholderModel model) {

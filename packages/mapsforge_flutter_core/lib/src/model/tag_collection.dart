@@ -1,17 +1,39 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/src/utils/list_helper.dart';
 
 /// A collection of `Tag` objects that provides a convenient way to access tags by key.
 class TagCollection implements ITagCollection {
   final List<Tag> _tags;
+  final Set<String> _keySet;
+  final Set<String> _valueSet;
+  final Map<String, Tag> _tagsByKey;
 
   final int _hashCode;
 
   /// Creates a new `TagCollection`.
-  TagCollection({required List<Tag> tags}) : _tags = tags, _hashCode = _calculateHashCode(tags);
+  TagCollection({required List<Tag> tags})
+      : _tags = tags,
+        _hashCode = _calculateHashCode(tags),
+        _keySet = {},
+        _valueSet = {},
+        _tagsByKey = {} {
+    _buildCaches(tags);
+  }
 
-  const TagCollection.empty() : _tags = const [], _hashCode = 0;
+  const TagCollection.empty()
+      : _tags = const [],
+        _hashCode = 0,
+        _keySet = const {},
+        _valueSet = const {},
+        _tagsByKey = const {};
+
+  void _buildCaches(List<Tag> tags) {
+    for (final tag in tags) {
+      _keySet.add(tag.key);
+      _valueSet.add(tag.value);
+      _tagsByKey.putIfAbsent(tag.key, () => tag);
+    }
+  }
 
   /// Creates a list of `Tag` objects from a map of key-value pairs.
   static TagCollection from(Map<String, String> tags) {
@@ -48,30 +70,28 @@ class TagCollection implements ITagCollection {
 
   /// Returns true if this POI has a tag with the given [key].
   bool hasTag(String key) {
-    return _tags.firstWhereOrNull((test) => test.key == key) != null;
+    return _tagsByKey.containsKey(key);
   }
 
   /// Returns true if this POI has a tag with the given [key] and [value].
   bool hasTagValue(String key, String value) {
-    return _tags.firstWhereOrNull((test) => test.key == key && test.value == value) != null;
+    return _tagsByKey[key]?.value == value;
   }
 
   /// Returns the value of the tag with the given [key], or null if it does not exist.
   @override
   String? getTag(String key) {
-    return _tags.firstWhereOrNull((test) => test.key == key)?.value;
+    return _tagsByKey[key]?.value;
   }
 
   @override
-  bool matchesTagList(List<String> keys) {
-    Tag? tag = _tags.firstWhereOrNull((element) => keys.contains(element.key));
-    return tag != null;
+  bool matchesTagList(Iterable<String> keys) {
+    return keys.any(_keySet.contains);
   }
 
   @override
-  bool valueMatchesTagList(List<String> values) {
-    Tag? tag = _tags.firstWhereOrNull((element) => values.contains(element.value));
-    return tag != null;
+  bool valueMatchesTagList(Iterable<String> values) {
+    return values.any(_valueSet.contains);
   }
 
   bool get isEmpty => _tags.isEmpty;

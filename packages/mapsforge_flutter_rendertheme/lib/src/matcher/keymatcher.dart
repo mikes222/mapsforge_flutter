@@ -1,19 +1,24 @@
-import 'package:collection/collection.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_rendertheme/src/matcher/attributematcher.dart';
+import 'package:mapsforge_flutter_rendertheme/src/matcher/anymatcher.dart';
 
 class KeyMatcher implements AttributeMatcher {
-  final List<String> keys;
+  final Set<String> keys;
 
-  const KeyMatcher(this.keys);
+  KeyMatcher(List<String> keys) : keys = Set.unmodifiable(keys);
 
   @override
   bool isCoveredByAttributeMatcher(AttributeMatcher attributeMatcher) {
     if (attributeMatcher == this) {
       return true;
     }
-    String? missing = (attributeMatcher as KeyMatcher).keys.firstWhereOrNull((test) => !keys.contains(test));
-    return missing == null;
+    if (attributeMatcher is AnyMatcher) {
+      return true;
+    }
+    if (attributeMatcher is KeyMatcher) {
+      return attributeMatcher.keys.every(keys.contains);
+    }
+    return false;
   }
 
   @override
@@ -23,6 +28,6 @@ class KeyMatcher implements AttributeMatcher {
 
   @override
   String toString() {
-    return 'KeyMatcher{keys: $keys}';
+    return 'KeyMatcher{keys: ${keys.toList()}}';
   }
 }
