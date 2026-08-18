@@ -22,6 +22,9 @@ class _MockRenderInstruction extends Renderinstruction {
 
   @override
   int level = 0;
+
+  @override
+  int get priority => 1;
 }
 
 // Mock RenderInfo for testing

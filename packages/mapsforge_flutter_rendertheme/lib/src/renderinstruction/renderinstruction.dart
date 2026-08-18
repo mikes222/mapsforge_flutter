@@ -166,6 +166,8 @@ abstract class Renderinstruction {
 
   final int serial;
 
+  int get priority;
+
   Renderinstruction() : serial = _nextId++;
 
   @override

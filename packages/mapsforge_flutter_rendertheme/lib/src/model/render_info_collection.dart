@@ -20,8 +20,9 @@ class RenderInfoCollection {
   /// @param input list of MapElements
   /// @return collision-free, ordered list, a subset of the input.
   void collisionFreeOrdered() {
+    if (renderInfos.length <= 1) return;
     // sort items by priority (highest first)
-    //    renderInfos.sort((a, b) => b.renderInstruction.priority.compareTo(a.renderInstruction.priority));
+    renderInfos.sort((a, b) => b.renderInstruction.priority.compareTo(a.renderInstruction.priority));
     // in order of priority, see if an item can be drawn, i.e. none of the items
     // in the currentItemsToDraw list clashes with it.
     List<RenderInfo> output = [];

@@ -68,6 +68,9 @@ class _MockRenderInstruction extends Renderinstruction {
 
   @override
   int level = 0;
+
+  @override
+  int get priority => 0;
 }
 
 void main() {
