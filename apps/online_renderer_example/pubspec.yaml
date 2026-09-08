@@ -39,13 +39,13 @@ dependencies:
   cupertino_icons: ^1.0.9
 
   # Mapsforge UI libraries
-  mapsforge_flutter: ^4.0.0
+  mapsforge_flutter: ^4.1.0
 
   # Mapsforge renderers
-  mapsforge_flutter_renderer: ^4.0.0
+  mapsforge_flutter_renderer: ^4.1.0
 
   logging: any
-  mapsforge_flutter_core: any
+  mapsforge_flutter_core: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
