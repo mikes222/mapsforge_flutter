@@ -51,15 +51,20 @@ melos version -V mapsforge_flutter:4.1.0 -V mapsforge_flutter_core:4.1.0 -V maps
 
 ````bash
     dart pub global activate pana
-    C:\Users\micro\AppData\Local\Pub\Cache\bin\pana
+    C:\Users\micro\AppData\Local\Pub\Cache\bin\pana packages/mapsforge_flutter_core
+    C:\Users\micro\AppData\Local\Pub\Cache\bin\pana packages/mapsforge_flutter_mapfile
+    C:\Users\micro\AppData\Local\Pub\Cache\bin\pana packages/mapsforge_flutter_rendertheme
+    C:\Users\micro\AppData\Local\Pub\Cache\bin\pana packages/mapsforge_flutter_renderer
+    C:\Users\micro\AppData\Local\Pub\Cache\bin\pana packages/mapsforge_flutter
+    ...
 ````
 
 Note: git must be installed and accessible via path
 
-[ ] flutter publish dry run
+[ ] publish dry run
 
 ````bash
-    dart pub publish --dry-run
+    dart pub publish --directory=packages/mapsforge_flutter_core --dry-run
 ````
 
 [ ] Checkin into git
@@ -69,5 +74,5 @@ Note: git must be installed and accessible via path
 [ ] flutter publish
 
 ````bash
-    dart pub publish
+    dart pub publish --directory=packages/mapsforge_flutter_core
 ````
