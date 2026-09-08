@@ -35,6 +35,12 @@ especially ``changes.md``
 
 [ ] Increase version in pubspec.yaml
 
+automatic:
+
+```bash
+melos version
+```
+
 manual:
 
 ```bash

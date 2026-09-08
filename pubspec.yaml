@@ -52,7 +52,12 @@ melos:
 
     hooks:
         post: flutter pub upgrade
-
+  version:
+    # Include private packages (like apps with `publish_to: none`) in versioning
+    includeScopes:
+      - "*"
+    # all packages in the workspace always share the same version
+    mode: fixed
   scripts:
     build:
       description: Generates dart files

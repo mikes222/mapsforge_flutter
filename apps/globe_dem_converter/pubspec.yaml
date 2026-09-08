@@ -3,7 +3,7 @@ resolution: workspace
 description: A command-line application to convert NOAA GLOBE DEM tiles into smaller lat/lon chunks.
 publish_to: 'none'
 
-version: 4.0.0
+version: 4.1.0
 
 environment:
   sdk: ^3.9.0
