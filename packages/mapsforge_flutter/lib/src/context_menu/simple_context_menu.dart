@@ -9,9 +9,9 @@ class SimpleContextMenu extends StatelessWidget {
 
   final Widget? child;
 
-  final TapEventListener? tapEventListener;
+  final TapEventListener tapEventListener;
 
-  const SimpleContextMenu({super.key, required this.info, this.child, this.tapEventListener});
+  const SimpleContextMenu({super.key, required this.info, this.child, required this.tapEventListener});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class SimpleContextMenu extends StatelessWidget {
         info.diffX > 3 * info.halfScreenWidth ||
         info.diffY < -info.halfScreenHeight ||
         info.diffY > 3 * info.halfScreenHeight) {
-      tapEventListener!.tap(info.mapModel);
+      tapEventListener.sendCloseRequest(info.mapModel);
       return const SizedBox();
     }
     return SimpleContextMenuWidget(
@@ -30,7 +30,8 @@ class SimpleContextMenu extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              tapEventListener!.tap(info.mapModel);
+              /// close the context menu
+              tapEventListener.sendCloseRequest(info.mapModel);
             },
             onLongPress: () async {
               await Clipboard.setData(ClipboardData(text: "${info.latitude.toStringAsFixed(6)}, ${info.longitude.toStringAsFixed(6)}"));
@@ -42,13 +43,12 @@ class SimpleContextMenu extends StatelessWidget {
                   children: [
                     Text("${info.latitude.toStringAsFixed(6)} / ${info.longitude.toStringAsFixed(6)}"),
                     const SizedBox(width: 12),
-                    if (tapEventListener != null)
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          tapEventListener!.tap(info.mapModel);
-                        },
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        tapEventListener.sendCloseRequest(info.mapModel);
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),

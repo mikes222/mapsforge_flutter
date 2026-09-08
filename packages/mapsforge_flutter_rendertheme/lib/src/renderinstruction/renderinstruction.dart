@@ -149,7 +149,8 @@ abstract class Renderinstruction {
   String getType();
 
   /// Returns the boundary of this object around the center of the area or the poi. If the boundary cannot determined exactly we need to estimate it.
-  /// This method is used only if the renderinstruction adds itself to label or clash (see [LayerContainer])
+  /// This method is used only if the renderinstruction adds itself to label or clash (see [LayerContainer]) and to determine if the object has been tapped by
+  /// the user
   MapRectangle getBoundary(RenderInfo renderInfo);
 
   /// Checks the nodeProperties and adds itself to the layerContainer if there is something to draw.

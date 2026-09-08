@@ -27,13 +27,20 @@ class DatastoreBundle {
   /// adding elements, which is more expensive.
   void addDeduplicate(DatastoreBundle other, bool deduplicate) {
     if (deduplicate) {
+      // Hash-based membership test: build a Set from the current content once so
+      // each lookup is O(1) instead of the O(n) List.contains() scan. Set.add()
+      // returns false when the element is already present, so we only append to
+      // the list when the item is genuinely new. This turns the merge from
+      // O(n^2) into O(n).
+      final Set<PointOfInterest> knownPois = pointOfInterests.toSet();
       for (PointOfInterest poi in other.pointOfInterests) {
-        if (!pointOfInterests.contains(poi)) {
+        if (knownPois.add(poi)) {
           pointOfInterests.add(poi);
         }
       }
+      final Set<Way> knownWays = ways.toSet();
       for (Way way in other.ways) {
-        if (!ways.contains(way)) {
+        if (knownWays.add(way)) {
           ways.add(way);
         }
       }

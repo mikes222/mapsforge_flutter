@@ -322,7 +322,8 @@ enum TapEventListener {
     }
   }
 
-  void tap(MapModel mapModel) {
+  /// Send a close-event to the listener (the listener receives null as parameter)
+  void sendCloseRequest(MapModel mapModel) {
     switch (this) {
       case TapEventListener.singleTap:
         return mapModel._tapSubject.add(null);

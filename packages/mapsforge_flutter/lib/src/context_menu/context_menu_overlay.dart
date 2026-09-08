@@ -7,7 +7,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 
-typedef ContextMenuBuilder = Widget Function(ContextMenuInfo info);
+typedef ContextMenuBuilder = Widget Function(ContextMenuInfo info, TapEventListener tapEventListener);
 
 /// Listens to tap events on the map and shows a context menu. The event which is being listened is configurable. The context menu to show is also
 /// configurable. Make sure to close the context menu by calling MapModel.tapEvent(null) when the context menu should be closed or is (far) outside of the visible area.
@@ -77,7 +77,9 @@ class ContextMenuOverlay extends StatelessWidget {
                   diffY: diffY,
                   event: event,
                 );
-                return contextMenuBuilder != null ? contextMenuBuilder!(contextMenuInfo) : SimpleContextMenu(info: contextMenuInfo);
+                return contextMenuBuilder != null
+                    ? contextMenuBuilder!(contextMenuInfo, tapEventListener)
+                    : SimpleContextMenu(info: contextMenuInfo, tapEventListener: tapEventListener);
               },
             );
           },

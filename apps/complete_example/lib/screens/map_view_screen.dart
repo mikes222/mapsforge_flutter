@@ -129,7 +129,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             ZoomInOverlay(mapModel: mapModel),
             // shows additional overlays or custom overlays
             // shows the indoorlevel buttons
-            IndoorlevelOverlay(mapModel: mapModel),
+            IndoorlevelOverlay(mapModel: mapModel, bottom: 170),
             if (_rendertheme?.styleMenu != null)
               StyleMenuOverlay(
                 styleMenu: _rendertheme!.styleMenu!,
@@ -146,7 +146,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             // listens to tap events (configurable) and shows a context menu (also configurable)
             ContextMenuOverlay(
               mapModel: mapModel,
-              contextMenuBuilder: (info) {
+              contextMenuBuilder: (info, tapEventListener) {
                 return MyContextMenu(
                   info: info,
                   markerDatastore: markerDatastore,

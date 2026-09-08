@@ -22,7 +22,7 @@ class MapsforgeView extends StatelessWidget {
         // Shows zoom-in and zoom-out buttons
         ZoomOverlay(mapModel: mapModel),
         // shows the indoorlevel buttons
-        IndoorlevelOverlay(mapModel: mapModel),
+        IndoorlevelOverlay(mapModel: mapModel, bottom: 170),
         // shows an icon in the right-upper corner to reset rotation if rotation is active
         RotationResetOverlay(mapModel: mapModel),
       ];

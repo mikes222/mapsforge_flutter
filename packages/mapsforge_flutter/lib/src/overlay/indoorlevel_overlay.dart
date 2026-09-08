@@ -7,7 +7,9 @@ class IndoorlevelOverlay extends StatefulWidget {
 
   final Map<int, String?>? indoorLevels;
 
-  IndoorlevelOverlay({required this.mapModel, this.indoorLevels});
+  final double? bottom;
+
+  IndoorlevelOverlay({required this.mapModel, this.indoorLevels, this.bottom});
 
   @override
   State<StatefulWidget> createState() {
@@ -22,7 +24,6 @@ class _IndoorlevelOverlayState extends State<IndoorlevelOverlay> with SingleTick
 
   late AnimationController _fadeAnimationController;
   late CurvedAnimation _fadeAnimation;
-
 
   @override
   void initState() {
@@ -48,7 +49,7 @@ class _IndoorlevelOverlayState extends State<IndoorlevelOverlay> with SingleTick
   Widget build(BuildContext context) {
     _fadeAnimationController.forward();
     return Positioned(
-      bottom: toolbarSpacing,
+      bottom: widget.bottom ?? toolbarSpacing,
       right: toolbarSpacing,
       //top: toolbarSpacing,
       // this widget has an unbound width
@@ -68,28 +69,6 @@ class _IndoorlevelOverlayState extends State<IndoorlevelOverlay> with SingleTick
               elevation: 2.0,
               borderRadius: const BorderRadius.all(Radius.circular(20)),
               initialLevel: 0,
-            ),
-            SizedBox(height: toolbarSpacing),
-            RawMaterialButton(
-              onPressed: () => widget.mapModel.zoomIn(),
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: const Icon(Icons.add),
-              padding: const EdgeInsets.all(10.0),
-              shape: const CircleBorder(),
-              constraints: const BoxConstraints(),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            SizedBox(height: toolbarSpacing),
-            RawMaterialButton(
-              onPressed: () => widget.mapModel.zoomOut(),
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: const Icon(Icons.remove),
-              padding: const EdgeInsets.all(10.0),
-              shape: const CircleBorder(),
-              constraints: const BoxConstraints(),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],
         ),

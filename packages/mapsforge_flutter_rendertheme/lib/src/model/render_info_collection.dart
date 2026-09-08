@@ -28,7 +28,7 @@ class RenderInfoCollection {
     // in order of priority, see if an item can be drawn, i.e. none of the items
     // in the currentItemsToDraw list clashes with it.
     // Use a spatial index to avoid an O(n²) collision scan.
-    final SpatialBoundaryIndex<RenderInfo> spatialIndex = SpatialBoundaryIndex(cellSize: 128.0);
+    final SpatialBoundaryIndex<RenderInfo> spatialIndex = SpatialBoundaryIndex(cellSize: 16.0);
     final List<RenderInfo> output = [];
     for (RenderInfo item in renderInfos) {
       MapRectangle boundary = item.getBoundaryAbsolute();

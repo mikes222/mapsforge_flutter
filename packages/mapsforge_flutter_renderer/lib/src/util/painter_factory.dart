@@ -124,6 +124,11 @@ class PainterFactory {
     List<Future> futures = [];
 
     for (RenderInfo renderInfo in renderInfoCollection.renderInfos) {
+      // Synchronous fast path: the render info already carries its painter or
+      // the painter is already cached. Only render instructions that really need
+      // async creation (e.g. bitmap / icon loading) go into the futures list.
+      if (_applyCachedPainter(renderInfo)) continue;
+
       futures.add(getOrCreateShapePainter(renderInfo));
       if (futures.length > 200) {
         await Future.wait(futures);
@@ -132,5 +137,22 @@ class PainterFactory {
     }
     await Future.wait(futures);
     session.complete();
+  }
+
+  /// Tries to attach an already existing shape painter to [renderInfo].
+  ///
+  /// Returns `true` when a painter is already present on the render info itself
+  /// or when a matching painter was found in the factory cache. In both cases
+  /// no async work is needed and no [Future] is allocated.
+  bool _applyCachedPainter<T extends Renderinstruction>(RenderInfo<T> renderInfo) {
+    if (renderInfo.shapePainter != null) return true;
+
+    ShapePainter? shapePainter = _shapePainters[renderInfo.renderInstruction.serial];
+    if (shapePainter != null) {
+      renderInfo.shapePainter = shapePainter as ShapePainter<T>;
+      return true;
+    }
+
+    return false;
   }
 }

@@ -23,7 +23,7 @@ class MyMarkerDatastore extends DefaultMarkerDatastore {
     super.dispose();
   }
 
-  void _newDragNdropEvent(DragNdropEvent event) {
+  Future<void> _newDragNdropEvent(DragNdropEvent event) async {
     switch (event.type) {
       case DragNdropEventType.start:
         List<Marker> markers = getTappedMarkers(event);
@@ -32,12 +32,12 @@ class MyMarkerDatastore extends DefaultMarkerDatastore {
         if (_dragNdropMarker != null) {
           // in a real app you do not need this because the position comes from an external source and can be refetched when drag'n'drop is cancelled.
           _originalPosition = _dragNdropMarker!.latLong;
-          _dragNdropMarker!.setStrokeColorFromNumber(Colors.red.toARGB32());
+          await _dragNdropMarker!.setStrokeColorFromNumber(Colors.red.toARGB32());
           markerChanged(_dragNdropMarker!);
         }
       case DragNdropEventType.cancel:
         if (_dragNdropMarker != null) {
-          _dragNdropMarker!.setStrokeColorFromNumber(Colors.black.toARGB32());
+          await _dragNdropMarker!.setStrokeColorFromNumber(Colors.black.toARGB32());
           _dragNdropMarker!.setLatLong(_originalPosition!, event.projection);
           markerChanged(_dragNdropMarker!);
         }
@@ -51,7 +51,7 @@ class MyMarkerDatastore extends DefaultMarkerDatastore {
       case DragNdropEventType.finish:
         if (_dragNdropMarker != null) {
           _dragNdropMarker!.setLatLong(event.latLong, event.projection);
-          _dragNdropMarker!.setStrokeColorFromNumber(Colors.black.toARGB32());
+          await _dragNdropMarker!.setStrokeColorFromNumber(Colors.black.toARGB32());
           markerChanged(_dragNdropMarker!);
           // in production we would save the new position to the database
           _dragNdropMarker = null;

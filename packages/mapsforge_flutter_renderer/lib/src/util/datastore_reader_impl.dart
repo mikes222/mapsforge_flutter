@@ -137,6 +137,12 @@ class DatastoreReaderImpl implements DatastoreReader {
     // never ever call an async method 44000 times. It takes 2 seconds to do so!
     //    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
     for (Way way in datastoreBundle.ways) {
+      // Cheap pre-filter using the projected bounding box of the way.
+      // This avoids the expensive full projection and Douglas-Peucker simplification
+      // for ways that are too small to be rendered.
+      MapRectangle bbox = projection.boundingBoxToRectangle(way.getBoundingBox());
+      if (bbox.getWidth() < 5 && bbox.getHeight() < 5) continue;
+
       WayProperties wayProperties = WayProperties(way, projection);
       MapRectangle rectangle = wayProperties.getBoundaryAbsolute();
       // filter small ways

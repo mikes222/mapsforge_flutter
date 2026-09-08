@@ -1,5 +1,9 @@
 # Publish the project to pub.dev
 
+```bash
+melos bootstrap
+```
+
 
 [ ] Test the ``simple_example`` in the emulator
 

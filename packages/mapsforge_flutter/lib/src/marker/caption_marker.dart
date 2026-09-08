@@ -65,7 +65,7 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
     if (!zoomlevelRange.isWithin(tapEvent.projection.scalefactor.zoomlevel)) return false;
     Mappoint absolute = renderInfo!.nodeProperties.getCoordinatesAbsolute();
     Mappoint tapped = tapEvent.projection.latLonToPixel(tapEvent);
-    MapRectangle boundary = renderinstruction.getBoundary(renderInfo!);
+    MapRectangle boundary = renderInfo!.renderInstruction.getBoundary(renderInfo!);
     bool tpd =
         tapped.x >= absolute.x + boundary.left &&
         tapped.x <= absolute.x + boundary.right &&

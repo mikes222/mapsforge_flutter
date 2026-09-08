@@ -190,7 +190,9 @@ class DefaultMarkerDatastore<T> extends MarkerDatastore<T> {
     _CurrentMarkers<T>? currentMarkers = _currentMarkers;
     if (currentMarkers != null) {
       for (var marker in currentMarkers._cachedMarkers) {
-        if (marker.isTapped(event)) tappedMarkers.add(marker);
+        if (marker.isTapped(event)) {
+          tappedMarkers.add(marker);
+        }
       }
     }
     return tappedMarkers;

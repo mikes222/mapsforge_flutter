@@ -59,7 +59,9 @@ class MoveHandler extends DefaultHandler {
       return;
     }
     // cancel swiping
-    cancelTimer();
+    _swipeTimer?.cancel();
+    _swipeTimer = null;
+
     _moveActive = false;
     _swipeOffset = null;
     _nextManualMoveEvent = 0;

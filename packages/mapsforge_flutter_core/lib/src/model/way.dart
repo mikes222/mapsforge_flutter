@@ -34,7 +34,12 @@ class Way {
           tags == other.tags;
 
   @override
-  int get hashCode => labelPosition.hashCode ^ latLongs.hashCode ^ layer.hashCode ^ tags.hashCode;
+  // Must stay consistent with operator== which compares the outer way
+  // (latLongs[0]) by content via listEquals(). Hashing the List object itself
+  // (latLongs.hashCode) is identity-based and would give content-equal ways
+  // different hash codes, breaking hash-based collections such as the dedup
+  // Set used by DatastoreBundle.addDeduplicate().
+  int get hashCode => Object.hash(labelPosition, Object.hashAll(latLongs[0]), layer, tags);
 
   /// Returns true if this way has a tag with the given [key].
   bool hasTag(String key) {

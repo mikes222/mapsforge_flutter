@@ -50,9 +50,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     // mapModel must be disposed after use
-    _mapModel?.dispose();
+    await _mapModel?.dispose();
     // The following caches also may be disposed. If you intend to start a new map it may make sense to keep them for faster startup
     SymbolCacheMgr().dispose();
     ParagraphCacheMgr().dispose();

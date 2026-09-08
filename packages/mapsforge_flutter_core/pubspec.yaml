@@ -18,7 +18,7 @@ dependencies:
 
   collection: ^1.19.1
 
-  dio: ^5.9.2
+  dio: ^5.11.1
 
   ecache: ^2.2.0
 

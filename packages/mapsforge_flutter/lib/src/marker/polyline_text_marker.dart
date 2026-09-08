@@ -82,7 +82,7 @@ class PolylineTextMarker<T> extends Marker<T> {
       Mappoint point0 = tapEvent.projection.latLonToPixel(_path[idx]);
       Mappoint point1 = tapEvent.projection.latLonToPixel(_path[idx + 1]);
       double distance = LatLongUtils.distanceSegmentPoint(point0.x, point0.y, point1.x, point1.y, tapped.x, tapped.y);
-      if (distance <= renderInfo!.renderInstruction.fontSize) return idx;
+      if (distance <= (renderInfo?.renderInstruction.fontSize ?? 0)) return idx;
     }
     return -1;
   }

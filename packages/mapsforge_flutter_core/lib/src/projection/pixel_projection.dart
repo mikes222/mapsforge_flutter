@@ -198,12 +198,13 @@ class PixelProjection extends MercatorProjection {
   int get mapsize => _mapSize;
 
   MapRectangle boundingBoxToRectangle(BoundingBox boundingBox) {
-    return MapRectangle(
-      longitudeToPixelX(boundingBox.minLongitude),
-      latitudeToPixelY(boundingBox.minLatitude),
-      longitudeToPixelX(boundingBox.maxLongitude),
-      latitudeToPixelY(boundingBox.maxLatitude),
-    );
+    // latitudeToPixelY decreases as latitude increases, so the northern
+    // (maxLatitude) edge becomes the smaller y value (top).
+    double left = longitudeToPixelX(boundingBox.minLongitude);
+    double right = longitudeToPixelX(boundingBox.maxLongitude);
+    double top = latitudeToPixelY(boundingBox.maxLatitude);
+    double bottom = latitudeToPixelY(boundingBox.minLatitude);
+    return MapRectangle(left, top, right, bottom);
   }
 
   @override

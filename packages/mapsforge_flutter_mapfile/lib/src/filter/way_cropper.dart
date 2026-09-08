@@ -126,6 +126,8 @@ class WayCropper {
     // no intersection, ignore these points
     if (!tileBoundary.intersects(wayBoundingBox)) return null;
 
+    final boundary = _Boundary.fromBoundingBox(tileBoundary);
+
     List<ILatLong> optimizedWaypoints = [];
     ILatLong? previousWaypoint;
     bool previousIsInside = false;
@@ -152,16 +154,16 @@ class WayCropper {
       // we do not support zoomlevels smaller than base-zoomlevel per subfile. In such cases the system combines for example 4 tiles to one
       // and we would draw 4 squares (with strokes) whereas we should only draw the fill and no strokes.
       // Step 1: Find out if the center of the tile is inside or outside of the original way
-      bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
+      bool isInside = LatLongUtils.isPointInPolygon(boundary.center, waypath.path);
       if (!isInside) {
         // no intersection, ignore these points
         return null;
       }
-      optimizedWaypoints.add(tileBoundary.getLeftUpper());
-      optimizedWaypoints.add(tileBoundary.getRightUpper());
-      optimizedWaypoints.add(tileBoundary.getRightLower());
-      optimizedWaypoints.add(tileBoundary.getLeftLower());
-      optimizedWaypoints.add(tileBoundary.getLeftUpper());
+      optimizedWaypoints.add(boundary.topLeft);
+      optimizedWaypoints.add(boundary.topRight);
+      optimizedWaypoints.add(boundary.bottomRight);
+      optimizedWaypoints.add(boundary.bottomLeft);
+      optimizedWaypoints.add(boundary.topLeft);
       return Waypath(path: optimizedWaypoints);
     }
     for (var waypoint in path) {
@@ -170,17 +172,17 @@ class WayCropper {
       if (isInside) {
         if (previousWaypoint != null && !previousIsInside) {
           // Previous waypoint was outside, new waypoint is inside of the tile. Find the intersection point.
-          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint, waypoint, tileBoundary);
+          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint, waypoint, boundary);
           if (firstEntryDirection == -1) firstEntryDirection = direction;
           lastEntryDirection = direction;
-          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, path);
+          _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, boundary, path);
           optimizedWaypoints.add(intersectionPoint!);
         }
         optimizedWaypoints.add(waypoint);
       } else {
         if (previousWaypoint != null && previousIsInside) {
           // Previous waypoint was inside, the new waypoint is outside of the tile. We must find the intersection point.
-          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint, waypoint, tileBoundary);
+          final (intersectionPoint, direction) = _findIntersectionPoint(previousWaypoint, waypoint, boundary);
           optimizedWaypoints.add(intersectionPoint!);
           if (firstExitDirection == -1) firstExitDirection = direction;
           lastExitDirection = direction;
@@ -191,16 +193,16 @@ class WayCropper {
           //   // no intersection, this should be a quick test
           //   return;
           // }
-          final (intersectionPoint, direction) = _findIntersectionPointOutside(previousWaypoint, waypoint, tileBoundary);
+          final (intersectionPoint, direction) = _findIntersectionPointOutside(previousWaypoint, waypoint, boundary);
           if (intersectionPoint != null) {
             // yes, they intersect (twice)
             if (firstEntryDirection == -1) firstEntryDirection = direction;
             lastEntryDirection = direction;
-            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, tileBoundary, path);
+            _addCorners(lastExitDirection, lastEntryDirection, optimizedWaypoints, boundary, path);
             optimizedWaypoints.add(intersectionPoint);
             // and now find the exit point. Search in opposite direction to find
             // the exit point nearest to the current waypoint
-            final (exitIntersectionPoint, exitDirection) = _findIntersectionPointOutside(waypoint, intersectionPoint, tileBoundary);
+            final (exitIntersectionPoint, exitDirection) = _findIntersectionPointOutside(waypoint, intersectionPoint, boundary);
             optimizedWaypoints.add(exitIntersectionPoint!);
             if (firstExitDirection == -1) firstExitDirection = exitDirection;
             lastExitDirection = exitDirection;
@@ -236,7 +238,7 @@ class WayCropper {
       return Waypath(path: optimizedWaypoints);
     }
     // Step 1: Find out if the center of the tile is inside or outside of the original way
-    bool isInside = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), waypath.path);
+    bool isInside = LatLongUtils.isPointInPolygon(boundary.center, waypath.path);
     if (optimizedWaypoints.isEmpty && !isInside) {
       // no intersection, ignore these points
       return null;
@@ -246,11 +248,11 @@ class WayCropper {
       // it is surrounding the tile. This is different to the original since we create areas for each tile. This is also the reason why
       // we do not support zoomlevels smaller than base-zoomlevel per subfile. In such cases the system combines for example 4 tiles to one
       // and we would draw 4 squares (with strokes) whereas we should only draw the fill and no strokes.
-      optimizedWaypoints.add(tileBoundary.getLeftUpper());
-      optimizedWaypoints.add(tileBoundary.getRightUpper());
-      optimizedWaypoints.add(tileBoundary.getRightLower());
-      optimizedWaypoints.add(tileBoundary.getLeftLower());
-      optimizedWaypoints.add(tileBoundary.getLeftUpper());
+      optimizedWaypoints.add(boundary.topLeft);
+      optimizedWaypoints.add(boundary.topRight);
+      optimizedWaypoints.add(boundary.bottomRight);
+      optimizedWaypoints.add(boundary.bottomLeft);
+      optimizedWaypoints.add(boundary.topLeft);
       return Waypath(path: optimizedWaypoints);
     }
     if (LatLongUtils.isClosedWay(optimizedWaypoints)) {
@@ -272,10 +274,10 @@ class WayCropper {
     // find how we should close the way:
     // Step 2: Temporary close the way and find out if the center of the tile is inside or outside of the new way
     List<ILatLong> tempWaypoints = List.from(optimizedWaypoints);
-    _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, tileBoundary, path);
+    _addCorners(lastExitDirection, firstEntryDirection, tempWaypoints, boundary, path);
     // close the temporary way
     tempWaypoints.add(tempWaypoints.first);
-    bool isInsideNew = LatLongUtils.isPointInPolygon(tileBoundary.getCenterPoint(), tempWaypoints);
+    bool isInsideNew = LatLongUtils.isPointInPolygon(boundary.center, tempWaypoints);
     if (isInside == isInsideNew) {
       // perfect, both are inside or outside
       assert(tempWaypoints.length >= 3);
@@ -283,7 +285,7 @@ class WayCropper {
       return Waypath(path: tempWaypoints);
     }
     // We have to close it the other way around
-    _addCornersOtherWay(lastExitDirection, firstEntryDirection, optimizedWaypoints, tileBoundary);
+    _addCornersOtherWay(lastExitDirection, firstEntryDirection, optimizedWaypoints, boundary);
     optimizedWaypoints.add(optimizedWaypoints.first);
     assert(optimizedWaypoints.length >= 3);
     assert(optimizedWaypoints.length <= 32767);
@@ -333,7 +335,7 @@ class WayCropper {
     return result;
   }
 
-  void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary, List<ILatLong> waypoints) {
+  void _addCorners(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, _Boundary boundary, List<ILatLong> waypoints) {
     // we had no exit from our tile, so we do not need to add any corners
     if (lastExitDirection == -1) return;
     // always assume last exit on the top. We rotate the corners if this is not the case.
@@ -344,56 +346,56 @@ class WayCropper {
         break;
       case 1:
         // entry right
-        optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getRightUpperRotate(lastExitDirection));
         break;
       case 2:
         // entry bottom, left or right? This approach does NOT work in any circumstance but it should make the code a bit better
-        if (LatLongUtils.isPointInPolygon(tileBoundary.getRightUpperRotate(lastExitDirection), waypoints) ||
-            LatLongUtils.isPointInPolygon(tileBoundary.getRightLowerRotate(lastExitDirection), waypoints)) {
-          optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
-          optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
+        if (LatLongUtils.isPointInPolygon(boundary.getRightUpperRotate(lastExitDirection), waypoints) ||
+            LatLongUtils.isPointInPolygon(boundary.getRightLowerRotate(lastExitDirection), waypoints)) {
+          optimizedWaypoints.add(boundary.getRightUpperRotate(lastExitDirection));
+          optimizedWaypoints.add(boundary.getRightLowerRotate(lastExitDirection));
         } else {
-          optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
-          optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
+          optimizedWaypoints.add(boundary.getLeftUpperRotate(lastExitDirection));
+          optimizedWaypoints.add(boundary.getLeftLowerRotate(lastExitDirection));
         }
         break;
       case 3:
         // entry left
-        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftUpperRotate(lastExitDirection));
         break;
       case -1:
         break;
     }
   }
 
-  void _addCornersOtherWay(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, BoundingBox tileBoundary) {
+  void _addCornersOtherWay(int lastExitDirection, int newEntryDirection, List<ILatLong> optimizedWaypoints, _Boundary boundary) {
     // we had no exit from our tile, so we do not need to add any corners
     if (lastExitDirection == -1) return;
     int entryDiffDirection = (newEntryDirection - lastExitDirection + 4) % 4;
     switch (entryDiffDirection) {
       case 0:
         // entry top
-        optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getRightUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getRightLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftUpperRotate(lastExitDirection));
         break;
       case 1:
         // entry right
-        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getRightLowerRotate(lastExitDirection));
         break;
       case 2:
         // entry bottom
-        optimizedWaypoints.add(tileBoundary.getLeftUpperRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftLowerRotate(lastExitDirection));
         break;
       case 3:
         // entry left
-        optimizedWaypoints.add(tileBoundary.getRightUpperRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getRightLowerRotate(lastExitDirection));
-        optimizedWaypoints.add(tileBoundary.getLeftLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getRightUpperRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getRightLowerRotate(lastExitDirection));
+        optimizedWaypoints.add(boundary.getLeftLowerRotate(lastExitDirection));
         break;
       case -1:
         break;
@@ -405,24 +407,17 @@ class WayCropper {
   /// Assumes one point is inside and one is outside the boundary.
   /// Returns the intersection point and the direction of the edge that was hit
   /// (0=top, 1=right, 2=bottom, 3=left).
-  (ILatLong?, int) _findIntersectionPoint(ILatLong start, ILatLong end, BoundingBox tileBoundary) {
-    final topLeft = LatLong(tileBoundary.maxLatitude, tileBoundary.minLongitude);
-    final topRight = LatLong(tileBoundary.maxLatitude, tileBoundary.maxLongitude);
-    final bottomRight = LatLong(tileBoundary.minLatitude, tileBoundary.maxLongitude);
-    final bottomLeft = LatLong(tileBoundary.minLatitude, tileBoundary.minLongitude);
-
-    // Prüfe jeden Rand des Rechtecks auf Schnittpunkte
-
-    ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, topLeft, topRight);
+  (ILatLong?, int) _findIntersectionPoint(ILatLong start, ILatLong end, _Boundary boundary) {
+    ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, boundary.topLeft, boundary.topRight);
     if (intersection != null) return (intersection, 0);
 
-    intersection = LatLongUtils.getLineIntersectionVertical(start, end, topRight, bottomRight);
+    intersection = LatLongUtils.getLineIntersectionVertical(start, end, boundary.topRight, boundary.bottomRight);
     if (intersection != null) return (intersection, 1);
 
-    intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, bottomRight, bottomLeft);
+    intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, boundary.bottomRight, boundary.bottomLeft);
     if (intersection != null) return (intersection, 2);
 
-    intersection = LatLongUtils.getLineIntersectionVertical(start, end, bottomLeft, topLeft);
+    intersection = LatLongUtils.getLineIntersectionVertical(start, end, boundary.bottomLeft, boundary.topLeft);
     if (intersection != null) return (intersection, 3);
 
     return (null, -1);
@@ -434,37 +429,120 @@ class WayCropper {
   /// This is used to detect cases where a way passes through a tile without having
   /// any of its nodes inside the tile.
   /// Returns the intersection point and the direction of the edge that was hit.
-  (ILatLong?, int) _findIntersectionPointOutside(ILatLong start, ILatLong end, BoundingBox tileBoundary) {
-    final topLeft = LatLong(tileBoundary.maxLatitude, tileBoundary.minLongitude);
-    final topRight = LatLong(tileBoundary.maxLatitude, tileBoundary.maxLongitude);
-    final bottomRight = LatLong(tileBoundary.minLatitude, tileBoundary.maxLongitude);
-    final bottomLeft = LatLong(tileBoundary.minLatitude, tileBoundary.minLongitude);
-
-    // Prüfe jeden Rand des Rechtecks auf Schnittpunkte
-
+  (ILatLong?, int) _findIntersectionPointOutside(ILatLong start, ILatLong end, _Boundary boundary) {
     if (start.latitude > end.latitude) {
-      ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, topLeft, topRight);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, boundary.topLeft, boundary.topRight);
       if (intersection != null) return (intersection, 0);
 
-      return _checkLeftRight(start, end, topLeft, topRight, bottomRight, bottomLeft);
+      return _checkLeftRight(start, end, boundary);
     } else {
-      ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, bottomRight, bottomLeft);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionHorizontal(start, end, boundary.bottomRight, boundary.bottomLeft);
       if (intersection != null) return (intersection, 2);
 
-      return _checkLeftRight(start, end, topLeft, topRight, bottomRight, bottomLeft);
+      return _checkLeftRight(start, end, boundary);
     }
   }
 
-  (ILatLong?, int) _checkLeftRight(ILatLong start, ILatLong end, ILatLong topLeft, ILatLong topRight, ILatLong bottomRight, ILatLong bottomLeft) {
+  (ILatLong?, int) _checkLeftRight(ILatLong start, ILatLong end, _Boundary boundary) {
     if (start.longitude > end.longitude) {
-      ILatLong? intersection = LatLongUtils.getLineIntersectionVertical(start, end, topRight, bottomRight);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionVertical(start, end, boundary.topRight, boundary.bottomRight);
       if (intersection != null) return (intersection, 1);
     } else {
-      ILatLong? intersection1 = LatLongUtils.getLineIntersectionVertical(start, end, bottomLeft, topLeft);
-      if (intersection1 != null) return (intersection1, 3);
+      ILatLong? intersection = LatLongUtils.getLineIntersectionVertical(start, end, boundary.bottomLeft, boundary.topLeft);
+      if (intersection != null) return (intersection, 3);
     }
 
     return (null, -1);
+  }
+}
+
+class _Boundary {
+  final ILatLong topLeft;
+  final ILatLong topRight;
+  final ILatLong bottomRight;
+  final ILatLong bottomLeft;
+  final ILatLong center;
+
+  _Boundary._(this.topLeft, this.topRight, this.bottomRight, this.bottomLeft, this.center);
+
+  factory _Boundary.fromBoundingBox(BoundingBox box) => _Boundary._(
+        LatLong(box.maxLatitude, box.minLongitude),
+        LatLong(box.maxLatitude, box.maxLongitude),
+        LatLong(box.minLatitude, box.maxLongitude),
+        LatLong(box.minLatitude, box.minLongitude),
+        box.getCenterPoint(),
+      );
+
+  ILatLong getLeftUpper() => topLeft;
+
+  ILatLong getLeftLower() => bottomLeft;
+
+  ILatLong getRightUpper() => topRight;
+
+  ILatLong getRightLower() => bottomRight;
+
+  ILatLong getLeftUpperRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getLeftUpper();
+      case 1:
+        return getRightUpper();
+      case 2:
+        return getRightLower();
+      case 3:
+        return getLeftLower();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
+  ILatLong getRightUpperRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getRightUpper();
+      case 1:
+        return getRightLower();
+      case 2:
+        return getLeftLower();
+      case 3:
+        return getLeftUpper();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
+  ILatLong getRightLowerRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getRightLower();
+      case 1:
+        return getLeftLower();
+      case 2:
+        return getLeftUpper();
+      case 3:
+        return getRightUpper();
+      default:
+        throw Exception("step $steps out of range");
+    }
+  }
+
+  ILatLong getLeftLowerRotate(int steps) {
+    switch (steps) {
+      case -1:
+      case 0:
+        return getLeftLower();
+      case 1:
+        return getLeftUpper();
+      case 2:
+        return getRightUpper();
+      case 3:
+        return getRightLower();
+      default:
+        throw Exception("step $steps out of range");
+    }
   }
 }
 

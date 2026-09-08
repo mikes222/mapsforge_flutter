@@ -15,7 +15,7 @@ dependency_overrides:
   #  path: ../ecache
 
 dev_dependencies:
-  melos: ^7.4.1
+  melos: ^8.6.0
 workspace:
   - packages/mapsforge_flutter_core
   - packages/mapsforge_flutter_mapfile
@@ -33,11 +33,16 @@ melos:
     bootstrap:
       dependencies:
 
-        dio: ^5.9.2
+        # The following adds the Cupertino Icons font to your application.
+        # Use with the CupertinoIcons class for iOS style icons.
+        cupertino_icons: ^1.0.9
+
+        dio: ^5.11.1
 
         ecache: ^2.2.0
 
         xml: ^7.0.1
+
       dev_dependencies:
 
         lints: ^6.1.0
