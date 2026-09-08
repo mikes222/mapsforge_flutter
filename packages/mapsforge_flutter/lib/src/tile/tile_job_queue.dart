@@ -199,7 +199,7 @@ class TileJobQueue extends ChangeNotifier {
         tileSet.images[tile] = await ImageHelper().createNoDataBitmap();
       }
       _emitTileSetBatched(tileSet);
-    } on TimeoutException catch (error, stackTrace) {
+    } on TimeoutException {
       // we aborted the job, ignore this error
     }
   }

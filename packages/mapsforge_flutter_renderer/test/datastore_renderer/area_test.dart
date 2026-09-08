@@ -51,7 +51,7 @@ void main() {
       DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
       JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
-      return await jobResult.picture!.convertPictureToImage();
+      return jobResult.picture!.convertPictureToImage();
     }));
 
     expect(img, isNotNull);

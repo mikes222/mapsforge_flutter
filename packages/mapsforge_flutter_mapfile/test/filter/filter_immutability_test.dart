@@ -76,7 +76,7 @@ void main() {
       // A polyline with many points (force simplification).
       List<ILatLong> pts = List.generate(20, (i) => LatLong(0, i.toDouble()));
       Waypath longLine = _polyline(pts);
-      Waypath shortLine = _polyline([LatLong(0, 0), LatLong(0, 1), LatLong(0, 2)]);
+      Waypath shortLine = _polyline([const LatLong(0, 0), const LatLong(0, 1), const LatLong(0, 2)]);
       Wayholder original = _createWayholder(openOuters: [longLine, shortLine], closedOuters: []);
 
       final snap = _snapshotWayholder(original);

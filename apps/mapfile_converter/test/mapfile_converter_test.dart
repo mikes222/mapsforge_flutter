@@ -37,7 +37,7 @@ void main() {
 
         // Run the converter with test file and output to temp directory
         await shell.run(
-          'dart run bin/mapfile_converter.dart convert ' + '--sourcefiles "$mapFilePath" ' + '--destinationfile "$outputPath" ',
+          'dart run bin/mapfile_converter.dart convert ' '--sourcefiles "$mapFilePath" ' '--destinationfile "$outputPath" ',
           //'--rendertheme "$renderThemePath"',
         );
 
@@ -72,10 +72,7 @@ void main() {
 
         // Run the converter with test file and output to temp directory
         await shell.run(
-          'dart run bin/mapfile_converter.dart convert ' +
-              '--sourcefiles "$mapFilePath" ' +
-              '--destinationfile "$outputPath" ' +
-              '--rendertheme "$renderThemePath"',
+          'dart run bin/mapfile_converter.dart convert ' '--sourcefiles "$mapFilePath" ' '--destinationfile "$outputPath" ' '--rendertheme "$renderThemePath"',
         );
 
         // Verify the output file was created and has content

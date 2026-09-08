@@ -75,7 +75,7 @@ class WayholderWriter {
     String? featureName = wayholder.tagholderCollection.extractName(languagesPreferences);
     int layer = wayholder.tagholderCollection.extractLayer();
 
-    assert(layer >= -5, "layer=${layer}");
+    assert(layer >= -5, "layer=$layer");
     assert(layer <= 10);
 
     /// A tile on zoom level z is made up of exactly 16 sub tiles on zoom level z+2

@@ -48,20 +48,20 @@ class OsmWriter {
 
   void writeWay(Wayholder wayholder) {
     assert(wayholder.tagholderCollection.isNotEmpty);
-    _Way _way = _Way(wayholder.tagholderCollection);
+    _Way way = _Way(wayholder.tagholderCollection);
     for (var waypath in wayholder.innerRead) {
       List<int> nodes = _writeNodesForWay(waypath);
-      _way.addNodes(nodes);
+      way.addNodes(nodes);
     }
     for (var waypath in wayholder.closedOutersRead) {
       List<int> nodes = _writeNodesForWay(waypath);
-      _way.addOuterNodes(nodes);
+      way.addOuterNodes(nodes);
     }
     for (var waypath in wayholder.openOutersRead) {
       List<int> nodes = _writeNodesForWay(waypath);
-      _way.addOuterNodes(nodes);
+      way.addOuterNodes(nodes);
     }
-    _ways.add(_way);
+    _ways.add(way);
     if (_ways.length >= 1000) {
       _tempSink ??= File(tempFilename).openWrite();
       _writeWays(_tempSink!);

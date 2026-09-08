@@ -49,7 +49,7 @@ class WayholderFileCollection implements IWayholderCollection {
       _fileEntries.add(_WayTemp(pos: batchStartPos, length: uint8list.length));
     });
     _fileSorted = null;
-    assert(length == expected, "expected ${length} == $expected");
+    assert(length == expected, "expected $length == $expected");
   }
 
   @override

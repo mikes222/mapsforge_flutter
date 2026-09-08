@@ -190,7 +190,7 @@ class _RotationGestureDetectorState extends State<RotationGestureDetector> {
           overlay,
           ValueListenableBuilder<double>(
             valueListenable: widget.rotationDeg!,
-            builder: (_, angle, __) {
+            builder: (_, angle, _) {
               final visible = !widget.hideResetWhenZero || angle.abs() > widget.zeroEpsilonDeg;
               if (!visible) return const SizedBox.shrink();
               return _positionedResetChild(widget.resetChild!);

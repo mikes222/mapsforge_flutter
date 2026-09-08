@@ -60,15 +60,15 @@ class BlockPage extends StatelessWidget {
       //print("result: $result");
       return result;
     } catch (e, stacktrace) {
-      print("${e.toString()}");
-      print("${stacktrace.toString()}");
+      print(e.toString());
+      print(stacktrace.toString());
       rethrow;
     }
   }
 }
 
 class _CardWidget extends StatelessWidget {
-  const _CardWidget({super.key, required this.datastoreBundle, required this.items, required this.zoomlevel, required this.minZoomlevel});
+  const _CardWidget({required this.datastoreBundle, required this.items, required this.zoomlevel, required this.minZoomlevel});
 
   final DatastoreBundle datastoreBundle;
   final int? items;
@@ -81,7 +81,7 @@ class _CardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text("Zoomlevel ${minZoomlevel} - $zoomlevel", style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text("Zoomlevel $minZoomlevel - $zoomlevel", style: const TextStyle(fontWeight: FontWeight.bold)),
           Text("IsWater ${datastoreBundle.isWater}, "),
           InkWell(
             child: Row(children: <Widget>[Text("Pois ${datastoreBundle.pointOfInterests.length}, "), const Icon(Icons.more_horiz)]),

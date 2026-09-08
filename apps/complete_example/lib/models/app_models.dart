@@ -1,4 +1,5 @@
 /// Data models for the mapsforge complete example app
+library;
 
 enum RendererType {
   offline('Mapfile Offline Renderer'),

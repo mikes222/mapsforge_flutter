@@ -83,7 +83,7 @@ class PoiholderFileCollection implements IPoiholderCollection {
       other._readbufferFile = otherReadbufferFile;
       assert(
         length == expected,
-        "expected ${length} == $expected ${_entries.length}/${other._entries.length} ${_fileEntries.length}/${other._fileEntries.length}",
+        "expected $length == $expected ${_entries.length}/${other._entries.length} ${_fileEntries.length}/${other._fileEntries.length}",
       );
     } else {
       addAll(await other.getAll());

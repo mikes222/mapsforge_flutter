@@ -44,6 +44,8 @@ dependencies:
   # Mapsforge renderers
   mapsforge_flutter_renderer: ^4.0.0
 
+  logging: any
+  mapsforge_flutter_core: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -55,7 +55,7 @@ class SimpleContextMenu extends StatelessWidget {
               ],
             ),
           ),
-          if (child != null) child!,
+          ?child,
         ],
       ),
     );

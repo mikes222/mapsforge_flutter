@@ -161,7 +161,7 @@ class LabelJobQueue extends ChangeNotifier {
       if (myJob._abort) return;
       labelSet.renderInfos.add(collection);
       _emitLabelSetBatched(labelSet);
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       // job cancelled, ignore this error
     }
   }

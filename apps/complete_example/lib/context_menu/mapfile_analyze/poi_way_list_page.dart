@@ -32,13 +32,13 @@ class PoiWayListPage extends StatelessWidget {
           return Center(child: Text(snapshot.error.toString()));
         }
         if (snapshot.data == null) return const Center(child: CircularProgressIndicator());
-        _PoiWayCount _poiWayCount = snapshot.data!;
+        _PoiWayCount poiWayCount = snapshot.data!;
 
         return Flex(
           direction: Axis.horizontal,
           children: [
-            Expanded(child: _showPois(_poiWayCount.poiCounts)),
-            Expanded(child: _showWays(_poiWayCount.wayCounts)),
+            Expanded(child: _showPois(poiWayCount.poiCounts)),
+            Expanded(child: _showWays(poiWayCount.wayCounts)),
           ],
         );
       },
@@ -52,23 +52,23 @@ class PoiWayListPage extends StatelessWidget {
         : ListView.builder(
             itemCount: pois.length,
             itemBuilder: (BuildContext context, int index) {
-              _PoiCount _poiCount = pois.elementAt(index);
+              _PoiCount poiCount = pois.elementAt(index);
               RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(tile.zoomLevel);
-              List renderers = renderthemeLevel.matchNode(0, _poiCount.poi);
+              List renderers = renderthemeLevel.matchNode(0, poiCount.poi);
               return Card(
                 child: Row(
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        LabeltextCustom(label: "Count", value: "${_poiCount.count}"),
+                        LabeltextCustom(label: "Count", value: "${poiCount.count}"),
                         renderers.isNotEmpty ? LabeltextCustom(label: "Renderers", value: "${renderers.length}") : const Icon(Icons.warning_amber_outlined),
                       ],
                     ),
                     const SizedBox(width: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _poiCount.poi.tags.tags.map((e) => LabeltextCustom(label: e.key, value: e.value)).toList(),
+                      children: poiCount.poi.tags.tags.map((e) => LabeltextCustom(label: e.key, value: e.value)).toList(),
                     ),
                   ],
                 ),
@@ -85,15 +85,15 @@ class PoiWayListPage extends StatelessWidget {
         : ListView.builder(
             itemCount: ways.length,
             itemBuilder: (BuildContext context, int index) {
-              _WayCount _wayCount = ways.elementAt(index);
+              _WayCount wayCount = ways.elementAt(index);
               RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(tile.zoomLevel);
-              List renderers = _wayCount.isClosedWay
-                  ? renderthemeLevel.matchClosedWay(tile, _wayCount.way)
-                  : renderthemeLevel.matchOpenWay(tile, _wayCount.way);
+              List renderers = wayCount.isClosedWay
+                  ? renderthemeLevel.matchClosedWay(tile, wayCount.way)
+                  : renderthemeLevel.matchOpenWay(tile, wayCount.way);
               if (renderers.isEmpty) {
-                renderers = _wayCount.isClosedWay
-                    ? renderthemeLevel.matchClosedWay(tileMax, _wayCount.way)
-                    : renderthemeLevel.matchOpenWay(tileMax, _wayCount.way);
+                renderers = wayCount.isClosedWay
+                    ? renderthemeLevel.matchClosedWay(tileMax, wayCount.way)
+                    : renderthemeLevel.matchOpenWay(tileMax, wayCount.way);
               }
               return Card(
                 child: Row(
@@ -101,17 +101,17 @@ class PoiWayListPage extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        LabeltextCustom(label: "Count", value: "${_wayCount.count}"),
+                        LabeltextCustom(label: "Count", value: "${wayCount.count}"),
                         renderers.isNotEmpty ? LabeltextCustom(label: "Renderers", value: "${renderers.length}") : const Icon(Icons.warning_amber_outlined),
                       ],
                     ),
                     const SizedBox(width: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _wayCount.way.tags.tags.map((e) => LabeltextCustom(label: e.key, value: e.value)).toList(),
+                      children: wayCount.way.tags.tags.map((e) => LabeltextCustom(label: e.key, value: e.value)).toList(),
                     ),
                     const Spacer(),
-                    _wayCount.isClosedWay ? const Icon(Icons.circle_outlined) : const SizedBox(),
+                    wayCount.isClosedWay ? const Icon(Icons.circle_outlined) : const SizedBox(),
                   ],
                 ),
               );
@@ -191,7 +191,7 @@ class PoiWayListPage extends StatelessWidget {
     QueryParameters queryParameters =  QueryParameters();
     queryParameters.queryZoomLevel = subFileParameter.baseZoomLevel;
     MercatorProjection mercatorProjection = MercatorProjection.fromZoomlevel(subFileParameter.baseZoomLevel);
-    _PoiWayCount _poiWayCount = _PoiWayCount();
+    _PoiWayCount poiWayCount = _PoiWayCount();
     int step = 20;
     for (int x = subFileParameter.boundaryTileLeft; x < subFileParameter.boundaryTileRight; x += step) {
       for (int y = subFileParameter.boundaryTileTop; y < subFileParameter.boundaryTileBottom; y += step) {
@@ -213,14 +213,14 @@ class PoiWayListPage extends StatelessWidget {
         DatastoreBundle? result = await mapFile.processBlocks(mapFile.readBufferSource, queryParameters, subFileParameter, boundingBox, selector);
         //print("result: $result");
 
-        _reducePois(result, _poiWayCount.poiCounts);
-        _reduceWays(result, _poiWayCount.wayCounts);
+        _reducePois(result, poiWayCount.poiCounts);
+        _reduceWays(result, poiWayCount.wayCounts);
       }
     }
-    _poiWayCount.poiCounts = _poiWayCount.poiCounts.sorted((a, b) => b.count - a.count);
-    _poiWayCount.wayCounts = _poiWayCount.wayCounts.sorted((a, b) => b.count - a.count);
+    poiWayCount.poiCounts = poiWayCount.poiCounts.sorted((a, b) => b.count - a.count);
+    poiWayCount.wayCounts = poiWayCount.wayCounts.sorted((a, b) => b.count - a.count);
 
-    return _poiWayCount;
+    return poiWayCount;
   }
 }
 

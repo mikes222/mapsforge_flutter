@@ -54,14 +54,14 @@ void main() {
       DatastoreRenderer dataStoreRenderer = DatastoreRenderer(datastore, renderTheme, useSeparateLabelLayer: false);
 
       JobResult jobResult0 = (await (dataStoreRenderer.executeJob(mapGeneratorJob0)));
-      var img0 = await jobResult0.picture!.convertPictureToImage();
+      var img0 = jobResult0.picture!.convertPictureToImage();
 
       dataStoreRenderer.tileDependencies!.debug();
 
       Tile tile1 = Tile(x + 1, y, zoomlevel, l);
       JobRequest mapGeneratorJob1 = JobRequest(tile1);
       JobResult jobResult1 = (await (dataStoreRenderer.executeJob(mapGeneratorJob1)));
-      var img1 = await jobResult1.picture!.convertPictureToImage();
+      var img1 = jobResult1.picture!.convertPictureToImage();
 
       //_dataStoreRenderer.labelStore.debug();
       //_dataStoreRenderer.tileDependencies!.debug();

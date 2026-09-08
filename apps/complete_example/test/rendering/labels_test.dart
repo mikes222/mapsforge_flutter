@@ -46,7 +46,7 @@ void main() {
         JobRequest mapGeneratorJob = JobRequest(tile);
         JobResult jobResult = await (dataStoreRenderer.executeJob(mapGeneratorJob));
         expect(jobResult.picture, isNotNull);
-        imgs.add(await jobResult.picture!.convertPictureToImage());
+        imgs.add(jobResult.picture!.convertPictureToImage());
       }
 
       return imgs;

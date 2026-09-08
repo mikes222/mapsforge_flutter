@@ -151,7 +151,7 @@ class OsmReader implements IPbfReader {
       } else if (event is XmlTextEvent) {
       } else if (event is XmlDeclarationEvent) {
       } else {
-        _log.info("unsupported element: ${event} ${event.runtimeType}");
+        _log.info("unsupported element: $event ${event.runtimeType}");
       }
     }
     OsmData? osmData = _sendData(true);

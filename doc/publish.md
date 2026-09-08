@@ -1,9 +1,22 @@
 # Publish the project to pub.dev
 
+[ ] Format source
+
+````bash
+    flutter format .
+````
+
+[ ] Fix issues
+
+````bash
+    dart fix --apply
+````
+
+[ ] Make sure all pubspec.yaml are in sync
+
 ```bash
 melos bootstrap
 ```
-
 
 [ ] Test the ``simple_example`` in the emulator
 
@@ -18,24 +31,14 @@ melos bootstrap
 
 [ ] Update documentation
 
-[ ] Format source
-
-````bash
-    flutter format .
-````
-
-[ ] Fix issues
-
-````bash
-    dart fix --apply
-````
+especially ``changes.md``
 
 [ ] Increase version in pubspec.yaml
 
 manual:
 
 ```bash
-melos version -V mapsforge_flutter:4.0.0 -V mapsforge_flutter_core:4.0.0 -V mapsforge_flutter_mapfile:4.0.0 -V mapsforge_flutter_renderer:4.0.0 -V mapsforge_flutter_rendertheme:4.0.0
+melos version -V mapsforge_flutter:4.1.0 -V mapsforge_flutter_core:4.1.0 -V mapsforge_flutter_mapfile:4.1.0 -V mapsforge_flutter_renderer:4.1.0 -V mapsforge_flutter_rendertheme:4.1.0
 ```
 
 [ ] Analyze package quality with pana (https://pub.dev/packages/pana)

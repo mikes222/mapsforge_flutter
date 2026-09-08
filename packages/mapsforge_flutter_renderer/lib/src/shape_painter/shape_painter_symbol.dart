@@ -101,9 +101,9 @@ class ShapePainterSymbol extends UiShapePainter<RenderinstructionSymbol> {
       ui.Canvas? uiCanvas = renderContext.canvas.expose();
       uiCanvas.drawRect(
         ui.Rect.fromLTWH(relative.dx + boundary.left, relative.dy + boundary.top, boundary.getWidth(), boundary.getHeight()),
-        ui.Paint()..color = Colors.red.withOpacity(0.5),
+        ui.Paint()..color = Colors.red.withValues(alpha: 0.5),
       );
-      uiCanvas.drawCircle(ui.Offset(relative.dx, relative.dy), 10, ui.Paint()..color = Colors.green.withOpacity(0.5));
+      uiCanvas.drawCircle(ui.Offset(relative.dx, relative.dy), 10, ui.Paint()..color = Colors.green.withValues(alpha: 0.5));
     }
 
     renderContext.canvas.drawPicture(

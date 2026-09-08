@@ -105,13 +105,13 @@ class MapHeaderPage extends StatelessWidget {
               LabeltextCustom(label: "MapTimestamp", value: formatMsToDatetimeMs(mapFile.getMapHeaderInfo().mapDate)),
               LabeltextCustom(label: "ProjectionName", value: mapFile.getMapHeaderInfo().projectionName),
               LabeltextCustom(label: "StartZoomLevel", value: "${mapFile.getMapHeaderInfo().startZoomLevel}"),
-              LabeltextCustom(label: "StartPosition", value: "${formatLatLong(mapFile.getMapHeaderInfo().startPosition)}"),
+              LabeltextCustom(label: "StartPosition", value: formatLatLong(mapFile.getMapHeaderInfo().startPosition)),
               LabeltextCustom(label: "TilePixelSize", value: "${mapFile.getMapHeaderInfo().tilePixelSize}"),
               LabeltextCustom(
                 label: "Zoomlevel",
                 value: "${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMin} - ${mapFile.getMapHeaderInfo().zoomlevelRange.zoomlevelMax}",
               ),
-              LabeltextCustom(label: "Boundingbox", value: "${formatBoundingbox(mapFile.getMapHeaderInfo().boundingBox)}"),
+              LabeltextCustom(label: "Boundingbox", value: formatBoundingbox(mapFile.getMapHeaderInfo().boundingBox)),
               InkWell(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

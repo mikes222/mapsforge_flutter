@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
 import 'package:mapsforge_flutter_renderer/src/hgt/noaa_file_definition.dart';
 
 class NoaaFileProvider extends HgtProvider {

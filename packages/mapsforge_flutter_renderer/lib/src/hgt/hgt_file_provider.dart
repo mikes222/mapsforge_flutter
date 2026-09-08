@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:ecache/ecache.dart';
 import 'package:mapsforge_flutter_renderer/offline_renderer.dart';
-import 'package:mapsforge_flutter_renderer/src/hgt/hgt_file.dart';
 
 class HgtFileProvider extends HgtProvider {
   final String directoryPath;

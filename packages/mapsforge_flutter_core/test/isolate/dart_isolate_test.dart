@@ -98,7 +98,7 @@ class IsolateWorkingClass {
 
   /// Note that the method is the same as the original class so it is easily interchangeable.
   Future<String> process(int key) async {
-    return await _isolateInstance.compute(key);
+    return _isolateInstance.compute(key);
   }
 
   @pragma('vm:entry-point')

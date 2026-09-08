@@ -48,3 +48,4 @@ dev_dependencies:
 
   # test dart executable in isolate
   process_run: ^1.2.4
+  path: any

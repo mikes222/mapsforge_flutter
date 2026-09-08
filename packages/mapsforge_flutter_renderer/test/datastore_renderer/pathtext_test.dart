@@ -49,7 +49,7 @@ void main() {
 
       JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
-      return await jobResult.picture!.convertPictureToImage();
+      return jobResult.picture!.convertPictureToImage();
     }));
 
     expect(img, isNotNull);
@@ -99,7 +99,7 @@ void main() {
 
       JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
-      return await jobResult.picture!.convertPictureToImage();
+      return jobResult.picture!.convertPictureToImage();
     }));
 
     expect(img, isNotNull);
@@ -149,7 +149,7 @@ void main() {
 
       JobResult jobResult = (await (dataStoreRenderer.executeJob(mapGeneratorJob)));
       expect(jobResult.picture, isNotNull);
-      return await jobResult.picture!.convertPictureToImage();
+      return jobResult.picture!.convertPictureToImage();
     }));
 
     expect(img, isNotNull);

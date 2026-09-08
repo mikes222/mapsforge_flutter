@@ -264,7 +264,7 @@ class GlobeDemConverter {
     final steps = value / outCellSizeDeg;
     final rounded = steps.roundToDouble();
     if ((steps - rounded).abs() > 1e-9) {
-      throw ArgumentError('$name must align to ${outCellSizeDeg}° steps. Got $value');
+      throw ArgumentError('$name must align to $outCellSizeDeg° steps. Got $value');
     }
   }
 

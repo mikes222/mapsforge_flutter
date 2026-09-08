@@ -13,7 +13,7 @@ Waypath _square(double minLat, double minLon, double maxLat, double maxLon) {
 Wayholder _bigWayholder(int i) {
   final w = Wayholder(tagholderCollection: TagholderCollection.fromWay({'name': 'way_$i'}));
   // 6 points => nodeCount() > 5 so it will be considered "large" and spilled.
-  w.closedOutersAdd(Waypath(path: [LatLong(0, 0), LatLong(0, 1), LatLong(1, 1), LatLong(1, 0), LatLong(0, 0), LatLong(0, 0.5), LatLong(0, 0)]));
+  w.closedOutersAdd(Waypath(path: [const LatLong(0, 0), const LatLong(0, 1), const LatLong(1, 1), const LatLong(1, 0), const LatLong(0, 0), const LatLong(0, 0.5), const LatLong(0, 0)]));
   return w;
 }
 

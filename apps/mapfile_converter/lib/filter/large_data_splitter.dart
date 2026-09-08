@@ -39,7 +39,7 @@ class LargeDataSplitter {
   }
 
   /// splits the open ways into several clusters and connects them cluster by cluster
-  void _connectClusterMulti(List<Wayholder> _wayHoldersMerged, Wayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
+  void _connectClusterMulti(List<Wayholder> wayHoldersMerged, Wayholder wayholder, BoundingBox boundingBox, int clusterSplitCount) {
     double latDiff = boundingBox.maxLatitude - boundingBox.minLatitude;
     double lonDiff = boundingBox.maxLongitude - boundingBox.minLongitude;
 
@@ -56,23 +56,23 @@ class LargeDataSplitter {
     }
     clusters.forEach((key, cluster) {
       int count = cluster.waypaths.length;
-      cluster.split(_wayHoldersMerged, wayholder);
+      cluster.split(wayHoldersMerged, wayholder);
       //print("reduced from $count to ${cluster.waypaths.length} ${_wayHoldersMerged.length}");
     });
     clusters.clear();
   }
 
-  void splitSimple(List<Wayholder> _wayHoldersMerged, Wayholder mergedWayholder) {
+  void splitSimple(List<Wayholder> wayHoldersMerged, Wayholder mergedWayholder) {
     // todo cluster the ways geographically so that we quickly can rule out ways which do not belong to a geographical area
     while (mergedWayholder.closedOutersRead.length > 300) {
       // too many ways, split it.
       List<Waypath> closedOuters = mergedWayholder.closedOutersRead.take(200).toList();
       mergedWayholder.closedOutersWrite.removeRange(0, 200);
       Wayholder newWayholder = mergedWayholder.cloneWith(inner: [], openOuters: [], closedOuters: closedOuters);
-      _wayHoldersMerged.add(newWayholder);
+      wayHoldersMerged.add(newWayholder);
     }
     //_log.info("Remaining coastline ${mergedWayholder.toStringWithoutNames()}");
-    _wayHoldersMerged.add(mergedWayholder);
+    wayHoldersMerged.add(mergedWayholder);
   }
 }
 
@@ -83,7 +83,7 @@ class _Cluster {
 
   final List<Waypath> waypaths = [];
 
-  void split(List<Wayholder> _wayHoldersMerged, Wayholder wayholder) {
+  void split(List<Wayholder> wayHoldersMerged, Wayholder wayholder) {
     // too less items to connect, ignore it in this iteration
     while (waypaths.length >= maxClusterSize) {
       if (waypaths.length < maxClusterSize * 1.5) {
@@ -92,7 +92,7 @@ class _Cluster {
           wayholder.closedOutersRemove(action);
         }
         Wayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: waypaths);
-        _wayHoldersMerged.add(newWayholder);
+        wayHoldersMerged.add(newWayholder);
         return;
       }
       Waypath wayFirst = waypaths.first;
@@ -118,7 +118,7 @@ class _Cluster {
       });
       assert(ways.length == maxClusterSize);
       Wayholder newWayholder = wayholder.cloneWith(inner: [], openOuters: [], closedOuters: ways);
-      _wayHoldersMerged.add(newWayholder);
+      wayHoldersMerged.add(newWayholder);
     }
   }
 }
