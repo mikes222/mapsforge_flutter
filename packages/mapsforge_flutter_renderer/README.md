@@ -64,6 +64,7 @@ final renderer = DatastoreRenderer(
   datastore,           // Your map datastore
   renderTheme,         // Rendering theme
   true                 // Render labels onto tiles
+  highDetailWays: true, // default: false Roads stored without gaps on big zooms
 );
 
 // Create rendering job
