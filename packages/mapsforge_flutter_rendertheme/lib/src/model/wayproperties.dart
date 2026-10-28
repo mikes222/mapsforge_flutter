@@ -12,7 +12,14 @@ import 'package:mapsforge_flutter_rendertheme/src/util/map_path_helper.dart';
 /// Properties for one Way as read from the datastore. Note that the properties are
 /// dependent on the zoomLevel. Therefore one instance of WayProperties can be used for one zoomlevel only.
 class WayProperties implements NodeWayProperties {
+  /// Rings whose bounding box is not larger than this (in pixels) in both directions are skipped.
   final double maxGap = 5;
+
+  /// Douglas-Peucker tolerance in pixels.
+  final double simplificationTolerance;
+
+  /// If true, small open ways (lines) are not skipped so connected roads have no gaps.
+  final bool keepSmallOpenWays;
 
   final Way way;
 
@@ -29,7 +36,9 @@ class WayProperties implements NodeWayProperties {
   /// cache for the boundary of the way in absolute mappixels
   MapRectangle? _boundaryAbsolute;
 
-  WayProperties(this.way, PixelProjection projection) : layer = max(0, way.layer), isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]) {
+  WayProperties(this.way, PixelProjection projection, {this.simplificationTolerance = 5, this.keepSmallOpenWays = false})
+    : layer = max(0, way.layer),
+      isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]) {
     _calculateCoordinatesAbsolute(projection);
   }
 
@@ -43,11 +52,11 @@ class WayProperties implements NodeWayProperties {
       List<Mappoint> mp1 = outerList.map((ILatLong position) => projection.latLonToPixel(position)).toList();
       MapRectangle minMaxMappoint = MapRectangle.from(mp1);
       if (idx == 0) _boundaryAbsolute = minMaxMappoint;
-      if (minMaxMappoint.getWidth() > maxGap || minMaxMappoint.getHeight() > maxGap) {
-        if (mp1.length > 6) mp1 = DouglasPeuckerMappoint().simplify(mp1, maxGap);
-        // check if the area to draw is too small. This saves 100ms for complex structures
-        coordinatesAbsolute.add(mp1);
-      }
+      // check if the area to draw is too small. This saves 100ms for complex structures
+      bool tooSmall = minMaxMappoint.getWidth() <= maxGap && minMaxMappoint.getHeight() <= maxGap;
+      if (tooSmall && !(keepSmallOpenWays && !isClosedWay)) return;
+      if (simplificationTolerance > 0 && mp1.length > 6) mp1 = DouglasPeuckerMappoint().simplify(mp1, simplificationTolerance);
+      coordinatesAbsolute.add(mp1);
     });
     return coordinatesAbsolute;
   }
