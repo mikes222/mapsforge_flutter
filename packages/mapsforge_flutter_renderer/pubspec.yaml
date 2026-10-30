@@ -38,14 +38,14 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.9
+  cupertino_icons: ^2.0.0
 
   # For the online renderers
   dio: ^5.11.1
 
   dio_cache_interceptor: ^4.0.7
 
-  ecache: ^2.2.0
+  ecache: ^2.3.0
 
   # BSD License
   # for importing svg files

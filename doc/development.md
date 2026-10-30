@@ -424,3 +424,11 @@ testWidgets('golden test with custom fonts', (WidgetTester tester) async {
 - Consider testing smaller components
 - Use appropriate image compression
 
+## Submitting Pull Requests
+
+- **One Feature Per PR:** Please submit only one feature per pull request (unless the changes are very minor).
+- **Focused Bug Fixes:** Similarly, limit each PR to a small group of related bug fixes.
+- **Conventional Commits:** Use Conventional Commits whenever possible to take advantage of automated versioning and changelog generation.
+https://www.conventionalcommits.org/en/v1.0.0/
+- **Behavior-driven tests:** Whenever suitable build a testcase. Is is preferred to have golden tests which proves the output for the user is as intended. 
+Tests should not fail if the internal structure of the system is refactored. 
