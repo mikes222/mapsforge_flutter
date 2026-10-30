@@ -125,7 +125,8 @@ class RenderThemeBuilder {
     List<Rule> rules = [];
     for (var ruleBuilder in ruleBuilderStack) {
       if (!ruleBuilder.impossible) {
-        Rule rule = ruleBuilder.build();
+        Rule? rule = ruleBuilder.build();
+        if (rule == null) continue;
         rules.add(rule);
         rule.parent = null;
       }

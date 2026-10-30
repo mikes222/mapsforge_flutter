@@ -89,4 +89,11 @@ class ShapePainterPolyline extends UiShapePainter<RenderinstructionPolyline> {
     UiPath path = calculatePath(wayProperties.getCoordinatesAbsolute(), renderContext.reference, renderinstruction.dy);
     renderContext.canvas.drawPath(path, stroke!);
   }
+
+  /// Releases the bitmap shader held by [stroke] (see [UiPaint.setBitmapShader]);
+  /// the painter owns the [SymbolImage] clone it received from the cache.
+  @override
+  void dispose() {
+    stroke?.dispose();
+  }
 }

@@ -6,18 +6,25 @@ import '../matcher/anymatcher.dart';
 import '../xml/rulebuilder.dart';
 
 abstract class AttributeMatcher {
-  static Map<List<String>, AttributeMatcher> MATCHERS_CACHE_KEY = {};
-  static Map<List<String>, AttributeMatcher> MATCHERS_CACHE_VALUE = {};
+  // Keyed by the joined string, not the List<String>: Dart lists compare by
+  // identity, so a List key never hits and the cache grows by one entry per
+  // rule per theme parse (the Java original relies on List.equals/hashCode
+  // being content-based).
+  static final Map<String, AttributeMatcher> MATCHERS_CACHE_KEY = {};
+  static final Map<String, AttributeMatcher> MATCHERS_CACHE_VALUE = {};
+
+  static String _cacheKey(List<String> list) => list.join('|');
 
   static AttributeMatcher getKeyMatcher(List<String> keyList) {
     if (RuleBuilder.STRING_WILDCARD == (keyList.elementAt(0))) {
       return const AnyMatcher();
     }
 
-    AttributeMatcher? attributeMatcher = MATCHERS_CACHE_KEY[keyList];
+    String cacheKey = _cacheKey(keyList);
+    AttributeMatcher? attributeMatcher = MATCHERS_CACHE_KEY[cacheKey];
     if (attributeMatcher == null) {
       attributeMatcher = KeyMatcher(keyList);
-      MATCHERS_CACHE_KEY[keyList] = attributeMatcher;
+      MATCHERS_CACHE_KEY[cacheKey] = attributeMatcher;
     }
     return attributeMatcher;
   }
@@ -27,10 +34,11 @@ abstract class AttributeMatcher {
       return const AnyMatcher();
     }
 
-    AttributeMatcher? attributeMatcher = MATCHERS_CACHE_VALUE[valueList];
+    String cacheKey = _cacheKey(valueList);
+    AttributeMatcher? attributeMatcher = MATCHERS_CACHE_VALUE[cacheKey];
     if (attributeMatcher == null) {
       attributeMatcher = ValueMatcher(valueList);
-      MATCHERS_CACHE_VALUE[valueList] = attributeMatcher;
+      MATCHERS_CACHE_VALUE[cacheKey] = attributeMatcher;
     }
     return attributeMatcher;
   }

@@ -31,9 +31,10 @@ class ShapePainterLinesymbol extends UiShapePainter<RenderinstructionLinesymbol>
   /// Initializes the shape painter by loading the symbol from the cache.
   Future<void> init() async {
     try {
-      symbolImage =
-          await SymbolCacheMgr().getOrCreateSymbol(renderinstruction.bitmapSrc!, renderinstruction.getBitmapWidth(), renderinstruction.getBitmapHeight())
-            ?..clone();
+      // The cache already hands out a clone owned by this painter (see
+      // FileSymbolCache.getOrCreateSymbol); cloning again here would leak the
+      // extra ui.Image handle.
+      symbolImage = await SymbolCacheMgr().getOrCreateSymbol(renderinstruction.bitmapSrc!, renderinstruction.getBitmapWidth(), renderinstruction.getBitmapHeight());
     } catch (error) {
       _log.warning("Error loading bitmap ${renderinstruction.bitmapSrc}", error);
     }

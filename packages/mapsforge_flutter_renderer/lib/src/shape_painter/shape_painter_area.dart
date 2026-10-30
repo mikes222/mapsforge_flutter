@@ -106,4 +106,12 @@ class ShapePainterArea extends UiShapePainter<RenderinstructionArea> {
     if (fill != null) renderContext.canvas.drawPath(path, fill!);
     if (stroke != null) renderContext.canvas.drawPath(path, stroke!);
   }
+
+  /// Releases the bitmap shader held by [fill] (see [UiPaint.setBitmapShader]);
+  /// the painter owns the [SymbolImage] clone it received from the cache.
+  @override
+  void dispose() {
+    fill?.dispose();
+    stroke?.dispose();
+  }
 }
