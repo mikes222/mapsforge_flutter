@@ -136,6 +136,10 @@ class DatastoreRenderer extends Renderer {
 
   final Datastore datastore;
 
+  /// If true, tiny open ways of road, rail and country/state border tags are kept (simplified with 1 px
+  /// instead of 5 px). Avoids gaps in roads made of many short pieces. Other tiny ways are still dropped.
+  final bool highDetailWays;
+
   /// Manages dependencies between tiles for label rendering.
   TileDependencies? tileDependencies;
 
@@ -155,14 +159,21 @@ class DatastoreRenderer extends Renderer {
   /// [rendertheme] Theme defining visual styling rules
   /// [useSeparateLabelLayer] Whether to render labels at a separate layer (true) or onto the tiles directly (false
   /// [useIsolateReader] Whether to use an isolate for rendering. If you use [IsolateMapfile] do NOT use an isolateReader
-  DatastoreRenderer(this.datastore, this.rendertheme, {this.useSeparateLabelLayer = true, bool useIsolateReader = false}) {
+  /// [highDetailWays] Whether to keep small open ways and use a finer simplification, see [highDetailWays]
+  DatastoreRenderer(
+    this.datastore,
+    this.rendertheme, {
+    this.useSeparateLabelLayer = true,
+    bool useIsolateReader = false,
+    this.highDetailWays = false,
+  }) {
     if (useSeparateLabelLayer) {
       tileDependencies = null;
     } else {
       tileDependencies = TileDependencies();
     }
     if (!useIsolateReader) {
-      _datastoreReader = DatastoreReaderImpl(datastore);
+      _datastoreReader = DatastoreReaderImpl(datastore, highDetailWays: highDetailWays);
     }
   }
 
@@ -187,7 +198,7 @@ class DatastoreRenderer extends Renderer {
     RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(job.tile.zoomLevel);
     session.checkpoint("after prepareZoomlevel");
 
-    _datastoreReader ??= await IsolateDatastoreReader.create(datastore);
+    _datastoreReader ??= await IsolateDatastoreReader.create(datastore, highDetailWays: highDetailWays);
 
     LayerContainerCollection? layerContainerCollection = await _datastoreReader!.read(job.tile, renderthemeLevel);
 
@@ -237,7 +248,7 @@ class DatastoreRenderer extends Renderer {
     // we need something like 600ms to start an isolate whereas the whole read-process just needs about 200ms
     RenderthemeZoomlevel renderthemeLevel = rendertheme.prepareZoomlevel(job.tile.zoomLevel);
 
-    _datastoreReader ??= await IsolateDatastoreReader.create(datastore);
+    _datastoreReader ??= await IsolateDatastoreReader.create(datastore, highDetailWays: highDetailWays);
 
     LayerContainerCollection? layerContainerCollection = await _datastoreReader!.readLabels(job.tile, job.rightLower ?? job.tile, renderthemeLevel);
 

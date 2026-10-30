@@ -1,6 +1,7 @@
 import 'package:mapsforge_flutter_core/dart_isolate.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/projection.dart';
+import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_renderer/src/datastore_reader.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
@@ -20,15 +21,16 @@ class IsolateDatastoreReader implements DatastoreReader {
   IsolateDatastoreReader._(Datastore datastore);
 
   /// Creates and spawns a new `IsolateDatastoreReader`.
-  static Future<IsolateDatastoreReader> create(Datastore datastore) async {
+  static Future<IsolateDatastoreReader> create(Datastore datastore, {bool highDetailWays = false}) async {
     IsolateDatastoreReader instance = IsolateDatastoreReader._(datastore);
-    await instance._isolateInstance.spawn(_createInstanceStatic, DatastoreReaderIsolateInitRequest(datastore));
+    await instance._isolateInstance.spawn(_createInstanceStatic, DatastoreReaderIsolateInitRequest(datastore, highDetailWays: highDetailWays));
     return instance;
   }
 
   @pragma('vm:entry-point')
   static Future<void> _createInstanceStatic(IsolateInitInstanceParams request) async {
-    _reader = DatastoreReaderImpl((request.initObject as DatastoreReaderIsolateInitRequest).datastore);
+    DatastoreReaderIsolateInitRequest initRequest = request.initObject as DatastoreReaderIsolateInitRequest;
+    _reader = DatastoreReaderImpl(initRequest.datastore, highDetailWays: initRequest.highDetailWays);
     await FlutterIsolateInstance.isolateInit(request, _acceptRequestsStatic);
   }
 
@@ -56,7 +58,9 @@ class IsolateDatastoreReader implements DatastoreReader {
 class DatastoreReaderIsolateInitRequest {
   final Datastore datastore;
 
-  DatastoreReaderIsolateInitRequest(this.datastore);
+  final bool highDetailWays;
+
+  DatastoreReaderIsolateInitRequest(this.datastore, {this.highDetailWays = false});
 }
 //////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +84,11 @@ class DatastoreReaderIsolateRequest {
 class DatastoreReaderImpl implements DatastoreReader {
   final Datastore datastore;
 
-  DatastoreReaderImpl(this.datastore);
+  /// If true, tiny road, rail and border open ways are kept and simplified with a 1 px
+  /// instead of a 5 px tolerance. Avoids gaps in roads made of many short ways.
+  final bool highDetailWays;
+
+  DatastoreReaderImpl(this.datastore, {this.highDetailWays = false});
 
   /// Reads the map data for a single [tile] and processes it against the
   /// [renderthemeLevel].
@@ -137,16 +145,25 @@ class DatastoreReaderImpl implements DatastoreReader {
     // never ever call an async method 44000 times. It takes 2 seconds to do so!
     //    Future.wait(mapReadResult.ways.map((way) => _renderWay(renderContext, PolylineContainer(way, renderContext.job.tile))));
     for (Way way in datastoreBundle.ways) {
+      final bool isClosedWay = LatLongUtils.isClosedWay(way.latLongs[0]);
+      // Cheap rejection before any projection: open ways without a matching rendering rule are never drawn.
+      if (!isClosedWay && renderthemeLevel.matchOpenWay(tile, way).isEmpty) continue;
+
       // Cheap pre-filter using the projected bounding box of the way.
       // This avoids the expensive full projection and Douglas-Peucker simplification
       // for ways that are too small to be rendered.
       MapRectangle bbox = projection.boundingBoxToRectangle(way.getBoundingBox());
-      if (bbox.getWidth() < 5 && bbox.getHeight() < 5) continue;
+      bool tooSmall = bbox.getWidth() < 5 && bbox.getHeight() < 5;
+      // In high detail mode, tiny open roads and borders are kept so that roads made of many short pieces have no gaps.
+      bool keepSmallOpenWay = highDetailWays && !isClosedWay && _isKeepableSmallOpenWay(way);
+      if (tooSmall && !keepSmallOpenWay) continue;
 
-      WayProperties wayProperties = WayProperties(way, projection);
-      MapRectangle rectangle = wayProperties.getBoundaryAbsolute();
-      // filter small ways
-      if (rectangle.getWidth() < 5 && rectangle.getHeight() < 5) continue;
+      WayProperties wayProperties = WayProperties(
+        way,
+        projection,
+        simplificationTolerance: keepSmallOpenWay ? 1 : 5,
+        keepSmallOpenWays: keepSmallOpenWay,
+      );
       if (wayProperties.getCoordinatesAbsolute().isNotEmpty) {
         List<Renderinstruction> renderinstructions;
         if (wayProperties.isClosedWay) {
@@ -165,6 +182,17 @@ class DatastoreReaderImpl implements DatastoreReader {
     //   _renderWaterBackground(renderContext);
     // }
     layerContainerCollection.reduce();
+  }
+
+  /// Tiny open ways that are kept in high detail mode: road and rail pieces and country/state borders.
+  static bool _isKeepableSmallOpenWay(Way way) {
+    TagCollection tags = way.tags;
+    if (tags.hasTag('highway') || tags.hasTag('railway')) return true;
+    if (tags.hasTagValue('boundary', 'administrative')) {
+      String? adminLevel = tags.getTag('admin_level');
+      return adminLevel == '2' || adminLevel == '4';
+    }
+    return false;
   }
 
   List<Renderinstruction> _retrieveShapesForClosedWay(Tile tile, RenderthemeZoomlevel renderthemeLevel, WayProperties wayProperties) {
