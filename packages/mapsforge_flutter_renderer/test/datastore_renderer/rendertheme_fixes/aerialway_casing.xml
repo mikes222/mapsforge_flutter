@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimal reproduction of the RuleOptimizer inversion.
+
+  The <rule k="aerialway"> parent has no instruction of its own. One of its
+  children repeats the parent's key (k="aerialway"), which made the old
+  RuleOptimizer widen the PARENT to AnyMatcher. From then on the parent's
+  k="*" child (the casing) applied to every way, e.g. the highway, and since
+  it comes later in the theme it is painted on top of it.
+
+  Expected: highway = thin blue line; aerialway = black line with red casing.
+-->
+<rendertheme xmlns="http://mapsforge.org/renderTheme" map-background="#FFFFFF" version="6">
+    <rule e="way" k="highway" v="*">
+        <line stroke="#0050FF" stroke-width="2" stroke-linecap="butt" />
+    </rule>
+    <rule e="way" k="aerialway" v="*">
+        <rule e="way" k="*" v="*">
+            <line stroke="#FF0000" stroke-width="8" stroke-linecap="butt" />
+        </rule>
+        <rule e="way" k="aerialway" v="cable_car|gondola">
+            <line stroke="#000000" stroke-width="2" stroke-linecap="butt" />
+        </rule>
+    </rule>
+</rendertheme>

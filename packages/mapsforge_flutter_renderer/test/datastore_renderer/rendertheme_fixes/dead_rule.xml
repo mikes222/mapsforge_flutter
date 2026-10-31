@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimal reproduction of a rule that can never match.
+
+  The inner rule's zoom-max (12) is below the zoom-min it inherits from its
+  parent (14), so it is marked impossible and skipped. That leaves the parent
+  with neither render instructions nor subrules, which tripped the assertion
+  in Rule's constructor and the whole theme failed to load. Real-world themes
+  contain such rules.
+
+  Expected: the theme loads and the highway is drawn as a blue line.
+-->
+<rendertheme xmlns="http://mapsforge.org/renderTheme" map-background="#FFFFFF" version="6">
+    <rule e="way" k="highway" v="*">
+        <line stroke="#0050FF" stroke-width="2" stroke-linecap="butt" />
+    </rule>
+    <rule e="way" k="natural" v="*" zoom-min="14">
+        <rule e="way" k="natural" v="cliff" zoom-max="12">
+            <line stroke="#000000" stroke-width="2" stroke-linecap="butt" />
+        </rule>
+    </rule>
+</rendertheme>
