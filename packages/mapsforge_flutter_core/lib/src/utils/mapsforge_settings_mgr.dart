@@ -32,6 +32,19 @@ class MapsforgeSettingsMgr {
   /// Text strokes start scaling at higher zoom levels than regular strokes.
   int strokeMinZoomlevelText = 18;
 
+  /// Minimum zoom level at which the bitmaps of a render theme's `<symbol>` and
+  /// `<lineSymbol>` grow. Null means [strokeMinZoomlevelText]: they grow
+  /// together with text. Icons and markers are not affected.
+  ///
+  /// Set it above [defaultMaxZoomlevel] to keep symbols at the size the render
+  /// theme gives them at every zoom level, as Java mapsforge draws them. It is
+  /// read while a render theme is parsed: set it before loading the theme, and
+  /// load the theme again after changing it.
+  int? symbolMinZoomlevel;
+
+  /// The zoom level from which symbol bitmaps grow, see [symbolMinZoomlevel].
+  int get symbolBitmapMinZoomlevel => symbolMinZoomlevel ?? strokeMinZoomlevelText;
+
   /// Multiplicative factor for stroke thickness increase per zoom level.
   /// Applied when zoom level exceeds strokeMinZoomlevel.
   double _strokeIncreaseFactor = 1.4;

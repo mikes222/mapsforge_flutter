@@ -40,7 +40,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
   RenderinstructionSymbol(int level) {
     this.level = level;
     setBitmapPercent(100);
-    setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
+    setBitmapMinZoomLevel(MapsforgeSettingsMgr().symbolBitmapMinZoomlevel);
   }
 
   /// Creates a zoom level specific copy of this symbol instruction.
