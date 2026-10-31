@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A track drawn as a row of 20 x 20 red squares. -->
+<rendertheme xmlns="http://mapsforge.org/renderTheme" map-background="#FFFFFF" version="6">
+    <rule e="way" k="highway" v="track">
+        <lineSymbol src="jar:symbols/red_square.svg" symbol-width="20" symbol-height="20" repeat="true" repeat-gap="40" />
+    </rule>
+</rendertheme>

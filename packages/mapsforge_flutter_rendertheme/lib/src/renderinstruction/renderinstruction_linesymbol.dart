@@ -31,7 +31,7 @@ class RenderinstructionLinesymbol extends Renderinstruction with BaseSrcMixin, B
     setRepeatGap(REPEAT_GAP_DEFAULT);
     setRepeatStart(REPEAT_START_DEFAULT);
     setBitmapPercent(100);
-    setBitmapMinZoomLevel(MapsforgeSettingsMgr().strokeMinZoomlevelText);
+    setBitmapMinZoomLevel(MapsforgeSettingsMgr().symbolBitmapMinZoomlevel);
   }
 
   @override

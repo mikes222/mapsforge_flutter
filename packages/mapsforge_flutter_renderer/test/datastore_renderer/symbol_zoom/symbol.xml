@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A peak drawn as a 20 x 20 red square. Ways are not drawn. -->
+<rendertheme xmlns="http://mapsforge.org/renderTheme" map-background="#FFFFFF" version="6">
+    <rule e="node" k="natural" v="peak">
+        <symbol src="jar:symbols/red_square.svg" symbol-width="20" symbol-height="20" />
+    </rule>
+</rendertheme>
