@@ -42,8 +42,10 @@ class _GenericGestureDetectorState extends State<GenericGestureDetector> {
     // A fling keeps moving the map from a periodic timer after the finger is lifted. Stop it with the view, or it
     // moves a MapModel that has been disposed in the meantime.
     for (var handler in _handlers) {
-      handler.cancelTimer();
+      handler.dispose();
     }
+    _handlers.clear();
+    _pointers.clear();
     super.dispose();
   }
 

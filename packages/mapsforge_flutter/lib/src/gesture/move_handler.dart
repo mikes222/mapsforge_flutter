@@ -35,6 +35,13 @@ class MoveHandler extends DefaultHandler {
   MoveHandler({required super.longPressDuration, required super.mapModel, this.swipeAbsorption = 0.9}) : assert(swipeAbsorption >= 0 && swipeAbsorption <= 1);
 
   @override
+  void dispose() {
+    _swipeTimer?.cancel();
+    _swipeTimer = null;
+    super.dispose();
+  }
+
+  @override
   void cancelTimer() {
     super.cancelTimer();
     _swipeTimer?.cancel();

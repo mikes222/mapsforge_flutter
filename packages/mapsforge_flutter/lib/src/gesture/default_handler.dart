@@ -25,6 +25,10 @@ class DefaultHandler {
 
   DefaultHandler({required this.longPressDuration, required this.mapModel});
 
+  void dispose() {
+    cancelTimer();
+  }
+
   bool activeTimer() {
     return _timer != null;
   }
