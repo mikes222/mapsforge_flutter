@@ -43,8 +43,11 @@ class MapModel extends ChangeNotifier {
     _renderers.add(renderer);
   }
 
+  bool _disposed = false;
+
   @override
   Future<void> dispose() async {
+    _disposed = true;
     super.dispose();
     await _positionSubject.close();
     await _manualMoveSubject.close();
@@ -80,6 +83,8 @@ class MapModel extends ChangeNotifier {
   }
 
   void setPosition(MapPosition position) {
+    // Late gesture or animation callbacks must not fail on the closed subjects.
+    if (_disposed) return;
     _lastPosition = position;
     _positionSubject.add(position);
     rotationNotifier.value = _normalize180(position.rotation);
@@ -119,23 +124,28 @@ class MapModel extends ChangeNotifier {
   Stream<RenderChangedEvent> get renderChangedStream => _renderChangedSubject.stream;
 
   void manualMove(Object object) {
+    if (_disposed) return;
     _manualMoveSubject.add(object);
   }
 
   /// sets or clears a tap event. Clearing a tap event usually means that the context menu should not be shown anymore
   void tap(TapEvent? event) {
+    if (_disposed) return;
     _tapSubject.add(event);
   }
 
   void longTap(TapEvent? event) {
+    if (_disposed) return;
     _longTapSubject.add(event);
   }
 
   void doubleTap(TapEvent? event) {
+    if (_disposed) return;
     _doubleTapSubject.add(event);
   }
 
   void dragNdrop(DragNdropEvent event) {
+    if (_disposed) return;
     _dragNdropSubject.add(event);
   }
 

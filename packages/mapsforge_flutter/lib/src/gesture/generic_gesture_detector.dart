@@ -38,6 +38,16 @@ class _GenericGestureDetectorState extends State<GenericGestureDetector> {
   }
 
   @override
+  void dispose() {
+    // A fling keeps moving the map from a periodic timer after the finger is lifted. Stop it with the view, or it
+    // moves a MapModel that has been disposed in the meantime.
+    for (var handler in _handlers) {
+      handler.cancelTimer();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
