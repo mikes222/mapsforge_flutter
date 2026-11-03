@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 import 'dart:math' as math;
@@ -24,6 +25,10 @@ class ReadbufferFile implements ReadbufferSource {
 
   int _position = 0;
 
+  /// Incremented by [freeRessources]. A positional read that started before
+  /// the call closes its resource when it returns instead of re-queuing it.
+  int _generation = 0;
+
   ReadbufferFile(this.filename);
 
   @override
@@ -31,14 +36,33 @@ class ReadbufferFile implements ReadbufferSource {
     freeRessources();
   }
 
+  /// Closes the pooled resources. Reads may still be in flight (a render
+  /// job aborted by dispose keeps its awaited read); their resource is not
+  /// in the pool at this moment and is closed by [_release] when the read
+  /// returns. The pool is snapshotted before the first await so a
+  /// returning read cannot modify the queue under the iteration.
+  ///
+  /// The source stays usable: a later read opens the file again, as before,
+  /// so it can still be sent to another isolate after this call.
   @override
   Future<void> freeRessources() async {
-    await _resource?.close();
+    _generation++;
+    final resource = _resource;
     _resource = null;
-    for (var resource in _resourceAts) {
-      await resource.close();
-    }
+    final pooled = List<_ReadbufferFileResource>.of(_resourceAts);
     _resourceAts.clear();
+    await resource?.close();
+    for (var r in pooled) {
+      await r.close();
+    }
+  }
+
+  void _release(_ReadbufferFileResource resource, int generation) {
+    if (generation != _generation) {
+      unawaited(resource.close());
+      return;
+    }
+    _resourceAts.addLast(resource);
   }
 
   /// Reads the given amount of bytes from the file into the read buffer and resets the internal buffer position. If
@@ -72,9 +96,10 @@ class ReadbufferFile implements ReadbufferSource {
     assert(position >= 0);
 
     var session = PerformanceProfiler().startSession(category: "ReadbufferFile.readAt");
+    final generation = _generation;
     _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
     Uint8List bufferData = await resourceAt.readAt(position, length);
-    _resourceAts.addLast(resourceAt);
+    _release(resourceAt, generation);
     Readbuffer result = Readbuffer(bufferData, position);
     session.complete();
     return result;
@@ -86,9 +111,10 @@ class ReadbufferFile implements ReadbufferSource {
     assert(position >= 0);
 
     var session = PerformanceProfiler().startSession(category: "ReadbufferFile.readAt");
+    final generation = _generation;
     _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
     Uint8List bufferData = await resourceAt.readAtMax(position, maxLength);
-    _resourceAts.addLast(resourceAt);
+    _release(resourceAt, generation);
     Readbuffer result = Readbuffer(bufferData, position);
     session.complete();
     return result;
@@ -97,9 +123,10 @@ class ReadbufferFile implements ReadbufferSource {
   @override
   Future<int> length() async {
     if (_length != null) return _length!;
+    final generation = _generation;
     _ReadbufferFileResource resourceAt = _resourceAts.isNotEmpty ? _resourceAts.removeFirst() : _ReadbufferFileResource(filename);
     _length = await resourceAt.length();
-    _resourceAts.addLast(resourceAt);
+    _release(resourceAt, generation);
     assert(_length! >= 0);
     //_log.info("length needed ${DateTime.now().millisecondsSinceEpoch - time} ms");
     return _length!;
