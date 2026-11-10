@@ -2,6 +2,7 @@ import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_rendertheme/src/model/scale.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/bitmap_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/renderinstruction_node.dart';
@@ -89,6 +90,7 @@ class RenderinstructionSymbol extends Renderinstruction with BaseSrcMixin, Bitma
         setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
+        if (scale == Scale.NONE) setBitmapMinZoomLevel(65535);
       } else if (Renderinstruction.ID == name) {
         id = value;
       } else if (Renderinstruction.SYMBOL_HEIGHT == name) {

@@ -3,6 +3,7 @@ import 'package:mapsforge_flutter_core/utils.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 import 'package:mapsforge_flutter_rendertheme/renderinstruction.dart';
 import 'package:mapsforge_flutter_rendertheme/rendertheme.dart';
+import 'package:mapsforge_flutter_rendertheme/src/model/scale.dart';
 import 'package:mapsforge_flutter_rendertheme/src/model/text_transform.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/base_src_mixin.dart';
 import 'package:mapsforge_flutter_rendertheme/src/renderinstruction/fill_src_mixin.dart';
@@ -107,6 +108,7 @@ class RenderinstructionCaption extends Renderinstruction
         setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
+        if (scale == Scale.NONE) setStrokeMinZoomLevel(65535);
       } else if (Renderinstruction.FILL == name) {
         setFillColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.FONT_FAMILY == name) {

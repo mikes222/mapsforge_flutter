@@ -74,7 +74,7 @@ class RenderinstructionArea extends Renderinstruction with BaseSrcMixin, BitmapS
         setDy(double.parse(value));
       } else if (Renderinstruction.SCALE == name) {
         setScaleFromValue(value);
-        if (scale == Scale.NONE) setStrokeMinZoomLevel(665535);
+        if (scale == Scale.NONE) setStrokeMinZoomLevel(65535);
       } else if (Renderinstruction.FILL == name) {
         setFillColorFromNumber(XmlUtils.getColor(value));
       } else if (Renderinstruction.STROKE == name) {

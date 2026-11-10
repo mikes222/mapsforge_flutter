@@ -48,9 +48,9 @@ mixin BaseSrcMixin {
   }
 
   void setScaleFromValue(String value) {
-    if (value.contains("ALL")) {
+    if (value.contains("all")) {
       scale = Scale.ALL;
-    } else if (value.contains("NONE")) {
+    } else if (value.contains("none")) {
       scale = Scale.NONE;
     }
     scale = Scale.STROKE;
