@@ -45,9 +45,14 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionCaption renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
-    renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed, caption: caption);
-    await PainterFactory().getOrCreateShapePainter(renderInfo!);
+    // render() may be called while awaiting the painter, so publish renderInfo only after the painter exists
+    RenderInfoNode<RenderinstructionCaption> renderInfoNew = RenderInfoNode(
+      NodeProperties(PointOfInterest.simple(latLong), projection),
+      renderinstructionZoomed,
+      caption: caption,
+    );
+    await PainterFactory().getOrCreateShapePainter(renderInfoNew);
+    renderInfo = renderInfoNew;
   }
 
   ///
@@ -57,7 +62,8 @@ class CaptionMarker<T> extends AbstractPoiMarker<T> {
   void render(UiRenderContext renderContext) {
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
     assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
-    renderInfo?.render(renderContext);
+    if (renderInfo?.shapePainter == null) return;
+    renderInfo!.render(renderContext);
   }
 
   @override

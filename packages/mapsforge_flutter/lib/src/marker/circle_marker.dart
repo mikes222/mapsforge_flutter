@@ -40,9 +40,13 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   Future<void> changeZoomlevel(int zoomlevel, PixelProjection projection) async {
     //renderInfo?.shapePainter?.dispose();
     RenderinstructionCircle renderinstructionZoomed = renderinstructionsZoomed.putIfAbsent(zoomlevel, () => renderinstruction.forZoomlevel(zoomlevel, 0));
-    NodeProperties nodeProperties = NodeProperties(PointOfInterest.simple(latLong), projection);
-    renderInfo = RenderInfoNode(nodeProperties, renderinstructionZoomed);
-    await PainterFactory().getOrCreateShapePainter(renderInfo!);
+    // render() may be called while awaiting the painter, so publish renderInfo only after the painter exists
+    RenderInfoNode<RenderinstructionCircle> renderInfoNew = RenderInfoNode(
+      NodeProperties(PointOfInterest.simple(latLong), projection),
+      renderinstructionZoomed,
+    );
+    await PainterFactory().getOrCreateShapePainter(renderInfoNew);
+    renderInfo = renderInfoNew;
 
     // captions needs the new renderinstruction so execute this method after renderInfo is created
     await changeZoomlevelCaptions(zoomlevel, projection);
@@ -55,6 +59,7 @@ class CircleMarker<T> extends AbstractPoiMarker<T> with CaptionMixin {
   void render(UiRenderContext renderContext) {
     assert(renderInfo != null, "renderInfo is null, maybe changeZoomlevel() was not called");
     if (!zoomlevelRange.isWithin(renderContext.projection.scalefactor.zoomlevel)) return;
+    if (renderInfo?.shapePainter == null) return;
     renderCaptions(renderContext: renderContext, nodeProperties: renderInfo!.nodeProperties);
 
     renderInfo?.render(renderContext);
