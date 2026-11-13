@@ -1,5 +1,5 @@
 import 'package:complete_example/models/app_models.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class CurrentConfigurationCard extends StatelessWidget {
   final AppConfiguration _currentConfiguration;

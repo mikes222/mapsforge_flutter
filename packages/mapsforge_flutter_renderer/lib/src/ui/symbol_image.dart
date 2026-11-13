@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter_core/model.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A wrapper for a `ui.Image` that represents a bitmap symbol.
 ///

@@ -5,7 +5,7 @@ import 'package:complete_example/context_menu/my_context_menu.dart';
 import 'package:complete_example/marker/my_marker_datastore.dart';
 import 'package:complete_example/widget/performance_widget.dart';
 import 'package:ecache/ecache.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter/gesture.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';

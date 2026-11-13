@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mapsforge_flutter/src/overlay/style_menu_bar.dart';
 import 'package:mapsforge_flutter_rendertheme/model.dart';
 

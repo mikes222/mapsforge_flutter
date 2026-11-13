@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:mapsforge_flutter/src/tile/tile_job_queue.dart';
 import 'package:mapsforge_flutter/src/tile/tile_set.dart';
 import 'package:mapsforge_flutter_core/model.dart';

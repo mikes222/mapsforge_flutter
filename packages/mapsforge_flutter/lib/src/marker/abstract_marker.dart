@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mapsforge_flutter/src/marker/marker.dart';
 
 /// Abstract Marker class for further extensions. This class handles the caption of a marker.

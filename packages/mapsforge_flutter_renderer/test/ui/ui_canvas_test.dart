@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:mapsforge_flutter_renderer/src/ui/ui_canvas.dart';
 import 'package:mapsforge_flutter_renderer/src/ui/ui_paint.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

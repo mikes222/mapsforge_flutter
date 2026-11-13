@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter_core/model.dart';
 import 'package:mapsforge_flutter_core/utils.dart';
@@ -199,5 +199,5 @@ class MeterPainter extends CustomPainter {
   bool? hitTest(Offset position) => null;
 
   @override
-  get semanticsBuilder => null;
+  Null get semanticsBuilder => null;
 }

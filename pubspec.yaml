@@ -8,14 +8,14 @@ repository: https://github.com/mikes222/mapsforge_flutter
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.10.0
 
 dependency_overrides:
   #ecache:
   #  path: ../ecache
 
 dev_dependencies:
-  melos: ^8.9.0
+  melos: ^8.10.1
 workspace:
   - packages/mapsforge_flutter_core
   - packages/mapsforge_flutter_mapfile
@@ -41,7 +41,7 @@ melos:
 
         ecache: ^2.3.0
 
-        xml: ^7.0.1
+        xml: ^6.6.1
 
       dev_dependencies:
 

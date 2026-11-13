@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/label/label_job_queue.dart';
 import 'package:mapsforge_flutter/src/label/label_painter.dart';

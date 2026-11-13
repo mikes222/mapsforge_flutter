@@ -3,7 +3,7 @@ import 'package:complete_example/screens/configuration_screen.dart';
 import 'package:complete_example/screens/file_download_screen.dart';
 import 'package:complete_example/screens/map_view_screen.dart';
 import 'package:complete_example/widget/current_configuration_card.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});

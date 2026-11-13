@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mapsforge_flutter/src/context_menu/context_menu_overlay.dart';
 
 /// A widget to draw a frame which points to the tapped position.

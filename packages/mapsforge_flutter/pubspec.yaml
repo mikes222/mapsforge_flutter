@@ -57,6 +57,8 @@ dependencies:
   # simpler version of flutter streams
   rxdart: ^0.28.0
 
+  cupertino_ui: any
+  material_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

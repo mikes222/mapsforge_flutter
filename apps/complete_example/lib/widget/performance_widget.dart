@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:complete_example/services/memory_mgr.dart';
 import 'package:ecache/ecache.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:mapsforge_flutter_core/task_queue.dart';
 import 'package:mapsforge_flutter_core/utils.dart';

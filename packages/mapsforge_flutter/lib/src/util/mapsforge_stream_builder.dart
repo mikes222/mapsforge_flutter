@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 
 typedef EventBuilder<T> = Widget Function(BuildContext context, T event);

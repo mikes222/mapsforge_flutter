@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:ecache/ecache.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:mapsforge_flutter/mapsforge.dart';
 import 'package:mapsforge_flutter/src/tile/tile_dimension.dart';
 import 'package:mapsforge_flutter/src/tile/tile_set.dart';

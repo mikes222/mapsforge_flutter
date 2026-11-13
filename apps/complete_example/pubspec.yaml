@@ -35,7 +35,7 @@ dependencies:
     sdk: flutter
 
   # for unzipping the hillshading file after download
-  archive: ^4.5.2
+  archive: ^4.7.1
 
   # Enhancements for the flutter collection classes, e.g. List.firstWhereOrNull()
   collection: ^1.19.1
@@ -51,7 +51,7 @@ dependencies:
   ecache: ^2.3.0
 
   # For downlaoding files in web
-  file_picker: ^13.2.0
+  file_picker: ^13.3.3
 
   # BSD License
   # For converting int to datetime
@@ -81,6 +81,7 @@ dependencies:
   # For memory monitoring
   system_info2: ^4.2.0
 
+  material_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
